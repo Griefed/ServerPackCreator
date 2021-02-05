@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Mods {
+    // This class will be all about copy and paste and deleting mods from client to server
+
     public static void copyMods(String serverPath, String modDir) {
         //Files.copy(
     }
