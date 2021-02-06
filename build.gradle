@@ -2,12 +2,10 @@ plugins {
     id 'java'
 }
 
-group 'de.griefed'
-version '0.1-SNAPSHOT'
-
 repositories {
     mavenCentral()
 }
+
 sourceSets {
     main {
         java {
@@ -15,6 +13,18 @@ sourceSets {
         }
     }
 }
+
+jar {
+    archiveBaseName = 'ServerPack Creator'
+    archiveVersion =  '0.1.1'
+    manifest {
+        attributes "Main-Class": "de.griefed.Main"
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
 dependencies {
-    compile 'junit:junit:4.12'
+    //compile 'junit:junit:4.12'
 }
