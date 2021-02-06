@@ -13,9 +13,7 @@ public class CopyFiles {
         String clientModDir = packDir + "/mods";
         String serverModsDir = CreateFolders.serverModsPath(packDir);
         try {
-            // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientModDir));
-            // copy all files and folders from `src` to `dest`
             files.forEach(file -> {
                 try {
                     Files.copy(file, Paths.get(serverModsDir).resolve(Paths.get(clientModDir).relativize(file)),
@@ -24,9 +22,7 @@ public class CopyFiles {
                     e.printStackTrace();
                 }
             });
-            // close the stream
             files.close();
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -36,9 +32,7 @@ public class CopyFiles {
         String clientConfigDir = packDir + "/config";
         String serverConfigDir = CreateFolders.serverConfigPath(packDir);
         try {
-            // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientConfigDir));
-            // copy all files and folders from `src` to `dest`
             files.forEach(file -> {
                 try {
                     Files.copy(file, Paths.get(serverConfigDir).resolve(Paths.get(clientConfigDir).relativize(file)),
@@ -47,9 +41,7 @@ public class CopyFiles {
                     e.printStackTrace();
                 }
             });
-            // close the stream
             files.close();
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -59,9 +51,7 @@ public class CopyFiles {
         String clientScriptsDir = packDir + "/scripts";
         String serverScriptsDir = CreateFolders.serverScriptsPath(packDir);
         try {
-            // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientScriptsDir));
-            // copy all files and folders from `src` to `dest`
             files.forEach(file -> {
                 try {
                     Files.copy(file, Paths.get(serverScriptsDir).resolve(Paths.get(clientScriptsDir).relativize(file)),
@@ -70,9 +60,7 @@ public class CopyFiles {
                     e.printStackTrace();
                 }
             });
-            // close the stream
             files.close();
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -82,9 +70,7 @@ public class CopyFiles {
         String clientDefaultconfigsDir = packDir + "/defaultconfigs";
         String serverDefaultconfigsDir = CreateFolders.serverDefaultconfigsPath(packDir);
         try {
-            // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientDefaultconfigsDir));
-            // copy all files and folders from `src` to `dest`
             files.forEach(file -> {
                 try {
                     Files.copy(file, Paths.get(serverDefaultconfigsDir).resolve(Paths.get(clientDefaultconfigsDir).relativize(file)),
@@ -93,9 +79,7 @@ public class CopyFiles {
                     e.printStackTrace();
                 }
             });
-            // close the stream
             files.close();
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
