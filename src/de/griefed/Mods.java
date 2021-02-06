@@ -1,4 +1,4 @@
-package com.griefed;
+package de.griefed;
 
 public class Mods {
     // deleting clientside mods from serverpack

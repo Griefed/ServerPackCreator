@@ -1,4 +1,4 @@
-package com.griefed;
+package de.griefed;
 
 import java.io.IOException;
 

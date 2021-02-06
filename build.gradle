@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group 'de.griefed'
+version '0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+    }
+}
+dependencies {
+    compile 'junit:junit:4.12'
+}

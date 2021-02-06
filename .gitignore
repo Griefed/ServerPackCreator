@@ -104,8 +104,27 @@ dist
 .tern-port
 
 # Repo specific
-out
-out/*
-.idea
 Survive*
+
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
 *.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
