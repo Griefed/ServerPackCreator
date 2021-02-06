@@ -1,19 +1,8 @@
 package com.griefed;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Mods {
-    // This class will be all about copy and paste and deleting mods from client to server
+    // deleting clientside mods from serverpack
 
-    public static void copyMods(String clientModDir, String serverModsDir) throws IOException {
-        Files.copy(Paths.get(clientModDir), Paths.get(serverModsDir));
-    }
 
 
 /*
