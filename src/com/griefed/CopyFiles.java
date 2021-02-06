@@ -11,7 +11,7 @@ public class CopyFiles {
     // Copy all mods from client to server
     public static void copyMods(String packDir) throws IOException {
         String clientModDir = packDir + "/mods";
-        String serverModsDir = Folders.serverModsPath(packDir);
+        String serverModsDir = CreateFolders.serverModsPath(packDir);
         try {
             // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientModDir));
@@ -34,7 +34,7 @@ public class CopyFiles {
     // Copy all configs from client to server
     public static void copyConfig(String packDir) throws IOException {
         String clientConfigDir = packDir + "/config";
-        String serverConfigDir = Folders.serverConfigPath(packDir);
+        String serverConfigDir = CreateFolders.serverConfigPath(packDir);
         try {
             // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientConfigDir));
@@ -57,7 +57,7 @@ public class CopyFiles {
     // Copy all scripts from client to server
     public static void copyScripts(String packDir) throws IOException {
         String clientScriptsDir = packDir + "/scripts";
-        String serverScriptsDir = Folders.serverScriptsPath(packDir);
+        String serverScriptsDir = CreateFolders.serverScriptsPath(packDir);
         try {
             // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientScriptsDir));
@@ -80,7 +80,7 @@ public class CopyFiles {
     // Copy all defaultconfigs from client to server
     public static void copyDefaultconfigs(String packDir) throws IOException {
         String clientDefaultconfigsDir = packDir + "/defaultconfigs";
-        String serverDefaultconfigsDir = Folders.serverDefaultconfigsPath(packDir);
+        String serverDefaultconfigsDir = CreateFolders.serverDefaultconfigsPath(packDir);
         try {
             // create stream for `src`
             Stream<Path> files = Files.walk(Paths.get(clientDefaultconfigsDir));
