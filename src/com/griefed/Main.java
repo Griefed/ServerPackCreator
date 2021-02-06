@@ -16,7 +16,7 @@ public class Main {
         String serverConfigDir = Folders.serverConfigPath(packDir);
         String serverDefaultconfigsDir = Folders.serverDefaultconfigsPath(packDir);
         String serverScriptsDir = Folders.serverScriptsPath(packDir);
-
+        Mods.copyMods(clientModDir, serverModsDir);
         //System.out.println(Mods.modsList(modDir));
         //System.out.println(Mods.modsServer(modDir));
     }

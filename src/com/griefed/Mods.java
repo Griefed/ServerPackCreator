@@ -11,8 +11,8 @@ import java.util.List;
 public class Mods {
     // This class will be all about copy and paste and deleting mods from client to server
 
-    public static void copyMods(String serverPath, String modDir) {
-        //Files.copy(
+    public static void copyMods(String clientModDir, String serverModsDir) throws IOException {
+        Files.copy(Paths.get(clientModDir), Paths.get(serverModsDir));
     }
 
 
