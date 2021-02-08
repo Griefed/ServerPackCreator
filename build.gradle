@@ -2,6 +2,9 @@ plugins {
     id 'java'
 }
 
+group 'de.griefed.serverPackCreator'
+version '1.0-SNAPSHOT'
+
 repositories {
     mavenCentral()
 }
@@ -9,22 +12,28 @@ repositories {
 sourceSets {
     main {
         java {
-            srcDirs = ['src']
+            srcDirs = ['src/main']
         }
     }
 }
 
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    compile 'junit:junit:4.12'
+}
+
+test {
+    useJUnitPlatform()
+}
+
 jar {
-    archiveBaseName = 'ServerPack Creator'
+    archiveBaseName = 'ServerPackCreator'
     archiveVersion =  '0.1.1'
     manifest {
-        attributes "Main-Class": "de.griefed.Main"
+        attributes "Main-Class": "de.griefed.serverPackCreator.Main"
     }
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
-}
-
-dependencies {
-    //compile 'junit:junit:4.12'
 }

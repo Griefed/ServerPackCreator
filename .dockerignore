@@ -8,3 +8,6 @@ img
 .gitlab
 out
 out/*
+build
+.gradle
+.idea
