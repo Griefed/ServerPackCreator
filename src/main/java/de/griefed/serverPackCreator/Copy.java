@@ -24,7 +24,7 @@ public class Copy {
                 InputStream link = (getClass().getResourceAsStream("/" + configFile.getName()));
                 Files.copy(link, configFile.getAbsoluteFile().toPath());
                 link.close();
-                System.err.println("Default config file generated. Please customize.");
+                System.out.println("Default config file generated. Please customize.");
             } catch (IOException e) {
                 System.err.println("Could not extract default config-file");
                 e.printStackTrace();
@@ -35,7 +35,7 @@ public class Copy {
                 InputStream link = (getClass().getResourceAsStream("/" + propertiesFile.getName()));
                 Files.copy(link, propertiesFile.getAbsoluteFile().toPath());
                 link.close();
-                System.err.println("Default server.properties file generated. Please customize if you intend on using it.");
+                System.out.println("Default server.properties file generated. Please customize if you intend on using it.");
             } catch (IOException e) {
                 System.err.println("Could not extract default server.properties file");
                 e.printStackTrace();
@@ -46,7 +46,7 @@ public class Copy {
                 InputStream link = (getClass().getResourceAsStream("/" + iconFile.getName()));
                 Files.copy(link, iconFile.getAbsoluteFile().toPath());
                 link.close();
-                System.err.println("Default server-icon.png file generated. Please customize if you intend on using it.");
+                System.out.println("Default server-icon.png file generated. Please customize if you intend on using it.");
             } catch (IOException e) {
                 System.err.println("Could not extract default server-icon.png file");
                 e.printStackTrace();
@@ -57,7 +57,7 @@ public class Copy {
                 InputStream link = (getClass().getResourceAsStream("/" + windowsFile.getName()));
                 Files.copy(link, windowsFile.getAbsoluteFile().toPath());
                 link.close();
-                System.err.println("Default Windows start file generated.");
+                System.out.println("Default Windows start file generated.");
             } catch (IOException e) {
                 System.err.println("Could not extract default Windows start file");
                 e.printStackTrace();
@@ -68,7 +68,7 @@ public class Copy {
                 InputStream link = (getClass().getResourceAsStream("/" + linuxFile.getName()));
                 Files.copy(link, linuxFile.getAbsoluteFile().toPath());
                 link.close();
-                System.err.println("Default Linux start file generated.");
+                System.out.println("Default Linux start file generated.");
             } catch (IOException e) {
                 System.err.println("Could not extract default Linux start file");
                 e.printStackTrace();
@@ -93,13 +93,12 @@ public class Copy {
                     try {
                         Files.copy(file, Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),REPLACE_EXISTING);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 });
                 files.close();
-            } catch (IOException ex) {
-                System.out.println("File/folder already exists");
-                //ex.printStackTrace();
+            } catch (IOException e) {
+                //e.printStackTrace();
             }
         }
     }
@@ -112,7 +111,7 @@ public class Copy {
         try {
             Files.copy(Paths.get(sourceIcon), Paths.get(destIcon), REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -124,7 +123,7 @@ public class Copy {
         try {
             Files.copy(Paths.get(sourceProperties), Paths.get(destProperties), REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -136,14 +135,14 @@ public class Copy {
         try {
             Files.copy(Paths.get(sourceWindows), Paths.get(destWindows), REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         String sourceLinux = "./" + linuxFile;
         String destLinux = modpackDir + "/server_pack/" + linuxFile;
         try {
             Files.copy(Paths.get(sourceLinux), Paths.get(destLinux), REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
