@@ -1,6 +1,6 @@
 package de.griefed.serverPackCreator;
 
-public class Mods {
+public class ServerMods {
     // deleting clientside mods from serverpack
 
 
