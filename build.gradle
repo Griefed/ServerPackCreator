@@ -3,10 +3,14 @@ plugins {
 }
 
 group 'de.griefed.serverPackCreator'
-version '0.1.2-SNAPSHOT'
+version '0.3-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    jcenter()
+    maven {
+        url "https://jitpack.io"
+    }
 }
 
 sourceSets {
@@ -17,10 +21,16 @@ sourceSets {
     }
 }
 
+configurations {
+    embed
+    compile.extendsFrom(embed)
+}
+
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     compile 'junit:junit:4.12'
+    embed group: 'com.typesafe', name: 'config', version: '1.4.1'
 }
 
 test {
@@ -29,11 +39,13 @@ test {
 
 jar {
     archiveBaseName = 'ServerPackCreator'
-    archiveVersion =  '0.1.2'
+    archiveVersion =  version
+    configurations.embed.each { dep ->
+        from(project.zipTree(dep)) {
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
     manifest {
         attributes "Main-Class": "de.griefed.serverPackCreator.Main"
     }
-    /*from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }*/
 }
