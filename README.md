@@ -20,7 +20,7 @@ Take any given modpack, if possible for any given Forge version, and:
   - [X] Make creation of server.properties optional
 - [X] Create default start scripts for Linux and Windows systems based on forge version installed
   - [X] Make creation of start scripts optional
-- [ ] Automatically create zip-archive of the created serverpack with a configurable filename alongside unpacked serverpack
-  - [ ] Make creation of archive optional
+- [X] Automatically create zip-archive of the created serverpack with a configurable filename alongside unpacked serverpack
+  - [X] Make creation of archive optional
     
 Supporting Fabric or any other modloader is not planned. Feel free to fork and do whatever you want with this software. It's MIT License for a reason.
