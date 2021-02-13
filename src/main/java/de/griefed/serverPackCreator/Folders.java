@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class CreateFolders {
+public class Folders {
     // Create server pack folder and serverPath to use later on
     public static String serverPath(String packDir) throws IOException {
         String serverPath = packDir + "/server_pack";
