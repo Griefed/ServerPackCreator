@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'de.griefed.serverPackCreator'
-version '0.3-SNAPSHOT'
+version '0.4.1-SNAPSHOT'
 
 repositories {
     mavenCentral()

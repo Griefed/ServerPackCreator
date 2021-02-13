@@ -1,8 +1,12 @@
 package de.griefed.serverPackCreator;
 
+import java.util.List;
+
 public class ServerMods {
     // deleting clientside mods from serverpack
+    public void deleteClientMods(String modpackDir, List<String> clientMods) {
 
+    }
 
 
 /*
