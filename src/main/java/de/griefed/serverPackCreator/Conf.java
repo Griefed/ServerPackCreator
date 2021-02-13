@@ -59,5 +59,10 @@ public class Conf {
         if (includeStartScripts) {
             Copy.copyStartScripts(modpackDir);
         }
+
+        // If true, create zip archive of serverpack.
+        if (includeZipCreation) {
+            Server.zipBuilder(modpackDir);
+        }
     }
 }
