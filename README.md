@@ -23,4 +23,4 @@ Take any given modpack, if possible for any given Forge version, and:
 - Automatically create zip-archive of the created serverpack with a configurable filename alongside unpacked serverpack
     - Make creation of archive optional
     
-Supporting Fabric or any other modloader is not planned. Feel free to fork and do whatever you want with this software. It's MIT License for a reason.iHi
+Supporting Fabric or any other modloader is not planned. Feel free to fork and do whatever you want with this software. It's MIT License for a reason.
