@@ -35,7 +35,14 @@ public class Conf {
         try {
             Copy.copyFiles(modpackDir, copyDirs);
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+        }
+
+        // Delete client-side mods from serverpack.
+        try {
+            Server.deleteClientMods(modpackDir, clientMods);
+        } catch (IOException e) {
+            //e.printStackTrace();
         }
 
         // If true, copy server-icon to serverpack.
