@@ -124,7 +124,10 @@ out
 # gradle
 src/test
 tests
-build
+/build/classes
+build/generated
+/build/resources
+/build/tmp
 .gradle
 
 # other
