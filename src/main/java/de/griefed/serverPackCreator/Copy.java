@@ -1,6 +1,8 @@
 package de.griefed.serverPackCreator;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -85,20 +87,36 @@ public class Copy {
         for (int i = 0; i<copyDirs.toArray().length; i++) {
             String clientDir = modpackDir + "/" + copyDirs.get(i);
             String serverDir = serverPath + "/" + copyDirs.get(i);
-            Files.createDirectories(Paths.get(serverDir));
+            //Files.createDirectories(Paths.get(serverDir));
             System.out.println("Setting up " + serverDir + " files.");
-            try {
-                Stream<Path> files = Files.walk(Paths.get(clientDir));
-                files.forEach(file -> {
-                    try {
-                        Files.copy(file, Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        //e.printStackTrace();
-                    }
-                });
-                files.close();
-            } catch (IOException e) {
-                //e.printStackTrace();
+            if (copyDirs.get(i).startsWith("saves/")) {
+                String savesDir = serverPath + "/" + copyDirs.get(i).substring(6);
+                try {
+                    Stream<Path> files = Files.walk(Paths.get(clientDir));
+                    files.forEach(file -> {
+                        try {
+                            Files.copy(file, Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            //e.printStackTrace();
+                        }
+                    });
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                }
+            } else {
+                try {
+                    Stream<Path> files = Files.walk(Paths.get(clientDir));
+                    files.forEach(file -> {
+                        try {
+                            Files.copy(file, Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            //e.printStackTrace();
+                        }
+                    });
+                    files.close();
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                }
             }
         }
     }
