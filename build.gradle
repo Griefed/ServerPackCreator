@@ -3,8 +3,8 @@ plugins {
     id ("maven-publish")
 }
 
-group 'de.griefed.serverPackCreator'
-version '0.7.7-SNAPSHOT'
+//group 'de.griefed.serverPackCreator'
+//version '0.7.8-SNAPSHOT'
 
 apply plugin: 'idea'
 
@@ -41,8 +41,8 @@ test {
 }
 
 jar {
-    archiveBaseName = 'ServerPackCreator'
-    archiveVersion =  version
+    //archiveBaseName = 'ServerPackCreator'
+    //archiveVersion =  version
     configurations.embed.each { dep ->
         from(project.zipTree(dep)) {
             exclude 'META-INF', 'META-INF/**'
