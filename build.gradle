@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'de.griefed.serverPackCreator'
@@ -47,5 +48,18 @@ jar {
     }
     manifest {
         attributes "Main-Class": "de.griefed.serverPackCreator.Main"
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/Griefed/ServerPackCreator"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
