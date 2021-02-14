@@ -6,6 +6,8 @@ plugins {
 group 'de.griefed.serverPackCreator'
 version '0.5.4-SNAPSHOT'
 
+apply plugin: 'idea'
+
 repositories {
     mavenCentral()
     jcenter()
@@ -54,16 +56,17 @@ jar {
 publishing {
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/griefed/serverpackcreator")
+            name = "ServerPackCreatorMaven"
+            url = uri("https://maven.pkg.github.com/Griefed/ServerPackCreator")
             credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+                username = project.findProperty("gpr.user") ?: System.getenv("GPR_USER")
+                password = project.findProperty("gpr.key") ?: System.getenv("GPR_API_KEY")
             }
         }
     }
     publications {
         gpr(MavenPublication) {
+            artifactId='serverpackcreator'
             from(components.java)
         }
     }
