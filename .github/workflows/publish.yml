@@ -20,22 +20,18 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-#      - name: Build with Gradle
-#        run: ./gradlew build
+#      - name: Publish to GitHub Packages
+#        env:
+#          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: ./gradlew build publish
 
-      - name: Publish to GitHub Packages
+      - name: Publish artifact
         env:
-#          GPR_USER: ${{ secrets.GPR_USER }}
-#          GPR_API_KEY: ${{ secrets.GPR_TOKEN }}
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew build publish
-
-#      - name: Publish artifact
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          NEW_VERSION=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
-#          echo "New version: ${NEW_VERSION}"
-#          echo "Github username: ${GITHUB_ACTOR}"
-#          ./gradlew -Pversion=${NEW_VERSION} publish
+        run: |
+          NEW_VERSION=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
+          echo "New version: ${NEW_VERSION}"
+          echo "Github username: ${GITHUB_ACTOR}"
+          ./gradlew -Pversion=${NEW_VERSION} publish
