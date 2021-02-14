@@ -12,6 +12,7 @@ Take any given modpack, if possible for any given Forge version, and:
 - [X] Copy all mod related files to a "server_pack" directory
   - [X] Delete client side mods (make this configurable so users can customize the list of mods to be deleted by ServerPackCreator)
 - [X] Allow specifiying custom directories to include in server_pack
+  - [ ] Remove prefix "saves" when adding a world from a modpack
 - [ ] Download and install Forge server (make this configurable so users can specify their forge version)
 - [X] Copy server-icon.png to a "server_pack" directory and make the source configurable
   - [X] Make creation of server-icon.png optional
