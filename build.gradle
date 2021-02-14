@@ -56,11 +56,13 @@ jar {
 publishing {
     repositories {
         maven {
-            name = "ServerPackCreatorMaven"
+            name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/Griefed/ServerPackCreator")
             credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GPR_USER")
-                password = project.findProperty("gpr.key") ?: System.getenv("GPR_API_KEY")
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+                //username = project.findProperty("gpr.user") ?: System.getenv("GPR_USER")
+                //password = project.findProperty("gpr.key") ?: System.getenv("GPR_API_KEY")
             }
         }
     }
