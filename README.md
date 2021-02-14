@@ -1,6 +1,9 @@
 # ServerPackCreator (WIP Title)
 Java programm to create a server pack from a given 1.16.5 Minecraft modpack (only SCP4 at first)
 
+![Publish Release](https://github.com/Griefed/ServerPackCreator/workflows/Publish%20Release/badge.svg)
+![Java CI with Gradle](https://github.com/Griefed/ServerPackCreator/workflows/Java%20CI%20with%20Gradle/badge.svg)
+
 # WIP! CURRENTLY NOT FOR PUBLIC CONSUMPTION
 Use at your own risk! You shouldn't use it atm.
 Seriously bro, don't.

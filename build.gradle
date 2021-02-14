@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'de.griefed.serverPackCreator'
-version '0.5.4-SNAPSHOT'
+version '0.7.7-SNAPSHOT'
 
 apply plugin: 'idea'
 
@@ -61,8 +61,6 @@ publishing {
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
-                //username = project.findProperty("gpr.user") ?: System.getenv("GPR_USER")
-                //password = project.findProperty("gpr.key") ?: System.getenv("GPR_API_KEY")
             }
         }
     }
