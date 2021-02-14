@@ -122,12 +122,14 @@ out
 .idea
 
 # gradle
-src/test
-tests
-build
-.gradle
+/src/test
+/tests
+/build
+/.gradle
 
 # other
 eclipse
 run
 /ServerPack*
+/build/generated/
+/build/libs/
