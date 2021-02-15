@@ -1,45 +1,87 @@
-# ServerPackCreator (WIP Title)
+# ServerPackCreator
 
-Java programm to create a server pack from a given 1.16.5 Minecraft modpack (only SCP4 at first)
+[![banner](img/serverpackcreator_banner.png)](https://github.com/Griefed/ServerPackCreator)
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Publish%20Release?label=Publish%20Release&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Publish+Release%22)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Java%20CI%20with%20Gradle?label=Java%20CI%20with%20Gradle&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Java+CI+with+Gradle%22)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed?tab=packages&repo_name=ServerPackCreator)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
-# WIP! CURRENTLY NOT FOR PUBLIC CONSUMPTION
 
-Use at your own risk! You shouldn't use it atm.
+### ServerPackCreator is a program which aims to create a serverpack for any given modpack, making modpack-developing, or at least a part of it, a little less time-consuming.
+
+## WIP!
+
+Use at your own risk! Be aware that data loss is possible. If you wish to test this, there's a description down below.
+If you wish to contribute, fork the repository, make your changes and create a pull request.
+
+Help for
+- setting up Forge downloading
+  - installing Forge server after successful download
+- setting up Fabric downloading
+  - installing Fabric server after successful download
+
+would be greatly appreciated.
 
 ## Features
 
-Planned:
-Take any given modpack, if possible for any given Forge version, and:
+Planned/wanted:
 
-- [ ] **Download and install Forge server (make this configurable so users can specify their forge version)**
+- [ ] **Specify whether to use Forge or Fabric**
+  - [ ] **Download and install Forge server**
+    - [ ] **Make version configurable**
+  - [ ] **Download and install Fabric server**
+    - [ ] **Make version configurable**
 - [X] **Create default start scripts for Linux and Windows systems**
-  - [X] **Make creation of start scripts optional**
+  - [X] **Make inclusion of start scripts optional**
   - [X] **Provide default/example**
-  - [ ] **Change start scripts based on forge version in creator.conf**
+    - [X] **Forge**
+    - **Fabric provides its own start scripts for Linux and Windows systems**
+  - [ ] **Change start scripts based on Forge version in creator.conf**
+- [X] **On first run, generate all default files, tell user to customize and run again, then exit.**
 - [X] **Delete client side mods**
-  - [X] **Make list of client side mods cinfigurable**
-- [X] **Allow specifiying directories to include in server_pack**
+  - [X] **Make list of client side mods configurable**
+- [X] **Allow specifying directories to include in serverpack**
   - [X] **Remove prefix "saves" when adding a world from a modpack**
 - [X] **Copy server-icon.png to "server_pack" directory**
-  - [X] **Make creation of server-icon.png optional**
+  - [X] **Make inclusion of server-icon.png optional**
   - [X] **Provide default**
 - [X] **Create a server.properties file in "server_pack" directory**
-  - [X] **Make creation of server.properties optional**
+  - [X] **Make inclusion of server.properties optional**
   - [X] **Provide default**
 - [X] **Automatically create zip-archive of the created serverpack**
   - [X] **Make creation of archive optional**
+  
+## Running ServerPackCreator
 
-Supporting Fabric or any other modloader is not planned. Feel free to fork and do whatever you want with this software. It's MIT License for a reason.
+The initial run of ServerPackCreator will place default files in the same directory where the .jar-file resides in. Among those default files are:
+
+File | Description
+---- | ----
+creator.conf | Configuration file for customization. See [creator.conf](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/creator.conf).
+server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server.properties). 
+server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server-icon.png). 
+start.bat | Server start script for windows systems. See [start.bat](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/start.bat).
+start.sh | Server start script for linux systems. See [start.sh](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/start.sh).
+
+The creator.conf file allows you to customize a couple of different things:
+
+Variable | Default values | Description
+-------- | ------- | -----------
+modpackDir | "./Survive Create Prosper 4 1.16.5" | The path to the directory where your modpack resides in.
+clientMods | ["AmbientSounds",<br/>"BackTools",<br/>"BetterAdvancement",<br/>"BetterPing",<br/>"cherished",<br/>"ClientTweaks",<br/>"Controlling",<br/>"DefaultOptions",<br/>"durability",<br/>"DynamicSurroundings",<br/>"itemzoom",<br/>"jei-professions",<br/>"jeiintegration",<br/>"JustEnoughResources",<br/>"MouseTweaks",<br/>"Neat",<br/>"OldJavaWarning",<br/>"PackMenu",<br/>"preciseblockplacing",<br/>"SimpleDiscordRichPresence",<br/>"SpawnerFix",<br/>"TipTheScales",<br/>"WorldNameRandomizer"] | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack.
+copyDirs | ["config",<br/>"defaultconfigs",<br/>"mods",<br/>"scripts",<br/>"seeds",<br/>"saves/scp4"] | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. 
+includeForgeInstallation | true | Whether to install the specified version of the Forge server.
+forgeVersion | "36.0.15" | Specific Forge version to install the server in the serverpack.
+includeServerIcon | true | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.
+includeServerProperties | true | Whether to include server.properties in your serverpack. Must be `true` or `false`.
+includeStartScripts | true | Whether to inlude start scripts in your serverpack. Must be `true` or `false`.
+includeZipCreation | true | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.
 
 ## Testing
 
 If you want to help testing (I can not be held responsible for loss of data. Make sure you make backups and execute this program in a test environment.):
 1. Download `serverpackcreator-x.x.x.jar` from `Packages` on the right side. Example for version 0.7.8:
-   ![download-jar](download-jar.png)
+   ![download-jar](img/download-jar.png)
 2. Put it in the parent folder of your modpack folder. Here's an example for my modpack Survive Create Prosper:
 ```
 tests/
