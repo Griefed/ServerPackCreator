@@ -2,9 +2,10 @@
 
 Java programm to create a server pack from a given 1.16.5 Minecraft modpack (only SCP4 at first)
 
-![Publish Release](https://github.com/Griefed/ServerPackCreator/workflows/Publish%20Release/badge.svg)
-![Java CI with Gradle](https://github.com/Griefed/ServerPackCreator/workflows/Java%20CI%20with%20Gradle/badge.svg)
-
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Publish%20Release?label=Publish%20Release&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Publish+Release%22)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Java%20CI%20with%20Gradle?label=Java%20CI%20with%20Gradle&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Java+CI+with+Gradle%22)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed?tab=packages&repo_name=ServerPackCreator)
+[![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
 # WIP! CURRENTLY NOT FOR PUBLIC CONSUMPTION
 
 Use at your own risk! You shouldn't use it atm.
