@@ -13,23 +13,25 @@ Use at your own risk! You shouldn't use it atm.
 
 Planned:
 Take any given modpack, if possible for any given Forge version, and:
-- [ ] Download and install Forge server (make this configurable so users can specify their forge version)
-- [X] Copy all config related files to a "server_pack" directory
-  - [X] "config", "defaultconfigs", "scripts" etc. etc.
-- [X] Copy all mod related files to a "server_pack" directory
-  - [X] Delete client side mods (make this configurable so users can customize the list of mods to be deleted by ServerPackCreator)
-- [X] Allow specifiying custom directories to include in server_pack
-  - [X] Remove prefix "saves" when adding a world from a modpack
-- [X] Copy server-icon.png to a "server_pack" directory and make the source configurable
-  - [X] Make creation of server-icon.png optional
-  - [X] Provide default
-- [X] Create a server.properties file in "server_pack" directory and make this configurable so users can set their defaults once and SPC will take care of the rest
-  - [X] Make creation of server.properties optional
-- [X] Create default start scripts for Linux and Windows systems based on forge version installed
-  - [X] Make creation of start scripts optional
-- [X] Automatically create zip-archive of the created serverpack with a configurable filename alongside unpacked serverpack
-  - [X] Make creation of archive optional
-    
+
+- [ ] **Download and install Forge server (make this configurable so users can specify their forge version)**
+- [X] **Create default start scripts for Linux and Windows systems**
+  - [X] **Make creation of start scripts optional**
+  - [X] **Provide default/example**
+  - [ ] **Change start scripts based on forge version in creator.conf**
+- [X] **Delete client side mods**
+  - [X] **Make list of client side mods cinfigurable**
+- [X] **Allow specifiying directories to include in server_pack**
+  - [X] **Remove prefix "saves" when adding a world from a modpack**
+- [X] **Copy server-icon.png to "server_pack" directory**
+  - [X] **Make creation of server-icon.png optional**
+  - [X] **Provide default**
+- [X] **Create a server.properties file in "server_pack" directory**
+  - [X] **Make creation of server.properties optional**
+  - [X] **Provide default**
+- [X] **Automatically create zip-archive of the created serverpack**
+  - [X] **Make creation of archive optional**
+
 Supporting Fabric or any other modloader is not planned. Feel free to fork and do whatever you want with this software. It's MIT License for a reason.
 
 ## Testing
