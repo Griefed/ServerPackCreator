@@ -20,6 +20,7 @@ public class Copy {
     public static final File linuxFile = new File("start.sh");
 
     public Copy() {
+        boolean firstRun = true;
         // Copy all default files to base directory where jar resides.
         if (!configFile.exists()) {
             try {
@@ -31,6 +32,8 @@ public class Copy {
                 System.err.println("Could not extract default config-file");
                 e.printStackTrace();
             }
+        } else {
+            firstRun = false;
         }
         if (!propertiesFile.exists()) {
             try {
@@ -76,8 +79,13 @@ public class Copy {
                 e.printStackTrace();
             }
         }
-        // Continue to load values from config file.
-        Conf.loadConfig();
+        if (firstRun) {
+            System.out.println("First run! Default files generated. Please customize and run again.");
+            System.exit(0);
+        } else {
+            // Continue to load values from config file.
+            Conf.loadConfig();
+        }
     }
 
     // Copy all specified directories from modpack to serverpack.
