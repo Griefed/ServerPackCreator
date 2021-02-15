@@ -35,7 +35,8 @@ Supporting Fabric or any other modloader is not planned. Feel free to fork and d
 ## Testing
 
 If you want to help testing (I can not be held responsible for loss of data. Make sure you make backups and execute this program in a test environment.):
-1. Download `serverpackcreator-x.x.x.jar` from `Packages` on the right side.
+1. Download `serverpackcreator-x.x.x.jar` from `Packages` on the right side. Example for version 0.7.8:
+   ![download-jar](download-jar.png)
 2. Put it in the parent folder of your modpack folder. Here's an example for my modpack Survive Create Prosper:
 ```
 tests/
