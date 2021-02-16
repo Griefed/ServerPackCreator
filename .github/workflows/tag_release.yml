@@ -1,0 +1,30 @@
+name: Tag & Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged
+    steps:
+      - uses: actions/checkout@master
+      - name: Tag and prepare release
+        id: tag_and_prepare_release
+        uses: K-Phoen/semver-release-action@master
+        with:
+          release_branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release notes
+        if: steps.tag_and_prepare_release.outputs.tag
+        uses: Roang-zero1/github-create-release-action@master
+        with:
+          created_tag: ${{ steps.tag_and_prepare_release.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
