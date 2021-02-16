@@ -26,7 +26,7 @@ would be greatly appreciated.
 
 Planned/wanted:
 
-- [ ] **Specify whether to use Forge or Fabric**
+- [X] **Specify whether to use Forge or Fabric**
   - [ ] **Download and install Forge server**
     - [ ] **Make version configurable**
   - [ ] **Download and install Fabric server**
@@ -35,7 +35,7 @@ Planned/wanted:
   - [X] **Make inclusion of start scripts optional**
   - [X] **Provide default/example**
     - [X] **Forge**
-    - **Fabric provides its own start scripts for Linux and Windows systems**
+    - [X] **Fabric**
   - [ ] **Change start scripts based on Forge version in creator.conf**
 - [X] **On first run, generate all default files, tell user to customize and run again, then exit.**
 - [X] **Delete client side mods**
