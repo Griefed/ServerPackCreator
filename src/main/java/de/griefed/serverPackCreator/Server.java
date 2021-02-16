@@ -19,9 +19,9 @@ public class Server {
                 for (int i = 0; i < clientMods.toArray().length; i++) {
                     if (f.getName().startsWith(clientMods.get(i))) {
                         f.delete();
+                    }
                 }
             }
-        }
     }
     // Create zip archive of serverpack.
     public static void zipBuilder(String modpackDir) {
