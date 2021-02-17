@@ -31,7 +31,7 @@ jobs:
         uses: craig-day/compute-tag@v10
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          version_scheme: semantic
+          version_scheme: patch
 
       - name: Generate changelog
         id: changelog
