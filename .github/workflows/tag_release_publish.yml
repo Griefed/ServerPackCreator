@@ -23,9 +23,6 @@ jobs:
           
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew build
         
       - id: compute_tag
         uses: craig-day/compute-tag@v10
