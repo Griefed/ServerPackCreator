@@ -21,10 +21,27 @@ jobs:
           release_branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload release notes
-        if: steps.tag_and_prepare_release.outputs.tag
-        uses: Roang-zero1/github-create-release-action@master
+
+      - name: Generate changelog
+        id: changelog
+        uses: jaywcjlove/changelog-generator@main
         with:
-          created_tag: ${{ steps.tag_and_prepare_release.outputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filter: '*'
+
+      - name: Get the changelog
+        run: echo "${{ steps.changelog.outputs.changelog }}"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag_and_prepare_release.outputs.tag }}
+          release_name: ${{ github.ref }}
+          body: |
+            ${{ steps.changelog.outputs.compareurl }}
+            ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: true
