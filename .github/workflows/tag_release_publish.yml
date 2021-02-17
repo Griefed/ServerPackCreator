@@ -34,15 +34,11 @@ jobs:
           version_scheme: semantic
           version_type: patch
 
-      - name: Generate changelog
+      - name: Changelog
+        uses: Bullrich/generate-release-changelog@master
         id: changelog
-        uses: jaywcjlove/changelog-generator@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filter: '*'
-
-      - name: Get the changelog
-        run: echo "${{ steps.changelog.outputs.changelog }}"
+        env:
+          REPO: ${{ github.repository }}
 
       - name: Create Release
         id: create_release
@@ -54,7 +50,6 @@ jobs:
           release_name: "ServerPackCreator"
           body: |
             Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
-            ${{ steps.changelog.outputs.compareurl }}
             ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: true
