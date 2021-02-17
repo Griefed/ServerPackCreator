@@ -16,10 +16,13 @@ public class Copy {
     public static final File configFile = new File("creator.conf");
     public static final File propertiesFile = new File("server.properties");
     public static final File iconFile = new File("server-icon.png");
-    public static final File windowsFile = new File("start.bat");
-    public static final File linuxFile = new File("start.sh");
+    public static final File forgeWindowsFile = new File("start-forge.bat");
+    public static final File forgeLinuxFile = new File("start-forge.sh");
+    public static final File fabricWindowsFile = new File("start-fabric.bat");
+    public static final File fabricLinuxFile = new File("start-fabric.sh");
 
     public Copy() {
+        Main.warning();
         boolean firstRun = true;
         // Copy all default files to base directory where jar resides.
         if (!configFile.exists()) {
@@ -57,34 +60,78 @@ public class Copy {
                 e.printStackTrace();
             }
         }
-        if (!windowsFile.exists()) {
-            try {
-                InputStream link = (getClass().getResourceAsStream("/" + windowsFile.getName()));
-                Files.copy(link, windowsFile.getAbsoluteFile().toPath());
-                link.close();
-                System.out.println("Default Windows start file generated.");
-            } catch (IOException e) {
-                System.err.println("Could not extract default Windows start file");
-                e.printStackTrace();
-            }
-        }
-        if (!linuxFile.exists()) {
-            try {
-                InputStream link = (getClass().getResourceAsStream("/" + linuxFile.getName()));
-                Files.copy(link, linuxFile.getAbsoluteFile().toPath());
-                link.close();
-                System.out.println("Default Linux start file generated.");
-            } catch (IOException e) {
-                System.err.println("Could not extract default Linux start file");
-                e.printStackTrace();
-            }
-        }
         if (firstRun) {
             System.out.println("First run! Default files generated. Please customize and run again.");
             System.exit(0);
         } else {
             // Continue to load values from config file.
             Conf.loadConfig();
+        }
+    }
+
+    public static void copyStartScripts(String modpackDir, String modLoader, String modLoaderVersion, boolean includeStartScripts) {
+        if (modLoader.equals("Forge")) {
+            if (!forgeWindowsFile.exists()) {
+                try {
+                    InputStream link = (Copy.class.getResourceAsStream("/" + forgeWindowsFile.getName()));
+                    Files.copy(link, forgeWindowsFile.getAbsoluteFile().toPath());
+                    link.close();
+                    System.out.println("Default Forge Windows start file generated.");
+                } catch (IOException e) {
+                    System.err.println("Could not extract default Forge Windows start file");
+                    //e.printStackTrace();
+                }
+            }
+            if (!forgeLinuxFile.exists()) {
+                try {
+                    InputStream link = (Copy.class.getResourceAsStream("/" + forgeLinuxFile.getName()));
+                    Files.copy(link, forgeLinuxFile.getAbsoluteFile().toPath());
+                    link.close();
+                    System.out.println("Default Forge Linux start file generated.");
+                } catch (IOException e) {
+                    System.err.println("Could not extract default Forge Linux start file");
+                    //e.printStackTrace();
+                }
+            }
+            System.out.println("Copying Forge start scripts...");
+            try {
+                Files.copy(Paths.get("./" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("./" + forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + forgeLinuxFile), REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (modLoader.equals("Fabric")) {
+            if (!fabricWindowsFile.exists()) {
+                try {
+                    InputStream link = (Copy.class.getResourceAsStream("/" + fabricWindowsFile.getName()));
+                    Files.copy(link, fabricWindowsFile.getAbsoluteFile().toPath());
+                    link.close();
+                    System.out.println("Default Fabric Windows start file generated.");
+                } catch (IOException e) {
+                    System.err.println("Could not extract default Fabric Windows start file");
+                    //e.printStackTrace();
+                }
+            }
+            if (!fabricLinuxFile.exists()) {
+                try {
+                    InputStream link = (Copy.class.getResourceAsStream("/" + fabricLinuxFile.getName()));
+                    Files.copy(link, fabricLinuxFile.getAbsoluteFile().toPath());
+                    link.close();
+                    System.out.println("Default Fabric Linux start file generated.");
+                } catch (IOException e) {
+                    System.err.println("Could not extract default Fabric Linux start file");
+                    //e.printStackTrace();
+                }
+            }
+            System.out.println("Copying Fabric start scripts...");
+            try {
+                Files.copy(Paths.get("./" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("./" + fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + fabricLinuxFile), REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Specified invalid modloader. Must be either Forge or Fabric.");
         }
     }
 
@@ -131,11 +178,9 @@ public class Copy {
 
     // If true, copy server-icon to serverpack.
     public static void copyIcon(String modpackDir) {
-        String sourceIcon = "./" + iconFile;
-        String destIcon = modpackDir + "/server_pack/" + iconFile;
         System.out.println("Copying server-icon.png...");
         try {
-            Files.copy(Paths.get(sourceIcon), Paths.get(destIcon), REPLACE_EXISTING);
+            Files.copy(Paths.get("./" + iconFile), Paths.get(modpackDir + "/server_pack/" + iconFile), REPLACE_EXISTING);
         } catch (IOException e) {
             //e.printStackTrace();
         }
@@ -143,33 +188,37 @@ public class Copy {
 
     // If true, copy server.properties to serverpack.
     public static void copyProperties(String modpackDir) {
-        String sourceProperties = "./" + propertiesFile;
-        String destProperties = modpackDir + "/server_pack/" + propertiesFile;
         System.out.println("Copying server.properties...");
         try {
-            Files.copy(Paths.get(sourceProperties), Paths.get(destProperties), REPLACE_EXISTING);
+            Files.copy(Paths.get("./" + propertiesFile), Paths.get(modpackDir + "/server_pack/" + propertiesFile), REPLACE_EXISTING);
         } catch (IOException e) {
             //e.printStackTrace();
         }
     }
 
     // If true, copy start scripts to serverpack.
-    public static void copyStartScripts(String modpackDir) {
-        String sourceWindows = "./" + windowsFile;
-        String destWindows = modpackDir + "/server_pack/" + windowsFile;
-        System.out.println("Copying start scripts...");
-        try {
-            Files.copy(Paths.get(sourceWindows), Paths.get(destWindows), REPLACE_EXISTING);
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
-        String sourceLinux = "./" + linuxFile;
-        String destLinux = modpackDir + "/server_pack/" + linuxFile;
-        try {
-            Files.copy(Paths.get(sourceLinux), Paths.get(destLinux), REPLACE_EXISTING);
-        } catch (IOException e) {
-            //e.printStackTrace();
+    /*
+    public static void copyStartScripts(String modpackDir, String modLoader) {
+        if (modLoader.equals("Forge")) {
+            System.out.println("Copying start scripts...");
+            try {
+                Files.copy(Paths.get(("./" + forgeWindowsFile)), Paths.get((modpackDir + "/server_pack/" + forgeWindowsFile)), REPLACE_EXISTING);
+                Files.copy(Paths.get(("./" + forgeLinuxFile)), Paths.get((modpackDir + "/server_pack/" + forgeLinuxFile)), REPLACE_EXISTING);
+            } catch (IOException e) {
+                //e.printStackTrace();
+            }
+        } else if (modLoader.equals("Fabric")) {
+            System.out.println("Copying start scripts...");
+            try {
+                Files.copy(Paths.get(("./" + fabricWindowsFile)), Paths.get((modpackDir + "/server_pack/" + fabricWindowsFile)), REPLACE_EXISTING);
+                Files.copy(Paths.get(("./" + fabricLinuxFile)), Paths.get((modpackDir + "/server_pack/" + fabricLinuxFile)), REPLACE_EXISTING);
+            } catch (IOException e) {
+                //e.printStackTrace();
+            }
+        } else {
+            System.out.println("Specified invalid modloader. Start scripts not copied.");
         }
     }
 
+     */
 }

@@ -2,8 +2,8 @@
 
 [![banner](img/serverpackcreator_banner.png)](https://github.com/Griefed/ServerPackCreator)
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Publish%20Release?label=Publish%20Release&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Publish+Release%22)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Java%20CI%20with%20Gradle?label=Java%20CI%20with%20Gradle&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Java+CI+with+Gradle%22)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Java%20CI%20with%20Gradle?label=Gradle%20Build%20Test&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Java+CI+with+Gradle%22)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Publish%20Release?label=Package%20Release&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Publish+Release%22)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed?tab=packages&repo_name=ServerPackCreator)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
 
@@ -26,7 +26,7 @@ would be greatly appreciated.
 
 Planned/wanted:
 
-- [ ] **Specify whether to use Forge or Fabric**
+- [X] **Specify whether to use Forge or Fabric**
   - [ ] **Download and install Forge server**
     - [ ] **Make version configurable**
   - [ ] **Download and install Fabric server**
@@ -35,7 +35,7 @@ Planned/wanted:
   - [X] **Make inclusion of start scripts optional**
   - [X] **Provide default/example**
     - [X] **Forge**
-    - **Fabric provides its own start scripts for Linux and Windows systems**
+    - [X] **Fabric**
   - [ ] **Change start scripts based on Forge version in creator.conf**
 - [X] **On first run, generate all default files, tell user to customize and run again, then exit.**
 - [X] **Delete client side mods**
@@ -70,8 +70,9 @@ Variable | Default values | Description
 modpackDir | "./Survive Create Prosper 4 1.16.5" | The path to the directory where your modpack resides in.
 clientMods | ["AmbientSounds",<br/>"BackTools",<br/>"BetterAdvancement",<br/>"BetterPing",<br/>"cherished",<br/>"ClientTweaks",<br/>"Controlling",<br/>"DefaultOptions",<br/>"durability",<br/>"DynamicSurroundings",<br/>"itemzoom",<br/>"jei-professions",<br/>"jeiintegration",<br/>"JustEnoughResources",<br/>"MouseTweaks",<br/>"Neat",<br/>"OldJavaWarning",<br/>"PackMenu",<br/>"preciseblockplacing",<br/>"SimpleDiscordRichPresence",<br/>"SpawnerFix",<br/>"TipTheScales",<br/>"WorldNameRandomizer"] | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack.
 copyDirs | ["config",<br/>"defaultconfigs",<br/>"mods",<br/>"scripts",<br/>"seeds",<br/>"saves/scp4"] | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. 
-includeForgeInstallation | true | Whether to install the specified version of the Forge server.
-forgeVersion | "36.0.15" | Specific Forge version to install the server in the serverpack.
+includeServerInstallation | true | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
+modLoader | "Forge" | Which modloader to install. Must be either "Forge" or "Fabric".
+modLoaderVersion | "1.16.5-36.0.15" | Specific Minecraft-Modloader version to install the server in the serverpack.
 includeServerIcon | true | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.
 includeServerProperties | true | Whether to include server.properties in your serverpack. Must be `true` or `false`.
 includeStartScripts | true | Whether to inlude start scripts in your serverpack. Must be `true` or `false`.
@@ -151,11 +152,13 @@ copyDirs = [
     "saves/scp4"
     ]
 
-# Install Forge for your serverpack. Must be true or false.
-# The version of Forge your modpack and serverpack are running on.
+# Whether to install a Forge/Fabric server for the serverpack. Must be true or false.
+# Which modloader to install. Must be either "Forge" or "Fabric".
+# The version of the modloader you want to install.
 # NOT YET IMPLEMENTED. IGNORE. THIS DOES NOTHING AT THE MOMENT.
-includeForgeInstallation = true
-forgeVersion = "36.0.15"
+includeServerInstallation = true
+modLoader= "Forge"
+modLoaderVersion = "1.16.5-36.0.15"
 
 # Include a server-icon.png in your serverpack. Must be true or false.
 # Place your server-icon.png in the same directory as this cfg-file.

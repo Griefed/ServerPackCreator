@@ -9,8 +9,9 @@ public class Conf {
     public static String modpackDir;
     public static List<String> clientMods;
     public static List<String> copyDirs;
-    public static Boolean includeForgeInstallation;
-    public static String forgeVersion;
+    public static Boolean includeServerInstallation;
+    public static String modLoader;
+    public static String modLoaderVersion;
     public static Boolean includeServerIcon;
     public static Boolean includeServerProperties;
     public static Boolean includeStartScripts;
@@ -23,8 +24,9 @@ public class Conf {
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
-        includeForgeInstallation = conf.getBoolean("includeForgeInstallation");
-        forgeVersion = conf.getString("forgeVersion");
+        includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        modLoader = conf.getString("modLoader");
+        modLoaderVersion = conf.getString("modLoaderVersion");
         includeServerIcon = conf.getBoolean("includeServerIcon");
         includeServerProperties = conf.getBoolean("includeServerProperties");
         includeStartScripts = conf.getBoolean("includeStartScripts");
@@ -44,6 +46,9 @@ public class Conf {
             //e.printStackTrace();
         }
 
+        // Generate Forge/Fabric start scripts and copy to serverpack.
+        Copy.copyStartScripts(modpackDir, modLoader, modLoaderVersion, includeStartScripts);
+
         // If true, copy server-icon to serverpack.
         if (includeServerIcon) {
             Copy.copyIcon(modpackDir);
@@ -55,9 +60,11 @@ public class Conf {
         }
 
         // If true, copy start scripts to serverpack.
+        /*
         if (includeStartScripts) {
-            Copy.copyStartScripts(modpackDir);
+            Copy.copyStartScripts(modpackDir, modLoader);
         }
+         */
 
         // If true, create zip archive of serverpack.
         if (includeZipCreation) {
