@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     #if: github.event.pull_request.merged
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout latest code
+        uses: actions/checkout@master
       - id: compute_tag
         uses: craig-day/compute-tag@v10
         with:
@@ -37,10 +38,28 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.compute_tag.outputs.next_tag }}
-          release_name: ${{ github.ref }}
+          release_name: "ServerPackCreator"
           body: |
             Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
             ${{ steps.changelog.outputs.compareurl }}
             ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: true
+          
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_VERSION=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
+          echo "New version: ${NEW_VERSION}"
+          echo "Github username: ${GITHUB_ACTOR}"
+          ./gradlew -Pversion=${NEW_VERSION} publish
