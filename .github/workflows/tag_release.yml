@@ -14,15 +14,11 @@ jobs:
     #if: github.event.pull_request.merged
     steps:
       - uses: actions/checkout@master
-      - name: Tag and prepare release
-        id: tag_and_prepare_release
-        uses: K-Phoen/semver-release-action@master
+      - id: compute_tag
+        uses: craig-day/compute-tag@v10
         with:
-          release_branch: main
-          release_strategy: tag
-          tag_format: "%major%.%minor%.%patch%"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          version_scheme: semantic
 
       - name: Generate changelog
         id: changelog
@@ -40,9 +36,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag_and_prepare_release.outputs.tag }}
+          tag_name: ${{ steps.compute_tag.outputs.next_tag }}
           release_name: ${{ github.ref }}
           body: |
+            Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
             ${{ steps.changelog.outputs.compareurl }}
             ${{ steps.changelog.outputs.changelog }}
           draft: false
