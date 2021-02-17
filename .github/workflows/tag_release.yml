@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged
+    #if: github.event.pull_request.merged
     steps:
       - uses: actions/checkout@master
       - name: Tag and prepare release
@@ -19,6 +19,8 @@ jobs:
         uses: K-Phoen/semver-release-action@master
         with:
           release_branch: main
+          release_strategy: tag
+          tag_format: "%major%.%minor%.%patch%"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
