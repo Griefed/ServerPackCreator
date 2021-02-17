@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-*.jar
+          asset_path: ./build/libs/ServerPackCreator-0.7.8-SNAPSHOT.jar
           asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.jar
           asset_content_type: application/jar
 
@@ -78,3 +78,6 @@ jobs:
           echo "New version: ${NEW_VERSION}"
           echo "Github username: ${GITHUB_ACTOR}"
           ./gradlew -Pversion=${NEW_VERSION} publish
+          ls -al *
+          ls -al build
+          ls -al build/libs
