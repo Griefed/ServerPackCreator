@@ -22,6 +22,9 @@ jobs:
       - name: Build Changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@main
+        with:
+          ignorePreReleases: false
+          commitMode: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
