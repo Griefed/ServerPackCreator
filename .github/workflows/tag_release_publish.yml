@@ -13,9 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     #if: github.event.pull_request.merged
     steps:
-      - name: Checkout latest code
-        uses: actions/checkout@master
-
 #      - name: Changelog
 #        uses: Bullrich/generate-release-changelog@master
 #        id: changelog
@@ -27,6 +24,9 @@ jobs:
         uses: mikepenz/release-changelog-builder-action@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Checkout latest code
+        uses: actions/checkout@master
           
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
