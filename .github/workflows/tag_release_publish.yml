@@ -16,17 +16,17 @@ jobs:
       - name: Checkout latest code
         uses: actions/checkout@master
 
-#      - name: Changelog
-#        uses: Bullrich/generate-release-changelog@master
-#        id: changelog
-#        env:
-#          REPO: ${{ github.repository }}
-
-      - name: Generate changelog
+      - name: Changelog
+        uses: Bullrich/generate-release-changelog@master
         id: changelog
-        uses: metcalfc/changelog-generator@v0.4.4
-        with:
-          myToken: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          REPO: ${{ github.repository }}
+
+#      - name: Generate changelog
+#        id: changelog
+#        uses: metcalfc/changelog-generator@v0.4.4
+#        with:
+#          myToken: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
