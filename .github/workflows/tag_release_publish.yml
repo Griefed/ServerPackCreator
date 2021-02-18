@@ -13,21 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     #if: github.event.pull_request.merged
     steps:
-#      - name: Changelog
-#        uses: Bullrich/generate-release-changelog@master
-#        id: changelog
-#        env:
-#          REPO: ${{ github.repository }}
-
-      - name: Build Changelog
+      - name: Changelog
+        uses: Bullrich/generate-release-changelog@2.0.0
         id: changelog
-        uses: mikepenz/release-changelog-builder-action@main
-        with:
-          ignorePreReleases: false
-          commitMode: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+          REPO: ${{ github.repository }}
+
+      - name: Get Git Changelog
+        id: get_changelog
+        uses: thenilsdev/git-log-action@1.0.4
+        
       - name: Checkout latest code
         uses: actions/checkout@master
           
@@ -57,6 +52,7 @@ jobs:
           body: |
             Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
             ${{ steps.changelog.outputs.changelog }}
+            ${{ steps.get_changelog.outputs.log }}
           draft: false
           prerelease: true
 
