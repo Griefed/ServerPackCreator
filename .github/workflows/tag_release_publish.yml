@@ -21,10 +21,14 @@ jobs:
         id: changelog
         env:
           REPO: ${{ github.repository }}
-
-      - name: Get Git Changelog
-        id: get_changelog
-        uses: thenilsdev/git-log-action@1.0.4
+          
+      - name: Build Changelog
+        id: release_changelog
+        uses: mikepenz/release-changelog-builder-action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          ignorePreReleases: false
 
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
@@ -51,8 +55,8 @@ jobs:
           release_name: "ServerPackCreator"
           body: |
             Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
+            **Changes in this release:**
             ${{ steps.changelog.outputs.changelog }}
-            ${{ steps.get_changelog.outputs.log }}
           draft: false
           prerelease: true
 
