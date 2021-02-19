@@ -21,14 +21,6 @@ jobs:
         id: changelog
         env:
           REPO: ${{ github.repository }}
-          
-      - name: Build Changelog
-        id: release_changelog
-        uses: mikepenz/release-changelog-builder-action@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          ignorePreReleases: false
 
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
