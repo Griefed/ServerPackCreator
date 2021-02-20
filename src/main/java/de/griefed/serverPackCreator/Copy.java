@@ -21,13 +21,12 @@ public class Copy {
     public static final File fabricWindowsFile = new File("start-fabric.bat");
     public static final File fabricLinuxFile = new File("start-fabric.sh");
 
-    public Copy() {
-        Main.warning();
+    public static void filesSetup() {
         boolean firstRun = true;
         // Copy all default files to base directory where jar resides.
         if (!configFile.exists()) {
             try {
-                InputStream link = (getClass().getResourceAsStream("/" + configFile.getName()));
+                InputStream link = (Copy.class.getResourceAsStream("/" + configFile.getName()));
                 Files.copy(link, configFile.getAbsoluteFile().toPath());
                 link.close();
                 System.out.println("Default config file generated. Please customize.");
@@ -40,7 +39,7 @@ public class Copy {
         }
         if (!propertiesFile.exists()) {
             try {
-                InputStream link = (getClass().getResourceAsStream("/" + propertiesFile.getName()));
+                InputStream link = (Copy.class.getResourceAsStream("/" + propertiesFile.getName()));
                 Files.copy(link, propertiesFile.getAbsoluteFile().toPath());
                 link.close();
                 System.out.println("Default server.properties file generated. Please customize if you intend on using it.");
@@ -51,7 +50,7 @@ public class Copy {
         }
         if (!iconFile.exists()) {
             try {
-                InputStream link = (getClass().getResourceAsStream("/" + iconFile.getName()));
+                InputStream link = (Copy.class.getResourceAsStream("/" + iconFile.getName()));
                 Files.copy(link, iconFile.getAbsoluteFile().toPath());
                 link.close();
                 System.out.println("Default server-icon.png file generated. Please customize if you intend on using it.");
@@ -64,8 +63,7 @@ public class Copy {
             System.out.println("First run! Default files generated. Please customize and run again.");
             System.exit(0);
         } else {
-            // Continue to load values from config file.
-            Conf.loadConfig();
+            System.out.println("Setup completed.");
         }
     }
 
