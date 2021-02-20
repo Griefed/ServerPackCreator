@@ -3,9 +3,6 @@ plugins {
     id ("maven-publish")
 }
 
-//group 'de.griefed.serverPackCreator'
-//version '0.7.8-SNAPSHOT'
-
 apply plugin: 'idea'
 
 repositories {
