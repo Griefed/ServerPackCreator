@@ -14,7 +14,9 @@ jobs:
     steps:
       - name: Checkout latest code
         uses: actions/checkout@master
-        
+        with:
+          fetch-depth: 0
+          
       - name: Changelog
         uses: Bullrich/generate-release-changelog@2.0.0
         id: changelog
