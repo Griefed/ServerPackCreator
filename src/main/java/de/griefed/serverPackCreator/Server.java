@@ -39,15 +39,15 @@ public class Server {
                         byte[] bytes = Files.readAllBytes(file);
                         outputStream.write(bytes, 0, bytes.length);
                         outputStream.closeEntry();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
                     return FileVisitResult.CONTINUE;
                 }
             });
             outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }

@@ -2,6 +2,8 @@ package de.griefed.serverPackCreator;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -18,7 +20,7 @@ public class Main {
     public static Boolean includeZipCreation;
     public static Config conf;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         // Warning about this being a WIP
         System.out.println("WORK IN PROGESS! CONSIDER THIS ALPHA-STATE!");
         System.out.println("Use at your own risk! Be aware that data loss IS possible.");
@@ -44,15 +46,15 @@ public class Main {
         // Copy all specified directories from modpack to serverpack.
         try {
             Copy.copyFiles(modpackDir, copyDirs);
-        } catch (IOException e) {
-            //e.printStackTrace();
+        } catch (IOException ex) {
+            //ex.printStackTrace();
         }
 
         // Delete client-side mods from serverpack.
         try {
             Server.deleteClientMods(modpackDir, clientMods);
-        } catch (IOException e) {
-            //e.printStackTrace();
+        } catch (IOException ex) {
+            //ex.printStackTrace();
         }
 
         // Generate Forge/Fabric start scripts and copy to serverpack.
@@ -74,16 +76,5 @@ public class Main {
         }
 
         System.out.println("Done!");
-    }
-
-
-
-
-
-
-
-
-    public static void warning() {
-
     }
 }
