@@ -17,6 +17,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - id: conventional_changelog
+        uses: ardalanamini/auto-changelog@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Changelog
         uses: Bullrich/generate-release-changelog@2.0.0
         id: changelog
@@ -27,10 +32,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-          
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        
+
       - id: compute_tag
         uses: craig-day/compute-tag@v10
         with:
@@ -50,6 +55,9 @@ jobs:
             Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
             **Changes in this release:**
             ${{ steps.changelog.outputs.changelog }}
+            ---
+            **Conventional Commit Changelog Test:**
+            ${{ steps.conventional_changelog.outputs.changelog }}
           draft: false
           prerelease: true
 
@@ -62,7 +70,7 @@ jobs:
           echo "New version: ${NEW_VERSION}"
           echo "Github username: ${GITHUB_ACTOR}"
           ./gradlew -Pversion=${NEW_VERSION} publish
-          
+
       - name: Upload Release Asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
