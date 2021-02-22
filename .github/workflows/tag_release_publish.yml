@@ -16,7 +16,12 @@ jobs:
         uses: actions/checkout@master
         with:
           fetch-depth: 0
-          
+
+      - id: conventional_changelog
+        uses: ardalanamini/auto-changelog@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Changelog
         uses: Bullrich/generate-release-changelog@2.0.0
         id: changelog
@@ -50,6 +55,9 @@ jobs:
             Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
             **Changes in this release:**
             ${{ steps.changelog.outputs.changelog }}
+            ---
+            **Conventional Commit Changelog Test:**
+            ${{ steps.conventional_changelog.outputs.changelog }}
           draft: false
           prerelease: true
 
