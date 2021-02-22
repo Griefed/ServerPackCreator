@@ -1,14 +1,11 @@
 package de.griefed.serverPackCreator;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
-
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class Copy {
@@ -37,37 +34,6 @@ public class Copy {
         } else {
             firstRun = false;
         }
-        if (!propertiesFile.exists()) {
-            try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + propertiesFile.getName()));
-                Files.copy(link, propertiesFile.getAbsoluteFile().toPath());
-                link.close();
-                System.out.println("Default server.properties file generated. Please customize if you intend on using it.");
-            } catch (IOException ex) {
-                System.err.println("Could not extract default server.properties file");
-                ex.printStackTrace();
-            }
-        }
-        if (!iconFile.exists()) {
-            try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + iconFile.getName()));
-                Files.copy(link, iconFile.getAbsoluteFile().toPath());
-                link.close();
-                System.out.println("Default server-icon.png file generated. Please customize if you intend on using it.");
-            } catch (IOException ex) {
-                System.err.println("Could not extract default server-icon.png file");
-                ex.printStackTrace();
-            }
-        }
-        if (firstRun) {
-            System.out.println("First run! Default files generated. Please customize and run again.");
-            System.exit(0);
-        } else {
-            System.out.println("Setup completed.");
-        }
-    }
-
-    public static void copyStartScripts(String modpackDir, String modLoader, String modLoaderVersion, boolean includeStartScripts) {
         if (!forgeWindowsFile.exists()) {
             try {
                 InputStream link = (Copy.class.getResourceAsStream("/" + forgeWindowsFile.getName()));
@@ -112,7 +78,38 @@ public class Copy {
                 //ex.printStackTrace();
             }
         }
-        if (modLoader.equals("Forge")) {
+        if (!propertiesFile.exists()) {
+            try {
+                InputStream link = (Copy.class.getResourceAsStream("/" + propertiesFile.getName()));
+                Files.copy(link, propertiesFile.getAbsoluteFile().toPath());
+                link.close();
+                System.out.println("Default server.properties file generated. Please customize if you intend on using it.");
+            } catch (IOException ex) {
+                System.err.println("Could not extract default server.properties file");
+                ex.printStackTrace();
+            }
+        }
+        if (!iconFile.exists()) {
+            try {
+                InputStream link = (Copy.class.getResourceAsStream("/" + iconFile.getName()));
+                Files.copy(link, iconFile.getAbsoluteFile().toPath());
+                link.close();
+                System.out.println("Default server-icon.png file generated. Please customize if you intend on using it.");
+            } catch (IOException ex) {
+                System.err.println("Could not extract default server-icon.png file");
+                ex.printStackTrace();
+            }
+        }
+        if (firstRun) {
+            System.out.println("First run! Default files generated. Please customize and run again.");
+            System.exit(0);
+        } else {
+            System.out.println("Setup completed.");
+        }
+    }
+
+    public static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) throws IOException {
+        if (modLoader.equals("Forge") && includeStartScripts) {
             System.out.println("Copying Forge start scripts...");
             try {
                 Files.copy(Paths.get("./" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
@@ -120,7 +117,7 @@ public class Copy {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-        } else if (modLoader.equals("Fabric")) {
+        } else if (modLoader.equals("Fabric") && includeStartScripts) {
             System.out.println("Copying Fabric start scripts...");
             try {
                 Files.copy(Paths.get("./" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
