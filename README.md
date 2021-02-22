@@ -39,7 +39,6 @@ Planned/wanted:
   - [X] **Provide default/example**
     - [X] **Forge**
     - [X] **Fabric**
-  - [ ] **Change start scripts based on Forge version in creator.conf**
 - [X] **On first run, generate all default files, tell user to customize and run again, then exit.**
 - [X] **Delete client side mods**
   - [X] **Make list of client side mods configurable**
