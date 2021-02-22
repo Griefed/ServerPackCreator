@@ -71,7 +71,7 @@ jobs:
           echo "Github username: ${GITHUB_ACTOR}"
           ./gradlew -Pversion=${NEW_VERSION} publish
 
-      - name: Upload Release Asset
+      - name: Upload Release Asset Main Jar
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
@@ -80,4 +80,26 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.jar
           asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.jar
+          asset_content_type: application/jar
+
+      - name: Upload Release Asset Sources Jar
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
+          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
+          asset_content_type: application/jar
+
+      - name: Upload Release Asset Javadoc Jar
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
+          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
           asset_content_type: application/jar

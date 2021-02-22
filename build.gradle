@@ -1,8 +1,13 @@
 plugins {
     id 'java'
-    id ("maven-publish")
+    id 'java-library'
+    id 'maven-publish'
+    id 'idea'
 }
 
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'java'
 apply plugin: 'idea'
 
 repositories {
@@ -10,14 +15,6 @@ repositories {
     jcenter()
     maven {
         url "https://jitpack.io"
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src/main/java']
-        }
     }
 }
 
@@ -37,9 +34,12 @@ test {
     useJUnitPlatform()
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 jar {
-    //archiveBaseName = 'ServerPackCreator'
-    //archiveVersion =  version
     configurations.embed.each { dep ->
         from(project.zipTree(dep)) {
             exclude 'META-INF', 'META-INF/**'
@@ -64,7 +64,7 @@ publishing {
     publications {
         gpr(MavenPublication) {
             artifactId='serverpackcreator'
-            from(components.java)
+            from (components.java)
         }
     }
 }
