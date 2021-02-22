@@ -68,29 +68,51 @@ public class Copy {
     }
 
     public static void copyStartScripts(String modpackDir, String modLoader, String modLoaderVersion, boolean includeStartScripts) {
+        if (!forgeWindowsFile.exists()) {
+            try {
+                InputStream link = (Copy.class.getResourceAsStream("/" + forgeWindowsFile.getName()));
+                Files.copy(link, forgeWindowsFile.getAbsoluteFile().toPath());
+                link.close();
+                System.out.println("Default Forge Windows start file generated.");
+            } catch (IOException ex) {
+                System.err.println("Could not extract default Forge Windows start file");
+                //ex.printStackTrace();
+            }
+        }
+        if (!forgeLinuxFile.exists()) {
+            try {
+                InputStream link = (Copy.class.getResourceAsStream("/" + forgeLinuxFile.getName()));
+                Files.copy(link, forgeLinuxFile.getAbsoluteFile().toPath());
+                link.close();
+                System.out.println("Default Forge Linux start file generated.");
+            } catch (IOException ex) {
+                System.err.println("Could not extract default Forge Linux start file");
+                //ex.printStackTrace();
+            }
+        }
+        if (!fabricWindowsFile.exists()) {
+            try {
+                InputStream link = (Copy.class.getResourceAsStream("/" + fabricWindowsFile.getName()));
+                Files.copy(link, fabricWindowsFile.getAbsoluteFile().toPath());
+                link.close();
+                System.out.println("Default Fabric Windows start file generated.");
+            } catch (IOException ex) {
+                System.err.println("Could not extract default Fabric Windows start file");
+                //ex.printStackTrace();
+            }
+        }
+        if (!fabricLinuxFile.exists()) {
+            try {
+                InputStream link = (Copy.class.getResourceAsStream("/" + fabricLinuxFile.getName()));
+                Files.copy(link, fabricLinuxFile.getAbsoluteFile().toPath());
+                link.close();
+                System.out.println("Default Fabric Linux start file generated.");
+            } catch (IOException ex) {
+                System.err.println("Could not extract default Fabric Linux start file");
+                //ex.printStackTrace();
+            }
+        }
         if (modLoader.equals("Forge")) {
-            if (!forgeWindowsFile.exists()) {
-                try {
-                    InputStream link = (Copy.class.getResourceAsStream("/" + forgeWindowsFile.getName()));
-                    Files.copy(link, forgeWindowsFile.getAbsoluteFile().toPath());
-                    link.close();
-                    System.out.println("Default Forge Windows start file generated.");
-                } catch (IOException ex) {
-                    System.err.println("Could not extract default Forge Windows start file");
-                    //ex.printStackTrace();
-                }
-            }
-            if (!forgeLinuxFile.exists()) {
-                try {
-                    InputStream link = (Copy.class.getResourceAsStream("/" + forgeLinuxFile.getName()));
-                    Files.copy(link, forgeLinuxFile.getAbsoluteFile().toPath());
-                    link.close();
-                    System.out.println("Default Forge Linux start file generated.");
-                } catch (IOException ex) {
-                    System.err.println("Could not extract default Forge Linux start file");
-                    //ex.printStackTrace();
-                }
-            }
             System.out.println("Copying Forge start scripts...");
             try {
                 Files.copy(Paths.get("./" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
@@ -99,28 +121,6 @@ public class Copy {
                 ex.printStackTrace();
             }
         } else if (modLoader.equals("Fabric")) {
-            if (!fabricWindowsFile.exists()) {
-                try {
-                    InputStream link = (Copy.class.getResourceAsStream("/" + fabricWindowsFile.getName()));
-                    Files.copy(link, fabricWindowsFile.getAbsoluteFile().toPath());
-                    link.close();
-                    System.out.println("Default Fabric Windows start file generated.");
-                } catch (IOException ex) {
-                    System.err.println("Could not extract default Fabric Windows start file");
-                    //ex.printStackTrace();
-                }
-            }
-            if (!fabricLinuxFile.exists()) {
-                try {
-                    InputStream link = (Copy.class.getResourceAsStream("/" + fabricLinuxFile.getName()));
-                    Files.copy(link, fabricLinuxFile.getAbsoluteFile().toPath());
-                    link.close();
-                    System.out.println("Default Fabric Linux start file generated.");
-                } catch (IOException ex) {
-                    System.err.println("Could not extract default Fabric Linux start file");
-                    //ex.printStackTrace();
-                }
-            }
             System.out.println("Copying Fabric start scripts...");
             try {
                 Files.copy(Paths.get("./" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
