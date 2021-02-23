@@ -15,7 +15,7 @@ You're also welcome to make contributions, or fork it and make your own version 
 ## WIP!
 
 Use at your own risk! Be aware that data loss is possible. If you wish to test this, there's a description down below.
-If you wish to contribute, fork the repository, make your changes and create a pull request.
+If you wish to contribute, fork the repository, make your changes, create a pull request and make sure to use [conventional commits](https://github.com/Griefed/ServerPackCreator/wiki)
 
 Help for
 - setting up Forge downloading
