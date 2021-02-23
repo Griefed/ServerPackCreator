@@ -34,6 +34,9 @@ Planned/wanted:
     - [ ] **Make version configurable**
   - [ ] **Download and install Fabric server**
     - [ ] **Make version configurable**
+- [ ] Logging
+  - [ ] log actions to action.log
+  - [ ] log errors to error.log
 - [X] **Create default start scripts for Linux and Windows systems**
   - [X] **Make inclusion of start scripts optional**
   - [X] **Provide default/example**
