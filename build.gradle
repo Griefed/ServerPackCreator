@@ -1,21 +1,14 @@
 plugins {
     id 'java'
-    id 'java-library'
+    id 'maven'
     id 'maven-publish'
     id 'idea'
 }
 
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'java'
-apply plugin: 'idea'
-
 repositories {
     mavenCentral()
     jcenter()
-    maven {
-        url "https://jitpack.io"
-    }
+    maven { url "https://jitpack.io" }
 }
 
 configurations {
@@ -24,14 +17,8 @@ configurations {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    compile 'junit:junit:4.12'
+    embed group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
     embed group: 'com.typesafe', name: 'config', version: '1.4.1'
-}
-
-test {
-    useJUnitPlatform()
 }
 
 java {
@@ -42,13 +29,32 @@ java {
 jar {
     configurations.embed.each { dep ->
         from(project.zipTree(dep)) {
-            exclude 'META-INF', 'META-INF/**'
+            exclude 'META-INF/maven',
+                    'META-INF/maven/**',
+                    'META-INF/org',
+                    'META-INF/org/**',
+                    'META-INF/versions',
+                    'META-INF/versions/**',
+                    'META-INF/DEPENDENCIES',
+                    'META-INF/LICENSE',
+                    'META-INF/NOTICE'
         }
     }
     manifest {
-        attributes "Main-Class": "de.griefed.serverPackCreator.Main"
+        attributes(
+                'Main-Class'     : 'de.griefed.serverPackCreator.Main',
+                'Description'    : 'Create serverpacks from Minecraft modpacks.',
+                'Built-By'       : System.properties['user.name'],
+                'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ").format(new Date()),
+                'Created-By'     : "Gradle ${gradle.gradleVersion}",
+                'Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+                'Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
+                'Dependencies'   : configurations.runtime.files.collect {"$it.name" }.join(', ')
+        )
     }
 }
+
+sourceSets.main.runtimeClasspath.each { println it }
 
 publishing {
     repositories {
