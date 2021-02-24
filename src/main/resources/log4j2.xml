@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} - %msg%n" />
+        </Console>
+		<RollingFile name="ApplicationLogger" fileName="logs/action.log" filePattern="logs/$${date:yyyy-MM}/spc-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d [%t] %p %c - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="50 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20" />
+        </RollingFile>
+        <RollingFile name="ErrorLogger" fileName="logs/error.log" filePattern="logs/$${date:yyyy-MM}/spc-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d [%t] %p %c - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="50 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20" />
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="ALL">
+            <AppenderRef ref="Console"/>
+        </Root>
+		<Logger name="Main">
+            <AppenderRef ref="ApplicationLogger" />
+        </Logger>
+        <Logger name="Server">
+            <AppenderRef ref="ApplicationLogger" />
+        </Logger>
+        <Logger name="Copy">
+            <AppenderRef ref="ApplicationLogger" />
+        </Logger>
+        <Logger name="MainError">
+            <AppenderRef ref="ErrorLogger" />
+        </Logger>
+        <Logger name="ServerError">
+            <AppenderRef ref="ErrorLogger" />
+        </Logger>
+        <Logger name="CopyError">
+            <AppenderRef ref="ErrorLogger" />
+        </Logger>
+    </Loggers>
+</Configuration>

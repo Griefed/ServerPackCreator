@@ -1,5 +1,7 @@
 package de.griefed.serverPackCreator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,8 +19,11 @@ public class Copy {
     public static final File forgeLinuxFile = new File("start-forge.sh");
     public static final File fabricWindowsFile = new File("start-fabric.bat");
     public static final File fabricLinuxFile = new File("start-fabric.sh");
+    private static final Logger appLogger = LogManager.getLogger("Copy");
+    private static final Logger errorLogger = LogManager.getLogger("CopyError");
 
     public static void filesSetup() {
+        appLogger.info("Setting up default files...");
         boolean firstRun = true;
         // Copy all default files to base directory where jar resides.
         if (!configFile.exists()) {
@@ -26,10 +31,9 @@ public class Copy {
                 InputStream link = (Copy.class.getResourceAsStream("/" + configFile.getName()));
                 Files.copy(link, configFile.getAbsoluteFile().toPath());
                 link.close();
-                System.out.println("Default config file generated. Please customize.");
+                appLogger.info("Default config file generated. Please customize.");
             } catch (IOException ex) {
-                System.err.println("Could not extract default config-file");
-                ex.printStackTrace();
+                errorLogger.error("Could not extract default config-file", ex);
             }
         } else {
             firstRun = false;
@@ -39,10 +43,9 @@ public class Copy {
                 InputStream link = (Copy.class.getResourceAsStream("/" + forgeWindowsFile.getName()));
                 Files.copy(link, forgeWindowsFile.getAbsoluteFile().toPath());
                 link.close();
-                System.out.println("Default Forge Windows start file generated.");
+                appLogger.info("Default Forge Windows start file generated.");
             } catch (IOException ex) {
-                System.err.println("Could not extract default Forge Windows start file");
-                //ex.printStackTrace();
+                errorLogger.error("Could not extract default Forge Windows start file", ex);
             }
         }
         if (!forgeLinuxFile.exists()) {
@@ -50,10 +53,9 @@ public class Copy {
                 InputStream link = (Copy.class.getResourceAsStream("/" + forgeLinuxFile.getName()));
                 Files.copy(link, forgeLinuxFile.getAbsoluteFile().toPath());
                 link.close();
-                System.out.println("Default Forge Linux start file generated.");
+                appLogger.info("Default Forge Linux start file generated.");
             } catch (IOException ex) {
-                System.err.println("Could not extract default Forge Linux start file");
-                //ex.printStackTrace();
+                errorLogger.error("Could not extract default Forge Linux start file", ex);
             }
         }
         if (!fabricWindowsFile.exists()) {
@@ -61,10 +63,9 @@ public class Copy {
                 InputStream link = (Copy.class.getResourceAsStream("/" + fabricWindowsFile.getName()));
                 Files.copy(link, fabricWindowsFile.getAbsoluteFile().toPath());
                 link.close();
-                System.out.println("Default Fabric Windows start file generated.");
+                appLogger.info("Default Fabric Windows start file generated.");
             } catch (IOException ex) {
-                System.err.println("Could not extract default Fabric Windows start file");
-                //ex.printStackTrace();
+                errorLogger.error("Could not extract default Fabric Windows start file", ex);
             }
         }
         if (!fabricLinuxFile.exists()) {
@@ -72,10 +73,9 @@ public class Copy {
                 InputStream link = (Copy.class.getResourceAsStream("/" + fabricLinuxFile.getName()));
                 Files.copy(link, fabricLinuxFile.getAbsoluteFile().toPath());
                 link.close();
-                System.out.println("Default Fabric Linux start file generated.");
+                appLogger.info("Default Fabric Linux start file generated.");
             } catch (IOException ex) {
-                System.err.println("Could not extract default Fabric Linux start file");
-                //ex.printStackTrace();
+                errorLogger.error("Could not extract default Fabric Linux start file", ex);
             }
         }
         if (!propertiesFile.exists()) {
@@ -83,10 +83,9 @@ public class Copy {
                 InputStream link = (Copy.class.getResourceAsStream("/" + propertiesFile.getName()));
                 Files.copy(link, propertiesFile.getAbsoluteFile().toPath());
                 link.close();
-                System.out.println("Default server.properties file generated. Please customize if you intend on using it.");
+                appLogger.info("Default server.properties file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
-                System.err.println("Could not extract default server.properties file");
-                ex.printStackTrace();
+                errorLogger.error("Could not extract default server.properties file", ex);
             }
         }
         if (!iconFile.exists()) {
@@ -94,39 +93,38 @@ public class Copy {
                 InputStream link = (Copy.class.getResourceAsStream("/" + iconFile.getName()));
                 Files.copy(link, iconFile.getAbsoluteFile().toPath());
                 link.close();
-                System.out.println("Default server-icon.png file generated. Please customize if you intend on using it.");
+                appLogger.info("Default server-icon.png file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
-                System.err.println("Could not extract default server-icon.png file");
-                ex.printStackTrace();
+                errorLogger.error("Could not extract default server-icon.png file");
             }
         }
         if (firstRun) {
-            System.out.println("First run! Default files generated. Please customize and run again.");
+            appLogger.warn("First run! Default files generated. Please customize and run again.");
             System.exit(0);
         } else {
-            System.out.println("Setup completed.");
+            appLogger.info("Setup completed.");
         }
     }
 
     public static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) throws IOException {
         if (modLoader.equals("Forge") && includeStartScripts) {
-            System.out.println("Copying Forge start scripts...");
+            appLogger.info("Copying Forge start scripts...");
             try {
                 Files.copy(Paths.get("./" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("./" + forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + forgeLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                errorLogger.error(ex);
             }
         } else if (modLoader.equals("Fabric") && includeStartScripts) {
-            System.out.println("Copying Fabric start scripts...");
+            appLogger.info("Copying Fabric start scripts...");
             try {
                 Files.copy(Paths.get("./" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("./" + fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + fabricLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                errorLogger.error(ex);
             }
         } else {
-            System.out.println("Specified invalid modloader. Must be either Forge or Fabric.");
+            appLogger.info("Specified invalid modloader. Must be either Forge or Fabric.");
         }
     }
 
@@ -138,7 +136,7 @@ public class Copy {
             String clientDir = modpackDir + "/" + copyDirs.get(i);
             String serverDir = serverPath + "/" + copyDirs.get(i);
             //Files.createDirectories(Paths.get(serverDir));
-            System.out.println("Setting up " + serverDir + " files.");
+            appLogger.info("Setting up " + serverDir + " files.");
             if (copyDirs.get(i).startsWith("saves/")) {
                 String savesDir = serverPath + "/" + copyDirs.get(i).substring(6);
                 try {
@@ -146,12 +144,15 @@ public class Copy {
                     files.forEach(file -> {
                         try {
                             Files.copy(file, Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
+                            appLogger.info("Copying: " + file.toAbsolutePath().toString());
                         } catch (IOException ex) {
-                            //ex.printStackTrace();
+                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                errorLogger.error(ex);
+                            }
                         }
                     });
                 } catch (IOException ex) {
-                    //ex.printStackTrace();
+                    errorLogger.error(ex);
                 }
             } else {
                 try {
@@ -159,13 +160,16 @@ public class Copy {
                     files.forEach(file -> {
                         try {
                             Files.copy(file, Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
+                            appLogger.info("Copying: " + file.toAbsolutePath().toString());
                         } catch (IOException ex) {
-                            //ex.printStackTrace();
+                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                errorLogger.error(ex);
+                            }
                         }
                     });
                     files.close();
                 } catch (IOException ex) {
-                    //ex.printStackTrace();
+                    errorLogger.error(ex);
                 }
             }
         }
@@ -173,21 +177,21 @@ public class Copy {
 
     // If true, copy server-icon to serverpack.
     public static void copyIcon(String modpackDir) {
-        System.out.println("Copying server-icon.png...");
+        appLogger.info("Copying server-icon.png...");
         try {
             Files.copy(Paths.get("./" + iconFile), Paths.get(modpackDir + "/server_pack/" + iconFile), REPLACE_EXISTING);
         } catch (IOException ex) {
-            //ex.printStackTrace();
+            errorLogger.error(ex);
         }
     }
 
     // If true, copy server.properties to serverpack.
     public static void copyProperties(String modpackDir) {
-        System.out.println("Copying server.properties...");
+        appLogger.info("Copying server.properties...");
         try {
             Files.copy(Paths.get("./" + propertiesFile), Paths.get(modpackDir + "/server_pack/" + propertiesFile), REPLACE_EXISTING);
         } catch (IOException ex) {
-            //ex.printStackTrace();
+            errorLogger.error(ex);
         }
     }
 }

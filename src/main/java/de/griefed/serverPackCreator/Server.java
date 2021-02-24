@@ -1,5 +1,7 @@
 package de.griefed.serverPackCreator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,13 +13,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class Server {
+    private static final Logger appLogger = LogManager.getLogger("Server");
+    private static final Logger errorLogger = LogManager.getLogger("ServerError");
+
     // Delete clientside mods from serverpack
     public static void deleteClientMods(String modpackDir, List<String> clientMods) throws IOException {
-        System.out.println("Deleting client side mods...");
+        appLogger.info("Deleting client side mods from serverpack...");
         File serverMods = new File(modpackDir + "/server_pack/mods");
             for (File f : Objects.requireNonNull(serverMods.listFiles())) {
                 for (int i = 0; i < clientMods.toArray().length; i++) {
                     if (f.getName().startsWith(clientMods.get(i))) {
+                        appLogger.info("Deleting: " + f.getName() + " from serverpack...");
                         f.delete();
                     }
                 }
@@ -25,7 +31,7 @@ public class Server {
     }
     // Create zip archive of serverpack.
     public static void zipBuilder(String modpackDir) {
-        System.out.println("Creating zip archive of serverpack...");
+        appLogger.info("Creating zip archive of serverpack...");
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
         String zipFileName = sourceDir.toString().concat(".zip");
         try {
@@ -40,14 +46,14 @@ public class Server {
                         outputStream.write(bytes, 0, bytes.length);
                         outputStream.closeEntry();
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        errorLogger.error(ex);
                     }
                     return FileVisitResult.CONTINUE;
                 }
             });
             outputStream.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            errorLogger.error(ex);
         }
     }
 }

@@ -2,6 +2,8 @@ package de.griefed.serverPackCreator;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.List;
 
@@ -17,19 +19,20 @@ public class Main {
     public static Boolean includeStartScripts;
     public static Boolean includeZipCreation;
     public static Config conf;
+    private static final Logger appLogger = LogManager.getLogger("Main");
+    private static final Logger errorLogger = LogManager.getLogger("MainError");
 
     public static void main(String[] args) throws IOException {
-        // Warning about this being a WIP
-        System.out.println("WORK IN PROGESS! CONSIDER THIS ALPHA-STATE!");
-        System.out.println("Use at your own risk! Be aware that data loss IS possible.");
-        System.out.println("You have been warned.");
-        System.out.println("----------------------------------------------------------");
+        appLogger.info("WORK IN PROGESS! CONSIDER THIS ALPHA-STATE!");
+        appLogger.info("USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!");
+        appLogger.info("I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!");
+        appLogger.info("YOU HAVE BEEN WARNED!");
+        appLogger.info("----------------------------------------------------------");
 
-        // Setup default files that SPC needs
-        System.out.println("Setting up default files...");
         Copy.filesSetup();
 
         // Setup config variables with config file
+        appLogger.info("Getting configuration...");
         conf = ConfigFactory.parseFile(Copy.configFile);
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
@@ -41,18 +44,33 @@ public class Main {
         includeServerProperties = conf.getBoolean("includeServerProperties");
         includeStartScripts = conf.getBoolean("includeStartScripts");
         includeZipCreation = conf.getBoolean("includeZipCreation");
+
+        appLogger.info("Your configuration is:");
+        appLogger.info("Modpack directory: " + modpackDir);
+        appLogger.info("Client mods are:");
+        for (int i = 0; i < clientMods.toArray().length; i++) {appLogger.info("                 " + clientMods.get(i));}
+        appLogger.info("Directories to copy:");
+        for (int i = 0; i < copyDirs.toArray().length; i++) {appLogger.info("                     " + copyDirs.get(i));}
+        appLogger.info("Include server installation:      " + includeServerInstallation.toString());
+        appLogger.info("Modloader:                        " + modLoader);
+        appLogger.info("Modloader Version:                " + modLoaderVersion);
+        appLogger.info("Include server icon:              " + includeServerIcon.toString());
+        appLogger.info("Include server properties:        " + includeServerProperties.toString());
+        appLogger.info("Include start scripts:            " + includeStartScripts.toString());
+        appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
+
         // Copy all specified directories from modpack to serverpack.
         try {
             Copy.copyFiles(modpackDir, copyDirs);
         } catch (IOException ex) {
-            //ex.printStackTrace();
+            errorLogger.error(ex);
         }
 
         // Delete client-side mods from serverpack.
         try {
             Server.deleteClientMods(modpackDir, clientMods);
         } catch (IOException ex) {
-            //ex.printStackTrace();
+            errorLogger.error(ex);
         }
 
         // Generate Forge/Fabric start scripts and copy to serverpack.
@@ -72,7 +90,7 @@ public class Main {
         if (includeZipCreation) {
             Server.zipBuilder(modpackDir);
         }
-
-        System.out.println("Done!");
+        appLogger.info("Done!");
+        appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
     }
 }
