@@ -49,9 +49,9 @@ public class Main {
         appLogger.info("Your configuration is:");
         appLogger.info("Modpack directory: " + modpackDir);
         appLogger.info("Client mods are:");
-        for (int i = 0; i < clientMods.toArray().length; i++) {appLogger.info("                 " + clientMods.get(i));}
+        for (int i = 0; i < clientMods.toArray().length; i++) {appLogger.info("    " + clientMods.get(i));}
         appLogger.info("Directories to copy:");
-        for (int i = 0; i < copyDirs.toArray().length; i++) {appLogger.info("                     " + copyDirs.get(i));}
+        for (int i = 0; i < copyDirs.toArray().length; i++) {appLogger.info("    " + copyDirs.get(i));}
         appLogger.info("Include server installation:      " + includeServerInstallation.toString());
         appLogger.info("Modloader:                        " + modLoader);
         appLogger.info("Modloader Version:                " + modLoaderVersion);

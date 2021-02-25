@@ -18,12 +18,12 @@ public class Server {
 
     // Delete clientside mods from serverpack
     public static void deleteClientMods(String modpackDir, List<String> clientMods) throws IOException {
-        appLogger.info("Deleting client side mods from serverpack...");
+        appLogger.info("Deleting client-side mods from serverpack: ");
         File serverMods = new File(modpackDir + "/server_pack/mods");
             for (File f : Objects.requireNonNull(serverMods.listFiles())) {
                 for (int i = 0; i < clientMods.toArray().length; i++) {
                     if (f.getName().startsWith(clientMods.get(i))) {
-                        appLogger.info("Deleting: " + f.getName() + " from serverpack...");
+                        appLogger.info("    " + f.getName());
                         f.delete();
                     }
                 }
