@@ -31,7 +31,7 @@ jobs:
         run: chmod +x gradlew
 
       - id: compute_tag
-        uses: craig-day/compute-tag@v10
+        uses: craig-day/compute-tag@v11
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           version_scheme: semantic
