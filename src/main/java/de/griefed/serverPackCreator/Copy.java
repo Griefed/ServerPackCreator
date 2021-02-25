@@ -24,6 +24,11 @@ public class Copy {
 
     public static void filesSetup() {
         appLogger.info("Setting up default files...");
+        try {
+            Files.createDirectories(Paths.get("server_files"));
+        } catch (IOException ex) {
+            errorLogger.error("Could not create server_files directory.", ex);
+        }
         boolean firstRun = true;
         // Copy all default files to base directory where jar resides.
         if (!configFile.exists()) {
@@ -33,6 +38,7 @@ public class Copy {
                 link.close();
                 appLogger.info("Default config file generated. Please customize.");
             } catch (IOException ex) {
+                //add ignore for FileAlreadyExistsException
                 errorLogger.error("Could not extract default config-file", ex);
             }
         } else {
@@ -40,61 +46,67 @@ public class Copy {
         }
         if (!forgeWindowsFile.exists()) {
             try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + forgeWindowsFile.getName()));
-                Files.copy(link, forgeWindowsFile.getAbsoluteFile().toPath());
+                InputStream link = (Copy.class.getResourceAsStream("/server_files/" + forgeWindowsFile.getName()));
+                Files.copy(link, Paths.get("server_files/" + forgeWindowsFile));
                 link.close();
                 appLogger.info("Default Forge Windows start file generated.");
             } catch (IOException ex) {
+                //add ignore for FileAlreadyExistsException
                 errorLogger.error("Could not extract default Forge Windows start file", ex);
             }
         }
         if (!forgeLinuxFile.exists()) {
             try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + forgeLinuxFile.getName()));
-                Files.copy(link, forgeLinuxFile.getAbsoluteFile().toPath());
+                InputStream link = (Copy.class.getResourceAsStream("/server_files/" + forgeLinuxFile.getName()));
+                Files.copy(link, Paths.get("server_files/" + forgeLinuxFile));
                 link.close();
                 appLogger.info("Default Forge Linux start file generated.");
             } catch (IOException ex) {
+                //add ignore for FileAlreadyExistsException
                 errorLogger.error("Could not extract default Forge Linux start file", ex);
             }
         }
         if (!fabricWindowsFile.exists()) {
             try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + fabricWindowsFile.getName()));
-                Files.copy(link, fabricWindowsFile.getAbsoluteFile().toPath());
+                InputStream link = (Copy.class.getResourceAsStream("/server_files/" + fabricWindowsFile.getName()));
+                Files.copy(link, Paths.get("server_files/" + fabricWindowsFile));
                 link.close();
                 appLogger.info("Default Fabric Windows start file generated.");
             } catch (IOException ex) {
+                //add ignore for FileAlreadyExistsException
                 errorLogger.error("Could not extract default Fabric Windows start file", ex);
             }
         }
         if (!fabricLinuxFile.exists()) {
             try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + fabricLinuxFile.getName()));
-                Files.copy(link, fabricLinuxFile.getAbsoluteFile().toPath());
+                InputStream link = (Copy.class.getResourceAsStream("/server_files/" + fabricLinuxFile.getName()));
+                Files.copy(link, Paths.get("server_files/" + fabricLinuxFile));
                 link.close();
                 appLogger.info("Default Fabric Linux start file generated.");
             } catch (IOException ex) {
+                //add ignore for FileAlreadyExistsException
                 errorLogger.error("Could not extract default Fabric Linux start file", ex);
             }
         }
         if (!propertiesFile.exists()) {
             try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + propertiesFile.getName()));
-                Files.copy(link, propertiesFile.getAbsoluteFile().toPath());
+                InputStream link = (Copy.class.getResourceAsStream("/server_files/" + propertiesFile.getName()));
+                Files.copy(link, Paths.get("server_files/" + propertiesFile));
                 link.close();
                 appLogger.info("Default server.properties file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
+                //add ignore for FileAlreadyExistsException
                 errorLogger.error("Could not extract default server.properties file", ex);
             }
         }
         if (!iconFile.exists()) {
             try {
-                InputStream link = (Copy.class.getResourceAsStream("/" + iconFile.getName()));
-                Files.copy(link, iconFile.getAbsoluteFile().toPath());
+                InputStream link = (Copy.class.getResourceAsStream("/server_files/" + iconFile.getName()));
+                Files.copy(link, Paths.get("server_files/" + iconFile));
                 link.close();
                 appLogger.info("Default server-icon.png file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
+                //add ignore for FileAlreadyExistsException
                 errorLogger.error("Could not extract default server-icon.png file");
             }
         }
@@ -110,16 +122,16 @@ public class Copy {
         if (modLoader.equals("Forge") && includeStartScripts) {
             appLogger.info("Copying Forge start scripts...");
             try {
-                Files.copy(Paths.get("./" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
-                Files.copy(Paths.get("./" + forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + forgeLinuxFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("server_files/" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("server_files/" + forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + forgeLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
                 errorLogger.error(ex);
             }
         } else if (modLoader.equals("Fabric") && includeStartScripts) {
             appLogger.info("Copying Fabric start scripts...");
             try {
-                Files.copy(Paths.get("./" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
-                Files.copy(Paths.get("./" + fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + fabricLinuxFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("server_files/" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("server_files/" + fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + fabricLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
                 errorLogger.error(ex);
             }
@@ -135,7 +147,6 @@ public class Copy {
         for (int i = 0; i<copyDirs.toArray().length; i++) {
             String clientDir = modpackDir + "/" + copyDirs.get(i);
             String serverDir = serverPath + "/" + copyDirs.get(i);
-            //Files.createDirectories(Paths.get(serverDir));
             appLogger.info("Setting up " + serverDir + " files.");
             if (copyDirs.get(i).startsWith("saves/")) {
                 String savesDir = serverPath + "/" + copyDirs.get(i).substring(6);
@@ -179,7 +190,7 @@ public class Copy {
     public static void copyIcon(String modpackDir) {
         appLogger.info("Copying server-icon.png...");
         try {
-            Files.copy(Paths.get("./" + iconFile), Paths.get(modpackDir + "/server_pack/" + iconFile), REPLACE_EXISTING);
+            Files.copy(Paths.get("server_files/" + iconFile), Paths.get(modpackDir + "/server_pack/" + iconFile), REPLACE_EXISTING);
         } catch (IOException ex) {
             errorLogger.error(ex);
         }
@@ -189,7 +200,7 @@ public class Copy {
     public static void copyProperties(String modpackDir) {
         appLogger.info("Copying server.properties...");
         try {
-            Files.copy(Paths.get("./" + propertiesFile), Paths.get(modpackDir + "/server_pack/" + propertiesFile), REPLACE_EXISTING);
+            Files.copy(Paths.get("server_files/" + propertiesFile), Paths.get(modpackDir + "/server_pack/" + propertiesFile), REPLACE_EXISTING);
         } catch (IOException ex) {
             errorLogger.error(ex);
         }
