@@ -38,8 +38,9 @@ public class Copy {
                 link.close();
                 appLogger.info("Default config file generated. Please customize.");
             } catch (IOException ex) {
-                //add ignore for FileAlreadyExistsException
-                errorLogger.error("Could not extract default config-file", ex);
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    errorLogger.error("Could not extract default config-file", ex);
+                }
             }
         } else {
             firstRun = false;
@@ -51,8 +52,9 @@ public class Copy {
                 link.close();
                 appLogger.info("Default Forge Windows start file generated.");
             } catch (IOException ex) {
-                //add ignore for FileAlreadyExistsException
-                errorLogger.error("Could not extract default Forge Windows start file", ex);
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    errorLogger.error("Could not extract default Forge Windows start file", ex);
+                }
             }
         }
         if (!forgeLinuxFile.exists()) {
@@ -62,8 +64,9 @@ public class Copy {
                 link.close();
                 appLogger.info("Default Forge Linux start file generated.");
             } catch (IOException ex) {
-                //add ignore for FileAlreadyExistsException
-                errorLogger.error("Could not extract default Forge Linux start file", ex);
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    errorLogger.error("Could not extract default Forge Linux start file", ex);
+                }
             }
         }
         if (!fabricWindowsFile.exists()) {
@@ -73,8 +76,9 @@ public class Copy {
                 link.close();
                 appLogger.info("Default Fabric Windows start file generated.");
             } catch (IOException ex) {
-                //add ignore for FileAlreadyExistsException
-                errorLogger.error("Could not extract default Fabric Windows start file", ex);
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    errorLogger.error("Could not extract default Fabric Windows start file", ex);
+                }
             }
         }
         if (!fabricLinuxFile.exists()) {
@@ -84,8 +88,9 @@ public class Copy {
                 link.close();
                 appLogger.info("Default Fabric Linux start file generated.");
             } catch (IOException ex) {
-                //add ignore for FileAlreadyExistsException
-                errorLogger.error("Could not extract default Fabric Linux start file", ex);
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    errorLogger.error("Could not extract default Fabric Linux start file", ex);
+                }
             }
         }
         if (!propertiesFile.exists()) {
@@ -95,8 +100,9 @@ public class Copy {
                 link.close();
                 appLogger.info("Default server.properties file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
-                //add ignore for FileAlreadyExistsException
-                errorLogger.error("Could not extract default server.properties file", ex);
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    errorLogger.error("Could not extract default server.properties file", ex);
+                }
             }
         }
         if (!iconFile.exists()) {
@@ -106,8 +112,9 @@ public class Copy {
                 link.close();
                 appLogger.info("Default server-icon.png file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
-                //add ignore for FileAlreadyExistsException
-                errorLogger.error("Could not extract default server-icon.png file");
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    errorLogger.error("Could not extract default server-icon.png file", ex);
+                }
             }
         }
         if (firstRun) {
@@ -118,14 +125,14 @@ public class Copy {
         }
     }
 
-    public static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) throws IOException {
+    public static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
         if (modLoader.equals("Forge") && includeStartScripts) {
             appLogger.info("Copying Forge start scripts...");
             try {
                 Files.copy(Paths.get("server_files/" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("server_files/" + forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + forgeLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                errorLogger.error(ex);
+                errorLogger.error("An error occured while copying files: ", ex);
             }
         } else if (modLoader.equals("Fabric") && includeStartScripts) {
             appLogger.info("Copying Fabric start scripts...");
@@ -133,7 +140,7 @@ public class Copy {
                 Files.copy(Paths.get("server_files/" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("server_files/" + fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + fabricLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                errorLogger.error(ex);
+                errorLogger.error("An error occured while copying files: ", ex);
             }
         } else {
             appLogger.info("Specified invalid modloader. Must be either Forge or Fabric.");
