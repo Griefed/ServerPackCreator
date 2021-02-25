@@ -2,29 +2,23 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} - %msg%n" />
+            <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
         </Console>
-		<RollingFile name="ApplicationLogger" fileName="logs/action.log" filePattern="logs/$${date:yyyy-MM}/spc-%d{MM-dd-yyyy}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>%d [%t] %p %c - %m%n</Pattern>
-            </PatternLayout>
+		<RollingFile name="ApplicationLogger" fileName="logs/action.log" filePattern="logs/action.log.%i">
+            <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
             <Policies>
                 <OnStartupTriggeringPolicy />
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="50 MB" />
+                <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
-            <DefaultRolloverStrategy max="20" />
+            <DefaultRolloverStrategy max="5" />
         </RollingFile>
-        <RollingFile name="ErrorLogger" fileName="logs/error.log" filePattern="logs/$${date:yyyy-MM}/spc-%d{MM-dd-yyyy}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>%d [%t] %p %c - %m%n</Pattern>
-            </PatternLayout>
+        <RollingFile name="ErrorLogger" fileName="logs/error.log" filePattern="logs/error.log.%i">
+            <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
             <Policies>
                 <OnStartupTriggeringPolicy />
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="50 MB" />
+                <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
-            <DefaultRolloverStrategy max="20" />
+            <DefaultRolloverStrategy max="5" />
         </RollingFile>
     </Appenders>
     <Loggers>
