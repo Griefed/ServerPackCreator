@@ -41,7 +41,7 @@ jobs:
           tag_name: ${{ steps.compute_tag.outputs.next_tag }}
           release_name: "ServerPackCreator"
           body: |
-            Automatic release of ${{ steps.compute_tag.outputs.next_tag }}
+            Automatic release of version: **${{ steps.compute_tag.outputs.next_tag }}**
             **Changes in this release:**
             ${{ steps.conventional_changelog.outputs.changelog }}
           draft: false
