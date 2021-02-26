@@ -23,8 +23,8 @@ public class Main {
     private static final Logger appLogger = LogManager.getLogger("Main");
     private static final Logger errorLogger = LogManager.getLogger("MainError");
 
-    public static void main(String[] args) throws IOException {
-        appLogger.info("WORK IN PROGESS! CONSIDER THIS ALPHA-STATE!");
+    public static void main(String[] args) {
+        appLogger.info("WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!");
         appLogger.info("USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!");
         appLogger.info("I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!");
         appLogger.info("YOU HAVE BEEN WARNED!");
@@ -91,7 +91,7 @@ public class Main {
         if (includeZipCreation) {
             Server.zipBuilder(modpackDir);
         }
-        appLogger.info("Done!");
         appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
+        appLogger.info("Done!");
     }
 }
