@@ -23,25 +23,9 @@
     </Appenders>
     <Loggers>
         <Root level="ALL">
-            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Console" level="info"/>
+            <AppenderRef ref="ApplicationLogger" level="info" />
+            <AppenderRef ref="ErrorLogger" level="error"/>
         </Root>
-		<Logger name="Main">
-            <AppenderRef ref="ApplicationLogger" />
-        </Logger>
-        <Logger name="Server">
-            <AppenderRef ref="ApplicationLogger" />
-        </Logger>
-        <Logger name="Copy">
-            <AppenderRef ref="ApplicationLogger" />
-        </Logger>
-        <Logger name="MainError">
-            <AppenderRef ref="ErrorLogger" />
-        </Logger>
-        <Logger name="ServerError">
-            <AppenderRef ref="ErrorLogger" />
-        </Logger>
-        <Logger name="CopyError">
-            <AppenderRef ref="ErrorLogger" />
-        </Logger>
     </Loggers>
 </Configuration>
