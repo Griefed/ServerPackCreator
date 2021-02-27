@@ -30,8 +30,12 @@ public class Server {
             for (File f : Objects.requireNonNull(serverMods.listFiles())) {
                 for (int i = 0; i < clientMods.toArray().length; i++) {
                     if (f.getName().startsWith(clientMods.get(i))) {
-                        appLogger.info("    " + f.getName());
-                        f.delete();
+                        boolean isDeleted = f.delete();
+                        if (isDeleted) {
+                            appLogger.info("    " + f.getName());
+                        } else {
+                            appLogger.error("Could not delete: " + f.getName());
+                        }
                     }
                 }
             }
