@@ -34,7 +34,7 @@ public class Server {
                         if (isDeleted) {
                             appLogger.info("    " + f.getName());
                         } else {
-                            appLogger.error("Could not delete: " + f.getName());
+                            errorLogger.error("Could not delete: " + f.getName());
                         }
                     }
                 }
