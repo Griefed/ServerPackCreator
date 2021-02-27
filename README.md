@@ -22,8 +22,6 @@ If you wish to contribute, fork the repository, make your changes, create a pull
 Help for
 - setting up Forge downloading
   - installing Forge server after successful download
-- setting up Fabric downloading
-  - installing Fabric server after successful download
 
 would be greatly appreciated.
 
@@ -34,8 +32,8 @@ Planned/wanted:
 - [X] **Specify whether to use Forge or Fabric**
   - [ ] **Download and install Forge server**
     - [ ] **Make version configurable**
-  - [ ] **Download and install Fabric server**
-    - [ ] **Make version configurable**
+  - [X] **Download and install Fabric server** (needs additional testing)
+    - [X] **Make version configurable** (needs additional testing)
 - [X] Logging
   - [X] log actions to action.log
   - [X] log errors to error.log
@@ -60,16 +58,19 @@ Planned/wanted:
   
 ## Running ServerPackCreator
 
-The initial run of ServerPackCreator will place default files in a directory called `conf` in the same directory where the .jar-file resides in. 
+The initial run of ServerPackCreator will place default-files in a directory called `server_files` in the same directory where the .jar-file resides in.
+The config file will be created in the same directory as `ServerPackCreator-x.x.x.jar`.
 Among those default files are:
 
 File | Description
 ---- | ----
 creator.conf | Configuration file for customization. See [creator.conf](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/creator.conf).
-server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server.properties). 
-server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server-icon.png). 
-start.bat | Server start script for windows systems. See [start.bat](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/start.bat).
-start.sh | Server start script for linux systems. See [start.sh](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/start.sh).
+server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/server.properties). 
+server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/server-icon.png).
+start-fabric.bat | Fabric server start script for windows systems. See [start-fabric.bat](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/start-fabric.bat).
+start-fabric.sh | Fabric server start script for linux systems. See [start-fabric.sh](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/start-fabric.sh).
+start-forge.bat | Forge server start script for windows systems. See [start-forge.bat](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/start-forge.bat).
+start-forge.sh | Forge server start script for linux systems. See [start-forge.sh](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/start-forge.sh).
 
 The creator.conf file allows you to customize a couple of different things:
 
@@ -79,8 +80,9 @@ modpackDir | The path to the directory where your modpack resides in.
 clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack.
 copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. 
 includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
+minecraftVersion | The version of Minecraft for which to install the modloader server.
 modLoader | Which modloader to install. Must be either "Forge" or "Fabric".
-modLoaderVersion | Specific Minecraft-Modloader version to install the server in the serverpack.
+modLoaderVersion | Specific Modloader version to install the server in the serverpack.
 includeServerIcon | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.
 includeServerProperties | Whether to include server.properties in your serverpack. Must be `true` or `false`.
 includeStartScripts | Whether to inlude start scripts in your serverpack. Must be `true` or `false`.
@@ -92,7 +94,7 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 
 If you want to help testing (I can not be held responsible for loss of data. Make sure you make backups and execute this program in a test environment.):
 1. Download `ServerPackCreator-x.x.x.jar` from `Packages` or `Releases` on the right side.
-2. Put it in the parent folder of your modpack folder. Here's an example for my modpack Survive Create Prosper:
+2. Put it in the parent folder of your modpack folder. Here's an example for my modpack Survive Create Prosper 4:
 ```
 tests/
 │   creator.conf
@@ -127,28 +129,13 @@ tests/
     ├───schematics
     ├───screenshots
     ├───scripts
-    ├───seeds
-    └───server_pack
-        │   server-icon.png
-        │   server.properties
-        │   start-forge.bat
-        │   start-forge.sh
-        │
-        ├───config
-        ├───defaultconfigs
-        ├───mods
-        ├───scp4
-        ├───scripts
-        └───seeds
+    └───seeds
 ```
 3. Customize the configuration file `creator.conf` to work with your modpack.
+   (truncated for better readability)
 ```
-# Path to your modpack. Can be either relative or absolute.
 modpackDir = "./Survive Create Prosper 4 1.16.5"
 
-# List of client mods to delete from serverpack.
-# No need to include version specifics.
-# Must be the filenames of the mods, not their project names on CurseForge!
 clientMods = [
     "AmbientSounds",
     "BackTools",
@@ -175,9 +162,6 @@ clientMods = [
     "WorldNameRandomizer"
     ]
 
-# Name of directories to include in serverpack.
-# When specifying "saves/world", "world" will be copied to the base directory of the serverpack
-# for immediate use with the server.
 copyDirs = [
     "config",
     "defaultconfigs",
@@ -187,29 +171,17 @@ copyDirs = [
     "saves/scp4"
     ]
 
-# Whether to install a Forge/Fabric server for the serverpack. Must be true or false.
-# Which modloader to install. Must be either "Forge" or "Fabric".
-# The version of the modloader you want to install.
-# NOT YET IMPLEMENTED. IGNORE. THIS DOES NOTHING AT THE MOMENT.
 includeServerInstallation = true
-modLoader= "Forge"
-modLoaderVersion = "1.16.5-36.0.15"
+minecraftVersion = "1.16.5"
+modLoader= "Fabric"
+modLoaderVersion = "0.11.2"
 
-# Include a server-icon.png in your serverpack. Must be true or false.
-# Place your server-icon.png in the same directory as this cfg-file.
-# If no server-icon.png is provided but is set to true, a default one will be provided.
-# Dimensions must be 64x64!
 includeServerIcon = true
 
-# Include a server.properties in your serverpack. Must be true or false.
-# Place your server.properties in the same directory as this cfg-file.
-# If no server.properties is provided but is set to true, a default one will be provided.
 includeServerProperties = true
 
-# Include start scripts for windows and linux systems. Must be true or false.
 includeStartScripts = true
 
-# Create zip-archive of serverpack. Must be true or false.
 includeZipCreation = true
 ```
 
