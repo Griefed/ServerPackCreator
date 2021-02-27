@@ -31,6 +31,7 @@ public class Main {
         appLogger.info("#                    YOU HAVE BEEN WARNED!                     #");
         appLogger.info("################################################################");
 
+        // Generate default files if they do not exist and exit if creator.conf was created
         Copy.filesSetup();
 
         // Setup config variables with config file
@@ -48,6 +49,7 @@ public class Main {
         includeStartScripts = conf.getBoolean("includeStartScripts");
         includeZipCreation = conf.getBoolean("includeZipCreation");
 
+        // Print current configuration so in case of error, logs are more informative
         appLogger.info("Your configuration is:");
         appLogger.info("Modpack directory: " + modpackDir);
         appLogger.info("Client mods are:");

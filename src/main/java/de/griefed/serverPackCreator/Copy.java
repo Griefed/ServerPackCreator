@@ -22,15 +22,17 @@ public class Copy {
     private static final Logger appLogger = LogManager.getLogger("Copy");
     private static final Logger errorLogger = LogManager.getLogger("CopyError");
 
+    // Copy all default files to base directory where jar resides.
     public static void filesSetup() {
         appLogger.info("Setting up default files...");
+        boolean firstRun = true;
+        // Create directory for server files for customization
         try {
             Files.createDirectories(Paths.get("server_files"));
         } catch (IOException ex) {
             errorLogger.error("Could not create server_files directory.", ex);
         }
-        boolean firstRun = true;
-        // Copy all default files to base directory where jar resides.
+        // Copy config file in case it does not exist yet
         if (!configFile.exists()) {
             try {
                 InputStream link = (Copy.class.getResourceAsStream("/" + configFile.getName()));
@@ -42,9 +44,8 @@ public class Copy {
                     errorLogger.error("Could not extract default config-file", ex);
                 }
             }
-        } else {
-            firstRun = false;
-        }
+        } else { firstRun = false; }
+        // Copy Forge related start scripts
         if (!forgeWindowsFile.exists()) {
             try {
                 InputStream link = (Copy.class.getResourceAsStream("/server_files/" + forgeWindowsFile.getName()));
@@ -69,6 +70,7 @@ public class Copy {
                 }
             }
         }
+        // Copy Fabric related start scripts
         if (!fabricWindowsFile.exists()) {
             try {
                 InputStream link = (Copy.class.getResourceAsStream("/server_files/" + fabricWindowsFile.getName()));
@@ -93,6 +95,7 @@ public class Copy {
                 }
             }
         }
+        // Copy server.properties if it does not exist
         if (!propertiesFile.exists()) {
             try {
                 InputStream link = (Copy.class.getResourceAsStream("/server_files/" + propertiesFile.getName()));
@@ -105,6 +108,7 @@ public class Copy {
                 }
             }
         }
+        // Copy server icon file if it does not exist
         if (!iconFile.exists()) {
             try {
                 InputStream link = (Copy.class.getResourceAsStream("/server_files/" + iconFile.getName()));
@@ -117,6 +121,7 @@ public class Copy {
                 }
             }
         }
+        // If the config file was just generated because it did not exist yet, then exit and tell user to customize
         if (firstRun) {
             appLogger.warn("First run! Default files generated. Please customize and run again.");
             System.exit(0);
