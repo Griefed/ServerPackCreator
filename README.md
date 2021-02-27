@@ -33,6 +33,8 @@ Planned/wanted:
   - [ ] **Download and install Forge server**
     - [ ] **Make version configurable**
   - [X] **Download and install Fabric server** (needs additional testing)
+    
+    With permission from the Fabric-Team, see [Request for permission](https://github.com/FabricMC/fabric-installer/issues/63#issuecomment-787103410)
     - [X] **Make version configurable** (needs additional testing)
 - [X] Logging
   - [X] log actions to action.log
