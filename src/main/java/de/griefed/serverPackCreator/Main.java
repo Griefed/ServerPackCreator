@@ -13,6 +13,7 @@ public class Main {
     public static List<String> clientMods;
     public static List<String> copyDirs;
     public static Boolean includeServerInstallation;
+    public static String minecraftVersion;
     public static String modLoader;
     public static String modLoaderVersion;
     public static Boolean includeServerIcon;
@@ -24,11 +25,12 @@ public class Main {
     private static final Logger errorLogger = LogManager.getLogger("MainError");
 
     public static void main(String[] args) {
-        appLogger.info("WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!");
-        appLogger.info("USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!");
-        appLogger.info("I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!");
-        appLogger.info("YOU HAVE BEEN WARNED!");
-        appLogger.info("----------------------------------------------------------");
+        appLogger.info("################################################################");
+        appLogger.info("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
+        appLogger.info("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
+        appLogger.info("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
+        appLogger.info("#                    YOU HAVE BEEN WARNED!                     #");
+        appLogger.info("################################################################");
 
         Copy.filesSetup();
 
@@ -39,6 +41,7 @@ public class Main {
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
         includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
         modLoaderVersion = conf.getString("modLoaderVersion");
         includeServerIcon = conf.getBoolean("includeServerIcon");
@@ -77,19 +80,31 @@ public class Main {
         // Generate Forge/Fabric start scripts and copy to serverpack.
         Copy.copyStartScripts(modpackDir, modLoader, includeStartScripts);
 
+        if (includeServerInstallation) {
+            Server.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion);
+        } else {
+            appLogger.info("Not installing modded server.");
+        }
+
         // If true, copy server-icon to serverpack.
         if (includeServerIcon) {
             Copy.copyIcon(modpackDir);
+        } else {
+            appLogger.info("Not including servericon.");
         }
 
         // If true, copy server.properties to serverpack.
         if (includeServerProperties) {
             Copy.copyProperties(modpackDir);
+        } else {
+            appLogger.info("Not including server.properties.");
         }
 
         // If true, create zip archive of serverpack.
         if (includeZipCreation) {
             Server.zipBuilder(modpackDir);
+        } else {
+            appLogger.info("Not creating zip archive of serverpack.");
         }
         appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
         appLogger.info("Done!");
