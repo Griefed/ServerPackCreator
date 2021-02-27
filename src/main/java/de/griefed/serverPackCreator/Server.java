@@ -6,7 +6,6 @@ import net.fabricmc.installer.util.LauncherMeta;
 import net.fabricmc.installer.util.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -90,7 +89,7 @@ public class Server {
         } else if (modLoader.equals("Forge")) {
             appLogger.info("Forge installation not yet implemented.");
             /*try {
-              appLogger.info("################################################################");
+                appLogger.info("################################################################");
                 appLogger.info("#                Starting Forge installation                   #");
                 appLogger.info("################################################################");
 
@@ -103,7 +102,7 @@ public class Server {
             }
             */
         } else {
-            errorLogger.error("Speficied invalid modloader: " + modLoader);
+            errorLogger.error("Specified invalid modloader: " + modLoader);
         }
     }
 }
