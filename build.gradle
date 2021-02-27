@@ -21,9 +21,6 @@ configurations {
 dependencies {
     embed group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
     embed group: 'com.typesafe', name: 'config', version: '1.4.1'
-    /* embed ("com.github.MinecraftForge:Installer:master-SNAPSHOT"){
-        transitive = true
-    } */
     embed ("com.github.FabricMC:fabric-installer:master-SNAPSHOT"){
         transitive = true
     }
@@ -45,7 +42,9 @@ jar {
                     'META-INF/versions/**',
                     'META-INF/DEPENDENCIES',
                     'META-INF/LICENSE',
-                    'META-INF/NOTICE'
+                    'META-INF/NOTICE',
+                    'icon.png',
+                    'profile_icon.png'
         }
     }
     manifest {
