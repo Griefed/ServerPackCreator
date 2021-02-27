@@ -57,14 +57,14 @@ public class Server {
                         outputStream.write(bytes, 0, bytes.length);
                         outputStream.closeEntry();
                     } catch (IOException ex) {
-                        errorLogger.error(ex);
+                        errorLogger.error("There was an error during zip creation", ex);
                     }
                     return FileVisitResult.CONTINUE;
                 }
             });
             outputStream.close();
         } catch (IOException ex) {
-            errorLogger.error(ex);
+            errorLogger.error("There was an error during zip creation", ex);
         }
     }
 
@@ -92,7 +92,7 @@ public class Server {
             }
         } else if (modLoader.equals("Forge")) {
             appLogger.info("Forge installation not yet implemented.");
-            /*try {
+            try {
                 appLogger.info("################################################################");
                 appLogger.info("#                Starting Forge installation                   #");
                 appLogger.info("################################################################");
@@ -104,7 +104,7 @@ public class Server {
             } catch (IOException ex) {
                 errorLogger.error("An error occurred during Forge installation.", ex);
             }
-            */
+
         } else {
             errorLogger.error("Specified invalid modloader: " + modLoader);
         }

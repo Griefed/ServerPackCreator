@@ -176,7 +176,7 @@ public class Copy {
                         }
                     });
                 } catch (IOException ex) {
-                    errorLogger.error(ex);
+                    errorLogger.error("An error occurred copying the specified world.", ex);
                 }
             } else {
                 try {
@@ -187,13 +187,13 @@ public class Copy {
                             appLogger.info("Copying: " + file.toAbsolutePath().toString());
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                errorLogger.error(ex);
+                                errorLogger.error("An error occurred copying files to the serverpack.", ex);
                             }
                         }
                     });
                     files.close();
                 } catch (IOException ex) {
-                    errorLogger.error(ex);
+                    errorLogger.error("An error occurred during the copy-procedure to the serverpack.", ex);
                 }
             }
         }
@@ -205,7 +205,7 @@ public class Copy {
         try {
             Files.copy(Paths.get("server_files/" + iconFile), Paths.get(modpackDir + "/server_pack/" + iconFile), REPLACE_EXISTING);
         } catch (IOException ex) {
-            errorLogger.error(ex);
+            errorLogger.error("An error occurred trying to copy the server icon.", ex);
         }
     }
 
@@ -215,7 +215,7 @@ public class Copy {
         try {
             Files.copy(Paths.get("server_files/" + propertiesFile), Paths.get(modpackDir + "/server_pack/" + propertiesFile), REPLACE_EXISTING);
         } catch (IOException ex) {
-            errorLogger.error(ex);
+            errorLogger.error("An error occurred trying to copy the server.properties-file.", ex);
         }
     }
 }

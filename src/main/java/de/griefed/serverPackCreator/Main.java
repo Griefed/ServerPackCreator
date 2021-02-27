@@ -68,14 +68,14 @@ public class Main {
         try {
             Copy.copyFiles(modpackDir, copyDirs);
         } catch (IOException ex) {
-            errorLogger.error(ex);
+            errorLogger.error("There was an error calling the copyFiles method.", ex);
         }
 
         // Delete client-side mods from serverpack.
         try {
             Server.deleteClientMods(modpackDir, clientMods);
         } catch (IOException ex) {
-            errorLogger.error(ex);
+            errorLogger.error("There was an error calling the delteClientMods method.", ex);
         }
 
         // Generate Forge/Fabric start scripts and copy to serverpack.
