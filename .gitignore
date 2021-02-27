@@ -133,3 +133,4 @@ run
 /ServerPack*
 /build/generated/
 /build/libs/
+/libs

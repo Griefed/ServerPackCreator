@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 plugins {
     id 'java'
     id 'maven'
@@ -19,6 +21,12 @@ configurations {
 dependencies {
     embed group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
     embed group: 'com.typesafe', name: 'config', version: '1.4.1'
+    /* embed ("com.github.MinecraftForge:Installer:master-SNAPSHOT"){
+        transitive = true
+    } */
+    embed ("com.github.FabricMC:fabric-installer:master-SNAPSHOT"){
+        transitive = true
+    }
 }
 
 java {
@@ -45,7 +53,7 @@ jar {
                 'Main-Class'     : 'de.griefed.serverPackCreator.Main',
                 'Description'    : 'Create serverpacks from Minecraft modpacks.',
                 'Built-By'       : System.properties['user.name'],
-                'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ").format(new Date()),
+                'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 'Created-By'     : "Gradle ${gradle.gradleVersion}",
                 'Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
                 'Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
@@ -53,8 +61,6 @@ jar {
         )
     }
 }
-
-sourceSets.main.runtimeClasspath.each { println it }
 
 publishing {
     repositories {
@@ -68,8 +74,11 @@ publishing {
         }
     }
     publications {
+        //noinspection GroovyAssignabilityCheck
         gpr(MavenPublication) {
+            //noinspection GroovyAssignabilityCheck
             artifactId='serverpackcreator'
+            //noinspection GroovyAssignabilityCheck
             from (components.java)
         }
     }
