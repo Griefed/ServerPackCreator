@@ -125,6 +125,7 @@ public class Copy {
         }
     }
 
+    // Copy forge/fabric start scripts to serverpack, depending on modLoader config.
     public static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
         if (modLoader.equals("Forge") && includeStartScripts) {
             appLogger.info("Copying Forge start scripts...");
@@ -132,7 +133,7 @@ public class Copy {
                 Files.copy(Paths.get("server_files/" + forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + forgeWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("server_files/" + forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + forgeLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                errorLogger.error("An error occured while copying files: ", ex);
+                errorLogger.error("An error occurred while copying files: ", ex);
             }
         } else if (modLoader.equals("Fabric") && includeStartScripts) {
             appLogger.info("Copying Fabric start scripts...");
@@ -140,7 +141,7 @@ public class Copy {
                 Files.copy(Paths.get("server_files/" + fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + fabricWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("server_files/" + fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + fabricLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                errorLogger.error("An error occured while copying files: ", ex);
+                errorLogger.error("An error occurred while copying files: ", ex);
             }
         } else {
             appLogger.info("Specified invalid modloader. Must be either Forge or Fabric.");
