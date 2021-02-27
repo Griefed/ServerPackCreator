@@ -1,5 +1,3 @@
-# ServerPackCreator
-
 [![banner](img/serverpackcreator_banner.png)](https://github.com/Griefed/ServerPackCreator)
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Java%20CI%20with%20Gradle?label=Gradle%20Build%20Test&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Java+CI+with+Gradle%22)
