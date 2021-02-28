@@ -126,8 +126,8 @@ public class Copy {
             appLogger.info("################################################################");
             appLogger.info("#                                                              #");
             appLogger.info("#       FIRST RUN. CUSTOMIZE YOUR CREATOR.CONF FILE NOW.       #");
-            appLogger.info("#         THE DEFAULTS ARE MEANT TO SHOW HOW IT'S DONE         #");
-            appLogger.info("#     THE DEFAULTS WILL MOST LIKELY NOT WORK ON YOUR SYSTEM    #");
+            appLogger.info("#        THE DEFAULTS ARE MEANT TO SHOW HOW IT'S DONE.         #");
+            appLogger.info("#    THE DEFAULTS WILL MOST LIKELY NOT WORK ON YOUR SYSTEM.    #");
             appLogger.info("#                                                              #");
             appLogger.info("################################################################");
             appLogger.warn("First run! Default files generated. Please customize and run again.");
