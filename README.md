@@ -17,22 +17,14 @@ You're also welcome to make contributions, or fork it and make your own version 
 Use at your own risk! Be aware that data loss is possible. If you wish to test this, there's a description down below.
 If you wish to contribute, fork the repository, make your changes, create a pull request and make sure to use [conventional commits](https://github.com/Griefed/ServerPackCreator/wiki)
 
-Help for
-- setting up Forge downloading
-  - installing Forge server after successful download
-
-would be greatly appreciated.
-
 ## Features
 
 Planned/wanted:
 
 - [X] **Specify whether to use Forge or Fabric**
-  - [ ] **Download and install Forge server**
-    - [ ] **Make version configurable**
-  - [X] **Download and install Fabric server** (needs additional testing)
-    
-    With permission from the Fabric-Team, see [Request for permission](https://github.com/FabricMC/fabric-installer/issues/63#issuecomment-787103410)
+  - [X] **Download and install Forge server** (needs additional testing)
+    - [X] **Make version configurable** (needs additional testing)
+  - [X] **Download and install Fabric server** (needs additional testing) 
     - [X] **Make version configurable** (needs additional testing)
 - [X] Logging
   - [X] log actions to action.log
@@ -96,7 +88,7 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 If you want to help testing (I can not be held responsible for loss of data. Make sure you make backups and execute this program in a test environment.):
 1. Download `ServerPackCreator-x.x.x.jar` from `Packages` or `Releases` on the right side.
 2. Put it in the parent folder of your modpack folder. Here's an example for my modpack Survive Create Prosper 4:
-```
+```console
 tests/
 │   creator.conf
 │   ServerPackCreator-X.X.X.jar
@@ -134,7 +126,7 @@ tests/
 ```
 3. Customize the configuration file `creator.conf` to work with your modpack.
    (truncated for better readability)
-```
+```editor-config
 modpackDir = "./Survive Create Prosper 4 1.16.5"
 
 clientMods = [
@@ -185,6 +177,12 @@ includeServerProperties = true
 includeStartScripts = true
 
 includeZipCreation = true
+```
+
+An example configuration to use Fabric for your serverpack:
+```editor-config
+modLoader= "Fabric"
+modLoaderVersion = "0.11.2"
 ```
 
 4. Customize any of the other files if need be. 
