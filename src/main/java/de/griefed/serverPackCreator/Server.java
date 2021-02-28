@@ -1,5 +1,6 @@
 package de.griefed.serverPackCreator;
 
+import net.fabricmc.installer.util.LauncherMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
@@ -52,13 +53,46 @@ public class Server {
             }
     }
     // Create zip archive of serverpack.
-    public static void zipBuilder(String modpackDir, String modLoader) {
+    public static void zipBuilder(String modpackDir, String modLoader, String minecraftVersion) {
         // With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
         appLogger.info("Creating zip archive of serverpack...");
         appLogger.info("NOTE: The minecraft_server.jar will not be included in the zip-archive.");
         appLogger.info("Mojang strictly prohibits the distribution of their software through third parties.");
-        appLogger.info("Your users will have to download and install the minecraft_server.jar themselves.");
+        appLogger.info("Tell your users to execute the download scripts to get the Minecraft server jar.");
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
+        try {
+            if (modLoader.equals("Fabric")) {
+                // Generate download script if modloader is Fabric, shell
+                String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
+                String shFabric = "#!/bin/bash\n#Download the Minecraft_server.jar for your modpack\n\nwget -O server.jar " + downloadMinecraftServer;
+                Path pathSh = Paths.get(modpackDir + "/server_pack/download_minecraft_server_fabric.sh");
+                byte[] strToBytesSh = shFabric.getBytes();
+                Files.write(pathSh, strToBytesSh);
+                String readSh = Files.readAllLines(pathSh).get(0);
+                // Generate download script if modloader is Fabric, batch
+                String batFabric = "powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + downloadMinecraftServer + "', 'server.jar')\"";
+                Path pathBat = Paths.get(modpackDir + "/server_pack/download_minecraft_server_fabric.bat");
+                byte[] strToBytesBat = batFabric.getBytes();
+                Files.write(pathBat, strToBytesBat);
+                String readBat = Files.readAllLines(pathBat).get(0);
+            } else if (modLoader.equals("Forge")) {
+                // Generate download script if modloader is Forge, shell
+                String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
+                String shForge = "#!/bin/bash\n# Download the Minecraft_server.jar for your modpack\n\nwget -O minecraft_server.1.16.5.jar " + downloadMinecraftServer;
+                Path pathSh = Paths.get(modpackDir + "/server_pack/download_minecraft_server_forge.sh");
+                byte[] strToBytesSh = shForge.getBytes();
+                Files.write(pathSh, strToBytesSh);
+                String readSh = Files.readAllLines(pathSh).get(0);
+                // Generate download script if modloader is Forge, batch
+                String batForge = "powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + downloadMinecraftServer + "', 'minecraft_server.1.16.5.jar')\"";
+                Path pathBat = Paths.get(modpackDir + "/server_pack/download_minecraft_server_forge.bat");
+                byte[] strToBytesBat = batForge.getBytes();
+                Files.write(pathBat, strToBytesBat);
+                String readBat = Files.readAllLines(pathBat).get(0);
+            }
+        } catch (IOException ex) {
+            errorLogger.error("Error during download-script generation for Minceraft server.", ex);
+        }
         String zipFileName = sourceDir.toString().concat(".zip");
         try {
             final ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFileName));
