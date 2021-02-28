@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -12,13 +13,17 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -47,9 +52,12 @@ public class Server {
             }
     }
     // Create zip archive of serverpack.
-    public static void zipBuilder(String modpackDir) {
+    public static void zipBuilder(String modpackDir, String modLoader) {
         // With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
         appLogger.info("Creating zip archive of serverpack...");
+        appLogger.info("NOTE: The minecraft_server.jar will not be included in the zip-archive.");
+        appLogger.info("Mojang strictly prohibits the distribution of their software through third parties.");
+        appLogger.info("Your users will have to download and install the minecraft_server.jar themselves.");
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
         String zipFileName = sourceDir.toString().concat(".zip");
         try {
@@ -72,6 +80,39 @@ public class Server {
             outputStream.close();
         } catch (IOException ex) {
             errorLogger.error("There was an error during zip creation", ex);
+        }
+        // With help from https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python
+        // and https://bugs.openjdk.java.net/browse/JDK-8186227
+        if (modLoader.equals("Forge")) {
+            Map<String, String> zip_properties = new HashMap<>();
+            zip_properties.put("create", "false");
+            zip_properties.put("encoding", "UTF-8");
+            Path serverpackZip = Paths.get(modpackDir + "/server_pack.zip");
+            URI zipUri = URI.create("jar:" + serverpackZip.toUri());
+            try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
+                Path pathInZipfile = zipfs.getPath("minecraft_server.1.16.5.jar");
+                appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
+                Files.delete(pathInZipfile);
+                appLogger.info("File successfully deleted");
+            } catch (IOException ex) {
+                errorLogger.error("Error deleting minecraft-server.jar from archive.", ex);
+            }
+        } else if (modLoader.equals("Fabric")) {
+            Map<String, String> zip_properties = new HashMap<>();
+            zip_properties.put("create", "false");
+            zip_properties.put("encoding", "UTF-8");
+            Path serverpackZip = Paths.get(modpackDir + "/server_pack.zip");
+            URI zipUri = URI.create("jar:" + serverpackZip.toUri());
+            try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
+                Path pathInZipfile = zipfs.getPath("server.jar");
+                appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
+                Files.delete(pathInZipfile);
+                appLogger.info("File successfully deleted");
+            } catch (IOException ex) {
+                errorLogger.error("Error deleting minecraft-server.jar from archive.", ex);
+            }
+        } else {
+            errorLogger.error("Specified invalid modloader: " + modLoader);
         }
     }
 
