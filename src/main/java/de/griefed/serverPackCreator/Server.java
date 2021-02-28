@@ -6,10 +6,12 @@ import net.fabricmc.installer.util.LauncherMeta;
 import net.fabricmc.installer.util.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import java.io.*;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static net.fabricmc.installer.util.InstallerProgress.CONSOLE;
 
 public class Server {
@@ -42,6 +45,7 @@ public class Server {
     }
     // Create zip archive of serverpack.
     public static void zipBuilder(String modpackDir) {
+        // With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
         appLogger.info("Creating zip archive of serverpack...");
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
         String zipFileName = sourceDir.toString().concat(".zip");
@@ -68,7 +72,7 @@ public class Server {
         }
     }
 
-    public static void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
+    public static void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
         File serverDir = new File(modpackDir + "/server_pack");
         if (modLoader.equals("Fabric")) {
             try {
@@ -76,6 +80,8 @@ public class Server {
                 appLogger.info("#                Starting Fabric installation                  #");
                 appLogger.info("################################################################");
                 // Feels like a dirty hack, but it works...
+                // Code from https://github.com/FabricMC/fabric-installer/blob/master/src/main/java/net/fabricmc/installer/server/ServerHandler.java
+                // With permission https://github.com/FabricMC/fabric-installer/issues/63#issuecomment-787103410
                 ServerInstaller.install(serverDir, modLoaderVersion, minecraftVersion, CONSOLE);
                 File serverJar = new File(serverDir, "server.jar");
                 File serverJarTmp = new File(serverDir, "server.jar.tmp");
@@ -96,8 +102,40 @@ public class Server {
                 appLogger.info("################################################################");
                 appLogger.info("#                Starting Forge installation                   #");
                 appLogger.info("################################################################");
-
-
+                appLogger.info("Downloading https://files.minecraftforge.net/maven/net/minecraftforge/forge/" + minecraftVersion + "-" + modLoaderVersion + "/forge-" + minecraftVersion + "-" + modLoaderVersion + "-installer.jar");
+                URL downloadForge = new URL("https://files.minecraftforge.net/maven/net/minecraftforge/forge/" + minecraftVersion + "-" + modLoaderVersion + "/forge-" + minecraftVersion + "-" + modLoaderVersion + "-installer.jar");
+                ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
+                FileOutputStream fileOutputStream = new FileOutputStream(modpackDir + "/server_pack/forge-installer.jar");
+                FileChannel fileChannel = fileOutputStream.getChannel();
+                fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                fileOutputStream.flush();
+                fileOutputStream.close();
+                File forgeInstaller = new File(modpackDir + "/server_pack/forge-installer.jar");
+                if (forgeInstaller.exists()) {
+                    ProcessBuilder builder = new ProcessBuilder("\"" + javaPath + "/bin/java\"", "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
+                    builder.redirectErrorStream(true);
+                    Process p = builder.start();
+                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    String line;
+                    while (true) {
+                        line = r.readLine();
+                        if (line == null) { break; }
+                        appLogger.info(line);
+                    }
+                }
+                Files.copy(Paths.get(modpackDir + "/server_pack/forge-" + minecraftVersion + "-" + modLoaderVersion + ".jar"), Paths.get(modpackDir + "/server_pack/forge.jar"), REPLACE_EXISTING);
+                boolean isOldJarDeleted = (new File(modpackDir + "/server_pack/forge-" + minecraftVersion + "-" + modLoaderVersion + ".jar")).delete();
+                if ((isOldJarDeleted) && (new File(modpackDir + "/server_pack/forge.jar").exists())) {
+                    appLogger.info("Renamed forge.jar and deleted old one.");
+                } else {
+                    errorLogger.error("There was an error during renaming or deletion of the forge server jar.");
+                }
+                boolean isInstallerDeleted = (new File(modpackDir + "/server_pack/forge-installer.jar")).delete();
+                if (isInstallerDeleted) {
+                    appLogger.info("Deleted " + forgeInstaller.getName());
+                } else {
+                    errorLogger.error("Could not delete " + forgeInstaller.getName());
+                }
                 appLogger.info("################################################################");
                 appLogger.info("#        Forge installation complete. Returning to SPC.        #");
                 appLogger.info("################################################################");

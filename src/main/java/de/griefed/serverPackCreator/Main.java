@@ -12,6 +12,7 @@ public class Main {
     public static List<String> clientMods;
     public static List<String> copyDirs;
     public static Boolean includeServerInstallation;
+    public static String javaPath;
     public static String minecraftVersion;
     public static String modLoader;
     public static String modLoaderVersion;
@@ -41,6 +42,7 @@ public class Main {
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
         includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        javaPath = conf.getString("javaPath");
         minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
         modLoaderVersion = conf.getString("modLoaderVersion");
@@ -57,6 +59,8 @@ public class Main {
         appLogger.info("Directories to copy:");
         for (int i = 0; i < copyDirs.toArray().length; i++) {appLogger.info("    " + copyDirs.get(i));}
         appLogger.info("Include server installation:      " + includeServerInstallation.toString());
+        appLogger.info("Java Installation path:           " + javaPath);
+        appLogger.info("Minecraft version:                " + minecraftVersion);
         appLogger.info("Modloader:                        " + modLoader);
         appLogger.info("Modloader Version:                " + modLoaderVersion);
         appLogger.info("Include server icon:              " + includeServerIcon.toString());
@@ -75,14 +79,14 @@ public class Main {
         try {
             Server.deleteClientMods(modpackDir, clientMods);
         } catch (IOException ex) {
-            errorLogger.error("There was an error calling the delteClientMods method.", ex);
+            errorLogger.error("There was an error calling the deleteClientMods method.", ex);
         }
 
         // Generate Forge/Fabric start scripts and copy to serverpack.
         Copy.copyStartScripts(modpackDir, modLoader, includeStartScripts);
 
         if (includeServerInstallation) {
-            Server.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion);
+            Server.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
         } else {
             appLogger.info("Not installing modded server.");
         }
