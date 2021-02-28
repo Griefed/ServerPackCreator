@@ -33,7 +33,6 @@ public class Main {
         appLogger.info("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
         appLogger.info("#                    YOU HAVE BEEN WARNED!                     #");
         appLogger.info("################################################################");
-
         // Get name of the jar so log states version number. Good for issues on GitHub.
         try {
             // Get path of the JAR file
@@ -49,7 +48,6 @@ public class Main {
         }
         // Generate default files if they do not exist and exit if creator.conf was created
         Copy.filesSetup();
-
         // Setup config variables with config file
         appLogger.info("Getting configuration...");
         conf = ConfigFactory.parseFile(Copy.configFile);
@@ -65,7 +63,6 @@ public class Main {
         includeServerProperties = conf.getBoolean("includeServerProperties");
         includeStartScripts = conf.getBoolean("includeStartScripts");
         includeZipCreation = conf.getBoolean("includeZipCreation");
-
         // Print current configuration so in case of error, logs are more informative
         appLogger.info("Your configuration is:");
         appLogger.info("Modpack directory: " + modpackDir);
@@ -82,21 +79,18 @@ public class Main {
         appLogger.info("Include server properties:        " + includeServerProperties.toString());
         appLogger.info("Include start scripts:            " + includeStartScripts.toString());
         appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
-
         // Copy all specified directories from modpack to serverpack.
         try {
             Copy.copyFiles(modpackDir, copyDirs);
         } catch (IOException ex) {
             errorLogger.error("There was an error calling the copyFiles method.", ex);
         }
-
         // Delete client-side mods from serverpack.
         try {
             Server.deleteClientMods(modpackDir, clientMods);
         } catch (IOException ex) {
             errorLogger.error("There was an error calling the deleteClientMods method.", ex);
         }
-
         // Generate Forge/Fabric start scripts and copy to serverpack.
         Copy.copyStartScripts(modpackDir, modLoader, includeStartScripts);
 
@@ -105,24 +99,21 @@ public class Main {
         } else {
             appLogger.info("Not installing modded server.");
         }
-
         // If true, copy server-icon to serverpack.
         if (includeServerIcon) {
             Copy.copyIcon(modpackDir);
         } else {
             appLogger.info("Not including servericon.");
         }
-
         // If true, copy server.properties to serverpack.
         if (includeServerProperties) {
             Copy.copyProperties(modpackDir);
         } else {
             appLogger.info("Not including server.properties.");
         }
-
         // If true, create zip archive of serverpack.
         if (includeZipCreation) {
-            Server.zipBuilder(modpackDir, modLoader);
+            Server.zipBuilder(modpackDir, modLoader, minecraftVersion);
         } else {
             appLogger.info("Not creating zip archive of serverpack.");
         }
