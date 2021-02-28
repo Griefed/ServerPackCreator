@@ -23,7 +23,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           version_scheme: semantic
-          version_type: major
+          version_type: patch
           # MAJOR.MINOR.PATCH
       - name: Create Release
         id: create_release
