@@ -35,7 +35,18 @@ public class Main {
         appLogger.info("################################################################");
 
         // Get name of the jar so log states version number. Good for issues on GitHub.
-        jarName();
+        try {
+            // Get path of the JAR file
+            String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            appLogger.info("JAR Path: " + jarPath);
+
+            // Get name of the JAR file
+            String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
+            appLogger.info("JAR Name: " + jarName);
+
+        } catch (URISyntaxException ex) {
+            errorLogger.error("Error getting jar name.", ex);
+        }
         // Generate default files if they do not exist and exit if creator.conf was created
         Copy.filesSetup();
 
@@ -111,28 +122,11 @@ public class Main {
 
         // If true, create zip archive of serverpack.
         if (includeZipCreation) {
-            Server.zipBuilder(modpackDir);
+            Server.zipBuilder(modpackDir, modLoader);
         } else {
             appLogger.info("Not creating zip archive of serverpack.");
         }
         appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
         appLogger.info("Done!");
-    }
-
-    public static void jarName() {
-        // See https://mkyong.com/java/java-get-the-name-or-path-of-a-running-jar-file/
-        Main obj = new Main();
-        try {
-            // Get path of the JAR file
-            String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            appLogger.info("JAR Path: " + jarPath);
-
-            // Get name of the JAR file
-            String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
-            appLogger.info("JAR Name: " + jarName);
-
-        } catch (URISyntaxException ex) {
-            errorLogger.error("Error getting jar name.", ex);
-        }
     }
 }
