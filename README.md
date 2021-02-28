@@ -10,7 +10,7 @@
 
 I am making this in my spare time, therefore progress is slow. I also just started getting into Java programming, so expect the code to be of...questionable...quality.
 If you're a Java Pro and your eyes bulge when looking at my code, by all means, you're welcome to help me improve it in any way, shape, or form.
-You're also welcome to make contributions, or fork it and make your own version of it. It's MIT license for a reason. Do what you want with it.
+You're also welcome to make contributions, or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
 
 ## WIP!
 
