@@ -109,7 +109,7 @@ public class Server {
                 File fabricXML = new File(modpackDir + "/server_pack/fabric-installer.xml");
                 File fabricInstaller = new File(modpackDir + "/server_pack/fabric-installer.jar");
                 if (fabricInstaller.exists()) {
-                    ProcessBuilder processBuilder = new ProcessBuilder("\"" + javaPath + "/bin/java\"", "-jar", "fabric-installer.jar", "server", "-mcversion " + minecraftVersion, "-loader " + modLoaderVersion, "-downloadMinecraft").directory(new File(modpackDir + "/server_pack"));
+                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "fabric-installer.jar", "server", "-mcversion " + minecraftVersion, "-loader " + modLoaderVersion, "-downloadMinecraft").directory(new File(modpackDir + "/server_pack"));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
                     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -157,7 +157,7 @@ public class Server {
                 // Install Forge server
                 File forgeInstaller = new File(modpackDir + "/server_pack/forge-installer.jar");
                 if (forgeInstaller.exists()) {
-                    ProcessBuilder processBuilder = new ProcessBuilder("\"" + javaPath + "/bin/java\"", "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
+                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
                     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));

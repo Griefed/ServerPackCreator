@@ -25,6 +25,7 @@ public class Main {
     private static final Logger errorLogger = LogManager.getLogger("MainError");
 
     public static void main(String[] args) {
+        appLogger.info(System.getenv("JAVA_HOME"));
         appLogger.info("################################################################");
         appLogger.info("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
         appLogger.info("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
