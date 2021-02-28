@@ -123,6 +123,13 @@ public class Copy {
         }
         // If the config file was just generated because it did not exist yet, then exit and tell user to customize
         if (firstRun) {
+            appLogger.info("################################################################");
+            appLogger.info("#                                                              #");
+            appLogger.info("#       FIRST RUN. CUSTOMIZE YOUR CREATOR.CONF FILE NOW.       #");
+            appLogger.info("#         THE DEFAULTS ARE MEANT TO SHOW HOW IT'S DONE         #");
+            appLogger.info("#     THE DEFAULTS WILL MOST LIKELY NOT WORK ON YOUR SYSTEM    #");
+            appLogger.info("#                                                              #");
+            appLogger.info("################################################################");
             appLogger.warn("First run! Default files generated. Please customize and run again.");
             System.exit(0);
         } else {
