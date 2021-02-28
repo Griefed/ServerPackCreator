@@ -21,9 +21,6 @@ configurations {
 dependencies {
     embed group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
     embed group: 'com.typesafe', name: 'config', version: '1.4.1'
-    embed ("com.github.FabricMC:fabric-installer:master-SNAPSHOT"){
-        transitive = true
-    }
 }
 
 java {
@@ -43,9 +40,7 @@ jar {
                     'META-INF/DEPENDENCIES',
                     'META-INF/LICENSE',
                     'META-INF/NOTICE',
-                    'Log4j-**',
-                    'icon.png',
-                    'profile_icon.png'
+                    'Log4j-**'
         }
     }
     manifest {
