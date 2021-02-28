@@ -4,7 +4,9 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class Main {
@@ -25,7 +27,6 @@ public class Main {
     private static final Logger errorLogger = LogManager.getLogger("MainError");
 
     public static void main(String[] args) {
-        appLogger.info(System.getenv("JAVA_HOME"));
         appLogger.info("################################################################");
         appLogger.info("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
         appLogger.info("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
@@ -33,6 +34,8 @@ public class Main {
         appLogger.info("#                    YOU HAVE BEEN WARNED!                     #");
         appLogger.info("################################################################");
 
+        // Get name of the jar so log states version number. Good for issues on GitHub.
+        jarName();
         // Generate default files if they do not exist and exit if creator.conf was created
         Copy.filesSetup();
 
@@ -114,5 +117,22 @@ public class Main {
         }
         appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
         appLogger.info("Done!");
+    }
+
+    public static void jarName() {
+        // See https://mkyong.com/java/java-get-the-name-or-path-of-a-running-jar-file/
+        Main obj = new Main();
+        try {
+            // Get path of the JAR file
+            String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            appLogger.info("JAR Path: " + jarPath);
+
+            // Get name of the JAR file
+            String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
+            appLogger.info("JAR Name: " + jarName);
+
+        } catch (URISyntaxException ex) {
+            errorLogger.error("Error getting jar name.", ex);
+        }
     }
 }
