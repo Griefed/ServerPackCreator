@@ -5,14 +5,12 @@
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed?tab=packages&repo_name=ServerPackCreator)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
 
-**ServerPackCreator is a program which aims to create a serverpack for any given modpack, making modpack-developing, or at least a part of it, a little less time-consuming. You customize the configuration to your liking and off you go.**
+**ServerPackCreator is a Command Line Program(CLI) which aims to create a serverpack for any given modpack, thus making modpack-developing, or at least a part of it, a little less time-consuming. You customize the configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a serverpack for your new modpack version.**
 
 I am making this in my spare time, therefore progress is slow. I also just started getting into Java programming, so expect the code to be of...questionable...quality.
 If you're a Java Pro and your eyes bulge when looking at my code, by all means, you're welcome to help me improve it in any way, shape, or form.
 You're also welcome to make contributions, or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
-
-## WIP!
 
 Use at your own risk! Be aware that data loss is possible. If you wish to test this, there's a description down below.
 If you wish to contribute, fork the repository, make your changes, create a pull request and make sure to use [conventional commits](https://github.com/Griefed/ServerPackCreator/wiki)
@@ -187,7 +185,7 @@ modLoaderVersion = "0.11.2"
 
 4. Customize any of the other files if need be. 
 
-5. Execute the program from the CLI with `java -jar ServerPackCreator-X.X.X.jar` where `X.X.X`is to be replaced with the version you downloaded.
+5. Execute the program from the CLI with `java -jar ServerPackCreator-X.X.X.jar` where `X.X.X` is to be replaced with the version you downloaded.
    
 6. ServerPackCreator should now be telling you what it is currently doing. You should also now see a `server_pack`-folder in the directory of your modpack.
 
