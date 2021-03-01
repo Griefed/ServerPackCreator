@@ -4,6 +4,7 @@
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Tag%20&%20Release%20&%20Publish?style=for-the-badge&logo=GitHub&color=c0ffee&labelColor=325358&label=Snag%20It%20Bag%20It%20Tag%20It&)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Tag+%26+Release+%26+Publish%22)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed?tab=packages&repo_name=ServerPackCreator)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
+[![GitHub all releases](https://img.shields.io/github/downloads/Griefed/ServerPackCreator/total?color=c0ffee&logo=GitHub&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases)
 
 **ServerPackCreator is a Command Line Program(CLI) which aims to create a serverpack for any given modpack, thus making modpack-developing, or at least a part of it, a little less time-consuming. You customize the configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a serverpack for your new modpack version.**
