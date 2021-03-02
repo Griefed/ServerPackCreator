@@ -10,19 +10,20 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 public class Main {
-    public static String modpackDir;
-    public static List<String> clientMods;
-    public static List<String> copyDirs;
-    public static Boolean includeServerInstallation;
-    public static String javaPath;
-    public static String minecraftVersion;
-    public static String modLoader;
-    public static String modLoaderVersion;
-    public static Boolean includeServerIcon;
-    public static Boolean includeServerProperties;
-    public static Boolean includeStartScripts;
-    public static Boolean includeZipCreation;
-    public static Config conf;
+    static String modpackDir;
+    static List<String> clientMods;
+    static List<String> copyDirs;
+    static Boolean includeServerInstallation;
+    static String javaPath;
+    static String minecraftVersion;
+    static String modLoader;
+    static String modLoaderVersion;
+    static Boolean includeServerIcon;
+    static Boolean includeServerProperties;
+    static Boolean includeStartScripts;
+    static Boolean includeZipCreation;
+    static Config conf;
+
     private static final Logger appLogger = LogManager.getLogger("Main");
     private static final Logger errorLogger = LogManager.getLogger("MainError");
 
@@ -46,11 +47,11 @@ public class Main {
         } catch (URISyntaxException ex) {
             errorLogger.error("Error getting jar name.", ex);
         }
-        // Generate default files if they do not exist and exit if creator.conf was created
-        Copy.filesSetup();
+        // Generate default files if they do not exist and exit if serverpackcreator.conf was created
+        FilesSetup.filesSetup();
         // Setup config variables with config file
         appLogger.info("Getting configuration...");
-        conf = ConfigFactory.parseFile(Copy.configFile);
+        conf = ConfigFactory.parseFile(FilesSetup.configFile);
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
@@ -81,39 +82,39 @@ public class Main {
         appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
         // Copy all specified directories from modpack to serverpack.
         try {
-            Copy.copyFiles(modpackDir, copyDirs);
+            CopyFiles.copyFiles(modpackDir, copyDirs);
         } catch (IOException ex) {
             errorLogger.error("There was an error calling the copyFiles method.", ex);
         }
         // Delete client-side mods from serverpack.
         try {
-            Server.deleteClientMods(modpackDir, clientMods);
+            ServerSetup.deleteClientMods(modpackDir, clientMods);
         } catch (IOException ex) {
             errorLogger.error("There was an error calling the deleteClientMods method.", ex);
         }
         // Generate Forge/Fabric start scripts and copy to serverpack.
-        Copy.copyStartScripts(modpackDir, modLoader, includeStartScripts);
+        CopyFiles.copyStartScripts(modpackDir, modLoader, includeStartScripts);
 
         if (includeServerInstallation) {
-            Server.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
+            ServerSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
         } else {
             appLogger.info("Not installing modded server.");
         }
         // If true, copy server-icon to serverpack.
         if (includeServerIcon) {
-            Copy.copyIcon(modpackDir);
+            CopyFiles.copyIcon(modpackDir);
         } else {
             appLogger.info("Not including servericon.");
         }
         // If true, copy server.properties to serverpack.
         if (includeServerProperties) {
-            Copy.copyProperties(modpackDir);
+            CopyFiles.copyProperties(modpackDir);
         } else {
             appLogger.info("Not including server.properties.");
         }
         // If true, create zip archive of serverpack.
         if (includeZipCreation) {
-            Server.zipBuilder(modpackDir, modLoader, minecraftVersion);
+            ServerSetup.zipBuilder(modpackDir, modLoader, minecraftVersion);
         } else {
             appLogger.info("Not creating zip archive of serverpack.");
         }

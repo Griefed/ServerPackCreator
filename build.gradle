@@ -32,8 +32,7 @@ java {
 jar {
     configurations.embed.each { dep ->
         from(project.zipTree(dep)) {
-            exclude 'META-INF/maven',
-                    'META-INF/maven/**',
+            exclude (
                     'META-INF/org',
                     'META-INF/org/**',
                     'META-INF/versions',
@@ -44,6 +43,7 @@ jar {
                     'Log4j-**',
                     'icon.png',
                     'profile_icon.png'
+            )
         }
     }
     manifest {
