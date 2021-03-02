@@ -26,9 +26,9 @@ Planned/wanted:
     - [X] **Make version configurable** (needs additional testing)
   - [X] **Download and install Fabric server** (needs additional testing) 
     - [X] **Make version configurable** (needs additional testing)
-- [X] Logging
-  - [X] log actions to action.log
-  - [X] log errors to error.log
+- [X] **Logging**
+  - [X] **log actions to action.log**
+  - [X] **log errors to error.log**
 - [X] **Create default start scripts for Linux and Windows systems**
   - [X] **Make inclusion of start scripts optional**
   - [X] **Provide default/example**
@@ -46,6 +46,8 @@ Planned/wanted:
   - [X] **Make inclusion of server.properties optional**
   - [X] **Provide default**
 - [X] **Automatically create zip-archive of the created serverpack**
+  - [X] **Generate download scripts for minecraft_server.jar**
+  - [X] **Exclude minecraft_server.jar from zip-archive as per Mojang's TOS and EULA**
   - [X] **Make creation of archive optional**
   
 ## Running ServerPackCreator
@@ -78,14 +80,14 @@ modLoader | Which modloader to install. Must be either "Forge" or "Fabric".
 modLoaderVersion | Specific Modloader version to install the server in the serverpack.
 includeServerIcon | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.
 includeServerProperties | Whether to include server.properties in your serverpack. Must be `true` or `false`.
-includeStartScripts | Whether to inlude start scripts in your serverpack. Must be `true` or `false`.
+includeStartScripts | Whether to include start scripts in your serverpack. Must be `true` or `false`.
 includeZipCreation | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
 ## Testing
 
-If you want to help testing (I can not be held responsible for loss of data. Make sure you make backups and execute this program in a test environment.):
+If you want to help with testing (I can not be held responsible for loss of data. Make sure you make backups and execute this program in a test environment.):
 1. Download `ServerPackCreator-x.x.x.jar` from `Packages` or `Releases` on the right side.
 2. Put it in the parent folder of your modpack folder. Here's an example for my modpack Survive Create Prosper 4:
 ```console
