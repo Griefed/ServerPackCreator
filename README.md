@@ -57,7 +57,7 @@ Among those default files are:
 
 File | Description
 ---- | ----
-creator.conf | Configuration file for customization. See [creator.conf](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/creator.conf).
+serverpackcreator.conf | Configuration file for customization. See [creator.conf](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/serverpackcreator.conf).
 server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/server.properties). 
 server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/server-icon.png).
 start-fabric.bat | Fabric server start script for windows systems. See [start-fabric.bat](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/start-fabric.bat).
@@ -73,7 +73,7 @@ modpackDir | The path to the directory where your modpack resides in.
 clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack.
 copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. 
 includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
-javaPath | Path to the Java Installation.
+javaPath | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.
 minecraftVersion | The version of Minecraft for which to install the modloader server.
 modLoader | Which modloader to install. Must be either "Forge" or "Fabric".
 modLoaderVersion | Specific Modloader version to install the server in the serverpack.
