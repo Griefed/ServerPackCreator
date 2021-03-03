@@ -49,7 +49,7 @@ Planned/wanted:
   - [X] **Exclude minecraft_server.jar from zip-archive as per Mojang's TOS and EULA**
   - [X] **Make creation of archive optional**
   
-## Running ServerPackCreator
+## Configuration
 
 The initial run of ServerPackCreator will place default-files in a directory called `server_files` in the same directory where the .jar-file resides in.
 The config file will be created in the same directory as `ServerPackCreator-x.x.x.jar`.
@@ -84,112 +84,10 @@ includeZipCreation | Whether to create a zip-file of your serverpack, saved in t
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
-## Testing
+## Running
 
-If you want to help with testing (I can not be held responsible for loss of data. Make sure you make backups and execute this program in a test environment.):
-1. Download `ServerPackCreator-x.x.x.jar` from `Packages` or `Releases` on the right side.
-2. Put it in the parent folder of your modpack folder. Here's an example for my modpack Survive Create Prosper 4:
-```console
-tests/
-│   creator.conf
-│   ServerPackCreator-X.X.X.jar
-│
-├───logs
-│       action.log
-│       error.log
-│
-├───server_files
-│       server-icon.png
-│       server.properties
-│       start-fabric.bat
-│       start-fabric.sh
-│       start-forge.bat
-│       start-forge.sh
-│
-└───Survive Create Prosper 4 1.16.5
-    ├───.mixin.out
-    ├───config
-    ├───defaultconfigs
-    ├───downloads
-    ├───local
-    ├───mods
-    ├───mod_data
-    ├───packmenu
-    ├───paintings
-    ├───patchouli_books
-    ├───resourcepacks
-    ├───saves
-    │   └───scp4
-    ├───schematics
-    ├───screenshots
-    ├───scripts
-    └───seeds
-```
-3. Customize the configuration file `creator.conf` to work with your modpack.
-   (truncated for better readability)
-```editor-config
-modpackDir = "./Survive Create Prosper 4 1.16.5"
+Guides on how to run ServerPackCreator are available at:
+1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator
+2. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
 
-clientMods = [
-    "AmbientSounds",
-    "BackTools",
-    "BetterAdvancement",
-    "BetterPing",
-    "cherished",
-    "ClientTweaks",
-    "Controlling",
-    "DefaultOptions",
-    "durability",
-    "DynamicSurroundings",
-    "itemzoom",
-    "jei-professions",
-    "jeiintegration",
-    "JustEnoughResources",
-    "MouseTweaks",
-    "Neat",
-    "OldJavaWarning",
-    "PackMenu",
-    "preciseblockplacing",
-    "SimpleDiscordRichPresence",
-    "SpawnerFix",
-    "TipTheScales",
-    "WorldNameRandomizer"
-    ]
-
-copyDirs = [
-    "config",
-    "defaultconfigs",
-    "mods",
-    "scripts",
-    "seeds",
-    "saves/scp4"
-    ]
-
-includeServerInstallation = true
-javaPath = "C:\\Program Files\\Java\\jdk1.8.0_271\\bin\\java"
-minecraftVersion = "1.16.5"
-modLoader= "Forge"
-modLoaderVersion = "36.0.15"
-
-includeServerIcon = true
-
-includeServerProperties = true
-
-includeStartScripts = true
-
-includeZipCreation = true
-```
-
-An example configuration to use Fabric for your serverpack:
-```editor-config
-modLoader= "Fabric"
-modLoaderVersion = "0.11.2"
-```
-
-4. Customize any of the other files if need be. 
-
-5. Execute the program from the CLI with `java -jar ServerPackCreator-X.X.X.jar` where `X.X.X` is to be replaced with the version you downloaded.
-   
-6. ServerPackCreator should now be telling you what it is currently doing. You should also now see a `server_pack`-folder in the directory of your modpack.
-
-7. Check these directories whether they contain all the files which are expected to be there.
+(They're the same, but there's two for redundancies sake)
