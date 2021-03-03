@@ -46,7 +46,7 @@ class ServerUtilities {
         try {
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String shFabric = "#!/bin/bash\n#Download the Minecraft_server.jar for your modpack\n\nwget -O server.jar " + downloadMinecraftServer;
-            Path pathSh = Paths.get(modpackDir + "/server_pack/download_minecraft_server_fabric.sh");
+            Path pathSh = Paths.get(modpackDir + "/server_pack/download_minecraft-server.jar_fabric.sh");
             byte[] strToBytesSh = shFabric.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
@@ -62,7 +62,7 @@ class ServerUtilities {
         try {
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String batFabric = "powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + downloadMinecraftServer + "', 'server.jar')\"";
-            Path pathBat = Paths.get(modpackDir + "/server_pack/download_minecraft_server_fabric.bat");
+            Path pathBat = Paths.get(modpackDir + "/server_pack/download_minecraft-server.jar_fabric.bat");
             byte[] strToBytesBat = batFabric.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
@@ -78,7 +78,7 @@ class ServerUtilities {
             // Generate download script if modloader is Forge, shell
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String shForge = "#!/bin/bash\n# Download the Minecraft_server.jar for your modpack\n\nwget -O minecraft_server." + minecraftVersion +".jar " + downloadMinecraftServer;
-            Path pathSh = Paths.get(modpackDir + "/server_pack/download_minecraft_server_forge.sh");
+            Path pathSh = Paths.get(modpackDir + "/server_pack/download_minecraft-server.jar_forge.sh");
             byte[] strToBytesSh = shForge.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
@@ -94,7 +94,7 @@ class ServerUtilities {
             // Generate download script if modloader is Forge, batch
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String batForge = "powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + downloadMinecraftServer + "', 'minecraft_server." + minecraftVersion + ".jar')\"";
-            Path pathBat = Paths.get(modpackDir + "/server_pack/download_minecraft_server_forge.bat");
+            Path pathBat = Paths.get(modpackDir + "/server_pack/download_minecraft-server.jar_forge.bat");
             byte[] strToBytesBat = batForge.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
