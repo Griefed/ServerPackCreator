@@ -7,10 +7,25 @@ plugins {
     id 'idea'
 }
 
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'idea'
+
 repositories {
     mavenCentral()
     jcenter()
     maven { url "https://jitpack.io" }
+}
+
+group 'de.griefed.serverPackCreator'
+
+sourceSets {
+    main {
+        java {
+            java.srcDirs = ['src/main/java']
+        }
+    }
 }
 
 configurations {
@@ -26,7 +41,7 @@ dependencies {
 
 java {
     withSourcesJar()
-    withJavadocJar()
+    //withJavadocJar()
 }
 
 jar {

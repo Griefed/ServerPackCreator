@@ -78,13 +78,13 @@ jobs:
           asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
           asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
           asset_content_type: application/jar
-      - name: Upload Release Asset Javadoc Jar
-        id: upload-release-asset-javadoc
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
-          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
-          asset_content_type: application/jar
+#      - name: Upload Release Asset Javadoc Jar
+#        id: upload-release-asset-javadoc
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
+#          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
+#          asset_content_type: application/jar
