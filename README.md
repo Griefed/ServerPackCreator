@@ -18,36 +18,27 @@ If you wish to contribute, fork the repository, make your changes, create a pull
 
 ## Features
 
-Planned/wanted:
-
-- [X] **Specify whether to use Forge or Fabric**
-  - [X] **Download and install Forge server** (needs additional testing)
-    - [X] **Make version configurable** (needs additional testing)
-  - [X] **Download and install Fabric server** (needs additional testing) 
-    - [X] **Make version configurable** (needs additional testing)
-- [X] **Logging**
-  - [X] **log actions to action.log**
-  - [X] **log errors to error.log**
-- [X] **Create default start scripts for Linux and Windows systems**
-  - [X] **Make inclusion of start scripts optional**
-  - [X] **Provide default/example**
-    - [X] **Forge**
-    - [X] **Fabric**
-- [X] **On first run, generate all default files, tell user to customize and run again, then exit.**
-- [X] **Delete client side mods**
-  - [X] **Make list of client side mods configurable**
-- [X] **Allow specifying directories to include in serverpack**
-  - [X] **Remove prefix "saves" when adding a world from a modpack**
-- [X] **Copy server-icon.png to "server_pack" directory**
-  - [X] **Make inclusion of server-icon.png optional**
-  - [X] **Provide default**
-- [X] **Create a server.properties file in "server_pack" directory**
-  - [X] **Make inclusion of server.properties optional**
-  - [X] **Provide default**
-- [X] **Automatically create zip-archive of the created serverpack**
-  - [X] **Generate download scripts for minecraft_server.jar**
-  - [X] **Exclude minecraft_server.jar from zip-archive as per Mojang's TOS and EULA**
-  - [X] **Make creation of archive optional**
+- **Supports Forge and Fabric modloaders**
+  - Installation of modloader-server for serverpack optional
+- **Default start scripts for Linux and Windows systems**
+  - Inclusion in serverpack optional
+  - Can be customized/replaced by user
+- **Delete client side mods**
+  - List of mods to delete from serverpack can be customized by user
+- **Specify directories to include in serverpack**
+  - List of directories can be customized by the user
+  - Worlds can be included in the serverpack as well
+    - Copying from `saves/world` will result in the world being copied to `serverpack/world`
+- **Default server-icon.png**
+  - Inclusion in serverpack optioanal
+  - Can be customized/replaced by user
+- **Default server.properties**
+  - Inclusion in serverpack optional
+  - Can be customized/replaced by user
+- **Create zip-archive of serverpack for immediate upload to CurseForge etc.**
+  - Zip-creation is optional
+  - Does to include minecraft_server.jar as per Mojang's TOS and EULA
+  - Includes download scripts for minecract_server.jar for Linux and Windows systems
   
 ## Configuration
 
