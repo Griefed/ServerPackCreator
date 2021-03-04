@@ -19,23 +19,23 @@ If you wish to contribute, fork the repository, make your changes, create a pull
 ## Features
 
 - **Supports Forge and Fabric modloaders**
-  - Installation of modloader-server for serverpack optional
+  - Installation of modloader-server for server_pack optional
 - **Default start scripts for Linux and Windows systems**
-  - Inclusion in serverpack optional
+  - Inclusion in server_pack optional
   - Can be customized/replaced by user
 - **Delete client side mods**
-  - List of mods to delete from serverpack can be customized by user
-- **Specify directories to include in serverpack**
+  - List of mods to delete from server_pack can be customized by user
+- **Specify directories to include in server_pack**
   - List of directories can be customized by the user
   - Worlds can be included in the serverpack as well
-    - Copying from `saves/world` will result in the world being copied to `serverpack/world`
+    - Copying from `saves/world` will result in the world being copied to `server_pack/world`
 - **Default server-icon.png**
-  - Inclusion in serverpack optioanal
+  - Inclusion in server_pack optioanal
   - Can be customized/replaced by user
 - **Default server.properties**
-  - Inclusion in serverpack optional
+  - Inclusion in server_pack optional
   - Can be customized/replaced by user
-- **Create zip-archive of serverpack for immediate upload to CurseForge etc.**
+- **Create zip-archive of server_pack for immediate upload to CurseForge etc.**
   - Zip-creation is optional
   - Does to include minecraft_server.jar as per Mojang's TOS and EULA
   - Includes download scripts for minecract_server.jar for Linux and Windows systems
