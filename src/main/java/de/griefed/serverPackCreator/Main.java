@@ -5,6 +5,8 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -29,7 +31,7 @@ public class Main {
     private static final Logger appLogger = LogManager.getLogger("Main");
     private static final Logger errorLogger = LogManager.getLogger("MainError");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException{
         appLogger.info("################################################################");
         appLogger.info("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
         appLogger.info("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
@@ -108,6 +110,11 @@ public class Main {
         }
 
         if (!configHasError) {
+            File serverPackDir = new File(modpackDir);
+            if (!serverPackDir.isDirectory()) {
+                throw new FileNotFoundException("Modpack directory doesn't exist.");
+            }
+
             // Print current configuration so in case of error, logs are more informative
             appLogger.info("Your configuration is:");
             appLogger.info("Modpack directory: " + modpackDir);
