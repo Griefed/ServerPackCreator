@@ -78,7 +78,10 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 ## Running
 
 Guides on how to run ServerPackCreator are available at:
-1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator
-2. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
+1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-Windows (for Windows) or
+2. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-macOS (for macOS)
+3. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
+
+(macOS guide by [whitebear60](https://github.com/whitebear60))
 
 (They're the same, but there's two for redundancies sake)
