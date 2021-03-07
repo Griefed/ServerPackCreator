@@ -56,7 +56,11 @@ public class Main {
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
         includeServerInstallation = conf.getBoolean("includeServerInstallation");
-        javaPath = conf.getString("javaPath");
+        if (conf.getString("javaPath").endsWith(".exe")) {
+            javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
+        } else {
+            javaPath = conf.getString("javaPath");
+        }
         minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
         modLoaderVersion = conf.getString("modLoaderVersion");
