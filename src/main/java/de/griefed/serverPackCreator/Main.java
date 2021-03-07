@@ -57,6 +57,7 @@ public class Main {
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
         includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        // Check whether Java is available if includeServerInstallation is true. Remove .exe-String if exists.
         if (includeServerInstallation && new File(conf.getString("javaPath")).exists()) {
             if (conf.getString("javaPath").endsWith(".exe")) {
                 javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
@@ -99,6 +100,9 @@ public class Main {
         appLogger.info("Include server properties:        " + includeServerProperties.toString());
         appLogger.info("Include start scripts:            " + includeStartScripts.toString());
         appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
+        // Delete serverpack directory and .zip archive if they exist. Ensure clean state
+        CopyFiles.cleanupEnvironment(modpackDir);
+
         // Copy all specified directories from modpack to serverpack.
         try {
             CopyFiles.copyFiles(modpackDir, copyDirs);

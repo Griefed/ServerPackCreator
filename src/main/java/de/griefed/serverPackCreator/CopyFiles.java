@@ -3,9 +3,8 @@ package de.griefed.serverPackCreator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.stream.Stream;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -13,6 +12,43 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 class CopyFiles {
     private static final Logger appLogger = LogManager.getLogger("CopyFiles");
     private static final Logger errorLogger = LogManager.getLogger("CopyFilesError");
+
+    static void cleanupEnvironment(String modpackDir) {
+        if (new File(modpackDir + "/server_pack").exists()) {
+            Path serverPack = Paths.get(modpackDir + "/server_pack");
+            try {
+                Files.walkFileTree(serverPack,
+                        new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult postVisitDirectory(
+                                    Path dir, IOException exc) throws IOException {
+                                Files.delete(dir);
+                                return FileVisitResult.CONTINUE;
+                            }
+
+                            @Override
+                            public FileVisitResult visitFile(
+                                    Path file, BasicFileAttributes attrs)
+                                    throws IOException {
+                                Files.delete(file);
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+            } catch (IOException ex) {
+                errorLogger.error("Error deleting file from " + modpackDir + "/server_pack");
+            } finally {
+                appLogger.info("Cleanup of previous server_pack completed.");
+            }
+        }
+        if (new File(modpackDir + "/server_pack.zip").exists()) {
+            boolean isZipDeleted = new File(modpackDir + "/server_pack.zip").delete();
+            if (isZipDeleted) {
+                appLogger.info("Old server_pack.zip deleted.");
+            } else {
+                errorLogger.error("Error deleting old zip archive.");
+            }
+        }
+    }
 
     // Copy forge/fabric start scripts to serverpack, depending on modLoader config.
     static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
