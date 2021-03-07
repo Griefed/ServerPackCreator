@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 class FilesSetup {
+    static final File oldConfigFile = new File("creator.conf");
     static final File configFile = new File("serverpackcreator.conf");
     static final File propertiesFile = new File("server.properties");
     static final File iconFile = new File("server-icon.png");
@@ -31,8 +32,19 @@ class FilesSetup {
         } catch (IOException ex) {
             errorLogger.error("Could not create server_files directory.", ex);
         }
-        // Copy config file in case it does not exist yet
-        if (!configFile.exists()) {
+        // Migrate creator.conf to new name, create config file in case it does not exist yet
+        if (oldConfigFile.exists()) {
+            try {
+                Files.copy(oldConfigFile.getAbsoluteFile().toPath(), configFile.getAbsoluteFile().toPath());
+                boolean isOldConfigDeleted = oldConfigFile.delete();
+                if (isOldConfigDeleted) {
+                    appLogger.info("creator.conf migrated to serverpackcreator.conf");
+                }
+                firstRun = false;
+            } catch (IOException ex) {
+                errorLogger.error("Error renaming creator.conf to serverpackcreator.conf", ex);
+            }
+        } else if (!configFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/" + configFile.getName()));
                 Files.copy(link, configFile.getAbsoluteFile().toPath());
