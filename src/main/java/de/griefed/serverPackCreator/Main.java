@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -56,11 +57,25 @@ public class Main {
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
         includeServerInstallation = conf.getBoolean("includeServerInstallation");
-        if (conf.getString("javaPath").endsWith(".exe")) {
-            javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
+        if (includeServerInstallation && new File(conf.getString("javaPath")).exists()) {
+            if (conf.getString("javaPath").endsWith(".exe")) {
+                javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
+            } else {
+                javaPath = conf.getString("javaPath");
+            }
+        } else if (includeServerInstallation && !(new File(conf.getString("javaPath")).exists())) {
+            errorLogger.error("Java could not be found. Check your configuration.");
+            errorLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+            System.exit(0);
+        } else if (!includeServerInstallation) {
+            appLogger.info("Server installation disabled. ");
         } else {
-            javaPath = conf.getString("javaPath");
+            errorLogger.error("Server installation and/or Java path incorrect. Please check.");
+            errorLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+            errorLogger.error("Your configuration for includeServerInstallation was: " + conf.getString("includeServerInstallation"));
+            System.exit(0);
         }
+
         minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
         modLoaderVersion = conf.getString("modLoaderVersion");
