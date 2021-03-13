@@ -1,16 +1,18 @@
 import java.text.SimpleDateFormat
 
-plugins {
-    id 'java'
-    id 'maven'
-    id 'maven-publish'
-    id 'idea'
-}
-
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
+
+
+sourceCompatibility = targetCompatibility = '1.8'
+
+if(JavaVersion.current() != JavaVersion.VERSION_1_8)
+    throw new GradleException(
+            "This project requires Java 8, but it's running on "
+                    +JavaVersion.current()
+    )
 
 repositories {
     mavenCentral()
@@ -39,9 +41,17 @@ dependencies {
     embed group: 'com.github.FabricMC', name:'fabric-installer', version:'master-SNAPSHOT'
 }
 
+tasks.withType(Javadoc) {
+    options.addStringOption('encoding', 'UTF-8')
+}
+
+javadoc {
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    classpath = sourceSets.main.runtimeClasspath
+}
 java {
     withSourcesJar()
-    //withJavadocJar()
+    withJavadocJar()
 }
 
 jar {
