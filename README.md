@@ -14,7 +14,7 @@ If you're a Java Pro and your eyes bulge when looking at my code, by all means, 
 You're also welcome to make contributions, or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
 
 Use at your own risk! Be aware that data loss is possible. If you wish to test this, there's a description down below.
-If you wish to contribute, fork the repository, make your changes, create a pull request and make sure to use [conventional commits](https://github.com/Griefed/ServerPackCreator/wiki)
+If you wish to contribute, fork the repository, make your changes, create a pull request and make sure to use [conventional commits](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md)
 
 ## Features
 
