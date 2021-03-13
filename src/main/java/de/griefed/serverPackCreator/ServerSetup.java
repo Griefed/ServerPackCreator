@@ -13,7 +13,6 @@ import java.util.zip.ZipOutputStream;
 
 class ServerSetup {
     private static final Logger appLogger = LogManager.getLogger("ServerSetup");
-    private static final Logger errorLogger = LogManager.getLogger("ServerSetupError");
 
     // Delete clientside mods from serverpack
     static void deleteClientMods(String modpackDir, List<String> clientMods) throws IOException {
@@ -24,9 +23,9 @@ class ServerSetup {
                 if (f.getName().startsWith(clientMods.get(i))) {
                     boolean isDeleted = f.delete();
                     if (isDeleted) {
-                        appLogger.info("    " + f.getName());
+                        appLogger.debug("    " + f.getName());
                     } else {
-                        errorLogger.error("Could not delete: " + f.getName());
+                        appLogger.error("Could not delete: " + f.getName());
                     }
                 }
             }
@@ -38,9 +37,7 @@ class ServerSetup {
         File forgeInstaller = new File(modpackDir + "/server_pack/forge-installer.jar");
         if (modLoader.equals("Fabric")) {
             try {
-                appLogger.info("################################################################");
-                appLogger.info("#                Starting Fabric installation                  #");
-                appLogger.info("################################################################");
+                appLogger.info("Starting Fabric installation.");
                 // Download newest release version of fabric-installer.jar
                 ServerUtilities.downloadFabricJar(modpackDir);
                 if (fabricInstaller.exists()) {
@@ -52,23 +49,17 @@ class ServerSetup {
                     while (true) {
                         line = r.readLine();
                         if (line == null) { break; }
-                        appLogger.info(line);
+                        appLogger.debug(line);
                     }
                 }
-                appLogger.info("################################################################");
-                appLogger.info("#         Fabric installation complete. Returning to SPC.      #");
-                appLogger.info("################################################################");
+                appLogger.info("Fabric installation complete. Returning to SPC.");
             } catch (IOException ex) {
-                errorLogger.error("An error occurred during Fabric installation.", ex);
+                appLogger.error("An error occurred during Fabric installation.", ex);
             }
         } else if (modLoader.equals("Forge")) {
-            appLogger.info("Forge installation not yet implemented.");
             try {
-                appLogger.info("################################################################");
-                appLogger.info("#                Starting Forge installation                   #");
-                appLogger.info("################################################################");
+                appLogger.info("Starting Forge installation.");
                 // Download Forge installer as specified in config
-                appLogger.info("Downloading https://files.minecraftforge.net/maven/net/minecraftforge/forge/" + minecraftVersion + "-" + modLoaderVersion + "/forge-" + minecraftVersion + "-" + modLoaderVersion + "-installer.jar");
                 ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
                 // Install Forge server
                 if (forgeInstaller.exists()) {
@@ -80,17 +71,15 @@ class ServerSetup {
                     while (true) {
                         line = r.readLine();
                         if (line == null) { break; }
-                        appLogger.info(line);
+                        appLogger.debug(line);
                     }
                 }
-                appLogger.info("################################################################");
-                appLogger.info("#        Forge installation complete. Returning to SPC.        #");
-                appLogger.info("################################################################");
+                appLogger.info("Forge installation complete. Returning to SPC.");
             } catch (IOException ex) {
-                errorLogger.error("An error occurred during Forge installation.", ex);
+                appLogger.error("An error occurred during Forge installation.", ex);
             }
         } else {
-            errorLogger.error("Specified invalid modloader: " + modLoader);
+            appLogger.error("Specified invalid modloader: " + modLoader);
         }
         // Cleanup
         ServerUtilities.cleanUpServerPack(fabricInstaller, forgeInstaller, modLoader, modpackDir, minecraftVersion, modLoaderVersion);
@@ -99,9 +88,9 @@ class ServerSetup {
     // Create zip archive of serverpack.
     static void zipBuilder(String modpackDir, String modLoader, String minecraftVersion) {
         // With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
-        appLogger.info("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
-        appLogger.info("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
-        appLogger.info("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+        appLogger.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
+        appLogger.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
+        appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
         ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         String zipFileName = sourceDir.toString().concat(".zip");
@@ -118,14 +107,14 @@ class ServerSetup {
                         outputStream.write(bytes, 0, bytes.length);
                         outputStream.closeEntry();
                     } catch (IOException ex) {
-                        errorLogger.error("There was an error during zip creation", ex);
+                        appLogger.error("There was an error during zip creation", ex);
                     }
                     return FileVisitResult.CONTINUE;
                 }
             });
             outputStream.close();
         } catch (IOException ex) {
-            errorLogger.error("There was an error during zip creation", ex);
+            appLogger.error("There was an error during zip creation", ex);
         }
         ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
         appLogger.info("Finished creation of zip archive.");

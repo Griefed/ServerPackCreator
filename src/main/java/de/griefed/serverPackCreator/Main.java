@@ -26,15 +26,14 @@ public class Main {
     static Config conf;
 
     private static final Logger appLogger = LogManager.getLogger("Main");
-    private static final Logger errorLogger = LogManager.getLogger("MainError");
 
     public static void main(String[] args) {
-        appLogger.info("################################################################");
-        appLogger.info("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
-        appLogger.info("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
-        appLogger.info("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
-        appLogger.info("#                    YOU HAVE BEEN WARNED!                     #");
-        appLogger.info("################################################################");
+        appLogger.warn("################################################################");
+        appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
+        appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
+        appLogger.warn("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
+        appLogger.warn("#                    YOU HAVE BEEN WARNED!                     #");
+        appLogger.warn("################################################################");
         // Get name of the jar so log states version number. Good for issues on GitHub.
         try {
             // Get path of the JAR file
@@ -46,7 +45,7 @@ public class Main {
             appLogger.info("JAR Name: " + jarName);
 
         } catch (URISyntaxException ex) {
-            errorLogger.error("Error getting jar name.", ex);
+            appLogger.error("Error getting jar name.", ex);
         }
         // Generate default files if they do not exist and exit if serverpackcreator.conf was created
         FilesSetup.filesSetup();
@@ -65,15 +64,15 @@ public class Main {
                 javaPath = conf.getString("javaPath");
             }
         } else if (includeServerInstallation && !(new File(conf.getString("javaPath")).exists())) {
-            errorLogger.error("Java could not be found. Check your configuration.");
-            errorLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+            appLogger.error("Java could not be found. Check your configuration.");
+            appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
             System.exit(0);
         } else if (!includeServerInstallation) {
             appLogger.info("Server installation disabled. ");
         } else {
-            errorLogger.error("Server installation and/or Java path incorrect. Please check.");
-            errorLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
-            errorLogger.error("Your configuration for includeServerInstallation was: " + conf.getString("includeServerInstallation"));
+            appLogger.error("Server installation and/or Java path incorrect. Please check.");
+            appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+            appLogger.error("Your configuration for includeServerInstallation was: " + conf.getString("includeServerInstallation"));
             System.exit(0);
         }
 
@@ -107,13 +106,13 @@ public class Main {
         try {
             CopyFiles.copyFiles(modpackDir, copyDirs);
         } catch (IOException ex) {
-            errorLogger.error("There was an error calling the copyFiles method.", ex);
+            appLogger.error("There was an error calling the copyFiles method.", ex);
         }
         // Delete client-side mods from serverpack.
         try {
             ServerSetup.deleteClientMods(modpackDir, clientMods);
         } catch (IOException ex) {
-            errorLogger.error("There was an error calling the deleteClientMods method.", ex);
+            appLogger.error("There was an error calling the deleteClientMods method.", ex);
         }
         // Generate Forge/Fabric start scripts and copy to serverpack.
         CopyFiles.copyStartScripts(modpackDir, modLoader, includeStartScripts);

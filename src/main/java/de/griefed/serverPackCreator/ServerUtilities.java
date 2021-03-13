@@ -27,7 +27,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ServerUtilities {
     private static final Logger appLogger = LogManager.getLogger("ServerUtilities");
-    private static final Logger errorLogger = LogManager.getLogger("ServerUtilitiesError");
 
     static void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
         if (modLoader.equals("Fabric")) {
@@ -37,7 +36,7 @@ class ServerUtilities {
             forgeShell(modpackDir, minecraftVersion);
             forgeBatch(modpackDir, minecraftVersion);
         } else {
-            errorLogger.error("Specified invalid Modloader: " + modLoader);
+            appLogger.error("Specified invalid Modloader: " + modLoader);
         }
     }
 
@@ -52,7 +51,7 @@ class ServerUtilities {
             String readSh = Files.readAllLines(pathSh).get(0);
             appLogger.debug("fabricShell.readSh was: " + readSh);
         } catch (IOException ex) {
-            errorLogger.error("Error creating shell script for Fabric.", ex);
+            appLogger.error("Error creating shell script for Fabric.", ex);
         }
         appLogger.info("Fabric shell script generated.");
     }
@@ -68,7 +67,7 @@ class ServerUtilities {
             String readBat = Files.readAllLines(pathBat).get(0);
             appLogger.debug("fabricBatch.readBat was: " + readBat);
         } catch (IOException ex) {
-            errorLogger.error("Error creating batch script for Fabric.", ex);
+            appLogger.error("Error creating batch script for Fabric.", ex);
         }
         appLogger.info("Fabric batch script generated.");
     }
@@ -84,7 +83,7 @@ class ServerUtilities {
             String readSh = Files.readAllLines(pathSh).get(0);
             appLogger.debug("forgeShell.readSh was: " + readSh);
         } catch (IOException ex) {
-            errorLogger.error("Error creating shell script for Forge.", ex);
+            appLogger.error("Error creating shell script for Forge.", ex);
         }
         appLogger.info("Forge shell script generated.");
     }
@@ -100,7 +99,7 @@ class ServerUtilities {
             String readBat = Files.readAllLines(pathBat).get(0);
             appLogger.debug("forgeBatch.readBat was: " + readBat);
         } catch (IOException ex) {
-            errorLogger.error("Error creating shell script for Forge.", ex);
+            appLogger.error("Error creating shell script for Forge.", ex);
         }
         appLogger.info("Forge batch script generated.");
     }
@@ -115,7 +114,7 @@ class ServerUtilities {
             downloadFabricFileOutputStream.flush();
             downloadFabricFileOutputStream.close();
         } catch (IOException ex) {
-            errorLogger.error("Error downloading Fabric.", ex);
+            appLogger.error("Error downloading Fabric.", ex);
         }
     }
 
@@ -139,7 +138,7 @@ class ServerUtilities {
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
             return result;
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-            errorLogger.error("Could not retrieve XML file. Defaulting to Installer version 0.7.1.", ex);
+            appLogger.error("Could not retrieve XML file. Defaulting to Installer version 0.7.1.", ex);
             return "0.7.1";
         } finally {
             appLogger.info("Successfully retrieved Fabric XML.");
@@ -156,7 +155,7 @@ class ServerUtilities {
             downloadForgeFileOutputStream.flush();
             downloadForgeFileOutputStream.close();
         } catch (IOException ex) {
-            errorLogger.error("Error downloading Forge.", ex);
+            appLogger.error("Error downloading Forge.", ex);
         }
     }
 
@@ -175,7 +174,7 @@ class ServerUtilities {
                 Files.delete(pathInZipfile);
                 appLogger.info("File successfully deleted");
             } catch (IOException ex) {
-                errorLogger.error("Error deleting minecraft-server.jar from archive.", ex);
+                appLogger.error("Error deleting minecraft-server.jar from archive.", ex);
             }
         } else if (modLoader.equals("Fabric")) {
             Map<String, String> zip_properties = new HashMap<>();
@@ -189,10 +188,10 @@ class ServerUtilities {
                 Files.delete(pathInZipfile);
                 appLogger.info("File successfully deleted");
             } catch (IOException ex) {
-                errorLogger.error("Error deleting minecraft-server.jar from archive.", ex);
+                appLogger.error("Error deleting minecraft-server.jar from archive.", ex);
             }
         } else {
-            errorLogger.error("Specified invalid modloader: " + modLoader);
+            appLogger.error("Specified invalid modloader: " + modLoader);
         }
     }
 
@@ -203,23 +202,23 @@ class ServerUtilities {
             boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
             if (isXmlDeleted) { appLogger.info("Deleted " + fabricXML.getName()); }
-            else { errorLogger.error("Could not delete " + fabricXML.getName()); }
+            else { appLogger.error("Could not delete " + fabricXML.getName()); }
             if (isInstallerDeleted) { appLogger.info("Deleted " + fabricInstaller.getName()); }
-            else { errorLogger.error("Could not delete " + fabricInstaller.getName()); }
+            else { appLogger.error("Could not delete " + fabricInstaller.getName()); }
         } else if (modLoader.equals("Forge")) {
             try {
                 Files.copy(Paths.get(modpackDir + "/server_pack/forge-" + minecraftVersion + "-" + modLoaderVersion + ".jar"), Paths.get(modpackDir + "/server_pack/forge.jar"), REPLACE_EXISTING);
                 boolean isOldJarDeleted = (new File(modpackDir + "/server_pack/forge-" + minecraftVersion + "-" + modLoaderVersion + ".jar")).delete();
                 boolean isInstallerDeleted = forgeInstaller.delete();
                 if ((isOldJarDeleted) && (new File(modpackDir + "/server_pack/forge.jar").exists())) { appLogger.info("Renamed forge.jar and deleted old one."); }
-                else { errorLogger.error("There was an error during renaming or deletion of the forge server jar."); }
+                else { appLogger.error("There was an error during renaming or deletion of the forge server jar."); }
                 if (isInstallerDeleted) { appLogger.info("Deleted " + forgeInstaller.getName()); }
-                else { errorLogger.error("Could not delete " + forgeInstaller.getName()); }
+                else { appLogger.error("Could not delete " + forgeInstaller.getName()); }
             } catch (IOException ex) {
-                errorLogger.error("Error during Forge cleanup", ex);
+                appLogger.error("Error during Forge cleanup", ex);
             }
         } else {
-            errorLogger.error("Specified invalid modloader: " + modLoader);
+            appLogger.error("Specified invalid modloader: " + modLoader);
         }
     }
 }
