@@ -32,7 +32,6 @@ public class Main {
   static Boolean configHasError = false;
 
   private static final Logger appLogger = LogManager.getLogger("Main");
-  private static final Logger errorLogger = LogManager.getLogger("MainError");
 
   private static boolean isMinecraftVersionCorrect () {
     try {
@@ -71,12 +70,12 @@ public class Main {
   }
   public static void main(String[] args) throws FileNotFoundException{
 
-    appLogger.info("################################################################");
-    appLogger.info("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
-    appLogger.info("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
-    appLogger.info("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
-    appLogger.info("#                    YOU HAVE BEEN WARNED!                     #");
-    appLogger.info("################################################################");
+    appLogger.warn("################################################################");
+    appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
+    appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
+    appLogger.warn("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
+    appLogger.warn("#                    YOU HAVE BEEN WARNED!                     #");
+    appLogger.warn("################################################################");
     // Get name of the jar so log states version number. Good for issues on GitHub.
     try {
       // Get path of the JAR file
@@ -88,7 +87,7 @@ public class Main {
       appLogger.info("JAR Name: " + jarName);
 
     } catch (URISyntaxException ex) {
-      errorLogger.error("Error getting jar name.", ex);
+      appLogger.error("Error getting jar name.", ex);
     }
     // Generate default files if they do not exist and exit if serverpackcreator.conf was created
     FilesSetup.filesSetup();
@@ -99,7 +98,25 @@ public class Main {
     clientMods = conf.getStringList("clientMods");
     copyDirs = conf.getStringList("copyDirs");
     includeServerInstallation = conf.getBoolean("includeServerInstallation");
-    javaPath = conf.getString("javaPath");
+    // Check whether Java is available if includeServerInstallation is true. Remove .exe-String if exists.
+    if (includeServerInstallation && new File(conf.getString("javaPath")).exists()) {
+      if (conf.getString("javaPath").endsWith(".exe")) {
+        javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
+      } else {
+        javaPath = conf.getString("javaPath");
+      }
+    } else if (includeServerInstallation && !(new File(conf.getString("javaPath")).exists())) {
+      appLogger.error("Java could not be found. Check your configuration.");
+      appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+      System.exit(0);
+    } else if (!includeServerInstallation) {
+      appLogger.info("Server installation disabled. ");
+    } else {
+      appLogger.error("Server installation and/or Java path incorrect. Please check.");
+      appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+      appLogger.error("Your configuration for includeServerInstallation was: " + conf.getString("includeServerInstallation"));
+      System.exit(0);
+    }
     minecraftVersion = conf.getString("minecraftVersion");
     modLoader = conf.getString("modLoader");
     modLoaderVersion = conf.getString("modLoaderVersion");
@@ -110,7 +127,7 @@ public class Main {
 
     if (modpackDir.equalsIgnoreCase("")) {
       configHasError = true;
-      errorLogger.error("Error: Modpack directory not specified.");
+      appLogger.error("Error: Modpack directory not specified.");
     } else {
       File manifestJSONFile = new File(modpackDir + "/manifest.json");
       try {
@@ -123,33 +140,27 @@ public class Main {
 
     if (copyDirs.isEmpty()) {
       configHasError = true;
-      errorLogger.error("Error: Don't specified which directories to copy.");
-    }
-
-    if (javaPath.equals("") || !javaPath.endsWith("java")) {
-      configHasError = true;
-      errorLogger.error("Error: Java path is not specified or incorrect.");
-      errorLogger.info("Consider specifying a valid path to java executable.");
+      appLogger.error("Error: Don't specified which directories to copy.");
     }
 
     if (minecraftVersion.equals("")) {
       configHasError = true;
-      errorLogger.error("Error: Minecraft version is not specified.");
+      appLogger.error("Error: Minecraft version is not specified.");
     } else {
       if (!isMinecraftVersionCorrect()) {
         configHasError = true;
-        errorLogger.error("Error: Invalid Minecraft version specified.");
+        appLogger.error("Error: Invalid Minecraft version specified.");
       }
     }
 
     if (!modLoader.equals("Forge") && !modLoader.equals("Fabric")) {
       configHasError = true;
-      errorLogger.error("Error: Incorrect mod loader specified.");
+      appLogger.error("Error: Incorrect mod loader specified.");
     }
 
     if (modLoaderVersion.equals("")) {
       configHasError = true;
-      errorLogger.error("Error: Mod loader version is not specified.");
+      appLogger.error("Error: Mod loader version is not specified.");
     }
 
     if (!configHasError) {
@@ -183,11 +194,13 @@ public class Main {
       appLogger.info("Include server properties:        " + includeServerProperties.toString());
       appLogger.info("Include start scripts:            " + includeStartScripts.toString());
       appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
+      // Delete serverpack directory and .zip archive if they exist. Ensure clean state
+      CopyFiles.cleanupEnvironment(modpackDir);
       // Copy all specified directories from modpack to serverpack.
             try {
                 CopyFiles.copyFiles(modpackDir, copyDirs);
             } catch (IOException ex) {
-                errorLogger.error("There was an error calling the copyFiles method.", ex);
+              appLogger.error("There was an error calling the copyFiles method.", ex);
             }
 
             if (clientModsExist) {
@@ -195,7 +208,7 @@ public class Main {
                 try {
                     ServerSetup.deleteClientMods(modpackDir, clientMods);
                 } catch (IOException ex) {
-                    errorLogger.error("There was an error calling the deleteClientMods method.", ex);
+                  appLogger.error("There was an error calling the deleteClientMods method.", ex);
                 }
             }
             // Generate Forge/Fabric start scripts and copy to serverpack.

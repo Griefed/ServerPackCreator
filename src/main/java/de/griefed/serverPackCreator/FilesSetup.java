@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 class FilesSetup {
+    static final File oldConfigFile = new File("creator.conf");
     static final File configFile = new File("serverpackcreator.conf");
     static final File propertiesFile = new File("server.properties");
     static final File iconFile = new File("server-icon.png");
@@ -19,7 +20,6 @@ class FilesSetup {
     static final File fabricLinuxFile = new File("start-fabric.sh");
 
     private static final Logger appLogger = LogManager.getLogger("FilesSetup");
-    private static final Logger errorLogger = LogManager.getLogger("FilesSetupError");
 
     // Copy all default files to base directory where jar resides.
     static void filesSetup() {
@@ -29,10 +29,21 @@ class FilesSetup {
         try {
             Files.createDirectories(Paths.get("server_files"));
         } catch (IOException ex) {
-            errorLogger.error("Could not create server_files directory.", ex);
+            appLogger.error("Could not create server_files directory.", ex);
         }
-        // Copy config file in case it does not exist yet
-        if (!configFile.exists()) {
+        // Migrate creator.conf to new name, create config file in case it does not exist yet
+        if (oldConfigFile.exists()) {
+            try {
+                Files.copy(oldConfigFile.getAbsoluteFile().toPath(), configFile.getAbsoluteFile().toPath());
+                boolean isOldConfigDeleted = oldConfigFile.delete();
+                if (isOldConfigDeleted) {
+                    appLogger.info("creator.conf migrated to serverpackcreator.conf");
+                }
+                firstRun = false;
+            } catch (IOException ex) {
+                appLogger.error("Error renaming creator.conf to serverpackcreator.conf", ex);
+            }
+        } else if (!configFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/" + configFile.getName()));
                 Files.copy(link, configFile.getAbsoluteFile().toPath());
@@ -40,7 +51,7 @@ class FilesSetup {
                 appLogger.info("Default config file generated. Please customize.");
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    errorLogger.error("Could not extract default config-file", ex);
+                    appLogger.error("Could not extract default config-file", ex);
                 }
             }
         } else { firstRun = false; }
@@ -53,7 +64,7 @@ class FilesSetup {
                 appLogger.info("Default Forge Windows start file generated.");
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    errorLogger.error("Could not extract default Forge Windows start file", ex);
+                    appLogger.error("Could not extract default Forge Windows start file", ex);
                 }
             }
         }
@@ -65,7 +76,7 @@ class FilesSetup {
                 appLogger.info("Default Forge Linux start file generated.");
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    errorLogger.error("Could not extract default Forge Linux start file", ex);
+                    appLogger.error("Could not extract default Forge Linux start file", ex);
                 }
             }
         }
@@ -78,7 +89,7 @@ class FilesSetup {
                 appLogger.info("Default Fabric Windows start file generated.");
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    errorLogger.error("Could not extract default Fabric Windows start file", ex);
+                    appLogger.error("Could not extract default Fabric Windows start file", ex);
                 }
             }
         }
@@ -90,7 +101,7 @@ class FilesSetup {
                 appLogger.info("Default Fabric Linux start file generated.");
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    errorLogger.error("Could not extract default Fabric Linux start file", ex);
+                    appLogger.error("Could not extract default Fabric Linux start file", ex);
                 }
             }
         }
@@ -103,7 +114,7 @@ class FilesSetup {
                 appLogger.info("Default server.properties file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    errorLogger.error("Could not extract default server.properties file", ex);
+                    appLogger.error("Could not extract default server.properties file", ex);
                 }
             }
         }
@@ -116,19 +127,19 @@ class FilesSetup {
                 appLogger.info("Default server-icon.png file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    errorLogger.error("Could not extract default server-icon.png file", ex);
+                    appLogger.error("Could not extract default server-icon.png file", ex);
                 }
             }
         }
         // If the config file was just generated because it did not exist yet, then exit and tell user to customize
         if (firstRun) {
-            appLogger.info("################################################################");
-            appLogger.info("#                                                              #");
-            appLogger.info("#       FIRST RUN. CUSTOMIZE YOUR CREATOR.CONF FILE NOW.       #");
-            appLogger.info("#        THE DEFAULTS ARE MEANT TO SHOW HOW IT'S DONE.         #");
-            appLogger.info("#    THE DEFAULTS WILL MOST LIKELY NOT WORK ON YOUR SYSTEM.    #");
-            appLogger.info("#                                                              #");
-            appLogger.info("################################################################");
+            appLogger.warn("################################################################");
+            appLogger.warn("#                                                              #");
+            appLogger.warn("#       FIRST RUN. CUSTOMIZE YOUR CREATOR.CONF FILE NOW.       #");
+            appLogger.warn("#        THE DEFAULTS ARE MEANT TO SHOW HOW IT'S DONE.         #");
+            appLogger.warn("#    THE DEFAULTS WILL MOST LIKELY NOT WORK ON YOUR SYSTEM.    #");
+            appLogger.warn("#                                                              #");
+            appLogger.warn("################################################################");
             appLogger.warn("First run! Default files generated. Please customize and run again.");
             System.exit(0);
         } else {

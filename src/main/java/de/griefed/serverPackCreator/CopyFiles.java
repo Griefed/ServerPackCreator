@@ -3,16 +3,51 @@ package de.griefed.serverPackCreator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.stream.Stream;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class CopyFiles {
     private static final Logger appLogger = LogManager.getLogger("CopyFiles");
-    private static final Logger errorLogger = LogManager.getLogger("CopyFilesError");
+
+    static void cleanupEnvironment(String modpackDir) {
+        if (new File(modpackDir + "/server_pack").exists()) {
+            Path serverPack = Paths.get(modpackDir + "/server_pack");
+            try {
+                Files.walkFileTree(serverPack,
+                        new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult postVisitDirectory(
+                                    Path dir, IOException exc) throws IOException {
+                                Files.delete(dir);
+                                return FileVisitResult.CONTINUE;
+                            }
+
+                            @Override
+                            public FileVisitResult visitFile(
+                                    Path file, BasicFileAttributes attrs)
+                                    throws IOException {
+                                Files.delete(file);
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+            } catch (IOException ex) {
+                appLogger.error("Error deleting file from " + modpackDir + "/server_pack");
+            } finally {
+                appLogger.info("Cleanup of previous server_pack completed.");
+            }
+        }
+        if (new File(modpackDir + "/server_pack.zip").exists()) {
+            boolean isZipDeleted = new File(modpackDir + "/server_pack.zip").delete();
+            if (isZipDeleted) {
+                appLogger.info("Old server_pack.zip deleted.");
+            } else {
+                appLogger.error("Error deleting old zip archive.");
+            }
+        }
+    }
 
     // Copy forge/fabric start scripts to serverpack, depending on modLoader config.
     static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
@@ -22,7 +57,7 @@ class CopyFiles {
                 Files.copy(Paths.get("server_files/" + FilesSetup.forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.forgeWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("server_files/" + FilesSetup.forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.forgeLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                errorLogger.error("An error occurred while copying files: ", ex);
+                appLogger.error("An error occurred while copying files: ", ex);
             }
         } else if (modLoader.equals("Fabric") && includeStartScripts) {
             appLogger.info("Copying Fabric start scripts...");
@@ -30,7 +65,7 @@ class CopyFiles {
                 Files.copy(Paths.get("server_files/" + FilesSetup.fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.fabricWindowsFile), REPLACE_EXISTING);
                 Files.copy(Paths.get("server_files/" + FilesSetup.fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.fabricLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
-                errorLogger.error("An error occurred while copying files: ", ex);
+                appLogger.error("An error occurred while copying files: ", ex);
             }
         } else {
             appLogger.info("Specified invalid modloader. Must be either Forge or Fabric.");
@@ -52,15 +87,15 @@ class CopyFiles {
                     files.forEach(file -> {
                         try {
                             Files.copy(file, Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
-                            appLogger.info("Copying: " + file.toAbsolutePath().toString());
+                            appLogger.debug("Copying: " + file.toAbsolutePath().toString());
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                errorLogger.error(ex);
+                                appLogger.error(ex);
                             }
                         }
                     });
                 } catch (IOException ex) {
-                    errorLogger.error("An error occurred copying the specified world.", ex);
+                    appLogger.error("An error occurred copying the specified world.", ex);
                 }
             } else {
                 try {
@@ -68,16 +103,16 @@ class CopyFiles {
                     files.forEach(file -> {
                         try {
                             Files.copy(file, Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
-                            appLogger.info("Copying: " + file.toAbsolutePath().toString());
+                            appLogger.debug("Copying: " + file.toAbsolutePath().toString());
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                errorLogger.error("An error occurred copying files to the serverpack.", ex);
+                                appLogger.error("An error occurred copying files to the serverpack.", ex);
                             }
                         }
                     });
                     files.close();
                 } catch (IOException ex) {
-                    errorLogger.error("An error occurred during the copy-procedure to the serverpack.", ex);
+                    appLogger.error("An error occurred during the copy-procedure to the serverpack.", ex);
                 }
             }
         }
@@ -89,7 +124,7 @@ class CopyFiles {
         try {
             Files.copy(Paths.get("server_files/" + FilesSetup.iconFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.iconFile), REPLACE_EXISTING);
         } catch (IOException ex) {
-            errorLogger.error("An error occurred trying to copy the server icon.", ex);
+            appLogger.error("An error occurred trying to copy the server icon.", ex);
         }
     }
 
@@ -99,7 +134,7 @@ class CopyFiles {
         try {
             Files.copy(Paths.get("server_files/" + FilesSetup.propertiesFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.propertiesFile), REPLACE_EXISTING);
         } catch (IOException ex) {
-            errorLogger.error("An error occurred trying to copy the server.properties-file.", ex);
+            appLogger.error("An error occurred trying to copy the server.properties-file.", ex);
         }
     }
 }
