@@ -1,12 +1,14 @@
 package de.griefed.serverPackCreator;
 
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -59,14 +61,39 @@ public class Main {
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
-        includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        try {
+            includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Wrong configuration for includeServerInstallation. Must be true or false.", ex);
+        }
         minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
         modLoaderVersion = conf.getString("modLoaderVersion");
-        includeServerIcon = conf.getBoolean("includeServerIcon");
-        includeServerProperties = conf.getBoolean("includeServerProperties");
-        includeStartScripts = conf.getBoolean("includeStartScripts");
-        includeZipCreation = conf.getBoolean("includeZipCreation");
+        try {
+            includeServerIcon = conf.getBoolean("includeServerIcon");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Wrong configuration for includeServerIcon. Must be true or false.", ex);
+        }
+        try {
+            includeServerProperties = conf.getBoolean("includeServerProperties");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Wrong configuration for includeServerProperties. Must be true or false.", ex);
+        }
+        try {
+            includeStartScripts = conf.getBoolean("includeStartScripts");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Wrong configuration for includeStartScripts. Must be true or false.", ex);
+        }
+        try {
+            includeZipCreation = conf.getBoolean("includeZipCreation");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Wrong configuration for includeZipCreation. Must be true or false.", ex);
+        }
 
         if (modpackDir.equalsIgnoreCase("")) {
             configHasError = true;
@@ -86,8 +113,8 @@ public class Main {
                 configHasError = true;
                 appLogger.error("Error: Minecraft version is not specified.");
             } else {
-                File manifestJSONFile = new File(modpackDir + "/manifest.json");
                 try {
+                    File manifestJSONFile = new File(modpackDir + "/manifest.json");
                     manifestJSONFile.getParentFile().createNewFile();
                     appLogger.info("Created temp file: Minecraft Manifest JSON");
                 } catch (IOException ex) {
