@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -15,234 +17,225 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-  static String modpackDir;
-  static Boolean clientModsExist;
-  static List<String> clientMods;
-  static List<String> copyDirs;
-  static Boolean includeServerInstallation;
-  static String javaPath;
-  static String minecraftVersion;
-  static String modLoader;
-  static String modLoaderVersion;
-  static Boolean includeServerIcon;
-  static Boolean includeServerProperties;
-  static Boolean includeStartScripts;
-  static Boolean includeZipCreation;
-  static Config conf;
-  static Boolean configHasError = false;
+    static String modpackDir;
+    static Boolean clientModsExist;
+    static List<String> clientMods;
+    static List<String> copyDirs;
+    static Boolean includeServerInstallation;
+    static String javaPath;
+    static String minecraftVersion;
+    static String modLoader;
+    static String modLoaderVersion;
+    static Boolean includeServerIcon;
+    static Boolean includeServerProperties;
+    static Boolean includeStartScripts;
+    static Boolean includeZipCreation;
+    static Config conf;
+    static Boolean configHasError = false;
 
-  private static final Logger appLogger = LogManager.getLogger("Main");
-
-  private static boolean isMinecraftVersionCorrect () {
-    try {
-      URL manifestJsonURL = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
-      ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-      FileOutputStream downloadManifestOutputStream = null;
-      try {
-        downloadManifestOutputStream = new FileOutputStream(modpackDir + "/mcmanifest.json");
-      } catch (FileNotFoundException e) {
-        e.printStackTrace();
-        File file = new File(modpackDir + "/mcmanifest.json");
-        if (!file.exists()){
-          appLogger.info("Manifest JSON File does not exist, creating...");
-          file.createNewFile();
+    private static final Logger appLogger = LogManager.getLogger("Main");
+    /** Warn user about WIP status. Get configuration from serverpackcreator.conf. Check configuration. Print configuration. Make calls according to configuration.
+     * Basically, the main class makes the calls to every other class where the actual magic is happening. The main class of ServerPackCreator should never contain code which does work on the serverpack itself.
+     *
+     */
+    public static void main(String[] args) throws FileNotFoundException {
+        appLogger.warn("################################################################");
+        appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
+        appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
+        appLogger.warn("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
+        appLogger.warn("#                    YOU HAVE BEEN WARNED!                     #");
+        appLogger.warn("################################################################");
+        try {
+            String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            appLogger.info("JAR Path: " + jarPath);
+            String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
+            appLogger.info("JAR Name: " + jarName);
+        } catch (URISyntaxException ex) {
+            appLogger.error("Error getting jar name.", ex);
         }
-        downloadManifestOutputStream = new FileOutputStream(modpackDir + "/mcmanifest.json");
-      }
-      FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-      downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-      downloadManifestOutputStream.flush();
-      downloadManifestOutputStream.close();
+        FilesSetup.filesSetup();
+        appLogger.info("Getting configuration...");
+        conf = ConfigFactory.parseFile(FilesSetup.configFile);
+        modpackDir = conf.getString("modpackDir");
+        clientMods = conf.getStringList("clientMods");
+        copyDirs = conf.getStringList("copyDirs");
+        includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        minecraftVersion = conf.getString("minecraftVersion");
+        modLoader = conf.getString("modLoader");
+        modLoaderVersion = conf.getString("modLoaderVersion");
+        includeServerIcon = conf.getBoolean("includeServerIcon");
+        includeServerProperties = conf.getBoolean("includeServerProperties");
+        includeStartScripts = conf.getBoolean("includeStartScripts");
+        includeZipCreation = conf.getBoolean("includeZipCreation");
 
-      File manifestJsonFile = new File(modpackDir + "/mcmanifest.json");
-      Scanner myReader = new Scanner(manifestJsonFile);
-      String data = myReader.nextLine();
-      myReader.close();
-      data = data.replaceAll("\\s", "");
-      boolean contains = data.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
-      manifestJsonFile.deleteOnExit();
-      return contains;
-    } catch (Exception e) {
-      System.out.println("An error occurred.");
-      e.printStackTrace();
-      return false;
-    }
-  }
-  public static void main(String[] args) throws FileNotFoundException{
+        if (modpackDir.equalsIgnoreCase("")) {
+            configHasError = true;
+            appLogger.error("Error: Modpack directory not specified.");
+        } else if (!(new File(modpackDir).isDirectory())) {
+            configHasError = true;
+            appLogger.error("Error: Modpack directory doesn't exist.");
+        }
 
-    appLogger.warn("################################################################");
-    appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
-    appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
-    appLogger.warn("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
-    appLogger.warn("#                    YOU HAVE BEEN WARNED!                     #");
-    appLogger.warn("################################################################");
-    // Get name of the jar so log states version number. Good for issues on GitHub.
-    try {
-      // Get path of the JAR file
-      String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-      appLogger.info("JAR Path: " + jarPath);
+        if (includeServerInstallation && new File(conf.getString("javaPath")).exists()) {
+            if (conf.getString("javaPath").endsWith(".exe")) {
+                javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
+            } else {
+                javaPath = conf.getString("javaPath");
+            }
+            if (minecraftVersion.equals("")) {
+                configHasError = true;
+                appLogger.error("Error: Minecraft version is not specified.");
+            } else {
+                File manifestJSONFile = new File(modpackDir + "/manifest.json");
+                try {
+                    manifestJSONFile.getParentFile().createNewFile();
+                    appLogger.info("Created temp file: Minecraft Manifest JSON");
+                } catch (IOException ex) {
+                    appLogger.error("Error: Couldn't create Minecraft Manifest JSON", ex);
+                }
+                if (!isMinecraftVersionCorrect()) {
+                    configHasError = true;
+                    appLogger.error("Error: Invalid Minecraft version specified.");
+                }
+            }
+            if (!modLoader.equals("Forge") && !modLoader.equals("Fabric")) {
+                configHasError = true;
+                appLogger.error("Error: Incorrect mod loader specified.");
+            }
+            if (modLoaderVersion.equals("")) {
+                configHasError = true;
+                appLogger.error("Error: Mod loader version is not specified.");
+            }
+        } else if (includeServerInstallation && !(new File(conf.getString("javaPath")).exists())) {
+            configHasError = true;
+            appLogger.error("Java could not be found. Check your configuration.");
+            appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+        } else if (!includeServerInstallation) {
+            javaPath = conf.getString("javaPath");
+            appLogger.info("Server installation disabled. Skipping check of:");
+            appLogger.info("    Java path");
+            appLogger.info("    Minecraft version");
+            appLogger.info("    Modloader");
+            appLogger.info("    Modloader version");
+        } else {
+            configHasError = true;
+            appLogger.error("Server installation and/or Java path incorrect. Please check.");
+            appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
+            appLogger.error("Your configuration for includeServerInstallation was: " + conf.getString("includeServerInstallation"));
+        }
 
-      // Get name of the JAR file
-      String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
-      appLogger.info("JAR Name: " + jarName);
+        if (copyDirs.isEmpty()) {
+            configHasError = true;
+            appLogger.error("Error: No directories specified for copying. This would result in an empty serverpack.");
+        }
 
-    } catch (URISyntaxException ex) {
-      appLogger.error("Error getting jar name.", ex);
-    }
-    // Generate default files if they do not exist and exit if serverpackcreator.conf was created
-    FilesSetup.filesSetup();
-    // Setup config variables with config file
-    appLogger.info("Getting configuration...");
-    conf = ConfigFactory.parseFile(FilesSetup.configFile);
-    modpackDir = conf.getString("modpackDir");
-    clientMods = conf.getStringList("clientMods");
-    copyDirs = conf.getStringList("copyDirs");
-    includeServerInstallation = conf.getBoolean("includeServerInstallation");
-    // Check whether Java is available if includeServerInstallation is true. Remove .exe-String if exists.
-    if (includeServerInstallation && new File(conf.getString("javaPath")).exists()) {
-      if (conf.getString("javaPath").endsWith(".exe")) {
-        javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
-      } else {
-        javaPath = conf.getString("javaPath");
-      }
-    } else if (includeServerInstallation && !(new File(conf.getString("javaPath")).exists())) {
-      appLogger.error("Java could not be found. Check your configuration.");
-      appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
-      System.exit(0);
-    } else if (!includeServerInstallation) {
-      appLogger.info("Server installation disabled. ");
-    } else {
-      appLogger.error("Server installation and/or Java path incorrect. Please check.");
-      appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
-      appLogger.error("Your configuration for includeServerInstallation was: " + conf.getString("includeServerInstallation"));
-      System.exit(0);
-    }
-    minecraftVersion = conf.getString("minecraftVersion");
-    modLoader = conf.getString("modLoader");
-    modLoaderVersion = conf.getString("modLoaderVersion");
-    includeServerIcon = conf.getBoolean("includeServerIcon");
-    includeServerProperties = conf.getBoolean("includeServerProperties");
-    includeStartScripts = conf.getBoolean("includeStartScripts");
-    includeZipCreation = conf.getBoolean("includeZipCreation");
-
-    if (modpackDir.equalsIgnoreCase("")) {
-      configHasError = true;
-      appLogger.error("Error: Modpack directory not specified.");
-    } else {
-      File manifestJSONFile = new File(modpackDir + "/manifest.json");
-      try {
-        manifestJSONFile.getParentFile().createNewFile();
-        appLogger.info("Created temp file: Minecraft Manifest JSON");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-
-    if (copyDirs.isEmpty()) {
-      configHasError = true;
-      appLogger.error("Error: Don't specified which directories to copy.");
-    }
-
-    if (minecraftVersion.equals("")) {
-      configHasError = true;
-      appLogger.error("Error: Minecraft version is not specified.");
-    } else {
-      if (!isMinecraftVersionCorrect()) {
-        configHasError = true;
-        appLogger.error("Error: Invalid Minecraft version specified.");
-      }
-    }
-
-    if (!modLoader.equals("Forge") && !modLoader.equals("Fabric")) {
-      configHasError = true;
-      appLogger.error("Error: Incorrect mod loader specified.");
-    }
-
-    if (modLoaderVersion.equals("")) {
-      configHasError = true;
-      appLogger.error("Error: Mod loader version is not specified.");
-    }
-
-    if (!configHasError) {
-      File serverPackDir = new File(modpackDir);
-      if (!serverPackDir.isDirectory()) {
-        throw new FileNotFoundException("Modpack directory doesn't exist.");
-      }
-      // Print current configuration so in case of error, logs are more informative
-      appLogger.info("Your configuration is:");
-      appLogger.info("Modpack directory: " + modpackDir);
-      clientModsExist = clientMods.toArray().length != 0;
-      appLogger.info(clientModsExist);
-      if (clientModsExist) {
-        appLogger.info("Client mods does not exist in the modpack.");
-      } else {
-        appLogger.info("Client mods are:");
-      }
-      for (int i = 0; i < clientMods.toArray().length; i++) {
-        appLogger.info("    " + clientMods.get(i));
-      }
-      appLogger.info("Directories to copy:");
-      for (int i = 0; i < copyDirs.toArray().length; i++) {
-        appLogger.info("    " + copyDirs.get(i));
-      }
-      appLogger.info("Include server installation:      " + includeServerInstallation.toString());
-      appLogger.info("Java Installation path:           " + javaPath);
-      appLogger.info("Minecraft version:                " + minecraftVersion);
-      appLogger.info("Modloader:                        " + modLoader);
-      appLogger.info("Modloader Version:                " + modLoaderVersion);
-      appLogger.info("Include server icon:              " + includeServerIcon.toString());
-      appLogger.info("Include server properties:        " + includeServerProperties.toString());
-      appLogger.info("Include start scripts:            " + includeStartScripts.toString());
-      appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
-      // Delete serverpack directory and .zip archive if they exist. Ensure clean state
-      CopyFiles.cleanupEnvironment(modpackDir);
-      // Copy all specified directories from modpack to serverpack.
+        if (!configHasError) {
+            appLogger.info("Your configuration is:");
+            appLogger.info("Modpack directory: " + modpackDir);
+            clientModsExist = clientMods.toArray().length != 0;
+            if (!clientModsExist) {
+                appLogger.warn("Client mods do not exist in the modpack.");
+            } else {
+                appLogger.info("Client mods specified. Client mods are:");
+                for (int i = 0; i < clientMods.toArray().length; i++) {
+                    appLogger.info("    " + clientMods.get(i));
+                }
+            }
+            appLogger.info("Directories to copy:");
+            for (int i = 0; i < copyDirs.toArray().length; i++) {
+                appLogger.info("    " + copyDirs.get(i));
+            }
+            appLogger.info("Include server installation:      " + includeServerInstallation.toString());
+            appLogger.info("Java Installation path:           " + conf.getString("javaPath"));
+            appLogger.info("Minecraft version:                " + minecraftVersion);
+            appLogger.info("Modloader:                        " + modLoader);
+            appLogger.info("Modloader Version:                " + modLoaderVersion);
+            appLogger.info("Include server icon:              " + includeServerIcon.toString());
+            appLogger.info("Include server properties:        " + includeServerProperties.toString());
+            appLogger.info("Include start scripts:            " + includeStartScripts.toString());
+            appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
+            CopyFiles.cleanupEnvironment(modpackDir);
             try {
                 CopyFiles.copyFiles(modpackDir, copyDirs);
             } catch (IOException ex) {
-              appLogger.error("There was an error calling the copyFiles method.", ex);
+                appLogger.error("There was an error calling the copyFiles method.", ex);
             }
-
             if (clientModsExist) {
-                // Delete client-side mods from serverpack.
                 try {
                     ServerSetup.deleteClientMods(modpackDir, clientMods);
                 } catch (IOException ex) {
-                  appLogger.error("There was an error calling the deleteClientMods method.", ex);
+                    appLogger.error("There was an error calling the deleteClientMods method.", ex);
                 }
             }
-            // Generate Forge/Fabric start scripts and copy to serverpack.
             CopyFiles.copyStartScripts(modpackDir, modLoader, includeStartScripts);
-
             if (includeServerInstallation) {
                 ServerSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
             } else {
                 appLogger.info("Not installing modded server.");
             }
-            // If true, copy server-icon to serverpack.
             if (includeServerIcon) {
                 CopyFiles.copyIcon(modpackDir);
             } else {
                 appLogger.info("Not including servericon.");
             }
-            // If true, copy server.properties to serverpack.
             if (includeServerProperties) {
                 CopyFiles.copyProperties(modpackDir);
             } else {
                 appLogger.info("Not including server.properties.");
             }
-            // If true, create zip archive of serverpack.
             if (includeZipCreation) {
-                ServerSetup.zipBuilder(modpackDir, modLoader, minecraftVersion);
+                ServerSetup.zipBuilder(modpackDir, modLoader, minecraftVersion, includeServerInstallation);
             } else {
                 appLogger.info("Not creating zip archive of serverpack.");
             }
             appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
             appLogger.info("Done!");
-    } else {
-      System.out.println();
-      appLogger.info("Config file has errors. Consider editing serverpackcreator.conf file that is located in directory with SPC.");
+        } else {
+            System.out.println();
+            appLogger.error("Config file has errors. Consider editing serverpackcreator.conf file that is located in directory with SPC.");
+            System.exit(1);
+        }
     }
-  }
-
+    /** Optional. Check the specified Minecraft version against Mojang's version manifest to validate the version.
+     *
+     * @return Returns boolean depending on whether the specified Minecraft version could be found in Mojang#s manifest.
+     */
+    private static boolean isMinecraftVersionCorrect () {
+        try {
+            URL manifestJsonURL = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
+            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+            FileOutputStream downloadManifestOutputStream = null;
+            try {
+                downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                File file = new File("mcmanifest.json");
+                if (!file.exists()){
+                    appLogger.info("Manifest JSON File does not exist, creating...");
+                    boolean jsonCreated = file.createNewFile();
+                    if (jsonCreated) {
+                        appLogger.info("Manifest JSON File created");
+                    } else {
+                        appLogger.error("Error. Could not create Manifest JSON File.");
+                    }
+                }
+                downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
+            }
+            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            downloadManifestOutputStream.flush();
+            downloadManifestOutputStream.close();
+            File manifestJsonFile = new File("mcmanifest.json");
+            Scanner myReader = new Scanner(manifestJsonFile);
+            String data = myReader.nextLine();
+            myReader.close();
+            data = data.replaceAll("\\s", "");
+            boolean contains = data.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
+            manifestJsonFile.deleteOnExit();
+            return contains;
+        } catch (Exception ex) {
+            appLogger.error("An error occurred during Minecraft version validation.", ex);
+            return false;
+        }
+    }
 }

@@ -20,18 +20,17 @@ class FilesSetup {
     static final File fabricLinuxFile = new File("start-fabric.sh");
 
     private static final Logger appLogger = LogManager.getLogger("FilesSetup");
-
-    // Copy all default files to base directory where jar resides.
+    /** Mandatory. Generate all default files, including serverpackcreator.conf if it does not exist. Said default files provide an example for the user as to what is possible and a template as well. It is possible to run this application only with the serverpackcreator.conf, so long as the related config variables are set correctly. If the serverpackcreator.conf file was generated during execution of this method, it is considered as first run and will exit after generation of said conf-file.
+     *
+     */
     static void filesSetup() {
         appLogger.info("Setting up default files...");
         boolean firstRun = true;
-        // Create directory for server files for customization
         try {
             Files.createDirectories(Paths.get("server_files"));
         } catch (IOException ex) {
             appLogger.error("Could not create server_files directory.", ex);
         }
-        // Migrate creator.conf to new name, create config file in case it does not exist yet
         if (oldConfigFile.exists()) {
             try {
                 Files.copy(oldConfigFile.getAbsoluteFile().toPath(), configFile.getAbsoluteFile().toPath());
@@ -55,7 +54,6 @@ class FilesSetup {
                 }
             }
         } else { firstRun = false; }
-        // Copy Forge related start scripts
         if (!forgeWindowsFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + forgeWindowsFile.getName()));
@@ -80,7 +78,6 @@ class FilesSetup {
                 }
             }
         }
-        // Copy Fabric related start scripts
         if (!fabricWindowsFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + fabricWindowsFile.getName()));
@@ -105,7 +102,6 @@ class FilesSetup {
                 }
             }
         }
-        // Copy server.properties if it does not exist
         if (!propertiesFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + propertiesFile.getName()));
@@ -118,7 +114,6 @@ class FilesSetup {
                 }
             }
         }
-        // Copy server icon file if it does not exist
         if (!iconFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + iconFile.getName()));
@@ -131,14 +126,11 @@ class FilesSetup {
                 }
             }
         }
-        // If the config file was just generated because it did not exist yet, then exit and tell user to customize
         if (firstRun) {
             appLogger.warn("################################################################");
-            appLogger.warn("#                                                              #");
-            appLogger.warn("#       FIRST RUN. CUSTOMIZE YOUR CREATOR.CONF FILE NOW.       #");
+            appLogger.warn("#  FIRST RUN. CUSTOMIZE YOUR SERVERPACKCREATOR.CONF FILE NOW.  #");
             appLogger.warn("#        THE DEFAULTS ARE MEANT TO SHOW HOW IT'S DONE.         #");
             appLogger.warn("#    THE DEFAULTS WILL MOST LIKELY NOT WORK ON YOUR SYSTEM.    #");
-            appLogger.warn("#                                                              #");
             appLogger.warn("################################################################");
             appLogger.warn("First run! Default files generated. Please customize and run again.");
             System.exit(0);
@@ -146,5 +138,4 @@ class FilesSetup {
             appLogger.info("Setup completed.");
         }
     }
-
 }

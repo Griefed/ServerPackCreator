@@ -4,7 +4,7 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
         </Console>
-        <RollingFile name="ApplicationLogger" fileName="logs/serverpackcreator.log" filePattern="logs/serverpackcreator.log.%i">
+		<RollingFile name="ApplicationLogger" fileName="logs/serverpackcreator.log" filePattern="logs/serverpackcreator.log.%i">
             <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
             <Policies>
                 <OnStartupTriggeringPolicy />
@@ -17,7 +17,6 @@
         <Root level="ALL">
             <AppenderRef ref="Console" level="info"/>
             <AppenderRef ref="ApplicationLogger" level="info" />
-            <AppenderRef ref="ErrorLogger" level="error"/>
         </Root>
     </Loggers>
 </Configuration>

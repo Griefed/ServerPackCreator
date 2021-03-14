@@ -13,8 +13,12 @@ import java.util.zip.ZipOutputStream;
 
 class ServerSetup {
     private static final Logger appLogger = LogManager.getLogger("ServerSetup");
-
-    // Delete clientside mods from serverpack
+    /** Optional. Deletes clientside-only mods specified in serverpackcreator.conf(clientMods). If the modpack does not have any clientside-only mods, then leaving it blank should be allowed.
+     *
+     * @param modpackDir
+     * @param clientMods
+     * @throws IOException
+     */
     static void deleteClientMods(String modpackDir, List<String> clientMods) throws IOException {
         appLogger.info("Deleting client-side mods from serverpack: ");
         File serverMods = new File(modpackDir + "/server_pack/mods");
@@ -31,14 +35,20 @@ class ServerSetup {
             }
         }
     }
-
+    /** Optional. Depending on serverpackcreator.conf(includeServerInstallation,modLoader,minecraftVersion,modLoaderVersion) this will install the files for a Forge/Fabric server.
+     *
+     * @param modLoader
+     * @param modpackDir
+     * @param minecraftVersion
+     * @param modLoaderVersion
+     * @param javaPath
+     */
     static void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
         File fabricInstaller = new File(modpackDir + "/server_pack/fabric-installer.jar");
         File forgeInstaller = new File(modpackDir + "/server_pack/forge-installer.jar");
         if (modLoader.equals("Fabric")) {
             try {
                 appLogger.info("Starting Fabric installation.");
-                // Download newest release version of fabric-installer.jar
                 ServerUtilities.downloadFabricJar(modpackDir);
                 if (fabricInstaller.exists()) {
                     ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "fabric-installer.jar", "server", "-mcversion " + minecraftVersion, "-loader " + modLoaderVersion, "-downloadMinecraft").directory(new File(modpackDir + "/server_pack"));
@@ -59,9 +69,7 @@ class ServerSetup {
         } else if (modLoader.equals("Forge")) {
             try {
                 appLogger.info("Starting Forge installation.");
-                // Download Forge installer as specified in config
                 ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
-                // Install Forge server
                 if (forgeInstaller.exists()) {
                     ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
                     processBuilder.redirectErrorStream(true);
@@ -81,18 +89,17 @@ class ServerSetup {
         } else {
             appLogger.error("Specified invalid modloader: " + modLoader);
         }
-        // Cleanup
+        ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         ServerUtilities.cleanUpServerPack(fabricInstaller, forgeInstaller, modLoader, modpackDir, minecraftVersion, modLoaderVersion);
     }
-
-    // Create zip archive of serverpack.
-    static void zipBuilder(String modpackDir, String modLoader, String minecraftVersion) {
-        // With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
-        appLogger.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
-        appLogger.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
-        appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+    /** Depending on serverpackcreator.conf(includeZipCreation) this will create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
+     * With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
+     * @param modpackDir
+     * @param modLoader
+     * @param minecraftVersion
+     */
+    static void zipBuilder(String modpackDir, String modLoader, String minecraftVersion, Boolean includeServerInstallation) {
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
-        ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         String zipFileName = sourceDir.toString().concat(".zip");
         appLogger.info("Creating zip archive of serverpack...");
         try {
@@ -116,7 +123,12 @@ class ServerSetup {
         } catch (IOException ex) {
             appLogger.error("There was an error during zip creation", ex);
         }
-        ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
+        if (includeServerInstallation) {
+            ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
+            appLogger.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
+            appLogger.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
+            appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+        }
         appLogger.info("Finished creation of zip archive.");
     }
 }

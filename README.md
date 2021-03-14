@@ -14,7 +14,7 @@ If you're a Java Pro and your eyes bulge when looking at my code, by all means, 
 You're also welcome to make contributions, or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
 
 Use at your own risk! Be aware that data loss is possible. If you wish to test this, there's a description down below.
-If you wish to contribute, fork the repository, make your changes, create a pull request and make sure to use [conventional commits](https://github.com/Griefed/ServerPackCreator/wiki)
+If you wish to contribute, fork the repository, make your changes, create a pull request and make sure to use [conventional commits](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md)
 
 ## Features
 
@@ -78,7 +78,10 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 ## Running
 
 Guides on how to run ServerPackCreator are available at:
-1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator
-2. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
+1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-Windows (for Windows) or
+2. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-macOS (for macOS)
+3. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
+
+(macOS guide by [whitebear60](https://github.com/whitebear60))
 
 (They're the same, but there's two for redundancies sake)

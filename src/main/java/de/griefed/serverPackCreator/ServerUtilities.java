@@ -27,7 +27,12 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ServerUtilities {
     private static final Logger appLogger = LogManager.getLogger("ServerUtilities");
-
+    /** Optional. Depending on serverpackcreator.conf(includeServerInstallation,modLoader,includeZipCreation) this will call generation of download scripts which will download Mojang's minecraft_server.jar. These scripts are most useful for the zip-archive of the serverpack.
+     *
+     * @param modLoader
+     * @param modpackDir
+     * @param minecraftVersion
+     */
     static void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
         if (modLoader.equals("Fabric")) {
             fabricShell(modpackDir, minecraftVersion);
@@ -39,9 +44,12 @@ class ServerUtilities {
             appLogger.error("Specified invalid Modloader: " + modLoader);
         }
     }
-
+    /** Optional. Generates minecraft_server.jar download scripts for Fabric,Linux
+     *
+     * @param modpackDir
+     * @param minecraftVersion
+     */
     private static void fabricShell(String modpackDir, String minecraftVersion) {
-        // Generate download script if modloader is Fabric, shell
         try {
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String shFabric = "#!/bin/bash\n#Download the Minecraft_server.jar for your modpack\n\nwget -O server.jar " + downloadMinecraftServer;
@@ -55,9 +63,12 @@ class ServerUtilities {
         }
         appLogger.info("Fabric shell script generated.");
     }
-
+    /** Optional. Generates minecraft_server.jar download scripts for Fabric,Windows
+     *
+     * @param modpackDir
+     * @param minecraftVersion
+     */
     private static void fabricBatch(String modpackDir, String minecraftVersion) {
-        // Generate download script if modloader is Fabric, batch
         try {
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String batFabric = "powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + downloadMinecraftServer + "', 'server.jar')\"";
@@ -71,10 +82,13 @@ class ServerUtilities {
         }
         appLogger.info("Fabric batch script generated.");
     }
-
+    /** Optional. Generates minecraft_server.jar download scripts for Forge,Linux
+     *
+     * @param modpackDir
+     * @param minecraftVersion
+     */
     private static void forgeShell(String modpackDir, String minecraftVersion) {
         try {
-            // Generate download script if modloader is Forge, shell
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String shForge = "#!/bin/bash\n# Download the Minecraft_server.jar for your modpack\n\nwget -O minecraft_server." + minecraftVersion +".jar " + downloadMinecraftServer;
             Path pathSh = Paths.get(modpackDir + "/server_pack/download_minecraft-server.jar_forge.sh");
@@ -87,10 +101,13 @@ class ServerUtilities {
         }
         appLogger.info("Forge shell script generated.");
     }
-
+    /** Optional. Generates minecraft_server.jar download scripts for Forge,Windows
+     *
+     * @param modpackDir
+     * @param minecraftVersion
+     */
     private static void forgeBatch(String modpackDir, String minecraftVersion) {
         try {
-            // Generate download script if modloader is Forge, batch
             String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
             String batForge = "powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + downloadMinecraftServer + "', 'minecraft_server." + minecraftVersion + ".jar')\"";
             Path pathBat = Paths.get(modpackDir + "/server_pack/download_minecraft-server.jar_forge.bat");
@@ -103,7 +120,10 @@ class ServerUtilities {
         }
         appLogger.info("Forge batch script generated.");
     }
-
+    /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation) this will download the specified version of Fabric.
+     *
+     * @param modpackDir
+     */
     static void downloadFabricJar(String modpackDir) {
         try {
             URL downloadFabric = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/" + latestFabric(modpackDir) + "/fabric-installer-" + latestFabric(modpackDir) + ".jar");
@@ -117,11 +137,14 @@ class ServerUtilities {
             appLogger.error("Error downloading Fabric.", ex);
         }
     }
-
+    /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation), this returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.
+     *
+     * @param modpackDir
+     * @return
+     */
     private static String latestFabric(String modpackDir) {
         String result;
         try {
-            // Download fabric-installer.xml
             URL downloadFabricXml = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
             FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(modpackDir + "/server_pack/fabric-installer.xml");
@@ -129,7 +152,6 @@ class ServerUtilities {
             downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
             downloadFabricXmlFileOutputStream.flush();
             downloadFabricXmlFileOutputStream.close();
-            // Parse fabric-installer.xml to get newest release version
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = domFactory.newDocumentBuilder();
             Document fabricXml = builder.parse(new File(modpackDir + "/server_pack/fabric-installer.xml"));
@@ -144,7 +166,12 @@ class ServerUtilities {
             appLogger.info("Successfully retrieved Fabric XML.");
         }
     }
-
+    /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation,modLoaderVersion) this downloads the specified version of the Forge installer to be used in ServerSetup.installServer.
+     *
+     * @param minecraftVersion
+     * @param modLoaderVersion
+     * @param modpackDir
+     */
     static void downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
         try {
             URL downloadForge = new URL("https://files.minecraftforge.net/maven/net/minecraftforge/forge/" + minecraftVersion + "-" + modLoaderVersion + "/forge-" + minecraftVersion + "-" + modLoaderVersion + "-installer.jar");
@@ -158,10 +185,12 @@ class ServerUtilities {
             appLogger.error("Error downloading Forge.", ex);
         }
     }
-
+    /** Optional. Depending on serverpackcreator.conf(includeZipCreation) this will delete Mojang's minecraft_server.jar from the zip-archive so users do not accidentally upload a file containing software from Mojang.
+     * With help from https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python and https://bugs.openjdk.java.net/browse/JDK-8186227
+     * @param modLoader
+     * @param modpackDir
+     */
     static void deleteMinecraftJar(String modLoader, String modpackDir) {
-        // With help from https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python
-        // and https://bugs.openjdk.java.net/browse/JDK-8186227
         if (modLoader.equals("Forge")) {
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
@@ -194,7 +223,15 @@ class ServerUtilities {
             appLogger.error("Specified invalid modloader: " + modLoader);
         }
     }
-
+    /** Optional. This deletes remnant files from Fabric/Forge installation no longer needed.
+     *
+     * @param fabricInstaller
+     * @param forgeInstaller
+     * @param modLoader
+     * @param modpackDir
+     * @param minecraftVersion
+     * @param modLoaderVersion
+     */
     static void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
         appLogger.info("Cleanup after modloader server installation.");
         if (modLoader.equals("Fabric")) {
