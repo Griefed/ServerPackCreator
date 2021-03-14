@@ -27,7 +27,7 @@ class FilesSetup {
         appLogger.info("Setting up default files...");
         boolean firstRun = true;
         try {
-            Files.createDirectories(Paths.get("server_files"));
+            Files.createDirectories(Paths.get("./server_files"));
         } catch (IOException ex) {
             appLogger.error("Could not create server_files directory.", ex);
         }
@@ -57,7 +57,7 @@ class FilesSetup {
         if (!forgeWindowsFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + forgeWindowsFile.getName()));
-                Files.copy(link, Paths.get("server_files/" + forgeWindowsFile));
+                Files.copy(link, Paths.get("./server_files/" + forgeWindowsFile));
                 link.close();
                 appLogger.info("Default Forge Windows start file generated.");
             } catch (IOException ex) {
@@ -69,7 +69,7 @@ class FilesSetup {
         if (!forgeLinuxFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + forgeLinuxFile.getName()));
-                Files.copy(link, Paths.get("server_files/" + forgeLinuxFile));
+                Files.copy(link, Paths.get("./server_files/" + forgeLinuxFile));
                 link.close();
                 appLogger.info("Default Forge Linux start file generated.");
             } catch (IOException ex) {
@@ -81,7 +81,7 @@ class FilesSetup {
         if (!fabricWindowsFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + fabricWindowsFile.getName()));
-                Files.copy(link, Paths.get("server_files/" + fabricWindowsFile));
+                Files.copy(link, Paths.get("./server_files/" + fabricWindowsFile));
                 link.close();
                 appLogger.info("Default Fabric Windows start file generated.");
             } catch (IOException ex) {
@@ -93,7 +93,7 @@ class FilesSetup {
         if (!fabricLinuxFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + fabricLinuxFile.getName()));
-                Files.copy(link, Paths.get("server_files/" + fabricLinuxFile));
+                Files.copy(link, Paths.get("./server_files/" + fabricLinuxFile));
                 link.close();
                 appLogger.info("Default Fabric Linux start file generated.");
             } catch (IOException ex) {
@@ -105,7 +105,7 @@ class FilesSetup {
         if (!propertiesFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + propertiesFile.getName()));
-                Files.copy(link, Paths.get("server_files/" + propertiesFile));
+                Files.copy(link, Paths.get("./server_files/" + propertiesFile));
                 link.close();
                 appLogger.info("Default server.properties file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {
@@ -117,7 +117,7 @@ class FilesSetup {
         if (!iconFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + iconFile.getName()));
-                Files.copy(link, Paths.get("server_files/" + iconFile));
+                Files.copy(link, Paths.get("./server_files/" + iconFile));
                 link.close();
                 appLogger.info("Default server-icon.png file generated. Please customize if you intend on using it.");
             } catch (IOException ex) {

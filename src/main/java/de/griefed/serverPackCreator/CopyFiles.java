@@ -60,16 +60,16 @@ class CopyFiles {
         if (modLoader.equals("Forge") && includeStartScripts) {
             appLogger.info("Copying Forge start scripts...");
             try {
-                Files.copy(Paths.get("server_files/" + FilesSetup.forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.forgeWindowsFile), REPLACE_EXISTING);
-                Files.copy(Paths.get("server_files/" + FilesSetup.forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.forgeLinuxFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("./server_files/" + FilesSetup.forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.forgeWindowsFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("./server_files/" + FilesSetup.forgeLinuxFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.forgeLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
                 appLogger.error("An error occurred while copying files: ", ex);
             }
         } else if (modLoader.equals("Fabric") && includeStartScripts) {
             appLogger.info("Copying Fabric start scripts...");
             try {
-                Files.copy(Paths.get("server_files/" + FilesSetup.fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.fabricWindowsFile), REPLACE_EXISTING);
-                Files.copy(Paths.get("server_files/" + FilesSetup.fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.fabricLinuxFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("./server_files/" + FilesSetup.fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.fabricWindowsFile), REPLACE_EXISTING);
+                Files.copy(Paths.get("./server_files/" + FilesSetup.fabricLinuxFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.fabricLinuxFile), REPLACE_EXISTING);
             } catch (IOException ex) {
                 appLogger.error("An error occurred while copying files: ", ex);
             }
@@ -134,7 +134,7 @@ class CopyFiles {
     static void copyIcon(String modpackDir) {
         appLogger.info("Copying server-icon.png...");
         try {
-            Files.copy(Paths.get("server_files/" + FilesSetup.iconFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.iconFile), REPLACE_EXISTING);
+            Files.copy(Paths.get("./server_files/" + FilesSetup.iconFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.iconFile), REPLACE_EXISTING);
         } catch (IOException ex) {
             appLogger.error("An error occurred trying to copy the server icon.", ex);
         }
@@ -146,7 +146,7 @@ class CopyFiles {
     static void copyProperties(String modpackDir) {
         appLogger.info("Copying server.properties...");
         try {
-            Files.copy(Paths.get("server_files/" + FilesSetup.propertiesFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.propertiesFile), REPLACE_EXISTING);
+            Files.copy(Paths.get("./server_files/" + FilesSetup.propertiesFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.propertiesFile), REPLACE_EXISTING);
         } catch (IOException ex) {
             appLogger.error("An error occurred trying to copy the server.properties-file.", ex);
         }
