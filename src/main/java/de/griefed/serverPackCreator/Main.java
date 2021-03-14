@@ -200,6 +200,7 @@ public class Main {
      *
      * @return Returns boolean depending on whether the specified Minecraft version could be found in Mojang#s manifest.
      */
+
     private static boolean isMinecraftVersionCorrect() {
         try {
             URL manifestJsonURL = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");

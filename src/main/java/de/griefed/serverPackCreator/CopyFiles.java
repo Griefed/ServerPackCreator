@@ -27,7 +27,6 @@ class CopyFiles {
                                 Files.delete(dir);
                                 return FileVisitResult.CONTINUE;
                             }
-
                             @Override
                             public FileVisitResult visitFile(
                                     Path file, BasicFileAttributes attrs)
