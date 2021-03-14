@@ -57,44 +57,22 @@ public class Main {
         }
         FilesSetup.filesSetup();
         appLogger.info("Getting configuration...");
-        conf = ConfigFactory.parseFile(FilesSetup.configFile);
+        try {
+            conf = ConfigFactory.parseFile(FilesSetup.configFile);
+        } catch (ConfigException ex) {
+            appLogger.error("One of your config values is empty. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
+        }
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
-        try {
             includeServerInstallation = conf.getBoolean("includeServerInstallation");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Wrong configuration for includeServerInstallation. Must be true or false.", ex);
-        }
         minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
         modLoaderVersion = conf.getString("modLoaderVersion");
-        try {
             includeServerIcon = conf.getBoolean("includeServerIcon");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Wrong configuration for includeServerIcon. Must be true or false.", ex);
-        }
-        try {
             includeServerProperties = conf.getBoolean("includeServerProperties");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Wrong configuration for includeServerProperties. Must be true or false.", ex);
-        }
-        try {
             includeStartScripts = conf.getBoolean("includeStartScripts");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Wrong configuration for includeStartScripts. Must be true or false.", ex);
-        }
-        try {
             includeZipCreation = conf.getBoolean("includeZipCreation");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Wrong configuration for includeZipCreation. Must be true or false.", ex);
-        }
-
         if (modpackDir.equalsIgnoreCase("")) {
             configHasError = true;
             appLogger.error("Error: Modpack directory not specified.");
