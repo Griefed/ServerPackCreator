@@ -40,7 +40,7 @@ public class Main {
      * Basically, the main class makes the calls to every other class where the actual magic is happening. The main class of ServerPackCreator should never contain code which does work on the serverpack itself.
      *
      */
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         appLogger.warn("################################################################");
         appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
         appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
@@ -57,7 +57,11 @@ public class Main {
         }
         FilesSetup.filesSetup();
         appLogger.info("Getting configuration...");
-        conf = ConfigFactory.parseFile(FilesSetup.configFile);
+        try {
+            conf = ConfigFactory.parseFile(FilesSetup.configFile);
+        } catch (ConfigException ex) {
+            appLogger.error("One of your config values is empty. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".", ex);
+        }
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
@@ -65,7 +69,7 @@ public class Main {
             includeServerInstallation = conf.getBoolean("includeServerInstallation");
         } catch (ConfigException ex) {
             configHasError = true;
-            appLogger.error("Wrong configuration for includeServerInstallation. Must be true or false.", ex);
+            appLogger.error("Error: Wrong configuration for includeServerInstallation. Must be true or false.");
         }
         minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
@@ -74,25 +78,25 @@ public class Main {
             includeServerIcon = conf.getBoolean("includeServerIcon");
         } catch (ConfigException ex) {
             configHasError = true;
-            appLogger.error("Wrong configuration for includeServerIcon. Must be true or false.", ex);
+            appLogger.error("Error: Wrong configuration for includeServerIcon. Must be true or false.");
         }
         try {
             includeServerProperties = conf.getBoolean("includeServerProperties");
         } catch (ConfigException ex) {
             configHasError = true;
-            appLogger.error("Wrong configuration for includeServerProperties. Must be true or false.", ex);
+            appLogger.error("Error: Wrong configuration for includeServerProperties. Must be true or false.");
         }
         try {
             includeStartScripts = conf.getBoolean("includeStartScripts");
         } catch (ConfigException ex) {
             configHasError = true;
-            appLogger.error("Wrong configuration for includeStartScripts. Must be true or false.", ex);
+            appLogger.error("Error: Wrong configuration for includeStartScripts. Must be true or false.");
         }
         try {
             includeZipCreation = conf.getBoolean("includeZipCreation");
         } catch (ConfigException ex) {
             configHasError = true;
-            appLogger.error("Wrong configuration for includeZipCreation. Must be true or false.", ex);
+            appLogger.error("Error: Wrong configuration for includeZipCreation. Must be true or false.");
         }
 
         if (modpackDir.equalsIgnoreCase("")) {
@@ -218,7 +222,6 @@ public class Main {
             appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
             appLogger.info("Done!");
         } else {
-            System.out.println();
             appLogger.error("Config file has errors. Consider editing serverpackcreator.conf file that is located in directory with SPC.");
             System.exit(1);
         }
@@ -227,7 +230,6 @@ public class Main {
      *
      * @return Returns boolean depending on whether the specified Minecraft version could be found in Mojang#s manifest.
      */
-
     private static boolean isMinecraftVersionCorrect() {
         try {
             URL manifestJsonURL = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
