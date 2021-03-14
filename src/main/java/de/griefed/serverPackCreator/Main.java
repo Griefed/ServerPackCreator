@@ -60,7 +60,7 @@ public class Main {
         try {
             conf = ConfigFactory.parseFile(FilesSetup.configFile);
         } catch (ConfigException ex) {
-            appLogger.error("One of your config values is empty. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".", ex);
+            appLogger.error("One of your config values is empty. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
         }
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
