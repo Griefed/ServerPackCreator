@@ -89,6 +89,7 @@ class ServerSetup {
         } else {
             appLogger.error("Specified invalid modloader: " + modLoader);
         }
+        ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         ServerUtilities.cleanUpServerPack(fabricInstaller, forgeInstaller, modLoader, modpackDir, minecraftVersion, modLoaderVersion);
     }
     /** Depending on serverpackcreator.conf(includeZipCreation) this will create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
@@ -97,12 +98,8 @@ class ServerSetup {
      * @param modLoader
      * @param minecraftVersion
      */
-    static void zipBuilder(String modpackDir, String modLoader, String minecraftVersion) {
-        appLogger.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
-        appLogger.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
-        appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+    static void zipBuilder(String modpackDir, String modLoader, String minecraftVersion, Boolean includeServerInstallation) {
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
-        ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         String zipFileName = sourceDir.toString().concat(".zip");
         appLogger.info("Creating zip archive of serverpack...");
         try {
@@ -126,7 +123,12 @@ class ServerSetup {
         } catch (IOException ex) {
             appLogger.error("There was an error during zip creation", ex);
         }
-        ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
+        if (includeServerInstallation) {
+            ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
+            appLogger.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
+            appLogger.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
+            appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+        }
         appLogger.info("Finished creation of zip archive.");
     }
 }
