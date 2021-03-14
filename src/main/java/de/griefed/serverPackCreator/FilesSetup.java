@@ -128,11 +128,9 @@ class FilesSetup {
         }
         if (firstRun) {
             appLogger.warn("################################################################");
-            appLogger.warn("#                                                              #");
-            appLogger.warn("#       FIRST RUN. CUSTOMIZE YOUR CREATOR.CONF FILE NOW.       #");
+            appLogger.warn("#  FIRST RUN. CUSTOMIZE YOUR SERVERPACKCREATOR.CONF FILE NOW.  #");
             appLogger.warn("#        THE DEFAULTS ARE MEANT TO SHOW HOW IT'S DONE.         #");
             appLogger.warn("#    THE DEFAULTS WILL MOST LIKELY NOT WORK ON YOUR SYSTEM.    #");
-            appLogger.warn("#                                                              #");
             appLogger.warn("################################################################");
             appLogger.warn("First run! Default files generated. Please customize and run again.");
             System.exit(0);
