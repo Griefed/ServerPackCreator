@@ -67,14 +67,40 @@ public class Main {
         modpackDir = conf.getString("modpackDir");
         clientMods = conf.getStringList("clientMods");
         copyDirs = conf.getStringList("copyDirs");
+        try {
             includeServerInstallation = conf.getBoolean("includeServerInstallation");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Error: Wrong configuration for includeServerInstallation. Must be true or false.");
+        }
         minecraftVersion = conf.getString("minecraftVersion");
         modLoader = conf.getString("modLoader");
         modLoaderVersion = conf.getString("modLoaderVersion");
+        try {
             includeServerIcon = conf.getBoolean("includeServerIcon");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Error: Wrong configuration for includeServerIcon. Must be true or false.");
+        }
+        try {
             includeServerProperties = conf.getBoolean("includeServerProperties");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Error: Wrong configuration for includeServerProperties. Must be true or false.");
+        }
+        try {
             includeStartScripts = conf.getBoolean("includeStartScripts");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Error: Wrong configuration for includeStartScripts. Must be true or false.");
+        }
+        try {
             includeZipCreation = conf.getBoolean("includeZipCreation");
+        } catch (ConfigException ex) {
+            configHasError = true;
+            appLogger.error("Error: Wrong configuration for includeZipCreation. Must be true or false.");
+        }
+
         if (modpackDir.equalsIgnoreCase("")) {
             configHasError = true;
             appLogger.error("Error: Modpack directory not specified.");
@@ -201,7 +227,6 @@ public class Main {
             appLogger.info("Serverpack available at: " + modpackDir + "/serverpack");
             appLogger.info("Done!");
         } else {
-            System.out.println();
             appLogger.error("Config file has errors. Consider editing serverpackcreator.conf file that is located in directory with SPC.");
             System.exit(1);
         }
@@ -210,7 +235,6 @@ public class Main {
      *
      * @return Returns boolean depending on whether the specified Minecraft version could be found in Mojang's manifest.
      */
-
     static boolean isMinecraftVersionCorrect(String mcver) {
         try {
             URL manifestJsonURL = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
