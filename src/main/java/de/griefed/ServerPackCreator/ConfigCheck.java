@@ -37,7 +37,7 @@ class ConfigCheck {
     private static final Logger appLogger = LogManager.getLogger("ConfigCheck");
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
      *
-     * @return return true if error is found in user's configuration
+     * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
     static boolean checkConfig() {
         appLogger.info("Checking configuration...");
@@ -233,8 +233,8 @@ class ConfigCheck {
             FileOutputStream downloadManifestOutputStream = null;
             try {
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+            } catch (FileNotFoundException ex) {
+                appLogger.error("Error: Couldn't create Fabric Manifest JSON", ex);
                 File file = new File("fabric-manifest.xml");
                 if (!file.exists()){
                     appLogger.info("Fabric Manifest XML File does not exist, creating...");

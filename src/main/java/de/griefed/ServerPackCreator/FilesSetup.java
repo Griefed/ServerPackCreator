@@ -18,8 +18,9 @@ class FilesSetup {
     static final File fabricWindowsFile = new File("start-fabric.bat");
     static final File fabricLinuxFile = new File("start-fabric.sh");
     private static final Logger appLogger = LogManager.getLogger("FilesSetup");
-    /** Mandatory. Generate all default files, including serverpackcreator.conf if it does not exist. Said default files provide an example for the user as to what is possible and a template as well. It is possible to run this application only with the serverpackcreator.conf, so long as the related config variables are set correctly. If the serverpackcreator.conf file was generated during execution of this method, it is considered as first run and will exit after generation of said conf-file.
-     *
+    /** Generate all default files, including serverpackcreator.conf if it does not exist. Said default files provide an example for the user as to what is possible and a template as well.
+     * It is possible to run this application only with the serverpackcreator.conf, so long as the related config variables are set correctly.
+     * If any file was generated during execution of this method, it is considered as first run and will exit after generation of said conf-file and tell the user to customize and run again.
      */
     static void filesSetup() {
         appLogger.info("Checking for default files...");

@@ -13,11 +13,11 @@ import java.util.zip.ZipOutputStream;
 
 class ServerSetup {
     private static final Logger appLogger = LogManager.getLogger("ServerSetup");
-    /** Optional. Deletes clientside-only mods specified in serverpackcreator.conf(clientMods). If the modpack does not have any clientside-only mods, then leaving it blank should be allowed.
+    /** Deletes client-side-only mods in server_pack, if specified.
      *
-     * @param modpackDir
-     * @param clientMods
-     * @throws IOException
+     * @param modpackDir Files will be deleted in the subfolder server_pack.
+     * @param clientMods Client mods to delete.
+     * @throws IOException Throw error if a file could not be deleted.
      */
     static void deleteClientMods(String modpackDir, List<String> clientMods) throws IOException {
         appLogger.info("Deleting client-side mods from serverpack: ");
