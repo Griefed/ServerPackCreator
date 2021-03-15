@@ -17,6 +17,7 @@ class CopyFiles {
      */
     static void cleanupEnvironment(String modpackDir) {
         if (new File(modpackDir + "/server_pack").exists()) {
+            appLogger.info("Found old server_pack. Cleaning up...");
             Path serverPack = Paths.get(modpackDir + "/server_pack");
             try {
                 Files.walkFileTree(serverPack,
@@ -42,6 +43,7 @@ class CopyFiles {
             }
         }
         if (new File(modpackDir + "/server_pack.zip").exists()) {
+            appLogger.info("Found old server_pack.zip. Cleaning up...");
             boolean isZipDeleted = new File(modpackDir + "/server_pack.zip").delete();
             if (isZipDeleted) {
                 appLogger.info("Old server_pack.zip deleted.");
