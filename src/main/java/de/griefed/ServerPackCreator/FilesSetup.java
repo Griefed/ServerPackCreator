@@ -1,4 +1,4 @@
-package de.griefed.serverPackCreator;
+package de.griefed.ServerPackCreator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

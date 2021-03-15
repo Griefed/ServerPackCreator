@@ -1,4 +1,4 @@
-package de.griefed.serverPackCreator;
+package de.griefed.ServerPackCreator;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;

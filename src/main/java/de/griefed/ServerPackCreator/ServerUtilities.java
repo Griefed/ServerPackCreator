@@ -1,4 +1,4 @@
-package de.griefed.serverPackCreator;
+package de.griefed.ServerPackCreator;
 
 import net.fabricmc.installer.util.LauncherMeta;
 import org.apache.logging.log4j.LogManager;
