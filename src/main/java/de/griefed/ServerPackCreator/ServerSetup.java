@@ -46,7 +46,7 @@ class ServerSetup {
     static void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
         File fabricInstaller = new File(modpackDir + "/server_pack/fabric-installer.jar");
         File forgeInstaller = new File(modpackDir + "/server_pack/forge-installer.jar");
-        if (modLoader.equals("Fabric")) {
+        if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
                 appLogger.info("Starting Fabric installation.");
                 ServerUtilities.downloadFabricJar(modpackDir);
@@ -66,7 +66,7 @@ class ServerSetup {
             } catch (IOException ex) {
                 appLogger.error("An error occurred during Fabric installation.", ex);
             }
-        } else if (modLoader.equals("Forge")) {
+        } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
                 appLogger.info("Starting Forge installation.");
                 ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);

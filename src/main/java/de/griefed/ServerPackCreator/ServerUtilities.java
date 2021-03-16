@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -23,6 +24,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
+
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ServerUtilities {
@@ -34,10 +36,10 @@ class ServerUtilities {
      * @param minecraftVersion
      */
     static void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
-        if (modLoader.equals("Fabric")) {
+        if (modLoader.equalsIgnoreCase("Fabric")) {
             fabricShell(modpackDir, minecraftVersion);
             fabricBatch(modpackDir, minecraftVersion);
-        } else if (modLoader.equals("Forge")) {
+        } else if (modLoader.equalsIgnoreCase("Forge")) {
             forgeShell(modpackDir, minecraftVersion);
             forgeBatch(modpackDir, minecraftVersion);
         } else {
@@ -191,7 +193,7 @@ class ServerUtilities {
      * @param modpackDir
      */
     static void deleteMinecraftJar(String modLoader, String modpackDir) {
-        if (modLoader.equals("Forge")) {
+        if (modLoader.equalsIgnoreCase("Forge")) {
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
             zip_properties.put("encoding", "UTF-8");
@@ -205,7 +207,7 @@ class ServerUtilities {
             } catch (IOException ex) {
                 appLogger.error("Error deleting minecraft-server.jar from archive.", ex);
             }
-        } else if (modLoader.equals("Fabric")) {
+        } else if (modLoader.equalsIgnoreCase("Fabric")) {
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
             zip_properties.put("encoding", "UTF-8");
@@ -234,7 +236,7 @@ class ServerUtilities {
      */
     static void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
         appLogger.info("Cleanup after modloader server installation.");
-        if (modLoader.equals("Fabric")) {
+        if (modLoader.equalsIgnoreCase("Fabric")) {
             File fabricXML = new File(modpackDir + "/server_pack/fabric-installer.xml");
             boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
@@ -242,7 +244,7 @@ class ServerUtilities {
             else { appLogger.error("Could not delete " + fabricXML.getName()); }
             if (isInstallerDeleted) { appLogger.info("Deleted " + fabricInstaller.getName()); }
             else { appLogger.error("Could not delete " + fabricInstaller.getName()); }
-        } else if (modLoader.equals("Forge")) {
+        } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
                 Files.copy(Paths.get(modpackDir + "/server_pack/forge-" + minecraftVersion + "-" + modLoaderVersion + ".jar"), Paths.get(modpackDir + "/server_pack/forge.jar"), REPLACE_EXISTING);
                 boolean isOldJarDeleted = (new File(modpackDir + "/server_pack/forge-" + minecraftVersion + "-" + modLoaderVersion + ".jar")).delete();
