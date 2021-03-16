@@ -20,7 +20,7 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
-group 'de.griefed.ServerPackCreator'
+group 'de.griefed'
 
 sourceSets {
     main {
