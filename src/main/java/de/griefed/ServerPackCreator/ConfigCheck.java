@@ -271,4 +271,9 @@ class ConfigCheck {
             return false;
         }
     }
+    /* @Whitebear60: Replace this with your Forge version check method.
+    private static boolean isForgeVersionCorrect(String version) {
+
+    }
+    */
 }
