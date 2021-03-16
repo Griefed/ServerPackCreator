@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -59,6 +60,18 @@ class ConfigCheck {
             appLogger.error("Error: No directories specified for copying. This would result in an empty serverpack.");
         } else {
             copyDirs = conf.getStringList("copyDirs");
+        }
+        boolean isAllDirectoriesExist = true;
+        for (int i = 0; i < copyDirs.size(); i++) {
+            File dir = new File(modpackDir + "/" + copyDirs.get(i));
+            if (!dir.exists() || !dir.isDirectory()) {
+                isAllDirectoriesExist = false;
+                appLogger.error(dir.getAbsolutePath() + " does not exist.");
+            }
+        }
+        if (!isAllDirectoriesExist) {
+            appLogger.error("One or more directories that you specified to copy does not exist. Consider checking the logs above and creating these directories / fixing typos in config file.");
+            System.exit(5);
         }
         try {
             includeServerInstallation = conf.getBoolean("includeServerInstallation");
