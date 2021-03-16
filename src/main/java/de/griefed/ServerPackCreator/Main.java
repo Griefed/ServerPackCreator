@@ -2,17 +2,23 @@ package de.griefed.ServerPackCreator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 
 public class Main {
-    static Boolean clientModsExist;
     private static final Logger appLogger = LogManager.getLogger("Main");
     /** Warn user about WIP status. Get configuration from serverpackcreator.conf. Check configuration. Print configuration. Make calls according to configuration.
      * Basically, the main class makes the calls to every other class where the actual magic is happening. The main class of ServerPackCreator should never contain code which does work on the serverpack itself.
      *
      */
     public static void main(String[] args) {
+//        System.out.println(System.getProperty("java.home"));
+        System.out.println(Arrays.toString(args));
+        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || !FilesSetup.oldConfigFile.exists() || !FilesSetup.configFile.exists()){
+            CLISetup.setup();
+        }
         appLogger.warn("################################################################");
         appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
         appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");

@@ -2,11 +2,14 @@ package de.griefed.ServerPackCreator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.io.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.stream.Stream;
+
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class CopyFiles {
@@ -59,7 +62,7 @@ class CopyFiles {
      * @param includeStartScripts Whether to include start scripts in server_pack. Boolean.
      */
     static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
-        if (modLoader.equals("Forge") && includeStartScripts) {
+        if (modLoader.equalsIgnoreCase("Forge") && includeStartScripts) {
             appLogger.info("Copying Forge start scripts...");
             try {
                 Files.copy(Paths.get("./server_files/" + FilesSetup.forgeWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.forgeWindowsFile), REPLACE_EXISTING);
@@ -67,7 +70,7 @@ class CopyFiles {
             } catch (IOException ex) {
                 appLogger.error("An error occurred while copying files: ", ex);
             }
-        } else if (modLoader.equals("Fabric") && includeStartScripts) {
+        } else if (modLoader.equalsIgnoreCase("Fabric") && includeStartScripts) {
             appLogger.info("Copying Fabric start scripts...");
             try {
                 Files.copy(Paths.get("./server_files/" + FilesSetup.fabricWindowsFile), Paths.get(modpackDir + "/server_pack/" + FilesSetup.fabricWindowsFile), REPLACE_EXISTING);

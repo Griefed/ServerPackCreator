@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -83,17 +82,15 @@ class ConfigCheck {
                     appLogger.error("Error: Invalid Minecraft version specified.");
                 } else {
                     minecraftVersion = conf.getString("minecraftVersion");
-                    if (!conf.getString("modLoader").equals("Forge") && !conf.getString("modLoader").equals("Fabric") && !conf.getString("modLoader").equals("")) {
+                    if (!conf.getString("modLoader").equalsIgnoreCase("Forge") && !conf.getString("modLoader").equalsIgnoreCase("Fabric") && !conf.getString("modLoader").equals("")) {
                         configHasError = true;
                         appLogger.error("Error: Incorrect mod loader specified.");
-                    } else if (conf.getString("modLoader").equals("Fabric") && !ConfigCheck.isFabricVersionCorrect(conf.getString("modLoaderVersion"))) {
+                    } else if (conf.getString("modLoader").equalsIgnoreCase("Fabric") && !ConfigCheck.isFabricVersionCorrect(conf.getString("modLoaderVersion"))) {
                         configHasError = true;
                         appLogger.error("Error: Incorrect Fabric version specified.");
-                    /* @Whitebear60 Make the call for Forge version check here!
-                    } else if (conf.getString("modLoader").equals("Forge") && !ConfigCheck.isForgeVersionCorrect(conf.getString("modLoaderVersion"))) {
+                    } else if (conf.getString("modLoader").equalsIgnoreCase("Forge") && !ConfigCheck.isForgeVersionCorrect(conf.getString("modLoaderVersion"), conf.getString("minecraftVersion"))){
                         configHasError = true;
                         appLogger.error("Error: Incorrect Forge version specified.");
-                    */
                     } else {
                         if (conf.getString("modLoaderVersion").equals("")) {
                             configHasError = true;
@@ -176,17 +173,12 @@ class ConfigCheck {
     }
     /** Optional. Check the specified Minecraft version against Mojang's version manifest to validate the version.
      *
+     * @param mcver Minecraft version to check.
      * @return Returns boolean depending on whether the specified Minecraft version could be found in Mojang's manifest.
      */
-    private static boolean isMinecraftVersionCorrect(String mcver) {
+    static boolean isMinecraftVersionCorrect(String mcver) {
         try {
-            File manifestJSONFile = new File(conf.getString("modpackDir") + "/manifest.json");
-            manifestJSONFile.getParentFile().createNewFile();
-        } catch (IOException ex) {
-            appLogger.error("Error: Couldn't create Minecraft Manifest JSON", ex);
-        }
-        try {
-            URL manifestJsonURL = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
+            URL manifestJsonURL = new URL(Reference.MINECRAFT_MANIFEST_URL);
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
             FileOutputStream downloadManifestOutputStream = null;
             try {
@@ -222,13 +214,14 @@ class ConfigCheck {
             return false;
         }
     }
-    /** Optional. Check the specified Minecraft version against Fabric's version manifest to validate the version.
+    /** Optional. Check the specified Fabric version against Fabric's version manifest to validate the version.
      *
-     * @return Returns boolean depending on whether the specified Minecraft version could be found in Fabric's manifest.
+     * @param version The Fabric version to check
+     * @return Returns boolean depending on whether the specified Fabric version could be found in Fabric's manifest.
      */
-    private static boolean isFabricVersionCorrect(String version) {
+    static boolean isFabricVersionCorrect(String version) {
         try {
-            URL manifestJsonURL = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml");
+            URL manifestJsonURL = new URL(Reference.FABRIC_MANIFEST_URL);
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
             FileOutputStream downloadManifestOutputStream = null;
             try {
@@ -271,9 +264,56 @@ class ConfigCheck {
             return false;
         }
     }
-    /* @Whitebear60: Replace this with your Forge version check method.
-    private static boolean isForgeVersionCorrect(String version) {
 
+    /**
+     * Checks Forge version for errors (basically for its availability in Forge manifest)
+     *
+     * @param version The Forge version to check
+     * @param minecraftVersion The Minecraft version that modpack uses. Needed to prevent usage of Forge, for example, from MC version 1.7.10, with 1.12.2.
+     * @return Returns true if Forge version correct and false if it isn't correct.
+     */
+    static boolean isForgeVersionCorrect(String version, String minecraftVersion) {
+        try {
+            URL manifestJsonURL = new URL(Reference.FORGE_MANIFEST_URL);
+            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+            FileOutputStream downloadManifestOutputStream = null;
+            try {
+                downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                File file = new File("forge-manifest.json");
+                if (!file.exists()){
+                    appLogger.info("Forge Manifest JSON File does not exist, creating...");
+                    boolean jsonCreated = file.createNewFile();
+                    if (jsonCreated) {
+                        appLogger.info("Forge Manifest JSON File created");
+                    } else {
+                        appLogger.error("Error. Could not create Forge Manifest JSON File.");
+                    }
+                }
+                downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
+            }
+            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            downloadManifestOutputStream.flush();
+            downloadManifestOutputStream.close();
+            File manifestJsonFile = new File("forge-manifest.json");
+            manifestJsonFile.deleteOnExit();
+            Scanner myReader = new Scanner(manifestJsonFile);
+            ArrayList<String> d = new ArrayList<>();
+            while (myReader.hasNextLine()) {
+                d.add(myReader.nextLine());
+            }
+            String[] data = new String[d.size()];
+            String manifestJSON;
+            d.toArray(data);
+            manifestJSON = Arrays.toString(data);
+            myReader.close();
+            manifestJSON = manifestJSON.replaceAll("\\s", "");
+            return manifestJSON.trim().contains(String.format("%s-%s", minecraftVersion, version));
+        } catch (Exception ex) {
+            appLogger.error("An error occurred during Forge version validation.", ex);
+            return false;
+        }
     }
-    */
 }
