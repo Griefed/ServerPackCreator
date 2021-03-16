@@ -178,7 +178,7 @@ class ConfigCheck {
      *
      * @return Returns boolean depending on whether the specified Minecraft version could be found in Mojang's manifest.
      */
-    private static boolean isMinecraftVersionCorrect(String mcver) {
+    static boolean isMinecraftVersionCorrect(String mcver) {
         try {
             File manifestJSONFile = new File(conf.getString("modpackDir") + "/manifest.json");
             manifestJSONFile.getParentFile().createNewFile();
@@ -226,7 +226,7 @@ class ConfigCheck {
      *
      * @return Returns boolean depending on whether the specified Minecraft version could be found in Fabric's manifest.
      */
-    private static boolean isFabricVersionCorrect(String version) {
+    static boolean isFabricVersionCorrect(String version) {
         try {
             URL manifestJsonURL = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml");
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
@@ -272,7 +272,7 @@ class ConfigCheck {
         }
     }
     /* @Whitebear60: Replace this with your Forge version check method.
-    private static boolean isForgeVersionCorrect(String version) {
+    static boolean isForgeVersionCorrect(String version) {
 
     }
     */
