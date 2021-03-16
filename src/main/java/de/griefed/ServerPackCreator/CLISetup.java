@@ -37,12 +37,7 @@ class CLISetup {
     System.out.println();
     System.out.println("Enter client mods names, one per line. When you are done, simply press enter with empty input.");
     clientMods.addAll(readStringArray());
-//    StringBuilder sb = new StringBuilder();
-//    for (int i = 0; i <clientMods.size(); i++) {
-//      if (clientMods.size() - 1 == 1) {
-//        sb.append(clientMods.get(i));
-//      }
-//    }
+
     String[] cm = new String[clientMods.size()];
     clientMods.toArray(cm);
     System.out.println("What directories to copy? Specify relative paths from the modpack path you have set already.");
@@ -96,7 +91,6 @@ class CLISetup {
           break;
         } else break;
       }
-//      if ()
     }
     System.out.println();
     System.out.println("Include server icon?");
@@ -181,10 +175,6 @@ class CLISetup {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-
-    System.out.println(s);
-    System.exit(0);
   }
 
 
