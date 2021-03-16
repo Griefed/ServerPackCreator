@@ -5,7 +5,6 @@ import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -264,9 +263,7 @@ class ConfigCheck {
             return false;
         }
     }
-
-    /**
-     * Checks Forge version for errors (basically for its availability in Forge manifest)
+    /** Checks Forge version for errors (basically for its availability in Forge manifest)
      *
      * @param version The Forge version to check
      * @param minecraftVersion The Minecraft version that modpack uses. Needed to prevent usage of Forge, for example, from MC version 1.7.10, with 1.12.2.
