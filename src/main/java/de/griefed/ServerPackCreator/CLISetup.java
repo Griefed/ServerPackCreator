@@ -1,5 +1,8 @@
 package de.griefed.ServerPackCreator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,6 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 
 class CLISetup {
+  private static final Logger appLogger = LogManager.getLogger("CLISetup");
   /**
    * CLI for config file generation. Prompts user to enter config file values and then generates a config file with values entered by user.
    */
@@ -25,86 +29,81 @@ class CLISetup {
     Boolean includeServerProperties;
     Boolean includeStartScripts;
     Boolean includeZipCreation;
-
     Scanner reader = new Scanner(System.in);
 
-
-    System.out.println("First of all, enter your modpack path. This path can be relative or absolute.");
-    System.out.println("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
+    appLogger.info("First of all, enter your modpack path. This path can be relative or absolute.");
+    appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
     System.out.println();
-    System.out.print("Enter your modpack path: ");
+    appLogger.info("Enter your modpack path: ");
     modpackDir = reader.nextLine();
     System.out.println();
-    System.out.println("Enter client mods names, one per line. When you are done, simply press enter with empty input.");
+    appLogger.info("Enter client mods names, one per line. When you are done, simply press enter with empty input.");
     clientMods.addAll(readStringArray());
 
     String[] cm = new String[clientMods.size()];
     clientMods.toArray(cm);
-    System.out.println("What directories to copy? Specify relative paths from the modpack path you have set already.");
+    appLogger.info("What directories to copy? Specify relative paths from the modpack path you have set already.");
     copyDirs.addAll(readStringArray());
     String[] cd = new String[copyDirs.size()];
     copyDirs.toArray(cd);
 
-
-
-    System.out.println("Include server installation?");
+    appLogger.info("Include server installation?");
     includeServerInstallation = readBoolean();
     if (includeServerInstallation) {
-      System.out.println("Which Minecraft version your modpack uses?");
+      appLogger.info("Which Minecraft version your modpack uses?");
       while (true) {
         minecraftVersion = reader.nextLine();
         if (ConfigCheck.isMinecraftVersionCorrect(minecraftVersion)) break; else {
-          System.out.println("Incorrect Minecraft version specified, please, try again.");
+          appLogger.error("Incorrect Minecraft version specified, please, try again.");
         }
       }
       System.out.println();
-      System.out.println("What mod loader do you want to use?");
+      appLogger.info("What mod loader do you want to use?");
       while (true) {
         modLoader = reader.nextLine();
         if (modLoader.matches("Forge") || modLoader.matches("Fabric")) {
           break;
         } else {
-          System.out.println("Invalid mod loader specified, please, try again.");
+          appLogger.error("Invalid mod loader specified, please, try again.");
         }
       }
       System.out.println();
-      System.out.println("What mod loader version do you want to use?");
+      appLogger.info("What mod loader version do you want to use?");
       while (true) {
         modLoaderVersion = reader.nextLine();
         if (modLoaderVersion.isEmpty()) {
-          System.out.println("Mod loader version can't be empty, please, try again.");
+          appLogger.error("Mod loader version can't be empty, please, try again.");
         } else if (modLoader.matches("Fabric") && !ConfigCheck.isFabricVersionCorrect(modLoaderVersion)) {
-          System.out.println("Fabric version is incorrect, please, try again.");
+          appLogger.error("Fabric version is incorrect, please, try again.");
         } else if (modLoader.matches("Forge") && !ConfigCheck.isForgeVersionCorrect(modLoaderVersion, minecraftVersion)) {
-          System.out.println("Forge version is incorrect, please, try again.");
+          appLogger.error("Forge version is incorrect, please, try again.");
         } else break;
       }
       System.out.println();
-      System.out.println("When Java is located on your disk?");
+      appLogger.info("Path to your Java installation:");
       while (true) {
         javaPath = reader.nextLine();
         if (!javaPath.isEmpty() && !javaPath.endsWith("java") && !javaPath.endsWith("java.exe")) {
           System.out.println("Error: Incorrect Java path specified. The java path must end with \"java\" or \"java.exe\".");
         } else if (javaPath.isEmpty()) {
-          javaPath = System.getProperty("java.home") + "/bin";
+          javaPath = System.getProperty("java.home").replace("\\","/") + "/bin/java";
           System.out.println(javaPath);
           break;
         } else break;
       }
     }
     System.out.println();
-    System.out.println("Include server icon?");
+    appLogger.info("Include server icon in server pack? Must be true or false.");
     includeServerIcon = readBoolean();
     System.out.println();
-    System.out.println("Include server.properties?");
+    appLogger.info("Include server.properties in server pack? Must be true or false.");
     includeServerProperties = readBoolean();
     System.out.println();
-    System.out.println("Include start scripts?");
+    appLogger.info("Include start scripts in server pack? Must be true or false.");
     includeStartScripts = readBoolean();
     System.out.println();
-    System.out.println("Create ZIP version of server pack?");
+    appLogger.info("Create ZIP-archive of server pack? Must be true or false.");
     includeZipCreation = readBoolean();
-
     String s = String.format("# Path to your modpack. Can be either relative or absolute.\n" +
             "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
             "modpackDir = \"%s\"\n" +
@@ -159,8 +158,19 @@ class CLISetup {
             "\n" +
             "# Create zip-archive of serverpack. Must be true or false.\n" +
             "# Default value is true\n" +
-            "includeZipCreation = %b\n", modpackDir, buildString(Arrays.toString(cm)), buildString(Arrays.toString(cd)), includeServerInstallation, javaPath, minecraftVersion, modLoader, modLoaderVersion, includeServerIcon, includeServerProperties, includeStartScripts, includeZipCreation);
-
+            "includeZipCreation = %b\n",
+            modpackDir,
+            buildString(Arrays.toString(cm)),
+            buildString(Arrays.toString(cd)),
+            includeServerInstallation,
+            javaPath,
+            minecraftVersion,
+            modLoader,
+            modLoaderVersion,
+            includeServerIcon,
+            includeServerProperties,
+            includeStartScripts,
+            includeZipCreation);
     try {
       if (FilesSetup.configFile.exists()) {
         FilesSetup.configFile.delete();
@@ -171,13 +181,10 @@ class CLISetup {
       BufferedWriter writer = new BufferedWriter(new FileWriter(FilesSetup.configFile));
       writer.write(s);
       writer.close();
-
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException ex) {
+      appLogger.error("Error writing new config file.", ex);
     }
   }
-
-
   /**
    * A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
    * @return Returns list with user input values that will be stored in config.
@@ -195,7 +202,6 @@ class CLISetup {
       }
     }
   }
-
   /**
    * @param args Strings that will be concatenated into one string
    * @return Returns concatenated string that contains all provided values.
@@ -204,11 +210,9 @@ class CLISetup {
     StringBuilder sb = new StringBuilder();
     sb.append(Arrays.toString(args));
     sb.delete(0, 2).reverse().delete(0,2).reverse();
-//    System.out.println(sb);
-//    System.out.println(Arrays.toString(sb.));
     return sb.toString();
   }
-  /*
+  /**
   * A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
   * @return Returns value entered by user that will be stored in config.
   */
@@ -222,7 +226,7 @@ class CLISetup {
       } else if (boolRead.matches("false") || boolRead.matches("0") || boolRead.matches("no") || boolRead.matches("n" )){
         return false;
       } else {
-        System.out.println("Incorrect value specified, please, try again.");
+        appLogger.error("Incorrect value specified, please, try again.");
       }
     }
   }
