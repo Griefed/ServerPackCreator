@@ -84,7 +84,7 @@ class CLISetup {
       while (true) {
         javaPath = reader.nextLine();
         if (!javaPath.isEmpty() && !javaPath.endsWith("java") && !javaPath.endsWith("java.exe")) {
-          System.out.println("Error: Incorrect Java path specified. The java path must end with \"java\" or \"java.exe\".");
+          appLogger.error("Error: Incorrect Java path specified. The java path must end with \"java\" or \"java.exe\".");
         } else if (javaPath.isEmpty()) {
           javaPath = System.getProperty("java.home").replace("\\","/") + "/bin/java";
           System.out.println(javaPath);
