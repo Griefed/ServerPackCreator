@@ -36,7 +36,7 @@ class ServerSetup {
         }
     }
     /** Optional. Depending on serverpackcreator.conf(includeServerInstallation,modLoader,minecraftVersion,modLoaderVersion) this will install the files for a Forge/Fabric server.
-     *
+     *  TODO: Write param docs
      * @param modLoader
      * @param modpackDir
      * @param minecraftVersion
@@ -94,6 +94,7 @@ class ServerSetup {
     }
     /** Depending on serverpackcreator.conf(includeZipCreation) this will create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
      * With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
+     *  TODO: Write param docs
      * @param modpackDir
      * @param modLoader
      * @param minecraftVersion
