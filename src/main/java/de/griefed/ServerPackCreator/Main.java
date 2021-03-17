@@ -14,11 +14,6 @@ public class Main {
      *
      */
     public static void main(String[] args) {
-//        System.out.println(System.getProperty("java.home"));
-        System.out.println(Arrays.toString(args));
-        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || !FilesSetup.oldConfigFile.exists() || !FilesSetup.configFile.exists()){
-            CLISetup.setup();
-        }
         appLogger.warn("################################################################");
         appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
         appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
@@ -33,6 +28,9 @@ public class Main {
         } catch (URISyntaxException ex) {
             appLogger.error("Error getting jar name.", ex);
         }
+        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!FilesSetup.oldConfigFile.exists() && !FilesSetup.configFile.exists())){
+            CLISetup.setup();
+        } 
         FilesSetup.filesSetup();
         if (!ConfigCheck.checkConfig()) {
             CopyFiles.cleanupEnvironment(ConfigCheck.modpackDir);
