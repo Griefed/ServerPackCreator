@@ -33,34 +33,41 @@ class CLISetup {
 
     appLogger.info("First of all, enter your modpack path. This path can be relative or absolute.");
     appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
-    System.out.println();
-    appLogger.info("Enter your modpack path: ");
+    System.out.print("Enter your modpack path: ");
     String mD = reader.nextLine();
     modpackDir = mD.replace("\\","/");
+    appLogger.info("You entered: " + modpackDir);
     System.out.println();
     appLogger.info("Enter client mods names, one per line. When you are done, simply press enter with empty input.");
     clientMods.addAll(readStringArray());
+    appLogger.info("You entered: " + clientMods.toString());
 
     String[] cm = new String[clientMods.size()];
     clientMods.toArray(cm);
-    appLogger.info("What directories to copy? Specify relative paths from the modpack path you have set already.");
+    appLogger.info("Which directories should be copied to the server pack? Specify relative paths from the modpack path you have set already.");
     copyDirs.addAll(readStringArray());
+    appLogger.info("You entered: " + copyDirs.toString());
     String[] cd = new String[copyDirs.size()];
     copyDirs.toArray(cd);
 
     appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
+    System.out.print("Include modloader server installation: ");
     includeServerInstallation = readBoolean();
+    appLogger.info("You entered: " + includeServerInstallation);
     if (includeServerInstallation) {
-      appLogger.info("Which Minecraft version does your modpack use?");
+      appLogger.info("Which version of Minecraft does your modpack use?");
       while (true) {
+        System.out.print("Minecraft version: ");
         minecraftVersion = reader.nextLine();
         if (ConfigCheck.isMinecraftVersionCorrect(minecraftVersion)) break; else {
           appLogger.error("Incorrect Minecraft version specified, please, try again.");
         }
       }
+      appLogger.info("You entered: " + minecraftVersion);
       System.out.println();
       appLogger.info("What modloader does your modpack use?");
       while (true) {
+        System.out.print("Modloader: ");
         modLoader = reader.nextLine();
         if (modLoader.matches("Forge") || modLoader.matches("Fabric")) {
           break;
@@ -68,9 +75,11 @@ class CLISetup {
           appLogger.error("Invalid mod loader specified, please, try again.");
         }
       }
+      appLogger.info("You entered: " + modLoader);
       System.out.println();
       appLogger.info("What version of " + modLoader + " does your modpack use?");
       while (true) {
+        System.out.print("Modloader version: ");
         modLoaderVersion = reader.nextLine();
         if (modLoaderVersion.isEmpty()) {
           appLogger.error("Modloader version can't be empty. Please try again.");
@@ -80,38 +89,46 @@ class CLISetup {
           appLogger.error("Forge version is incorrect. Please try again.");
         } else break;
       }
+      appLogger.info("You entered: " + modLoaderVersion);
       System.out.println();
-      appLogger.info("Path to your Java installation:");
+      appLogger.info("Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.If you leave this empty, ServerPackCreator will try to determine the path for you.");
+      appLogger.info("Example for Linux: /usr/bin/java | Example for Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
       while (true) {
+        System.out.print("Path to your Java installation: ");
         javaPath = reader.nextLine();
         if (!javaPath.isEmpty() && !javaPath.endsWith("java") && !javaPath.endsWith("java.exe")) {
-          appLogger.error("Error: Incorrect Java path specified. The java path must end with \"java\"(Linux) or \"java.exe\"(Windows).");
-          appLogger.error("Example Linux: /usr/bin/java");
-          appLogger.error("Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
+          appLogger.error("Error: Incorrect Java path specified.");
         } else if (javaPath.isEmpty()) {
-          appLogger.warn("You didn't enter a path to your Java installation. ServerPackCreator will try to get the path for you.");
-          appLogger.warn("Please verify that the path is correct, and, if it is not, correct it in your config file.");
+          appLogger.warn("You didn't enter a path to your Java installation.");
           String jP = System.getProperty("java.home").replace("\\","/") + "/bin/java";
           if (jP.startsWith("C:")) {
             javaPath = jP + ".exe";
           }
-          appLogger.warn("ServerPackCreator set the path to your Java installation to: " + javaPath);
           break;
         } else break;
       }
     }
+    appLogger.warn("ServerPackCreator set the path to your Java installation to: " + javaPath);
     System.out.println();
-    appLogger.info("Include server icon in server pack? Must be true or false.");
+    appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
+    System.out.print("Include server-icon.png: ");
     includeServerIcon = readBoolean();
+    appLogger.info("You entered: " + includeServerIcon);
     System.out.println();
-    appLogger.info("Include server.properties in server pack? Must be true or false.");
+    appLogger.info("Do you want ServerPackCreator to include a server.properties in server pack? Must be true or false.");
+    System.out.print("Include server.properties: ");
     includeServerProperties = readBoolean();
+    appLogger.info("You entered: " + includeServerProperties);
     System.out.println();
-    appLogger.info("Include start scripts in server pack? Must be true or false.");
+    appLogger.info("Do you want ServerPackCreator to include start scripts for Linux and Windows in your server pack? Must be true or false.");
+    System.out.print("Include start scripts: ");
     includeStartScripts = readBoolean();
+    appLogger.info("You entered: " + includeStartScripts);
     System.out.println();
-    appLogger.info("Create ZIP-archive of server pack? Must be true or false.");
+    appLogger.info("Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
+    System.out.print("Create ZIP-archive: ");
     includeZipCreation = readBoolean();
+    appLogger.info("You entered: " + includeZipCreation);
     String s = String.format("# Path to your modpack. Can be either relative or absolute.\n" +
             "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
             "modpackDir = \"%s\"\n" +
