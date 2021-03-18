@@ -28,13 +28,14 @@ class FilesSetup {
         } catch (IOException ex) {
             appLogger.error("Could not create server_files directory.", ex);
         }
-        if (checkForConfig()        ||
-            checkForFabricLinux()   ||
-            checkForFabricWindows() ||
-            checkForForgeLinux()    ||
-            checkForForgeWindows()  ||
-            checkForProperties()    ||
-            checkForIcon())         {
+        boolean a = checkForConfig();
+        boolean b = checkForFabricLinux();
+        boolean c = checkForFabricWindows();
+        boolean d = checkForForgeLinux();
+        boolean e = checkForForgeWindows();
+        boolean f = checkForProperties();
+        boolean g = checkForIcon();
+        if (a || b || c || d || e || f || g) {
                 appLogger.warn("################################################################");
                 appLogger.warn("#             ONE OR MORE DEFAULT FILE(S) GENERATED.           #");
                 appLogger.warn("# CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED. #");
