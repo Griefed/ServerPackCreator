@@ -27,6 +27,7 @@ If you wish to contribute, fork the repository, make your changes, create a pull
 
 ## Features
 
+- ** Generate a config step-by-step by running with argument `-cgen`
 - **Supports Forge and Fabric modloaders**
   - Installation of modloader-server for server_pack optional
 - **Default start scripts for Linux and Windows systems**
