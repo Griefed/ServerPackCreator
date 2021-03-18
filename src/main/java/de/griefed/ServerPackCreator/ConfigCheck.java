@@ -35,7 +35,7 @@ class ConfigCheck {
     static Boolean configHasError = false;
     private static final Logger appLogger = LogManager.getLogger("ConfigCheck");
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
-     *
+     * TODO: Break up checkConfig into searate methods so they can be called from anywhere more easily, like CLISetup
      * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
     static boolean checkConfig() {
