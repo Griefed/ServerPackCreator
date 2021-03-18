@@ -25,17 +25,18 @@ class CLISetup {
     String minecraftVersion = "";
     String modLoader = "";
     String modLoaderVersion = "";
-    Boolean includeServerIcon;
-    Boolean includeServerProperties;
-    Boolean includeStartScripts;
-    Boolean includeZipCreation;
+    boolean includeServerIcon;
+    boolean includeServerProperties;
+    boolean includeStartScripts;
+    boolean includeZipCreation;
     Scanner reader = new Scanner(System.in);
 
     appLogger.info("First of all, enter your modpack path. This path can be relative or absolute.");
     appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
     System.out.println();
     appLogger.info("Enter your modpack path: ");
-    modpackDir = reader.nextLine();
+    String mD = reader.nextLine();
+    modpackDir = mD.replace("\\","/");
     System.out.println();
     appLogger.info("Enter client mods names, one per line. When you are done, simply press enter with empty input.");
     clientMods.addAll(readStringArray());
@@ -47,10 +48,10 @@ class CLISetup {
     String[] cd = new String[copyDirs.size()];
     copyDirs.toArray(cd);
 
-    appLogger.info("Include server installation?");
+    appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
     includeServerInstallation = readBoolean();
     if (includeServerInstallation) {
-      appLogger.info("Which Minecraft version your modpack uses?");
+      appLogger.info("Which Minecraft version does your modpack use?");
       while (true) {
         minecraftVersion = reader.nextLine();
         if (ConfigCheck.isMinecraftVersionCorrect(minecraftVersion)) break; else {
@@ -58,7 +59,7 @@ class CLISetup {
         }
       }
       System.out.println();
-      appLogger.info("What mod loader do you want to use?");
+      appLogger.info("What modloader does your modpack use?");
       while (true) {
         modLoader = reader.nextLine();
         if (modLoader.matches("Forge") || modLoader.matches("Fabric")) {
@@ -68,15 +69,15 @@ class CLISetup {
         }
       }
       System.out.println();
-      appLogger.info("What mod loader version do you want to use?");
+      appLogger.info("What version of " + modLoader + " does your modpack use?");
       while (true) {
         modLoaderVersion = reader.nextLine();
         if (modLoaderVersion.isEmpty()) {
-          appLogger.error("Mod loader version can't be empty, please, try again.");
+          appLogger.error("Modloader version can't be empty. Please try again.");
         } else if (modLoader.matches("Fabric") && !ConfigCheck.isFabricVersionCorrect(modLoaderVersion)) {
-          appLogger.error("Fabric version is incorrect, please, try again.");
+          appLogger.error("Fabric version is incorrect. Please try again.");
         } else if (modLoader.matches("Forge") && !ConfigCheck.isForgeVersionCorrect(modLoaderVersion, minecraftVersion)) {
-          appLogger.error("Forge version is incorrect, please, try again.");
+          appLogger.error("Forge version is incorrect. Please try again.");
         } else break;
       }
       System.out.println();
@@ -84,10 +85,17 @@ class CLISetup {
       while (true) {
         javaPath = reader.nextLine();
         if (!javaPath.isEmpty() && !javaPath.endsWith("java") && !javaPath.endsWith("java.exe")) {
-          appLogger.error("Error: Incorrect Java path specified. The java path must end with \"java\" or \"java.exe\".");
+          appLogger.error("Error: Incorrect Java path specified. The java path must end with \"java\"(Linux) or \"java.exe\"(Windows).");
+          appLogger.error("Example Linux: /usr/bin/java");
+          appLogger.error("Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
         } else if (javaPath.isEmpty()) {
-          javaPath = System.getProperty("java.home").replace("\\","/") + "/bin/java";
-          System.out.println(javaPath);
+          appLogger.warn("You didn't enter a path to your Java installation. ServerPackCreator will try to get the path for you.");
+          appLogger.warn("Please verify that the path is correct, and, if it is not, correct it in your config file.");
+          String jP = System.getProperty("java.home").replace("\\","/") + "/bin/java";
+          if (jP.startsWith("C:")) {
+            javaPath = jP + ".exe";
+          }
+          appLogger.warn("ServerPackCreator set the path to your Java installation to: " + javaPath);
           break;
         } else break;
       }
@@ -173,10 +181,14 @@ class CLISetup {
             includeZipCreation);
     try {
       if (FilesSetup.configFile.exists()) {
-        FilesSetup.configFile.delete();
+        boolean delConf = FilesSetup.configFile.delete();
+        if (delConf) { appLogger.info("Deleted existing config file to replace with new one."); }
+        else { appLogger.error("Could not delete existing config file."); }
       }
       if (FilesSetup.oldConfigFile.exists()) {
-        FilesSetup.oldConfigFile.delete();
+        boolean delOldConf = FilesSetup.oldConfigFile.delete();
+        if (delOldConf) { appLogger.info("Deleted existing config file to replace with new one."); }
+        else { appLogger.error("Could not delete existing config file."); }
       }
       BufferedWriter writer = new BufferedWriter(new FileWriter(FilesSetup.configFile));
       writer.write(s);
