@@ -43,7 +43,7 @@ class ServerUtilities {
             forgeShell(modpackDir, minecraftVersion);
             forgeBatch(modpackDir, minecraftVersion);
         } else {
-            appLogger.error("Specified invalid Modloader: " + modLoader);
+            appLogger.error(String.format("Specified invalid Modloader: %s", modLoader));
         }
     }
     /** Optional. Generates minecraft_server.jar download scripts for Fabric,Linux
@@ -59,7 +59,7 @@ class ServerUtilities {
             byte[] strToBytesSh = shFabric.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
-            appLogger.debug("fabricShell.readSh was: " + readSh);
+            appLogger.debug(String.format("fabricShell.readSh was: %s", readSh));
         } catch (IOException ex) {
             appLogger.error("Error creating shell script for Fabric.", ex);
         }
@@ -78,7 +78,7 @@ class ServerUtilities {
             byte[] strToBytesBat = batFabric.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
-            appLogger.debug("fabricBatch.readBat was: " + readBat);
+            appLogger.debug(String.format("fabricBatch.readBat was: %s", readBat));
         } catch (IOException ex) {
             appLogger.error("Error creating batch script for Fabric.", ex);
         }
@@ -97,7 +97,7 @@ class ServerUtilities {
             byte[] strToBytesSh = shForge.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
-            appLogger.debug("forgeShell.readSh was: " + readSh);
+            appLogger.debug(String.format("forgeShell.readSh was: %s", readSh));
         } catch (IOException ex) {
             appLogger.error("Error creating shell script for Forge.", ex);
         }
@@ -116,7 +116,7 @@ class ServerUtilities {
             byte[] strToBytesBat = batForge.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
-            appLogger.debug("forgeBatch.readBat was: " + readBat);
+            appLogger.debug(String.format("forgeBatch.readBat was: %s", readBat));
         } catch (IOException ex) {
             appLogger.error("Error creating shell script for Forge.", ex);
         }
@@ -125,20 +125,33 @@ class ServerUtilities {
     /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation) this will download the specified version of Fabric.
      *  TODO: Write param docs
      * @param modpackDir
+     * @return
      */
-    static void downloadFabricJar(String modpackDir) {
+    static boolean downloadFabricJar(String modpackDir) {
+        boolean downloaded = false;
         try {
             appLogger.info("Trying to download Fabric installer...");
             URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabric(modpackDir), latestFabric(modpackDir)));
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
-            FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(modpackDir + "/server_pack/fabric-installer.jar");
+            FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.jar", modpackDir));
             FileChannel downloadFabricFileChannel = downloadFabricFileOutputStream.getChannel();
             downloadFabricFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadFabricFileOutputStream.flush();
             downloadFabricFileOutputStream.close();
-        } catch (IOException ex) {
-            appLogger.error("Error downloading Fabric.", ex);
+        } catch (IOException e) {
+            appLogger.error("An error occurred downloading Fabric: ", e);
+            if (new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists()) {
+                try {
+                    Files.delete(Paths.get(String.format("%s/server_pack/fabric-installer.jar", modpackDir)));
+                } catch (IOException ex) {
+                    appLogger.error("Couldn't delete corrupted Fabric installer.", ex);
+                }
+            }
         }
+        if (new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists()) {
+            downloaded = true;
+        }
+        return downloaded;
     }
     /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation), this returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.
      * TODO: Write param docs
@@ -174,20 +187,33 @@ class ServerUtilities {
      * @param minecraftVersion
      * @param modLoaderVersion
      * @param modpackDir
+     * @return
      */
-    static void downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
+    static boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
+        boolean downloaded = false;
         try {
             appLogger.info("Trying to download specified Forge installer...");
             URL downloadForge = new URL(String.format("https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar", minecraftVersion, modLoaderVersion, minecraftVersion, modLoaderVersion));
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
-            FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(modpackDir + "/server_pack/forge-installer.jar");
+            FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("%s/server_pack/forge-installer.jar", modpackDir));
             FileChannel downloadForgeFileChannel = downloadForgeFileOutputStream.getChannel();
             downloadForgeFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadForgeFileOutputStream.flush();
             downloadForgeFileOutputStream.close();
-        } catch (IOException ex) {
-            appLogger.error("An error occurred downloading Forge: ", ex);
+        } catch (IOException e) {
+            appLogger.error("An error occurred downloading Forge: ", e);
+            if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists()) {
+                try {
+                    Files.delete(Paths.get(String.format("%s/server_pack/forge-installer.jar", modpackDir)));
+                } catch (IOException ex) {
+                    appLogger.error("Couldn't delete corrupted Forge installer.", ex);
+                }
+            }
         }
+        if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists()) {
+            downloaded = true;
+        }
+        return downloaded;
     }
     /** Optional. Depending on serverpackcreator.conf(includeZipCreation) this will delete Mojang's minecraft_server.jar from the zip-archive so users do not accidentally upload a file containing software from Mojang.
      * With help from https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python and https://bugs.openjdk.java.net/browse/JDK-8186227
@@ -243,10 +269,10 @@ class ServerUtilities {
             File fabricXML = new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
             boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
-            if (isXmlDeleted) { appLogger.info("Deleted " + fabricXML.getName()); }
-            else { appLogger.error("Could not delete " + fabricXML.getName()); }
-            if (isInstallerDeleted) { appLogger.info("Deleted " + fabricInstaller.getName()); }
-            else { appLogger.error("Could not delete " + fabricInstaller.getName()); }
+            if (isXmlDeleted) { appLogger.info(String.format("Deleted %s", fabricXML.getName())); }
+            else { appLogger.error(String.format("Could not delete %s", fabricXML.getName())); }
+            if (isInstallerDeleted) { appLogger.info(String.format("Deleted %s", fabricInstaller.getName())); }
+            else { appLogger.error(String.format("Could not delete %s", fabricInstaller.getName())); }
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
                 Files.copy(Paths.get(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)), Paths.get(String.format("%s/server_pack/forge.jar", modpackDir)), REPLACE_EXISTING);
@@ -254,13 +280,13 @@ class ServerUtilities {
                 boolean isInstallerDeleted = forgeInstaller.delete();
                 if ((isOldJarDeleted) && (new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists())) { appLogger.info("Renamed forge.jar and deleted old one."); }
                 else { appLogger.error("There was an error during renaming or deletion of the forge server jar."); }
-                if (isInstallerDeleted) { appLogger.info("Deleted " + forgeInstaller.getName()); }
-                else { appLogger.error("Could not delete " + forgeInstaller.getName()); }
+                if (isInstallerDeleted) { appLogger.info(String.format("Deleted %s", forgeInstaller.getName())); }
+                else { appLogger.error(String.format("Could not delete %s", forgeInstaller.getName())); }
             } catch (IOException ex) {
                 appLogger.error("Error during Forge cleanup.", ex);
             }
         } else {
-            appLogger.error("Specified invalid modloader: " + modLoader);
+            appLogger.error(String.format("Specified invalid modloader: %s", modLoader));
         }
     }
 }
