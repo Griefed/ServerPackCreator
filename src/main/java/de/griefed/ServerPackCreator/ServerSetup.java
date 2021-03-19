@@ -49,8 +49,8 @@ class ServerSetup {
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
                 appLogger.info("Starting Fabric installation.");
-                ServerUtilities.downloadFabricJar(modpackDir);
-                if (fabricInstaller.exists()) {
+                if (ServerUtilities.downloadFabricJar(modpackDir)) {
+                    appLogger.info("Fabric installer successfully downloaded. Installing Fabric. This may take a while...");
                     ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "fabric-installer.jar", "server", "-mcversion " + minecraftVersion, "-loader " + modLoaderVersion, "-downloadMinecraft").directory(new File(modpackDir + "/server_pack"));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
@@ -61,16 +61,18 @@ class ServerSetup {
                         if (line == null) { break; }
                         appLogger.debug(line);
                     }
+                    appLogger.info("Fabric installation complete. Returning to SPC.");
+                } else {
+                    appLogger.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
                 }
-                appLogger.info("Fabric installation complete. Returning to SPC.");
             } catch (IOException ex) {
                 appLogger.error("An error occurred during Fabric installation.", ex);
             }
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
                 appLogger.info("Starting Forge installation.");
-                ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
-                if (forgeInstaller.exists()) {
+                if (ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
+                    appLogger.info("Forge installer successfully downloaded. Installing Forge. This may take a while...");
                     ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
@@ -81,8 +83,10 @@ class ServerSetup {
                         if (line == null) { break; }
                         appLogger.debug(line);
                     }
+                    appLogger.info("Forge installation complete. Returning to SPC.");
+                } else {
+                    appLogger.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
                 }
-                appLogger.info("Forge installation complete. Returning to SPC.");
             } catch (IOException ex) {
                 appLogger.error("An error occurred during Forge installation.", ex);
             }
