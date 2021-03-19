@@ -29,11 +29,10 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ServerUtilities {
     private static final Logger appLogger = LogManager.getLogger("ServerUtilities");
-    /** Optional. Depending on serverpackcreator.conf(includeServerInstallation,modLoader,includeZipCreation) this will call generation of download scripts which will download Mojang's minecraft_server.jar. These scripts are most useful for the zip-archive of the serverpack.
-     * TODO: Write param docs
-     * @param modLoader
-     * @param modpackDir
-     * @param minecraftVersion
+    /** Calls methods for generating download scripts for Mojang's Minecraft server depending on the specified versions and modloader.
+     * @param modLoader String. The specified modloader determines the name under which Mojang's server jar will be downloaded as.
+     * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
+     * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
     static void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
         if (modLoader.equalsIgnoreCase("Fabric")) {
@@ -46,10 +45,9 @@ class ServerUtilities {
             appLogger.error(String.format("Specified invalid Modloader: %s", modLoader));
         }
     }
-    /** Optional. Generates minecraft_server.jar download scripts for Fabric,Linux
-     * TODO: Write param docs
-     * @param modpackDir
-     * @param minecraftVersion
+    /** Generates download scripts for Mojang's Minecraft server for Fabric,Linux.
+     * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
+     * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
     private static void fabricShell(String modpackDir, String minecraftVersion) {
         try {
@@ -65,10 +63,9 @@ class ServerUtilities {
         }
         appLogger.info("Fabric shell script generated.");
     }
-    /** Optional. Generates minecraft_server.jar download scripts for Fabric,Windows
-     * TODO: Write param docs
-     * @param modpackDir
-     * @param minecraftVersion
+    /** Generates download scripts for Mojang's Minecraft server for Fabric,Windows.
+     * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
+     * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
     private static void fabricBatch(String modpackDir, String minecraftVersion) {
         try {
@@ -84,10 +81,9 @@ class ServerUtilities {
         }
         appLogger.info("Fabric batch script generated.");
     }
-    /** Optional. Generates minecraft_server.jar download scripts for Forge,Linux
-     * TODO: Write param docs
-     * @param modpackDir
-     * @param minecraftVersion
+    /** Generates download scripts for Mojang's Minecraft server for Forge,Linux.
+     * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
+     * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
     private static void forgeShell(String modpackDir, String minecraftVersion) {
         try {
@@ -103,10 +99,9 @@ class ServerUtilities {
         }
         appLogger.info("Forge shell script generated.");
     }
-    /** Optional. Generates minecraft_server.jar download scripts for Forge,Windows
-     * TODO: Write param docs
-     * @param modpackDir
-     * @param minecraftVersion
+    /** Generates download scripts for Mojang's Minecraft server for Forge,Windows.
+     * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
+     * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
     private static void forgeBatch(String modpackDir, String minecraftVersion) {
         try {
@@ -122,10 +117,9 @@ class ServerUtilities {
         }
         appLogger.info("Forge batch script generated.");
     }
-    /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation) this will download the specified version of Fabric.
-     *  TODO: Write param docs
-     * @param modpackDir
-     * @return
+    /** Downloads the specified version of Fabric.
+     * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
+     * @return Boolean. Returns true if the download was successful. False if not.
      */
     static boolean downloadFabricJar(String modpackDir) {
         boolean downloaded = false;
@@ -153,10 +147,9 @@ class ServerUtilities {
         }
         return downloaded;
     }
-    /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation), this returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.
-     * TODO: Write param docs
-     * @param modpackDir
-     * @return
+    /** Returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.
+     * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
+     * @return Boolean. Returns true if the download was successful. False if not.
      */
     private static String latestFabric(String modpackDir) {
         String result;
@@ -182,12 +175,11 @@ class ServerUtilities {
             appLogger.info("Successfully retrieved Fabric XML.");
         }
     }
-    /** Optional. Depending on serverpackcreator.conf(modLoader,includeServerInstallation,modLoaderVersion) this downloads the specified version of the Forge installer to be used in ServerSetup.installServer.
-     * TODO: Write param docs
-     * @param minecraftVersion
-     * @param modLoaderVersion
-     * @param modpackDir
-     * @return
+    /** Downloads the specified version of the Forge installer to be used in ServerSetup.installServer.
+     * @param minecraftVersion String. The Minecraft version corresponding to the Forge version. Minecraft version and Forge version build a pair.
+     * @param modLoaderVersion String. The Forge version corresponding to the Minecraft version. Minecraft version and Forge version build a pair.
+     * @param modpackDir String. /server_pack The directory where the Forge installer will be placed in.
+     * @return Boolean. Returns true if the download was successful. False if not.
      */
     static boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
         boolean downloaded = false;
@@ -215,11 +207,10 @@ class ServerUtilities {
         }
         return downloaded;
     }
-    /** Optional. Depending on serverpackcreator.conf(includeZipCreation) this will delete Mojang's minecraft_server.jar from the zip-archive so users do not accidentally upload a file containing software from Mojang.
+    /** Deletes Mojang's minecraft_server.jar from the zip-archive so users do not accidentally upload a file containing software from Mojang.
      * With help from https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python and https://bugs.openjdk.java.net/browse/JDK-8186227
-     *  TODO: Write param docs
-     * @param modLoader
-     * @param modpackDir
+     * @param modLoader String. Determines the name of the file to delete.
+     * @param modpackDir String. /server_pack The directory in which the file will be deleted.
      */
     static void deleteMinecraftJar(String modLoader, String modpackDir) {
         if (modLoader.equalsIgnoreCase("Forge")) {
@@ -254,14 +245,13 @@ class ServerUtilities {
             appLogger.error("Specified invalid modloader: " + modLoader);
         }
     }
-    /** Optional. This deletes remnant files from Fabric/Forge installation no longer needed.
-     * TODO: Write param docs
-     * @param fabricInstaller
-     * @param forgeInstaller
-     * @param modLoader
-     * @param modpackDir
-     * @param minecraftVersion
-     * @param modLoaderVersion
+    /** Deletes remnant files from Fabric/Forge installation no longer needed.
+     * @param fabricInstaller File. Fabric installer to be deleted.
+     * @param forgeInstaller File. Forge installer to be deleted.
+     * @param modLoader String. Whether Forge or Fabric files are to be deleted.
+     * @param modpackDir String. /server_pack The directory where files are to be deleted.
+     * @param minecraftVersion String. Needed for renaming the Forge server jar to work with launch scripts provided by ServerPackCreator.
+     * @param modLoaderVersion String. Needed for renaming the Forge server jar to work with launch scripts provided by ServerPackCreator.
      */
     static void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
         appLogger.info("Cleanup after modloader server installation.");
