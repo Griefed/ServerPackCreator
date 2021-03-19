@@ -214,9 +214,8 @@ class CLISetup {
       appLogger.error("Error writing new config file.", ex);
     }
   }
-  /**
-   * A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
-   * @return Returns list with user input values that will be stored in config.
+  /** A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
+   * @return String List. Returns list with user input values that will be stored in config.
    */
   private static List<String> readStringArray() {
     Scanner reader = new Scanner(System.in);
@@ -231,9 +230,9 @@ class CLISetup {
       }
     }
   }
-  /**
+  /** Converts list of strings into concatenated string.
    * @param args Strings that will be concatenated into one string
-   * @return Returns concatenated string that contains all provided values.
+   * @return String. Returns concatenated string that contains all provided values.
    */
   private static String buildString(String... args) {
     StringBuilder sb = new StringBuilder();
@@ -241,9 +240,8 @@ class CLISetup {
     sb.delete(0, 2).reverse().delete(0,2).reverse();
     return sb.toString();
   }
-  /**
-  * A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
-  * @return Returns value entered by user that will be stored in config.
+  /** A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
+  * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
   */
   private static boolean readBoolean() {
     Scanner reader = new Scanner(System.in);
