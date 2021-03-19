@@ -183,10 +183,9 @@ class ConfigCheck {
         appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
         return configHasError;
     }
-    /** Optional. Check the specified Minecraft version against Mojang's version manifest to validate the version.
-     *
+    /** Check the specified Minecraft version against Mojang's version manifest to validate the version.
      * @param mcver Minecraft version to check.
-     * @return Returns boolean depending on whether the specified Minecraft version could be found in Mojang's manifest.
+     * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest. False if not.
      */
     static boolean isMinecraftVersionCorrect(String mcver) {
         try {
@@ -226,10 +225,9 @@ class ConfigCheck {
             return false;
         }
     }
-    /** Optional. Check the specified Fabric version against Fabric's version manifest to validate the version.
-     *
-     * @param version The Fabric version to check
-     * @return Returns boolean depending on whether the specified Fabric version could be found in Fabric's manifest.
+    /** Check the specified Fabric version against Fabric's version manifest to validate the version.
+     * @param version String. The Fabric version to check.
+     * @return Boolean. Returns true if the specified Fabric version could be found in Fabric's manifest. False if not.
      */
     static boolean isFabricVersionCorrect(String version) {
         try {
@@ -277,10 +275,9 @@ class ConfigCheck {
         }
     }
     /** Checks Forge version for errors (basically for its availability in Forge manifest)
-     *
-     * @param version The Forge version to check
-     * @param minecraftVersion The Minecraft version that modpack uses. Needed to prevent usage of Forge, for example, from MC version 1.7.10, with 1.12.2.
-     * @return Returns true if Forge version correct and false if it isn't correct.
+     * @param version String. The Forge version to check.
+     * @param minecraftVersion String. The Minecraft version that the modpack uses. Needed to prevent usage of Forge, for example, from MC version 1.7.10, with 1.12.2.
+     * @return Boolean. Returns true if Forge version correct and false if it isn't correct.
      */
     static boolean isForgeVersionCorrect(String version, String minecraftVersion) {
         try {

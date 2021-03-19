@@ -18,8 +18,7 @@ class FilesSetup {
     static final File fabricWindowsFile = new File("start-fabric.bat");
     static final File fabricLinuxFile = new File("start-fabric.sh");
     private static final Logger appLogger = LogManager.getLogger("FilesSetup");
-    /**
-     * Calls individual methods which check for existence of default files. If any of these methods return true, ServerPackCreator will exit, giving the user the chance to customize it before the program runs in production.
+    /** Calls individual methods which check for existence of default files. If any of these methods return true, ServerPackCreator will exit, giving the user the chance to customize it before the program runs in production.
      */
     static void filesSetup() {
         appLogger.info("Checking for default files...");
@@ -46,9 +45,8 @@ class FilesSetup {
             appLogger.info("Setup completed.");
         }
     }
-    /**
-     * Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new config file is generated.
-     * @return Returns true if new config file was generated.
+    /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new config file is generated.
+     * @return Boolean. Returns true if new config file was generated.
      */
     private static boolean checkForConfig() {
         boolean firstRun = false;
@@ -78,9 +76,8 @@ class FilesSetup {
         }
         return firstRun;
     }
-    /**
-     * Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
-     * @return Returns true if the file was generated.
+    /** Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
+     * @return Boolean. Returns true if the file was generated.
      */
     private static boolean checkForFabricLinux() {
         boolean firstRun = false;
@@ -100,9 +97,8 @@ class FilesSetup {
         }
         return firstRun;
     }
-    /**
-     * Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
-     * @return Returns true if the file was generated.
+    /** Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
+     * @return Boolean. Returns true if the file was generated.
      */
     private static boolean checkForFabricWindows() {
         boolean firstRun = false;
@@ -122,9 +118,8 @@ class FilesSetup {
         }
         return firstRun;
     }
-    /**
-     * Checks for existence of Forge start script for Linux. If it is not found, it is generated.
-     * @return Returns true if the file was generated.
+    /** Checks for existence of Forge start script for Linux. If it is not found, it is generated.
+     * @return Boolean. Returns true if the file was generated.
      */
     private static boolean checkForForgeLinux() {
         boolean firstRun = false;
@@ -144,9 +139,8 @@ class FilesSetup {
         }
         return firstRun;
     }
-    /**
-     *  Checks for existence of Forge start script for Windows. If it is not found, it is generated.
-     * @return Returns true if the file was generated.
+    /** Checks for existence of Forge start script for Windows. If it is not found, it is generated.
+     * @return Boolean. Returns true if the file was generated.
      */
     private static boolean checkForForgeWindows() {
         boolean firstRun = false;
@@ -166,9 +160,8 @@ class FilesSetup {
         }
         return firstRun;
     }
-    /**
-     * Checks for existence of server.properties file. If it is not found, it is generated.
-     * @return Returns true if the file was generated.
+    /** Checks for existence of server.properties file. If it is not found, it is generated.
+     * @return Boolean. Returns true if the file was generated.
      */
     private static boolean checkForProperties() {
         boolean firstRun = false;
@@ -188,9 +181,8 @@ class FilesSetup {
         }
         return firstRun;
     }
-    /**
-     * Checks for existence of server-icon.png file. If it is not found, it is generated.
-     * @return Returns true if the file was generated.
+    /** Checks for existence of server-icon.png file. If it is not found, it is generated.
+     * @return Boolean. Returns true if the file was generated.
      */
     private static boolean checkForIcon() {
         boolean firstRun = false;
