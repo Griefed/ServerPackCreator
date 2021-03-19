@@ -14,12 +14,10 @@ import java.util.zip.ZipOutputStream;
 class ServerSetup {
     private static final Logger appLogger = LogManager.getLogger("ServerSetup");
     /** Deletes client-side-only mods in server_pack, if specified.
-     *
-     * @param modpackDir Files will be deleted in the subfolder server_pack.
-     * @param clientMods Client mods to delete.
-     * @throws IOException Throw error if a file could not be deleted.
+     * @param modpackDir String. /server_pack/mods The directory where the files will be deleted.
+     * @param clientMods String List. Client mods to delete.
      */
-    static void deleteClientMods(String modpackDir, List<String> clientMods) throws IOException {
+    static void deleteClientMods(String modpackDir, List<String> clientMods) {
         appLogger.info("Deleting client-side mods from serverpack: ");
         File serverMods = new File(modpackDir + "/server_pack/mods");
         for (File f : Objects.requireNonNull(serverMods.listFiles())) {
@@ -35,13 +33,12 @@ class ServerSetup {
             }
         }
     }
-    /** Optional. Depending on serverpackcreator.conf(includeServerInstallation,modLoader,minecraftVersion,modLoaderVersion) this will install the files for a Forge/Fabric server.
-     *  TODO: Write param docs
-     * @param modLoader
-     * @param modpackDir
-     * @param minecraftVersion
-     * @param modLoaderVersion
-     * @param javaPath
+    /** Installs the files for a Forge/Fabric server.
+     * @param modLoader String. The modloader for which to install the server.
+     * @param modpackDir String. /server_pack The directory where the modloader server will be installed in.
+     * @param minecraftVersion String. The Minecraft version for which to install the modloader and Minecraft server.
+     * @param modLoaderVersion String. The modloader version for which to install the modloader and Minecraft server.
+     * @param javaPath String. Path to Java installation needed to execute the Fabric and Forge installers.
      */
     static void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
         File fabricInstaller = new File(modpackDir + "/server_pack/fabric-installer.jar");
@@ -96,14 +93,13 @@ class ServerSetup {
         ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         ServerUtilities.cleanUpServerPack(fabricInstaller, forgeInstaller, modLoader, modpackDir, minecraftVersion, modLoaderVersion);
     }
-    /** Depending on serverpackcreator.conf(includeZipCreation) this will create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
+    /** Create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
      * With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
-     *  TODO: Write param docs
-     * @param modpackDir
-     * @param modLoader
-     * @param minecraftVersion
+     * @param modpackDir String. The directory where the zip-archive will be created and saved in.
+     * @param modLoader String. Determines the name of Minecraft#s server jar which will be deleted from the zip-archive.
+     * @param includeServerInstallation Boolean. Determines whether the Minecraft server jar needs to be deleted from the zip-archive.
      */
-    static void zipBuilder(String modpackDir, String modLoader, String minecraftVersion, Boolean includeServerInstallation) {
+    static void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation) {
         final Path sourceDir = Paths.get(modpackDir + "/server_pack");
         String zipFileName = sourceDir.toString().concat(".zip");
         appLogger.info("Creating zip archive of serverpack...");

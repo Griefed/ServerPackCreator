@@ -11,7 +11,7 @@ public class Main {
     private static final Logger appLogger = LogManager.getLogger("Main");
     /** Warn user about WIP status. Get configuration from serverpackcreator.conf. Check configuration. Print configuration. Make calls according to configuration.
      * Basically, the main class makes the calls to every other class where the actual magic is happening. The main class of ServerPackCreator should never contain code which does work on the serverpack itself.
-     *
+     * @param args Command Line Argument determines whether ServerPackCreator will start into normal operation mode or with a step-by-step generation of a configuration file.
      */
     public static void main(String[] args) {
         appLogger.warn("################################################################");
@@ -40,11 +40,7 @@ public class Main {
                 appLogger.error("There was an error calling the copyFiles method.", ex);
             }
             if (ConfigCheck.clientMods.toArray().length != 0) {
-                try {
-                    ServerSetup.deleteClientMods(ConfigCheck.modpackDir, ConfigCheck.clientMods);
-                } catch (IOException ex) {
-                    appLogger.error("There was an error calling the deleteClientMods method.", ex);
-                }
+                ServerSetup.deleteClientMods(ConfigCheck.modpackDir, ConfigCheck.clientMods);
             }
             CopyFiles.copyStartScripts(ConfigCheck.modpackDir, ConfigCheck.modLoader, ConfigCheck.includeStartScripts);
             if (ConfigCheck.includeServerInstallation) {
@@ -63,7 +59,7 @@ public class Main {
                 appLogger.info("Not including server.properties.");
             }
             if (ConfigCheck.includeZipCreation) {
-                ServerSetup.zipBuilder(ConfigCheck.modpackDir, ConfigCheck.modLoader, ConfigCheck.minecraftVersion, ConfigCheck.includeServerInstallation);
+                ServerSetup.zipBuilder(ConfigCheck.modpackDir, ConfigCheck.modLoader, ConfigCheck.includeServerInstallation);
             } else {
                 appLogger.info("Not creating zip archive of serverpack.");
             }
