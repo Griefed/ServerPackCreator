@@ -21,15 +21,15 @@ class ServerSetup {
      */
     static void deleteClientMods(String modpackDir, List<String> clientMods) {
         appLogger.info("Deleting client-side mods from serverpack: ");
-        File serverMods = new File(modpackDir + "/server_pack/mods");
+        File serverMods = new File(String.format("%s/server_pack/mods", modpackDir));
         for (File f : Objects.requireNonNull(serverMods.listFiles())) {
             for (int i = 0; i < clientMods.toArray().length; i++) {
                 if (f.getName().startsWith(clientMods.get(i))) {
                     boolean isDeleted = f.delete();
                     if (isDeleted) {
-                        appLogger.debug("    " + f.getName());
+                        appLogger.debug(String.format("    %s", f.getName()));
                     } else {
-                        appLogger.error("Could not delete: " + f.getName());
+                        appLogger.error(String.format("Could not delete: %s", f.getName()));
                     }
                 }
             }
@@ -43,14 +43,14 @@ class ServerSetup {
      * @param javaPath String. Path to Java installation needed to execute the Fabric and Forge installers.
      */
     static void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
-        File fabricInstaller = new File(modpackDir + "/server_pack/fabric-installer.jar");
-        File forgeInstaller = new File(modpackDir + "/server_pack/forge-installer.jar");
+        File fabricInstaller = new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir));
+        File forgeInstaller = new File(String.format("%s/server_pack/forge-installer.jar", modpackDir));
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
                 appLogger.info("Starting Fabric installation.");
                 if (ServerUtilities.downloadFabricJar(modpackDir)) {
                     appLogger.info("Fabric installer successfully downloaded. Installing Fabric. This may take a while...");
-                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "fabric-installer.jar", "server", "-mcversion " + minecraftVersion, "-loader " + modLoaderVersion, "-downloadMinecraft").directory(new File(modpackDir + "/server_pack"));
+                    ProcessBuilder processBuilder = new ProcessBuilder(String.format("%s -jar fabric-installer.jar server -mcversion %s -loader %s -downloadMinecraft", javaPath, minecraftVersion, modLoaderVersion)).directory(new File(String.format("%s/server_pack", modpackDir)));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
                     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -73,7 +73,8 @@ class ServerSetup {
                 appLogger.info("Starting Forge installation.");
                 if (ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
                     appLogger.info("Forge installer successfully downloaded. Installing Forge. This may take a while...");
-                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
+                    //ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
+                    ProcessBuilder processBuilder = new ProcessBuilder(String.format("%s -jar forge-installer.jar --installServer", javaPath)).directory(new File(String.format("%s/server_pack", modpackDir)));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
                     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -92,7 +93,7 @@ class ServerSetup {
                 appLogger.error("An error occurred during Forge installation.", ex);
             }
         } else {
-            appLogger.error("Specified invalid modloader: " + modLoader);
+            appLogger.error(String.format("Specified invalid modloader: %s", modLoader));
         }
         ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         ServerUtilities.cleanUpServerPack(fabricInstaller, forgeInstaller, modLoader, modpackDir, minecraftVersion, modLoaderVersion);
@@ -104,7 +105,7 @@ class ServerSetup {
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server jar needs to be deleted from the zip-archive.
      */
     static void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation) {
-        final Path sourceDir = Paths.get(modpackDir + "/server_pack");
+        final Path sourceDir = Paths.get(String.format("%s/server_pack", modpackDir));
         String zipFileName = sourceDir.toString().concat(".zip");
         appLogger.info("Creating zip archive of serverpack...");
         try {
