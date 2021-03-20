@@ -35,7 +35,7 @@ class ConfigCheck {
     static Boolean configHasError = false;
     private static final Logger appLogger = LogManager.getLogger("ConfigCheck");
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
-     * TODO: Break up checkConfig into searate methods so they can be called from anywhere more easily, like CLISetup
+     * TODO: Break up checkConfig into separate methods so they can be called from anywhere more easily, like CLISetup
      * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
     static boolean checkConfig() {
@@ -237,7 +237,7 @@ class ConfigCheck {
             try {
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
             } catch (FileNotFoundException ex) {
-                appLogger.error("Error: Couldn't create Fabric Manifest JSON", ex);
+                appLogger.debug("Couldn't find fabric-manifest.xml.", ex);
                 File file = new File("fabric-manifest.xml");
                 if (!file.exists()){
                     appLogger.info("Fabric Manifest XML File does not exist, creating...");
@@ -256,13 +256,13 @@ class ConfigCheck {
             downloadManifestOutputStream.close();
             File manifestXMLFile = new File("fabric-manifest.xml");
             Scanner myReader = new Scanner(manifestXMLFile);
-            ArrayList<String> d = new ArrayList<>();
+            ArrayList<String> dataArray = new ArrayList<>();
             while (myReader.hasNextLine()) {
-                d.add(myReader.nextLine());
+                dataArray.add(myReader.nextLine());
             }
-            String[] data = new String[d.size()];
+            String[] data = new String[dataArray.size()];
             String manifestXML;
-            d.toArray(data);
+            dataArray.toArray(data);
             manifestXML = Arrays.toString(data);
             myReader.close();
             manifestXML = manifestXML.replaceAll("\\s", "");
@@ -286,8 +286,8 @@ class ConfigCheck {
             FileOutputStream downloadManifestOutputStream = null;
             try {
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+            } catch (FileNotFoundException ex) {
+                appLogger.debug("Couldn't find forge-manifest.json", ex);
                 File file = new File("forge-manifest.json");
                 if (!file.exists()){
                     appLogger.info("Forge Manifest JSON File does not exist, creating...");
