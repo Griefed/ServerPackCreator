@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Scanner;
 
 class ConfigCheck {
-    static String modpackDir;
+    /*static String modpackDir;
     static List<String> clientMods;
     static List<String> copyDirs;
     static Boolean includeServerInstallation;
@@ -30,210 +30,271 @@ class ConfigCheck {
     static Boolean includeServerIcon;
     static Boolean includeServerProperties;
     static Boolean includeStartScripts;
-    static Boolean includeZipCreation;
+    static Boolean includeZipCreation;*/
     static Config conf;
-    static Boolean configHasError = false;
-    private static final Logger appLogger = LogManager.getLogger("ConfigCheck");
+    static Boolean configHasError = true;
+    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
-     * TODO: Break up checkConfig into separate methods so they can be called from anywhere more easily, like CLISetup
      * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
     static boolean checkConfig() {
         appLogger.info("Checking configuration...");
         try {
-            conf = ConfigFactory.parseFile(FilesSetup.configFile);
+            conf = ConfigFactory.parseFile(Reference.configFile);
         } catch (ConfigException ex) {
-            appLogger.error("One of your config values is empty. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
+            appLogger.error("Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
         }
-        if (conf.getString("modpackDir").equalsIgnoreCase("")) {
-            configHasError = true;
-            appLogger.error("Error: Modpack directory not specified.");
-        } else if (!(new File(conf.getString("modpackDir")).isDirectory())) {
-            configHasError = true;
-            appLogger.error("Error: Modpack directory doesn't exist.");
+
+        if (checkModpackDir(conf.getString("modpackDir"))) {
+            Reference.modpackDir = conf.getString("modpackDir");
+            configHasError = false;
+        }
+
+        Reference.clientMods = conf.getStringList("clientMods");
+
+        if (checkCopyDirs(conf.getStringList("copyDirs"), conf.getString("modpackDir"))) {
+            Reference.copyDirs = conf.getStringList("copyDirs");
+            configHasError = false;
+        }
+
+        Reference.includeServerInstallation = convertToBoolean(conf.getString("includeServerInstallation"));
+
+        if (Reference.includeServerInstallation) {
+            if (checkJavaPath(conf.getString("javaPath"))) {
+                Reference.javaPath = getJavaPath(conf.getString("javaPath"));
+                configHasError = false;
+            }
+            if (isMinecraftVersionCorrect(conf.getString("minecraftVersion"))) {
+                Reference.minecraftVersion = conf.getString("minecraftVersion");
+                configHasError = false;
+            }
+            if (checkModloader(conf.getString("modLoader"))) {
+                Reference.modLoader = setModloader(conf.getString("modLoader"));
+                configHasError = false;
+            }
+            if (checkModloaderVersion(Reference.modLoader, conf.getString("modLoaderVersion"), Reference.minecraftVersion)) {
+                Reference.modLoaderVersion = conf.getString("modLoaderVersion");
+                configHasError = false;
+            }
         } else {
-            modpackDir = conf.getString("modpackDir");
-        }
-        clientMods = conf.getStringList("clientMods");
-        if (conf.getStringList("copyDirs").isEmpty()) {
-            configHasError = true;
-            appLogger.error("Error: No directories specified for copying. This would result in an empty serverpack.");
-        } else {
-            copyDirs = conf.getStringList("copyDirs");
-        }
-        boolean isAllDirectoriesExist = true;
-        for (int i = 0; i < copyDirs.size(); i++) {
-            File dir = new File(modpackDir + "/" + copyDirs.get(i));
-            if (!dir.exists() || !dir.isDirectory()) {
-                isAllDirectoriesExist = false;
-                appLogger.error(dir.getAbsolutePath() + " does not exist.");
-            }
-        }
-        if (!isAllDirectoriesExist) {
-            appLogger.error("One or more directories that you specified to copy does not exist. Consider checking the logs above and creating these directories / fixing typos in config file.");
-            System.exit(5);
-        }
-        try {
-            includeServerInstallation = conf.getBoolean("includeServerInstallation");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Error: Wrong configuration for includeServerInstallation. Must be true or false.");
-        }
-        if (includeServerInstallation && (new File(conf.getString("javaPath")).exists())) {
-            if (conf.getString("javaPath").endsWith(".exe")) {
-                javaPath = conf.getString("javaPath").substring(0, conf.getString("javaPath").length() - 4);
-            } else {
-                javaPath = conf.getString("javaPath");
-            }
-            if (conf.getString("minecraftVersion").equals("")) {
-                configHasError = true;
-                appLogger.error("Error: Minecraft version is not specified.");
-            } else {
-                if (!ConfigCheck.isMinecraftVersionCorrect(conf.getString("minecraftVersion"))) {
-                    configHasError = true;
-                    appLogger.error("Error: Invalid Minecraft version specified.");
-                } else {
-                    minecraftVersion = conf.getString("minecraftVersion");
-                    if (!conf.getString("modLoader").equalsIgnoreCase("Forge") && !conf.getString("modLoader").equalsIgnoreCase("Fabric") && !conf.getString("modLoader").equals("")) {
-                        configHasError = true;
-                        appLogger.error("Error: Incorrect mod loader specified.");
-                    } else if (conf.getString("modLoader").equalsIgnoreCase("Fabric") && !ConfigCheck.isFabricVersionCorrect(conf.getString("modLoaderVersion"))) {
-                        configHasError = true;
-                        appLogger.error("Error: Incorrect Fabric version specified.");
-                    } else if (conf.getString("modLoader").equalsIgnoreCase("Forge") && !ConfigCheck.isForgeVersionCorrect(conf.getString("modLoaderVersion"), conf.getString("minecraftVersion"))){
-                        configHasError = true;
-                        appLogger.error("Error: Incorrect Forge version specified.");
-                    } else {
-                        if (conf.getString("modLoaderVersion").equals("")) {
-                            configHasError = true;
-                            appLogger.error("Error: Mod loader version is not specified.");
-                        } else {
-                            modLoaderVersion = conf.getString("modLoaderVersion");
-                            modLoader = conf.getString("modLoader");
-                        }
-                    }
-                }
-            }
-        } else if (includeServerInstallation && !(new File(conf.getString("javaPath")).exists())) {
-            configHasError = true;
-            appLogger.error("Java could not be found. Check your configuration.");
-            appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
-        } else if (!includeServerInstallation) {
-            javaPath = conf.getString("javaPath");
             appLogger.info("Server installation disabled. Skipping check of:");
             appLogger.info("    Java path");
             appLogger.info("    Minecraft version");
             appLogger.info("    Modloader");
             appLogger.info("    Modloader version");
-        } else {
-            configHasError = true;
-            appLogger.error("Server installation and/or Java path incorrect. Please check.");
-            appLogger.error("Your configuration for javaPath was: " + conf.getString("javaPath"));
-            appLogger.error("Your configuration for includeServerInstallation was: " + conf.getString("includeServerInstallation"));
         }
-        try {
-            includeServerIcon = conf.getBoolean("includeServerIcon");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Error: Wrong configuration for includeServerIcon. Must be true or false.");
-        }
-        try {
-            includeServerProperties = conf.getBoolean("includeServerProperties");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Error: Wrong configuration for includeServerProperties. Must be true or false.");
-        }
-        try {
-            includeStartScripts = conf.getBoolean("includeStartScripts");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Error: Wrong configuration for includeStartScripts. Must be true or false.");
-        }
-        try {
-            includeZipCreation = conf.getBoolean("includeZipCreation");
-        } catch (ConfigException ex) {
-            configHasError = true;
-            appLogger.error("Error: Wrong configuration for includeZipCreation. Must be true or false.");
-        }
-        if (!configHasError) {
-            appLogger.info("Config check successful. No errors encountered.");
-        }
+
+        Reference.includeServerIcon = convertToBoolean(conf.getString("includeServerIcon"));
+        Reference.includeServerProperties = convertToBoolean(conf.getString("includeServerProperties"));
+        Reference.includeStartScripts = convertToBoolean(conf.getString("includeStartScripts"));
+        Reference.includeZipCreation = convertToBoolean(conf.getString("includeZipCreation"));
+
         appLogger.info("Your configuration is:");
-        appLogger.info("Modpack directory: " + modpackDir);
-        if (clientMods.toArray().length == 0) {
+        appLogger.info("Modpack directory: " + Reference.modpackDir);
+        if (Reference.clientMods.toArray().length == 0) {
             appLogger.warn("No client mods specified");
         } else {
             appLogger.info("Client mods specified. Client mods are:");
-            for (int i = 0; i < clientMods.toArray().length; i++) {
-                appLogger.info("    " + clientMods.get(i));
+            for (int i = 0; i < Reference.clientMods.toArray().length; i++) {
+                appLogger.info("    " + Reference.clientMods.get(i));
             }
         }
         appLogger.info("Directories to copy:");
-        for (int i = 0; i < copyDirs.toArray().length; i++) {
-            appLogger.info("    " + copyDirs.get(i));
+        for (int i = 0; i < Reference.copyDirs.toArray().length; i++) {
+            appLogger.info("    " + Reference.copyDirs.get(i));
         }
-        appLogger.info("Include server installation:      " + includeServerInstallation.toString());
-        appLogger.info("Java Installation path:           " + ConfigFactory.parseFile(FilesSetup.configFile).getString("javaPath"));
-        appLogger.info("Minecraft version:                " + minecraftVersion);
-        appLogger.info("Modloader:                        " + modLoader);
-        appLogger.info("Modloader Version:                " + modLoaderVersion);
-        appLogger.info("Include server icon:              " + includeServerIcon.toString());
-        appLogger.info("Include server properties:        " + includeServerProperties.toString());
-        appLogger.info("Include start scripts:            " + includeStartScripts.toString());
-        appLogger.info("Create zip-archive of serverpack: " + includeZipCreation.toString());
+        appLogger.info("Include server installation:      " + Reference.includeServerInstallation.toString());
+        appLogger.info("Java Installation path:           " + ConfigFactory.parseFile(Reference.configFile).getString("javaPath"));
+        appLogger.info("Minecraft version:                " + Reference.minecraftVersion);
+        appLogger.info("Modloader:                        " + Reference.modLoader);
+        appLogger.info("Modloader Version:                " + Reference.modLoaderVersion);
+        appLogger.info("Include server icon:              " + Reference.includeServerIcon.toString());
+        appLogger.info("Include server properties:        " + Reference.includeServerProperties.toString());
+        appLogger.info("Include start scripts:            " + Reference.includeStartScripts.toString());
+        appLogger.info("Create zip-archive of serverpack: " + Reference.includeZipCreation.toString());
+        if (!configHasError) {
+            appLogger.info("Config check successful. No errors encountered.");
+        } else {
+            appLogger.error("Config check not successful. Check your config for errors.");
+        }
         return configHasError;
     }
+    /** Check whether the specified modpack directory exists.
+     * @param modpackDir String. The path to the modpack directory.
+     * @return Boolean. Returns true if the directory exists. False if not.
+     */
+    static boolean checkModpackDir(String modpackDir) {
+        boolean configCorrect = false;
+        if (modpackDir.equals("")) {
+            appLogger.error("Error: Modpack directory not specified.");
+        } else if (!(new File(modpackDir).isDirectory())) {
+            appLogger.error("Error: Modpack directory doesn't exist.");
+        } else {
+            configCorrect = true;
+        }
+        return configCorrect;
+    }
+    /** Check whether the specified directories exist in the modpack directory.
+     * @param copyDirs String. The directories for which to check.
+     * @param modpackDir String. The path to the modpack directory in which to check for directories.
+     * @return Boolean. Returns true if all directories exist. False if any one does not.
+     */
+    static boolean checkCopyDirs(List<String> copyDirs, String modpackDir) {
+        boolean configCorrect = true;
+        if (copyDirs.isEmpty()) {
+            appLogger.error("Error: No directories specified for copying. This would result in an empty serverpack.");
+            configCorrect = false;
+        } else {
+            for (String copyDir : copyDirs) {
+                File directory = new File(String.format("%s/%s", modpackDir, copyDir));
+                if (!directory.exists() || !directory.isDirectory()) {
+                    appLogger.error(String.format("Error: %s does not exist.", directory.getAbsolutePath()));
+                    configCorrect = false;
+                }
+            }
+        }
+        return configCorrect;
+    }
+    /** Converts various strings to booleans.
+     * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
+     * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
+     */
+    static boolean convertToBoolean(String stringBoolean) {
+        boolean returnBoolean;
+        if (stringBoolean.matches("[Tt]rue") || stringBoolean.matches("1") || stringBoolean.matches("[Yy]es") || stringBoolean.matches("[Yy]")) {
+            returnBoolean = true;
+        } else if (stringBoolean.matches("[Ff]alse") || stringBoolean.matches("0") || stringBoolean.matches("[Nn]o") || stringBoolean.matches("[Nn]" )) {
+            returnBoolean = false;
+        } else {
+            appLogger.warn("Warning. Couldn't parse boolean. Assuming false.");
+            returnBoolean = false;
+        }
+        return returnBoolean;
+    }
+    /** Checks whether the correct path to the Java installation was set.
+     * @param pathToJava String. The path to check for java.exe or java.
+     * @return Boolean. Returns true if the path was correctly set. False if not.
+     */
+    static boolean checkJavaPath(String pathToJava) {
+        boolean configCorrect = false;
+        if (new File(pathToJava).exists() && pathToJava.endsWith("java.exe")) {
+            configCorrect = true;
+        } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
+            configCorrect = true;
+        }
+        return configCorrect;
+    }
+    /** If the specified Java path ends with .exe, remove it.
+     * @param setJavaPath String. The path which to check for ending with .exe.
+     * @return String. Returns the path to Java installation.
+     */
+    static String getJavaPath(String setJavaPath) {
+        String pathToJava;
+        if (setJavaPath.endsWith(".exe")) {
+            pathToJava = setJavaPath.substring(0, conf.getString("javaPath").length() - 4);
+        } else {
+            pathToJava = setJavaPath;
+        }
+        return pathToJava;
+    }
+    /** Checks whether Forge or Fabric were specified as modloader.
+     * @param modloader String. Check case insensitive for Forge or Fabric.
+     * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if not.
+     */
+    static boolean checkModloader(String modloader) {
+        boolean configCorrect = false;
+        if (modloader.equalsIgnoreCase("Forge") || modloader.equalsIgnoreCase("Fabric")) {
+            configCorrect = true;
+        } else {
+            appLogger.error("Error: Invalid modloader specified.");
+        }
+        return configCorrect;
+    }
+    /** Standardize the specified modloader.
+     * @param modloader String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..
+     * @return String. Returns a standardized String of the specified modloader.
+     */
+    static String setModloader(String modloader) {
+        String returnLoader = null;
+        if (modloader.equalsIgnoreCase("Forge")) {
+            returnLoader = "Forge";
+        } else if (modloader.equalsIgnoreCase("Fabric")) {
+            returnLoader = "Fabric";
+        }
+        return returnLoader;
+    }
+    /** Determine whether to check for correct Forge or correct Fabric modloader version.
+     * @param modloader String. Determines whether the check for Forge or Fabric is called.
+     * @param modloaderVersion String. The version of the modloader to check for.
+     * @param minecraftVersion String. The version of Minecraft for which to check for if modloader is Forge.
+     * @return Boolean. Returns true if the specified modloader version is correct. False if not.
+     */
+    static boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
+        boolean isVersionCorrect = false;
+        if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion, minecraftVersion)) {
+            isVersionCorrect = true;
+        } else if (modloader.equalsIgnoreCase("Fabric") && isFabricVersionCorrect(modloaderVersion)) {
+            isVersionCorrect = true;
+        } else {
+            appLogger.error("Specified incorrect modloader version.");
+        }
+        return isVersionCorrect;
+    }
     /** Check the specified Minecraft version against Mojang's version manifest to validate the version.
-     * @param mcver Minecraft version to check.
+     * @param minecraftVersion Minecraft version to check.
      * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest. False if not.
      */
-    static boolean isMinecraftVersionCorrect(String mcver) {
-        try {
-            URL manifestJsonURL = new URL(Reference.MINECRAFT_MANIFEST_URL);
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-            FileOutputStream downloadManifestOutputStream = null;
+    static boolean isMinecraftVersionCorrect(String minecraftVersion) {
+        if (!minecraftVersion.equals("")) {
             try {
-                downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
-            } catch (FileNotFoundException ex) {
-                appLogger.debug("Couldn't find mcmanifest.json", ex);
-                File file = new File("mcmanifest.json");
-                if (!file.exists()){
-                    appLogger.info("Manifest JSON File does not exist, creating...");
-                    boolean jsonCreated = file.createNewFile();
-                    if (jsonCreated) {
-                        appLogger.info("Manifest JSON File created");
-                    } else {
-                        appLogger.error("Error. Could not create Manifest JSON File.");
+                URL manifestJsonURL = new URL(Reference.MINECRAFT_MANIFEST_URL);
+                ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+                FileOutputStream downloadManifestOutputStream;
+                try {
+                    downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
+                } catch (FileNotFoundException ex) {
+                    appLogger.debug("Couldn't find mcmanifest.json", ex);
+                    File file = new File("mcmanifest.json");
+                    if (!file.exists()) {
+                        appLogger.info("Manifest JSON File does not exist, creating...");
+                        boolean jsonCreated = file.createNewFile();
+                        if (jsonCreated) {
+                            appLogger.info("Manifest JSON File created");
+                        } else {
+                            appLogger.error("Error. Could not create Manifest JSON File.");
+                        }
                     }
+                    downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
                 }
-                downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
+                FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+                downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                downloadManifestOutputStream.flush();
+                downloadManifestOutputStream.close();
+                File manifestJsonFile = new File("mcmanifest.json");
+                Scanner myReader = new Scanner(manifestJsonFile);
+                String data = myReader.nextLine();
+                myReader.close();
+                data = data.replaceAll("\\s", "");
+                boolean contains = data.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
+                manifestJsonFile.deleteOnExit();
+                return contains;
+            } catch (Exception ex) {
+                appLogger.error("An error occurred during Minecraft version validation.", ex);
+                return false;
             }
-            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            downloadManifestOutputStream.flush();
-            downloadManifestOutputStream.close();
-            File manifestJsonFile = new File("mcmanifest.json");
-            Scanner myReader = new Scanner(manifestJsonFile);
-            String data = myReader.nextLine();
-            myReader.close();
-            data = data.replaceAll("\\s", "");
-            boolean contains = data.trim().contains(String.format("\"id\":\"%s\"", mcver));
-            manifestJsonFile.deleteOnExit();
-            return contains;
-        } catch (Exception ex) {
-            appLogger.error("An error occurred during Minecraft version validation.", ex);
+        } else {
             return false;
         }
     }
     /** Check the specified Fabric version against Fabric's version manifest to validate the version.
-     * @param version String. The Fabric version to check.
+     * @param fabricVersion String. The Fabric version to check.
      * @return Boolean. Returns true if the specified Fabric version could be found in Fabric's manifest. False if not.
      */
-    static boolean isFabricVersionCorrect(String version) {
+    static boolean isFabricVersionCorrect(String fabricVersion) {
         try {
             URL manifestJsonURL = new URL(Reference.FABRIC_MANIFEST_URL);
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-            FileOutputStream downloadManifestOutputStream = null;
+            FileOutputStream downloadManifestOutputStream;
             try {
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
             } catch (FileNotFoundException ex) {
@@ -266,7 +327,7 @@ class ConfigCheck {
             manifestXML = Arrays.toString(data);
             myReader.close();
             manifestXML = manifestXML.replaceAll("\\s", "");
-            boolean contains = manifestXML.trim().contains(String.format("<version>%s</version>", version));
+            boolean contains = manifestXML.trim().contains(String.format("<version>%s</version>", fabricVersion));
             manifestXMLFile.deleteOnExit();
             return contains;
         } catch (Exception ex) {
@@ -275,15 +336,15 @@ class ConfigCheck {
         }
     }
     /** Checks Forge version for errors (basically for its availability in Forge manifest)
-     * @param version String. The Forge version to check.
+     * @param forgeVersion String. The Forge version to check.
      * @param minecraftVersion String. The Minecraft version that the modpack uses. Needed to prevent usage of Forge, for example, from MC version 1.7.10, with 1.12.2.
      * @return Boolean. Returns true if Forge version correct and false if it isn't correct.
      */
-    static boolean isForgeVersionCorrect(String version, String minecraftVersion) {
+    static boolean isForgeVersionCorrect(String forgeVersion, String minecraftVersion) {
         try {
             URL manifestJsonURL = new URL(Reference.FORGE_MANIFEST_URL);
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-            FileOutputStream downloadManifestOutputStream = null;
+            FileOutputStream downloadManifestOutputStream;
             try {
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
             } catch (FileNotFoundException ex) {
@@ -317,7 +378,7 @@ class ConfigCheck {
             manifestJSON = Arrays.toString(data);
             myReader.close();
             manifestJSON = manifestJSON.replaceAll("\\s", "");
-            return manifestJSON.trim().contains(String.format("%s-%s", minecraftVersion, version));
+            return manifestJSON.trim().contains(String.format("%s-%s", minecraftVersion, forgeVersion));
         } catch (Exception ex) {
             appLogger.error("An error occurred during Forge version validation.", ex);
             return false;
