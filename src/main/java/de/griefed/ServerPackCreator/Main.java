@@ -27,42 +27,42 @@ public class Main {
         } catch (URISyntaxException ex) {
             appLogger.error("Error getting jar name.", ex);
         }
-        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!FilesSetup.oldConfigFile.exists() && !FilesSetup.configFile.exists())){
+        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!Reference.oldConfigFile.exists() && !Reference.configFile.exists())){
             CLISetup.setup();
         } 
         FilesSetup.filesSetup();
         if (!ConfigCheck.checkConfig()) {
-            CopyFiles.cleanupEnvironment(ConfigCheck.modpackDir);
+            CopyFiles.cleanupEnvironment(Reference.modpackDir);
             try {
-                CopyFiles.copyFiles(ConfigCheck.modpackDir, ConfigCheck.copyDirs);
+                CopyFiles.copyFiles(Reference.modpackDir, Reference.copyDirs);
             } catch (IOException ex) {
                 appLogger.error("There was an error calling the copyFiles method.", ex);
             }
-            if (ConfigCheck.clientMods.toArray().length != 0) {
-                ServerSetup.deleteClientMods(ConfigCheck.modpackDir, ConfigCheck.clientMods);
+            if (Reference.clientMods.toArray().length != 0) {
+                ServerSetup.deleteClientMods(Reference.modpackDir, Reference.clientMods);
             }
-            CopyFiles.copyStartScripts(ConfigCheck.modpackDir, ConfigCheck.modLoader, ConfigCheck.includeStartScripts);
-            if (ConfigCheck.includeServerInstallation) {
-                ServerSetup.installServer(ConfigCheck.modLoader, ConfigCheck.modpackDir, ConfigCheck.minecraftVersion, ConfigCheck.modLoaderVersion, ConfigCheck.javaPath);
+            CopyFiles.copyStartScripts(Reference.modpackDir, Reference.modLoader, Reference.includeStartScripts);
+            if (Reference.includeServerInstallation) {
+                ServerSetup.installServer(Reference.modLoader, Reference.modpackDir, Reference.minecraftVersion, Reference.modLoaderVersion, Reference.javaPath);
             } else {
                 appLogger.info("Not installing modded server.");
             }
-            if (ConfigCheck.includeServerIcon) {
-                CopyFiles.copyIcon(ConfigCheck.modpackDir);
+            if (Reference.includeServerIcon) {
+                CopyFiles.copyIcon(Reference.modpackDir);
             } else {
                 appLogger.info("Not including servericon.");
             }
-            if (ConfigCheck.includeServerProperties) {
-                CopyFiles.copyProperties(ConfigCheck.modpackDir);
+            if (Reference.includeServerProperties) {
+                CopyFiles.copyProperties(Reference.modpackDir);
             } else {
                 appLogger.info("Not including server.properties.");
             }
-            if (ConfigCheck.includeZipCreation) {
-                ServerSetup.zipBuilder(ConfigCheck.modpackDir, ConfigCheck.modLoader, ConfigCheck.includeServerInstallation);
+            if (Reference.includeZipCreation) {
+                ServerSetup.zipBuilder(Reference.modpackDir, Reference.modLoader, Reference.includeServerInstallation);
             } else {
                 appLogger.info("Not creating zip archive of serverpack.");
             }
-            appLogger.info("Serverpack available at: " + ConfigCheck.modpackDir + "/serverpack");
+            appLogger.info("Serverpack available at: " + Reference.modpackDir + "/serverpack");
             appLogger.info("Done!");
         } else {
             appLogger.error("Config file has errors. Consider editing serverpackcreator.conf file that is located in directory with SPC.");
