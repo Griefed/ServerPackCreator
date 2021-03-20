@@ -50,7 +50,7 @@ class ServerSetup {
                 appLogger.info("Starting Fabric installation.");
                 if (ServerUtilities.downloadFabricJar(modpackDir)) {
                     appLogger.info("Fabric installer successfully downloaded. Installing Fabric. This may take a while...");
-                    ProcessBuilder processBuilder = new ProcessBuilder(String.format("%s -jar fabric-installer.jar server -mcversion %s -loader %s -downloadMinecraft", javaPath, minecraftVersion, modLoaderVersion)).directory(new File(String.format("%s/server_pack", modpackDir)));
+                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "fabric-installer.jar", "server", "-mcversion " + minecraftVersion, "-loader " + modLoaderVersion, "-downloadMinecraft").directory(new File(modpackDir + "/server_pack"));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
                     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -73,8 +73,7 @@ class ServerSetup {
                 appLogger.info("Starting Forge installation.");
                 if (ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
                     appLogger.info("Forge installer successfully downloaded. Installing Forge. This may take a while...");
-                    //ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
-                    ProcessBuilder processBuilder = new ProcessBuilder(String.format("%s -jar forge-installer.jar --installServer", javaPath)).directory(new File(String.format("%s/server_pack", modpackDir)));
+                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
                     processBuilder.redirectErrorStream(true);
                     Process p = processBuilder.start();
                     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
