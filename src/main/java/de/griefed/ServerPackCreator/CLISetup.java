@@ -39,15 +39,14 @@ class CLISetup {
             appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
             do {
                 System.out.print("Path to modpack directory: ");
-                tmpModpackDir = null;
                 tmpModpackDir = reader.nextLine();
             } while (!ConfigCheck.checkModpackDir(tmpModpackDir));
             modpackDir = tmpModpackDir.replace("\\", "/");
-            appLogger.info("You entered: " + modpackDir);
+            appLogger.info(String.format("You entered: %s", modpackDir));
             System.out.println();
             appLogger.info("Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
             clientMods.addAll(readStringArray());
-            appLogger.info("You entered: " + clientMods.toString());
+            appLogger.info(String.format("You entered: %s", clientMods.toString()));
             tmpClientMods = new String[clientMods.size()];
             clientMods.toArray(tmpClientMods);
             appLogger.info("Which directories should be copied to the server pack? These are folder names inside your modpack directory.");
@@ -56,19 +55,19 @@ class CLISetup {
                 copyDirs = new ArrayList<>(0);
                 copyDirs.addAll(readStringArray());
             } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
-            appLogger.info("You entered: " + copyDirs.toString());
+            appLogger.info(String.format("You entered: %s", copyDirs.toString()));
             tmpCopyDirs = new String[copyDirs.size()];
             copyDirs.toArray(tmpCopyDirs);
             appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
             System.out.print("Include modloader server installation: ");
             includeServerInstallation = readBoolean();
-            appLogger.info("You entered: " + includeServerInstallation);
+            appLogger.info(String.format("You entered: %s", includeServerInstallation));
             appLogger.info("Which version of Minecraft does your modpack use?");
             do {
                 System.out.print("Minecraft version: ");
                 minecraftVersion = reader.nextLine();
             } while (!ConfigCheck.isMinecraftVersionCorrect(minecraftVersion));
-            appLogger.info("You entered: " + minecraftVersion);
+            appLogger.info(String.format("You entered: %s", minecraftVersion));
             System.out.println();
             appLogger.info("What modloader does your modpack use?");
             do {
@@ -76,14 +75,14 @@ class CLISetup {
                 modLoader = reader.nextLine();
             } while (!ConfigCheck.checkModloader(modLoader));
             modLoader = ConfigCheck.setModloader(modLoader);
-            appLogger.info("You entered: " + modLoader);
+            appLogger.info(String.format("You entered: %s", modLoader));
             System.out.println();
-            appLogger.info("What version of " + modLoader + " does your modpack use?");
+            appLogger.info(String.format("What version of %s does your modpack use?", modLoader));
             do {
                 System.out.print("Modloader version: ");
                 modLoaderVersion = reader.nextLine();
             } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
-            appLogger.info("You entered: " + modLoaderVersion);
+            appLogger.info(String.format("You entered: %s", modLoaderVersion));
             System.out.println();
             appLogger.info("Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.If you leave this empty, ServerPackCreator will try to determine the path for you.");
             appLogger.info("Example for Linux: /usr/bin/java | Example for Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
@@ -98,27 +97,27 @@ class CLISetup {
                     }
                 }
             } while (!ConfigCheck.checkJavaPath(javaPath));
-            appLogger.warn("ServerPackCreator set the path to your Java installation to: " + javaPath);
+            appLogger.warn(String.format("ServerPackCreator set the path to your Java installation to: %s", javaPath));
             System.out.println();
             appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
             System.out.print("Include server-icon.png: ");
             includeServerIcon = readBoolean();
-            appLogger.info("You entered: " + includeServerIcon);
+            appLogger.info(String.format("You entered: %s", includeServerIcon));
             System.out.println();
             appLogger.info("Do you want ServerPackCreator to include a server.properties in server pack? Must be true or false.");
             System.out.print("Include server.properties: ");
             includeServerProperties = readBoolean();
-            appLogger.info("You entered: " + includeServerProperties);
+            appLogger.info(String.format("You entered: %s", includeServerProperties));
             System.out.println();
             appLogger.info("Do you want ServerPackCreator to include start scripts for Linux and Windows in your server pack? Must be true or false.");
             System.out.print("Include start scripts: ");
             includeStartScripts = readBoolean();
-            appLogger.info("You entered: " + includeStartScripts);
+            appLogger.info(String.format("You entered: %s", includeStartScripts));
             System.out.println();
             appLogger.info("Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
             System.out.print("Create ZIP-archive: ");
             includeZipCreation = readBoolean();
-            appLogger.info("You entered: " + includeZipCreation);
+            appLogger.info(String.format("You entered: %s", includeZipCreation));
             ConfigCheck.printConfig(modpackDir, clientMods, copyDirs, includeServerInstallation, javaPath, minecraftVersion, modLoader, modLoaderVersion, includeServerIcon, includeServerProperties, includeStartScripts, includeZipCreation);
             appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
             System.out.print("Answer: ");
