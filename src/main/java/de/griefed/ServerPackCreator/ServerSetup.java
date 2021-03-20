@@ -83,6 +83,7 @@ class ServerSetup {
                         if (line == null) { break; }
                         installerLogger.info(line);
                     }
+                    appLogger.info("For details regarding the installation of this modloader server, see modloader_installer.log");
                     appLogger.info("Forge installation complete. Returning to SPC.");
                 } else {
                     appLogger.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
