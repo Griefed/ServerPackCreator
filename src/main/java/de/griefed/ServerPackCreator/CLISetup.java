@@ -197,17 +197,17 @@ class CLISetup {
             includeStartScripts,
             includeZipCreation);
     try {
-      if (FilesSetup.configFile.exists()) {
-        boolean delConf = FilesSetup.configFile.delete();
+      if (Reference.configFile.exists()) {
+        boolean delConf = Reference.configFile.delete();
         if (delConf) { appLogger.info("Deleted existing config file to replace with new one."); }
         else { appLogger.error("Could not delete existing config file."); }
       }
-      if (FilesSetup.oldConfigFile.exists()) {
-        boolean delOldConf = FilesSetup.oldConfigFile.delete();
+      if (Reference.oldConfigFile.exists()) {
+        boolean delOldConf = Reference.oldConfigFile.delete();
         if (delOldConf) { appLogger.info("Deleted existing config file to replace with new one."); }
         else { appLogger.error("Could not delete existing config file."); }
       }
-      BufferedWriter writer = new BufferedWriter(new FileWriter(FilesSetup.configFile));
+      BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.configFile));
       writer.write(configString);
       writer.close();
     } catch (IOException ex) {
