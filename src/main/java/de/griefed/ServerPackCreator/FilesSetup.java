@@ -17,7 +17,7 @@ class FilesSetup {
     static final File forgeLinuxFile = new File("start-forge.sh");
     static final File fabricWindowsFile = new File("start-fabric.bat");
     static final File fabricLinuxFile = new File("start-fabric.sh");
-    private static final Logger appLogger = LogManager.getLogger("FilesSetup");
+    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
     /** Calls individual methods which check for existence of default files. If any of these methods return true, ServerPackCreator will exit, giving the user the chance to customize it before the program runs in production.
      */
     static void filesSetup() {
@@ -27,14 +27,14 @@ class FilesSetup {
         } catch (IOException ex) {
             appLogger.error("Could not create server_files directory.", ex);
         }
-        boolean a = checkForConfig();
-        boolean b = checkForFabricLinux();
-        boolean c = checkForFabricWindows();
-        boolean d = checkForForgeLinux();
-        boolean e = checkForForgeWindows();
-        boolean f = checkForProperties();
-        boolean g = checkForIcon();
-        if (a || b || c || d || e || f || g) {
+        boolean doesConfigExist = checkForConfig();
+        boolean doesFabricLinuxExist = checkForFabricLinux();
+        boolean doesFabricWindowsExist = checkForFabricWindows();
+        boolean doesForgeLinuxExist = checkForForgeLinux();
+        boolean doesForgeWindowsExist = checkForForgeWindows();
+        boolean doesPropertiesExist = checkForProperties();
+        boolean doesIconExist = checkForIcon();
+        if (doesConfigExist || doesFabricLinuxExist || doesFabricWindowsExist || doesForgeLinuxExist || doesForgeWindowsExist || doesPropertiesExist || doesIconExist) {
                 appLogger.warn("################################################################");
                 appLogger.warn("#             ONE OR MORE DEFAULT FILE(S) GENERATED.           #");
                 appLogger.warn("# CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED. #");
