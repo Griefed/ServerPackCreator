@@ -28,7 +28,7 @@ import java.util.Map;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ServerUtilities {
-    private static final Logger appLogger = LogManager.getLogger("ServerUtilities");
+    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
     /** Calls methods for generating download scripts for Mojang's Minecraft server depending on the specified versions and modloader.
      * @param modLoader String. The specified modloader determines the name under which Mojang's server jar will be downloaded as.
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.

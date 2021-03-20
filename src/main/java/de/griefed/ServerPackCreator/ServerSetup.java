@@ -12,7 +12,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 class ServerSetup {
-    private static final Logger appLogger = LogManager.getLogger("ServerSetup");
+    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
+    private static final Logger installerLogger = LogManager.getLogger("InstallerLogger");
+
     /** Deletes client-side-only mods in server_pack, if specified.
      * @param modpackDir String. /server_pack/mods The directory where the files will be deleted.
      * @param clientMods String List. Client mods to delete.
@@ -56,8 +58,9 @@ class ServerSetup {
                     while (true) {
                         line = r.readLine();
                         if (line == null) { break; }
-                        appLogger.debug(line);
+                        installerLogger.info(line);
                     }
+                    appLogger.info("For details regarding the installation of this modloader server, see modloader_installer.log");
                     appLogger.info("Fabric installation complete. Returning to SPC.");
                 } else {
                     appLogger.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
@@ -78,7 +81,7 @@ class ServerSetup {
                     while (true) {
                         line = r.readLine();
                         if (line == null) { break; }
-                        appLogger.debug(line);
+                        installerLogger.info(line);
                     }
                     appLogger.info("Forge installation complete. Returning to SPC.");
                 } else {

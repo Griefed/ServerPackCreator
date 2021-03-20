@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 
 class CLISetup {
-  private static final Logger appLogger = LogManager.getLogger("CLISetup");
+  private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
   /**
    * CLI for config file generation. Prompts user to enter config file values and then generates a config file with values entered by user.
    */
