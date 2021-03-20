@@ -34,21 +34,21 @@ class CLISetup {
     appLogger.info("First of all, enter your modpack path. This path can be relative or absolute.");
     appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
     System.out.print("Enter your modpack path: ");
-    String mD = reader.nextLine();
-    modpackDir = mD.replace("\\","/");
+    String tmpModpackDir = reader.nextLine();
+    modpackDir = tmpModpackDir.replace("\\","/");
     appLogger.info("You entered: " + modpackDir);
     System.out.println();
     appLogger.info("Enter client mods names, one per line. When you are done, simply press enter with empty input.");
     clientMods.addAll(readStringArray());
     appLogger.info("You entered: " + clientMods.toString());
 
-    String[] cm = new String[clientMods.size()];
-    clientMods.toArray(cm);
+    String[] tmpClientMods = new String[clientMods.size()];
+    clientMods.toArray(tmpClientMods);
     appLogger.info("Which directories should be copied to the server pack? Specify relative paths from the modpack path you have set already.");
     copyDirs.addAll(readStringArray());
     appLogger.info("You entered: " + copyDirs.toString());
-    String[] cd = new String[copyDirs.size()];
-    copyDirs.toArray(cd);
+    String[] tmpCopyDirs = new String[copyDirs.size()];
+    copyDirs.toArray(tmpCopyDirs);
 
     appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
     System.out.print("Include modloader server installation: ");
@@ -100,9 +100,9 @@ class CLISetup {
           appLogger.error("Error: Incorrect Java path specified.");
         } else if (javaPath.isEmpty()) {
           appLogger.warn("You didn't enter a path to your Java installation.");
-          String jP = System.getProperty("java.home").replace("\\","/") + "/bin/java";
-          if (jP.startsWith("C:")) {
-            javaPath = jP + ".exe";
+          String tmpJavaPath = System.getProperty("java.home").replace("\\","/") + "/bin/java";
+          if (tmpJavaPath.startsWith("C:")) {
+            javaPath = tmpJavaPath + ".exe";
           }
           break;
         } else break;
@@ -129,7 +129,7 @@ class CLISetup {
     System.out.print("Create ZIP-archive: ");
     includeZipCreation = readBoolean();
     appLogger.info("You entered: " + includeZipCreation);
-    String s = String.format("# Path to your modpack. Can be either relative or absolute.\n" +
+    String configString = String.format("# Path to your modpack. Can be either relative or absolute.\n" +
             "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
             "modpackDir = \"%s\"\n" +
             "\n" +
@@ -185,8 +185,8 @@ class CLISetup {
             "# Default value is true\n" +
             "includeZipCreation = %b\n",
             modpackDir,
-            buildString(Arrays.toString(cm)),
-            buildString(Arrays.toString(cd)),
+            buildString(Arrays.toString(tmpClientMods)),
+            buildString(Arrays.toString(tmpCopyDirs)),
             includeServerInstallation,
             javaPath,
             minecraftVersion,
@@ -208,7 +208,7 @@ class CLISetup {
         else { appLogger.error("Could not delete existing config file."); }
       }
       BufferedWriter writer = new BufferedWriter(new FileWriter(FilesSetup.configFile));
-      writer.write(s);
+      writer.write(configString);
       writer.close();
     } catch (IOException ex) {
       appLogger.error("Error writing new config file.", ex);
@@ -220,13 +220,13 @@ class CLISetup {
   private static List<String> readStringArray() {
     Scanner reader = new Scanner(System.in);
     ArrayList<String> result = new ArrayList<>(1);
-    String s;
+    String stringArray;
     while (true) {
-      s = reader.nextLine();
-      if (s.isEmpty()) {
+      stringArray = reader.nextLine();
+      if (stringArray.isEmpty()) {
         return result;
       } else {
-        result.add(s);
+        result.add(stringArray);
       }
     }
   }
@@ -235,10 +235,10 @@ class CLISetup {
    * @return String. Returns concatenated string that contains all provided values.
    */
   private static String buildString(String... args) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(Arrays.toString(args));
-    sb.delete(0, 2).reverse().delete(0,2).reverse();
-    return sb.toString();
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append(Arrays.toString(args));
+    stringBuilder.delete(0, 2).reverse().delete(0,2).reverse();
+    return stringBuilder.toString();
   }
   /** A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
   * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
@@ -253,7 +253,7 @@ class CLISetup {
       } else if (boolRead.matches("false") || boolRead.matches("0") || boolRead.matches("no") || boolRead.matches("n" )){
         return false;
       } else {
-        appLogger.error("Incorrect value specified, please, try again.");
+        appLogger.error("Incorrect value specified. Please try again.");
       }
     }
   }
