@@ -2,21 +2,12 @@ package de.griefed.ServerPackCreator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 class FilesSetup {
-    static final File oldConfigFile = new File("creator.conf");
-    static final File configFile = new File("serverpackcreator.conf");
-    static final File propertiesFile = new File("server.properties");
-    static final File iconFile = new File("server-icon.png");
-    static final File forgeWindowsFile = new File("start-forge.bat");
-    static final File forgeLinuxFile = new File("start-forge.sh");
-    static final File fabricWindowsFile = new File("start-fabric.bat");
-    static final File fabricLinuxFile = new File("start-fabric.sh");
     private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
     /** Calls individual methods which check for existence of default files. If any of these methods return true, ServerPackCreator will exit, giving the user the chance to customize it before the program runs in production.
      */
@@ -50,20 +41,20 @@ class FilesSetup {
      */
     private static boolean checkForConfig() {
         boolean firstRun = false;
-        if (oldConfigFile.exists()) {
+        if (Reference.oldConfigFile.exists()) {
             try {
-                Files.copy(oldConfigFile.getAbsoluteFile().toPath(), configFile.getAbsoluteFile().toPath());
-                boolean isOldConfigDeleted = oldConfigFile.delete();
+                Files.copy(Reference.oldConfigFile.getAbsoluteFile().toPath(), Reference.configFile.getAbsoluteFile().toPath());
+                boolean isOldConfigDeleted = Reference.oldConfigFile.delete();
                 if (isOldConfigDeleted) {
                     appLogger.info("creator.conf migrated to serverpackcreator.conf");
                 }
             } catch (IOException ex) {
                 appLogger.error("Error renaming creator.conf to serverpackcreator.conf", ex);
             }
-        } else if (!configFile.exists()) {
+        } else if (!Reference.configFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/" + configFile.getName()));
-                Files.copy(link, configFile.getAbsoluteFile().toPath());
+                InputStream link = (CopyFiles.class.getResourceAsStream("/" + Reference.configFile.getName()));
+                Files.copy(link, Reference.configFile.getAbsoluteFile().toPath());
                 link.close();
                 appLogger.info("serverpackcreator.conf generated. Please customize.");
                 firstRun = true;
@@ -81,10 +72,10 @@ class FilesSetup {
      */
     private static boolean checkForFabricLinux() {
         boolean firstRun = false;
-        if (!fabricLinuxFile.exists()) {
+        if (!Reference.fabricLinuxFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + fabricLinuxFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + fabricLinuxFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.fabricLinuxFile.getName()));
+                Files.copy(link, Paths.get("./server_files/" + Reference.fabricLinuxFile));
                 link.close();
                 appLogger.info("start-fabric.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -102,10 +93,10 @@ class FilesSetup {
      */
     private static boolean checkForFabricWindows() {
         boolean firstRun = false;
-        if (!fabricWindowsFile.exists()) {
+        if (!Reference.fabricWindowsFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + fabricWindowsFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + fabricWindowsFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.fabricWindowsFile.getName()));
+                Files.copy(link, Paths.get("./server_files/" + Reference.fabricWindowsFile));
                 link.close();
                 appLogger.info("start-fabric.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -123,10 +114,10 @@ class FilesSetup {
      */
     private static boolean checkForForgeLinux() {
         boolean firstRun = false;
-        if (!forgeLinuxFile.exists()) {
+        if (!Reference.forgeLinuxFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + forgeLinuxFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + forgeLinuxFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.forgeLinuxFile.getName()));
+                Files.copy(link, Paths.get("./server_files/" + Reference.forgeLinuxFile));
                 link.close();
                 appLogger.info("start-forge.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -144,10 +135,10 @@ class FilesSetup {
      */
     private static boolean checkForForgeWindows() {
         boolean firstRun = false;
-        if (!forgeWindowsFile.exists()) {
+        if (!Reference.forgeWindowsFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + forgeWindowsFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + forgeWindowsFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.forgeWindowsFile.getName()));
+                Files.copy(link, Paths.get("./server_files/" + Reference.forgeWindowsFile));
                 link.close();
                 appLogger.info("start-forge.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -165,10 +156,10 @@ class FilesSetup {
      */
     private static boolean checkForProperties() {
         boolean firstRun = false;
-        if (!propertiesFile.exists()) {
+        if (!Reference.propertiesFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + propertiesFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + propertiesFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.propertiesFile.getName()));
+                Files.copy(link, Paths.get("./server_files/" + Reference.propertiesFile));
                 link.close();
                 appLogger.info("server.properties generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -186,10 +177,10 @@ class FilesSetup {
      */
     private static boolean checkForIcon() {
         boolean firstRun = false;
-        if (!iconFile.exists()) {
+        if (!Reference.iconFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + iconFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + iconFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.iconFile.getName()));
+                Files.copy(link, Paths.get("./server_files/" + Reference.iconFile));
                 link.close();
                 appLogger.info("server-icon.png generated. Please customize if you intend on using it.");
                 firstRun = true;
