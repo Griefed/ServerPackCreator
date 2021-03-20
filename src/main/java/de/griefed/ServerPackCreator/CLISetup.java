@@ -12,124 +12,118 @@ import java.util.List;
 import java.util.Scanner;
 
 class CLISetup {
-  private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
-  /**
-   * CLI for config file generation. Prompts user to enter config file values and then generates a config file with values entered by user.
-   */
-  static void setup() {
-    String modpackDir;
-    List<String> clientMods = new ArrayList<>(0);
-    List<String> copyDirs = new ArrayList<>(0);
-    boolean includeServerInstallation;
-    String javaPath = "";
-    String minecraftVersion = "";
-    String modLoader = "";
-    String modLoaderVersion = "";
-    boolean includeServerIcon;
-    boolean includeServerProperties;
-    boolean includeStartScripts;
-    boolean includeZipCreation;
-    Scanner reader = new Scanner(System.in);
-
-    appLogger.info("First of all, enter your modpack path. This path can be relative or absolute.");
-    appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
-    System.out.print("Enter your modpack path: ");
-    String tmpModpackDir = reader.nextLine();
-    modpackDir = tmpModpackDir.replace("\\","/");
-    appLogger.info("You entered: " + modpackDir);
-    System.out.println();
-    appLogger.info("Enter client mods names, one per line. When you are done, simply press enter with empty input.");
-    clientMods.addAll(readStringArray());
-    appLogger.info("You entered: " + clientMods.toString());
-
-    String[] tmpClientMods = new String[clientMods.size()];
-    clientMods.toArray(tmpClientMods);
-    appLogger.info("Which directories should be copied to the server pack? Specify relative paths from the modpack path you have set already.");
-    copyDirs.addAll(readStringArray());
-    appLogger.info("You entered: " + copyDirs.toString());
-    String[] tmpCopyDirs = new String[copyDirs.size()];
-    copyDirs.toArray(tmpCopyDirs);
-
-    appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
-    System.out.print("Include modloader server installation: ");
-    includeServerInstallation = readBoolean();
-    appLogger.info("You entered: " + includeServerInstallation);
-    if (includeServerInstallation) {
-      appLogger.info("Which version of Minecraft does your modpack use?");
-      while (true) {
-        System.out.print("Minecraft version: ");
-        minecraftVersion = reader.nextLine();
-        if (ConfigCheck.isMinecraftVersionCorrect(minecraftVersion)) break; else {
-          appLogger.error("Incorrect Minecraft version specified, please, try again.");
-        }
-      }
-      appLogger.info("You entered: " + minecraftVersion);
-      System.out.println();
-      appLogger.info("What modloader does your modpack use?");
-      while (true) {
-        System.out.print("Modloader: ");
-        modLoader = reader.nextLine();
-        if (modLoader.matches("Forge") || modLoader.matches("Fabric")) {
-          break;
-        } else {
-          appLogger.error("Invalid mod loader specified, please, try again.");
-        }
-      }
-      appLogger.info("You entered: " + modLoader);
-      System.out.println();
-      appLogger.info("What version of " + modLoader + " does your modpack use?");
-      while (true) {
-        System.out.print("Modloader version: ");
-        modLoaderVersion = reader.nextLine();
-        if (modLoaderVersion.isEmpty()) {
-          appLogger.error("Modloader version can't be empty. Please try again.");
-        } else if (modLoader.matches("Fabric") && !ConfigCheck.isFabricVersionCorrect(modLoaderVersion)) {
-          appLogger.error("Fabric version is incorrect. Please try again.");
-        } else if (modLoader.matches("Forge") && !ConfigCheck.isForgeVersionCorrect(modLoaderVersion, minecraftVersion)) {
-          appLogger.error("Forge version is incorrect. Please try again.");
-        } else break;
-      }
-      appLogger.info("You entered: " + modLoaderVersion);
-      System.out.println();
-      appLogger.info("Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.If you leave this empty, ServerPackCreator will try to determine the path for you.");
-      appLogger.info("Example for Linux: /usr/bin/java | Example for Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
-      while (true) {
-        System.out.print("Path to your Java installation: ");
-        javaPath = reader.nextLine();
-        if (!javaPath.isEmpty() && !javaPath.endsWith("java") && !javaPath.endsWith("java.exe")) {
-          appLogger.error("Error: Incorrect Java path specified.");
-        } else if (javaPath.isEmpty()) {
-          appLogger.warn("You didn't enter a path to your Java installation.");
-          String tmpJavaPath = System.getProperty("java.home").replace("\\","/") + "/bin/java";
-          if (tmpJavaPath.startsWith("C:")) {
-            javaPath = tmpJavaPath + ".exe";
-          }
-          break;
-        } else break;
-      }
-    }
-    appLogger.warn("ServerPackCreator set the path to your Java installation to: " + javaPath);
-    System.out.println();
-    appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
-    System.out.print("Include server-icon.png: ");
-    includeServerIcon = readBoolean();
-    appLogger.info("You entered: " + includeServerIcon);
-    System.out.println();
-    appLogger.info("Do you want ServerPackCreator to include a server.properties in server pack? Must be true or false.");
-    System.out.print("Include server.properties: ");
-    includeServerProperties = readBoolean();
-    appLogger.info("You entered: " + includeServerProperties);
-    System.out.println();
-    appLogger.info("Do you want ServerPackCreator to include start scripts for Linux and Windows in your server pack? Must be true or false.");
-    System.out.print("Include start scripts: ");
-    includeStartScripts = readBoolean();
-    appLogger.info("You entered: " + includeStartScripts);
-    System.out.println();
-    appLogger.info("Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
-    System.out.print("Create ZIP-archive: ");
-    includeZipCreation = readBoolean();
-    appLogger.info("You entered: " + includeZipCreation);
-    String configString = String.format("# Path to your modpack. Can be either relative or absolute.\n" +
+    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
+    /**
+     * CLI for config file generation. Prompts user to enter config file values and then generates a config file with values entered by user.
+     */
+    static void setup() {
+        String modpackDir;
+        List<String> clientMods = new ArrayList<>(0);
+        String tmpModpackDir;
+        String[] tmpClientMods;
+        List<String> copyDirs = new ArrayList<>(0);
+        String[] tmpCopyDirs;
+        boolean includeServerInstallation;
+        String javaPath;
+        String minecraftVersion;
+        String modLoader;
+        String modLoaderVersion;
+        boolean includeServerIcon;
+        boolean includeServerProperties;
+        boolean includeStartScripts;
+        boolean includeZipCreation;
+        Scanner reader = new Scanner(System.in);
+        appLogger.info("You started ServerPackCreator with the \"-cgen\" argument. Step-by-step generation of config file initiated...");
+        do {
+            appLogger.info("Please enter your modpack path. This path can be relative to ServerPackCreator, or absolute.");
+            appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
+            do {
+                System.out.print("Path to modpack directory: ");
+                tmpModpackDir = null;
+                tmpModpackDir = reader.nextLine();
+            } while (!ConfigCheck.checkModpackDir(tmpModpackDir));
+            modpackDir = tmpModpackDir.replace("\\", "/");
+            appLogger.info("You entered: " + modpackDir);
+            System.out.println();
+            appLogger.info("Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
+            clientMods.addAll(readStringArray());
+            appLogger.info("You entered: " + clientMods.toString());
+            tmpClientMods = new String[clientMods.size()];
+            clientMods.toArray(tmpClientMods);
+            appLogger.info("Which directories should be copied to the server pack? These are folder names inside your modpack directory.");
+            do {
+                appLogger.info("Specify your directories you want to be copied:");
+                copyDirs = new ArrayList<>(0);
+                copyDirs.addAll(readStringArray());
+            } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
+            appLogger.info("You entered: " + copyDirs.toString());
+            tmpCopyDirs = new String[copyDirs.size()];
+            copyDirs.toArray(tmpCopyDirs);
+            appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
+            System.out.print("Include modloader server installation: ");
+            includeServerInstallation = readBoolean();
+            appLogger.info("You entered: " + includeServerInstallation);
+            appLogger.info("Which version of Minecraft does your modpack use?");
+            do {
+                System.out.print("Minecraft version: ");
+                minecraftVersion = reader.nextLine();
+            } while (!ConfigCheck.isMinecraftVersionCorrect(minecraftVersion));
+            appLogger.info("You entered: " + minecraftVersion);
+            System.out.println();
+            appLogger.info("What modloader does your modpack use?");
+            do {
+                System.out.print("Modloader: ");
+                modLoader = reader.nextLine();
+            } while (!ConfigCheck.checkModloader(modLoader));
+            modLoader = ConfigCheck.setModloader(modLoader);
+            appLogger.info("You entered: " + modLoader);
+            System.out.println();
+            appLogger.info("What version of " + modLoader + " does your modpack use?");
+            do {
+                System.out.print("Modloader version: ");
+                modLoaderVersion = reader.nextLine();
+            } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
+            appLogger.info("You entered: " + modLoaderVersion);
+            System.out.println();
+            appLogger.info("Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.If you leave this empty, ServerPackCreator will try to determine the path for you.");
+            appLogger.info("Example for Linux: /usr/bin/java | Example for Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
+            do {
+                System.out.print("Path to your Java installation: ");
+                javaPath = reader.nextLine();
+                if (javaPath.isEmpty()) {
+                    appLogger.warn("You didn't enter a path to your Java installation. ServerPackCreator will try to get it for you...");
+                    String tmpJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
+                    if (tmpJavaPath.startsWith("C:")) {
+                        javaPath = tmpJavaPath + ".exe";
+                    }
+                }
+            } while (!ConfigCheck.checkJavaPath(javaPath));
+            appLogger.warn("ServerPackCreator set the path to your Java installation to: " + javaPath);
+            System.out.println();
+            appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
+            System.out.print("Include server-icon.png: ");
+            includeServerIcon = readBoolean();
+            appLogger.info("You entered: " + includeServerIcon);
+            System.out.println();
+            appLogger.info("Do you want ServerPackCreator to include a server.properties in server pack? Must be true or false.");
+            System.out.print("Include server.properties: ");
+            includeServerProperties = readBoolean();
+            appLogger.info("You entered: " + includeServerProperties);
+            System.out.println();
+            appLogger.info("Do you want ServerPackCreator to include start scripts for Linux and Windows in your server pack? Must be true or false.");
+            System.out.print("Include start scripts: ");
+            includeStartScripts = readBoolean();
+            appLogger.info("You entered: " + includeStartScripts);
+            System.out.println();
+            appLogger.info("Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
+            System.out.print("Create ZIP-archive: ");
+            includeZipCreation = readBoolean();
+            appLogger.info("You entered: " + includeZipCreation);
+            ConfigCheck.printConfig(modpackDir, clientMods, copyDirs, includeServerInstallation, javaPath, minecraftVersion, modLoader, modLoaderVersion, includeServerIcon, includeServerProperties, includeStartScripts, includeZipCreation);
+            appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
+            System.out.print("Answer: ");
+        } while (!readBoolean());
+        String configString = String.format("# Path to your modpack. Can be either relative or absolute.\n" +
             "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
             "modpackDir = \"%s\"\n" +
             "\n" +
@@ -196,65 +190,65 @@ class CLISetup {
             includeServerProperties,
             includeStartScripts,
             includeZipCreation);
-    try {
-      if (Reference.configFile.exists()) {
-        boolean delConf = Reference.configFile.delete();
-        if (delConf) { appLogger.info("Deleted existing config file to replace with new one."); }
-        else { appLogger.error("Could not delete existing config file."); }
-      }
-      if (Reference.oldConfigFile.exists()) {
-        boolean delOldConf = Reference.oldConfigFile.delete();
-        if (delOldConf) { appLogger.info("Deleted existing config file to replace with new one."); }
-        else { appLogger.error("Could not delete existing config file."); }
-      }
-      BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.configFile));
-      writer.write(configString);
-      writer.close();
-    } catch (IOException ex) {
-      appLogger.error("Error writing new config file.", ex);
+        try {
+            if (Reference.configFile.exists()) {
+            boolean delConf = Reference.configFile.delete();
+            if (delConf) { appLogger.info("Deleted existing config file to replace with new one."); }
+            else { appLogger.error("Could not delete existing config file."); }
+            }
+            if (Reference.oldConfigFile.exists()) {
+            boolean delOldConf = Reference.oldConfigFile.delete();
+            if (delOldConf) { appLogger.info("Deleted existing config file to replace with new one."); }
+            else { appLogger.error("Could not delete existing config file."); }
+            }
+            BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.configFile));
+            writer.write(configString);
+            writer.close();
+        } catch (IOException ex) {
+            appLogger.error("Error writing new config file.", ex);
+        }
     }
-  }
-  /** A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
-   * @return String List. Returns list with user input values that will be stored in config.
-   */
-  private static List<String> readStringArray() {
-    Scanner reader = new Scanner(System.in);
-    ArrayList<String> result = new ArrayList<>(1);
-    String stringArray;
-    while (true) {
-      stringArray = reader.nextLine();
-      if (stringArray.isEmpty()) {
-        return result;
-      } else {
-        result.add(stringArray);
-      }
+    /** A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
+    * @return String List. Returns list with user input values that will be stored in config.
+    */
+    private static List<String> readStringArray() {
+        Scanner reader = new Scanner(System.in);
+        ArrayList<String> result = new ArrayList<>(1);
+        String stringArray;
+        while (true) {
+            stringArray = reader.nextLine();
+            if (stringArray.isEmpty()) {
+                return result;
+            } else {
+                result.add(stringArray);
+            }
+        }
     }
-  }
-  /** Converts list of strings into concatenated string.
-   * @param args Strings that will be concatenated into one string
-   * @return String. Returns concatenated string that contains all provided values.
-   */
-  private static String buildString(String... args) {
-    StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append(Arrays.toString(args));
-    stringBuilder.delete(0, 2).reverse().delete(0,2).reverse();
-    return stringBuilder.toString();
-  }
-  /** A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
-  * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
-  */
-  private static boolean readBoolean() {
-    Scanner reader = new Scanner(System.in);
-    String boolRead;
-    while (true) {
-      boolRead = reader.nextLine();
-      if (boolRead.matches("true") || boolRead.matches("1") || boolRead.matches("yes")|| boolRead.matches("y")) {
-        return true;
-      } else if (boolRead.matches("false") || boolRead.matches("0") || boolRead.matches("no") || boolRead.matches("n" )){
-        return false;
-      } else {
-        appLogger.error("Incorrect value specified. Please try again.");
-      }
+    /** Converts list of strings into concatenated string.
+     * @param args Strings that will be concatenated into one string
+     * @return String. Returns concatenated string that contains all provided values.
+     */
+    private static String buildString(String... args) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(Arrays.toString(args));
+        stringBuilder.delete(0, 2).reverse().delete(0,2).reverse();
+        return stringBuilder.toString();
     }
-  }
+    /** A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
+    * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
+    */
+    private static boolean readBoolean() {
+        Scanner reader = new Scanner(System.in);
+        String boolRead;
+        while (true) {
+            boolRead = reader.nextLine();
+            if (boolRead.matches("[Tt]rue") || boolRead.matches("1") || boolRead.matches("[Yy]es")|| boolRead.matches("[Yy]")) {
+                return true;
+            } else if (boolRead.matches("[Ff]alse") || boolRead.matches("0") || boolRead.matches("[Nn]o") || boolRead.matches("[Nn]" )){
+                return false;
+            } else {
+                appLogger.error("Incorrect value specified. Please try again.");
+            }
+        }
+    }
 }
