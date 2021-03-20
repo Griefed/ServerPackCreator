@@ -61,7 +61,7 @@ class ConfigCheck {
 
         if (Reference.includeServerInstallation) {
             if (checkJavaPath(conf.getString("javaPath"))) {
-                Reference.javaPath = getJavaPath(conf.getString("javaPath"));
+                Reference.javaPath = conf.getString("javaPath");
                 configHasError = false;
             }
             if (isMinecraftVersionCorrect(conf.getString("minecraftVersion"))) {
@@ -89,35 +89,54 @@ class ConfigCheck {
         Reference.includeStartScripts = convertToBoolean(conf.getString("includeStartScripts"));
         Reference.includeZipCreation = convertToBoolean(conf.getString("includeZipCreation"));
 
-        appLogger.info("Your configuration is:");
-        appLogger.info("Modpack directory: " + Reference.modpackDir);
-        if (Reference.clientMods.toArray().length == 0) {
-            appLogger.warn("No client mods specified");
-        } else {
-            appLogger.info("Client mods specified. Client mods are:");
-            for (int i = 0; i < Reference.clientMods.toArray().length; i++) {
-                appLogger.info("    " + Reference.clientMods.get(i));
-            }
-        }
-        appLogger.info("Directories to copy:");
-        for (int i = 0; i < Reference.copyDirs.toArray().length; i++) {
-            appLogger.info("    " + Reference.copyDirs.get(i));
-        }
-        appLogger.info("Include server installation:      " + Reference.includeServerInstallation.toString());
-        appLogger.info("Java Installation path:           " + ConfigFactory.parseFile(Reference.configFile).getString("javaPath"));
-        appLogger.info("Minecraft version:                " + Reference.minecraftVersion);
-        appLogger.info("Modloader:                        " + Reference.modLoader);
-        appLogger.info("Modloader Version:                " + Reference.modLoaderVersion);
-        appLogger.info("Include server icon:              " + Reference.includeServerIcon.toString());
-        appLogger.info("Include server properties:        " + Reference.includeServerProperties.toString());
-        appLogger.info("Include start scripts:            " + Reference.includeStartScripts.toString());
-        appLogger.info("Create zip-archive of serverpack: " + Reference.includeZipCreation.toString());
+        printConfig(Reference.modpackDir, Reference.clientMods, Reference.copyDirs, Reference.includeServerInstallation, Reference.javaPath, Reference.minecraftVersion, Reference.modLoader, Reference.modLoaderVersion, Reference.includeServerIcon, Reference.includeServerProperties, Reference.includeStartScripts, Reference.includeZipCreation);
+
         if (!configHasError) {
             appLogger.info("Config check successful. No errors encountered.");
         } else {
             appLogger.error("Config check not successful. Check your config for errors.");
         }
         return configHasError;
+    }
+
+    /** Prints the configuration.
+     * @param modpackDirectory String. Path to modpack directory.
+     * @param clientsideMods String List. List of clientside mods to delete from server pack.
+     * @param copyDirectories String List. List of directories to copy to server pack.
+     * @param installServer Boolean. Whether to install the modloader server.
+     * @param javaInstallPath String. Path to Java installation needed to install modloader server.
+     * @param minecraftVer String. Minecraft version the modpack uses.
+     * @param modloader String. Modloader the modpack uses.
+     * @param modloaderVersion String. Version of the modloader the modpack uses.
+     * @param includeIcon Boolean. Whether to include the server-icon.png in the server pack.
+     * @param includeProperties Boolean. Whether to include the server.properties in the server pack.
+     * @param includeScripts Boolean. Whether to include start scripts for the specified modloader in the server pack.
+     * @param includeZip Boolean. Whether to create a zip-archive of the server pack.
+     */
+    static void printConfig(String modpackDirectory, List<String> clientsideMods, List<String> copyDirectories, boolean installServer, String javaInstallPath, String minecraftVer, String modloader, String modloaderVersion, boolean includeIcon, boolean includeProperties, boolean includeScripts, boolean includeZip) {
+        appLogger.info("Your configuration is:");
+        appLogger.info("Modpack directory: " + modpackDirectory);
+        if (clientsideMods.toArray().length == 0) {
+            appLogger.warn("No client mods specified");
+        } else {
+            appLogger.info("Client mods specified. Client mods are:");
+            for (int i = 0; i < clientsideMods.toArray().length; i++) {
+                appLogger.info("    " + clientsideMods.get(i));
+            }
+        }
+        appLogger.info("Directories to copy:");
+        for (int i = 0; i < copyDirectories.toArray().length; i++) {
+            appLogger.info("    " + copyDirectories.get(i));
+        }
+        appLogger.info("Include server installation:      " + installServer);
+        appLogger.info("Java Installation path:           " + javaInstallPath);
+        appLogger.info("Minecraft version:                " + minecraftVer);
+        appLogger.info("Modloader:                        " + modloader);
+        appLogger.info("Modloader Version:                " + modloaderVersion);
+        appLogger.info("Include server icon:              " + includeIcon);
+        appLogger.info("Include server properties:        " + includeProperties);
+        appLogger.info("Include start scripts:            " + includeScripts);
+        appLogger.info("Create zip-archive of serverpack: " + includeZip);
     }
     /** Check whether the specified modpack directory exists.
      * @param modpackDir String. The path to the modpack directory.
@@ -181,21 +200,10 @@ class ConfigCheck {
             configCorrect = true;
         } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
             configCorrect = true;
+        } else {
+            appLogger.error("Incorrect Java path specified");
         }
         return configCorrect;
-    }
-    /** If the specified Java path ends with .exe, remove it.
-     * @param setJavaPath String. The path which to check for ending with .exe.
-     * @return String. Returns the path to Java installation.
-     */
-    static String getJavaPath(String setJavaPath) {
-        String pathToJava;
-        if (setJavaPath.endsWith(".exe")) {
-            pathToJava = setJavaPath.substring(0, conf.getString("javaPath").length() - 4);
-        } else {
-            pathToJava = setJavaPath;
-        }
-        return pathToJava;
     }
     /** Checks whether Forge or Fabric were specified as modloader.
      * @param modloader String. Check case insensitive for Forge or Fabric.
