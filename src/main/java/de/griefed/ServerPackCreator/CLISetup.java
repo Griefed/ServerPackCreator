@@ -21,7 +21,7 @@ class CLISetup {
         List<String> clientMods = new ArrayList<>(0);
         String tmpModpackDir;
         String[] tmpClientMods;
-        List<String> copyDirs = new ArrayList<>(0);
+        List<String> copyDirs;
         String[] tmpCopyDirs;
         boolean includeServerInstallation;
         String javaPath;
