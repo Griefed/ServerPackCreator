@@ -19,18 +19,6 @@ import java.util.List;
 import java.util.Scanner;
 
 class ConfigCheck {
-    /*static String modpackDir;
-    static List<String> clientMods;
-    static List<String> copyDirs;
-    static Boolean includeServerInstallation;
-    static String javaPath;
-    static String minecraftVersion;
-    static String modLoader;
-    static String modLoaderVersion;
-    static Boolean includeServerIcon;
-    static Boolean includeServerProperties;
-    static Boolean includeStartScripts;
-    static Boolean includeZipCreation;*/
     static Config conf;
     static Boolean configHasError = true;
     private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
@@ -44,21 +32,16 @@ class ConfigCheck {
         } catch (ConfigException ex) {
             appLogger.error("Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
         }
-
         if (checkModpackDir(conf.getString("modpackDir"))) {
             Reference.modpackDir = conf.getString("modpackDir");
             configHasError = false;
         }
-
         Reference.clientMods = conf.getStringList("clientMods");
-
         if (checkCopyDirs(conf.getStringList("copyDirs"), conf.getString("modpackDir"))) {
             Reference.copyDirs = conf.getStringList("copyDirs");
             configHasError = false;
         }
-
         Reference.includeServerInstallation = convertToBoolean(conf.getString("includeServerInstallation"));
-
         if (Reference.includeServerInstallation) {
             if (checkJavaPath(conf.getString("javaPath"))) {
                 Reference.javaPath = conf.getString("javaPath");
@@ -83,14 +66,11 @@ class ConfigCheck {
             appLogger.info("    Modloader");
             appLogger.info("    Modloader version");
         }
-
         Reference.includeServerIcon = convertToBoolean(conf.getString("includeServerIcon"));
         Reference.includeServerProperties = convertToBoolean(conf.getString("includeServerProperties"));
         Reference.includeStartScripts = convertToBoolean(conf.getString("includeStartScripts"));
         Reference.includeZipCreation = convertToBoolean(conf.getString("includeZipCreation"));
-
         printConfig(Reference.modpackDir, Reference.clientMods, Reference.copyDirs, Reference.includeServerInstallation, Reference.javaPath, Reference.minecraftVersion, Reference.modLoader, Reference.modLoaderVersion, Reference.includeServerIcon, Reference.includeServerProperties, Reference.includeStartScripts, Reference.includeZipCreation);
-
         if (!configHasError) {
             appLogger.info("Config check successful. No errors encountered.");
         } else {
