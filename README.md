@@ -27,33 +27,28 @@ If you wish to contribute, fork the repository, make your changes, create a pull
 
 ## Features
 
-- ** Generate a config step-by-step by running with argument `-cgen`
-- **Supports Forge and Fabric modloaders**
-  - Installation of modloader-server for server_pack optional
-- **Default start scripts for Linux and Windows systems**
-  - Inclusion in server_pack optional
-  - Can be customized/replaced by user
-- **Delete client side mods**
-  - List of mods to delete from server_pack can be customized by user
-- **Specify directories to include in server_pack**
-  - List of directories can be customized by the user
-  - Worlds can be included in the serverpack as well
-    - Copying from `saves/world` will result in the world being copied to `server_pack/world`
-- **Default server-icon.png**
-  - Inclusion in server_pack optioanal
-  - Can be customized/replaced by user
-- **Default server.properties**
-  - Inclusion in server_pack optional
-  - Can be customized/replaced by user
-- **Create zip-archive of server_pack for immediate upload to CurseForge etc.**
-  - Zip-creation is optional
-  - Does to include minecraft_server.jar as per Mojang's TOS and EULA
-  - Includes download scripts for minecract_server.jar for Linux and Windows systems
+1. **Generate a config step-by-step by running with argument**`-cgen`
+2. **Install a Forge or Fabric modloader server in your server pack**
+3. **Configurable list of mods to delete from your server pack**
+4. **Configurable list of directories from your modpack to include in your server pack**
+    1. Copying worlds from `modpack/saves/world` will result in the world being copied to `server_pack/world`
+5. **Include Forge or Fabric start scripts in your server pack**
+6. **Include a server-icon.png-file in your server pack**
+7. **Include a server.properties-file in your server pack**
+8. **Include creation of a ZIP-archive of your server pack**
   
+After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator.jar resides in.
+Inside it are files you can customize, so they suit your modpack and server pack:
+1. Start scripts for Forge and Fabric modloaders, for Linux and Windows systems
+2. server-icon.png
+3. server.properties
+
+If you wish to re-generate the default-files, simply delete any one of the previously mentioned files, run ServerPackCreator again, and a new template-file will be generated in `server_files`
+
 ## Configuration
 
 The initial run of ServerPackCreator will place default-files in a directory called `server_files` in the same directory where the .jar-file resides in.
-The config file will be created in the same directory as `ServerPackCreator-x.x.x.jar`.
+The config file will be created in the same directory as `ServerPackCreator-x.x.x.jar`. An example for a fully configured `serverpackcreator.conf`file can be viewed [here](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00).
 Among those default files are:
 
 File | Description
@@ -66,7 +61,7 @@ start-fabric.sh | Fabric server start script for linux systems. See [start-fabri
 start-forge.bat | Forge server start script for windows systems. See [start-forge.bat](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/start-forge.bat).
 start-forge.sh | Forge server start script for linux systems. See [start-forge.sh](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/resources/server_files/start-forge.sh).
 
-The creator.conf file allows you to customize a couple of different things:
+The serverpackcreator.conf file allows you to customize a couple of different things:
 
 Variable | Description
 -------- | -----------
