@@ -38,7 +38,7 @@ jobs:
             **Changes in this release:**
             ${{ steps.conventional_changelog.outputs.changelog }}
           draft: false
-          prerelease: true
+          prerelease: false
 
       # BUILD PROJECT AND PUBLISH TO PACKAGES
       - name: Set up JDK 1.8
