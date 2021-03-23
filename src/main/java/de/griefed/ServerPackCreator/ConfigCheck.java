@@ -20,12 +20,12 @@ import java.util.Scanner;
 
 class ConfigCheck {
     static Config conf;
-    static Boolean configHasError = true;
     private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
      * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
     static boolean checkConfig() {
+        boolean configHasError = false;
         appLogger.info("Checking configuration...");
         try {
             conf = ConfigFactory.parseFile(Reference.configFile);
@@ -34,31 +34,25 @@ class ConfigCheck {
         }
         if (checkModpackDir(conf.getString("modpackDir"))) {
             Reference.modpackDir = conf.getString("modpackDir");
-            configHasError = false;
-        }
+        } else { configHasError = true; }
         Reference.clientMods = conf.getStringList("clientMods");
         if (checkCopyDirs(conf.getStringList("copyDirs"), conf.getString("modpackDir"))) {
             Reference.copyDirs = conf.getStringList("copyDirs");
-            configHasError = false;
-        }
+        } else { configHasError = true; }
         Reference.includeServerInstallation = convertToBoolean(conf.getString("includeServerInstallation"));
         if (Reference.includeServerInstallation) {
             if (checkJavaPath(conf.getString("javaPath"))) {
                 Reference.javaPath = conf.getString("javaPath");
-                configHasError = false;
-            }
+            } else { configHasError = true; }
             if (isMinecraftVersionCorrect(conf.getString("minecraftVersion"))) {
                 Reference.minecraftVersion = conf.getString("minecraftVersion");
-                configHasError = false;
-            }
+            } else { configHasError = true; }
             if (checkModloader(conf.getString("modLoader"))) {
                 Reference.modLoader = setModloader(conf.getString("modLoader"));
-                configHasError = false;
-            }
+            } else { configHasError = true; }
             if (checkModloaderVersion(Reference.modLoader, conf.getString("modLoaderVersion"), Reference.minecraftVersion)) {
                 Reference.modLoaderVersion = conf.getString("modLoaderVersion");
-                configHasError = false;
-            }
+            } else { configHasError = true; }
         } else {
             appLogger.info("Server installation disabled. Skipping check of:");
             appLogger.info("    Java path");
