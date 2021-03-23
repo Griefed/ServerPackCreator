@@ -119,9 +119,9 @@ class ConfigCheck {
     static boolean checkModpackDir(String modpackDir) {
         boolean configCorrect = false;
         if (modpackDir.equals("")) {
-            appLogger.error("Error: Modpack directory not specified.");
+            appLogger.error("Error: Modpack directory not specified. Please specify an existing directory.");
         } else if (!(new File(modpackDir).isDirectory())) {
-            appLogger.error("Error: Modpack directory doesn't exist.");
+            appLogger.error("Error: Modpack directory doesn't exist.Please specify an existing directory.");
         } else {
             configCorrect = true;
         }
@@ -141,7 +141,7 @@ class ConfigCheck {
             for (String copyDir : copyDirs) {
                 File directory = new File(String.format("%s/%s", modpackDir, copyDir));
                 if (!directory.exists() || !directory.isDirectory()) {
-                    appLogger.error(String.format("Error: %s does not exist.", directory.getAbsolutePath()));
+                    appLogger.error(String.format("Error: Specified directory %s does not exist. Please specify existing directories.", directory.getAbsolutePath()));
                     configCorrect = false;
                 }
             }
@@ -175,7 +175,7 @@ class ConfigCheck {
         } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
             configCorrect = true;
         } else {
-            appLogger.error("Incorrect Java path specified");
+            appLogger.error("Incorrect Java path specified.");
         }
         return configCorrect;
     }
@@ -188,7 +188,7 @@ class ConfigCheck {
         if (modloader.equalsIgnoreCase("Forge") || modloader.equalsIgnoreCase("Fabric")) {
             configCorrect = true;
         } else {
-            appLogger.error("Error: Invalid modloader specified.");
+            appLogger.error("Error: Invalid modloader specified. Modloader must bei either Forge or Fabric.");
         }
         return configCorrect;
     }
@@ -218,7 +218,7 @@ class ConfigCheck {
         } else if (modloader.equalsIgnoreCase("Fabric") && isFabricVersionCorrect(modloaderVersion)) {
             isVersionCorrect = true;
         } else {
-            appLogger.error("Specified incorrect modloader version.");
+            appLogger.error("Specified incorrect modloader version. Please check your modpack for the correct version and enter again.");
         }
         return isVersionCorrect;
     }
@@ -265,6 +265,7 @@ class ConfigCheck {
                 return false;
             }
         } else {
+            appLogger.error("You didn't specify your Minecraft version.");
             return false;
         }
     }
