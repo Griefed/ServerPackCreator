@@ -89,4 +89,4 @@ Guides on how to run ServerPackCreator are available at:
 
 (macOS guide by [whitebear60](https://github.com/whitebear60))
 
-(They're the same, but there's two for redundancies sake)
+(They're the same, but there's two for redundancies' sake)
