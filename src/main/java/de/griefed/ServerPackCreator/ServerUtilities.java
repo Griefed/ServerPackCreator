@@ -167,12 +167,12 @@ class ServerUtilities {
             XPathFactory xPathFactory = XPathFactory.newInstance();
             XPath xpath = xPathFactory.newXPath();
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
-            return result;
+            appLogger.info("Successfully retrieved Fabric XML.");
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             appLogger.error("Could not retrieve XML file. Defaulting to Installer version 0.7.1.", ex);
-            return "0.7.1";
+            result = "0.7.1";
         } finally {
-            appLogger.info("Successfully retrieved Fabric XML.");
+            return result;
         }
     }
     /** Downloads the specified version of the Forge installer to be used in ServerSetup.installServer.
