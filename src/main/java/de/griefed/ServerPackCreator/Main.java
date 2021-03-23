@@ -21,9 +21,9 @@ public class Main {
         appLogger.warn("################################################################");
         try {
             String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            appLogger.info("JAR Path: " + jarPath);
+            appLogger.info(String.format("JAR Path: %s", jarPath));
             String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
-            appLogger.info("JAR Name: " + jarName);
+            appLogger.info(String.format("JAR Name: %s", jarName));
         } catch (URISyntaxException ex) {
             appLogger.error("Error getting jar name.", ex);
         }

@@ -33,7 +33,7 @@ class CLISetup {
         boolean includeStartScripts;
         boolean includeZipCreation;
         Scanner reader = new Scanner(System.in);
-        appLogger.info("You started ServerPackCreator with the \"-cgen\" argument. Step-by-step generation of config file initiated...");
+        appLogger.info(String.format("You started ServerPackCreator with the \"%s\" argument. Step-by-step generation of config file initiated...", Reference.CONFIG_GEN_ARGUMENT));
         do {
             appLogger.info("Please enter your modpack path. This path can be relative to ServerPackCreator, or absolute.");
             appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
@@ -93,11 +93,13 @@ class CLISetup {
                     appLogger.warn("You didn't enter a path to your Java installation. ServerPackCreator will try to get it for you...");
                     String tmpJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
                     if (tmpJavaPath.startsWith("C:")) {
-                        javaPath = tmpJavaPath + ".exe";
+                        javaPath = String.format("%s.exe", tmpJavaPath);
                     }
+                    javaPath = tmpJavaPath;
+                    appLogger.warn(String.format("ServerPackCreator set the path to your Java installation to: %s", javaPath));
+                    break;
                 }
             } while (!ConfigCheck.checkJavaPath(javaPath));
-            appLogger.warn(String.format("ServerPackCreator set the path to your Java installation to: %s", javaPath));
             System.out.println();
             appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
             System.out.print("Include server-icon.png: ");
