@@ -84,8 +84,9 @@ class CLISetup {
             } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
             appLogger.info(String.format("You entered: %s", modLoaderVersion));
             System.out.println();
-            appLogger.info("Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.If you leave this empty, ServerPackCreator will try to determine the path for you.");
-            appLogger.info("Example for Linux: /usr/bin/java | Example for Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
+            appLogger.info("Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.");
+            appLogger.info("If you leave this empty, ServerPackCreator will try to determine the path for you.");
+            appLogger.info("Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
             do {
                 System.out.print("Path to your Java installation: ");
                 javaPath = reader.nextLine();
@@ -93,11 +94,10 @@ class CLISetup {
                     appLogger.warn("You didn't enter a path to your Java installation. ServerPackCreator will try to get it for you...");
                     String tmpJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
                     if (tmpJavaPath.startsWith("C:")) {
-                        javaPath = String.format("%s.exe", tmpJavaPath);
+                        tmpJavaPath = String.format("%s.exe", tmpJavaPath);
                     }
                     javaPath = tmpJavaPath;
                     appLogger.warn(String.format("ServerPackCreator set the path to your Java installation to: %s", javaPath));
-                    break;
                 }
             } while (!ConfigCheck.checkJavaPath(javaPath));
             System.out.println();
@@ -106,7 +106,7 @@ class CLISetup {
             includeServerIcon = readBoolean();
             appLogger.info(String.format("You entered: %s", includeServerIcon));
             System.out.println();
-            appLogger.info("Do you want ServerPackCreator to include a server.properties in server pack? Must be true or false.");
+            appLogger.info("Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
             System.out.print("Include server.properties: ");
             includeServerProperties = readBoolean();
             appLogger.info(String.format("You entered: %s", includeServerProperties));
