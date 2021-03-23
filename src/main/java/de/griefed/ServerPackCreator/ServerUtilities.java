@@ -152,7 +152,7 @@ class ServerUtilities {
      * @return Boolean. Returns true if the download was successful. False if not.
      */
     private static String latestFabric(String modpackDir) {
-        String result;
+        String result = "0.7.1";
         try {
             URL downloadFabricXml = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
@@ -170,7 +170,6 @@ class ServerUtilities {
             appLogger.info("Successfully retrieved Fabric XML.");
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             appLogger.error("Could not retrieve XML file. Defaulting to Installer version 0.7.1.", ex);
-            result = "0.7.1";
         } finally {
             return result;
         }
