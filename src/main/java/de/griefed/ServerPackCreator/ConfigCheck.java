@@ -43,7 +43,14 @@ class ConfigCheck {
         if (Reference.includeServerInstallation) {
             if (checkJavaPath(conf.getString("javaPath"))) {
                 Reference.javaPath = conf.getString("javaPath");
-            } else { configHasError = true; }
+            } else {
+                String tmpJavaPath = getJavaPath(conf.getString("javaPath"));
+                if (checkJavaPath(tmpJavaPath)) {
+                    Reference.javaPath = tmpJavaPath;
+                } else {
+                    configHasError = true;
+                }
+            }
             if (isMinecraftVersionCorrect(conf.getString("minecraftVersion"))) {
                 Reference.minecraftVersion = conf.getString("minecraftVersion");
             } else { configHasError = true; }
@@ -163,6 +170,25 @@ class ConfigCheck {
             returnBoolean = false;
         }
         return returnBoolean;
+    }
+    /** Automatically set Java path if none is specified
+     * @param enteredPath String. The path to check whether it is empty.
+     * @return String. Return the entered Java path if it is not empty. Automatically determine path if empty.
+     */
+    static String getJavaPath(String enteredPath) {
+        String autoJavaPath;
+        if (enteredPath.equals("")) {
+            appLogger.warn("You didn't specify the path to your Java installation. ServerPackCreator will try to determine it for you...");
+            autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
+            if (autoJavaPath.startsWith("C:")) {
+                autoJavaPath = String.format("%s.exe", autoJavaPath);
+            }
+            appLogger.warn(String.format("ServerPackCreator set the path to your Java installation to: %s", autoJavaPath));
+            return autoJavaPath;
+        } else {
+            appLogger.info(String.format("ServerPackCreator set the path to your Java installation to: %s", enteredPath));
+            return enteredPath;
+        }
     }
     /** Checks whether the correct path to the Java installation was set.
      * @param pathToJava String. The path to check for java.exe or java.
