@@ -122,7 +122,6 @@ out
 .idea
 
 # gradle
-/src/test
 /tests
 /build
 /.gradle
