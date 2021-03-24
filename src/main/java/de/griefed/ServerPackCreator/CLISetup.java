@@ -89,16 +89,8 @@ class CLISetup {
             appLogger.info("Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
             do {
                 System.out.print("Path to your Java installation: ");
-                javaPath = reader.nextLine();
-                if (javaPath.isEmpty()) {
-                    appLogger.warn("You didn't enter a path to your Java installation. ServerPackCreator will try to get it for you...");
-                    String tmpJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
-                    if (tmpJavaPath.startsWith("C:")) {
-                        tmpJavaPath = String.format("%s.exe", tmpJavaPath);
-                    }
-                    javaPath = tmpJavaPath;
-                    appLogger.warn(String.format("ServerPackCreator set the path to your Java installation to: %s", javaPath));
-                }
+                String tmpJavaPath = reader.nextLine();
+                javaPath = ConfigCheck.getJavaPath(tmpJavaPath);
             } while (!ConfigCheck.checkJavaPath(javaPath));
             System.out.println();
             appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
