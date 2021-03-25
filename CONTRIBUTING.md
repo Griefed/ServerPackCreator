@@ -48,3 +48,8 @@ The `flag` is optional (if provided, it must be surrounded in square brackets) a
 * `ignore` (Omits the commit from the changelog)
 
 > If `flag` is not found in the list, it'll be ignored.
+> 
+
+## Contributions
+
+* I reserve the right to reject any and all PRs without stating why. It may be due to a variety of reasons. Maybe I want to implement a feature myself, maybe I am already working on implementing the changes you are proposing, maybe I don't want the change you are proposing. I will most probably tell you why I rejected your PR, if I rejected it, but I reserve the right to just say "No.". This project is mainly meant as a training ground for me and Java, and it wouldn't do me any good if others do all the work for me. :D I hope you understand where I am coming from with this.
