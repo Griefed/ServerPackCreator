@@ -47,9 +47,9 @@ If you wish to re-generate the default-files, simply delete any one of the previ
 
 ## Configuration
 
-The initial run of ServerPackCreator will place default-files in a directory called `server_files` in the same directory where the .jar-file resides in.
+The initial run of ServerPackCreator will guide you through the generation of a config-file, suited to your needs, step-by-step and then place template-files in a directory called `server_files` in the same directory where the .jar-file resides in.
 The config file will be created in the same directory as `ServerPackCreator-x.x.x.jar`. An example for a fully configured `serverpackcreator.conf`file can be viewed [here](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00).
-Among those default files are:
+Detailed list of all template files:
 
 File | Description
 ---- | ----
@@ -66,13 +66,13 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 Variable | Description
 -------- | -----------
 modpackDir | The path to the directory where your modpack resides in.
-clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack.
+clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look.
 copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. 
 includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
 javaPath | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.
-minecraftVersion | The version of Minecraft for which to install the modloader server.
-modLoader | Which modloader to install. Must be either "Forge" or "Fabric".
-modLoaderVersion | Specific Modloader version to install the server in the serverpack.
+minecraftVersion | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses.
+modLoader | Which modloader to install. Must be either "Forge" or "Fabric". The same modloader your modpack ueses.
+modLoaderVersion | Specific Modloader version to install the server in the serverpack. The same version your modpack uses.
 includeServerIcon | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.
 includeServerProperties | Whether to include server.properties in your serverpack. Must be `true` or `false`.
 includeStartScripts | Whether to include start scripts in your serverpack. Must be `true` or `false`.
