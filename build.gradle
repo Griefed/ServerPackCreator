@@ -5,7 +5,6 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
 
-
 sourceCompatibility = targetCompatibility = '1.8'
 
 if(JavaVersion.current() != JavaVersion.VERSION_1_8)
@@ -36,9 +35,16 @@ configurations {
 }
 
 dependencies {
-    embed group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
+    embed group: 'org.slf4j', name: 'slf4j-log4j12', version: '2.0.0-alpha1'
+    embed group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.14.1'
     embed group: 'com.typesafe', name: 'config', version: '1.4.1'
     embed group: 'com.github.FabricMC', name:'fabric-installer', version:'master-SNAPSHOT'
+    embed group: 'com.github.TheRandomLabs', name:'CurseAPI', version:'master-SNAPSHOT'
+    embed group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.2'
+    /*
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    */
 }
 
 tasks.withType(Javadoc) {
@@ -53,6 +59,12 @@ java {
     withSourcesJar()
     withJavadocJar()
 }
+
+/*
+test {
+    useJUnitPlatform()
+}
+*/
 
 jar {
     configurations.embed.each { dep ->
