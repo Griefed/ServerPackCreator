@@ -5,13 +5,12 @@ RUN \
     git && \
   git clone \
     https://github.com/Griefed/ServerPackCreator.git \
-      /tmp/serverpackcreator
+      /tmp/serverpackcreator && \
+  chmod +x /tmp/serverpackcreator/gradlew* && \
+  /tmp/serverpackcreator/gradlew build && \
+  ll /tmp/serverpackcreator/build/libs/
 
 WORKDIR /tmp/serverpackcreator
-
-RUN \
-  ./gradlew build && \
-  ll build/libs/
 
 FROM lsiobase/alpine:3.12
 
