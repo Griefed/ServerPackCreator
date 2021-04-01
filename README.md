@@ -28,14 +28,15 @@ If you wish to contribute, fork the repository, make your changes, create a pull
 ## Features
 
 1. **Generate a config step-by-step by running with argument**`-cgen`
-2. **Install a Forge or Fabric modloader server in your server pack**
-3. **Configurable list of mods to delete from your server pack**
-4. **Configurable list of directories from your modpack to include in your server pack**
+2. **Download a modpack and create a server pack from it.**
+3. **Install a Forge or Fabric modloader server in your server pack**
+4. **Configurable list of mods to delete from your server pack**
+5. **Configurable list of directories from your modpack to include in your server pack**
     1. Copying worlds from `modpack/saves/world` will result in the world being copied to `server_pack/world`
-5. **Include Forge or Fabric start scripts in your server pack**
-6. **Include a server-icon.png-file in your server pack**
-7. **Include a server.properties-file in your server pack**
-8. **Include creation of a ZIP-archive of your server pack**
+6. **Include Forge or Fabric start scripts in your server pack**
+7. **Include a server-icon.png-file in your server pack**
+8. **Include a server.properties-file in your server pack**
+9. **Include creation of a ZIP-archive of your server pack**
   
 After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator.jar resides in.
 Inside it are files you can customize, so they suit your modpack and server pack:
@@ -65,14 +66,14 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 
 Variable | Description
 -------- | -----------
-modpackDir | The path to the directory where your modpack resides in.
+modpackDir | The path to the directory where your modpack resides in. Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4, version 4.6.7: `430517,3250155`. Specifying said combination would download and install version 4.6.7 of my modpack Survive Create Prosper, gather information, write a new config file and therefor allow you to generate server packs for any modpack on CurseForge. Special thanks to [TheRandomLabs](https://github.com/TheRandomLabs) and their [CurseAPI](https://github.com/TheRandomLabs/CurseAPI).
 clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look.
-copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. 
+copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. A suggestion-list is created when setting `modpackDir`to a projectID,fileID-combination. 
 includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
 javaPath | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.
-minecraftVersion | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses.
-modLoader | Which modloader to install. Must be either "Forge" or "Fabric". The same modloader your modpack ueses.
-modLoaderVersion | Specific Modloader version to install the server in the serverpack. The same version your modpack uses.
+minecraftVersion | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses. Automaticall set when setting `modpackDir`to a projectID,fileID-combination.
+modLoader | Which modloader to install. Must be either "Forge" or "Fabric". The same modloader your modpack ueses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.
+modLoaderVersion | Specific Modloader version to install the server in the serverpack. The same version your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.
 includeServerIcon | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.
 includeServerProperties | Whether to include server.properties in your serverpack. Must be `true` or `false`.
 includeStartScripts | Whether to include start scripts in your serverpack. Must be `true` or `false`.
