@@ -81,9 +81,12 @@ includeZipCreation | Whether to create a zip-file of your serverpack, saved in t
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
-## Running
 
-Guides on how to run ServerPackCreator are available at:
+# Running
+
+## Commandline
+
+Guides on how to run ServerPackCreator via commandline are available at:
 1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-Windows (for Windows) or
 2. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-macOS (for macOS)
 3. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
@@ -91,3 +94,73 @@ Guides on how to run ServerPackCreator are available at:
 (macOS guide by [whitebear60](https://github.com/whitebear60))
 
 (They're the same, but there's two for redundancies' sake)
+
+## Docker
+
+Creates a Container which runs [Griefed's](https://github.com/Griefed) [ServerPackCreator](https://github.com/Griefed/ServerPackCreator), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image.
+
+The [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) image is a custom base image built with [Alpine linux](https://alpinelinux.org/) and [S6 overlay](https://github.com/just-containers/s6-overlay).
+Using this image allows us to use the same user/group ids in the container as on the host, making file transfers much easier
+
+
+Tags | Description
+-----|------------
+`latest` | Using the `latest` tag will pull the latest image for linux/amd64,linux/arm/v7,linux/arm64.
+`develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk!
+
+Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
+Images are available for linux/amd64,linux/arm/v7,linux/arm64.
+
+### Using docker-compose:
+
+```docker-compose.yml
+version: "2"
+services:
+  serverpackcreator:
+    image: griefed/serverpackcreator:latest
+    container_name: serverpackcreator
+    restart: no
+    environment:
+      - TZ=Europe/Berlin # Timezone
+      - PUID=1000 # User ID
+      - PGID=1000 # Group ID
+      - MODPACKDIR=/data
+      - CLIENTMODS= # Comma-separated
+      - COPYDIRS= #Comma-separated
+      - MINECRAFTVERSION=
+      - MODLOADER=
+      - MODLOADERVERSION=
+      - INCLUDESERVERINSTALLATION=true
+      - INCLUDESERVERICON=true
+      - INCLUDESERVERPROPERTIES=true
+      - INCLUDESTARTSCRIPTS=true
+      - INCLUDEZIPCREATION=true
+    volumes:
+      - /host/path/to/config:/config
+      - /host/path/to/modpack:/data
+```
+
+### Using CLI:
+
+```bash
+docker create \
+  --name=serverpackcreator \
+  -e TZ=Europe/Berlin # Timezone \
+  -e PUID=1000 # User ID \
+  -e PGID=1000 # Group ID \
+  -e MODPACKDIR=/data \
+  -e CLIENTMODS= \
+  -e COPYDIRS= \
+  -e MINECRAFTVERSION= \
+  -e MODLOADER= \
+  -e MODLOADERVERSION= \
+  -e INCLUDESERVERINSTALLATION=true \
+  -e INCLUDESERVERICON=true \
+  -e INCLUDESERVERPROPERTIES=true \
+  -e INCLUDESTARTSCRIPTS=true \
+  -e INCLUDEZIPCREATION=true \
+  -v /host/path/to/config:/config `# Where the bot-conf will be stored` \
+  -v /host/path/to/modpack:/data `# Path to the data directory where the generated modpacks/server packs will be available` \
+  --restart no \
+  griefed/serverpackcreator:latest
+```
