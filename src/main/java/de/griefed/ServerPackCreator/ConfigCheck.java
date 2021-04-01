@@ -162,18 +162,9 @@ class ConfigCheck {
         for (int i = 0; i < modpack.getFiles().toArray().length; i++) {
             String[] mods;
             mods = modpack.getFiles().get(i).toString().split(",");
-            try {
-                if (CurseAPI.project(Integer.parseInt(mods[0])).get().name().toLowerCase().contains("jumploader")) {
-                    appLogger.info("Jumploader detected. Setting modloader to Fabric.");
-                    hasJumploader = true;
-                }
-            } catch (CurseException cex) {
-                appLogger.error("Error: Encountered error during check for Jumploader.", cex);
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException iex) {
-                appLogger.debug("Error during interruption event.", iex);
+            if (mods[0].equalsIgnoreCase("361988")) {
+                appLogger.info("Jumploader detected. Setting modloader to Fabric.");
+                hasJumploader = true;
             }
         }
         return hasJumploader;
