@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class CopyFiles {
-    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
+    private static final Logger appLogger = LogManager.getLogger(CopyFiles.class);
     /** Deletes files from previous runs of ServerPackCreator.
      * @param modpackDir String. The directory in where to check for files from previous runs.
      */
