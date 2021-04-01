@@ -195,6 +195,7 @@ class ConfigCheck {
         boolean configCorrect = false;
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
             appLogger.info("You specified a CurseForge projectID and fileID combination.");
+            appLogger.warn("WARNING: This functionality is experimental and prone to errors. If you encounter any errors, please open an issue on https://github.com/Griefed/ServerPackCreator/issues");
             configCorrect = true;
         } else {
             appLogger.error("Error: You did not specify a CurseForge projectID,fileID combination.");
