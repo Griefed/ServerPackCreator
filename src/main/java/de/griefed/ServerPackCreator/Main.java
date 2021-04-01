@@ -65,7 +65,7 @@ public class Main {
             appLogger.info("Serverpack available at: " + Reference.modpackDir + "/serverpack");
             appLogger.info("Done!");
         } else {
-            appLogger.error("Config file has errors. Consider editing serverpackcreator.conf file that is located in directory with SPC.");
+            appLogger.error("ERROR: Please check your serverpackcreator.conf for any incorrect settings. This message is also displayed if ServerPackCreator downloaded and setup a modpack from a projectID,fileID for modpackDir.");
             System.exit(1);
         }
     }
