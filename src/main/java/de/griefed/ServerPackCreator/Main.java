@@ -8,7 +8,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 
 public class Main {
-    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
+    private static final Logger appLogger = LogManager.getLogger(Main.class);
     /** Main class makes the calls to every other class where the actual magic is happening. The main class of ServerPackCreator should never contain code which does work on the server pack itself.
      * @param args Command Line Argument determines whether ServerPackCreator will start into normal operation mode or with a step-by-step generation of a configuration file.
      */
@@ -29,7 +29,7 @@ public class Main {
         }
         if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!Reference.oldConfigFile.exists() && !Reference.configFile.exists())){
             CLISetup.setup();
-        } 
+        }
         FilesSetup.filesSetup();
         if (!ConfigCheck.checkConfig()) {
             CopyFiles.cleanupEnvironment(Reference.modpackDir);
