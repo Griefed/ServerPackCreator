@@ -7,8 +7,12 @@ RUN \
     https://github.com/Griefed/ServerPackCreator.git \
       /tmp/serverpackcreator && \
   chmod +x /tmp/serverpackcreator/gradlew* && \
-  /tmp/serverpackcreator/gradlew build && \
-  ll /tmp/serverpackcreator/build/libs/
+
+WORKDIR /tmp/serverpackcreator
+
+RUN \
+  ./gradlew build && \
+  ls -ahl ./build/libs/
 
 WORKDIR /tmp/serverpackcreator
 
@@ -28,7 +32,7 @@ RUN \
       /root/.cache \
       /tmp/*
 
-COPY --from=builder ./build/libs/ServerPackCreator-*.*.*.jar /app/serverpackcreator/serverpackcreator.jar
+COPY --from=builder ./build/libs/ServerPackCreator.jar /app/serverpackcreator/serverpackcreator.jar
 COPY src/main/resources/server_files/ /app/serverpackcreator/server_files
 COPY root/ /
 
