@@ -122,7 +122,7 @@ class ConfigCheck {
                         String[] minecraftLoaderVersions = modpack.getMinecraft().toString().split(",");
                         String[] modLoaderVersion = minecraftLoaderVersions[1].replace("[", "").replace("]", "").split("-");
                         Reference.minecraftVersion = minecraftLoaderVersions[0].replace("[", "");
-                        if (containsJumploader(modpack)) {
+                        if (containsFabric(modpack)) {
                             appLogger.info("Please make sure to check the configuration for the used Fabric version after ServerPackCreator is done setting up the modpack and new config file.");
                             Reference.modLoader = "Fabric";
                             Reference.modLoaderVersion = "0.7.2";
@@ -157,13 +157,13 @@ class ConfigCheck {
      * @param modpack Object. Contains information about our modpack. Used to get a list of all projects used in the modpack.
      * @return Boolean. Returns true if Jumploader is found, false if not found.
      */
-    private static boolean containsJumploader(Modpack modpack) {
+    private static boolean containsFabric(Modpack modpack) {
         boolean hasJumploader = false;
         for (int i = 0; i < modpack.getFiles().toArray().length; i++) {
             String[] mods;
             mods = modpack.getFiles().get(i).toString().split(",");
-            if (mods[0].equalsIgnoreCase("361988")) {
-                appLogger.info("Jumploader detected. Setting modloader to Fabric.");
+            if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
+                appLogger.info("Fabric detected. Setting modloader to Fabric.");
                 hasJumploader = true;
             }
         }
@@ -467,7 +467,7 @@ class ConfigCheck {
             manifestXML = Arrays.toString(dataArray);
             xmlReader.close();
             manifestXML = manifestXML.replaceAll("\\s", "");
-            boolean contains = manifestXML.trim().contains(String.format("<version>%s</version>", fabricVersion));
+            boolean contains = manifestXML.trim().contains(String.format("%s", fabricVersion));
             manifestXMLFile.deleteOnExit();
             return contains;
         } catch (Exception ex) {
