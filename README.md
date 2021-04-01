@@ -136,8 +136,7 @@ services:
       - INCLUDESTARTSCRIPTS=true
       - INCLUDEZIPCREATION=true
     volumes:
-      - /host/path/to/config:/config
-      - /host/path/to/modpack:/data
+      - /host/path/to/data:/data
 ```
 
 ### Using CLI:
@@ -159,8 +158,7 @@ docker create \
   -e INCLUDESERVERPROPERTIES=true \
   -e INCLUDESTARTSCRIPTS=true \
   -e INCLUDEZIPCREATION=true \
-  -v /host/path/to/config:/config `# Where the bot-conf will be stored` \
-  -v /host/path/to/modpack:/data `# Path to the data directory where the generated modpacks/server packs will be available` \
+  -v /host/path/to/data:/data `# Path to the data directory where the generated modpacks/server packs will be available` \
   --restart no \
   griefed/serverpackcreator:latest
 ```
