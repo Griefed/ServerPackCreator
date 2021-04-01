@@ -44,13 +44,16 @@ public class Splines {
             "Splatting Transforms","Stratifying Ground Layers","Sub-Sampling Water Data","Synthesizing Gravity",
             "Synthesizing Wavelets","Time-Compressing Simulator Clock","Unable to Reveal Current Activity",
             "Weathering Buildings","Zeroing Crime Network"};
-    public static int getRandomInt() {
+
+    private static int getRandomInt() {
         Random randInt = new Random();
         return randInt.nextInt(reticulating.length);
     }
+
     private static String setSplines(String[] reticulating) {
         return reticulating[getRandomInt()];
     }
+
     public static String getSplines() {
         return setSplines(reticulating);
     }
