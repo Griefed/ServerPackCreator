@@ -50,11 +50,11 @@ public class Splines {
         return randInt.nextInt(reticulating.length);
     }
 
-    private static String setSplines(String[] reticulating) {
-        return reticulating[getRandomInt()];
+    private static String setSplines() {
+        return Splines.reticulating[getRandomInt()];
     }
 
     public static String getSplines() {
-        return setSplines(reticulating);
+        return setSplines();
     }
 }
