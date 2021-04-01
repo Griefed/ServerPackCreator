@@ -1,7 +1,11 @@
 package de.griefed.ServerPackCreator;
 
+import com.therandomlabs.curseapi.project.CurseProject;
+import com.typesafe.config.Config;
+
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 class Reference {
     static final String MINECRAFT_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
@@ -15,6 +19,7 @@ class Reference {
     static final File forgeLinuxFile = new File("start-forge.sh");
     static final File fabricWindowsFile = new File("start-fabric.bat");
     static final File fabricLinuxFile = new File("start-fabric.sh");
+    static Config conf;
     static String modpackDir;
     static List<String> clientMods;
     static List<String> copyDirs;
