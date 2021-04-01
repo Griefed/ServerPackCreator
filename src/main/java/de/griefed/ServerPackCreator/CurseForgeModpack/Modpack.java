@@ -7,8 +7,6 @@ import java.util.List;
 public class Modpack {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private List<Minecraft> minecraft;
-    private String manifestType;
-    private String manifestVersion;
     private String name;
     private String version;
     private String author;
@@ -56,17 +54,14 @@ public class Modpack {
 
     @Override
     public String toString() {
-        String modpackDetails = String.format(
+        return String.format(
                         "**** Modpack details ****\n" +
                         "Version & Modloader: %s\n" +
-                        "Manifest type: %s\n" +
-                        "Manifest version: %s\n" +
                         "Name: %s\n" +
                         "Version: %s\n" +
                         "Author: %s\n" +
                         "Files: %s",
-                minecraft, manifestType, manifestVersion, name, version, author, files
+                minecraft, name, version, author, files
         );
-        return modpackDetails;
     }
 }
