@@ -198,9 +198,9 @@ class FilesSetup {
      * @param copyDirs List, String. List of directories to include in server pack.
      * @param includeServer Boolean. Whether to include a modloader server installation.
      * @param javaPath String. Path to the java executable.
-     * @param minecraftVersion String. Minecraft version used by the modpack & server pack.
-     * @param modLoader String. Modloader used by the modpack & server pack. Ether Forge or Fabric.
-     * @param modLoaderVersion String. Modloader version used by the modpack & server pack.
+     * @param minecraftVersion String. Minecraft version used by the modpack and server pack.
+     * @param modLoader String. Modloader used by the modpack and server pack. Ether Forge or Fabric.
+     * @param modLoaderVersion String. Modloader version used by the modpack and server pack.
      * @param includeIcon Boolean. Whether to include a server-icon in the server pack.
      * @param includeProperties Boolean. Whether to include a properties file in the server pack.
      * @param includeScripts Boolean. Whether to include start scripts in the server pack.

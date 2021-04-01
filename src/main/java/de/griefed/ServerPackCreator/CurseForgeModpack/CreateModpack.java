@@ -32,6 +32,7 @@ public class CreateModpack {
      * @param modpackDir String. Combination of project name and file name. Created during download procedure and later added to config file.
      * @param projectID Integer. The ID of the project. Used to gather information and to download the modpack.
      * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
+     * @return Boolean. Returns true if the modpack was freshly created.
      */
     public static boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
@@ -254,7 +255,10 @@ public class CreateModpack {
             appLogger.error(String.format("Error: There was an error extracting the archive %s", zipFile), ex);
         }
     }
-    /** Helpermethod for unzipArchive
+    /** Helpermethod for unzipArchive. With help from: https://www.baeldung.com/java-compress-and-uncompress
+     * @param destinationDir Check whether the file is outside of the directory it is supposed to be in.
+     * @param zipEntry Zipentry with which to check for location.
+     * @return Returns the correct destination for the new file.
      */
     private static File newFile(File destinationDir, ZipEntry zipEntry) {
         File destFile = new File(destinationDir, zipEntry.getName());
