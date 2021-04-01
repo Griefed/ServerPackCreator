@@ -119,7 +119,7 @@ services:
   serverpackcreator:
     image: griefed/serverpackcreator:latest
     container_name: serverpackcreator
-    restart: no
+    restart: "no"
     environment:
       - TZ=Europe/Berlin # Timezone
       - PUID=1000 # User ID
@@ -159,6 +159,6 @@ docker create \
   -e INCLUDESTARTSCRIPTS=true \
   -e INCLUDEZIPCREATION=true \
   -v /host/path/to/data:/data `# Path to the data directory where the generated modpacks/server packs will be available` \
-  --restart no \
+  --restart "no" \
   griefed/serverpackcreator:latest
 ```
