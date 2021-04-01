@@ -24,7 +24,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class CreateModpack {
     private static final Logger appLogger = LogManager.getLogger(CreateModpack.class);
-    private static Optional<CurseProject> curseProject;
     private static String projectName;
     private static String fileName;
     private static String fileDiskName;
@@ -37,14 +36,24 @@ public class CreateModpack {
     public static boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
         try {
-            curseProject = CurseAPI.project(projectID);
-            projectName = curseProject.get().name();
-            try {
-                fileName = curseProject.get().files().fileWithID(fileID).displayName();
-            } catch (NullPointerException npe) {
-                fileName = curseProject.get().files().fileWithID(fileID).nameOnDisk();
+            if (CurseAPI.project(projectID).isPresent()) {
+                Optional<CurseProject> curseProject = CurseAPI.project(projectID);
+                //noinspection OptionalGetWithoutIsPresent
+                projectName = curseProject.get().name();
+                try {
+                    //noinspection ConstantConditions
+                    fileName = curseProject.get().files().fileWithID(fileID).displayName();
+                } catch (NullPointerException npe) {
+                    //noinspection ConstantConditions
+                    fileName = curseProject.get().files().fileWithID(fileID).nameOnDisk();
+                }
+                //noinspection ConstantConditions
+                fileDiskName = curseProject.get().files().fileWithID(fileID).nameOnDisk();
+            } else {
+                projectName = projectID.toString();
+                fileName = fileID.toString();
+                fileDiskName = fileID.toString();
             }
-            fileDiskName = curseProject.get().files().fileWithID(fileID).nameOnDisk();
         } catch (CurseException cex) {
         appLogger.error(String.format("Error: Could not retrieve either projectID %s or fileID %s. Please verify that they are correct.", projectID, fileID), cex);
         }
@@ -94,6 +103,7 @@ public class CreateModpack {
         if (new File(String.format("%s/overrides", modpackDir)).isDirectory()) {
             try {
                 Path pathToBeDeleted = Paths.get(String.format("%s/overrides", modpackDir));
+                //noinspection ResultOfMethodCallIgnored
                 Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             } catch (IOException ex) {
                 appLogger.info("Directory \"overrides\" not found. Skipping delete action...");
@@ -125,7 +135,9 @@ public class CreateModpack {
                 modID = Integer.parseInt(mods[0]);
                 fileID = Integer.parseInt(mods[1]);
                 try {
+                    //noinspection OptionalGetWithoutIsPresent
                     modName = CurseAPI.project(modID).get().name();
+                    //noinspection OptionalGetWithoutIsPresent,ConstantConditions
                     modFileName = CurseAPI.project(modID).get().files().fileWithID(fileID).nameOnDisk();
                 } catch (CurseException cex) {
                     appLogger.error("Error: Couldn't retrieve CurseForge project name and file name.", cex);
@@ -134,6 +146,7 @@ public class CreateModpack {
                     appLogger.info(String.format("Downloading mod %d of %d: %s | %s.", i+1, modpack.getFiles().toArray().length, modName, modFileName));
                     CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
                     try {
+                        //noinspection BusyWait
                         Thread.sleep(1000);
                     } catch (InterruptedException iex) {
                         appLogger.debug("Error during interruption event.", iex);
@@ -162,9 +175,10 @@ public class CreateModpack {
             }
         }
     }
-    /** Delets all directories in the modpack directory as specified in an internal Array. Currently not used anywhere.
+    /** Deletes all directories in the modpack directory as specified in an internal Array. Currently not used anywhere.
      * @param modpackDir String. The directory in which to deletes should be made.
      */
+    @SuppressWarnings("unused")
     private static void deleteDirs(String modpackDir) {
         appLogger.info("Deleting directories not needed in server pack from modpack...");
         String[] dirsToBeDeleted = {"overrides", "packmenu", "resourcepacks"};
@@ -173,6 +187,7 @@ public class CreateModpack {
             if (new File(deleteMe).isDirectory()) {
                 try {
                     Path pathToBeDeleted = Paths.get(deleteMe);
+                    //noinspection ResultOfMethodCallIgnored
                     Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
                 } catch (IOException ex) {
                     appLogger.info(String.format("Directory %s not found. Skipping delete action...", deleteMe));
@@ -255,9 +270,9 @@ public class CreateModpack {
             appLogger.error(String.format("Error: There was an error extracting the archive %s", zipFile), ex);
         }
     }
-    /** Helpermethod for unzipArchive. With help from: https://www.baeldung.com/java-compress-and-uncompress
+    /** Helper-Method for unzipArchive. With help from: https://www.baeldung.com/java-compress-and-uncompress
      * @param destinationDir Check whether the file is outside of the directory it is supposed to be in.
-     * @param zipEntry Zipentry with which to check for location.
+     * @param zipEntry Zip entry with which to check for location.
      * @return Returns the correct destination for the new file.
      */
     private static File newFile(File destinationDir, ZipEntry zipEntry) {
@@ -275,7 +290,7 @@ public class CreateModpack {
         } catch (IOException ex) {
             appLogger.error(String.format("Error: There was an error getting the path for %s", destFile.toString()), ex);
         }
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+        if (destFilePath != null && !destFilePath.startsWith(destDirPath + File.separator)) {
             appLogger.error(String.format("Entry is outside of the target dir: %s", zipEntry.getName()));
         }
         return destFile;
