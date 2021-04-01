@@ -103,10 +103,16 @@ class ConfigCheck {
                 try {
                     projectName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().name();
                     try {
+                        //noinspection ConstantConditions
                         displayName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().files().fileWithID(Integer.parseInt(projectFileIds[1])).displayName();
                     } catch (NullPointerException npe) {
                         appLogger.info("INFO: Display name not found. Setting display name as file name on disk.");
-                        displayName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().files().fileWithID(Integer.parseInt(projectFileIds[1])).nameOnDisk();
+                        try {
+                            //noinspection ConstantConditions
+                            displayName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().files().fileWithID(Integer.parseInt(projectFileIds[1])).nameOnDisk();
+                        } catch (NullPointerException npe2) {
+                            displayName = projectFileIds[1];
+                        }
                     }
                 } catch (CurseException cex) {
                     appLogger.error("Error: Could not retrieve CurseForge project and file.");
@@ -178,13 +184,20 @@ class ConfigCheck {
         String[] dirsNotToCopy = {"overrides","packmenu","resourcepacks"};
         File directories = new File(modpackDir);
         String[] dirArray = directories.list((current, name) -> new File(current, name).isDirectory());
-        List<String> dirList = new ArrayList<>(Arrays.asList(dirArray));
-        List<String> doNotCopyList = new ArrayList<>(Arrays.asList(dirsNotToCopy));
-        for (int i = 0; i< dirsNotToCopy.length; i++) {
-            dirList.remove(doNotCopyList.get(i));
+        List<String> dirList;
+        String[] copyDirs = new String[0];
+        if (dirArray != null) {
+            dirList = new ArrayList<>(Arrays.asList(dirArray));
+            List<String> doNotCopyList = new ArrayList<>(Arrays.asList(dirsNotToCopy));
+            for (int i = 0; i< dirsNotToCopy.length; i++) {
+                dirList.remove(doNotCopyList.get(i));
+            }
+            copyDirs = dirList.toArray(new String[0]);
+            appLogger.info(String.format("Modpack directory checked. Suggested directories for copyDirs-setting are: %s", dirList.toString()));
+            return Arrays.asList(copyDirs.clone());
+        } else {
+            appLogger.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.");
         }
-        String[] copyDirs = dirList.toArray(new String[0]);
-        appLogger.info(String.format("Modpack directory checked. Suggested directories for copyDirs-setting are: %s", dirList.toString()));
         return Arrays.asList(copyDirs.clone());
     }
     /** Checks whether the modpackDir contains a valid projectID,fileID combination. ProjectIDs must be at least two digits long, fileIDs must be at least 5 digits long. Must be numbers separated by a ",".
@@ -254,8 +267,14 @@ class ConfigCheck {
             }
         }
         appLogger.info("Directories to copy:");
-        for (int i = 0; i < copyDirectories.toArray().length; i++) {
-            appLogger.info(String.format("    %s", copyDirectories.get(i)));
+        if (copyDirectories != null) {
+            for (int i = 0; i < copyDirectories.toArray().length; i++) {
+                appLogger.info(String.format("    %s", copyDirectories.get(i)));
+            }
+        } else {
+            appLogger.error("Error: List of directories to copy is empty.");
+            //noinspection ConstantConditions
+            copyDirectories.add("empty");
         }
         appLogger.info(String.format("Include server installation:      %s", installServer));
         appLogger.info(String.format("Java Installation path:           %s", javaInstallPath));
@@ -406,6 +425,7 @@ class ConfigCheck {
                     }
                     downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
                 }
+                //noinspection unused
                 FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
                 downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
                 downloadManifestOutputStream.flush();
@@ -452,6 +472,7 @@ class ConfigCheck {
                 }
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
             }
+            //noinspection unused
             FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
@@ -502,6 +523,7 @@ class ConfigCheck {
                 }
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
             }
+            //noinspection unused
             FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
