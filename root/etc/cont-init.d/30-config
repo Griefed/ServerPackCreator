@@ -1,7 +1,5 @@
 #!/usr/bin/with-contenv bash
 
-VERSION=$(curl --silent "https://api.github.com/repos/griefed/serverpackcreator/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
-
 if [ ! -f /data/serverpackcreator.conf ]; then
   echo "**** Setting up ServerPackCreator configuration. ****"
   cp -f \
