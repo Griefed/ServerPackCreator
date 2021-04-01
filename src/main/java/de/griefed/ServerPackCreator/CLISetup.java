@@ -3,16 +3,13 @@ package de.griefed.ServerPackCreator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
 class CLISetup {
-    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
+    private static final Logger appLogger = LogManager.getLogger(CLISetup.class);
     /**
      * CLI for config file generation. Prompts user to enter config file values and then generates a config file with values entered by user.
      */
@@ -116,89 +113,8 @@ class CLISetup {
             appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
             System.out.print("Answer: ");
         } while (!readBoolean());
-        String configString = String.format("# Path to your modpack. Can be either relative or absolute.\n" +
-            "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
-            "modpackDir = \"%s\"\n" +
-            "\n" +
-            "# List of client-only mods to delete from serverpack.\n" +
-            "# No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n" +
-            "# Example: [\"AmbientSounds\", \"ClientTweaks\", \"PackMenu\", \"BetterAdvancement\", \"jeiintegration\"]\n" +
-            "clientMods = [%s]\n" +
-            "\n" +
-            "# Name of directories to include in serverpack.\n" +
-            "# When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n" +
-            "# for immediate use with the server.\n" +
-            "# Example: [\"config\", \"mods\", \"scripts\"]\n" +
-            "copyDirs = [%s]\n" +
-            "\n" +
-            "# Whether to install a Forge/Fabric server for the serverpack. Must be true or false.\n" +
-            "includeServerInstallation = %b\n" +
-            "\n" +
-            "# Path to the Java executable. On Linux systems it would be something like \"/usr/bin/java\".\n" +
-            "# Only needed if includeServerInstallation is true.\n" +
-            "javaPath = \"%s\"\n" +
-            "\n" +
-            "# Which Minecraft version to use.\n" +
-            "# Example: \"1.16.5\".\n" +
-            "# Only needed if includeServerInstallation is true.\n" +
-            "minecraftVersion = \"%s\"\n" +
-            "\n" +
-            "# Which modloader to install. Must be either \"Forge\" or \"Fabric\".\n" +
-            "# Only needed if includeServerInstallation is true.\n" +
-            "modLoader = \"%s\"\n" +
-            "\n" +
-            "# The version of the modloader you want to install.\n" +
-            "# Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n" +
-            "# Only needed if includeServerInstallation is true.\n" +
-            "modLoaderVersion = \"%s\"\n" +
-            "\n" +
-            "# Include a server-icon.png in your serverpack. Must be true or false.\n" +
-            "# Place your server-icon.png in the same directory as this cfg-file.\n" +
-            "# If no server-icon.png is provided but is set to true, a default one will be provided.\n" +
-            "# Dimensions must be 64x64!\n" +
-            "includeServerIcon = %b\n" +
-            "\n" +
-            "# Include a server.properties in your serverpack. Must be true or false.\n" +
-            "# Place your server.properties in the same directory as this cfg-file.\n" +
-            "# If no server.properties is provided but is set to true, a default one will be provided.\n" +
-            "# Default value is true\n" +
-            "includeServerProperties = %b\n" +
-            "\n" +
-            "# Include start scripts for windows and linux systems. Must be true or false.\n" +
-            "# Default value is true\n" +
-            "includeStartScripts = %b\n" +
-            "\n" +
-            "# Create zip-archive of serverpack. Must be true or false.\n" +
-            "# Default value is true\n" +
-            "includeZipCreation = %b\n",
-            modpackDir,
-            buildString(Arrays.toString(tmpClientMods)),
-            buildString(Arrays.toString(tmpCopyDirs)),
-            includeServerInstallation,
-            javaPath,
-            minecraftVersion,
-            modLoader,
-            modLoaderVersion,
-            includeServerIcon,
-            includeServerProperties,
-            includeStartScripts,
-            includeZipCreation);
-        try {
-            if (Reference.configFile.exists()) {
-            boolean delConf = Reference.configFile.delete();
-            if (delConf) { appLogger.info("Deleted existing config file to replace with new one."); }
-            else { appLogger.error("Could not delete existing config file."); }
-            }
-            if (Reference.oldConfigFile.exists()) {
-            boolean delOldConf = Reference.oldConfigFile.delete();
-            if (delOldConf) { appLogger.info("Deleted existing config file to replace with new one."); }
-            else { appLogger.error("Could not delete existing config file."); }
-            }
-            BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.configFile));
-            writer.write(configString);
-            writer.close();
-        } catch (IOException ex) {
-            appLogger.error("Error writing new config file.", ex);
+        if (FilesSetup.writeConfigToFile(modpackDir, buildString(Arrays.toString(tmpClientMods)), buildString(Arrays.toString(tmpCopyDirs)), includeServerInstallation, javaPath, minecraftVersion, modLoader, modLoaderVersion, includeServerIcon, includeServerProperties, includeStartScripts, includeZipCreation)) {
+            appLogger.info("New config file successfully written. Thanks go to Whitebear60 for initially writing the CLI-Config-Generation.");
         }
     }
     /** A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
@@ -221,7 +137,7 @@ class CLISetup {
      * @param args Strings that will be concatenated into one string
      * @return String. Returns concatenated string that contains all provided values.
      */
-    private static String buildString(String... args) {
+    static String buildString(String... args) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Arrays.toString(args));
         stringBuilder.delete(0, 2).reverse().delete(0,2).reverse();
