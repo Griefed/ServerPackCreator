@@ -36,5 +36,5 @@ class Reference {
     static int projectFileID;
     static Boolean dockerEnv;
     static final String CONFIG_GEN_ARGUMENT = "-cgen";
-    static final String DOCKER_ENV_ARGUMENT = "-dock";
+    static final String DOCKER_ENV_ARGUMENT = "-cont";
 }
