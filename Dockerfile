@@ -27,7 +27,7 @@ RUN \
       /root/.cache \
       /tmp/*
 
-COPY --from=builder ./build/libs/ServerPackCreator.jar /app/serverpackcreator/serverpackcreator.jar
+COPY --from=builder tmp/serverpackcreator/build/libs/ServerPackCreator.jar /app/serverpackcreator/serverpackcreator.jar
 COPY src/main/resources/server_files/ /defaults/server_files
 COPY root/ /
 

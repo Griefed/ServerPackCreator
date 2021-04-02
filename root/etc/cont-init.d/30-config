@@ -38,6 +38,22 @@ if [ ! -f /data/serverpackcreator.conf ]; then
   sed -i \
     "s/INCLUDEZIPCREATION/${INCLUDEZIPCREATION}/g" \
     /data/serverpackcreator.conf
+  if [ ! -d "/data/server_files/" ]; then
+    mkdir -p \
+      /data/server_files
+  fi
+  if [ ! -d "/app/serverpackcreator/server_files/" ]; then
+    mkdir -p \
+      /app/serverpackcreator/server_files
+  fi
+  if [ ! -d "/data/logs" ]; then
+    mkdir -p \
+      /data/logs
+  fi
+  if [ ! -d "/app/serverpackcreator/logs" ]; then
+    mkdir -p \
+      /app/serverpackcreator/logs
+  fi
   if [ ! -f /data/server_files/server.properties ]; then
     echo "**** Setting up default server.properties. ****"
     cp -f \
@@ -82,7 +98,12 @@ fi
 
 ln -sf /data/logs /app/serverpackcreator/logs
 ln -sf /data/serverpackcreator.conf /app/serverpackcreator/serverpackcreator.conf
-ln -sf /data/server_files /app/serverpackcreator/server_files
+ln -sf /data/server_files/server.properties /app/serverpackcreator/server_files/server.properties
+ln -sf /data/server_files/server-icon.png /app/serverpackcreator/server_files/server-icon.png
+ln -sf /data/server_files/start-fabric.bat /app/serverpackcreator/server_files/start-fabric.bat
+ln -sf /data/server_files/start-fabric.sh /app/serverpackcreator/server_files/start-fabric.sh
+ln -sf /data/server_files/start-forge.bat /app/serverpackcreator/server_files/start-forge.bat
+ln -sf /data/server_files/start-forge.sh /app/serverpackcreator/server_files/start-forge.sh
 
 chown -R \
   abc:abc \
