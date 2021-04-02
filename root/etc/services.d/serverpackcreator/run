@@ -2,4 +2,4 @@
 
 cd /app/serverpackcreator
 
-exec s6-setuidgid abc /usr/bin/java -jar serverpackcreator.jar -docker
+exec s6-setuidgid abc /usr/bin/java -jar serverpackcreator.jar -dock
