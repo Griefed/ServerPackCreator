@@ -39,11 +39,23 @@ class ConfigCheck {
         Reference.includeServerProperties = convertToBoolean(Reference.conf.getString("includeServerProperties"));
         Reference.includeStartScripts = convertToBoolean(Reference.conf.getString("includeStartScripts"));
         Reference.includeZipCreation = convertToBoolean(Reference.conf.getString("includeZipCreation"));
-        if (checkModpackDir(Reference.conf.getString("modpackDir"))) {
-            configHasError = isDir();
-        } else if (checkCurseForge(Reference.conf.getString("modpackDir"))) {
-            configHasError = isCurse();
-        } else { configHasError = true; }
+        if (Reference.dockerEnv) {
+            if (checkModpackDir(String.format("/data/%s", Reference.conf.getString("modpackDir")))) {
+                configHasError = isDir(String.format("/data/%s", Reference.conf.getString("modpackDir")));
+            } else if (checkCurseForge(Reference.conf.getString("modpackDir"))) {
+                configHasError = isCurse();
+            } else {
+                configHasError = true;
+            }
+        } else {
+            if (checkModpackDir(Reference.conf.getString("modpackDir"))) {
+                configHasError = isDir(Reference.conf.getString("modpackDir"));
+            } else if (checkCurseForge(Reference.conf.getString("modpackDir"))) {
+                configHasError = isCurse();
+            } else {
+                configHasError = true;
+            }
+        }
         printConfig(Reference.modpackDir, Reference.clientMods, Reference.copyDirs, Reference.includeServerInstallation, Reference.javaPath, Reference.minecraftVersion, Reference.modLoader, Reference.modLoaderVersion, Reference.includeServerIcon, Reference.includeServerProperties, Reference.includeStartScripts, Reference.includeZipCreation);
         if (!configHasError) {
             appLogger.info("Config check successful. No errors encountered.");
@@ -55,10 +67,10 @@ class ConfigCheck {
     /** Checks whether the specified modpack exists. If it does, the config file is checked for errors. Should any error be found, it will return true so the configCheck method informs the user about an invalid configuration.
      * @return Boolean. Returns true if an error is found during configuration check. False if the configuration is deemed valid.
      */
-    private static boolean isDir() {
+    private static boolean isDir(String modpackDir) {
         boolean configHasError = false;
-        Reference.modpackDir = Reference.conf.getString("modpackDir");
-        if (checkCopyDirs(Reference.conf.getStringList("copyDirs"), Reference.conf.getString("modpackDir"))) {
+        Reference.modpackDir = modpackDir;
+        if (checkCopyDirs(Reference.conf.getStringList("copyDirs"), Reference.modpackDir)) {
             Reference.copyDirs = Reference.conf.getStringList("copyDirs");
         } else { configHasError = true; }
         if (Reference.includeServerInstallation) {
@@ -95,30 +107,33 @@ class ConfigCheck {
      */
     private static boolean isCurse() {
         boolean configHasError = false;
-        String[] projectFileIds = splitString(Reference.conf.getString("modpackDir"));
         try {
-            if (CurseAPI.project(Integer.parseInt(projectFileIds[0])).isPresent()) {
+            if (CurseAPI.project(Reference.projectID).isPresent()) {
                 String projectName, displayName;
                 projectName = displayName = "";
                 try {
-                    projectName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().name();
+                    projectName = CurseAPI.project(Reference.projectID).get().name();
                     try {
                         //noinspection ConstantConditions
-                        displayName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().files().fileWithID(Integer.parseInt(projectFileIds[1])).displayName();
+                        displayName = CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID).displayName();
                     } catch (NullPointerException npe) {
                         appLogger.info("INFO: Display name not found. Setting display name as file name on disk.");
                         try {
                             //noinspection ConstantConditions
-                            displayName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().files().fileWithID(Integer.parseInt(projectFileIds[1])).nameOnDisk();
+                            displayName = CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID).nameOnDisk();
                         } catch (NullPointerException npe2) {
-                            displayName = projectFileIds[1];
+                            displayName = String.format("%d", Reference.projectFileID);
                         }
                     }
                 } catch (CurseException cex) {
                     appLogger.error("Error: Could not retrieve CurseForge project and file.");
                 }
-                Reference.modpackDir = String.format("./%s/%s", projectName, displayName);
-                if (curseForgeModpack(Reference.modpackDir, Integer.parseInt(projectFileIds[0]), Integer.parseInt(projectFileIds[1]))) {
+                if (Reference.dockerEnv) {
+                    Reference.modpackDir = String.format("data/%s/%s", projectName, displayName);
+                } else {
+                    Reference.modpackDir = String.format("./%s/%s", projectName, displayName);
+                }
+                if (curseForgeModpack(Reference.modpackDir, Reference.projectID, Reference.projectFileID)) {
                     try {
                         byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", Reference.modpackDir)));
                         ObjectMapper objectMapper = new ObjectMapper();
@@ -154,7 +169,7 @@ class ConfigCheck {
                 configHasError = true;
             }
         } catch (CurseException cex) {
-            appLogger.error(String.format("Error: Project with ID %s could not be found", projectFileIds[0]), cex);
+            appLogger.error(String.format("Error: Project with ID %s could not be found", Reference.projectID), cex);
             configHasError = true;
         }
         return configHasError;
@@ -205,9 +220,14 @@ class ConfigCheck {
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
     private static boolean checkCurseForge(String modpackDir) {
+        String[] projectFileIds;
         boolean configCorrect = false;
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
             appLogger.info("You specified a CurseForge projectID and fileID combination.");
+            projectFileIds = modpackDir.split(",");
+            Reference.projectID = Integer.parseInt(projectFileIds[0]);
+            Reference.projectFileID = Integer.parseInt(projectFileIds[1]);
+            appLogger.info(String.format("You entered: ProjectID %s | FileID %s.", Reference.projectID, Reference.projectFileID));
             appLogger.warn("WARNING: This functionality is experimental and prone to errors. If you encounter any errors, please open an issue on https://github.com/Griefed/ServerPackCreator/issues");
             configCorrect = true;
         } else {
@@ -219,6 +239,7 @@ class ConfigCheck {
      * @param modpackDir String. The string which to split with the "," separator.
      * @return Array, String. Returns the array consisting of the projectID at 0 and the fileID at 1.
      */
+    @SuppressWarnings("unused")
     private static String[] splitString(String modpackDir) {
         String[] projectFileIds;
         projectFileIds = modpackDir.split(",");
