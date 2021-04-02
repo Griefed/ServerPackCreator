@@ -118,6 +118,7 @@ Variable | Description
 TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
+MODPACKDIR | When running in docker, modpackDir is a little different compared to regular CLI operation. Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=your_modpack.</br>If you provide a CurseForge projectID and fileID, mount a folder like this `/path/to/data/folder:/data` and set MODPACKDIR=projectID,fileID. The then created modpack and serverpack will be available in `/path/to/data/folder`.   
 
 ### Using docker-compose:
 
@@ -132,7 +133,7 @@ services:
       - TZ=Europe/Berlin # Timezone
       - PUID=1000 # User ID
       - PGID=1000 # Group ID
-      - MODPACKDIR=/data
+      - MODPACKDIR=
       - CLIENTMODS= # Comma-separated
       - COPYDIRS= #Comma-separated
       - MINECRAFTVERSION=
@@ -155,7 +156,7 @@ docker create \
   -e TZ=Europe/Berlin # Timezone \
   -e PUID=1000 # User ID \
   -e PGID=1000 # Group ID \
-  -e MODPACKDIR=/data \
+  -e MODPACKDIR= \
   -e CLIENTMODS= \
   -e COPYDIRS= \
   -e MINECRAFTVERSION= \
