@@ -115,6 +115,7 @@ When running as a docker container, there are a couple more settings you need to
 
 Variable | Description
 -------- | -----------
+START | What mode the container should start in. Currently only `dock` is supported in the docker environment.
 TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
@@ -130,6 +131,7 @@ services:
     container_name: serverpackcreator
     restart: "no"
     environment:
+      - START=dock
       - TZ=Europe/Berlin # Timezone
       - PUID=1000 # User ID
       - PGID=1000 # Group ID
