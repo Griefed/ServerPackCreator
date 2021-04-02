@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+cd /app/serverpackcreator
+
+exec s6-setuidgid abc /usr/bin/java -jar serverpackcreator.jar -docker
