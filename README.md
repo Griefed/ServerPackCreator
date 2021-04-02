@@ -111,6 +111,14 @@ Tags | Description
 Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
 Images are available for linux/amd64,linux/arm/v7,linux/arm64.
 
+When running as a docker container, there are a couple more settings you need to be aware of.
+
+Variable | Description
+-------- | -----------
+TZ | The timezone your system operates in. Default "Europe/Berlin"
+PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
+PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
+
 ### Using docker-compose:
 
 ```docker-compose.yml
@@ -158,7 +166,7 @@ docker create \
   -e INCLUDESERVERPROPERTIES=true \
   -e INCLUDESTARTSCRIPTS=true \
   -e INCLUDEZIPCREATION=true \
-  -v /host/path/to/data:/data `# Path to the data directory where the generated modpacks/server packs will be available` \
+  -v /host/path/to/data:/data \
   --restart "no" \
   griefed/serverpackcreator:latest
 ```
