@@ -2,4 +2,8 @@
 
 cd /app/serverpackcreator
 
-exec s6-setuidgid abc java -jar /app/serverpackcreator/serverpackcreator.jar $START
+exec \
+  s6-setuidgid abc \
+    java -jar \
+      /app/serverpackcreator/serverpackcreator.jar $START && \
+  exit 0
