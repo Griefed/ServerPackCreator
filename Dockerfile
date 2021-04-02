@@ -7,14 +7,9 @@ RUN \
     https://github.com/Griefed/ServerPackCreator.git \
       /tmp/serverpackcreator && \
   chmod +x /tmp/serverpackcreator/gradlew* && \
-
-WORKDIR /tmp/serverpackcreator
-
-RUN \
+  cd /tmp/serverpackcreator && \
   ./gradlew build && \
   ls -ahl ./build/libs/
-
-WORKDIR /tmp/serverpackcreator
 
 FROM lsiobase/alpine:3.12
 
@@ -33,7 +28,7 @@ RUN \
       /tmp/*
 
 COPY --from=builder ./build/libs/ServerPackCreator.jar /app/serverpackcreator/serverpackcreator.jar
-COPY src/main/resources/server_files/ /app/serverpackcreator/server_files
+COPY src/main/resources/server_files/ /defaults/server_files
 COPY root/ /
 
 VOLUME /data
