@@ -1,9 +1,8 @@
 #!/usr/bin/with-contenv bash
 
-cd /app/serverpackcreator
+cd /data
 
 exec \
   s6-setuidgid abc \
     java -jar \
-      /app/serverpackcreator/serverpackcreator.jar $START && \
-  exit 0
+      /app/serverpackcreator/serverpackcreator.jar
