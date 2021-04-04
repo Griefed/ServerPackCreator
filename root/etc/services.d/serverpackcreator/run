@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+
+cd /data
+
+exec \
+  s6-setuidgid abc \
+    java -jar \
+      /app/serverpackcreator/serverpackcreator.jar

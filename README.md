@@ -81,9 +81,12 @@ includeZipCreation | Whether to create a zip-file of your serverpack, saved in t
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
-## Running
 
-Guides on how to run ServerPackCreator are available at:
+# Running
+
+## Commandline
+
+Guides on how to run ServerPackCreator via commandline are available at:
 1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-Windows (for Windows) or
 2. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-macOS (for macOS)
 3. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
@@ -91,3 +94,81 @@ Guides on how to run ServerPackCreator are available at:
 (macOS guide by [whitebear60](https://github.com/whitebear60))
 
 (They're the same, but there's two for redundancies' sake)
+
+## Docker
+
+Creates a Container which runs [Griefed's](https://github.com/Griefed) [ServerPackCreator](https://github.com/Griefed/ServerPackCreator), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image.
+
+The [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) image is a custom base image built with [Alpine linux](https://alpinelinux.org/) and [S6 overlay](https://github.com/just-containers/s6-overlay).
+Using this image allows us to use the same user/group ids in the container as on the host, making file transfers much easier
+
+
+Tags | Description
+-----|------------
+`latest` | Using the `latest` tag will pull the latest image for linux/amd64,linux/arm/v7,linux/arm64.
+`develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk!
+
+Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
+Images are available for linux/amd64,linux/arm/v7,linux/arm64.
+
+When running as a docker container, there are a couple more settings you need to be aware of.
+
+Variable | Description
+-------- | -----------
+START | What mode the container should start in. Currently, only `cont` is supported in the docker environment.
+TZ | The timezone your system operates in. Default "Europe/Berlin"
+PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
+PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
+MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.   
+
+### Using docker-compose:
+
+```docker-compose.yml
+version: "2"
+services:
+  serverpackcreator:
+    image: griefed/serverpackcreator:latest
+    container_name: serverpackcreator
+    restart: "no"
+    environment:
+      - TZ=Europe/Berlin # Your Timezone
+      - PUID=1000 # Your user ID
+      - PGID=1000 # Your group ID
+      - MODPACKDIR= # Either path to the modpack directory or CurseForge projectID,fileID combination.
+      - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
+      - COPYDIRS= # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
+      - MINECRAFTVERSION= # The Minecraft version the modpack uses.
+      - MODLOADER= # Either Forge or Fabric
+      - MODLOADERVERSION= # The version of the modlaoder the modpack uses.
+      - INCLUDESERVERINSTALLATION=true # Or false
+      - INCLUDESERVERICON=true # Or false
+      - INCLUDESERVERPROPERTIES=true # Or false
+      - INCLUDESTARTSCRIPTS=true # Or false
+      - INCLUDEZIPCREATION=true # Or false
+    volumes:
+      - /host/path/to/data:/data
+```
+
+### Using CLI:
+
+```bash
+docker create \
+  --name=serverpackcreator \
+  -e TZ=Europe/Berlin \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e MODPACKDIR= \
+  -e CLIENTMODS= \
+  -e COPYDIRS= \
+  -e MINECRAFTVERSION= \
+  -e MODLOADER= \
+  -e MODLOADERVERSION= \
+  -e INCLUDESERVERINSTALLATION=true \
+  -e INCLUDESERVERICON=true \
+  -e INCLUDESERVERPROPERTIES=true \
+  -e INCLUDESTARTSCRIPTS=true \
+  -e INCLUDEZIPCREATION=true \
+  -v /host/path/to/data:/data \
+  --restart "no" \
+  griefed/serverpackcreator:latest
+```

@@ -32,5 +32,9 @@ class Reference {
     static Boolean includeServerProperties;
     static Boolean includeStartScripts;
     static Boolean includeZipCreation;
+    static int projectID;
+    static int projectFileID;
+    static Boolean dockerEnv;
     static final String CONFIG_GEN_ARGUMENT = "-cgen";
+    static final String DOCKER_ENV_ARGUMENT = "-cont";
 }

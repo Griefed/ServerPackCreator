@@ -125,7 +125,7 @@ class ServerUtilities {
         boolean downloaded = false;
         try {
             appLogger.info("Trying to download Fabric installer...");
-            URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabric(modpackDir), latestFabric(modpackDir)));
+            URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller(modpackDir), latestFabricInstaller(modpackDir)));
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
             FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.jar", modpackDir));
             FileChannel downloadFabricFileChannel = downloadFabricFileOutputStream.getChannel();
@@ -151,8 +151,8 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
-    private static String latestFabric(String modpackDir) {
-        String result = "0.7.1";
+    private static String latestFabricInstaller(String modpackDir) {
+        String result = "0.7.2";
         try {
             URL downloadFabricXml = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
@@ -167,9 +167,9 @@ class ServerUtilities {
             XPathFactory xPathFactory = XPathFactory.newInstance();
             XPath xpath = xPathFactory.newXPath();
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
-            appLogger.info("Successfully retrieved Fabric XML.");
+            appLogger.info("Successfully retrieved Fabric-Installer XML.");
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-            appLogger.error("Could not retrieve XML file. Defaulting to Installer version 0.7.1.", ex);
+            appLogger.error("Could not retrieve Installer XML file. Defaulting to Installer version 0.7.2.", ex);
         } finally {
             return result;
         }

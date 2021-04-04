@@ -8,7 +8,16 @@ import com.typesafe.config.*;
 import de.griefed.ServerPackCreator.CurseForgeModpack.Modpack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -40,10 +49,12 @@ class ConfigCheck {
         Reference.includeStartScripts = convertToBoolean(Reference.conf.getString("includeStartScripts"));
         Reference.includeZipCreation = convertToBoolean(Reference.conf.getString("includeZipCreation"));
         if (checkModpackDir(Reference.conf.getString("modpackDir"))) {
-            configHasError = isDir();
+            configHasError = isDir(Reference.conf.getString("modpackDir"));
         } else if (checkCurseForge(Reference.conf.getString("modpackDir"))) {
             configHasError = isCurse();
-        } else { configHasError = true; }
+        } else {
+            configHasError = true;
+        }
         printConfig(Reference.modpackDir, Reference.clientMods, Reference.copyDirs, Reference.includeServerInstallation, Reference.javaPath, Reference.minecraftVersion, Reference.modLoader, Reference.modLoaderVersion, Reference.includeServerIcon, Reference.includeServerProperties, Reference.includeStartScripts, Reference.includeZipCreation);
         if (!configHasError) {
             appLogger.info("Config check successful. No errors encountered.");
@@ -52,13 +63,15 @@ class ConfigCheck {
         }
         return configHasError;
     }
+
     /** Checks whether the specified modpack exists. If it does, the config file is checked for errors. Should any error be found, it will return true so the configCheck method informs the user about an invalid configuration.
+     * @param modpackDir String. Should an existing modpack be specified, all configurations are read from local file and the server pack is created, if config is correct.
      * @return Boolean. Returns true if an error is found during configuration check. False if the configuration is deemed valid.
      */
-    private static boolean isDir() {
+    private static boolean isDir(String modpackDir) {
         boolean configHasError = false;
-        Reference.modpackDir = Reference.conf.getString("modpackDir");
-        if (checkCopyDirs(Reference.conf.getStringList("copyDirs"), Reference.conf.getString("modpackDir"))) {
+        Reference.modpackDir = modpackDir;
+        if (checkCopyDirs(Reference.conf.getStringList("copyDirs"), Reference.modpackDir)) {
             Reference.copyDirs = Reference.conf.getStringList("copyDirs");
         } else { configHasError = true; }
         if (Reference.includeServerInstallation) {
@@ -95,30 +108,29 @@ class ConfigCheck {
      */
     private static boolean isCurse() {
         boolean configHasError = false;
-        String[] projectFileIds = splitString(Reference.conf.getString("modpackDir"));
         try {
-            if (CurseAPI.project(Integer.parseInt(projectFileIds[0])).isPresent()) {
+            if (CurseAPI.project(Reference.projectID).isPresent()) {
                 String projectName, displayName;
                 projectName = displayName = "";
                 try {
-                    projectName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().name();
+                    projectName = CurseAPI.project(Reference.projectID).get().name();
                     try {
                         //noinspection ConstantConditions
-                        displayName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().files().fileWithID(Integer.parseInt(projectFileIds[1])).displayName();
+                        displayName = CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID).displayName();
                     } catch (NullPointerException npe) {
                         appLogger.info("INFO: Display name not found. Setting display name as file name on disk.");
                         try {
                             //noinspection ConstantConditions
-                            displayName = CurseAPI.project(Integer.parseInt(projectFileIds[0])).get().files().fileWithID(Integer.parseInt(projectFileIds[1])).nameOnDisk();
+                            displayName = CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID).nameOnDisk();
                         } catch (NullPointerException npe2) {
-                            displayName = projectFileIds[1];
+                            displayName = String.format("%d", Reference.projectFileID);
                         }
                     }
                 } catch (CurseException cex) {
                     appLogger.error("Error: Could not retrieve CurseForge project and file.");
                 }
                 Reference.modpackDir = String.format("./%s/%s", projectName, displayName);
-                if (curseForgeModpack(Reference.modpackDir, Integer.parseInt(projectFileIds[0]), Integer.parseInt(projectFileIds[1]))) {
+                if (curseForgeModpack(Reference.modpackDir, Reference.projectID, Reference.projectFileID)) {
                     try {
                         byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", Reference.modpackDir)));
                         ObjectMapper objectMapper = new ObjectMapper();
@@ -131,7 +143,7 @@ class ConfigCheck {
                         if (containsFabric(modpack)) {
                             appLogger.info("Please make sure to check the configuration for the used Fabric version after ServerPackCreator is done setting up the modpack and new config file.");
                             Reference.modLoader = "Fabric";
-                            Reference.modLoaderVersion = "0.7.2";
+                            Reference.modLoaderVersion = latestFabricLoader(Reference.modpackDir);
                         } else {
                             Reference.modLoader = setModloader(modLoaderVersion[0]);
                             Reference.modLoaderVersion = modLoaderVersion[1];
@@ -151,10 +163,10 @@ class ConfigCheck {
                     appLogger.info("Your old config file will now be replaced by a new one, with values gathered from the downloaded modpack.");
                     FilesSetup.writeConfigToFile(Reference.modpackDir, CLISetup.buildString(Reference.clientMods.toString()), CLISetup.buildString(Reference.copyDirs.toString()), Reference.includeServerInstallation, Reference.javaPath, Reference.minecraftVersion, Reference.modLoader, Reference.modLoaderVersion, Reference.includeServerIcon, Reference.includeServerProperties, Reference.includeStartScripts, Reference.includeZipCreation);
                 }
-                configHasError = true;
+                // configHasError = true;
             }
         } catch (CurseException cex) {
-            appLogger.error(String.format("Error: Project with ID %s could not be found", projectFileIds[0]), cex);
+            appLogger.error(String.format("Error: Project with ID %s could not be found", Reference.projectID), cex);
             configHasError = true;
         }
         return configHasError;
@@ -205,9 +217,14 @@ class ConfigCheck {
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
     private static boolean checkCurseForge(String modpackDir) {
+        String[] projectFileIds;
         boolean configCorrect = false;
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
             appLogger.info("You specified a CurseForge projectID and fileID combination.");
+            projectFileIds = modpackDir.split(",");
+            Reference.projectID = Integer.parseInt(projectFileIds[0]);
+            Reference.projectFileID = Integer.parseInt(projectFileIds[1]);
+            appLogger.info(String.format("You entered: ProjectID %s | FileID %s.", Reference.projectID, Reference.projectFileID));
             appLogger.warn("WARNING: This functionality is experimental and prone to errors. If you encounter any errors, please open an issue on https://github.com/Griefed/ServerPackCreator/issues");
             configCorrect = true;
         } else {
@@ -219,6 +236,7 @@ class ConfigCheck {
      * @param modpackDir String. The string which to split with the "," separator.
      * @return Array, String. Returns the array consisting of the projectID at 0 and the fileID at 1.
      */
+    @SuppressWarnings("unused")
     private static String[] splitString(String modpackDir) {
         String[] projectFileIds;
         projectFileIds = modpackDir.split(",");
@@ -545,6 +563,33 @@ class ConfigCheck {
         } catch (Exception ex) {
             appLogger.error("An error occurred during Forge version validation.", ex);
             return false;
+        }
+    }
+    /** Returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.
+     * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
+     * @return Boolean. Returns true if the download was successful. False if not.
+     */
+    private static String latestFabricLoader(String modpackDir) {
+        String result = "0.11.3";
+        try {
+            URL downloadFabricXml = new URL(Reference.FABRIC_MANIFEST_URL);
+            ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
+            FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-loader.xml", modpackDir));
+            FileChannel downloadFabricXmlFileChannel = downloadFabricXmlFileOutputStream.getChannel();
+            downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
+            downloadFabricXmlFileOutputStream.flush();
+            downloadFabricXmlFileOutputStream.close();
+            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = domFactory.newDocumentBuilder();
+            Document fabricXml = builder.parse(new File(String.format("%s/server_pack/fabric-loader.xml",modpackDir)));
+            XPathFactory xPathFactory = XPathFactory.newInstance();
+            XPath xpath = xPathFactory.newXPath();
+            result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
+            appLogger.info("Successfully retrieved Fabric-Loader XML.");
+        } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
+            appLogger.error("Could not retrieve XML file. Defaulting to Laoder version 0.11.3.", ex);
+        } finally {
+            return result;
         }
     }
 }

@@ -1,0 +1,101 @@
+#!/usr/bin/with-contenv bash
+
+if [ ! -f /data/serverpackcreator.conf ]; then
+  echo "**** Setting up ServerPackCreator configuration. ****"
+  cp -f \
+    /defaults/serverpackcreator.conf \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/MODPACK/${MODPACKDIR}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/CLIENT/${CLIENTMODS}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/COPY/${COPYDIRS}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/MINECRAFT/${MINECRAFTVERSION}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/MODLOADER/${MODLOADER}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/VERSION/${MODLOADERVERSION}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/SERVER/${INCLUDESERVERINSTALLATION}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/ICON/${INCLUDESERVERICON}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/PROPERTIES/${INCLUDESERVERPROPERTIES}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/START/${INCLUDESTARTSCRIPTS}/g" \
+    /data/serverpackcreator.conf
+  sed -i \
+    "s/ZIP/${INCLUDEZIPCREATION}/g" \
+    /data/serverpackcreator.conf
+  if [ ! -d "/data/server_files/" ]; then
+    mkdir -p \
+      /data/server_files
+  fi
+  if [ ! -f /data/server_files/server.properties ]; then
+    echo "**** Setting up default server.properties. ****"
+    cp -f \
+      /defaults/server_files/server.properties \
+      /data/server_files/server.properties
+  fi
+  if [ ! -f /data/server_files/server-icon.png ]; then
+    echo "**** Setting up default server.icon.png. ****"
+    cp -f \
+      /defaults/server_files/server-icon.png \
+      /data/server_files/server-icon.png
+  fi
+  if [ ! -f /data/server_files/start-fabric.bat ]; then
+    echo "**** Setting up default start-fabric.bat. ****"
+    cp -f \
+      /defaults/server_files/start-fabric.bat \
+      /data/server_files/start-fabric.bat
+  fi
+  if [ ! -f /data/server_files/start-fabric.sh ]; then
+    echo "**** Setting up default start-fabric.sh. ****"
+    cp -f \
+      /defaults/server_files/start-fabric.sh \
+      /data/server_files/start-fabric.sh
+  fi
+  if [ ! -f /data/server_files/start-forge.bat ]; then
+    echo "**** Setting up default start-forge.bat. ****"
+    cp -f \
+      /defaults/server_files/start-forge.bat \
+      /data/server_files/start-forge.bat
+  fi
+  if [ ! -f /data/server_files/start-forge.sh ]; then
+    echo "**** Setting up default start-forge.sh. ****"
+    cp -f \
+      /defaults/server_files/start-forge.sh \
+      /data/server_files/start-forge.sh
+  fi
+  chown -R \
+    abc:abc \
+      /app/serverpackcreator \
+      /data
+fi
+
+# ln -sf /data/logs /app/serverpackcreator/logs
+# ln -sf /data/serverpackcreator.conf /app/serverpackcreator/serverpackcreator.conf
+# ln -sf /data/server_files/server.properties /app/serverpackcreator/server_files/server.properties
+# ln -sf /data/server_files/server-icon.png /app/serverpackcreator/server_files/server-icon.png
+# ln -sf /data/server_files/start-fabric.bat /app/serverpackcreator/server_files/start-fabric.bat
+# ln -sf /data/server_files/start-fabric.sh /app/serverpackcreator/server_files/start-fabric.sh
+# ln -sf /data/server_files/start-forge.bat /app/serverpackcreator/server_files/start-forge.bat
+# ln -sf /data/server_files/start-forge.sh /app/serverpackcreator/server_files/start-forge.sh
+
+#chown -R \
+#  abc:abc \
+#    /app/serverpackcreator \
+#    /data
+
+echo "**** To reset the configuration, delete serverpackcreator.conf in /data and restart the container. ****"

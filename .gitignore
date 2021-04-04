@@ -130,7 +130,6 @@ out
 gradlew
 gradlew.bat
 eclipse
-run
 /ServerPack*
 /build/generated/
 /build/libs/
