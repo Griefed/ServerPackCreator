@@ -139,17 +139,17 @@ services:
       - TZ=Europe/Berlin # Your Timezone
       - PUID=1000 # Your user ID
       - PGID=1000 # Your group ID
-      - MODPACKDIR # Either path to the modpack directory or CurseForge projectID,fileID combination.
-      - MODLOADERVERSION # The version of the modlaoder the modpack uses.
-      - MODLOADER # Either Forge or Fabric
-      - MINECRAFTVERSION # The Minecraft version the modpack uses.
+      - MODPACKDIR= # Either path to the modpack directory or CurseForge projectID,fileID combination.
+      - MODLOADERVERSION= # The version of the modlaoder the modpack uses.
+      - MODLOADER= # Either Forge or Fabric
+      - MINECRAFTVERSION= # The Minecraft version the modpack uses.
       - INCLUDEZIPCREATION=true # Or false
       - INCLUDESTARTSCRIPTS=true # Or false
       - INCLUDESERVERPROPERTIES=true # Or false
       - INCLUDESERVERINSTALLATION=true # Or false
       - INCLUDESERVERICON=true # Or false
-      - COPYDIRS # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
-      - CLIENTMODS # Comma-separated. Client-side mods to delete from server pack.
+      - COPYDIRS= # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
+      - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
     volumes:
       - /host/path/todata:data # Created modpacks and server packs will be here
 
@@ -163,17 +163,17 @@ docker create \
   -e TZ=Europe/Berlin `# Your Timezone` \
   -e PUID=1000 `# Your user ID` \
   -e PGID=1000 `# Your group ID` \
-  -e MODPACKDIR `# Either path to the modpack directory or CurseForge projectID,fileID combination.` \
-  -e MODLOADERVERSION `# The version of the modlaoder the modpack uses.` \
-  -e MODLOADER `# Either Forge or Fabric` \
-  -e MINECRAFTVERSION `# The Minecraft version the modpack uses.` \
+  -e MODPACKDIR= `# Either path to the modpack directory or CurseForge projectID,fileID combination.` \
+  -e MODLOADERVERSION= `# The version of the modlaoder the modpack uses.` \
+  -e MODLOADER= `# Either Forge or Fabric` \
+  -e MINECRAFTVERSION= `# The Minecraft version the modpack uses.` \
   -e INCLUDEZIPCREATION=true `# Or false` \
   -e INCLUDESTARTSCRIPTS=true `# Or false` \
   -e INCLUDESERVERPROPERTIES=true `# Or false` \
   -e INCLUDESERVERINSTALLATION=true `# Or false` \
   -e INCLUDESERVERICON=true `# Or false` \
-  -e COPYDIRS `# Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.` \
-  -e CLIENTMODS `# Comma-separated. Client-side mods to delete from server pack.` \
+  -e COPYDIRS= `# Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.` \
+  -e CLIENTMODS= `# Comma-separated. Client-side mods to delete from server pack.` \
   -v /host/path/todata:data `# Created modpacks and server packs will be here` \
   --restart "no" \
   griefed/serverpackcreator:latest
