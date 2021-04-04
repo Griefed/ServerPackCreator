@@ -13,6 +13,8 @@ RUN \
 
 FROM lsiobase/alpine:3.12
 
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+
 LABEL maintainer="Griefed <griefed@griefed.de>"
 
 RUN \
