@@ -131,7 +131,6 @@ services:
     container_name: serverpackcreator
     restart: "no"
     environment:
-      - START=-cont
       - TZ=Europe/Berlin # Timezone
       - PUID=1000 # User ID
       - PGID=1000 # Group ID
