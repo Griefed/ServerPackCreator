@@ -63,7 +63,9 @@ class ConfigCheck {
         }
         return configHasError;
     }
+
     /** Checks whether the specified modpack exists. If it does, the config file is checked for errors. Should any error be found, it will return true so the configCheck method informs the user about an invalid configuration.
+     * @param modpackDir String. Should an existing modpack be specified, all configurations are read from local file and the server pack is created, if config is correct.
      * @return Boolean. Returns true if an error is found during configuration check. False if the configuration is deemed valid.
      */
     private static boolean isDir(String modpackDir) {
