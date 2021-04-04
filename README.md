@@ -119,7 +119,7 @@ START | What mode the container should start in. Currently, only `cont` is suppo
 TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
-MODPACKDIR | When running in docker, modpackDir is a little different compared to regular CLI operation. Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=your_modpack.</br>If you provide a CurseForge projectID and fileID, mount a folder like this `/path/to/data/folder:/data` and set MODPACKDIR=projectID,fileID. The then created modpack and serverpack will be available in `/path/to/data/folder`.   
+MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.   
 
 ### Using docker-compose:
 
@@ -131,20 +131,20 @@ services:
     container_name: serverpackcreator
     restart: "no"
     environment:
-      - TZ=Europe/Berlin # Timezone
-      - PUID=1000 # User ID
-      - PGID=1000 # Group ID
-      - MODPACKDIR=
-      - CLIENTMODS= # Comma-separated
-      - COPYDIRS= #Comma-separated
-      - MINECRAFTVERSION=
-      - MODLOADER=
-      - MODLOADERVERSION=
-      - INCLUDESERVERINSTALLATION=true
-      - INCLUDESERVERICON=true
-      - INCLUDESERVERPROPERTIES=true
-      - INCLUDESTARTSCRIPTS=true
-      - INCLUDEZIPCREATION=true
+      - TZ=Europe/Berlin # Your Timezone
+      - PUID=1000 # Your user ID
+      - PGID=1000 # Your group ID
+      - MODPACKDIR= # Either path to the modpack directory or CurseForge projectID,fileID combination.
+      - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
+      - COPYDIRS= # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
+      - MINECRAFTVERSION= # The Minecraft version the modpack uses.
+      - MODLOADER= # Either Forge or Fabric
+      - MODLOADERVERSION= # The version of the modlaoder the modpack uses.
+      - INCLUDESERVERINSTALLATION=true # Or false
+      - INCLUDESERVERICON=true # Or false
+      - INCLUDESERVERPROPERTIES=true # Or false
+      - INCLUDESTARTSCRIPTS=true # Or false
+      - INCLUDEZIPCREATION=true # Or false
     volumes:
       - /host/path/to/data:/data
 ```
@@ -154,9 +154,9 @@ services:
 ```bash
 docker create \
   --name=serverpackcreator \
-  -e TZ=Europe/Berlin # Timezone \
-  -e PUID=1000 # User ID \
-  -e PGID=1000 # Group ID \
+  -e TZ=Europe/Berlin \
+  -e PUID=1000 \
+  -e PGID=1000 \
   -e MODPACKDIR= \
   -e CLIENTMODS= \
   -e COPYDIRS= \
