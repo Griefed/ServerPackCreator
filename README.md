@@ -8,11 +8,17 @@
 [![Discord](https://img.shields.io/badge/Griefed.de-Discord-c0ffee?style=for-the-badge&labelColor=325358&logo=discord&logoColor=white)](https://discord.griefed.de)
 
 ---
+[![Docker Pulls](https://img.shields.io/docker/pulls/griefed/serverpackcreator?style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
+[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/griefed/serverpackcreator?label=Image%20size&sort=date&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
+[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/griefed/serverpackcreator?label=Docker%20build&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
+[![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/griefed/serverpackcreator?label=Docker%20build&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Java%20CI%20with%20Gradle?label=Gradle%20Build%20Test&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Java+CI+with+Gradle%22)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Tag%20&%20Release%20&%20Publish?style=for-the-badge&logo=GitHub&color=c0ffee&labelColor=325358&label=Snag%20It%20Bag%20It%20Tag%20It&)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Tag+%26+Release+%26+Publish%22)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed?tab=packages&repo_name=ServerPackCreator)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
+[![GitHub Repo stars](https://img.shields.io/github/stars/Griefed/serverpackcreator?label=GitHub%20Stars&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
+[![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub all releases](https://img.shields.io/github/downloads/Griefed/ServerPackCreator/total?color=c0ffee&logo=GitHub&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases)
 
 **ServerPackCreator is a Command Line Program(CLI) which aims to create a serverpack for any given modpack, thus making modpack-developing, or at least a part of it, a little less time-consuming. You customize the configuration to your liking and off you go.**
@@ -134,19 +140,20 @@ services:
       - TZ=Europe/Berlin # Your Timezone
       - PUID=1000 # Your user ID
       - PGID=1000 # Your group ID
-      - MODPACKDIR= # Either path to the modpack directory or CurseForge projectID,fileID combination.
-      - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
-      - COPYDIRS= # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
-      - MINECRAFTVERSION= # The Minecraft version the modpack uses.
-      - MODLOADER= # Either Forge or Fabric
-      - MODLOADERVERSION= # The version of the modlaoder the modpack uses.
+      - MODPACKDIR # Either path to the modpack directory or CurseForge projectID,fileID combination.
+      - MODLOADERVERSION # The version of the modlaoder the modpack uses.
+      - MODLOADER # Either Forge or Fabric
+      - MINECRAFTVERSION # The Minecraft version the modpack uses.
+      - INCLUDEZIPCREATION=true # Or false
+      - INCLUDESTARTSCRIPTS=true # Or false
+      - INCLUDESERVERPROPERTIES=true # Or false
       - INCLUDESERVERINSTALLATION=true # Or false
       - INCLUDESERVERICON=true # Or false
-      - INCLUDESERVERPROPERTIES=true # Or false
-      - INCLUDESTARTSCRIPTS=true # Or false
-      - INCLUDEZIPCREATION=true # Or false
+      - COPYDIRS # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
+      - CLIENTMODS # Comma-separated. Client-side mods to delete from server pack.
     volumes:
-      - /host/path/to/data:/data
+      - /host/path/todata:data # Created modpacks and server packs will be here
+
 ```
 
 ### Using CLI:
@@ -154,21 +161,21 @@ services:
 ```bash
 docker create \
   --name=serverpackcreator \
-  -e TZ=Europe/Berlin \
-  -e PUID=1000 \
-  -e PGID=1000 \
-  -e MODPACKDIR= \
-  -e CLIENTMODS= \
-  -e COPYDIRS= \
-  -e MINECRAFTVERSION= \
-  -e MODLOADER= \
-  -e MODLOADERVERSION= \
-  -e INCLUDESERVERINSTALLATION=true \
-  -e INCLUDESERVERICON=true \
-  -e INCLUDESERVERPROPERTIES=true \
-  -e INCLUDESTARTSCRIPTS=true \
-  -e INCLUDEZIPCREATION=true \
-  -v /host/path/to/data:/data \
+  -e TZ=Europe/Berlin `# Your Timezone` \
+  -e PUID=1000 `# Your user ID` \
+  -e PGID=1000 `# Your group ID` \
+  -e MODPACKDIR `# Either path to the modpack directory or CurseForge projectID,fileID combination.` \
+  -e MODLOADERVERSION `# The version of the modlaoder the modpack uses.` \
+  -e MODLOADER `# Either Forge or Fabric` \
+  -e MINECRAFTVERSION `# The Minecraft version the modpack uses.` \
+  -e INCLUDEZIPCREATION=true `# Or false` \
+  -e INCLUDESTARTSCRIPTS=true `# Or false` \
+  -e INCLUDESERVERPROPERTIES=true `# Or false` \
+  -e INCLUDESERVERINSTALLATION=true `# Or false` \
+  -e INCLUDESERVERICON=true `# Or false` \
+  -e COPYDIRS `# Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.` \
+  -e CLIENTMODS `# Comma-separated. Client-side mods to delete from server pack.` \
+  -v /host/path/todata:data `# Created modpacks and server packs will be here` \
   --restart "no" \
   griefed/serverpackcreator:latest
 ```
