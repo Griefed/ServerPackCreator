@@ -10,7 +10,6 @@
 ---
 [![Docker Pulls](https://img.shields.io/docker/pulls/griefed/serverpackcreator?style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
 [![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/griefed/serverpackcreator?label=Image%20size&sort=date&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
-[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/griefed/serverpackcreator?label=Docker%20build&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
 [![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/griefed/serverpackcreator?label=Docker%20build&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Java%20CI%20with%20Gradle?label=Gradle%20Build%20Test&logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions?query=workflow%3A%22Java+CI+with+Gradle%22)
