@@ -4,5 +4,5 @@ cd /data
 
 exec \
   s6-setuidgid abc \
-    java -jar \
+    /usr/bin/java -jar \
       /app/serverpackcreator/serverpackcreator.jar

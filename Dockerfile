@@ -1,8 +1,10 @@
-FROM openjdk:8-jdk-alpine3.9 AS builder
+FROM lsiobase/ubuntu:bionic AS builder
 
 RUN \
-  apk add --no-cache \
-    git && \
+  apt-get update && \
+  apt-get install -y \
+    git \
+    openjdk-8-jdk && \
   git clone \
     https://github.com/Griefed/ServerPackCreator.git \
       /tmp/serverpackcreator && \
