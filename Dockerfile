@@ -3,7 +3,7 @@ FROM openjdk:8-jdk-alpine3.9 AS builder
 RUN \
   apk add --no-cache \
     git && \
-  git clone -b develop \
+  git clone \
     https://github.com/Griefed/ServerPackCreator.git \
       /tmp/serverpackcreator && \
   chmod +x /tmp/serverpackcreator/gradlew* && \
