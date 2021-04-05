@@ -194,10 +194,8 @@ class ServerUtilities {
         } catch (IOException e) {
             appLogger.error("An error occurred downloading Forge: ", e);
             if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists()) {
-                try {
-                    Files.delete(Paths.get(String.format("%s/server_pack/forge-installer.jar", modpackDir)));
-                } catch (IOException ex) {
-                    appLogger.error("Couldn't delete corrupted Forge installer.", ex);
+                if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete()) {
+                 appLogger.debug("Deleted incomplete Forge-installer...");
                 }
             }
         }
