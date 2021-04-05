@@ -224,7 +224,7 @@ class ConfigCheck {
             appLogger.warn("WARNING: This functionality is experimental and prone to errors. If you encounter any errors, please open an issue on https://github.com/Griefed/ServerPackCreator/issues");
             configCorrect = true;
         } else {
-            appLogger.error("Error: You did not specify a CurseForge projectID,fileID combination.");
+            appLogger.error("INFO: You did not specify a CurseForge projectID,fileID combination or you specified an incorrect one.");
         }
         return configCorrect;
     }
