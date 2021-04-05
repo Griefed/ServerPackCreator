@@ -5,6 +5,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
 
+//noinspection GroovyUnusedAssignment
 sourceCompatibility = targetCompatibility = '1.8'
 
 if(JavaVersion.current() != JavaVersion.VERSION_1_8)
@@ -20,8 +21,8 @@ repositories {
 }
 
 group 'de.griefed'
-
 sourceSets {
+    //noinspection GroovyAssignabilityCheck
     main {
         java {
             java.srcDirs = ['src/main/java']
@@ -41,10 +42,17 @@ dependencies {
     embed group: 'com.github.FabricMC', name:'fabric-installer', version:'master-SNAPSHOT'
     embed group: 'com.github.TheRandomLabs', name:'CurseAPI', version:'master-SNAPSHOT'
     embed group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.2'
-    /*
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    */
+    testImplementation 'org.mockito:mockito-core:2.1.0'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 tasks.withType(Javadoc) {
@@ -59,12 +67,6 @@ java {
     withSourcesJar()
     withJavadocJar()
 }
-
-/*
-test {
-    useJUnitPlatform()
-}
-*/
 
 jar {
     configurations.embed.each { dep ->
