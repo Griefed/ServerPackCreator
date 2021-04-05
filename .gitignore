@@ -125,12 +125,23 @@ out
 /tests
 /build
 /.gradle
-
-# other
 gradlew
 gradlew.bat
+
+# other
 eclipse
-/ServerPack*
-/build/generated/
-/build/libs/
-/libs
+
+# Tests
+src/test/resources/tests/server_pack/download*
+src/test/resources/tests/server_pack/forge.jar
+src/test/resources/tests/server_pack/fabric-installer.xml
+src/test/resources/tests/server_pack/libraries
+src/test/resources/tests/server_pack/1.16.5.json
+src/test/resources/tests/server_pack/fabric-server-launch.jar
+src/test/resources/tests/server_pack/minecraft_server.1.16.5.jar
+src/test/resources/tests/server_pack/server.jar
+src/test/resources/tests/server_pack/server.jar.tmp
+src/test/resources/tests/server_pack/fabric-installer.jar
+src/test/resources/tests/server_pack/forge-installer.jar
+serverpackcreator.conf
+server_files
