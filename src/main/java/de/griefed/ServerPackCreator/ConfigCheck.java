@@ -228,17 +228,6 @@ class ConfigCheck {
         }
         return configCorrect;
     }
-    /** Splits a string into an array with the separator being ",". Used to get the CurseForge projectID and fileID as separate string so they can later be parsed into integers and used with the CurseForgeAPI make downloads and gather information.
-     * @param modpackDir String. The string which to split with the "," separator.
-     * @return Array, String. Returns the array consisting of the projectID at 0 and the fileID at 1.
-     */
-    @SuppressWarnings("unused")
-    private static String[] splitString(String modpackDir) {
-        String[] projectFileIds;
-        projectFileIds = modpackDir.split(",");
-        appLogger.info(String.format("You entered: ProjectID %s | FileID %s.", projectFileIds[0], projectFileIds[1]));
-        return projectFileIds;
-    }
     /** Converts various strings to booleans.
      * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
      * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
@@ -583,5 +572,16 @@ class ConfigCheck {
         } finally {
             return result;
         }
+    }
+    /** Splits a string into an array with the separator being ",". Used to get the CurseForge projectID and fileID as separate string so they can later be parsed into integers and used with the CurseForgeAPI make downloads and gather information.
+     * @param modpackDir String. The string which to split with the "," separator.
+     * @return Array, String. Returns the array consisting of the projectID at 0 and the fileID at 1.
+     */
+    @SuppressWarnings("unused")
+    private static String[] splitString(String modpackDir) {
+        String[] projectFileIds;
+        projectFileIds = modpackDir.split(",");
+        appLogger.info(String.format("You entered: ProjectID %s | FileID %s.", projectFileIds[0], projectFileIds[1]));
+        return projectFileIds;
     }
 }
