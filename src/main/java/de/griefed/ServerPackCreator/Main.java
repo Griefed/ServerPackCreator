@@ -14,9 +14,9 @@ public class Main {
      */
     public static void main(String[] args) {
         appLogger.warn("################################################################");
-        appLogger.warn("#         WORK IN PROGRESS! CONSIDER THIS ALPHA-STATE!         #");
+        appLogger.warn("#                      WORK IN PROGRESS!                       #");
         appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
-        appLogger.warn("#         I CAN NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
+        appLogger.warn("#        I WILL NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
         appLogger.warn("#                    YOU HAVE BEEN WARNED!                     #");
         appLogger.warn("################################################################");
         try {
@@ -30,7 +30,14 @@ public class Main {
         if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!Reference.oldConfigFile.exists() && !Reference.configFile.exists())){
             CLISetup.setup();
         }
-        FilesSetup.filesSetup();
+        if (!FilesSetup.filesSetup()) {
+            appLogger.warn("################################################################");
+            appLogger.warn("#             ONE OR MORE DEFAULT FILE(S) GENERATED.           #");
+            appLogger.warn("# CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED. #");
+            appLogger.warn("#         CUSTOMIZE, THEN RUN SERVERPACKCREATOR AGAIN!         #");
+            appLogger.warn("################################################################");
+            System.exit(0);
+        }
         if (!ConfigCheck.checkConfig()) {
             CopyFiles.cleanupEnvironment(Reference.modpackDir);
             try {
