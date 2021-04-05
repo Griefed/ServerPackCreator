@@ -9,8 +9,9 @@ import java.nio.file.Paths;
 class FilesSetup {
     private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
     /** Calls individual methods which check for existence of default files. If any of these methods return true, ServerPackCreator will exit, giving the user the chance to customize it before the program runs in production.
+     * @return Boolean. Returns true if no default file has been generated. False if any default file was generated.
      */
-    static void filesSetup() {
+    static boolean filesSetup() {
         appLogger.info("Checking for default files...");
         try {
             Files.createDirectories(Paths.get("./server_files"));
@@ -25,14 +26,10 @@ class FilesSetup {
         boolean doesPropertiesExist = checkForProperties();
         boolean doesIconExist = checkForIcon();
         if (doesConfigExist || doesFabricLinuxExist || doesFabricWindowsExist || doesForgeLinuxExist || doesForgeWindowsExist || doesPropertiesExist || doesIconExist) {
-                appLogger.warn("################################################################");
-                appLogger.warn("#             ONE OR MORE DEFAULT FILE(S) GENERATED.           #");
-                appLogger.warn("# CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED. #");
-                appLogger.warn("#         CUSTOMIZE, THEN RUN SERVERPACKCREATOR AGAIN!         #");
-                appLogger.warn("################################################################");
-                System.exit(0);
+            return false;
         } else {
             appLogger.info("Setup completed.");
+            return true;
         }
     }
     /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new config file is generated.
