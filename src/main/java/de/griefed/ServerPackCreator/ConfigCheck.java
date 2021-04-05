@@ -63,7 +63,6 @@ class ConfigCheck {
         }
         return configHasError;
     }
-
     /** Checks whether the specified modpack exists. If it does, the config file is checked for errors. Should any error be found, it will return true so the configCheck method informs the user about an invalid configuration.
      * @param modpackDir String. Should an existing modpack be specified, all configurations are read from local file and the server pack is created, if config is correct.
      * @return Boolean. Returns true if an error is found during configuration check. False if the configuration is deemed valid.
@@ -115,13 +114,11 @@ class ConfigCheck {
                 try {
                     projectName = CurseAPI.project(Reference.projectID).get().name();
                     try {
-                        //noinspection ConstantConditions
-                        displayName = CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID).displayName();
+                        displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).displayName();
                     } catch (NullPointerException npe) {
                         appLogger.info("INFO: Display name not found. Setting display name as file name on disk.");
                         try {
-                            //noinspection ConstantConditions
-                            displayName = CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID).nameOnDisk();
+                            displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).nameOnDisk();
                         } catch (NullPointerException npe2) {
                             displayName = String.format("%d", Reference.projectFileID);
                         }
@@ -163,7 +160,6 @@ class ConfigCheck {
                     appLogger.info("Your old config file will now be replaced by a new one, with values gathered from the downloaded modpack.");
                     FilesSetup.writeConfigToFile(Reference.modpackDir, CLISetup.buildString(Reference.clientMods.toString()), CLISetup.buildString(Reference.copyDirs.toString()), Reference.includeServerInstallation, Reference.javaPath, Reference.minecraftVersion, Reference.modLoader, Reference.modLoaderVersion, Reference.includeServerIcon, Reference.includeServerProperties, Reference.includeStartScripts, Reference.includeZipCreation);
                 }
-                // configHasError = true;
             }
         } catch (CurseException cex) {
             appLogger.error(String.format("Error: Project with ID %s could not be found", Reference.projectID), cex);
@@ -216,7 +212,7 @@ class ConfigCheck {
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
-    private static boolean checkCurseForge(String modpackDir) {
+    static boolean checkCurseForge(String modpackDir) {
         String[] projectFileIds;
         boolean configCorrect = false;
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
@@ -291,8 +287,6 @@ class ConfigCheck {
             }
         } else {
             appLogger.error("Error: List of directories to copy is empty.");
-            //noinspection ConstantConditions
-            copyDirectories.add("empty");
         }
         appLogger.info(String.format("Include server installation:      %s", installServer));
         appLogger.info(String.format("Java Installation path:           %s", javaInstallPath));
@@ -443,7 +437,7 @@ class ConfigCheck {
                     }
                     downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
                 }
-                //noinspection unused
+
                 FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
                 downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
                 downloadManifestOutputStream.flush();
@@ -490,7 +484,6 @@ class ConfigCheck {
                 }
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
             }
-            //noinspection unused
             FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
@@ -541,7 +534,6 @@ class ConfigCheck {
                 }
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
             }
-            //noinspection unused
             FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
@@ -587,7 +579,7 @@ class ConfigCheck {
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
             appLogger.info("Successfully retrieved Fabric-Loader XML.");
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-            appLogger.error("Could not retrieve XML file. Defaulting to Laoder version 0.11.3.", ex);
+            appLogger.error("Could not retrieve XML file. Defaulting to Loader version 0.11.3.", ex);
         } finally {
             return result;
         }
