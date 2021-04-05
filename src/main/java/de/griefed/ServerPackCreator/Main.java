@@ -30,12 +30,6 @@ public class Main {
         if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!Reference.oldConfigFile.exists() && !Reference.configFile.exists())){
             CLISetup.setup();
         }
-        /*
-        if (Arrays.asList(args).contains(Reference.DOCKER_ENV_ARGUMENT)) {
-            appLogger.info(String.format("You started ServerPackCreator with the \"%s\" argument. Adding prefix \"/data/\" to modpackDir...", Reference.DOCKER_ENV_ARGUMENT));
-            Reference.dockerEnv = true;
-        } else { Reference.dockerEnv = false; }
-        */
         FilesSetup.filesSetup();
         if (!ConfigCheck.checkConfig()) {
             CopyFiles.cleanupEnvironment(Reference.modpackDir);
