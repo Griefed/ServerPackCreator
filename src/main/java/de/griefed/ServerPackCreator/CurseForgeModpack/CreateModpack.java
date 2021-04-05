@@ -99,7 +99,6 @@ public class CreateModpack {
             appLogger.error("Error: There was a fault during json parsing.", ex);
         }
         copyOverride(modpackDir);
-        //deleteDirs(modpackDir);
         if (new File(String.format("%s/overrides", modpackDir)).isDirectory()) {
             try {
                 Path pathToBeDeleted = Paths.get(String.format("%s/overrides", modpackDir));
@@ -137,8 +136,8 @@ public class CreateModpack {
                 try {
                     //noinspection OptionalGetWithoutIsPresent
                     modName = CurseAPI.project(modID).get().name();
-                    //noinspection OptionalGetWithoutIsPresent,ConstantConditions
-                    modFileName = CurseAPI.project(modID).get().files().fileWithID(fileID).nameOnDisk();
+                    //noinspection OptionalGetWithoutIsPresent
+                    modFileName = Objects.requireNonNull(CurseAPI.project(modID).get().files().fileWithID(fileID)).nameOnDisk();
                 } catch (CurseException cex) {
                     appLogger.error("Error: Couldn't retrieve CurseForge project name and file name.", cex);
                 }
