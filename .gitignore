@@ -143,5 +143,6 @@ src/test/resources/tests/server_pack/server.jar
 src/test/resources/tests/server_pack/server.jar.tmp
 src/test/resources/tests/server_pack/fabric-installer.jar
 src/test/resources/tests/server_pack/forge-installer.jar
+/src/test/resources/forge_tests/Vanilla Forge
 serverpackcreator.conf
 server_files

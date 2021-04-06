@@ -6,15 +6,15 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 class ServerSetup {
-    private static final Logger appLogger = LogManager.getLogger("ApplicationLogger");
+    private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
     private static final Logger installerLogger = LogManager.getLogger("InstallerLogger");
-
     /** Deletes client-side-only mods in server_pack, if specified.
      * @param modpackDir String. /server_pack/mods The directory where the files will be deleted.
      * @param clientMods String List. Client mods to delete.
@@ -22,17 +22,32 @@ class ServerSetup {
     static void deleteClientMods(String modpackDir, List<String> clientMods) {
         appLogger.info("Deleting client-side mods from serverpack:");
         File serverMods = new File(String.format("%s/server_pack/mods", modpackDir));
-        for (File f : Objects.requireNonNull(serverMods.listFiles())) {
-            for (int i = 0; i < clientMods.toArray().length; i++) {
-                if (f.getName().startsWith(clientMods.get(i))) {
-                    boolean isDeleted = f.delete();
-                    if (isDeleted) {
-                        appLogger.info(String.format("    %s", f.getName()));
-                    } else {
-                        appLogger.error(String.format("Could not delete: %s", f.getName()));
+        Set<String> fileList = new HashSet<>();
+        try {
+            Files.walkFileTree(Paths.get(String.format("%s/server_pack/mods", modpackDir)), new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    if (!Files.isDirectory(file)) {
+                        fileList.add(file.getFileName().toString());
+                        for (int i = 0; i < clientMods.toArray().length; i++) {
+                            if (file.getFileName().toString().contains(clientMods.get(i))) {
+                                boolean isDeleted = file.toFile().delete();
+                                if (isDeleted) {
+                                    appLogger.info(String.format("    %s", file.getFileName().toString()));
+                                } else {
+                                    appLogger.error(String.format("Could not delete: %s", file.getFileName().toString()));
+                                }
+                            }
+                        }
                     }
+                    return FileVisitResult.CONTINUE;
                 }
-            }
+            });
+        } catch (IOException ex) {
+            appLogger.error("Error: There was an error during deletion of clientside mods.", ex);
+        }
+        for (int i = 0; i < fileList.toArray().length; i++) {
+            appLogger.debug(String.format("DEBUG: Remaining: %s", fileList.toArray()[i]));
         }
     }
     /** Installs the files for a Forge/Fabric server.
@@ -61,7 +76,7 @@ class ServerSetup {
                         installerLogger.info(line);
                     }
                     appLogger.info("For details regarding the installation of this modloader server, see modloader_installer.log");
-                    appLogger.info("Fabric installation complete. Returning to SPC.");
+                    appLogger.info("Returning to ServerPackCreator.");
                 } else {
                     appLogger.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
                 }
@@ -84,7 +99,7 @@ class ServerSetup {
                         installerLogger.info(line);
                     }
                     appLogger.info("For details regarding the installation of this modloader server, see modloader_installer.log");
-                    appLogger.info("Forge installation complete. Returning to SPC.");
+                    appLogger.info("Returning to ServerPackCreator.");
                 } else {
                     appLogger.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
                 }
