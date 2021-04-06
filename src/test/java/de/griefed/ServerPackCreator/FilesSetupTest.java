@@ -51,7 +51,18 @@ class FilesSetupTest {
         String modpackDir = "./src/test/resources/fabric_tests";
         List<String> clientMods = Arrays.asList("AmbientSounds","BackTools","BetterAdvancement","BetterPing","cherished","ClientTweaks","Controlling","DefaultOptions","durability","DynamicSurroundings","itemzoom","jei-professions","jeiintegration","JustEnoughResources","MouseTweaks","Neat","OldJavaWarning","PackMenu","preciseblockplacing","SimpleDiscordRichPresence","SpawnerFix","TipTheScales","WorldNameRandomizer");
         List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
-        String javaPath = "/use/bin/java";
+        String javaPath;
+        String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
+        if (autoJavaPath.startsWith("C:")) {
+            autoJavaPath = String.format("%s.exe", autoJavaPath);
+        }
+        if (new File("/usr/bin/java").exists()) {
+            javaPath = "/usr/bin/java";
+        } else if (new File("/opt/hostedtoolcache/jdk/8.0.282/x64/bin/java").exists()) {
+            javaPath = "/opt/hostedtoolcache/jdk/8.0.282/x64/bin/java";
+        } else {
+            javaPath = autoJavaPath;
+        }
         String minecraftVersion = "1.16.5";
         String modLoader = "Fabric";
         String modLoaderVersion = "0.11.3";
