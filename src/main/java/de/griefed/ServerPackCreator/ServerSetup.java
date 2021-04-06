@@ -20,14 +20,14 @@ class ServerSetup {
      * @param clientMods String List. Client mods to delete.
      */
     static void deleteClientMods(String modpackDir, List<String> clientMods) {
-        appLogger.info("Deleting client-side mods from serverpack: ");
+        appLogger.info("Deleting client-side mods from serverpack:");
         File serverMods = new File(String.format("%s/server_pack/mods", modpackDir));
         for (File f : Objects.requireNonNull(serverMods.listFiles())) {
             for (int i = 0; i < clientMods.toArray().length; i++) {
                 if (f.getName().startsWith(clientMods.get(i))) {
                     boolean isDeleted = f.delete();
                     if (isDeleted) {
-                        appLogger.debug(String.format("    %s", f.getName()));
+                        appLogger.info(String.format("    %s", f.getName()));
                     } else {
                         appLogger.error(String.format("Could not delete: %s", f.getName()));
                     }
