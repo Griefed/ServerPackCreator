@@ -38,27 +38,27 @@ class CopyFilesTest {
         CopyFiles.cleanupEnvironment(modpackDir);
     }
 
-    /*
-    TODO: Figure out how to run this test on GitHub infrastructure.
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyStartScriptsFabric() throws IOException {
-        String modpackDir = "./src/test/resources/fabric_tests";
-        String modLoader = "Fabric";
-        FilesSetup.filesSetup();
-        CopyFiles.copyStartScripts(modpackDir, modLoader, true);
-        Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.bat",modpackDir)).exists());
-        Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.sh",modpackDir)).exists());
-        new File(String.format("%s/server_pack/start-fabric.bat",modpackDir)).delete();
-        new File(String.format("%s/server_pack/start-fabric.sh",modpackDir)).delete();
-        String delete = "./server_files";
-        if (new File(delete).isDirectory()) {
-            Path pathToBeDeleted = Paths.get(delete);
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+        if (!new File("/home/runner").isDirectory()) {
+            String modpackDir = "./src/test/resources/fabric_tests";
+            String modLoader = "Fabric";
+            FilesSetup.filesSetup();
+            CopyFiles.copyStartScripts(modpackDir, modLoader, true);
+            Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).exists());
+            Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.sh", modpackDir)).exists());
+            new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).delete();
+            new File(String.format("%s/server_pack/start-fabric.sh", modpackDir)).delete();
+            String delete = "./server_files";
+            if (new File(delete).isDirectory()) {
+                Path pathToBeDeleted = Paths.get(delete);
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            }
+            new File("./serverpackcreator.conf").delete();
         }
-        new File("./serverpackcreator.conf").delete();
     }
-    */
+
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test

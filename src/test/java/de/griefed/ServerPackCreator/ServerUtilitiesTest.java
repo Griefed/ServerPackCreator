@@ -24,21 +24,22 @@ class ServerUtilitiesTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    /*
-    TODO: Figure out how to run this test on GitHub infrastructure.
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsFabric() {
-        String modLoader = "Fabric";
-        String modpackDir = "./src/test/resources/fabric_tests";
-        String minecraftVersion = "1.16.5";
-        ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir)).exists());
-        Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).exists());
-        new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir)).delete();
-        new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).delete();
+        if (!new File("/home/runner").isDirectory()) {
+            String modLoader = "Fabric";
+            String modpackDir = "./src/test/resources/fabric_tests";
+            String minecraftVersion = "1.16.5";
+            ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
+            Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir)).exists());
+            Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).exists());
+            new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir)).delete();
+            new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).delete();
+        }
     }
-     */
+
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
@@ -53,19 +54,18 @@ class ServerUtilitiesTest {
         new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).delete();
     }
 
-    /*
-    TODO: Figure out how to run this test on GitHub infrastructure.
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadFabricJar() {
-        String modpackDir = "./src/test/resources/fabric_tests";
-        boolean result = ServerUtilities.downloadFabricJar(modpackDir);
-        Assertions.assertTrue(result);
-        Assertions.assertTrue(new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists());
-        new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).delete();
-        new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir)).delete();
+        if (!new File("/home/runner").isDirectory()) {
+            String modpackDir = "./src/test/resources/fabric_tests";
+            boolean result = ServerUtilities.downloadFabricJar(modpackDir);
+            Assertions.assertTrue(result);
+            Assertions.assertTrue(new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists());
+            new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).delete();
+            new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir)).delete();
+        }
     }
-     */
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
