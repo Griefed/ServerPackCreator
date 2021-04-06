@@ -48,11 +48,16 @@ class ServerSetupTest {
         String modpackDir = "./src/test/resources/fabric_tests";
         String minecraftVersion = "1.16.5";
         String modLoaderVersion = "0.7.3";
+        String javaPath;
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
         if (autoJavaPath.startsWith("C:")) {
             autoJavaPath = String.format("%s.exe", autoJavaPath);
         }
-        String javaPath = autoJavaPath;
+        if (new File("/usr/bin/java").exists()) {
+            javaPath = "/usr/bin/java";
+        } else {
+            javaPath = autoJavaPath;
+        }
         ServerUtilities.downloadFabricJar(modpackDir);
         ServerSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
         Assertions.assertTrue(new File(String.format("%s/server_pack/fabric-server-launch.jar",modpackDir)).exists());
@@ -67,11 +72,16 @@ class ServerSetupTest {
         String modpackDir = "./src/test/resources/forge_tests";
         String minecraftVersion = "1.16.5";
         String modLoaderVersion = "36.1.2";
+        String javaPath;
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
         if (autoJavaPath.startsWith("C:")) {
             autoJavaPath = String.format("%s.exe", autoJavaPath);
         }
-        String javaPath = autoJavaPath;
+        if (new File("/usr/bin/java").exists()) {
+            javaPath = "/usr/bin/java";
+        } else {
+            javaPath = autoJavaPath;
+        }
         ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
         ServerSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
         Assertions.assertTrue(new File(String.format("%s/server_pack/1.16.5.json",modpackDir)).exists());
