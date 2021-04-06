@@ -10,6 +10,7 @@ RUN \
       /tmp/serverpackcreator && \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
+  rm -Rf /tmp/serverpackcreator/src/test && \
   ./gradlew build && \
   ls -ahl ./build/libs/
 
