@@ -21,7 +21,6 @@ class CLISetupTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
     }
-
     @Test
     void testBuildString() {
         List<String> args = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
@@ -29,5 +28,3 @@ class CLISetupTest {
         Assertions.assertEquals(args.toString(), String.format("[%s]",result));
     }
 }
-
-//Generated with love by TestMe :) Please report issues and submit feature requests at: http://weirddev.com/forum#!/testme

@@ -38,21 +38,18 @@ class ConfigCheckTest {
         Assertions.assertFalse(result);
         new File("./serverpackcreator.conf").delete();
     }
-
     @Test
     void testCheckCurseForgeCorrect() {
         String modpackDir = "238298,3174854";
         boolean result = ConfigCheck.checkCurseForge(modpackDir);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckCurseForgeFalse() {
         String modpackDir = "1,1234";
         boolean result = ConfigCheck.checkCurseForge(modpackDir);
         Assertions.assertFalse(result);
     }
-
     @SuppressWarnings("ConstantConditions")
     @Test
     void testPrintConfig() {
@@ -70,20 +67,17 @@ class ConfigCheckTest {
         boolean includeZipCreation = true;
         ConfigCheck.printConfig(modpackDir, clientMods, copyDirs, includeServerInstallation, javaPath, minecraftVersion, modLoader, modLoaderVersion, includeServerIcon, includeServerProperties, includeStartScripts, includeZipCreation);
     }
-
     @Test
     void testCheckModpackDirCorrect() {
         String modpackDir = "./src/test/resources/forge_tests";
         boolean result = ConfigCheck.checkModpackDir(modpackDir);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckModpackDirFalse() {
         boolean result = ConfigCheck.checkModpackDir("modpackDir");
         Assertions.assertFalse(result);
     }
-
     @Test
     void testCheckCopyDirsCorrect() {
         String modpackDir = "./src/test/resources/forge_tests";
@@ -91,7 +85,6 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckCopyDirsFalse() {
         String modpackDir = "./src/test/resources/forge_tests";
@@ -99,7 +92,6 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertFalse(result);
     }
-
     @Test
     void testGetJavaPath() {
         String result = ConfigCheck.getJavaPath("");
@@ -109,7 +101,6 @@ class ConfigCheckTest {
         }
         Assertions.assertEquals(autoJavaPath, result);
     }
-
     @Test
     void testCheckJavaPathCorrect() {
         String javaPath;
@@ -127,39 +118,33 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.checkJavaPath(javaPath);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckModloaderFabric() {
         String modLoader = "Fabric";
         boolean result = ConfigCheck.checkModloader(modLoader);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckModloaderForge() {
         String modLoader = "Forge";
         boolean result = ConfigCheck.checkModloader(modLoader);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckModloaderFalse() {
         boolean result = ConfigCheck.checkModloader("modloader");
         Assertions.assertFalse(result);
     }
-
     @Test
     void testSetModloaderFabric() {
         String result = ConfigCheck.setModloader("fAbRiC");
         Assertions.assertEquals("Fabric", result);
     }
-
     @Test
     void testSetModloaderForge() {
         String result = ConfigCheck.setModloader("fOrGe");
         Assertions.assertEquals("Forge", result);
     }
-
     @Test
     void testCheckModloaderVersionFabric() {
         String modLoader = "Fabric";
@@ -168,7 +153,6 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckModloaderVersionFabricIncorrect() {
         String modLoader = "Fabric";
@@ -177,7 +161,6 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertFalse(result);
     }
-
     @Test
     void testCheckModloaderVersionForge() {
         String modLoader = "Forge";
@@ -186,7 +169,6 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testCheckModloaderVersionForgeIncorrect() {
         String modLoader = "Forge";
@@ -195,35 +177,30 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertFalse(result);
     }
-
     @Test
     void testIsMinecraftVersionCorrect() {
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.isMinecraftVersionCorrect(minecraftVersion);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testIsMinecraftVersionFalse() {
         String minecraftVersion = "1.99.5";
         boolean result = ConfigCheck.isMinecraftVersionCorrect(minecraftVersion);
         Assertions.assertFalse(result);
     }
-
     @Test
     void testIsFabricVersionCorrect() {
         String fabricVersion = "0.11.3";
         boolean result = ConfigCheck.isFabricVersionCorrect(fabricVersion);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testIsFabricVersionFalse() {
         String fabricVersion = "0.90.3";
         boolean result = ConfigCheck.isFabricVersionCorrect(fabricVersion);
         Assertions.assertFalse(result);
     }
-
     @Test
     void testIsForgeVersionCorrect() {
         String forgeVersion = "36.1.2";
@@ -231,7 +208,6 @@ class ConfigCheckTest {
         boolean result = ConfigCheck.isForgeVersionCorrect(forgeVersion, minecraftVersion);
         Assertions.assertTrue(result);
     }
-
     @Test
     void testIsForgeVersionFalse() {
         String forgeVersion = "99.0.0";
@@ -240,5 +216,3 @@ class ConfigCheckTest {
         Assertions.assertFalse(result);
     }
 }
-
-//Generated with love by TestMe :) Please report issues and submit feature requests at: http://weirddev.com/forum#!/testme

@@ -41,7 +41,6 @@ class ServerSetupTest {
         }
         ServerSetup.deleteClientMods(modpackDir, clientMods);
     }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testInstallServerFabric() {
@@ -70,7 +69,6 @@ class ServerSetupTest {
             new File(String.format("%s/server_pack/server.jar", modpackDir)).delete();
         }
     }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testInstallServerForge() throws IOException {
@@ -112,7 +110,6 @@ class ServerSetupTest {
             }
         }
     }
-
     @Test
     void testZipBuilderFabric() {
         if (!new File("/home/runner").isDirectory()) {
@@ -121,7 +118,6 @@ class ServerSetupTest {
             ServerSetup.zipBuilder(modpackDir, modLoader, Boolean.TRUE);
         }
     }
-
     @Test
     void testZipBuilderForge() {
         if (!new File("/home/runner").isDirectory()) {

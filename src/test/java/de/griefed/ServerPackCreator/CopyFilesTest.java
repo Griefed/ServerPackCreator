@@ -37,7 +37,6 @@ class CopyFilesTest {
         Files.createDirectories(Paths.get(String.format("%s/server_pack",modpackDir)));
         CopyFiles.cleanupEnvironment(modpackDir);
     }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyStartScriptsFabric() throws IOException {
@@ -58,8 +57,6 @@ class CopyFilesTest {
             new File("./serverpackcreator.conf").delete();
         }
     }
-
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyStartScriptsForge() throws IOException {
@@ -78,7 +75,6 @@ class CopyFilesTest {
         }
         new File("./serverpackcreator.conf").delete();
     }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyFiles() throws IOException {
@@ -103,8 +99,6 @@ class CopyFilesTest {
             }
         }
     }
-
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyIcon() throws IOException {
@@ -120,7 +114,6 @@ class CopyFilesTest {
         }
         new File("./serverpackcreator.conf").delete();
     }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyProperties() throws IOException {

@@ -23,8 +23,6 @@ class ServerUtilitiesTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
     }
-
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsFabric() {
@@ -39,8 +37,6 @@ class ServerUtilitiesTest {
             new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).delete();
         }
     }
-
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsForge() {
@@ -53,7 +49,6 @@ class ServerUtilitiesTest {
         new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).delete();
         new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).delete();
     }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadFabricJar() {
@@ -66,7 +61,6 @@ class ServerUtilitiesTest {
             new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir)).delete();
         }
     }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadForgeJar() {
@@ -77,7 +71,6 @@ class ServerUtilitiesTest {
         Assertions.assertTrue(result);
         Assertions.assertTrue(new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists());
         new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
-
     }
     @Test
     void testDeleteMinecraftJarFabric() throws IOException {
