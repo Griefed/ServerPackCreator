@@ -146,11 +146,12 @@ class CopyFiles {
             }
         }
     }
-    /** TODO: Write docs
-     * @param modsDir
-     * @param clientMods
-     * @return
+    /** Generate a list of all mods in a modpack EXCEPT clientside-only mods. This list is then used by copyFiles.
+     * @param modsDir String. /mods The directory in which to generate a list of all available mods.
+     * @param clientMods List String. A list of all clientside-only mods passed by copyFiles, which is then removed from the list generated in this method.
+     * @return List String. A list of all mods inside the modpack excluding the specified clientside-only mods.
      */
+    @SuppressWarnings("UnusedAssignment")
     private static List<String> excludeClientMods(String modsDir, List<String> clientMods) {
         appLogger.info("Preparing a list of mods to include in server pack...");
         String[] copyMods = new String[0];
