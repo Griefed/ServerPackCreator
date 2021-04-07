@@ -76,7 +76,7 @@ class CopyFilesTest {
         }
         new File("./serverpackcreator.conf").delete();
     }
-/*
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyFiles() throws IOException {
@@ -127,7 +127,7 @@ class CopyFilesTest {
             }
         }
     }
-*/
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyIcon() throws IOException {

@@ -115,20 +115,16 @@ class CopyFiles {
                 }
             } else if (copyDirs.get(i).startsWith("mods") && clientMods.toArray().length > 0) {
                 List<String> listOfFiles = excludeClientMods(clientDir, clientMods);
+                Files.createDirectories(Paths.get(serverDir));
                 for (int in = 0; in < listOfFiles.toArray().length; in++) {
-                    //appLogger.info((new File(listOfFiles.get(in)).getName()));
-                    //String serverMod = new File(listOfFiles.get(in)).getName();
                     try {
-                        //Files.copy(Paths.get(listOfFiles.get(in)), Paths.get(String.format("%s/%s",serverDir, new File(listOfFiles.get(in)).getName())), REPLACE_EXISTING);
                         Files.copy(Paths.get(listOfFiles.get(in)), Paths.get(serverDir, new File(listOfFiles.get(in)).getName()), REPLACE_EXISTING);
-                        //appLogger.debug(String.format("Copying: %s", listOfFiles.get(in)));
+                        appLogger.debug(String.format("Copying: %s", listOfFiles.get(in)));
                     } catch (IOException ex) {
                         if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
                             appLogger.error("An error occurred copying files to the serverpack.", ex);
                         }
                     }
-                    //appLogger.info(String.format("%s", listOfFiles.get(in)));
-
                 }
             } else {
                 try {
@@ -150,6 +146,11 @@ class CopyFiles {
             }
         }
     }
+    /** TODO: Write docs
+     * @param modsDir
+     * @param clientMods
+     * @return
+     */
     private static List<String> excludeClientMods(String modsDir, List<String> clientMods) {
         appLogger.info("Preparing a list of mods to include in server pack...");
         String[] copyMods = new String[0];
@@ -171,7 +172,6 @@ class CopyFiles {
         }
         return Arrays.asList(copyMods.clone());
     }
-
     /** Copies the server-icon.png into server_pack.
      * @param modpackDir String. /server_pack. Directory where the server-icon.png will be copied to.
      */

@@ -15,41 +15,6 @@ import java.util.zip.ZipOutputStream;
 class ServerSetup {
     private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
     private static final Logger installerLogger = LogManager.getLogger("InstallerLogger");
-    /** Deletes client-side-only mods in server_pack, if specified.
-     * @param modpackDir String. /server_pack/mods The directory where the files will be deleted.
-     * @param clientMods String List. Client mods to delete.
-     */
-    static void deleteClientMods(String modpackDir, List<String> clientMods) {
-        appLogger.info("Deleting client-side mods from serverpack:");
-        File serverMods = new File(String.format("%s/server_pack/mods", modpackDir));
-        Set<String> fileList = new HashSet<>();
-        try {
-            Files.walkFileTree(Paths.get(String.format("%s/server_pack/mods", modpackDir)), new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    if (!Files.isDirectory(file)) {
-                        fileList.add(file.getFileName().toString());
-                        for (int i = 0; i < clientMods.toArray().length; i++) {
-                            if (file.getFileName().toString().contains(clientMods.get(i))) {
-                                boolean isDeleted = file.toFile().delete();
-                                if (isDeleted) {
-                                    appLogger.info(String.format("    %s", file.getFileName().toString()));
-                                } else {
-                                    appLogger.error(String.format("Could not delete: %s", file.getFileName().toString()));
-                                }
-                            }
-                        }
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException ex) {
-            appLogger.error("Error: There was an error during deletion of clientside mods.", ex);
-        }
-        for (int i = 0; i < fileList.toArray().length; i++) {
-            appLogger.debug(String.format("DEBUG: Remaining: %s", fileList.toArray()[i]));
-        }
-    }
     /** Installs the files for a Forge/Fabric server.
      * @param modLoader String. The modloader for which to install the server.
      * @param modpackDir String. /server_pack The directory where the modloader server will be installed in.
@@ -150,5 +115,42 @@ class ServerSetup {
             appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
         }
         appLogger.info("Finished creation of zip archive.");
+    }
+    /** Deletes client-side-only mods in server_pack, if specified.
+     * @param modpackDir String. /server_pack/mods The directory where the files will be deleted.
+     * @param clientMods String List. Client mods to delete.
+     */
+    @SuppressWarnings("unused")
+    @Deprecated
+    static void deleteClientMods(String modpackDir, List<String> clientMods) {
+        appLogger.info("Deleting client-side mods from serverpack:");
+        File serverMods = new File(String.format("%s/server_pack/mods", modpackDir));
+        Set<String> fileList = new HashSet<>();
+        try {
+            Files.walkFileTree(Paths.get(String.format("%s/server_pack/mods", modpackDir)), new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    if (!Files.isDirectory(file)) {
+                        fileList.add(file.getFileName().toString());
+                        for (int i = 0; i < clientMods.toArray().length; i++) {
+                            if (file.getFileName().toString().contains(clientMods.get(i))) {
+                                boolean isDeleted = file.toFile().delete();
+                                if (isDeleted) {
+                                    appLogger.info(String.format("    %s", file.getFileName().toString()));
+                                } else {
+                                    appLogger.error(String.format("Could not delete: %s", file.getFileName().toString()));
+                                }
+                            }
+                        }
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ex) {
+            appLogger.error("Error: There was an error during deletion of clientside mods.", ex);
+        }
+        for (int i = 0; i < fileList.toArray().length; i++) {
+            appLogger.debug(String.format("DEBUG: Remaining: %s", fileList.toArray()[i]));
+        }
     }
 }

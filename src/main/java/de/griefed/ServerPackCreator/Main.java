@@ -45,9 +45,6 @@ public class Main {
             } catch (IOException ex) {
                 appLogger.error("There was an error calling the copyFiles method.", ex);
             }
-            //if (Reference.clientMods.toArray().length != 0) {
-            //    ServerSetup.deleteClientMods(Reference.modpackDir, Reference.clientMods);
-            //}
             CopyFiles.copyStartScripts(Reference.modpackDir, Reference.modLoader, Reference.includeStartScripts);
             if (Reference.includeServerInstallation) {
                 ServerSetup.installServer(Reference.modLoader, Reference.modpackDir, Reference.minecraftVersion, Reference.modLoaderVersion, Reference.javaPath);
@@ -71,7 +68,7 @@ public class Main {
             }
             appLogger.info("Serverpack available at: " + Reference.modpackDir + "/serverpack");
             appLogger.info("Done!");
-            System.exit(0); // Just in case.
+            System.exit(0);
         } else {
             appLogger.error("ERROR: Please check your serverpackcreator.conf for any incorrect settings. This message is also displayed if ServerPackCreator downloaded and setup a modpack from a projectID,fileID for modpackDir.");
             System.exit(1);

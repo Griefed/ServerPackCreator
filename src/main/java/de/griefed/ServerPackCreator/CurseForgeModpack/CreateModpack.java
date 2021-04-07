@@ -291,6 +291,7 @@ public class CreateModpack {
      * @param modpackDir String. The directory in which to deletes should be made.
      */
     @SuppressWarnings("unused")
+    @Deprecated
     private static void deleteDirs(String modpackDir) {
         appLogger.info("Deleting directories not needed in server pack from modpack...");
         String[] dirsToBeDeleted = {"overrides", "packmenu", "resourcepacks"};
