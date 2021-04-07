@@ -43,9 +43,9 @@ dependencies {
     embed group: 'com.github.TheRandomLabs', name:'CurseAPI', version:'master-SNAPSHOT'
     embed group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.2'
 
+    testImplementation 'org.mockito:mockito-core:3.8.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    testImplementation 'org.mockito:mockito-core:3.8.0'
 }
 
 test {

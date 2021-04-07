@@ -21,7 +21,7 @@ class ServerUtilitiesTest {
     ServerUtilities serverUtilities;
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test

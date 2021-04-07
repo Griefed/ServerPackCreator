@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -27,7 +28,7 @@ class CopyFilesTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -75,12 +76,14 @@ class CopyFilesTest {
         }
         new File("./serverpackcreator.conf").delete();
     }
+/*
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyFiles() throws IOException {
         String modpackDir = "./src/test/resources/forge_tests";
+        List<String> clientMods = Arrays.asList("AmbientSounds","BackTools","BetterAdvancement","BetterPing","cherished","ClientTweaks","Controlling","DefaultOptions","durability","DynamicSurroundings","itemzoom","jei-professions","jeiintegration","JustEnoughResources","MouseTweaks","Neat","OldJavaWarning","PackMenu","preciseblockplacing","SimpleDiscordRichPresence","SpawnerFix","TipTheScales","WorldNameRandomizer");
         List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
-        CopyFiles.copyFiles(modpackDir, copyDirs);
+        CopyFiles.copyFiles(modpackDir, copyDirs, clientMods);
         Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/scripts",modpackDir)).isDirectory());
@@ -99,6 +102,32 @@ class CopyFilesTest {
             }
         }
     }
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCopyFilesEmptyClients() throws IOException {
+        String modpackDir = "./src/test/resources/forge_tests";
+        List<String> clientMods = new ArrayList<>();
+        List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        CopyFiles.copyFiles(modpackDir, copyDirs, clientMods);
+        Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/scripts",modpackDir)).isDirectory());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/seeds",modpackDir)).isDirectory());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/defaultconfigs",modpackDir)).isDirectory());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/config/testfile.txt",modpackDir)).exists());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/defaultconfigs/testfile.txt",modpackDir)).exists());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/mods/testmod.jar",modpackDir)).exists());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/scripts/testscript.zs",modpackDir)).exists());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/seeds/testjson.json",modpackDir)).exists());
+        for (String s : copyDirs) {
+            String deleteMe = (String.format("%s/server_pack/%s",modpackDir,s));
+            if (new File(deleteMe).isDirectory()) {
+                Path pathToBeDeleted = Paths.get(deleteMe);
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            }
+        }
+    }
+*/
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyIcon() throws IOException {

@@ -19,7 +19,7 @@ class CLISetupTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
     @Test
     void testBuildString() {

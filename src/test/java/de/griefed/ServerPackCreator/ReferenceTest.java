@@ -36,7 +36,7 @@ class ReferenceTest {
     Reference reference;
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 }
 

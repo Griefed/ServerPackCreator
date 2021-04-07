@@ -41,13 +41,13 @@ public class Main {
         if (!ConfigCheck.checkConfig()) {
             CopyFiles.cleanupEnvironment(Reference.modpackDir);
             try {
-                CopyFiles.copyFiles(Reference.modpackDir, Reference.copyDirs);
+                CopyFiles.copyFiles(Reference.modpackDir, Reference.copyDirs, Reference.clientMods);
             } catch (IOException ex) {
                 appLogger.error("There was an error calling the copyFiles method.", ex);
             }
-            if (Reference.clientMods.toArray().length != 0) {
-                ServerSetup.deleteClientMods(Reference.modpackDir, Reference.clientMods);
-            }
+            //if (Reference.clientMods.toArray().length != 0) {
+            //    ServerSetup.deleteClientMods(Reference.modpackDir, Reference.clientMods);
+            //}
             CopyFiles.copyStartScripts(Reference.modpackDir, Reference.modLoader, Reference.includeStartScripts);
             if (Reference.includeServerInstallation) {
                 ServerSetup.installServer(Reference.modLoader, Reference.modpackDir, Reference.minecraftVersion, Reference.modLoaderVersion, Reference.javaPath);
