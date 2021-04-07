@@ -7,7 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -83,14 +86,15 @@ class CopyFiles {
     /** Copies all specified folders and their files to the modpackDir.
      * @param modpackDir String. /server_pack. Directory where all directories listed in copyDirs will be copied into.
      * @param copyDirs String List. The folders and files within to copy.
+     * @param clientMods String List. List of clientside-only mods NOT to copy to server pack.
      * @throws IOException Only print stacktrace if it does not start with java.nio.file.DirectoryNotEmptyException.
      */
-    static void copyFiles(String modpackDir, List<String> copyDirs) throws IOException {
+    static void copyFiles(String modpackDir, List<String> copyDirs, List<String> clientMods) throws IOException {
         String serverPath = String.format("%s/server_pack", modpackDir);
         Files.createDirectories(Paths.get(serverPath));
-        for (int i = 0; i<copyDirs.toArray().length; i++) {
-            String clientDir = modpackDir + "/" + copyDirs.get(i);
-            String serverDir = serverPath + "/" + copyDirs.get(i);
+        for (int i = 0; i < copyDirs.toArray().length; i++) {
+            String clientDir = String.format("%s/%s", modpackDir,copyDirs.get(i));
+            String serverDir = String.format("%s/%s", serverPath,copyDirs.get(i));
             appLogger.info(String.format("Setting up %s files.", serverDir));
             if (copyDirs.get(i).startsWith("saves/")) {
                 String savesDir = String.format("%s/%s", serverPath, copyDirs.get(i).substring(6));
@@ -108,6 +112,19 @@ class CopyFiles {
                     });
                 } catch (IOException ex) {
                     appLogger.error("An error occurred copying the specified world.", ex);
+                }
+            } else if (copyDirs.get(i).startsWith("mods") && clientMods.toArray().length > 0) {
+                List<String> listOfFiles = excludeClientMods(clientDir, clientMods);
+                Files.createDirectories(Paths.get(serverDir));
+                for (int in = 0; in < listOfFiles.toArray().length; in++) {
+                    try {
+                        Files.copy(Paths.get(listOfFiles.get(in)), Paths.get(serverDir, new File(listOfFiles.get(in)).getName()), REPLACE_EXISTING);
+                        appLogger.debug(String.format("Copying: %s", listOfFiles.get(in)));
+                    } catch (IOException ex) {
+                        if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                            appLogger.error("An error occurred copying files to the serverpack.", ex);
+                        }
+                    }
                 }
             } else {
                 try {
@@ -128,6 +145,33 @@ class CopyFiles {
                 }
             }
         }
+    }
+    /** Generate a list of all mods in a modpack EXCEPT clientside-only mods. This list is then used by copyFiles.
+     * @param modsDir String. /mods The directory in which to generate a list of all available mods.
+     * @param clientMods List String. A list of all clientside-only mods passed by copyFiles, which is then removed from the list generated in this method.
+     * @return List String. A list of all mods inside the modpack excluding the specified clientside-only mods.
+     */
+    @SuppressWarnings("UnusedAssignment")
+    private static List<String> excludeClientMods(String modsDir, List<String> clientMods) {
+        appLogger.info("Preparing a list of mods to include in server pack...");
+        String[] copyMods = new String[0];
+        List<String> listOfFiles = new ArrayList<>();
+        try (Stream<Path> walk = Files.walk(Paths.get(modsDir))) {
+            listOfFiles = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
+            for (int in = 0; in < listOfFiles.toArray().length; in++) {
+                for (int i = 0; i < clientMods.toArray().length; i++) {
+                    String mod = listOfFiles.get(in);
+                    if (mod.contains(clientMods.get(i))) {
+                        listOfFiles.remove(in);
+                    }
+                }
+            }
+            copyMods = listOfFiles.toArray(new String[0]);
+            return Arrays.asList(copyMods.clone());
+        } catch (IOException ex) {
+            appLogger.error("Error: There was an error during the acquisition of files in mods directory.", ex);
+        }
+        return Arrays.asList(copyMods.clone());
     }
     /** Copies the server-icon.png into server_pack.
      * @param modpackDir String. /server_pack. Directory where the server-icon.png will be copied to.

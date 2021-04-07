@@ -26,8 +26,9 @@ class ServerSetupTest {
     ServerSetup serverSetup;
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
+    /* DEPRECATED
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDeleteClientMods() throws IOException {
@@ -41,6 +42,7 @@ class ServerSetupTest {
         }
         ServerSetup.deleteClientMods(modpackDir, clientMods);
     }
+    */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testInstallServerFabric() {

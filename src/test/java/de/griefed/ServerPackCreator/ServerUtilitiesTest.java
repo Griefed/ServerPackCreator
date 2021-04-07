@@ -21,7 +21,7 @@ class ServerUtilitiesTest {
     ServerUtilities serverUtilities;
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
@@ -40,14 +40,16 @@ class ServerUtilitiesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsForge() {
-        String modLoader = "Forge";
-        String modpackDir = "./src/test/resources/forge_tests";
-        String minecraftVersion = "1.16.5";
-        ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).exists());
-        Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).exists());
-        new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).delete();
-        new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).delete();
+        if (!new File("/home/runner").isDirectory()) {
+            String modLoader = "Forge";
+            String modpackDir = "./src/test/resources/forge_tests";
+            String minecraftVersion = "1.16.5";
+            ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
+            Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).exists());
+            Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).exists());
+            new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).delete();
+            new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).delete();
+        }
     }
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
@@ -64,13 +66,15 @@ class ServerUtilitiesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadForgeJar() {
-        String modLoaderVersion = "36.1.2";
-        String modpackDir = "./src/test/resources/forge_tests";
-        String minecraftVersion = "1.16.5";
-        boolean result = ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
-        Assertions.assertTrue(result);
-        Assertions.assertTrue(new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists());
-        new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
+        if (!new File("/home/runner").isDirectory()) {
+            String modLoaderVersion = "36.1.2";
+            String modpackDir = "./src/test/resources/forge_tests";
+            String minecraftVersion = "1.16.5";
+            boolean result = ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
+            Assertions.assertTrue(result);
+            Assertions.assertTrue(new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists());
+            new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
+        }
     }
     @Test
     void testDeleteMinecraftJarFabric() throws IOException {
