@@ -27,6 +27,6 @@ public class Minecraft {
 
     @Override
     public String toString() {
-        return version + "," + modLoaders;
+        return String.format("%s,%s",version,modLoaders);
     }
 }

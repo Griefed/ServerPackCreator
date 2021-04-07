@@ -36,14 +36,21 @@ class CreateModpackTest {
             int projectID = 238298;
             int fileID = 3174854;
             String projectName = CurseAPI.project(projectID).get().name();
-            String displayName = Objects.requireNonNull(CurseAPI.project(projectID).get().files().fileWithID(fileID)).displayName();
+            String displayName = Objects.requireNonNull(CurseAPI.project(projectID)
+                    .get()
+                    .files()
+                    .fileWithID(fileID))
+                    .displayName();
             String modpackDir = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
             boolean result = CreateModpack.curseForgeModpack(modpackDir, 238298, 3174854);
             Assertions.assertTrue(result);
             String delete = String.format("./src/test/resources/forge_tests/%s", projectName);
             if (new File(delete).isDirectory()) {
                 Path pathToBeDeleted = Paths.get(delete);
-                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                Files.walk(pathToBeDeleted)
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
             }
         }
     }

@@ -290,7 +290,7 @@ public class CreateModpack {
     /** Deletes all directories in the modpack directory as specified in an internal Array. Currently not used anywhere.
      * @param modpackDir String. The directory in which to deletes should be made.
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "ResultOfMethodCallIgnored"})
     @Deprecated
     private static void deleteDirs(String modpackDir) {
         appLogger.info("Deleting directories not needed in server pack from modpack...");
@@ -300,7 +300,6 @@ public class CreateModpack {
             if (new File(deleteMe).isDirectory()) {
                 try {
                     Path pathToBeDeleted = Paths.get(deleteMe);
-                    //noinspection ResultOfMethodCallIgnored
                     Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
                 } catch (IOException ex) {
                     appLogger.info(String.format("Directory %s not found. Skipping delete action...", deleteMe));

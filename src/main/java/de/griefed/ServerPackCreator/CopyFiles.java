@@ -68,16 +68,32 @@ class CopyFiles {
         if (modLoader.equalsIgnoreCase("Forge") && includeStartScripts) {
             appLogger.info("Copying Forge start scripts...");
             try {
-                Files.copy(Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)), Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.forgeWindowsFile)), REPLACE_EXISTING);
-                Files.copy(Paths.get(String.format("./server_files/%s", Reference.forgeLinuxFile)), Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.forgeLinuxFile)), REPLACE_EXISTING);
+                Files.copy(
+                        Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.forgeWindowsFile)),
+                        REPLACE_EXISTING
+                );
+                Files.copy(
+                        Paths.get(String.format("./server_files/%s", Reference.forgeLinuxFile)),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.forgeLinuxFile)),
+                        REPLACE_EXISTING
+                );
             } catch (IOException ex) {
                 appLogger.error("An error occurred while copying files: ", ex);
             }
         } else if (modLoader.equalsIgnoreCase("Fabric") && includeStartScripts) {
             appLogger.info("Copying Fabric start scripts...");
             try {
-                Files.copy(Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)), Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.fabricWindowsFile)), REPLACE_EXISTING);
-                Files.copy(Paths.get(String.format("./server_files/%s", Reference.fabricLinuxFile)), Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.fabricLinuxFile)), REPLACE_EXISTING);
+                Files.copy(
+                        Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.fabricWindowsFile)),
+                        REPLACE_EXISTING
+                );
+                Files.copy(
+                        Paths.get(String.format("./server_files/%s", Reference.fabricLinuxFile)),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.fabricLinuxFile)),
+                        REPLACE_EXISTING
+                );
             } catch (IOException ex) {
                 appLogger.error("An error occurred while copying files: ", ex);
             }
@@ -105,7 +121,11 @@ class CopyFiles {
                     Stream<Path> files = Files.walk(Paths.get(clientDir));
                     files.forEach(file -> {
                         try {
-                            Files.copy(file, Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
+                            Files.copy(
+                                    file,
+                                    Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)),
+                                    REPLACE_EXISTING
+                            );
                             appLogger.debug(String.format("Copying: %s", file.toAbsolutePath().toString()));
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
@@ -121,7 +141,11 @@ class CopyFiles {
                 Files.createDirectories(Paths.get(serverDir));
                 for (int in = 0; in < listOfFiles.toArray().length; in++) {
                     try {
-                        Files.copy(Paths.get(listOfFiles.get(in)), Paths.get(serverDir, new File(listOfFiles.get(in)).getName()), REPLACE_EXISTING);
+                        Files.copy(
+                                Paths.get(listOfFiles.get(in)),
+                                Paths.get(String.format("%s/%s",serverDir, new File(listOfFiles.get(in)).getName())),
+                                REPLACE_EXISTING
+                        );
                         appLogger.debug(String.format("Copying: %s", listOfFiles.get(in)));
                     } catch (IOException ex) {
                         if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
@@ -134,7 +158,11 @@ class CopyFiles {
                     Stream<Path> files = Files.walk(Paths.get(clientDir));
                     files.forEach(file -> {
                         try {
-                            Files.copy(file, Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)), REPLACE_EXISTING);
+                            Files.copy(
+                                    file,
+                                    Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
+                                    REPLACE_EXISTING
+                            );
                             appLogger.debug(String.format("Copying: %s", file.toAbsolutePath().toString()));
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
@@ -184,7 +212,11 @@ class CopyFiles {
     static void copyIcon(String modpackDir) {
         appLogger.info("Copying server-icon.png...");
         try {
-            Files.copy(Paths.get(String.format("./server_files/%s", Reference.iconFile)), Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.iconFile)), REPLACE_EXISTING);
+            Files.copy(
+                    Paths.get(String.format("./server_files/%s", Reference.iconFile)),
+                    Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.iconFile)),
+                    REPLACE_EXISTING
+            );
         } catch (IOException ex) {
             appLogger.error("An error occurred trying to copy the server icon.", ex);
         }
@@ -196,7 +228,11 @@ class CopyFiles {
     static void copyProperties(String modpackDir) {
         appLogger.info("Copying server.properties...");
         try {
-            Files.copy(Paths.get(String.format("./server_files/%s", Reference.propertiesFile)), Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.propertiesFile)), REPLACE_EXISTING);
+            Files.copy(
+                    Paths.get(String.format("./server_files/%s", Reference.propertiesFile)),
+                    Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.propertiesFile)),
+                    REPLACE_EXISTING
+            );
         } catch (IOException ex) {
             appLogger.error("An error occurred trying to copy the server.properties-file.", ex);
         }

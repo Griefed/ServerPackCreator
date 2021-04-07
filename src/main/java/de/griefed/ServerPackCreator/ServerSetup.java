@@ -30,17 +30,24 @@ class ServerSetup {
                 appLogger.info("Starting Fabric installation.");
                 if (ServerUtilities.downloadFabricJar(modpackDir)) {
                     appLogger.info("Fabric installer successfully downloaded. Installing Fabric. This may take a while...");
-                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "fabric-installer.jar", "server", "-mcversion " + minecraftVersion, "-loader " + modLoaderVersion, "-downloadMinecraft").directory(new File(modpackDir + "/server_pack"));
+                    ProcessBuilder processBuilder = new ProcessBuilder(
+                            javaPath,
+                            "-jar",
+                            "fabric-installer.jar",
+                            "server",
+                            String.format("-mcversion %s", minecraftVersion),
+                            String.format("-loader %s", modLoaderVersion),
+                            "-downloadMinecraft").directory(new File(String.format("%s/server_pack", modpackDir)));
                     processBuilder.redirectErrorStream(true);
-                    Process p = processBuilder.start();
-                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    Process process = processBuilder.start();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
                     while (true) {
-                        line = r.readLine();
+                        line = reader.readLine();
                         if (line == null) { break; }
                         installerLogger.info(line);
                     }
-                    appLogger.info("For details regarding the installation of this modloader server, see modloader_installer.log");
+                    appLogger.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log");
                     appLogger.info("Returning to ServerPackCreator.");
                 } else {
                     appLogger.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
@@ -53,17 +60,22 @@ class ServerSetup {
                 appLogger.info("Starting Forge installation.");
                 if (ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
                     appLogger.info("Forge installer successfully downloaded. Installing Forge. This may take a while...");
-                    ProcessBuilder processBuilder = new ProcessBuilder(javaPath, "-jar", "forge-installer.jar", "--installServer").directory(new File(modpackDir + "/server_pack"));
+                    ProcessBuilder processBuilder = new ProcessBuilder(
+                            javaPath,
+                            "-jar",
+                            "forge-installer.jar",
+                            "--installServer")
+                            .directory(new File(String.format("%s/server_pack", modpackDir)));
                     processBuilder.redirectErrorStream(true);
-                    Process p = processBuilder.start();
-                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    Process process = processBuilder.start();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
                     while (true) {
-                        line = r.readLine();
+                        line = reader.readLine();
                         if (line == null) { break; }
                         installerLogger.info(line);
                     }
-                    appLogger.info("For details regarding the installation of this modloader server, see modloader_installer.log");
+                    appLogger.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log");
                     appLogger.info("Returning to ServerPackCreator.");
                 } else {
                     appLogger.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
@@ -75,7 +87,12 @@ class ServerSetup {
             appLogger.error(String.format("Specified invalid modloader: %s", modLoader));
         }
         ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
-        ServerUtilities.cleanUpServerPack(fabricInstaller, forgeInstaller, modLoader, modpackDir, minecraftVersion, modLoaderVersion);
+        ServerUtilities.cleanUpServerPack(
+                fabricInstaller,
+                forgeInstaller,
+                modLoader,
+                modpackDir,
+                minecraftVersion, modLoaderVersion);
     }
     /** Create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
      * With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java

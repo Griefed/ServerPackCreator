@@ -55,7 +55,7 @@ class FilesSetup {
             }
         } else if (!Reference.configFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/" + Reference.configFile.getName()));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/%s", Reference.configFile.getName())));
                 Files.copy(link, Reference.configFile.getAbsoluteFile().toPath());
                 link.close();
                 appLogger.info("serverpackcreator.conf generated. Please customize.");
@@ -77,8 +77,8 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.fabricLinuxFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.fabricLinuxFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + Reference.fabricLinuxFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.fabricLinuxFile.getName())));
+                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricLinuxFile)));
                 link.close();
                 appLogger.info("start-fabric.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -99,8 +99,8 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.fabricWindowsFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.fabricWindowsFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + Reference.fabricWindowsFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.fabricWindowsFile.getName())));
+                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)));
                 link.close();
                 appLogger.info("start-fabric.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -121,8 +121,8 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.forgeLinuxFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.forgeLinuxFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + Reference.forgeLinuxFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.forgeLinuxFile.getName())));
+                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeLinuxFile)));
                 link.close();
                 appLogger.info("start-forge.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -143,8 +143,8 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.forgeWindowsFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.forgeWindowsFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + Reference.forgeWindowsFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.forgeWindowsFile.getName())));
+                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)));
                 link.close();
                 appLogger.info("start-forge.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -165,8 +165,8 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.propertiesFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.propertiesFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + Reference.propertiesFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.propertiesFile.getName())));
+                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.propertiesFile)));
                 link.close();
                 appLogger.info("server.properties generated. Please customize if you intend on using it.");
                 firstRun = true;
@@ -187,8 +187,8 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.iconFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream("/server_files/" + Reference.iconFile.getName()));
-                Files.copy(link, Paths.get("./server_files/" + Reference.iconFile));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.iconFile.getName())));
+                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.iconFile)));
                 link.close();
                 appLogger.info("server-icon.png generated. Please customize if you intend on using it.");
                 firstRun = true;

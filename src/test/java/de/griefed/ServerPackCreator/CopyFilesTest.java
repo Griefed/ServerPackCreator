@@ -72,7 +72,10 @@ class CopyFilesTest {
         String delete = "./server_files";
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
         }
         new File("./serverpackcreator.conf").delete();
     }
@@ -81,8 +84,38 @@ class CopyFilesTest {
     @Test
     void testCopyFiles() throws IOException {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> clientMods = Arrays.asList("AmbientSounds","BackTools","BetterAdvancement","BetterPing","cherished","ClientTweaks","Controlling","DefaultOptions","durability","DynamicSurroundings","itemzoom","jei-professions","jeiintegration","JustEnoughResources","MouseTweaks","Neat","OldJavaWarning","PackMenu","preciseblockplacing","SimpleDiscordRichPresence","SpawnerFix","TipTheScales","WorldNameRandomizer");
-        List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        List<String> clientMods = Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        );
+        List<String> copyDirs = Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        );
         CopyFiles.copyFiles(modpackDir, copyDirs, clientMods);
         Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
@@ -98,7 +131,10 @@ class CopyFilesTest {
             String deleteMe = (String.format("%s/server_pack/%s",modpackDir,s));
             if (new File(deleteMe).isDirectory()) {
                     Path pathToBeDeleted = Paths.get(deleteMe);
-                    Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                    Files.walk(pathToBeDeleted)
+                            .sorted(Comparator.reverseOrder())
+                            .map(Path::toFile)
+                            .forEach(File::delete);
             }
         }
     }
@@ -107,7 +143,13 @@ class CopyFilesTest {
     void testCopyFilesEmptyClients() throws IOException {
         String modpackDir = "./src/test/resources/forge_tests";
         List<String> clientMods = new ArrayList<>();
-        List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        List<String> copyDirs = Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        );
         CopyFiles.copyFiles(modpackDir, copyDirs, clientMods);
         Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
@@ -123,7 +165,10 @@ class CopyFilesTest {
             String deleteMe = (String.format("%s/server_pack/%s",modpackDir,s));
             if (new File(deleteMe).isDirectory()) {
                 Path pathToBeDeleted = Paths.get(deleteMe);
-                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                Files.walk(pathToBeDeleted)
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
             }
         }
     }
@@ -139,7 +184,10 @@ class CopyFilesTest {
         String delete = "./server_files";
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
         }
         new File("./serverpackcreator.conf").delete();
     }
@@ -154,7 +202,10 @@ class CopyFilesTest {
         String delete = "./server_files";
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
         }
         new File("./serverpackcreator.conf").delete();
     }

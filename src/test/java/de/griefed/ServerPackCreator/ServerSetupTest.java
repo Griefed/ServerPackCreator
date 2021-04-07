@@ -28,8 +28,9 @@ class ServerSetupTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
-    /* DEPRECATED
+    /*
     @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Deprecated
     @Test
     void testDeleteClientMods() throws IOException {
         String modpackDir = "./src/test/resources/forge_tests";

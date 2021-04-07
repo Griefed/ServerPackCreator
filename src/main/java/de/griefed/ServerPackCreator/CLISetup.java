@@ -15,21 +15,24 @@ class CLISetup {
      * CLI for config file generation. Prompts user to enter config file values and then generates a config file with values entered by user.
      */
     static void setup() {
-        String modpackDir;
-        List<String> clientMods = new ArrayList<>(0);
-        String tmpModpackDir;
-        String[] tmpClientMods;
-        List<String> copyDirs;
-        String[] tmpCopyDirs;
-        boolean includeServerInstallation;
-        String javaPath;
-        String minecraftVersion;
-        String modLoader;
-        String modLoaderVersion;
-        boolean includeServerIcon;
-        boolean includeServerProperties;
-        boolean includeStartScripts;
-        boolean includeZipCreation;
+        List<String> clientMods,
+                     copyDirs;
+        clientMods = copyDirs = new ArrayList<>(0);
+
+        String[] tmpClientMods,
+                 tmpCopyDirs;
+        boolean includeServerInstallation,
+                includeServerIcon,
+                includeServerProperties,
+                includeStartScripts,
+                includeZipCreation;
+        String modpackDir,
+               javaPath,
+               minecraftVersion,
+               modLoader,
+               modLoaderVersion,
+               tmpModpackDir;
+
         Scanner reader = new Scanner(System.in);
         appLogger.info(String.format("You started ServerPackCreator with the \"%s\" argument. Step-by-step generation of config file initiated...", Reference.CONFIG_GEN_ARGUMENT));
         do {
@@ -54,7 +57,6 @@ class CLISetup {
             appLogger.info("Which directories should be copied to the server pack? These are folder names inside your modpack directory.");
             do {
                 appLogger.info("Specify your directories you want to be copied:");
-                copyDirs = new ArrayList<>(0);
                 copyDirs.addAll(readStringArray());
             } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
             appLogger.info(String.format("You entered: %s", copyDirs.toString()));
@@ -139,7 +141,20 @@ class CLISetup {
             appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
             System.out.print("Answer: ");
         } while (!readBoolean());
-        if (FilesSetup.writeConfigToFile(modpackDir, buildString(Arrays.toString(tmpClientMods)), buildString(Arrays.toString(tmpCopyDirs)), includeServerInstallation, javaPath, minecraftVersion, modLoader, modLoaderVersion, includeServerIcon, includeServerProperties, includeStartScripts, includeZipCreation)) {
+        if (FilesSetup.writeConfigToFile(
+                modpackDir,
+                buildString(Arrays.toString(tmpClientMods)),
+                buildString(Arrays.toString(tmpCopyDirs)),
+                includeServerInstallation,
+                javaPath,
+                minecraftVersion,
+                modLoader,
+                modLoaderVersion,
+                includeServerIcon,
+                includeServerProperties,
+                includeStartScripts,
+                includeZipCreation
+        )) {
             appLogger.info("New config file successfully written. Thanks go to Whitebear60 for initially writing the CLI-Config-Generation.");
         }
     }

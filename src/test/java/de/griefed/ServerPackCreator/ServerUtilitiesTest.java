@@ -96,7 +96,13 @@ class ServerUtilitiesTest {
         String modpackDir = "./src/test/resources/forge_tests";
         String minecraftVersion = "1.16.5";
         String modLoaderVersion = "36.1.2";
-        ServerUtilities.cleanUpServerPack(new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)), new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)), modLoader, modpackDir, minecraftVersion, modLoaderVersion);
+        ServerUtilities.cleanUpServerPack(
+                new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)),
+                new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)),
+                modLoader,
+                modpackDir,
+                minecraftVersion,
+                modLoaderVersion);
     }
     @Test
     void testCleanUpServerPackFabric() {
@@ -104,6 +110,12 @@ class ServerUtilitiesTest {
         String modpackDir = "./src/test/resources/fabric_tests";
         String minecraftVersion = "1.16.5";
         String modLoaderVersion = "36.1.2";
-        ServerUtilities.cleanUpServerPack(new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)), new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)), modLoader, modpackDir, minecraftVersion, modLoaderVersion);
+        ServerUtilities.cleanUpServerPack(
+                new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)),
+                new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)),
+                modLoader,
+                modpackDir,
+                minecraftVersion,
+                modLoaderVersion);
     }
 }

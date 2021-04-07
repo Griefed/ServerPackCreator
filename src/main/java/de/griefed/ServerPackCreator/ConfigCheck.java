@@ -38,21 +38,21 @@ class ConfigCheck {
         boolean configHasError;
         appLogger.info("Checking configuration...");
         try {
-            Reference.conf = ConfigFactory.parseFile(Reference.configFile);
+            Reference.config = ConfigFactory.parseFile(Reference.configFile);
         } catch (ConfigException ex) {
             appLogger.error("Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
         }
 
-        Reference.clientMods = Reference.conf.getStringList("clientMods");
-        Reference.includeServerInstallation = convertToBoolean(Reference.conf.getString("includeServerInstallation"));
-        Reference.includeServerIcon = convertToBoolean(Reference.conf.getString("includeServerIcon"));
-        Reference.includeServerProperties = convertToBoolean(Reference.conf.getString("includeServerProperties"));
-        Reference.includeStartScripts = convertToBoolean(Reference.conf.getString("includeStartScripts"));
-        Reference.includeZipCreation = convertToBoolean(Reference.conf.getString("includeZipCreation"));
+        Reference.clientMods = Reference.config.getStringList("clientMods");
+        Reference.includeServerInstallation = convertToBoolean(Reference.config.getString("includeServerInstallation"));
+        Reference.includeServerIcon = convertToBoolean(Reference.config.getString("includeServerIcon"));
+        Reference.includeServerProperties = convertToBoolean(Reference.config.getString("includeServerProperties"));
+        Reference.includeStartScripts = convertToBoolean(Reference.config.getString("includeStartScripts"));
+        Reference.includeZipCreation = convertToBoolean(Reference.config.getString("includeZipCreation"));
 
-        if (checkModpackDir(Reference.conf.getString("modpackDir"))) {
-            configHasError = isDir(Reference.conf.getString("modpackDir"));
-        } else if (checkCurseForge(Reference.conf.getString("modpackDir"))) {
+        if (checkModpackDir(Reference.config.getString("modpackDir"))) {
+            configHasError = isDir(Reference.config.getString("modpackDir"));
+        } else if (checkCurseForge(Reference.config.getString("modpackDir"))) {
             configHasError = isCurse();
         } else {
             configHasError = true;
@@ -87,29 +87,29 @@ class ConfigCheck {
         boolean configHasError = false;
         Reference.modpackDir = modpackDir;
 
-        if (checkCopyDirs(Reference.conf.getStringList("copyDirs"), Reference.modpackDir)) {
-            Reference.copyDirs = Reference.conf.getStringList("copyDirs");
+        if (checkCopyDirs(Reference.config.getStringList("copyDirs"), Reference.modpackDir)) {
+            Reference.copyDirs = Reference.config.getStringList("copyDirs");
         } else { configHasError = true; }
 
         if (Reference.includeServerInstallation) {
-            if (checkJavaPath(Reference.conf.getString("javaPath"))) {
-                Reference.javaPath = Reference.conf.getString("javaPath");
+            if (checkJavaPath(Reference.config.getString("javaPath"))) {
+                Reference.javaPath = Reference.config.getString("javaPath");
             } else {
-                String tmpJavaPath = getJavaPath(Reference.conf.getString("javaPath"));
+                String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath"));
                 if (checkJavaPath(tmpJavaPath)) {
                     Reference.javaPath = tmpJavaPath;
                 } else { configHasError = true; } }
 
-            if (isMinecraftVersionCorrect(Reference.conf.getString("minecraftVersion"))) {
-                Reference.minecraftVersion = Reference.conf.getString("minecraftVersion");
+            if (isMinecraftVersionCorrect(Reference.config.getString("minecraftVersion"))) {
+                Reference.minecraftVersion = Reference.config.getString("minecraftVersion");
             } else { configHasError = true; }
 
-            if (checkModloader(Reference.conf.getString("modLoader"))) {
-                Reference.modLoader = setModloader(Reference.conf.getString("modLoader"));
+            if (checkModloader(Reference.config.getString("modLoader"))) {
+                Reference.modLoader = setModloader(Reference.config.getString("modLoader"));
             } else { configHasError = true; }
 
-            if (checkModloaderVersion(Reference.modLoader, Reference.conf.getString("modLoaderVersion"), Reference.minecraftVersion)) {
-                Reference.modLoaderVersion = Reference.conf.getString("modLoaderVersion");
+            if (checkModloaderVersion(Reference.modLoader, Reference.config.getString("modLoaderVersion"), Reference.minecraftVersion)) {
+                Reference.modLoaderVersion = Reference.config.getString("modLoaderVersion");
             } else { configHasError = true; }
 
         } else {
@@ -151,9 +151,16 @@ class ConfigCheck {
                         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
                         Modpack modpack = objectMapper.readValue(jsonData, Modpack.class);
 
-                        String[] minecraftLoaderVersions = modpack.getMinecraft().toString().split(",");
-                        String[] modLoaderVersion = minecraftLoaderVersions[1].replace("[", "").replace("]", "").split("-");
-                        Reference.minecraftVersion = minecraftLoaderVersions[0].replace("[", "");
+                        String[] minecraftLoaderVersions = modpack
+                                .getMinecraft()
+                                .toString()
+                                .split(",");
+                        String[] modLoaderVersion = minecraftLoaderVersions[1]
+                                .replace("[", "")
+                                .replace("]", "")
+                                .split("-");
+                        Reference.minecraftVersion = minecraftLoaderVersions[0]
+                                .replace("[", "");
 
                         if (containsFabric(modpack)) {
                             appLogger.info("Please make sure to check the configuration for the used Fabric version after ServerPackCreator is done setting up the modpack and new config file.");
@@ -165,17 +172,26 @@ class ConfigCheck {
                         }
                     } catch (IOException ex) { appLogger.error("Error: There was a fault during json parsing.", ex); }
 
-                    if (checkJavaPath(Reference.conf.getString("javaPath"))) {
-                        Reference.javaPath = Reference.conf.getString("javaPath");
+                    if (checkJavaPath(Reference.config.getString("javaPath"))) {
+                        Reference.javaPath = Reference.config.getString("javaPath");
                     } else {
-                        String tmpJavaPath = getJavaPath(Reference.conf.getString("javaPath"));
+                        String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath"));
                         if (checkJavaPath(tmpJavaPath)) {
                             Reference.javaPath = tmpJavaPath;
                         }
                     }
                     Reference.copyDirs = suggestCopyDirs(Reference.modpackDir);
                     appLogger.info("Your old config file will now be replaced by a new one, with values gathered from the downloaded modpack.");
-                    FilesSetup.writeConfigToFile(Reference.modpackDir, CLISetup.buildString(Reference.clientMods.toString()), CLISetup.buildString(Reference.copyDirs.toString()), Reference.includeServerInstallation, Reference.javaPath, Reference.minecraftVersion, Reference.modLoader, Reference.modLoaderVersion, Reference.includeServerIcon, Reference.includeServerProperties, Reference.includeStartScripts, Reference.includeZipCreation);
+                    FilesSetup.writeConfigToFile(
+                            Reference.modpackDir,
+                            CLISetup.buildString(Reference.clientMods.toString()),
+                            CLISetup.buildString(Reference.copyDirs.toString()),
+                            Reference.includeServerInstallation, Reference.javaPath,
+                            Reference.minecraftVersion, Reference.modLoader,
+                            Reference.modLoaderVersion, Reference.includeServerIcon,
+                            Reference.includeServerProperties, Reference.includeStartScripts,
+                            Reference.includeZipCreation
+                    );
                 }
             }
         } catch (CurseException cex) {
@@ -209,7 +225,11 @@ class ConfigCheck {
     private static List<String> suggestCopyDirs(String modpackDir) {
         appLogger.info("Preparing a list of directories to include in server pack...");
 
-        String[] dirsNotToCopy = {"overrides","packmenu","resourcepacks"};
+        String[] dirsNotToCopy = {
+                "overrides",
+                "packmenu",
+                "resourcepacks"
+        };
         String[] copyDirs = new String[0];
         List<String> dirList;
         File directories = new File(modpackDir);
@@ -295,7 +315,18 @@ class ConfigCheck {
      * @param includeScripts Boolean. Whether to include start scripts for the specified modloader in the server pack.
      * @param includeZip Boolean. Whether to create a zip-archive of the server pack.
      */
-    static void printConfig(String modpackDirectory, List<String> clientsideMods, List<String> copyDirectories, boolean installServer, String javaInstallPath, String minecraftVer, String modloader, String modloaderVersion, boolean includeIcon, boolean includeProperties, boolean includeScripts, boolean includeZip) {
+    static void printConfig(String modpackDirectory,
+                            List<String> clientsideMods,
+                            List<String> copyDirectories,
+                            boolean installServer,
+                            String javaInstallPath,
+                            String minecraftVer,
+                            String modloader,
+                            String modloaderVersion,
+                            boolean includeIcon,
+                            boolean includeProperties,
+                            boolean includeScripts,
+                            boolean includeZip) {
         appLogger.info("Your configuration is:");
         appLogger.info(String.format("Modpack directory: %s", modpackDirectory));
         if (clientsideMods.toArray().length == 0) {
@@ -369,7 +400,7 @@ class ConfigCheck {
         String autoJavaPath;
         if (enteredPath.equals("")) {
             appLogger.warn("You didn't specify the path to your Java installation. ServerPackCreator will try to determine it for you...");
-            autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
+            autoJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
             if (autoJavaPath.startsWith("C:")) {
                 autoJavaPath = String.format("%s.exe", autoJavaPath);
             }

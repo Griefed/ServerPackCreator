@@ -41,7 +41,10 @@ class FilesSetupTest {
         String delete = "./server_files";
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
         }
         new File("./serverpackcreator.conf").delete();
     }
@@ -49,8 +52,38 @@ class FilesSetupTest {
     @Test
     void testWriteConfigToFileFabric() {
         String modpackDir = "./src/test/resources/fabric_tests";
-        List<String> clientMods = Arrays.asList("AmbientSounds","BackTools","BetterAdvancement","BetterPing","cherished","ClientTweaks","Controlling","DefaultOptions","durability","DynamicSurroundings","itemzoom","jei-professions","jeiintegration","JustEnoughResources","MouseTweaks","Neat","OldJavaWarning","PackMenu","preciseblockplacing","SimpleDiscordRichPresence","SpawnerFix","TipTheScales","WorldNameRandomizer");
-        List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        List<String> clientMods = Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        );
+        List<String> copyDirs = Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        );
         String javaPath;
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
         if (autoJavaPath.startsWith("C:")) {
@@ -64,7 +97,20 @@ class FilesSetupTest {
         String minecraftVersion = "1.16.5";
         String modLoader = "Fabric";
         String modLoaderVersion = "0.11.3";
-        boolean result = FilesSetup.writeConfigToFile(modpackDir, CLISetup.buildString(clientMods.toString()), CLISetup.buildString(copyDirs.toString()), true, javaPath, minecraftVersion, modLoader, modLoaderVersion, true, true, true, true);
+        boolean result = FilesSetup.writeConfigToFile(
+                modpackDir,
+                CLISetup.buildString(clientMods.toString()),
+                CLISetup.buildString(copyDirs.toString()),
+                true,
+                javaPath,
+                minecraftVersion,
+                modLoader,
+                modLoaderVersion,
+                true,
+                true,
+                true,
+                true
+        );
         Assertions.assertTrue(result);
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
         new File("./serverpackcreator.conf").delete();
@@ -73,13 +119,56 @@ class FilesSetupTest {
     @Test
     void testWriteConfigToFileForge() {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> clientMods = Arrays.asList("AmbientSounds","BackTools","BetterAdvancement","BetterPing","cherished","ClientTweaks","Controlling","DefaultOptions","durability","DynamicSurroundings","itemzoom","jei-professions","jeiintegration","JustEnoughResources","MouseTweaks","Neat","OldJavaWarning","PackMenu","preciseblockplacing","SimpleDiscordRichPresence","SpawnerFix","TipTheScales","WorldNameRandomizer");
-        List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        List<String> clientMods = Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        );
+        List<String> copyDirs = Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        );
         String javaPath = "/use/bin/java";
         String minecraftVersion = "1.16.5";
         String modLoader = "Forge";
         String modLoaderVersion = "36.1.2";
-        boolean result = FilesSetup.writeConfigToFile(modpackDir, CLISetup.buildString(clientMods.toString()), CLISetup.buildString(copyDirs.toString()), true, javaPath, minecraftVersion, modLoader, modLoaderVersion, true, true, true, true);
+        boolean result = FilesSetup.writeConfigToFile(
+                modpackDir,
+                CLISetup.buildString(clientMods.toString()),
+                CLISetup.buildString(copyDirs.toString()),
+                true,
+                javaPath,
+                minecraftVersion,
+                modLoader,
+                modLoaderVersion,
+                true,
+                true,
+                true,
+                true
+        );
         Assertions.assertTrue(result);
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
         new File("./serverpackcreator.conf").delete();

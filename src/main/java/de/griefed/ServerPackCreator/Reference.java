@@ -4,6 +4,7 @@ import com.therandomlabs.curseapi.project.CurseProject;
 import com.typesafe.config.Config;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,9 @@ class Reference {
     static final String MINECRAFT_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
     static final String FORGE_MANIFEST_URL = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/maven-metadata.json";
     static final String FABRIC_MANIFEST_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
+
+    static final String CONFIG_GEN_ARGUMENT = "-cgen";
+
     static final File oldConfigFile = new File("creator.conf");
     static final File configFile = new File("serverpackcreator.conf");
     static final File propertiesFile = new File("server.properties");
@@ -19,21 +23,32 @@ class Reference {
     static final File forgeLinuxFile = new File("start-forge.sh");
     static final File fabricWindowsFile = new File("start-fabric.bat");
     static final File fabricLinuxFile = new File("start-fabric.sh");
-    static Config conf;
-    static String modpackDir;
-    static List<String> clientMods;
-    static List<String> copyDirs;
-    static Boolean includeServerInstallation;
-    static String javaPath;
-    static String minecraftVersion;
-    static String modLoader;
-    static String modLoaderVersion;
-    static Boolean includeServerIcon;
-    static Boolean includeServerProperties;
-    static Boolean includeStartScripts;
-    static Boolean includeZipCreation;
-    static int projectID;
-    static int projectFileID;
-    static Boolean dockerEnv;
-    static final String CONFIG_GEN_ARGUMENT = "-cgen";
+
+    static Config config;
+
+    static List<String>
+            clientMods,
+            copyDirs
+                    = new ArrayList<>();
+
+    static String
+            modpackDir,
+            javaPath,
+            minecraftVersion,
+            modLoader,
+            modLoaderVersion
+                    = null;
+
+    static Boolean
+            includeServerInstallation,
+            includeServerIcon,
+            includeServerProperties,
+            includeStartScripts,
+            includeZipCreation
+                    = false;
+
+    static int
+            projectID,
+            projectFileID
+                    = 0;
 }

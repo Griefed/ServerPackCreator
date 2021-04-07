@@ -25,7 +25,7 @@ public class Files {
 
     @Override
     public String toString() {
-        return projectID + "," + fileID;
+        return String.format("%s,%s",projectID,fileID);
     }
 }
 

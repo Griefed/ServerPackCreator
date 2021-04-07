@@ -23,7 +23,13 @@ class CLISetupTest {
     }
     @Test
     void testBuildString() {
-        List<String> args = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        List<String> args = Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        );
         String result = CLISetup.buildString(args.toString());
         Assertions.assertEquals(args.toString(), String.format("[%s]",result));
     }

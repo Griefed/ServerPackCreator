@@ -19,13 +19,25 @@ public class Main {
         appLogger.warn("#        I WILL NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
         appLogger.warn("#                    YOU HAVE BEEN WARNED!                     #");
         appLogger.warn("################################################################");
+
         try {
             String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            appLogger.info(String.format("JAR Path: %s", jarPath));
             String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
+            String javaVersion = System.getProperty("java.version");
+            String osArch = System.getProperty("os.arch");
+            String osName = System.getProperty("os.name");
+            String osVersion = System.getProperty("os.version");
+            appLogger.info("SYSTEM INFORMATION:");
+            appLogger.info(String.format("JAR Path: %s", jarPath));
             appLogger.info(String.format("JAR Name: %s", jarName));
+            appLogger.info(String.format("Java version: %s", javaVersion));
+            appLogger.info(String.format("OS architecture: %s", osArch));
+            appLogger.info(String.format("OS name: %s", osName));
+            appLogger.info(String.format("OS version: %s", osVersion));
+            appLogger.info("Include this information when reporting an issue on GitHub.");
+
         } catch (URISyntaxException ex) {
-            appLogger.error("Error getting jar name.", ex);
+            appLogger.error("Error getting system properties.", ex);
         }
         if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!Reference.oldConfigFile.exists() && !Reference.configFile.exists())){
             CLISetup.setup();
@@ -66,7 +78,8 @@ public class Main {
             } else {
                 appLogger.info("Not creating zip archive of serverpack.");
             }
-            appLogger.info("Serverpack available at: " + Reference.modpackDir + "/serverpack");
+            appLogger.info(String.format("Server pack available at: %s/server_pack", Reference.modpackDir));
+            appLogger.info(String.format("Server pack archive available at : %s/server_pack.zip", Reference.modpackDir));
             appLogger.info("Done!");
             System.exit(0);
         } else {

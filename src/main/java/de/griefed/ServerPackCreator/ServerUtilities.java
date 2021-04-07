@@ -51,7 +51,15 @@ class ServerUtilities {
      */
     private static void fabricShell(String modpackDir, String minecraftVersion) {
         try {
-            String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
+            String downloadMinecraftServer = (new URL(
+                    LauncherMeta
+                            .getLauncherMeta()
+                            .getVersion(minecraftVersion)
+                            .getVersionMeta()
+                            .downloads
+                            .get("server")
+                            .url))
+                    .toString();
             String shFabric = String.format("#!/bin/bash\n#Download the Minecraft_server.jar for your modpack\n\nwget -O server.jar %s", downloadMinecraftServer);
             Path pathSh = Paths.get(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir));
             byte[] strToBytesSh = shFabric.getBytes();
@@ -69,7 +77,15 @@ class ServerUtilities {
      */
     private static void fabricBatch(String modpackDir, String minecraftVersion) {
         try {
-            String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
+            String downloadMinecraftServer = (new URL(
+                    LauncherMeta
+                            .getLauncherMeta()
+                            .getVersion(minecraftVersion)
+                            .getVersionMeta()
+                            .downloads
+                            .get("server")
+                            .url))
+                    .toString();
             String batFabric = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'server.jar')\"", downloadMinecraftServer);
             Path pathBat = Paths.get(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir));
             byte[] strToBytesBat = batFabric.getBytes();
@@ -87,7 +103,15 @@ class ServerUtilities {
      */
     private static void forgeShell(String modpackDir, String minecraftVersion) {
         try {
-            String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
+            String downloadMinecraftServer = (new URL(
+                    LauncherMeta
+                            .getLauncherMeta()
+                            .getVersion(minecraftVersion)
+                            .getVersionMeta()
+                            .downloads
+                            .get("server")
+                            .url))
+                    .toString();
             String shForge = String.format("#!/bin/bash\n# Download the Minecraft_server.jar for your modpack\n\nwget -O minecraft_server.%s.jar %s", minecraftVersion, downloadMinecraftServer);
             Path pathSh = Paths.get(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir));
             byte[] strToBytesSh = shForge.getBytes();
@@ -105,7 +129,15 @@ class ServerUtilities {
      */
     private static void forgeBatch(String modpackDir, String minecraftVersion) {
         try {
-            String downloadMinecraftServer = (new URL(LauncherMeta.getLauncherMeta().getVersion(minecraftVersion).getVersionMeta().downloads.get("server").url)).toString();
+            String downloadMinecraftServer = (new URL(
+                    LauncherMeta
+                            .getLauncherMeta()
+                            .getVersion(minecraftVersion)
+                            .getVersionMeta()
+                            .downloads
+                            .get("server")
+                            .url))
+                    .toString();
             String batForge = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'minecraft_server.%s.jar')\"", downloadMinecraftServer, minecraftVersion);
             Path pathBat = Paths.get(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir));
             byte[] strToBytesBat = batForge.getBytes();
@@ -126,9 +158,11 @@ class ServerUtilities {
         try {
             appLogger.info("Trying to download Fabric installer...");
             URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller(modpackDir), latestFabricInstaller(modpackDir)));
+
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
             FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.jar", modpackDir));
             FileChannel downloadFabricFileChannel = downloadFabricFileOutputStream.getChannel();
+
             downloadFabricFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadFabricFileOutputStream.flush();
             downloadFabricFileOutputStream.close();
@@ -217,28 +251,34 @@ class ServerUtilities {
      */
     static void deleteMinecraftJar(String modLoader, String modpackDir) {
         if (modLoader.equalsIgnoreCase("Forge")) {
+            appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
+
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
             zip_properties.put("encoding", "UTF-8");
+
             Path serverpackZip = Paths.get(String.format("%s/server_pack.zip", modpackDir));
             URI zipUri = URI.create("jar:" + serverpackZip.toUri());
+
             try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
                 Path pathInZipfile = zipfs.getPath("minecraft_server.1.16.5.jar");
-                appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
                 Files.delete(pathInZipfile);
                 appLogger.info("File successfully deleted");
             } catch (IOException ex) {
                 appLogger.error("Error deleting minecraft-server.jar from archive.", ex);
             }
         } else if (modLoader.equalsIgnoreCase("Fabric")) {
+            appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
+
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
             zip_properties.put("encoding", "UTF-8");
+
             Path serverpackZip = Paths.get(String.format("%s/server_pack.zip", modpackDir));
             URI zipUri = URI.create(String.format("jar:%s", serverpackZip.toUri()));
+
             try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
                 Path pathInZipfile = zipfs.getPath("server.jar");
-                appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
                 Files.delete(pathInZipfile);
                 appLogger.info("File successfully deleted");
             } catch (IOException ex) {
@@ -262,19 +302,36 @@ class ServerUtilities {
             File fabricXML = new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
             boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
-            if (isXmlDeleted) { appLogger.info(String.format("Deleted %s", fabricXML.getName())); }
-            else { appLogger.error(String.format("Could not delete %s", fabricXML.getName())); }
-            if (isInstallerDeleted) { appLogger.info(String.format("Deleted %s", fabricInstaller.getName())); }
-            else { appLogger.error(String.format("Could not delete %s", fabricInstaller.getName())); }
+            if (isXmlDeleted)
+                { appLogger.info(String.format("Deleted %s", fabricXML.getName())); }
+            else
+                { appLogger.error(String.format("Could not delete %s", fabricXML.getName())); }
+
+            if (isInstallerDeleted)
+                { appLogger.info(String.format("Deleted %s", fabricInstaller.getName())); }
+            else
+                { appLogger.error(String.format("Could not delete %s", fabricInstaller.getName())); }
+
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
-                Files.copy(Paths.get(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)), Paths.get(String.format("%s/server_pack/forge.jar", modpackDir)), REPLACE_EXISTING);
-                boolean isOldJarDeleted = (new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion))).delete();
+                Files.copy(
+                        Paths.get(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)),
+                        Paths.get(String.format("%s/server_pack/forge.jar", modpackDir)),
+                        REPLACE_EXISTING);
+                boolean isOldJarDeleted = (new File(
+                        String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion))).delete();
                 boolean isInstallerDeleted = forgeInstaller.delete();
-                if ((isOldJarDeleted) && (new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists())) { appLogger.info("Renamed forge.jar and deleted old one."); }
-                else { appLogger.error("There was an error during renaming or deletion of the forge server jar."); }
-                if (isInstallerDeleted) { appLogger.info(String.format("Deleted %s", forgeInstaller.getName())); }
-                else { appLogger.error(String.format("Could not delete %s", forgeInstaller.getName())); }
+
+                if ((isOldJarDeleted) && (new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists()))
+                    { appLogger.info("Renamed forge.jar and deleted old one."); }
+                else
+                    { appLogger.error("There was an error during renaming or deletion of the forge server jar."); }
+
+                if (isInstallerDeleted)
+                    { appLogger.info(String.format("Deleted %s", forgeInstaller.getName())); }
+                else
+                    { appLogger.error(String.format("Could not delete %s", forgeInstaller.getName())); }
+
             } catch (IOException ex) {
                 appLogger.error("Error during Forge cleanup.", ex);
             }

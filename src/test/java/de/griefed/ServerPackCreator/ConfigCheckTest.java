@@ -33,7 +33,7 @@ class ConfigCheckTest {
     @Test
     void testCheckConfig() throws IOException {
         Files.copy(Paths.get("./src/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        Reference.conf = ConfigFactory.parseFile(Reference.configFile);
+        Reference.config = ConfigFactory.parseFile(Reference.configFile);
         boolean result = ConfigCheck.checkConfig();
         Assertions.assertFalse(result);
         new File("./serverpackcreator.conf").delete();
@@ -54,8 +54,38 @@ class ConfigCheckTest {
     @Test
     void testPrintConfig() {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> clientMods = Arrays.asList("AmbientSounds","BackTools","BetterAdvancement","BetterPing","cherished","ClientTweaks","Controlling","DefaultOptions","durability","DynamicSurroundings","itemzoom","jei-professions","jeiintegration","JustEnoughResources","MouseTweaks","Neat","OldJavaWarning","PackMenu","preciseblockplacing","SimpleDiscordRichPresence","SpawnerFix","TipTheScales","WorldNameRandomizer");
-        List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        List<String> clientMods = Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        );
+        List<String> copyDirs = Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        );
         boolean includeServerInstallation = true;
         String javaPath = "/usr/bin/java";
         String minecraftVersion = "1.16.5";
@@ -92,14 +122,26 @@ class ConfigCheckTest {
     @Test
     void testCheckCopyDirsCorrect() {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> copyDirs = Arrays.asList("config","mods","scripts","seeds","defaultconfigs");
+        List<String> copyDirs = Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        );
         boolean result = ConfigCheck.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertTrue(result);
     }
     @Test
     void testCheckCopyDirsFalse() {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> copyDirs = Arrays.asList("configs","modss","scriptss","seedss","defaultconfigss");
+        List<String> copyDirs = Arrays.asList(
+                "configs",
+                "modss",
+                "scriptss",
+                "seedss",
+                "defaultconfigss"
+        );
         boolean result = ConfigCheck.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertFalse(result);
     }
