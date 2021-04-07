@@ -65,7 +65,18 @@ class ConfigCheckTest {
         boolean includeServerProperties = true;
         boolean includeStartScripts = true;
         boolean includeZipCreation = true;
-        ConfigCheck.printConfig(modpackDir, clientMods, copyDirs, includeServerInstallation, javaPath, minecraftVersion, modLoader, modLoaderVersion, includeServerIcon, includeServerProperties, includeStartScripts, includeZipCreation);
+        ConfigCheck.printConfig(modpackDir,
+                clientMods,
+                copyDirs,
+                includeServerInstallation,
+                javaPath,
+                minecraftVersion,
+                modLoader,
+                modLoaderVersion,
+                includeServerIcon,
+                includeServerProperties,
+                includeStartScripts,
+                includeZipCreation);
     }
     @Test
     void testCheckModpackDirCorrect() {

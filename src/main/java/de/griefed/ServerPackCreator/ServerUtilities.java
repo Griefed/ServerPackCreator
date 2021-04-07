@@ -155,17 +155,21 @@ class ServerUtilities {
         String result = "0.7.2";
         try {
             URL downloadFabricXml = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
+
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
             FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
             FileChannel downloadFabricXmlFileChannel = downloadFabricXmlFileOutputStream.getChannel();
+
             downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
             downloadFabricXmlFileOutputStream.flush();
             downloadFabricXmlFileOutputStream.close();
+
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = domFactory.newDocumentBuilder();
             Document fabricXml = builder.parse(new File(String.format("%s/server_pack/fabric-installer.xml",modpackDir)));
             XPathFactory xPathFactory = XPathFactory.newInstance();
             XPath xpath = xPathFactory.newXPath();
+
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
             appLogger.info("Successfully retrieved Fabric-Installer XML.");
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
@@ -185,9 +189,11 @@ class ServerUtilities {
         try {
             appLogger.info("Trying to download specified Forge installer...");
             URL downloadForge = new URL(String.format("https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar", minecraftVersion, modLoaderVersion, minecraftVersion, modLoaderVersion));
+
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
             FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("%s/server_pack/forge-installer.jar", modpackDir));
             FileChannel downloadForgeFileChannel = downloadForgeFileOutputStream.getChannel();
+
             downloadForgeFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadForgeFileOutputStream.flush();
             downloadForgeFileOutputStream.close();

@@ -17,6 +17,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class CopyFiles {
     private static final Logger appLogger = LogManager.getLogger(CopyFiles.class);
+
     /** Deletes files from previous runs of ServerPackCreator.
      * @param modpackDir String. The directory in where to check for files from previous runs.
      */
@@ -57,6 +58,7 @@ class CopyFiles {
             }
         }
     }
+
     /** Copies start scripts for Forge modloader into the server_pack folder.
      * @param modpackDir String. Files will be copied into subfolder server_pack. Checks for valid modpackDir are in ConfigCheck.
      * @param modLoader String. Determines whether start scripts for Forge or Fabric are copied to modpackDir. Checks for valid modLoader are in ConfigCheck.
@@ -83,6 +85,7 @@ class CopyFiles {
             appLogger.info("Specified invalid modloader. Must be either Forge or Fabric.");
         }
     }
+
     /** Copies all specified folders and their files to the modpackDir.
      * @param modpackDir String. /server_pack. Directory where all directories listed in copyDirs will be copied into.
      * @param copyDirs String List. The folders and files within to copy.
@@ -146,6 +149,7 @@ class CopyFiles {
             }
         }
     }
+
     /** Generate a list of all mods in a modpack EXCEPT clientside-only mods. This list is then used by copyFiles.
      * @param modsDir String. /mods The directory in which to generate a list of all available mods.
      * @param clientMods List String. A list of all clientside-only mods passed by copyFiles, which is then removed from the list generated in this method.
@@ -173,6 +177,7 @@ class CopyFiles {
         }
         return Arrays.asList(copyMods.clone());
     }
+
     /** Copies the server-icon.png into server_pack.
      * @param modpackDir String. /server_pack. Directory where the server-icon.png will be copied to.
      */
@@ -184,6 +189,7 @@ class CopyFiles {
             appLogger.error("An error occurred trying to copy the server icon.", ex);
         }
     }
+
     /** Copies the server.properties into server_pack.
      * @param modpackDir String. /server_pack. Directory where the server.properties. will be copied to.
      */

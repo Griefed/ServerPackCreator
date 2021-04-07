@@ -25,7 +25,13 @@ class FilesSetup {
         boolean doesForgeWindowsExist = checkForForgeWindows();
         boolean doesPropertiesExist = checkForProperties();
         boolean doesIconExist = checkForIcon();
-        if (doesConfigExist || doesFabricLinuxExist || doesFabricWindowsExist || doesForgeLinuxExist || doesForgeWindowsExist || doesPropertiesExist || doesIconExist) {
+        if (doesConfigExist            ||
+                doesFabricLinuxExist   ||
+                doesFabricWindowsExist ||
+                doesForgeLinuxExist    ||
+                doesForgeWindowsExist  ||
+                doesPropertiesExist    ||
+                doesIconExist) {
             return false;
         } else {
             appLogger.info("Setup completed.");
@@ -63,6 +69,7 @@ class FilesSetup {
         }
         return firstRun;
     }
+
     /** Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
@@ -84,6 +91,7 @@ class FilesSetup {
         }
         return firstRun;
     }
+
     /** Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
@@ -105,6 +113,7 @@ class FilesSetup {
         }
         return firstRun;
     }
+
     /** Checks for existence of Forge start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
@@ -126,6 +135,7 @@ class FilesSetup {
         }
         return firstRun;
     }
+
     /** Checks for existence of Forge start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
@@ -147,6 +157,7 @@ class FilesSetup {
         }
         return firstRun;
     }
+
     /** Checks for existence of server.properties file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
@@ -168,6 +179,7 @@ class FilesSetup {
         }
         return firstRun;
     }
+
     /** Checks for existence of server-icon.png file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
@@ -189,6 +201,7 @@ class FilesSetup {
         }
         return firstRun;
     }
+
     /** Writes a new configuration file with the parameters passed to it.
      * @param modpackDir String. The path to the modpack.
      * @param clientMods List, String. List of clientside-only mods.
@@ -204,7 +217,18 @@ class FilesSetup {
      * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server jar.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
      */
-    static boolean writeConfigToFile(String modpackDir, String clientMods, String copyDirs, boolean includeServer, String javaPath, String minecraftVersion, String modLoader, String modLoaderVersion, boolean includeIcon, boolean includeProperties, boolean includeScripts, boolean includeZip ) {
+    static boolean writeConfigToFile(String modpackDir,
+                                     String clientMods,
+                                     String copyDirs,
+                                     boolean includeServer,
+                                     String javaPath,
+                                     String minecraftVersion,
+                                     String modLoader,
+                                     String modLoaderVersion,
+                                     boolean includeIcon,
+                                     boolean includeProperties,
+                                     boolean includeScripts,
+                                     boolean includeZip ) {
         boolean configWritten = false;
         String configString = String.format(
                         "# Path to your modpack. Can be either relative or absolute.\n" +

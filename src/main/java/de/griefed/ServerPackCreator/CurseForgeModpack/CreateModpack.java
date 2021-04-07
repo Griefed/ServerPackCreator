@@ -33,30 +33,26 @@ public class CreateModpack {
      * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
      * @return Boolean. Returns true if the modpack was freshly created.
      */
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     public static boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
         try {
             if (CurseAPI.project(projectID).isPresent()) {
                 Optional<CurseProject> curseProject = CurseAPI.project(projectID);
-                //noinspection OptionalGetWithoutIsPresent
+
                 projectName = curseProject.get().name();
-                try {
-                    //noinspection ConstantConditions
-                    fileName = curseProject.get().files().fileWithID(fileID).displayName();
-                } catch (NullPointerException npe) {
-                    //noinspection ConstantConditions
-                    fileName = curseProject.get().files().fileWithID(fileID).nameOnDisk();
-                }
-                //noinspection ConstantConditions
+                try { fileName = curseProject.get().files().fileWithID(fileID).displayName(); }
+                catch (NullPointerException npe) { fileName = curseProject.get().files().fileWithID(fileID).nameOnDisk(); }
                 fileDiskName = curseProject.get().files().fileWithID(fileID).nameOnDisk();
+
             } else {
                 projectName = projectID.toString();
                 fileName = fileID.toString();
                 fileDiskName = fileID.toString();
             }
-        } catch (CurseException cex) {
-        appLogger.error(String.format("Error: Could not retrieve either projectID %s or fileID %s. Please verify that they are correct.", projectID, fileID), cex);
-        }
+
+        } catch (CurseException cex) { appLogger.error(String.format("Error: Could not retrieve either projectID %s or fileID %s. Please verify that they are correct.", projectID, fileID), cex); }
+
         if (!checkCurseForgeDir(modpackDir)) {
             initializeModpack(modpackDir, projectID, fileID);
             modpackCreated = true;
@@ -68,26 +64,30 @@ public class CreateModpack {
      * @param projectID Integer. The ID of the project. Used to gather information and to download the modpack.
      * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void initializeModpack(String modpackDir, Integer projectID, Integer fileID) {
         try {
             appLogger.info(String.format("Downloading %s/%s.", projectName, fileName));
+
             CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
         } catch (CurseException cex) {
             appLogger.error(String.format("Error: Could not download file %s for project %s to directory %s.", fileName, projectName, modpackDir));
         }
+
         unzipArchive(String.format("%s/%s", modpackDir, fileDiskName), modpackDir);
         boolean isFileDeleted = new File(String.format("%s/%s", modpackDir, fileDiskName)).delete();
-        if (isFileDeleted) {
-            appLogger.info("Downloaded ZIP-file no longer needed. Deleted.");
-        }
+        if (isFileDeleted) { appLogger.info("Downloaded ZIP-file no longer needed. Deleted."); }
+
         try {
             byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
             Modpack modpack = objectMapper.readValue(jsonData, Modpack.class);
+
             String[] minecraftLoaderVersions = modpack.getMinecraft().toString().split(",");
             String[] modLoaderVersion = minecraftLoaderVersions[1].replace("[", "").replace("]", "").split("-");
+
             appLogger.info("CurseForge modpack manifest.json parsed.");
             appLogger.info(String.format("CurseForge modpack name: %s", modpack.getName()));
             appLogger.info(String.format("CurseForge modpack version: %s", modpack.getVersion()));
@@ -95,32 +95,36 @@ public class CreateModpack {
             appLogger.info(String.format("CurseForge modpack Minecraft version: %s", minecraftLoaderVersions[0].replace("[", "")));
             appLogger.info(String.format("CurseForge modpack modloader: %s", setModloader(modLoaderVersion[0])));
             appLogger.info(String.format("CurseForge modpack modloader version: %s", modLoaderVersion[1]));
-        } catch (IOException ex) {
-            appLogger.error("Error: There was a fault during json parsing.", ex);
-        }
+
+        } catch (IOException ex) { appLogger.error("Error: There was a fault during json parsing.", ex); }
+
         copyOverride(modpackDir);
         if (new File(String.format("%s/overrides", modpackDir)).isDirectory()) {
             try {
                 Path pathToBeDeleted = Paths.get(String.format("%s/overrides", modpackDir));
-                //noinspection ResultOfMethodCallIgnored
                 Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             } catch (IOException ex) {
                 appLogger.info("Directory \"overrides\" not found. Skipping delete action...");
             }
         }
+
         downloadMods(modpackDir);
     }
     /** Downloads all mods specified in the modpack's manifest.json file. If a download fails, one retry will be made, if said retry fails, too, then the download url will be sent to the log.
      * @param modpackDir String. All mods are downloaded to a child directory 'mods'
      */
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
     private static void downloadMods(String modpackDir) {
         appLogger.info("Downloading mods...");
         List<String> failedDownloads = new ArrayList<>();
+
         try {
             byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
+
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+
             Modpack modpack = objectMapper.readValue(jsonData, Modpack.class);
             Random randInt = new Random();
             for (int i = 0; i < modpack.getFiles().toArray().length; i++) {
@@ -128,15 +132,16 @@ public class CreateModpack {
                     appLogger.info(String.format("%s", Splines.getSplines()));
                 }
                 String[] mods = modpack.getFiles().get(i).toString().split(",");
+
                 String modName, modFileName;
                 modName = modFileName = "";
+
                 int modID, fileID;
                 modID = Integer.parseInt(mods[0]);
                 fileID = Integer.parseInt(mods[1]);
+
                 try {
-                    //noinspection OptionalGetWithoutIsPresent
                     modName = CurseAPI.project(modID).get().name();
-                    //noinspection OptionalGetWithoutIsPresent
                     modFileName = Objects.requireNonNull(CurseAPI.project(modID).get().files().fileWithID(fileID)).nameOnDisk();
                 } catch (CurseException cex) {
                     appLogger.error("Error: Couldn't retrieve CurseForge project name and file name.", cex);
@@ -144,14 +149,9 @@ public class CreateModpack {
                 try {
                     appLogger.info(String.format("Downloading mod %d of %d: %s | %s.", i+1, modpack.getFiles().toArray().length, modName, modFileName));
                     CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
-                    try {
-                        //noinspection BusyWait
-                        Thread.sleep(1000);
-                    } catch (InterruptedException iex) {
-                        appLogger.debug("Error during interruption event.", iex);
-                    }
-                } catch (CurseException cex) {
-                    appLogger.error(String.format("Error: Could not download mod %s (ID %s) | %s (ID %s).", modName, modID, modFileName, fileID));
+                    try { Thread.sleep(1000); }
+                    catch (InterruptedException iex) { appLogger.debug("Error during interruption event.", iex); }
+                } catch (CurseException cex) { appLogger.error(String.format("Error: Could not download mod %s (ID %s) | %s (ID %s).", modName, modID, modFileName, fileID));
                     try {
                         appLogger.info(String.format("Trying again for mod %s (ID %s) | %s (ID %s).", modName, modID, modFileName, fileID));
                         CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
@@ -220,8 +220,8 @@ public class CreateModpack {
         File destDir = new File(modpackDir);
         byte[] buffer = new byte[1024];
         try {
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
-            ZipEntry zipEntry = zis.getNextEntry();
+            ZipInputStream input = new ZipInputStream(new FileInputStream(zipFile));
+            ZipEntry zipEntry = input.getNextEntry();
             while (zipEntry != null) {
                 final File newFile = newFile(destDir, zipEntry);
                 if (zipEntry.isDirectory()) {
@@ -233,18 +233,17 @@ public class CreateModpack {
                     if (!parent.isDirectory() && !parent.mkdirs()) {
                         appLogger.error(String.format("Failed to create directory %s", parent));
                     }
-
-                    final FileOutputStream fos = new FileOutputStream(newFile);
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
+                    final FileOutputStream output = new FileOutputStream(newFile);
+                    int length;
+                    while ((length = input.read(buffer)) > 0) {
+                        output.write(buffer, 0, length);
                     }
-                    fos.close();
+                    output.close();
                 }
-                zipEntry = zis.getNextEntry();
+                zipEntry = input.getNextEntry();
             }
-            zis.closeEntry();
-            zis.close();
+            input.closeEntry();
+            input.close();
         } catch (IOException ex) {
             appLogger.error(String.format("Error: There was an error extracting the archive %s", zipFile), ex);
         }
@@ -258,6 +257,7 @@ public class CreateModpack {
         File destFile = new File(destinationDir, zipEntry.getName());
         String destDirPath = null;
         String destFilePath = null;
+
         try {
             destDirPath = destinationDir.getCanonicalPath();
 
