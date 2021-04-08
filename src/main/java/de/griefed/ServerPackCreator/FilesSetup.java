@@ -41,7 +41,7 @@ class FilesSetup {
     /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new config file is generated.
      * @return Boolean. Returns true if new config file was generated.
      */
-    private static boolean checkForConfig() {
+    static boolean checkForConfig() {
         boolean firstRun = false;
         if (Reference.oldConfigFile.exists()) {
             try {
@@ -76,7 +76,7 @@ class FilesSetup {
     /** Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    private static boolean checkForFabricLinux() {
+    static boolean checkForFabricLinux() {
         boolean firstRun = false;
         if (!Reference.fabricLinuxFile.exists()) {
             try {
@@ -101,7 +101,7 @@ class FilesSetup {
     /** Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    private static boolean checkForFabricWindows() {
+    static boolean checkForFabricWindows() {
         boolean firstRun = false;
         if (!Reference.fabricWindowsFile.exists()) {
             try {
@@ -126,7 +126,7 @@ class FilesSetup {
     /** Checks for existence of Forge start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    private static boolean checkForForgeLinux() {
+    static boolean checkForForgeLinux() {
         boolean firstRun = false;
         if (!Reference.forgeLinuxFile.exists()) {
             try {
@@ -151,7 +151,7 @@ class FilesSetup {
     /** Checks for existence of Forge start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    private static boolean checkForForgeWindows() {
+    static boolean checkForForgeWindows() {
         boolean firstRun = false;
         if (!Reference.forgeWindowsFile.exists()) {
             try {
@@ -176,7 +176,7 @@ class FilesSetup {
     /** Checks for existence of server.properties file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    private static boolean checkForProperties() {
+    static boolean checkForProperties() {
         boolean firstRun = false;
         if (!Reference.propertiesFile.exists()) {
             try {
@@ -201,7 +201,7 @@ class FilesSetup {
     /** Checks for existence of server-icon.png file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    private static boolean checkForIcon() {
+    static boolean checkForIcon() {
         boolean firstRun = false;
         if (!Reference.iconFile.exists()) {
             try {

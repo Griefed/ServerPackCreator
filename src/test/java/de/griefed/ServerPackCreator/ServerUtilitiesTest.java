@@ -17,12 +17,15 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 class ServerUtilitiesTest {
     @Mock
     Logger appLogger;
+
     @InjectMocks
     ServerUtilities serverUtilities;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsFabric() {
@@ -37,6 +40,7 @@ class ServerUtilitiesTest {
             new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).delete();
         }
     }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsForge() {
@@ -51,6 +55,7 @@ class ServerUtilitiesTest {
             new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).delete();
         }
     }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadFabricJar() {
@@ -63,6 +68,7 @@ class ServerUtilitiesTest {
             new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir)).delete();
         }
     }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadForgeJar() {
@@ -76,6 +82,7 @@ class ServerUtilitiesTest {
             new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
         }
     }
+
     @Test
     void testDeleteMinecraftJarFabric() throws IOException {
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
@@ -83,6 +90,7 @@ class ServerUtilitiesTest {
         String modpackDir = "./src/test/resources/forge_tests";
         ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
     }
+
     @Test
     void testDeleteMinecraftJarForge() throws IOException {
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
@@ -90,6 +98,7 @@ class ServerUtilitiesTest {
         String modpackDir = "./src/test/resources/forge_tests";
         ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
     }
+
     @Test
     void testCleanUpServerPackForge() {
         String modLoader = "Forge";
@@ -104,6 +113,7 @@ class ServerUtilitiesTest {
                 minecraftVersion,
                 modLoaderVersion);
     }
+
     @Test
     void testCleanUpServerPackFabric() {
         String modLoader = "Fabric";

@@ -20,12 +20,15 @@ import java.util.List;
 class FilesSetupTest {
     @Mock
     Logger appLogger;
+
     @InjectMocks
     FilesSetup filesSetup;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testFilesSetup() throws IOException {
@@ -48,6 +51,7 @@ class FilesSetupTest {
         }
         new File("./serverpackcreator.conf").delete();
     }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testWriteConfigToFileFabric() {
@@ -115,6 +119,7 @@ class FilesSetupTest {
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
         new File("./serverpackcreator.conf").delete();
     }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testWriteConfigToFileForge() {

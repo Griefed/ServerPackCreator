@@ -12,28 +12,40 @@ import java.util.List;
 class ReferenceTest {
     @Mock
     File oldConfigFile;
+
     @Mock
     File configFile;
+
     @Mock
     File propertiesFile;
+
     @Mock
     File iconFile;
+
     @Mock
     File forgeWindowsFile;
+
     @Mock
     File forgeLinuxFile;
+
     @Mock
     File fabricWindowsFile;
+
     @Mock
     File fabricLinuxFile;
+
     @Mock
     Config conf;
+
     @Mock
     List<String> clientMods;
+
     @Mock
     List<String> copyDirs;
+
     @InjectMocks
     Reference reference;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

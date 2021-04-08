@@ -14,6 +14,7 @@ import java.util.List;
 class CLISetupTest {
     @Mock
     Logger appLogger;
+
     @InjectMocks
     CLISetup cLISetup;
 
@@ -21,6 +22,7 @@ class CLISetupTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     @Test
     void testBuildString() {
         List<String> args = Arrays.asList(

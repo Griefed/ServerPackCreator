@@ -21,6 +21,7 @@ import java.util.Objects;
 class CreateModpackTest {
     @Mock
     Logger appLogger;
+
     @InjectMocks
     CreateModpack createModpack;
 
@@ -54,6 +55,7 @@ class CreateModpackTest {
             }
         }
     }
+
     @Test
     void testSetModloaderFabric() {
         String result = CreateModpack.setModloader("fAbRiC");
