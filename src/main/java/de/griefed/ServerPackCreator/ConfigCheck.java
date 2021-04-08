@@ -243,7 +243,7 @@ class ConfigCheck {
                 dirList.remove(doNotCopyList.get(i));
             }
             copyDirs = dirList.toArray(new String[0]);
-            appLogger.info(String.format("Modpack directory checked. Suggested directories for copyDirs-setting are: %s", dirList.toString()));
+            appLogger.info(String.format("Modpack directory checked. Suggested directories for copyDirs-setting are: %s", dirList));
 
             return Arrays.asList(copyDirs.clone());
 
@@ -381,8 +381,8 @@ class ConfigCheck {
             appLogger.error("Error: No directories specified for copying. This would result in an empty serverpack.");
             configCorrect = false;
         } else {
-            for (String copyDir : copyDirs) {
-                File directory = new File(String.format("%s/%s", modpackDir, copyDir));
+            for (int i = 0; i < copyDirs.toArray().length; i++) {
+                File directory = new File(String.format("%s/%s", modpackDir, copyDirs.get(i)));
                 if (!directory.exists() || !directory.isDirectory()) {
                     appLogger.error(String.format("Error: Specified directory %s does not exist. Please specify existing directories.", directory.getAbsolutePath()));
                     configCorrect = false;

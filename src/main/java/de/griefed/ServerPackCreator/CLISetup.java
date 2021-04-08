@@ -17,7 +17,9 @@ class CLISetup {
     static void setup() {
         List<String> clientMods,
                      copyDirs;
-        clientMods = copyDirs = new ArrayList<>(0);
+
+        clientMods = new ArrayList<>(0);
+        copyDirs = new ArrayList<>(0);
 
         String[] tmpClientMods,
                  tmpCopyDirs;
@@ -50,7 +52,7 @@ class CLISetup {
 
             appLogger.info("Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
             clientMods.addAll(readStringArray());
-            appLogger.info(String.format("You entered: %s", clientMods.toString()));
+            appLogger.info(String.format("You entered: %s", clientMods));
             tmpClientMods = new String[clientMods.size()];
             clientMods.toArray(tmpClientMods);
 
@@ -59,7 +61,7 @@ class CLISetup {
                 appLogger.info("Specify your directories you want to be copied:");
                 copyDirs.addAll(readStringArray());
             } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
-            appLogger.info(String.format("You entered: %s", copyDirs.toString()));
+            appLogger.info(String.format("You entered: %s", copyDirs));
             tmpCopyDirs = new String[copyDirs.size()];
             copyDirs.toArray(tmpCopyDirs);
 

@@ -28,27 +28,23 @@ class Reference {
 
     static List<String>
             clientMods,
-            copyDirs
-                    = new ArrayList<>();
+            copyDirs;
 
     static String
             modpackDir,
             javaPath,
             minecraftVersion,
             modLoader,
-            modLoaderVersion
-                    = null;
+            modLoaderVersion;
 
     static Boolean
             includeServerInstallation,
             includeServerIcon,
             includeServerProperties,
             includeStartScripts,
-            includeZipCreation
-                    = false;
+            includeZipCreation;
 
     static int
             projectID,
-            projectFileID
-                    = 0;
+            projectFileID;
 }

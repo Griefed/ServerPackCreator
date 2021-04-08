@@ -55,9 +55,12 @@ class FilesSetup {
             }
         } else if (!Reference.configFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/%s", Reference.configFile.getName())));
-                Files.copy(link, Reference.configFile.getAbsoluteFile().toPath());
-                link.close();
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", Reference.configFile.getName())));
+                if (link != null) {
+                    Files.copy(link, Reference.configFile.getAbsoluteFile().toPath());
+                    link.close();
+                }
+
                 appLogger.info("serverpackcreator.conf generated. Please customize.");
                 firstRun = true;
             } catch (IOException ex) {
@@ -77,9 +80,12 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.fabricLinuxFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.fabricLinuxFile.getName())));
-                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricLinuxFile)));
-                link.close();
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.fabricLinuxFile.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricLinuxFile)));
+                    link.close();
+                }
+
                 appLogger.info("start-fabric.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
             } catch (IOException ex) {
@@ -99,9 +105,12 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.fabricWindowsFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.fabricWindowsFile.getName())));
-                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)));
-                link.close();
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.fabricWindowsFile.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)));
+                    link.close();
+                }
+
                 appLogger.info("start-fabric.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
             } catch (IOException ex) {
@@ -121,9 +130,12 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.forgeLinuxFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.forgeLinuxFile.getName())));
-                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeLinuxFile)));
-                link.close();
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.forgeLinuxFile.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeLinuxFile)));
+                    link.close();
+                }
+
                 appLogger.info("start-forge.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
             } catch (IOException ex) {
@@ -143,9 +155,12 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.forgeWindowsFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.forgeWindowsFile.getName())));
-                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)));
-                link.close();
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.forgeWindowsFile.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)));
+                    link.close();
+                }
+
                 appLogger.info("start-forge.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
             } catch (IOException ex) {
@@ -165,9 +180,12 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.propertiesFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.propertiesFile.getName())));
-                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.propertiesFile)));
-                link.close();
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.propertiesFile.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.propertiesFile)));
+                    link.close();
+                }
+
                 appLogger.info("server.properties generated. Please customize if you intend on using it.");
                 firstRun = true;
             } catch (IOException ex) {
@@ -187,9 +205,12 @@ class FilesSetup {
         boolean firstRun = false;
         if (!Reference.iconFile.exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/server_files/%s", Reference.iconFile.getName())));
-                Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.iconFile)));
-                link.close();
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.iconFile.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.iconFile)));
+                    link.close();
+                }
+
                 appLogger.info("server-icon.png generated. Please customize if you intend on using it.");
                 firstRun = true;
             } catch (IOException ex) {
@@ -233,6 +254,7 @@ class FilesSetup {
         String configString = String.format(
                         "# Path to your modpack. Can be either relative or absolute.\n" +
                         "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
+                        "# Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4 4.6.7: \"390331,3215793\"\n" +
                         "modpackDir = \"%s\"\n" +
                         "\n" +
                         "# List of client-only mods to delete from serverpack.\n" +
@@ -242,49 +264,52 @@ class FilesSetup {
                         "\n" +
                         "# Name of directories to include in serverpack.\n" +
                         "# When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n" +
-                        "# for immediate use with the server.\n" +
+                        "# for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n" +
                         "# Example: [\"config\", \"mods\", \"scripts\"]\n" +
                         "copyDirs = [%s]\n" +
                         "\n" +
                         "# Whether to install a Forge/Fabric server for the serverpack. Must be true or false.\n" +
+                        "# Default value is true.\n" +
                         "includeServerInstallation = %b\n" +
                         "\n" +
                         "# Path to the Java executable. On Linux systems it would be something like \"/usr/bin/java\".\n" +
                         "# Only needed if includeServerInstallation is true.\n" +
                         "javaPath = \"%s\"\n" +
                         "\n" +
-                        "# Which Minecraft version to use.\n" +
-                        "# Example: \"1.16.5\".\n" +
+                        "# Which Minecraft version to use. Example: \"1.16.5\".\n" +
+                        "# Automatically set when projectID,fileID for modpackDir has been specified.\n" +
                         "# Only needed if includeServerInstallation is true.\n" +
                         "minecraftVersion = \"%s\"\n" +
                         "\n" +
                         "# Which modloader to install. Must be either \"Forge\" or \"Fabric\".\n" +
+                        "# Automatically set when projectID,fileID for modpackDir has been specified.\n" +
                         "# Only needed if includeServerInstallation is true.\n" +
                         "modLoader = \"%s\"\n" +
                         "\n" +
-                        "# The version of the modloader you want to install.\n" +
-                        "# Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n" +
+                        "# The version of the modloader you want to install. Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n" +
+                        "# Automatically set when projectID,fileID for modpackDir has been specified.\n" +
                         "# Only needed if includeServerInstallation is true.\n" +
                         "modLoaderVersion = \"%s\"\n" +
                         "\n" +
                         "# Include a server-icon.png in your serverpack. Must be true or false.\n" +
-                        "# Place your server-icon.png in the same directory as this cfg-file.\n" +
-                        "# If no server-icon.png is provided but is set to true, a default one will be provided.\n" +
+                        "# Customize server-icon.png in ./server_files.\n" +
                         "# Dimensions must be 64x64!\n" +
+                        "# Default value is true.\n" +
                         "includeServerIcon = %b\n" +
                         "\n" +
                         "# Include a server.properties in your serverpack. Must be true or false.\n" +
-                        "# Place your server.properties in the same directory as this cfg-file.\n" +
+                        "# Customize server.properties in ./server_files.\n" +
                         "# If no server.properties is provided but is set to true, a default one will be provided.\n" +
-                        "# Default value is true\n" +
+                        "# Default value is true.\n" +
                         "includeServerProperties = %b\n" +
                         "\n" +
                         "# Include start scripts for windows and linux systems. Must be true or false.\n" +
-                        "# Default value is true\n" +
+                        "# Customize files beginning with \"start-\" in ./server_files.\n" +
+                        "# Default value is true.\n" +
                         "includeStartScripts = %b\n" +
                         "\n" +
                         "# Create zip-archive of serverpack. Must be true or false.\n" +
-                        "# Default value is true\n" +
+                        "# Default value is true.\n" +
                         "includeZipCreation = %b\n",
                 modpackDir,
                 clientMods,
