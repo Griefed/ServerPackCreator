@@ -52,6 +52,7 @@ class ServerSetupTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testInstallServerFabric() {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Fabric";
             String modpackDir = "./src/test/resources/fabric_tests";
@@ -79,6 +80,7 @@ class ServerSetupTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testInstallServerForge() throws IOException {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
@@ -118,6 +120,7 @@ class ServerSetupTest {
 
     @Test
     void testZipBuilderFabric() {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Fabric";
             String modpackDir = "./src/test/resources/fabric_tests";
@@ -127,6 +130,7 @@ class ServerSetupTest {
 
     @Test
     void testZipBuilderForge() {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";

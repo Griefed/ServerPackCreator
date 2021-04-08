@@ -31,6 +31,136 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
+    void testRenameOldConfig() throws IOException {
+        File oldConfigFile = new File("creator.conf");
+        oldConfigFile.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForConfig());
+        Assertions.assertTrue(new File("serverpackcreator.conf").exists());
+        new File("serverpackcreator.conf").delete();
+        new File("creator.conf").delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForConfig() throws IOException {
+        File configFile = new File("serverpackcreator.conf");
+        configFile.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForConfig());
+        configFile.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForConfigNew() {
+        File configFile = new File("serverpackcreator.conf");
+        Assertions.assertTrue(FilesSetup.checkForConfig());
+        configFile.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForFabricLinux() throws IOException {
+        File fabricLinux = new File("start-fabric.sh");
+        fabricLinux.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForFabricLinux());
+        fabricLinux.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForFabricLinuxNew() {
+        File fabricLinux = new File("start-fabric.sh");
+        Assertions.assertTrue(FilesSetup.checkForFabricLinux());
+        fabricLinux.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForFabricWindows() throws IOException {
+        File fabricWindows = new File("start-fabric.bat");
+        fabricWindows.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForFabricWindows());
+        fabricWindows.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForFabricWindowsNew() {
+        File fabricWindows = new File("start-fabric.bat");
+        Assertions.assertTrue(FilesSetup.checkForFabricWindows());
+        fabricWindows.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForForgeLinux() throws IOException {
+        File forgeLinux = new File("start-forge.sh");
+        forgeLinux.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForForgeLinux());
+        forgeLinux.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForForgeLinuxNew() {
+        File forgeLinux = new File("start-forge.sh");
+        Assertions.assertTrue(FilesSetup.checkForForgeLinux());
+        forgeLinux.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForForgeWindows() throws IOException {
+        File forgeWindows = new File("start-forge.bat");
+        forgeWindows.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForForgeWindows());
+        forgeWindows.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForForgeWindowsNew() {
+        File forgeWindows = new File("start-forge.bat");
+        Assertions.assertTrue(FilesSetup.checkForForgeWindows());
+        forgeWindows.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForProperties() throws IOException {
+        File properties = new File("server.properties");
+        properties.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForProperties());
+        properties.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForPropertiesNew() {
+        File properties = new File("server.properties");
+        Assertions.assertTrue(FilesSetup.checkForProperties());
+        properties.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForIcon() throws IOException {
+        File icon = new File("server-icon.png");
+        icon.createNewFile();
+        Assertions.assertFalse(FilesSetup.checkForIcon());
+        icon.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void testCheckForIconNew() {
+        File icon = new File("server-icon.png");
+        Assertions.assertTrue(FilesSetup.checkForIcon());
+        icon.delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
     void testFilesSetup() throws IOException {
         FilesSetup.filesSetup();
         Assertions.assertTrue(new File("./server_files").isDirectory());

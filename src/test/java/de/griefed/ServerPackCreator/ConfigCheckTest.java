@@ -214,6 +214,7 @@ class ConfigCheckTest {
         Assertions.assertEquals("Forge", result);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCheckModloaderVersionFabric() {
         String modLoader = "Fabric";
@@ -221,8 +222,10 @@ class ConfigCheckTest {
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertTrue(result);
+        new File("fabric-manifest.xml").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCheckModloaderVersionFabricIncorrect() {
         String modLoader = "Fabric";
@@ -230,8 +233,10 @@ class ConfigCheckTest {
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertFalse(result);
+        new File("fabric-manifest.xml").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCheckModloaderVersionForge() {
         String modLoader = "Forge";
@@ -239,8 +244,10 @@ class ConfigCheckTest {
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertTrue(result);
+        new File("forge-manifest.json").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCheckModloaderVersionForgeIncorrect() {
         String modLoader = "Forge";
@@ -248,49 +255,62 @@ class ConfigCheckTest {
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
         Assertions.assertFalse(result);
+        new File("forge-manifest.json").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testIsMinecraftVersionCorrect() {
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.isMinecraftVersionCorrect(minecraftVersion);
         Assertions.assertTrue(result);
+        new File("mcmanifest.json").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testIsMinecraftVersionFalse() {
         String minecraftVersion = "1.99.5";
         boolean result = ConfigCheck.isMinecraftVersionCorrect(minecraftVersion);
         Assertions.assertFalse(result);
+        new File("mcmanifest.json").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testIsFabricVersionCorrect() {
         String fabricVersion = "0.11.3";
         boolean result = ConfigCheck.isFabricVersionCorrect(fabricVersion);
         Assertions.assertTrue(result);
+        new File("fabric-manifest.xml").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testIsFabricVersionFalse() {
         String fabricVersion = "0.90.3";
         boolean result = ConfigCheck.isFabricVersionCorrect(fabricVersion);
         Assertions.assertFalse(result);
+        new File("fabric-manifest.xml").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testIsForgeVersionCorrect() {
         String forgeVersion = "36.1.2";
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.isForgeVersionCorrect(forgeVersion, minecraftVersion);
         Assertions.assertTrue(result);
+        new File("forge-manifest.json").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testIsForgeVersionFalse() {
         String forgeVersion = "99.0.0";
         String minecraftVersion = "1.16.5";
         boolean result = ConfigCheck.isForgeVersionCorrect(forgeVersion, minecraftVersion);
         Assertions.assertFalse(result);
+        new File("forge-manifest.json").delete();
     }
 }

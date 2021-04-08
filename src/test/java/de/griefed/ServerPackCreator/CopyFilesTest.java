@@ -43,6 +43,7 @@ class CopyFilesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyStartScriptsFabric() throws IOException {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/fabric_tests";
             String modLoader = "Fabric";

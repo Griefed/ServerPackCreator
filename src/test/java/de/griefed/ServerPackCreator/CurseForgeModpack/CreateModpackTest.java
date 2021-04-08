@@ -33,6 +33,7 @@ class CreateModpackTest {
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ResultOfMethodCallIgnored"})
     @Test
     void testCurseForgeModpack() throws CurseException, IOException {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             int projectID = 238298;
             int fileID = 3174854;
@@ -68,5 +69,3 @@ class CreateModpackTest {
         Assertions.assertEquals("Forge", result);
     }
 }
-
-//Generated with love by TestMe :) Please report issues and submit feature requests at: http://weirddev.com/forum#!/testme

@@ -29,6 +29,7 @@ class ServerUtilitiesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsFabric() {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Fabric";
             String modpackDir = "./src/test/resources/fabric_tests";
@@ -44,6 +45,7 @@ class ServerUtilitiesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGenerateDownloadScriptsForge() {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
@@ -59,6 +61,7 @@ class ServerUtilitiesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadFabricJar() {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/fabric_tests";
             boolean result = ServerUtilities.downloadFabricJar(modpackDir);
@@ -72,6 +75,7 @@ class ServerUtilitiesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testDownloadForgeJar() {
+        //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modLoaderVersion = "36.1.2";
             String modpackDir = "./src/test/resources/forge_tests";
