@@ -1,17 +1,7 @@
 .github
-.gradle
-build
-gradle
 img
 logs
-src
-!src/main/resources/server_files/
 .gitignore
-build.gradle
 CONTRIBUTING.md
-gradle.properties
-gradlew
-gradlew.bat
 LICENSE
 README.md
-settings.gradle
