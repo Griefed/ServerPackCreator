@@ -1,9 +1,12 @@
 import java.text.SimpleDateFormat
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'idea'
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'idea'
+    id 'pmd'
+    id 'edu.sc.seis.launch4j' version '2.4.9'
+}
 
 //noinspection GroovyUnusedAssignment
 sourceCompatibility = targetCompatibility = '1.8'
@@ -27,6 +30,21 @@ sourceSets {
             java.srcDirs = ['src/main/java']
         }
     }
+}
+
+launch4j {
+    libraryDir = 'libraries'
+    outputDir = 'libs'
+    mainClassName = 'de.griefed.ServerPackCreator.Main'
+    icon = "${projectDir}/img/icon.ico"
+}
+
+pmd {
+    consoleOutput = true
+    toolVersion = "6.21.0"
+    //noinspection GroovyAccessibility, GroovyAssignabilityCheck
+    rulesMinimumPriority = 1
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
 }
 
 configurations {
@@ -68,6 +86,7 @@ java {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     configurations.embed.each { dep ->
         from(project.zipTree(dep)) {
             exclude (
@@ -93,7 +112,7 @@ jar {
                 'Created-By'     : "Gradle ${gradle.gradleVersion}",
                 'Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
                 'Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
-                'Dependencies'   : configurations.runtime.files.collect {"$it.name" }.join(', ')
+                'Dependencies'   : 'org.slf4j.slf4j-log4j12, org.apache.logging.log4j.log4j-slf4j-impl, com.typesafe.config, com.github.FabricMC.fabric-installer, com.github.TheRandomLabs.CurseAPI, com.fasterxml.jackson.core.jackson-databind'
         )
     }
 }
