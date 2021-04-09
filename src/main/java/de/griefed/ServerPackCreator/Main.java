@@ -13,6 +13,13 @@ public class Main {
      * @param args Command Line Argument determines whether ServerPackCreator will start into normal operation mode or with a step-by-step generation of a configuration file.
      */
     public static void main(String[] args) {
+        String jarPath = null,
+               jarName = null,
+               javaVersion = null,
+               osArch = null,
+               osName = null,
+               osVersion = null;
+
         appLogger.warn("################################################################");
         appLogger.warn("#                      WORK IN PROGRESS!                       #");
         appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
@@ -21,12 +28,12 @@ public class Main {
         appLogger.warn("################################################################");
 
         try {
-            String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
-            String javaVersion = System.getProperty("java.version");
-            String osArch = System.getProperty("os.arch");
-            String osName = System.getProperty("os.name");
-            String osVersion = System.getProperty("os.version");
+            jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
+            javaVersion = System.getProperty("java.version");
+            osArch = System.getProperty("os.arch");
+            osName = System.getProperty("os.name");
+            osVersion = System.getProperty("os.version");
             appLogger.info("SYSTEM INFORMATION:");
             appLogger.info(String.format("JAR Path: %s", jarPath));
             appLogger.info(String.format("JAR Name: %s", jarName));
@@ -39,7 +46,7 @@ public class Main {
         } catch (URISyntaxException ex) {
             appLogger.error("Error getting system properties.", ex);
         }
-        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!Reference.oldConfigFile.exists() && !Reference.configFile.exists())){
+        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT) || (!Reference.oldConfigFile.exists() && !Reference.configFile.exists() && !jarPath.endsWith(".exe"))){
             CLISetup.setup();
         }
         if (!FilesSetup.filesSetup()) {
