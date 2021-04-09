@@ -70,6 +70,16 @@ jobs:
           asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.jar
           asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.jar
           asset_content_type: application/jar
+      - name: Upload Release Asset Executable
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/ServerPackCreator*.exe
+          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.exe
+          asset_content_type: application/jar
       - name: Upload Release Asset Sources Jar
         id: upload-release-asset-sources
         uses: actions/upload-release-asset@v1
