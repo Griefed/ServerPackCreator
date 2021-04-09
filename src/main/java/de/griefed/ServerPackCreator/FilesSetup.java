@@ -270,13 +270,13 @@ class FilesSetup {
                         "\n" +
                         "# List of client-only mods to delete from serverpack.\n" +
                         "# No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n" +
-                        "# Example: [\"AmbientSounds\", \"ClientTweaks\", \"PackMenu\", \"BetterAdvancement\", \"jeiintegration\"]\n" +
+                        "# Example: [AmbientSounds,ClientTweaks,PackMenu,BetterAdvancement,jeiintegration]\n" +
                         "clientMods = [%s]\n" +
                         "\n" +
                         "# Name of directories to include in serverpack.\n" +
                         "# When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n" +
                         "# for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n" +
-                        "# Example: [\"config\", \"mods\", \"scripts\"]\n" +
+                        "# Example: [config,mods,scripts]\n" +
                         "copyDirs = [%s]\n" +
                         "\n" +
                         "# Whether to install a Forge/Fabric server for the serverpack. Must be true or false.\n" +
