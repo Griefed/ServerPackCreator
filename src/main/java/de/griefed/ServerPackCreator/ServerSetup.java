@@ -47,6 +47,7 @@ class ServerSetup {
                         if (line == null) { break; }
                         installerLogger.info(line);
                     }
+                    reader.close();
                     appLogger.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log");
                     appLogger.info("Returning to ServerPackCreator.");
                 } else {
@@ -75,6 +76,7 @@ class ServerSetup {
                         if (line == null) { break; }
                         installerLogger.info(line);
                     }
+                    reader.close();
                     appLogger.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log");
                     appLogger.info("Returning to ServerPackCreator.");
                 } else {

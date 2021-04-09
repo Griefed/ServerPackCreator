@@ -18,13 +18,14 @@ class FilesSetup {
         } catch (IOException ex) {
             appLogger.error("Could not create server_files directory.", ex);
         }
-        boolean doesConfigExist = checkForConfig();
-        boolean doesFabricLinuxExist = checkForFabricLinux();
-        boolean doesFabricWindowsExist = checkForFabricWindows();
-        boolean doesForgeLinuxExist = checkForForgeLinux();
-        boolean doesForgeWindowsExist = checkForForgeWindows();
-        boolean doesPropertiesExist = checkForProperties();
-        boolean doesIconExist = checkForIcon();
+        boolean doesConfigExist         = checkForConfig();
+        boolean doesFabricLinuxExist    = checkForFabricLinux();
+        boolean doesFabricWindowsExist  = checkForFabricWindows();
+        boolean doesForgeLinuxExist     = checkForForgeLinux();
+        boolean doesForgeWindowsExist   = checkForForgeWindows();
+        boolean doesPropertiesExist     = checkForProperties();
+        boolean doesIconExist           = checkForIcon();
+
         if (doesConfigExist            ||
                 doesFabricLinuxExist   ||
                 doesFabricWindowsExist ||
@@ -46,16 +47,19 @@ class FilesSetup {
         if (Reference.oldConfigFile.exists()) {
             try {
                 Files.copy(Reference.oldConfigFile.getAbsoluteFile().toPath(), Reference.configFile.getAbsoluteFile().toPath());
+
                 boolean isOldConfigDeleted = Reference.oldConfigFile.delete();
                 if (isOldConfigDeleted) {
                     appLogger.info("creator.conf migrated to serverpackcreator.conf");
                 }
+
             } catch (IOException ex) {
                 appLogger.error("Error renaming creator.conf to serverpackcreator.conf", ex);
             }
         } else if (!Reference.configFile.exists()) {
             try {
                 InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", Reference.configFile.getName())));
+
                 if (link != null) {
                     Files.copy(link, Reference.configFile.getAbsoluteFile().toPath());
                     link.close();
@@ -63,6 +67,7 @@ class FilesSetup {
 
                 appLogger.info("serverpackcreator.conf generated. Please customize.");
                 firstRun = true;
+
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
                     appLogger.error("Could not extract default config-file", ex);
@@ -88,6 +93,7 @@ class FilesSetup {
 
                 appLogger.info("start-fabric.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
+
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
                     appLogger.error("Could not extract default Fabric Linux start file", ex);
@@ -113,6 +119,7 @@ class FilesSetup {
 
                 appLogger.info("start-fabric.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
+
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
                     appLogger.error("Could not extract default Fabric Windows start file", ex);
@@ -138,6 +145,7 @@ class FilesSetup {
 
                 appLogger.info("start-forge.sh generated. Please customize if you intend on using it.");
                 firstRun = true;
+
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
                     appLogger.error("Could not extract default Forge Linux start file", ex);
@@ -163,6 +171,7 @@ class FilesSetup {
 
                 appLogger.info("start-forge.bat generated. Please customize if you intend on using it.");
                 firstRun = true;
+
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
                     appLogger.error("Could not extract default Forge Windows start file", ex);
@@ -188,6 +197,7 @@ class FilesSetup {
 
                 appLogger.info("server.properties generated. Please customize if you intend on using it.");
                 firstRun = true;
+
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
                     appLogger.error("Could not extract default server.properties file", ex);
@@ -213,6 +223,7 @@ class FilesSetup {
 
                 appLogger.info("server-icon.png generated. Please customize if you intend on using it.");
                 firstRun = true;
+
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
                     appLogger.error("Could not extract default server-icon.png file", ex);

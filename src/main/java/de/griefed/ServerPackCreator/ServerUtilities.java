@@ -162,10 +162,13 @@ class ServerUtilities {
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
             FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.jar", modpackDir));
             FileChannel downloadFabricFileChannel = downloadFabricFileOutputStream.getChannel();
-
             downloadFabricFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+
             downloadFabricFileOutputStream.flush();
             downloadFabricFileOutputStream.close();
+            readableByteChannel.close();
+            downloadFabricFileChannel.close();
+
         } catch (IOException e) {
             appLogger.error("An error occurred downloading Fabric: ", e);
             if (new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists()) {
@@ -186,17 +189,19 @@ class ServerUtilities {
      * @return Boolean. Returns true if the download was successful. False if not.
      */
     private static String latestFabricInstaller(String modpackDir) {
-        String result = "0.7.2";
+        String result;
         try {
             URL downloadFabricXml = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
 
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
             FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
             FileChannel downloadFabricXmlFileChannel = downloadFabricXmlFileOutputStream.getChannel();
-
             downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
+
             downloadFabricXmlFileOutputStream.flush();
             downloadFabricXmlFileOutputStream.close();
+            downloadFabricXmlReadableByteChannel.close();
+            downloadFabricXmlFileChannel.close();
 
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = domFactory.newDocumentBuilder();
@@ -208,9 +213,9 @@ class ServerUtilities {
             appLogger.info("Successfully retrieved Fabric-Installer XML.");
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             appLogger.error("Could not retrieve Installer XML file. Defaulting to Installer version 0.7.2.", ex);
-        } finally {
-            return result;
+            result = "0.7.2";
         }
+        return result;
     }
     /** Downloads the specified version of the Forge installer to be used in ServerSetup.installServer.
      * @param minecraftVersion String. The Minecraft version corresponding to the Forge version. Minecraft version and Forge version build a pair.
@@ -227,10 +232,13 @@ class ServerUtilities {
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
             FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("%s/server_pack/forge-installer.jar", modpackDir));
             FileChannel downloadForgeFileChannel = downloadForgeFileOutputStream.getChannel();
-
             downloadForgeFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+
             downloadForgeFileOutputStream.flush();
             downloadForgeFileOutputStream.close();
+            readableByteChannel.close();
+            downloadForgeFileChannel.close();
+
         } catch (IOException e) {
             appLogger.error("An error occurred downloading Forge: ", e);
             if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists()) {

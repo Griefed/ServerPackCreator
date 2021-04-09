@@ -1,12 +1,8 @@
 package de.griefed.ServerPackCreator;
 
-import com.therandomlabs.curseapi.project.CurseProject;
 import com.typesafe.config.Config;
-
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 class Reference {
     static final String MINECRAFT_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";

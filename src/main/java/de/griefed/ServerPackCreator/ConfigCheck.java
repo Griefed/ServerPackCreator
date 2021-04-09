@@ -505,6 +505,8 @@ class ConfigCheck {
                 downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
                 downloadManifestOutputStream.flush();
                 downloadManifestOutputStream.close();
+                readableByteChannel.close();
+                downloadManifestOutputStreamChannel.close();
 
                 File manifestJsonFile = new File("mcmanifest.json");
                 Scanner jsonReader = new Scanner(manifestJsonFile);
@@ -555,6 +557,8 @@ class ConfigCheck {
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
             downloadManifestOutputStream.close();
+            readableByteChannel.close();
+            downloadManifestOutputStreamChannel.close();
 
             File manifestXMLFile = new File("fabric-manifest.xml");
             Scanner xmlReader = new Scanner(manifestXMLFile);
@@ -609,6 +613,8 @@ class ConfigCheck {
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
             downloadManifestOutputStream.close();
+            readableByteChannel.close();
+            downloadManifestOutputStreamChannel.close();
 
             File manifestJsonFile = new File("forge-manifest.json");
             manifestJsonFile.deleteOnExit();
@@ -646,6 +652,8 @@ class ConfigCheck {
             downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
             downloadFabricXmlFileOutputStream.flush();
             downloadFabricXmlFileOutputStream.close();
+            downloadFabricXmlReadableByteChannel.close();
+            downloadFabricXmlFileChannel.close();
 
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = domFactory.newDocumentBuilder();

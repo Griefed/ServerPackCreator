@@ -187,18 +187,19 @@ class CopyFiles {
     private static List<String> excludeClientMods(String modsDir, List<String> clientMods) {
         appLogger.info("Preparing a list of mods to include in server pack...");
         String[] copyMods = new String[0];
-        List<String> listOfFiles = new ArrayList<>();
+        List<String> modpackModList = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(Paths.get(modsDir))) {
-            listOfFiles = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
-            for (int in = 0; in < listOfFiles.toArray().length; in++) {
+            modpackModList = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
+            for (int in = 0; in < modpackModList.toArray().length; in++) {
                 for (int i = 0; i < clientMods.toArray().length; i++) {
-                    String mod = listOfFiles.get(in);
-                    if (mod.contains(clientMods.get(i))) {
-                        listOfFiles.remove(in);
+                    String modpackMod = modpackModList.get(in);
+                    String clientMod = clientMods.get(i);
+                    if (modpackMod.contains(clientMod)) {
+                        modpackModList.remove(in);
                     }
                 }
             }
-            copyMods = listOfFiles.toArray(new String[0]);
+            copyMods = modpackModList.toArray(new String[0]);
             return Arrays.asList(copyMods.clone());
         } catch (IOException ex) {
             appLogger.error("Error: There was an error during the acquisition of files in mods directory.", ex);
