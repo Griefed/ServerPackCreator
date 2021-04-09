@@ -1,7 +1,19 @@
+# dot-files and folders
+.docker
 .github
+.gitignore
+.idea
+
+
+# folders
 img
 logs
-.gitignore
+tests
+src/test
+
+# other
 CONTRIBUTING.md
 LICENSE
 README.md
+
+
