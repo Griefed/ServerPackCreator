@@ -79,7 +79,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator*.exe
+          asset_path: ./build/libs/ServerPackCreator.exe
           asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.exe
           asset_content_type: application/jar
       - name: Upload Release Asset Sources Jar
