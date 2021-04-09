@@ -33,7 +33,7 @@ RUN \
       /tmp/*
 
 COPY --from=builder tmp/serverpackcreator/build/libs/ServerPackCreator.jar /app/serverpackcreator/serverpackcreator.jar
-COPY src/main/resources/server_files/ /defaults/server_files
+COPY src/main/resources/de/griefed/resources/server_files /defaults/server_files
 COPY root/ /
 
 VOLUME /data
