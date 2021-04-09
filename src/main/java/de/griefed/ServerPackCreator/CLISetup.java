@@ -51,19 +51,34 @@ class CLISetup {
             System.out.println();
 
             appLogger.info("Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
-            clientMods.addAll(readStringArray());
+            do {
+                clientMods.addAll(readStringArray());
+                appLogger.info(String.format("You entered: %s", clientMods));
+                appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
+                System.out.print("Answer: ");
+            } while (!readBoolean());
             appLogger.info(String.format("You entered: %s", clientMods));
             tmpClientMods = new String[clientMods.size()];
             clientMods.toArray(tmpClientMods);
+            System.out.println();
 
             appLogger.info("Which directories should be copied to the server pack? These are folder names inside your modpack directory.");
             do {
-                appLogger.info("Specify your directories you want to be copied:");
-                copyDirs.addAll(readStringArray());
-            } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
+                do {
+
+                    copyDirs.clear();
+                    appLogger.info("Specify your directories you want to be copied:");
+                    copyDirs.addAll(readStringArray());
+                } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
+
+                appLogger.info(String.format("You entered: %s", copyDirs));
+                appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
+                System.out.print("Answer: ");
+            } while (!readBoolean());
             appLogger.info(String.format("You entered: %s", copyDirs));
             tmpCopyDirs = new String[copyDirs.size()];
             copyDirs.toArray(tmpCopyDirs);
+            System.out.println();
 
             appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
             System.out.print("Include modloader server installation: ");
@@ -143,6 +158,8 @@ class CLISetup {
             appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
             System.out.print("Answer: ");
         } while (!readBoolean());
+        reader.close();
+
         if (FilesSetup.writeConfigToFile(
                 modpackDir,
                 buildString(Arrays.toString(tmpClientMods)),
@@ -165,11 +182,11 @@ class CLISetup {
     * @return String List. Returns list with user input values that will be stored in config.
     */
     private static List<String> readStringArray() {
-        Scanner reader = new Scanner(System.in);
+        Scanner readerArray = new Scanner(System.in);
         ArrayList<String> result = new ArrayList<>(1);
         String stringArray;
         while (true) {
-            stringArray = reader.nextLine();
+            stringArray = readerArray.nextLine();
             if (stringArray.isEmpty()) {
                 return result;
             } else {
@@ -193,10 +210,10 @@ class CLISetup {
     * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
     */
     private static boolean readBoolean() {
-        Scanner reader = new Scanner(System.in);
+        Scanner readerBoolean = new Scanner(System.in);
         String boolRead;
         while (true) {
-            boolRead = reader.nextLine();
+            boolRead = readerBoolean.nextLine();
             if (boolRead.matches("[Tt]rue") || boolRead.matches("1") || boolRead.matches("[Yy]es")|| boolRead.matches("[Yy]")) {
                 return true;
             } else if (boolRead.matches("[Ff]alse") || boolRead.matches("0") || boolRead.matches("[Nn]o") || boolRead.matches("[Nn]" )){
