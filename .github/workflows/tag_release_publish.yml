@@ -59,7 +59,7 @@ jobs:
           ./gradlew clean
           ./gradlew -Pversion=${NEW_VERSION} publish createExe
       - name: List files
-      - run: ls -ahl build/libs
+        run: ls -ahl build/libs
 
       # UPLOAD ASSETS TO RELEASE
       - name: Upload Release Asset Main Jar
