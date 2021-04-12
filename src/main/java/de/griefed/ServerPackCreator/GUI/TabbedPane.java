@@ -22,7 +22,7 @@ public class TabbedPane extends JPanel {
             createAndShowGUI();
         });
         /*
-        LOOK AND FEELs:
+        LOOK AND FEEL:
         Possibly restricted to platforms:
         com.sun.java.swing.plaf.motif.MotifLookAndFeel
         com.sun.java.swing.plaf.windows.WindowsLookAndFeel
@@ -39,14 +39,15 @@ public class TabbedPane extends JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setIconImage(ReferenceGUI.icon);
-
-        JLabel banner = new JLabel(ReferenceGUI.banner);
+        JLabel banner = new JLabel(ReferenceGUI.bannerIcon);
 
         frame.add(banner, BorderLayout.PAGE_START);
-
         frame.add(new TabbedPane(), BorderLayout.CENTER);
 
+        frame.setMinimumSize(ReferenceGUI.panelDimension);
         frame.setPreferredSize(ReferenceGUI.panelDimension);
+        frame.setMaximumSize(ReferenceGUI.panelDimension);
+        frame.setResizable(false);
 
         frame.pack();
         frame.setVisible(true);
@@ -57,7 +58,6 @@ public class TabbedPane extends JPanel {
         super(new GridLayout(1, 1));
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setPreferredSize(ReferenceGUI.panelDimension);
 
         tabbedPane.addTab("Create Server Pack", null, new CreateServerPack().createServerPack() , "Configure and start generation of server pack.");
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
