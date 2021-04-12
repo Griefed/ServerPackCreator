@@ -42,7 +42,14 @@ Use at your own risk! Be aware that data loss is possible.
 8. **Include a server.properties-file in your server pack**
 9. **Create a ZIP-archive of your server pack**
 
+## Versions
 
+Consider major version incompatible to each other. Meaning, configs from 1.x.x are incompatible with version 2.x.x etc.
+
+Version mask | Description
+-------------|------------
+**1.x.x** | CLI exclusive
+**2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI.
 
 ## Configuration
 
