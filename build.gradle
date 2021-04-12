@@ -23,6 +23,7 @@ repositories {
 }
 
 group 'de.griefed'
+
 sourceSets {
     //noinspection GroovyAssignabilityCheck
     main {
@@ -33,10 +34,17 @@ sourceSets {
 }
 
 launch4j {
+    fileDescription = "An application to create a server pack from any given Forge or Fabric Minecraft modpack."
+    version = System.getenv("NEW_VERSION").toString()
+    textVersion = System.getenv("NEW_VERSION").toString()
+    windowTitle = "ServerPackCreator"
+    copyright = "GNU Lesser General Public License v2.1"
+    downloadUrl = "https://github.com/Griefed/ServerPackCreator/releases"
+    supportUrl = "https://github.com/Griefed/ServerPackCreator/issues"
     libraryDir = 'libraries'
     outputDir = 'libs'
     mainClassName = 'de.griefed.ServerPackCreator.Main'
-    icon = "${projectDir}/img/icon.ico"
+    icon = "${projectDir}/src/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
 pmd {
