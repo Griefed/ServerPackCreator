@@ -37,7 +37,7 @@ class CopyFilesTest {
         String modpackDir = "./src/test/resources/cleanup_tests";
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/cleanup_tests/server_pack.zip"), REPLACE_EXISTING);
         Files.createDirectories(Paths.get(String.format("%s/server_pack",modpackDir)));
-        CopyFiles.cleanupEnvironment(modpackDir);
+        Reference.copyFiles.cleanupEnvironment(modpackDir);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -47,8 +47,8 @@ class CopyFilesTest {
         if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/fabric_tests";
             String modLoader = "Fabric";
-            FilesSetup.filesSetup();
-            CopyFiles.copyStartScripts(modpackDir, modLoader, true);
+            Reference.filesSetup.filesSetup();
+            Reference.copyFiles.copyStartScripts(modpackDir, modLoader, true);
             Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).exists());
             Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.sh", modpackDir)).exists());
             new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).delete();
@@ -67,8 +67,8 @@ class CopyFilesTest {
     void testCopyStartScriptsForge() throws IOException {
         String modpackDir = "./src/test/resources/forge_tests";
         String modLoader = "Forge";
-        FilesSetup.filesSetup();
-        CopyFiles.copyStartScripts(modpackDir, modLoader, true);
+        Reference.filesSetup.filesSetup();
+        Reference.copyFiles.copyStartScripts(modpackDir, modLoader, true);
         Assertions.assertTrue(new File(String.format("%s/server_pack/start-forge.bat",modpackDir)).exists());
         Assertions.assertTrue(new File(String.format("%s/server_pack/start-forge.sh",modpackDir)).exists());
         new File(String.format("%s/server_pack/start-forge.bat",modpackDir)).delete();
@@ -120,7 +120,7 @@ class CopyFilesTest {
                 "seeds",
                 "defaultconfigs"
         );
-        CopyFiles.copyFiles(modpackDir, copyDirs, clientMods);
+        Reference.copyFiles.copyFiles(modpackDir, copyDirs, clientMods);
         Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/scripts",modpackDir)).isDirectory());
@@ -155,7 +155,7 @@ class CopyFilesTest {
                 "seeds",
                 "defaultconfigs"
         );
-        CopyFiles.copyFiles(modpackDir, copyDirs, clientMods);
+        Reference.copyFiles.copyFiles(modpackDir, copyDirs, clientMods);
         Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/scripts",modpackDir)).isDirectory());
@@ -181,9 +181,9 @@ class CopyFilesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyIcon() throws IOException {
-        FilesSetup.filesSetup();
+        Reference.filesSetup.filesSetup();
         String modpackDir = "./src/test/resources/forge_tests";
-        CopyFiles.copyIcon(modpackDir);
+        Reference.copyFiles.copyIcon(modpackDir);
         Assertions.assertTrue(new File(String.format("%s/server_pack/server-icon.png",modpackDir)).exists());
         new File(String.format("%s/server_pack/server-icon.png",modpackDir)).delete();
         String delete = "./server_files";
@@ -200,9 +200,9 @@ class CopyFilesTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testCopyProperties() throws IOException {
-        FilesSetup.filesSetup();
+        Reference.filesSetup.filesSetup();
         String modpackDir = "./src/test/resources/forge_tests";
-        CopyFiles.copyProperties(modpackDir);
+        Reference.copyFiles.copyProperties(modpackDir);
         Assertions.assertTrue(new File(String.format("%s/server_pack/server.properties",modpackDir)).exists());
         new File(String.format("%s/server_pack/server.properties",modpackDir)).delete();
         String delete = "./server_files";

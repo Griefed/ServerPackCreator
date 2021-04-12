@@ -9,9 +9,8 @@ import java.nio.file.Paths;
 class FilesSetup {
     private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
     /** Calls individual methods which check for existence of default files. If any of these methods return true, ServerPackCreator will exit, giving the user the chance to customize it before the program runs in production.
-     * @return Boolean. Returns true if no default file has been generated. False if any default file was generated.
      */
-    static boolean filesSetup() {
+    void filesSetup() {
         appLogger.info("Checking for default files...");
         try {
             Files.createDirectories(Paths.get("./server_files"));
@@ -33,16 +32,21 @@ class FilesSetup {
                 doesForgeWindowsExist  ||
                 doesPropertiesExist    ||
                 doesIconExist) {
-            return false;
+
+            appLogger.warn("################################################################");
+            appLogger.warn("#             ONE OR MORE DEFAULT FILE(S) GENERATED.           #");
+            appLogger.warn("# CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED. #");
+            appLogger.warn("#               CUSTOMIZE THEM BEFORE CONTINUING!              #");
+            appLogger.warn("################################################################");
+
         } else {
             appLogger.info("Setup completed.");
-            return true;
         }
     }
     /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new config file is generated.
      * @return Boolean. Returns true if new config file was generated.
      */
-    static boolean checkForConfig() {
+    boolean checkForConfig() {
         boolean firstRun = false;
         if (Reference.oldConfigFile.exists()) {
             try {
@@ -81,7 +85,7 @@ class FilesSetup {
     /** Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    static boolean checkForFabricLinux() {
+    boolean checkForFabricLinux() {
         boolean firstRun = false;
         if (!Reference.fabricLinuxFile.exists()) {
             try {
@@ -107,7 +111,7 @@ class FilesSetup {
     /** Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    static boolean checkForFabricWindows() {
+    boolean checkForFabricWindows() {
         boolean firstRun = false;
         if (!Reference.fabricWindowsFile.exists()) {
             try {
@@ -133,7 +137,7 @@ class FilesSetup {
     /** Checks for existence of Forge start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    static boolean checkForForgeLinux() {
+    boolean checkForForgeLinux() {
         boolean firstRun = false;
         if (!Reference.forgeLinuxFile.exists()) {
             try {
@@ -159,7 +163,7 @@ class FilesSetup {
     /** Checks for existence of Forge start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    static boolean checkForForgeWindows() {
+    boolean checkForForgeWindows() {
         boolean firstRun = false;
         if (!Reference.forgeWindowsFile.exists()) {
             try {
@@ -185,7 +189,7 @@ class FilesSetup {
     /** Checks for existence of server.properties file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    static boolean checkForProperties() {
+    boolean checkForProperties() {
         boolean firstRun = false;
         if (!Reference.propertiesFile.exists()) {
             try {
@@ -211,7 +215,7 @@ class FilesSetup {
     /** Checks for existence of server-icon.png file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated.
      */
-    static boolean checkForIcon() {
+    boolean checkForIcon() {
         boolean firstRun = false;
         if (!Reference.iconFile.exists()) {
             try {
@@ -249,7 +253,7 @@ class FilesSetup {
      * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server jar.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
      */
-    static boolean writeConfigToFile(String modpackDir,
+    boolean writeConfigToFile(String modpackDir,
                                      String clientMods,
                                      String copyDirs,
                                      boolean includeServer,

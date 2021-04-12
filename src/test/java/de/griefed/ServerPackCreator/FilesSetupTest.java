@@ -34,7 +34,7 @@ class FilesSetupTest {
     void testRenameOldConfig() throws IOException {
         File oldConfigFile = new File("creator.conf");
         oldConfigFile.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForConfig());
+        Assertions.assertFalse(Reference.filesSetup.checkForConfig());
         Assertions.assertTrue(new File("serverpackcreator.conf").exists());
         new File("serverpackcreator.conf").delete();
         new File("creator.conf").delete();
@@ -45,7 +45,7 @@ class FilesSetupTest {
     void testCheckForConfig() throws IOException {
         File configFile = new File("serverpackcreator.conf");
         configFile.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForConfig());
+        Assertions.assertFalse(Reference.filesSetup.checkForConfig());
         configFile.delete();
     }
 
@@ -53,7 +53,7 @@ class FilesSetupTest {
     @Test
     void testCheckForConfigNew() {
         File configFile = new File("serverpackcreator.conf");
-        Assertions.assertTrue(FilesSetup.checkForConfig());
+        Assertions.assertTrue(Reference.filesSetup.checkForConfig());
         configFile.delete();
     }
 
@@ -62,7 +62,7 @@ class FilesSetupTest {
     void testCheckForFabricLinux() throws IOException {
         File fabricLinux = new File("start-fabric.sh");
         fabricLinux.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForFabricLinux());
+        Assertions.assertFalse(Reference.filesSetup.checkForFabricLinux());
         fabricLinux.delete();
     }
 
@@ -70,7 +70,7 @@ class FilesSetupTest {
     @Test
     void testCheckForFabricLinuxNew() {
         File fabricLinux = new File("start-fabric.sh");
-        Assertions.assertTrue(FilesSetup.checkForFabricLinux());
+        Assertions.assertTrue(Reference.filesSetup.checkForFabricLinux());
         fabricLinux.delete();
     }
 
@@ -79,7 +79,7 @@ class FilesSetupTest {
     void testCheckForFabricWindows() throws IOException {
         File fabricWindows = new File("start-fabric.bat");
         fabricWindows.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForFabricWindows());
+        Assertions.assertFalse(Reference.filesSetup.checkForFabricWindows());
         fabricWindows.delete();
     }
 
@@ -87,7 +87,7 @@ class FilesSetupTest {
     @Test
     void testCheckForFabricWindowsNew() {
         File fabricWindows = new File("start-fabric.bat");
-        Assertions.assertTrue(FilesSetup.checkForFabricWindows());
+        Assertions.assertTrue(Reference.filesSetup.checkForFabricWindows());
         fabricWindows.delete();
     }
 
@@ -96,7 +96,7 @@ class FilesSetupTest {
     void testCheckForForgeLinux() throws IOException {
         File forgeLinux = new File("start-forge.sh");
         forgeLinux.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForForgeLinux());
+        Assertions.assertFalse(Reference.filesSetup.checkForForgeLinux());
         forgeLinux.delete();
     }
 
@@ -104,7 +104,7 @@ class FilesSetupTest {
     @Test
     void testCheckForForgeLinuxNew() {
         File forgeLinux = new File("start-forge.sh");
-        Assertions.assertTrue(FilesSetup.checkForForgeLinux());
+        Assertions.assertTrue(Reference.filesSetup.checkForForgeLinux());
         forgeLinux.delete();
     }
 
@@ -113,7 +113,7 @@ class FilesSetupTest {
     void testCheckForForgeWindows() throws IOException {
         File forgeWindows = new File("start-forge.bat");
         forgeWindows.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForForgeWindows());
+        Assertions.assertFalse(Reference.filesSetup.checkForForgeWindows());
         forgeWindows.delete();
     }
 
@@ -121,7 +121,7 @@ class FilesSetupTest {
     @Test
     void testCheckForForgeWindowsNew() {
         File forgeWindows = new File("start-forge.bat");
-        Assertions.assertTrue(FilesSetup.checkForForgeWindows());
+        Assertions.assertTrue(Reference.filesSetup.checkForForgeWindows());
         forgeWindows.delete();
     }
 
@@ -130,7 +130,7 @@ class FilesSetupTest {
     void testCheckForProperties() throws IOException {
         File properties = new File("server.properties");
         properties.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForProperties());
+        Assertions.assertFalse(Reference.filesSetup.checkForProperties());
         properties.delete();
     }
 
@@ -138,7 +138,7 @@ class FilesSetupTest {
     @Test
     void testCheckForPropertiesNew() {
         File properties = new File("server.properties");
-        Assertions.assertTrue(FilesSetup.checkForProperties());
+        Assertions.assertTrue(Reference.filesSetup.checkForProperties());
         properties.delete();
     }
 
@@ -147,7 +147,7 @@ class FilesSetupTest {
     void testCheckForIcon() throws IOException {
         File icon = new File("server-icon.png");
         icon.createNewFile();
-        Assertions.assertFalse(FilesSetup.checkForIcon());
+        Assertions.assertFalse(Reference.filesSetup.checkForIcon());
         icon.delete();
     }
 
@@ -155,14 +155,14 @@ class FilesSetupTest {
     @Test
     void testCheckForIconNew() {
         File icon = new File("server-icon.png");
-        Assertions.assertTrue(FilesSetup.checkForIcon());
+        Assertions.assertTrue(Reference.filesSetup.checkForIcon());
         icon.delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testFilesSetup() throws IOException {
-        FilesSetup.filesSetup();
+        Reference.filesSetup.filesSetup();
         Assertions.assertTrue(new File("./server_files").isDirectory());
         Assertions.assertTrue(new File("./server_files/server.properties").exists());
         Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
@@ -231,10 +231,10 @@ class FilesSetupTest {
         String minecraftVersion = "1.16.5";
         String modLoader = "Fabric";
         String modLoaderVersion = "0.11.3";
-        boolean result = FilesSetup.writeConfigToFile(
+        boolean result = Reference.filesSetup.writeConfigToFile(
                 modpackDir,
-                CLISetup.buildString(clientMods.toString()),
-                CLISetup.buildString(copyDirs.toString()),
+                Reference.cliSetup.buildString(clientMods.toString()),
+                Reference.cliSetup.buildString(copyDirs.toString()),
                 true,
                 javaPath,
                 minecraftVersion,
@@ -290,10 +290,10 @@ class FilesSetupTest {
         String minecraftVersion = "1.16.5";
         String modLoader = "Forge";
         String modLoaderVersion = "36.1.2";
-        boolean result = FilesSetup.writeConfigToFile(
+        boolean result = Reference.filesSetup.writeConfigToFile(
                 modpackDir,
-                CLISetup.buildString(clientMods.toString()),
-                CLISetup.buildString(copyDirs.toString()),
+                Reference.cliSetup.buildString(clientMods.toString()),
+                Reference.cliSetup.buildString(copyDirs.toString()),
                 true,
                 javaPath,
                 minecraftVersion,

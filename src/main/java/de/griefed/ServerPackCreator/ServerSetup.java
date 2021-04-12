@@ -22,13 +22,13 @@ class ServerSetup {
      * @param modLoaderVersion String. The modloader version for which to install the modloader and Minecraft server.
      * @param javaPath String. Path to Java installation needed to execute the Fabric and Forge installers.
      */
-    static void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
+    void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
         File fabricInstaller = new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir));
         File forgeInstaller = new File(String.format("%s/server_pack/forge-installer.jar", modpackDir));
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
                 appLogger.info("Starting Fabric installation.");
-                if (ServerUtilities.downloadFabricJar(modpackDir)) {
+                if (Reference.serverUtilities.downloadFabricJar(modpackDir)) {
                     appLogger.info("Fabric installer successfully downloaded. Installing Fabric. This may take a while...");
                     ProcessBuilder processBuilder = new ProcessBuilder(
                             javaPath,
@@ -59,7 +59,7 @@ class ServerSetup {
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
                 appLogger.info("Starting Forge installation.");
-                if (ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
+                if (Reference.serverUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
                     appLogger.info("Forge installer successfully downloaded. Installing Forge. This may take a while...");
                     ProcessBuilder processBuilder = new ProcessBuilder(
                             javaPath,
@@ -88,8 +88,8 @@ class ServerSetup {
         } else {
             appLogger.error(String.format("Specified invalid modloader: %s", modLoader));
         }
-        ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
-        ServerUtilities.cleanUpServerPack(
+        Reference.serverUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
+        Reference.serverUtilities.cleanUpServerPack(
                 fabricInstaller,
                 forgeInstaller,
                 modLoader,
@@ -102,7 +102,7 @@ class ServerSetup {
      * @param modLoader String. Determines the name of Minecraft#s server jar which will be deleted from the zip-archive.
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server jar needs to be deleted from the zip-archive.
      */
-    static void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation) {
+    void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation) {
         final Path sourceDir = Paths.get(String.format("%s/server_pack", modpackDir));
         String zipFileName = sourceDir.toString().concat(".zip");
         appLogger.info("Creating zip archive of serverpack...");
@@ -128,7 +128,7 @@ class ServerSetup {
             appLogger.error("There was an error during zip creation", ex);
         }
         if (includeServerInstallation) {
-            ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
+            Reference.serverUtilities.deleteMinecraftJar(modLoader, modpackDir);
             appLogger.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
             appLogger.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
             appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
@@ -141,7 +141,7 @@ class ServerSetup {
      */
     @SuppressWarnings("unused")
     @Deprecated
-    static void deleteClientMods(String modpackDir, List<String> clientMods) {
+    private void deleteClientMods(String modpackDir, List<String> clientMods) {
         appLogger.info("Deleting client-side mods from serverpack:");
         File serverMods = new File(String.format("%s/server_pack/mods", modpackDir));
         Set<String> fileList = new HashSet<>();

@@ -21,7 +21,7 @@ class CopyFiles {
     /** Deletes files from previous runs of ServerPackCreator.
      * @param modpackDir String. The directory in where to check for files from previous runs.
      */
-    static void cleanupEnvironment(String modpackDir) {
+    void cleanupEnvironment(String modpackDir) {
         if (new File(String.format("%s/server_pack", modpackDir)).exists()) {
             appLogger.info("Found old server_pack. Cleaning up...");
             Path serverPack = Paths.get(String.format("%s/server_pack", modpackDir));
@@ -64,7 +64,7 @@ class CopyFiles {
      * @param modLoader String. Determines whether start scripts for Forge or Fabric are copied to modpackDir. Checks for valid modLoader are in ConfigCheck.
      * @param includeStartScripts Boolean. Whether to include start scripts in server_pack. Boolean.
      */
-    static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
+    void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
         if (modLoader.equalsIgnoreCase("Forge") && includeStartScripts) {
             appLogger.info("Copying Forge start scripts...");
             try {
@@ -108,7 +108,7 @@ class CopyFiles {
      * @param clientMods String List. List of clientside-only mods NOT to copy to server pack.
      * @throws IOException Only print stacktrace if it does not start with java.nio.file.DirectoryNotEmptyException.
      */
-    static void copyFiles(String modpackDir, List<String> copyDirs, List<String> clientMods) throws IOException {
+    void copyFiles(String modpackDir, List<String> copyDirs, List<String> clientMods) throws IOException {
         String serverPath = String.format("%s/server_pack", modpackDir);
         Files.createDirectories(Paths.get(serverPath));
         for (int i = 0; i < copyDirs.toArray().length; i++) {
@@ -184,7 +184,7 @@ class CopyFiles {
      * @return List String. A list of all mods inside the modpack excluding the specified clientside-only mods.
      */
     @SuppressWarnings("UnusedAssignment")
-    private static List<String> excludeClientMods(String modsDir, List<String> clientMods) {
+    private List<String> excludeClientMods(String modsDir, List<String> clientMods) {
         appLogger.info("Preparing a list of mods to include in server pack...");
         String[] copyMods = new String[0];
         List<String> modpackModList = new ArrayList<>();
@@ -210,7 +210,7 @@ class CopyFiles {
     /** Copies the server-icon.png into server_pack.
      * @param modpackDir String. /server_pack. Directory where the server-icon.png will be copied to.
      */
-    static void copyIcon(String modpackDir) {
+    void copyIcon(String modpackDir) {
         appLogger.info("Copying server-icon.png...");
         try {
             Files.copy(
@@ -226,7 +226,7 @@ class CopyFiles {
     /** Copies the server.properties into server_pack.
      * @param modpackDir String. /server_pack. Directory where the server.properties. will be copied to.
      */
-    static void copyProperties(String modpackDir) {
+    void copyProperties(String modpackDir) {
         appLogger.info("Copying server.properties...");
         try {
             Files.copy(

@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 class ServerSetupTest {
     @Mock
@@ -68,8 +66,8 @@ class ServerSetupTest {
             } else {
                 javaPath = autoJavaPath;
             }
-            ServerUtilities.downloadFabricJar(modpackDir);
-            ServerSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
+            Reference.serverUtilities.downloadFabricJar(modpackDir);
+            Reference.serverSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
             Assertions.assertTrue(new File(String.format("%s/server_pack/fabric-server-launch.jar", modpackDir)).exists());
             Assertions.assertTrue(new File(String.format("%s/server_pack/server.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/fabric-server-launch.jar", modpackDir)).delete();
@@ -96,8 +94,8 @@ class ServerSetupTest {
             } else {
                 javaPath = autoJavaPath;
             }
-            ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
-            ServerSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
+            Reference.serverUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
+            Reference.serverSetup.installServer(modLoader, modpackDir, minecraftVersion, modLoaderVersion, javaPath);
             Assertions.assertTrue(new File(String.format("%s/server_pack/1.16.5.json", modpackDir)).exists());
             Assertions.assertTrue(new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists());
             Assertions.assertTrue(new File(String.format("%s/server_pack/minecraft_server.1.16.5.jar", modpackDir)).exists());
@@ -124,7 +122,7 @@ class ServerSetupTest {
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Fabric";
             String modpackDir = "./src/test/resources/fabric_tests";
-            ServerSetup.zipBuilder(modpackDir, modLoader, Boolean.TRUE);
+            Reference.serverSetup.zipBuilder(modpackDir, modLoader, Boolean.TRUE);
         }
     }
 
@@ -134,7 +132,7 @@ class ServerSetupTest {
         if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
-            ServerSetup.zipBuilder(modpackDir, modLoader, Boolean.TRUE);
+            Reference.serverSetup.zipBuilder(modpackDir, modLoader, Boolean.TRUE);
         }
     }
 }

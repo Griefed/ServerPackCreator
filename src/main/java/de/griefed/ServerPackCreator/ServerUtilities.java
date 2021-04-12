@@ -34,7 +34,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
      * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
-    static void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
+    void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
         if (modLoader.equalsIgnoreCase("Fabric")) {
             fabricShell(modpackDir, minecraftVersion);
             fabricBatch(modpackDir, minecraftVersion);
@@ -49,7 +49,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
      * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
-    private static void fabricShell(String modpackDir, String minecraftVersion) {
+    private void fabricShell(String modpackDir, String minecraftVersion) {
         try {
             String downloadMinecraftServer = (new URL(
                     LauncherMeta
@@ -75,7 +75,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
      * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
-    private static void fabricBatch(String modpackDir, String minecraftVersion) {
+    private void fabricBatch(String modpackDir, String minecraftVersion) {
         try {
             String downloadMinecraftServer = (new URL(
                     LauncherMeta
@@ -101,7 +101,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
      * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
-    private static void forgeShell(String modpackDir, String minecraftVersion) {
+    private void forgeShell(String modpackDir, String minecraftVersion) {
         try {
             String downloadMinecraftServer = (new URL(
                     LauncherMeta
@@ -127,7 +127,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
      * @param minecraftVersion String. The version of the Minecraft server jar to download.
      */
-    private static void forgeBatch(String modpackDir, String minecraftVersion) {
+    private void forgeBatch(String modpackDir, String minecraftVersion) {
         try {
             String downloadMinecraftServer = (new URL(
                     LauncherMeta
@@ -153,7 +153,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
-    static boolean downloadFabricJar(String modpackDir) {
+    boolean downloadFabricJar(String modpackDir) {
         boolean downloaded = false;
         try {
             appLogger.info("Trying to download Fabric installer...");
@@ -188,7 +188,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
-    private static String latestFabricInstaller(String modpackDir) {
+    private String latestFabricInstaller(String modpackDir) {
         String result;
         try {
             URL downloadFabricXml = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
@@ -223,7 +223,7 @@ class ServerUtilities {
      * @param modpackDir String. /server_pack The directory where the Forge installer will be placed in.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
-    static boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
+    boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
         boolean downloaded = false;
         try {
             appLogger.info("Trying to download specified Forge installer...");
@@ -257,7 +257,7 @@ class ServerUtilities {
      * @param modLoader String. Determines the name of the file to delete.
      * @param modpackDir String. /server_pack The directory in which the file will be deleted.
      */
-    static void deleteMinecraftJar(String modLoader, String modpackDir) {
+    void deleteMinecraftJar(String modLoader, String modpackDir) {
         if (modLoader.equalsIgnoreCase("Forge")) {
             appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
 
@@ -304,7 +304,7 @@ class ServerUtilities {
      * @param minecraftVersion String. Needed for renaming the Forge server jar to work with launch scripts provided by ServerPackCreator.
      * @param modLoaderVersion String. Needed for renaming the Forge server jar to work with launch scripts provided by ServerPackCreator.
      */
-    static void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
+    void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
         appLogger.info("Cleanup after modloader server installation.");
         if (modLoader.equalsIgnoreCase("Fabric")) {
             File fabricXML = new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir));

@@ -32,7 +32,7 @@ class CLISetupTest {
                 "seeds",
                 "defaultconfigs"
         );
-        String result = CLISetup.buildString(args.toString());
+        String result = Reference.cliSetup.buildString(args.toString());
         Assertions.assertEquals(args.toString(), String.format("[%s]",result));
     }
 }

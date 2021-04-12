@@ -2,6 +2,7 @@ package de.griefed.ServerPackCreator.CurseForgeModpack;
 
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
+import de.griefed.ServerPackCreator.Reference;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,7 +46,7 @@ class CreateModpackTest {
                     .fileWithID(fileID))
                     .displayName();
             String modpackDir = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
-            boolean result = CreateModpack.curseForgeModpack(modpackDir, 238298, 3174854);
+            boolean result = Reference.createModpack.curseForgeModpack(modpackDir, 238298, 3174854);
             Assertions.assertTrue(result);
             String delete = String.format("./src/test/resources/forge_tests/%s", projectName);
             if (new File(delete).isDirectory()) {
@@ -59,13 +61,13 @@ class CreateModpackTest {
 
     @Test
     void testSetModloaderFabric() {
-        String result = CreateModpack.setModloader("fAbRiC");
+        String result = Reference.createModpack.setModloader("fAbRiC");
         Assertions.assertEquals("Fabric", result);
     }
 
     @Test
     void testSetModloaderForge() {
-        String result = CreateModpack.setModloader("fOrGe");
+        String result = Reference.createModpack.setModloader("fOrGe");
         Assertions.assertEquals("Forge", result);
     }
 }

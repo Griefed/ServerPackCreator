@@ -34,7 +34,7 @@ public class CreateModpack {
      * @return Boolean. Returns true if the modpack was freshly created.
      */
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
-    public static boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
+    public boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
         try {
             if (CurseAPI.project(projectID).isPresent()) {
@@ -65,7 +65,7 @@ public class CreateModpack {
      * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static void initializeModpack(String modpackDir, Integer projectID, Integer fileID) {
+    private void initializeModpack(String modpackDir, Integer projectID, Integer fileID) {
         try {
             appLogger.info(String.format("Downloading %s/%s.", projectName, fileName));
 
@@ -114,7 +114,7 @@ public class CreateModpack {
      * @param modpackDir String. All mods are downloaded to a child directory 'mods'
      */
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
-    private static void downloadMods(String modpackDir) {
+    private void downloadMods(String modpackDir) {
         appLogger.info("Downloading mods...");
         List<String> failedDownloads = new ArrayList<>();
 
@@ -177,7 +177,7 @@ public class CreateModpack {
     /** Copies all folders and the files therein to the parent modpack directory.
      * @param modpackDir String. The overrides directory resides in this directory. All folders and files within overrides are copied here.
      */
-    private static void copyOverride(String modpackDir) {
+    private void copyOverride(String modpackDir) {
         appLogger.info("Copying folders from overrides to modpack...");
         try {
             Stream<Path> files = java.nio.file.Files.walk(Paths.get(String.format("%s/overrides", modpackDir)));
@@ -200,7 +200,7 @@ public class CreateModpack {
      * @param modpackDir String. The path to the modpack directory, a combination of project name and file display name.
      * @return Boolean. Returns true if the directory exists. False if not.
      */
-    private static boolean checkCurseForgeDir(String modpackDir) {
+    private boolean checkCurseForgeDir(String modpackDir) {
         boolean isModpackPresent = false;
         if (!(new File(modpackDir).isDirectory()) && !(new File(String.format("%s/manifest.json", modpackDir)).exists())) {
             appLogger.info("CurseForge directory doesn't exist. We will download your file and create the modpack.");
@@ -215,7 +215,7 @@ public class CreateModpack {
      * @param zipFile String. The name of the zipfile to extract.
      * @param modpackDir The directory where the archive resides in and will be extracted to.
      */
-    private static void unzipArchive(String zipFile, String modpackDir) {
+    private void unzipArchive(String zipFile, String modpackDir) {
         appLogger.info("Extracting modpack ZIP-file.");
         File destDir = new File(modpackDir);
         byte[] buffer = new byte[1024];
@@ -253,7 +253,7 @@ public class CreateModpack {
      * @param zipEntry Zip entry with which to check for location.
      * @return Returns the correct destination for the new file.
      */
-    private static File newFile(File destinationDir, ZipEntry zipEntry) {
+    private File newFile(File destinationDir, ZipEntry zipEntry) {
         File destFile = new File(destinationDir, zipEntry.getName());
         String destDirPath = null;
         String destFilePath = null;
@@ -278,7 +278,7 @@ public class CreateModpack {
      * @param modloader String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..
      * @return String. Returns a standardized String of the specified modloader.
      */
-    static String setModloader(String modloader) {
+    String setModloader(String modloader) {
         String returnLoader = null;
         if (modloader.equalsIgnoreCase("Forge")) {
             returnLoader = "Forge";
@@ -292,7 +292,7 @@ public class CreateModpack {
      */
     @SuppressWarnings({"unused", "ResultOfMethodCallIgnored"})
     @Deprecated
-    private static void deleteDirs(String modpackDir) {
+    private void deleteDirs(String modpackDir) {
         appLogger.info("Deleting directories not needed in server pack from modpack...");
         String[] dirsToBeDeleted = {"overrides", "packmenu", "resourcepacks"};
         for (String s : dirsToBeDeleted) {

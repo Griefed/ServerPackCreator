@@ -14,7 +14,7 @@ class CLISetup {
     /**
      * CLI for config file generation. Prompts user to enter config file values and then generates a config file with values entered by user.
      */
-    static void setup() {
+    void setup() {
         List<String> clientMods,
                      copyDirs;
 
@@ -44,7 +44,7 @@ class CLISetup {
             do {
                 System.out.print("Path to modpack directory: ");
                 tmpModpackDir = reader.nextLine();
-            } while (!ConfigCheck.checkModpackDir(tmpModpackDir));
+            } while (!Reference.configCheck.checkModpackDir(tmpModpackDir));
 
             modpackDir = tmpModpackDir.replace("\\", "/");
             appLogger.info(String.format("You entered: %s", modpackDir));
@@ -69,7 +69,7 @@ class CLISetup {
                     copyDirs.clear();
                     appLogger.info("Specify your directories you want to be copied:");
                     copyDirs.addAll(readStringArray());
-                } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
+                } while (!Reference.configCheck.checkCopyDirs(copyDirs, modpackDir));
 
                 appLogger.info(String.format("You entered: %s", copyDirs));
                 appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
@@ -89,7 +89,7 @@ class CLISetup {
             do {
                 System.out.print("Minecraft version: ");
                 minecraftVersion = reader.nextLine();
-            } while (!ConfigCheck.isMinecraftVersionCorrect(minecraftVersion));
+            } while (!Reference.configCheck.isMinecraftVersionCorrect(minecraftVersion));
             appLogger.info(String.format("You entered: %s", minecraftVersion));
             System.out.println();
 
@@ -97,8 +97,8 @@ class CLISetup {
             do {
                 System.out.print("Modloader: ");
                 modLoader = reader.nextLine();
-            } while (!ConfigCheck.checkModloader(modLoader));
-            modLoader = ConfigCheck.setModloader(modLoader);
+            } while (!Reference.configCheck.checkModloader(modLoader));
+            modLoader = Reference.configCheck.setModloader(modLoader);
             appLogger.info(String.format("You entered: %s", modLoader));
             System.out.println();
 
@@ -106,7 +106,7 @@ class CLISetup {
             do {
                 System.out.print("Modloader version: ");
                 modLoaderVersion = reader.nextLine();
-            } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
+            } while (!Reference.configCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
             appLogger.info(String.format("You entered: %s", modLoaderVersion));
             System.out.println();
 
@@ -116,8 +116,8 @@ class CLISetup {
             do {
                 System.out.print("Path to your Java installation: ");
                 String tmpJavaPath = reader.nextLine();
-                javaPath = ConfigCheck.getJavaPath(tmpJavaPath);
-            } while (!ConfigCheck.checkJavaPath(javaPath));
+                javaPath = Reference.configCheck.getJavaPath(tmpJavaPath);
+            } while (!Reference.configCheck.checkJavaPath(javaPath));
             System.out.println();
 
             appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
@@ -143,7 +143,7 @@ class CLISetup {
             includeZipCreation = readBoolean();
             appLogger.info(String.format("You entered: %s", includeZipCreation));
 
-            ConfigCheck.printConfig(modpackDir,
+            Reference.configCheck.printConfig(modpackDir,
                     clientMods,
                     copyDirs,
                     includeServerInstallation,
@@ -160,7 +160,7 @@ class CLISetup {
         } while (!readBoolean());
         reader.close();
 
-        if (FilesSetup.writeConfigToFile(
+        if (Reference.filesSetup.writeConfigToFile(
                 modpackDir,
                 buildString(Arrays.toString(tmpClientMods)),
                 buildString(Arrays.toString(tmpCopyDirs)),
@@ -181,7 +181,7 @@ class CLISetup {
     /** A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
     * @return String List. Returns list with user input values that will be stored in config.
     */
-    private static List<String> readStringArray() {
+    private List<String> readStringArray() {
         Scanner readerArray = new Scanner(System.in);
         ArrayList<String> result = new ArrayList<>(1);
         String stringArray;
@@ -199,7 +199,7 @@ class CLISetup {
      * @param args Strings that will be concatenated into one string
      * @return String. Returns concatenated string that contains all provided values.
      */
-    static String buildString(String... args) {
+    String buildString(String... args) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Arrays.toString(args));
         stringBuilder.delete(0, 2).reverse().delete(0,2).reverse();
@@ -209,7 +209,7 @@ class CLISetup {
     /** A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
     * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
     */
-    private static boolean readBoolean() {
+    private boolean readBoolean() {
         Scanner readerBoolean = new Scanner(System.in);
         String boolRead;
         while (true) {

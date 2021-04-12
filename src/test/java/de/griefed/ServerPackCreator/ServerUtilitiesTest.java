@@ -34,7 +34,7 @@ class ServerUtilitiesTest {
             String modLoader = "Fabric";
             String modpackDir = "./src/test/resources/fabric_tests";
             String minecraftVersion = "1.16.5";
-            ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
+            Reference.serverUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
             Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir)).exists());
             Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).exists());
             new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir)).delete();
@@ -50,7 +50,7 @@ class ServerUtilitiesTest {
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
             String minecraftVersion = "1.16.5";
-            ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
+            Reference.serverUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
             Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).exists());
             Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).exists());
             new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).delete();
@@ -64,7 +64,7 @@ class ServerUtilitiesTest {
         //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/fabric_tests";
-            boolean result = ServerUtilities.downloadFabricJar(modpackDir);
+            boolean result = Reference.serverUtilities.downloadFabricJar(modpackDir);
             Assertions.assertTrue(result);
             Assertions.assertTrue(new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).delete();
@@ -80,7 +80,7 @@ class ServerUtilitiesTest {
             String modLoaderVersion = "36.1.2";
             String modpackDir = "./src/test/resources/forge_tests";
             String minecraftVersion = "1.16.5";
-            boolean result = ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
+            boolean result = Reference.serverUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
             Assertions.assertTrue(result);
             Assertions.assertTrue(new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
@@ -92,7 +92,7 @@ class ServerUtilitiesTest {
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
         String modLoader = "Fabric";
         String modpackDir = "./src/test/resources/forge_tests";
-        ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
+        Reference.serverUtilities.deleteMinecraftJar(modLoader, modpackDir);
     }
 
     @Test
@@ -100,7 +100,7 @@ class ServerUtilitiesTest {
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
         String modLoader = "Forge";
         String modpackDir = "./src/test/resources/forge_tests";
-        ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
+        Reference.serverUtilities.deleteMinecraftJar(modLoader, modpackDir);
     }
 
     @Test
@@ -109,7 +109,7 @@ class ServerUtilitiesTest {
         String modpackDir = "./src/test/resources/forge_tests";
         String minecraftVersion = "1.16.5";
         String modLoaderVersion = "36.1.2";
-        ServerUtilities.cleanUpServerPack(
+        Reference.serverUtilities.cleanUpServerPack(
                 new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)),
                 new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)),
                 modLoader,
@@ -124,7 +124,7 @@ class ServerUtilitiesTest {
         String modpackDir = "./src/test/resources/fabric_tests";
         String minecraftVersion = "1.16.5";
         String modLoaderVersion = "36.1.2";
-        ServerUtilities.cleanUpServerPack(
+        Reference.serverUtilities.cleanUpServerPack(
                 new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)),
                 new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)),
                 modLoader,

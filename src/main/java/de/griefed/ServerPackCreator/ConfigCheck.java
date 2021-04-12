@@ -26,15 +26,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static de.griefed.ServerPackCreator.CurseForgeModpack.CreateModpack.curseForgeModpack;
-
 class ConfigCheck {
     private static final Logger appLogger = LogManager.getLogger(ConfigCheck.class);
 
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
      * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
-    public static boolean checkConfig() {
+    public boolean checkConfig() {
         boolean configHasError;
         appLogger.info("Checking configuration...");
         try {
@@ -83,7 +81,7 @@ class ConfigCheck {
      * @param modpackDir String. Should an existing modpack be specified, all configurations are read from local file and the server pack is created, if config is correct.
      * @return Boolean. Returns true if an error is found during configuration check. False if the configuration is deemed valid.
      */
-    private static boolean isDir(String modpackDir) {
+    private boolean isDir(String modpackDir) {
         boolean configHasError = false;
         Reference.modpackDir = modpackDir;
 
@@ -125,7 +123,7 @@ class ConfigCheck {
     /** Checks whether the specified projectID,fileID combination is a valid CurseForge project and file and whether the resulting directory exists. If the directory does not exist, make calls to other methods which create the modpack. Parses information gathered from the modpack to later replace the previous configuration file.
      * @return Boolean. Currently always returns true so ServerPackCreator does not go straight into server pack creation after the creation of the specified modpack. Gives the user the chance to check their config before actually creating the server pack.
      */
-    private static boolean isCurse() {
+    private boolean isCurse() {
         boolean configHasError = false;
         try {
             if (CurseAPI.project(Reference.projectID).isPresent()) {
@@ -143,7 +141,7 @@ class ConfigCheck {
 
                 Reference.modpackDir = String.format("./%s/%s", projectName, displayName);
 
-                if (curseForgeModpack(Reference.modpackDir, Reference.projectID, Reference.projectFileID)) {
+                if (Reference.createModpack.curseForgeModpack(Reference.modpackDir, Reference.projectID, Reference.projectFileID)) {
                     try {
                         byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", Reference.modpackDir)));
                         ObjectMapper objectMapper = new ObjectMapper();
@@ -182,10 +180,10 @@ class ConfigCheck {
                     }
                     Reference.copyDirs = suggestCopyDirs(Reference.modpackDir);
                     appLogger.info("Your old config file will now be replaced by a new one, with values gathered from the downloaded modpack.");
-                    FilesSetup.writeConfigToFile(
+                    Reference.filesSetup.writeConfigToFile(
                             Reference.modpackDir,
-                            CLISetup.buildString(Reference.clientMods.toString()),
-                            CLISetup.buildString(Reference.copyDirs.toString()),
+                            Reference.cliSetup.buildString(Reference.clientMods.toString()),
+                            Reference.cliSetup.buildString(Reference.copyDirs.toString()),
                             Reference.includeServerInstallation, Reference.javaPath,
                             Reference.minecraftVersion, Reference.modLoader,
                             Reference.modLoaderVersion, Reference.includeServerIcon,
@@ -205,7 +203,7 @@ class ConfigCheck {
      * @param modpack Object. Contains information about our modpack. Used to get a list of all projects used in the modpack.
      * @return Boolean. Returns true if Jumploader is found, false if not found.
      */
-    private static boolean containsFabric(Modpack modpack) {
+    private boolean containsFabric(Modpack modpack) {
         boolean hasJumploader = false;
         for (int i = 0; i < modpack.getFiles().toArray().length; i++) {
             String[] mods;
@@ -222,7 +220,7 @@ class ConfigCheck {
      * @param modpackDir String. The directory for which to gather a list of directories.
      * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only directories which would not be needed by a server pack. If you have suggestions to this list, open an issue on https://github.com/Griefed/ServerPackCreator/issues
      */
-    private static List<String> suggestCopyDirs(String modpackDir) {
+    private List<String> suggestCopyDirs(String modpackDir) {
         appLogger.info("Preparing a list of directories to include in server pack...");
 
         String[] dirsNotToCopy = {
@@ -256,7 +254,7 @@ class ConfigCheck {
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
-    static boolean checkCurseForge(String modpackDir) {
+    boolean checkCurseForge(String modpackDir) {
         String[] projectFileIds;
         boolean configCorrect = false;
 
@@ -280,7 +278,7 @@ class ConfigCheck {
      * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
      * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
      */
-    private static boolean convertToBoolean(String stringBoolean) {
+    private boolean convertToBoolean(String stringBoolean) {
         boolean returnBoolean;
         if (stringBoolean.matches("[Tt]rue") ||
             stringBoolean.matches("1")       ||
@@ -315,7 +313,7 @@ class ConfigCheck {
      * @param includeScripts Boolean. Whether to include start scripts for the specified modloader in the server pack.
      * @param includeZip Boolean. Whether to create a zip-archive of the server pack.
      */
-    static void printConfig(String modpackDirectory,
+    void printConfig(String modpackDirectory,
                             List<String> clientsideMods,
                             List<String> copyDirectories,
                             boolean installServer,
@@ -358,7 +356,7 @@ class ConfigCheck {
      * @param modpackDir String. The path to the modpack directory.
      * @return Boolean. Returns true if the directory exists. False if not.
      */
-    static boolean checkModpackDir(String modpackDir) {
+    boolean checkModpackDir(String modpackDir) {
         boolean configCorrect = false;
         if (modpackDir.equals("")) {
             appLogger.error("Error: Modpack directory not specified. Please specify an existing directory.");
@@ -375,7 +373,7 @@ class ConfigCheck {
      * @param modpackDir String. The path to the modpack directory in which to check for directories.
      * @return Boolean. Returns true if all directories exist. False if any one does not.
      */
-    static boolean checkCopyDirs(List<String> copyDirs, String modpackDir) {
+    boolean checkCopyDirs(List<String> copyDirs, String modpackDir) {
         boolean configCorrect = true;
         if (copyDirs.isEmpty()) {
             appLogger.error("Error: No directories specified for copying. This would result in an empty serverpack.");
@@ -396,7 +394,7 @@ class ConfigCheck {
      * @param enteredPath String. The path to check whether it is empty.
      * @return String. Return the entered Java path if it is not empty. Automatically determine path if empty.
      */
-    static String getJavaPath(String enteredPath) {
+    String getJavaPath(String enteredPath) {
         String autoJavaPath;
         if (enteredPath.equals("")) {
             appLogger.warn("You didn't specify the path to your Java installation. ServerPackCreator will try to determine it for you...");
@@ -416,7 +414,7 @@ class ConfigCheck {
      * @param pathToJava String. The path to check for java.exe or java.
      * @return Boolean. Returns true if the path was correctly set. False if not.
      */
-    static boolean checkJavaPath(String pathToJava) {
+    boolean checkJavaPath(String pathToJava) {
         boolean configCorrect = false;
         if (new File(pathToJava).exists() && pathToJava.endsWith("java.exe")) {
             configCorrect = true;
@@ -432,7 +430,7 @@ class ConfigCheck {
      * @param modloader String. Check case insensitive for Forge or Fabric.
      * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if not.
      */
-    static boolean checkModloader(String modloader) {
+    boolean checkModloader(String modloader) {
         boolean configCorrect = false;
         if (modloader.equalsIgnoreCase("Forge") || modloader.equalsIgnoreCase("Fabric")) {
             configCorrect = true;
@@ -446,7 +444,7 @@ class ConfigCheck {
      * @param modloader String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..
      * @return String. Returns a standardized String of the specified modloader.
      */
-    static String setModloader(String modloader) {
+    String setModloader(String modloader) {
         String returnLoader = null;
         if (modloader.equalsIgnoreCase("Forge")) {
             returnLoader = "Forge";
@@ -462,7 +460,7 @@ class ConfigCheck {
      * @param minecraftVersion String. The version of Minecraft for which to check for if modloader is Forge.
      * @return Boolean. Returns true if the specified modloader version is correct. False if not.
      */
-    static boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
+    boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
         boolean isVersionCorrect = false;
         if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion, minecraftVersion)) {
             isVersionCorrect = true;
@@ -478,7 +476,7 @@ class ConfigCheck {
      * @param minecraftVersion Minecraft version to check.
      * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest. False if not.
      */
-    static boolean isMinecraftVersionCorrect(String minecraftVersion) {
+    boolean isMinecraftVersionCorrect(String minecraftVersion) {
         if (!minecraftVersion.equals("")) {
             try {
                 URL manifestJsonURL = new URL(Reference.MINECRAFT_MANIFEST_URL);
@@ -531,7 +529,7 @@ class ConfigCheck {
      * @param fabricVersion String. The Fabric version to check.
      * @return Boolean. Returns true if the specified Fabric version could be found in Fabric's manifest. False if not.
      */
-    static boolean isFabricVersionCorrect(String fabricVersion) {
+    boolean isFabricVersionCorrect(String fabricVersion) {
         try {
             URL manifestJsonURL = new URL(Reference.FABRIC_MANIFEST_URL);
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
@@ -587,7 +585,7 @@ class ConfigCheck {
      * @param minecraftVersion String. The Minecraft version that the modpack uses. Needed to prevent usage of Forge, for example, from MC version 1.7.10, with 1.12.2.
      * @return Boolean. Returns true if Forge version correct and false if it isn't correct.
      */
-    static boolean isForgeVersionCorrect(String forgeVersion, String minecraftVersion) {
+    boolean isForgeVersionCorrect(String forgeVersion, String minecraftVersion) {
         try {
             URL manifestJsonURL = new URL(Reference.FORGE_MANIFEST_URL);
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
@@ -641,7 +639,7 @@ class ConfigCheck {
      * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
-    private static String latestFabricLoader(String modpackDir) {
+    private String latestFabricLoader(String modpackDir) {
         String result = "0.11.3";
         try {
             URL downloadFabricXml = new URL(Reference.FABRIC_MANIFEST_URL);
@@ -675,7 +673,7 @@ class ConfigCheck {
      * @return Array, String. Returns the array consisting of the projectID at 0 and the fileID at 1.
      */
     @SuppressWarnings("unused")
-    private static String[] splitString(String modpackDir) {
+    private String[] splitString(String modpackDir) {
         String[] projectFileIds;
         projectFileIds = modpackDir.split(",");
         appLogger.info(String.format("You entered: ProjectID %s | FileID %s.", projectFileIds[0], projectFileIds[1]));
