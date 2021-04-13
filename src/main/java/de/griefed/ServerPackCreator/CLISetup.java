@@ -1,5 +1,6 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
