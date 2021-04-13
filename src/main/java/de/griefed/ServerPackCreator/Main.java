@@ -13,6 +13,38 @@ public class Main {
      * @param args Command Line Argument determines whether ServerPackCreator will start into normal operation mode or with a step-by-step generation of a configuration file.
      */
     public static void main(String[] args) {
+        if (Arrays.asList(args).contains(Reference.LANG_ARGUMENT)) {
+            List<String> programArgs = Arrays.asList(args);
+            try {
+                LocalizationManager.init(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
+            } catch (IncorrectLanguageException e) {
+                appLogger.info(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
+                appLogger.error("Incorrect language specified, falling back to English (United States)...");
+                LocalizationManager.init();
+            }
+        } else if (Reference.langPropertiesFile.exists()) {
+            try {
+                LocalizationManager.init(Reference.langPropertiesFile);
+            } catch (IncorrectLanguageException e) {
+                appLogger.error("Incorrect language specified, falling back to English (United States)...");
+                LocalizationManager.init();
+            }
+        } else {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+                boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                if (langCreated) {
+                    appLogger.debug(LocalizationManager.getLocalizedString("debug.lang_file_created"));
+                } else {
+                    appLogger.debug(LocalizationManager.getLocalizedString("debug.lang_file_failed"));
+                }
+                writer.write(String.format("# Supported languages: %s%n", Arrays.toString(LocalizationManager.getSupportedLanguages())));
+                writer.write(String.format("lang=en_us%n"));
+                LocalizationManager.init();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
         String jarPath = null,
                jarName = null,
                javaVersion = null,
