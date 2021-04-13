@@ -58,7 +58,7 @@ dependencies {
     embed group: 'com.typesafe', name: 'config', version: '1.4.1'
     embed group: 'com.github.FabricMC', name:'fabric-installer', version:'master-SNAPSHOT'
     embed group: 'com.github.TheRandomLabs', name:'CurseAPI', version:'master-SNAPSHOT'
-    embed group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.2'
+    embed group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.3'
 
     testImplementation 'org.mockito:mockito-core:3.9.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
