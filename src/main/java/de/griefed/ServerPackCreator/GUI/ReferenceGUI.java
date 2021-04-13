@@ -15,6 +15,8 @@ public class ReferenceGUI {
 
     static final Image icon = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/app.png")));
 
+    static final Color backgroundColour = new Color(255,248,235);
+
     static final Dimension panelDimension           = new Dimension(600,800);
     static final Dimension folderButtonDimension    = new Dimension(24,24);
     static final Dimension miscButtonDimension      = new Dimension(50,50);

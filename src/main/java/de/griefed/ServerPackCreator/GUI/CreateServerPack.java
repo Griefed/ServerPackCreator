@@ -101,64 +101,76 @@ public class CreateServerPack extends Component  {
         //Labels and checkboxes
         constraints.insets = new Insets(10,10,0,0);
 
-        //Label and checkBox installServer
+        //Label installServer
         JLabel labelServer = new JLabel("Install modloader server in server pack?");
         labelServer.setToolTipText("Whether to install the server-software for the chosen modloader.");
         constraints.gridx = 0;
         constraints.gridy = 18;
         createServerPackPanel.add(labelServer, constraints);
-        JCheckBox checkBoxServer = new JCheckBox();
-        constraints.gridx = 1;
-        constraints.gridy = 18;
-        createServerPackPanel.add(checkBoxServer, constraints);
 
-        //Label and checkBox copyIcon
+        //Label copyIcon
         JLabel labelIcon = new JLabel("Include server-icon.png in server pack?");
         labelIcon.setToolTipText("Whether to copy the server-icon.png from server_files to the server pack.");
         constraints.gridx = 0;
         constraints.gridy = 20;
         createServerPackPanel.add(labelIcon, constraints);
-        JCheckBox checkBoxIcon = new JCheckBox();
-        constraints.gridx = 1;
-        constraints.gridy = 20;
-        createServerPackPanel.add(checkBoxIcon, constraints);
 
-        //Label and checkBox copyProperties
+        //Label copyProperties
         JLabel labelProperties = new JLabel("Include server.properties in server pack?");
         labelProperties.setToolTipText("Whether to copy the server.properties to the server pack.");
         constraints.gridx = 0;
         constraints.gridy = 22;
         createServerPackPanel.add(labelProperties, constraints);
-        JCheckBox checkBoxProperties = new JCheckBox();
-        constraints.gridx = 1;
-        constraints.gridy = 22;
-        createServerPackPanel.add(checkBoxProperties, constraints);
 
-        //Label and checkBox copyStartScripts
+        //Label copyStartScripts
         JLabel labelScripts = new JLabel("Include start scripts in server pack?");
         labelScripts.setToolTipText("Whether to copy the start scripts for the chosen modloader to the server pack.");
         constraints.gridx = 0;
         constraints.gridy = 24;
         createServerPackPanel.add(labelScripts, constraints);
-        JCheckBox checkBoxScripts = new JCheckBox();
-        constraints.gridx = 1;
-        constraints.gridy = 24;
-        createServerPackPanel.add(checkBoxScripts, constraints);
 
-        //Label and checkBox createZIParchive
+        //Label createZIParchive
         JLabel labelZIP = new JLabel("Create ZIP-archive of server pack?");
         labelZIP.setToolTipText("Whether to create a ZIP-archive of the server pack for immediate upload.");
         constraints.gridx = 0;
         constraints.gridy = 26;
         createServerPackPanel.add(labelZIP, constraints);
+
+        //Checkboxes and buttons
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.fill = GridBagConstraints.NONE;
+
+        //Checkbox installServer
+        JCheckBox checkBoxServer = new JCheckBox();
+        constraints.gridx = 1;
+        constraints.gridy = 18;
+        createServerPackPanel.add(checkBoxServer, constraints);
+
+        //Checkbox copyIcon
+        JCheckBox checkBoxIcon = new JCheckBox();
+        constraints.gridx = 1;
+        constraints.gridy = 20;
+        createServerPackPanel.add(checkBoxIcon, constraints);
+
+        //Checkbox copyProperties
+        JCheckBox checkBoxProperties = new JCheckBox();
+        constraints.gridx = 1;
+        constraints.gridy = 22;
+        createServerPackPanel.add(checkBoxProperties, constraints);
+
+        //Checkbox copyScripts
+        JCheckBox checkBoxScripts = new JCheckBox();
+        constraints.gridx = 1;
+        constraints.gridy = 24;
+        createServerPackPanel.add(checkBoxScripts, constraints);
+
+        //Checkbox createZIP
         JCheckBox checkBoxZIP = new JCheckBox();
         constraints.gridx = 1;
         constraints.gridy = 26;
         createServerPackPanel.add(checkBoxZIP, constraints);
 
         //Buttons
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.fill = GridBagConstraints.NONE;
         constraints.insets = new Insets(0,10,0,0);
 
         //Select modpackDir button

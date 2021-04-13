@@ -13,7 +13,7 @@ public class TabbedPane extends JPanel {
     public void main() {
         SwingUtilities.invokeLater(() -> {
             //Bold fonts = true, else false
-            UIManager.put("swing.boldMetal", false);
+            UIManager.put("swing.boldMetal", true);
             try {
                 UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
@@ -40,6 +40,7 @@ public class TabbedPane extends JPanel {
 
         frame.setIconImage(ReferenceGUI.icon);
         JLabel banner = new JLabel(ReferenceGUI.bannerIcon);
+        banner.setOpaque(true);
 
         frame.add(banner, BorderLayout.PAGE_START);
         frame.add(new TabbedPane(), BorderLayout.CENTER);
@@ -58,6 +59,7 @@ public class TabbedPane extends JPanel {
         super(new GridLayout(1, 1));
 
         JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setBackground(ReferenceGUI.backgroundColour);
 
         tabbedPane.addTab("Create Server Pack", null, new CreateServerPack().createServerPack() , "Configure and start generation of server pack.");
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
