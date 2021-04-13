@@ -10,10 +10,12 @@ class Reference {
     static final String FABRIC_MANIFEST_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
 
     static final String CONFIG_GEN_ARGUMENT = "-cgen";
+    static final String LANG_ARGUMENT = "-lang";
 
     static final File oldConfigFile = new File("creator.conf");
     static final File configFile = new File("serverpackcreator.conf");
     static final File propertiesFile = new File("server.properties");
+    static final File langPropertiesFile = new File("lang.properties");
     static final File iconFile = new File("server-icon.png");
     static final File forgeWindowsFile = new File("start-forge.bat");
     static final File forgeLinuxFile = new File("start-forge.sh");
