@@ -1,12 +1,15 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.IncorrectLanguageException;
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
-class FilesSetup {
+public class FilesSetup {
     private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
     /** Calls individual methods which check for existence of default files. If any of these methods return true, ServerPackCreator will exit, giving the user the chance to customize it before the program runs in production.
      * @return Boolean. Returns true if no default file has been generated. False if any default file was generated.
@@ -232,6 +235,74 @@ class FilesSetup {
             }
         }
         return firstRun;
+    }
+
+    public static void checkLocaleFile() {
+        if (Reference.langPropertiesFile.exists()) {
+            try {
+                LocalizationManager.init(Reference.langPropertiesFile);
+            } catch (IncorrectLanguageException e) {
+
+                appLogger.error("Incorrect language specified, falling back to English (United States)...");
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+
+                    if (!Reference.langPropertiesFile.exists()) {
+                        boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                        if (langCreated) {
+                            appLogger.debug("Lang properties file created successfully.");
+                        } else {
+                            appLogger.debug("Lang properties file not created.");
+                        }
+                    }
+
+                    writer.write(String.format("# Supported languages: %s%n", Arrays.toString(LocalizationManager.getSupportedLanguages())));
+                    writer.write(String.format("lang=en_us%n"));
+
+                } catch (IOException ex) {
+                    appLogger.error("Error: There was an error writing the localization properties file.", ex);
+                }
+                LocalizationManager.init();
+            }
+        } else {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+
+                if (!Reference.langPropertiesFile.exists()) {
+                    boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                    if (langCreated) {
+                        appLogger.debug("Lang properties file created successfully.");
+                    } else {
+                        appLogger.debug("Lang properties file not created.");
+                    }
+                }
+
+                writer.write(String.format("# Supported languages: %s%n", Arrays.toString(LocalizationManager.getSupportedLanguages())));
+                writer.write(String.format("lang=en_us%n"));
+
+            } catch (IOException ex) {
+                appLogger.error("Error: There was an error writing the localization properties file.", ex);
+            }
+            LocalizationManager.init();
+        }
+    }
+
+    public static void writeLocaleToFile(String locale) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+
+            if (!Reference.langPropertiesFile.exists()) {
+                boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                if (langCreated) {
+                    appLogger.debug("Lang properties file created successfully.");
+                } else {
+                    appLogger.debug("Lang properties file not created.");
+                }
+            }
+
+            writer.write(String.format("# Supported languages: %s%n", Arrays.toString(LocalizationManager.getSupportedLanguages())));
+            writer.write(String.format("lang=%s%n", locale));
+
+        } catch (IOException ex) {
+            appLogger.error("Error: There was an error writing the localization properties file.", ex);
+        }
     }
 
     /** Writes a new configuration file with the parameters passed to it.
