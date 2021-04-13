@@ -1,5 +1,6 @@
 package de.griefed.ServerPackCreator.i18n;
 
+import de.griefed.ServerPackCreator.Reference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,11 +43,7 @@ public class LocalizationManager {
     /**
      * List pf the languages that application supports. Must be formatted like this: en_us, de_de etc. Fields are case insensitive.
      */
-    private static final String[] SUPPORTED_LANGUAGES = {
-            "en_us",
-            "uk_ua",
-            "ru_ru"
-    };
+
 
     /**
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by SPC or specified in the invalid format.
@@ -54,7 +51,7 @@ public class LocalizationManager {
      */
     public static void init(String locale) throws IncorrectLanguageException {
         boolean isLanguageExists = false;
-        for (String lang: SUPPORTED_LANGUAGES) {
+        for (String lang: Reference.SUPPORTED_LANGUAGES) {
             if (lang.equalsIgnoreCase(locale)) {
                 logger.debug("Lang is correct");
                 isLanguageExists = true;
@@ -96,7 +93,7 @@ public class LocalizationManager {
 
         boolean isLanguageExists = false;
 
-        for (String lang: SUPPORTED_LANGUAGES) {
+        for (String lang: Reference.SUPPORTED_LANGUAGES) {
             if (lang.equalsIgnoreCase(langProp)) {
                 logger.debug("Lang is correct");
                 isLanguageExists = true;
@@ -156,6 +153,6 @@ public class LocalizationManager {
     }
 
     public static String[] getSupportedLanguages() {
-        return SUPPORTED_LANGUAGES;
+        return Reference.SUPPORTED_LANGUAGES;
     }
 }
