@@ -36,14 +36,14 @@ public class Reference {
 
     public static final CreateModpack createModpack = new CreateModpack();
 
-    public static final TabbedPane mainGUI = new TabbedPane();
+    static final TabbedPane mainGUI = new TabbedPane();
 
-    public static final CLISetup cliSetup               = new CLISetup();
-    public static final ConfigCheck configCheck         = new ConfigCheck();
-    public static final CopyFiles copyFiles             = new CopyFiles();
-    public static final FilesSetup filesSetup           = new FilesSetup();
-    public static final ServerSetup serverSetup         = new ServerSetup();
-    public static final ServerUtilities serverUtilities = new ServerUtilities();
+    public static final FilesSetup filesSetup    = new FilesSetup();
+    static final CLISetup cliSetup               = new CLISetup();
+    static final ConfigCheck configCheck         = new ConfigCheck();
+    static final CopyFiles copyFiles             = new CopyFiles();
+    static final ServerSetup serverSetup         = new ServerSetup();
+    static final ServerUtilities serverUtilities = new ServerUtilities();
 
     static Config config;
 
