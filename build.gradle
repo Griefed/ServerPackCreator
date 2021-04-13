@@ -37,13 +37,13 @@ launch4j {
     fileDescription = "An application to create a server pack from any given Forge or Fabric Minecraft modpack."
     version = System.getenv("NEW_VERSION").toString()
     textVersion = System.getenv("NEW_VERSION").toString()
-    windowTitle = "ServerPackCreator"
+    windowTitle = "serverpackcreator"
     copyright = "GNU Lesser General Public License v2.1"
-    downloadUrl = "https://github.com/Griefed/ServerPackCreator/releases"
-    supportUrl = "https://github.com/Griefed/ServerPackCreator/issues"
+    downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
+    supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
     libraryDir = 'libraries'
     outputDir = 'libs'
-    mainClassName = 'de.griefed.ServerPackCreator.Main'
+    mainClassName = 'de.griefed.serverpackcreator.Main'
     icon = "${projectDir}/src/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
@@ -113,7 +113,7 @@ jar {
     }
     manifest {
         attributes(
-                'Main-Class'     : 'de.griefed.ServerPackCreator.Main',
+                'Main-Class'     : 'de.griefed.serverpackcreator.Main',
                 'Description'    : 'Create serverpacks from Minecraft modpacks.',
                 'Built-By'       : System.properties['user.name'],
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
@@ -129,7 +129,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Griefed/ServerPackCreator")
+            url = uri("https://maven.pkg.github.com/Griefed/serverpackcreator")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")

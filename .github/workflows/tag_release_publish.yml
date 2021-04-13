@@ -32,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.compute_tag.outputs.next_tag }}
-          release_name: "ServerPackCreator"
+          release_name: "serverpackcreator"
           body: |
             Automatic release of version: **${{ steps.compute_tag.outputs.next_tag }}**
             **Changes in this release:**
@@ -69,8 +69,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.jar
-          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.jar
+          asset_path: ./build/libs/serverpackcreator-${{ steps.compute_tag.outputs.next_tag }}.jar
+          asset_name: serverpackcreator-${{ steps.compute_tag.outputs.next_tag }}.jar
           asset_content_type: application/jar
       - name: Upload Release Asset Executable
         id: upload-release-asset-executable
@@ -79,8 +79,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator.exe
-          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}.exe
+          asset_path: ./build/libs/serverpackcreator.exe
+          asset_name: serverpackcreator-${{ steps.compute_tag.outputs.next_tag }}.exe
           asset_content_type: application/jar
       - name: Upload Release Asset Sources Jar
         id: upload-release-asset-sources
@@ -89,8 +89,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
-          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
+          asset_path: ./build/libs/serverpackcreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
+          asset_name: serverpackcreator-${{ steps.compute_tag.outputs.next_tag }}-sources.jar
           asset_content_type: application/jar
       - name: Upload Release Asset Javadoc Jar
         id: upload-release-asset-javadoc
@@ -99,8 +99,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
-          asset_name: ServerPackCreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
+          asset_path: ./build/libs/serverpackcreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
+          asset_name: serverpackcreator-${{ steps.compute_tag.outputs.next_tag }}-javadoc.jar
           asset_content_type: application/jar
 
       # DOCKER RELATED
