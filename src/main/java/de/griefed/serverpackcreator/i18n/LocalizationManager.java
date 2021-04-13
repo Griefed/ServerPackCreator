@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.i18n;
 
-import de.griefed.serverpackcreator.FilesSetup;
 import de.griefed.serverpackcreator.Reference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +23,7 @@ import java.util.*;
 public class LocalizationManager {
 
 
-    private static final Logger logger = LogManager.getLogger(LocalizationManager.class);
+    private static final Logger localeLogger = LogManager.getLogger(LocalizationManager.class);
     /**
      * Current language of application, mapped for easier further reference.
      */
@@ -49,7 +48,7 @@ public class LocalizationManager {
         boolean isLanguageExists = false;
         for (String lang: Reference.SUPPORTED_LANGUAGES) {
             if (lang.equalsIgnoreCase(locale)) {
-                logger.debug("Lang is correct");
+                localeLogger.debug("Lang is correct");
                 isLanguageExists = true;
                 break;
             }
@@ -64,9 +63,9 @@ public class LocalizationManager {
             throw new IncorrectLanguageException();
         }
         localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", locale));
-        logger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
+        localeLogger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
         if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
-            logger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
+            localeLogger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
         }
         Reference.filesSetup.writeLocaleToFile(locale);
     }
@@ -80,18 +79,18 @@ public class LocalizationManager {
         try (FileInputStream fis = new FileInputStream(localePropertiesFile)){
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
             langProperties.load(bufferedReader);
-            logger.debug(String.format("langProperties = %s", langProperties));
+            localeLogger.debug(String.format("langProperties = %s", langProperties));
         } catch (Exception e) {
             e.printStackTrace();
         }
         String langProp = langProperties.getProperty("lang");
-        logger.debug(langProp);
+        localeLogger.debug(langProp);
 
         boolean isLanguageExists = false;
 
         for (String lang: Reference.SUPPORTED_LANGUAGES) {
             if (lang.equalsIgnoreCase(langProp)) {
-                logger.debug("Lang is correct");
+                localeLogger.debug("Lang is correct");
                 isLanguageExists = true;
                 break;
             }
@@ -110,9 +109,9 @@ public class LocalizationManager {
         }
 
         localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("lang")), new Locale(currentLanguage.get(LANGUAGE_MAP_PATH), currentLanguage.get(COUNTRY_MAP_PATH)));
-        logger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
+        localeLogger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
         if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
-            logger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
+            localeLogger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
         }
     }
 
@@ -137,7 +136,7 @@ public class LocalizationManager {
             String value =  localeResources.getString(languageKey);
             return new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
         } catch (MissingResourceException ex) {
-            logger.error(String.format("ERROR: Language key %s not found in the language file.", ex.getKey()));
+            localeLogger.error(String.format("ERROR: Language key %s not found in the language file.", ex.getKey()));
             System.exit(8);
         }
         return null;
