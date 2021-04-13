@@ -1,10 +1,12 @@
 package de.griefed.serverpackcreator.gui;
 
+import de.griefed.serverpackcreator.Reference;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class ReferenceGUI {
+public class ReferenceGUI extends Reference {
     static final ImageIcon folderIcon               = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/folder.png")));
     static final ImageIcon serverPackCreatorIcon    = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/icon.png")));
     static final ImageIcon startGeneration          = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/start_generation.png")));

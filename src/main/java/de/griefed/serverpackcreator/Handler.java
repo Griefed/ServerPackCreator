@@ -13,6 +13,9 @@ import java.util.List;
 public class Handler {
     private static final Logger appLogger = LogManager.getLogger(Handler.class);
 
+    /** Handler-class makes the calls to every other class where the actual magic is happening. The main class of ServerPackCreator should never contain code which does work on the server pack itself.
+     * @param args Command Line Argument determines whether ServerPackCreator will start into normal operation mode or with a step-by-step generation of a configuration file.
+     */
     void main(String[] args) {
         String jarPath = null,
                 jarName = null,
@@ -83,6 +86,9 @@ public class Handler {
         }
     }
 
+    /**
+     * Run when ServerPackCreator is run in either -cli or -cgen mode. Runs what used to be the main content in Main in pre-1.x.x. times. Inits config checks and, if config checks are successfull, calls methods to create the server pack.
+     */
     private void runInCli() {
         if (!Reference.configCheck.checkConfig()) {
             Reference.copyFiles.cleanupEnvironment(Reference.modpackDir);

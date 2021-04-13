@@ -39,6 +39,7 @@ public class Reference {
     static final TabbedPane mainGUI = new TabbedPane();
 
     public static final FilesSetup filesSetup    = new FilesSetup();
+    static final Handler handler                 = new Handler();
     static final CLISetup cliSetup               = new CLISetup();
     static final ConfigCheck configCheck         = new ConfigCheck();
     static final CopyFiles copyFiles             = new CopyFiles();
