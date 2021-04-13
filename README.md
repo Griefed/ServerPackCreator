@@ -24,8 +24,6 @@
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.**
 
 I am making this in my spare time, therefore progress is slow. I also just started getting into Java programming, so expect the code to be of...questionable...quality.
-If you're a Java Pro and your eyes bulge when looking at my code, by all means, you're welcome to help me improve it in any way, shape, or form.
-You're also welcome to make [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md), or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
 
 Use at your own risk! Be aware that data loss is possible.
 
@@ -96,6 +94,14 @@ includeZipCreation | Whether to create a zip-file of your serverpack, saved in t
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
 # Running
+
+## Localization
+
+If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
+1. Run `java -jar ServerPackCreator-X-X-X.jar -lang your_locale` for example `java -jar ServerPackCreator-X-X-X.jar -lang en_us`
+2. Create a `lang.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and input your locale like this `lang=your_locale` for example `lang=en_us`
+
+See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/c4512e19f9276ba1abc84f2731b83cfc05e2ef4e/src/main/java/de/griefed/ServerPackCreator/Reference.java) in `Reference.java` for a list of supported locales.
 
 ## Commandline
 
@@ -182,3 +188,16 @@ docker create \
   --restart "no" \
   griefed/serverpackcreator:latest
 ```
+
+# Contributing
+
+If you're a Java Pro and your eyes bulge when looking at my code, by all means, you're welcome to help me improve it in any way, shape, or form.
+You're welcome to make [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md), or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
+
+## Translating ServerPackCreator
+
+To add a new language to the app you need:
+
+Create resources/de/griefed/resources/lang/lang_language code.lang file.
+Add language code to the SUPPORTED_LANGUAGES list in Reference.
+Translate the app!
