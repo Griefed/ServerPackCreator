@@ -1,11 +1,16 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.IncorrectLanguageException;
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.List;
 
 public class Main {
     private static final Logger appLogger = LogManager.getLogger(Main.class);
@@ -13,6 +18,38 @@ public class Main {
      * @param args Command Line Argument determines whether ServerPackCreator will start into normal operation mode or with a step-by-step generation of a configuration file.
      */
     public static void main(String[] args) {
+        if (Arrays.asList(args).contains(Reference.LANG_ARGUMENT)) {
+            List<String> programArgs = Arrays.asList(args);
+            try {
+                LocalizationManager.init(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
+            } catch (IncorrectLanguageException e) {
+                appLogger.info(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
+                appLogger.error("Incorrect language specified, falling back to English (United States)...");
+                LocalizationManager.init();
+            }
+        } else if (Reference.langPropertiesFile.exists()) {
+            try {
+                LocalizationManager.init(Reference.langPropertiesFile);
+            } catch (IncorrectLanguageException e) {
+                appLogger.error("Incorrect language specified, falling back to English (United States)...");
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+                    if (!Reference.langPropertiesFile.exists()) {
+                        boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                        if (langCreated) {
+                            appLogger.debug("Lang properties file created successfully.");
+                        } else {
+                            appLogger.debug("Lang properties file not created.");
+                        }
+                    }
+                    writer.write(String.format("# Supported languages: %s%n", Arrays.toString(LocalizationManager.getSupportedLanguages())));
+                    writer.write(String.format("lang=en_us%n"));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                LocalizationManager.init();
+            }
+        }
+        
         String jarPath = null,
                jarName = null,
                javaVersion = null,

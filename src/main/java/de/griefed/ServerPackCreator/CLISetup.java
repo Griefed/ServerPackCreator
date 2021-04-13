@@ -1,5 +1,6 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -214,9 +215,9 @@ class CLISetup {
         String boolRead;
         while (true) {
             boolRead = readerBoolean.nextLine();
-            if (boolRead.matches("[Tt]rue") || boolRead.matches("1") || boolRead.matches("[Yy]es")|| boolRead.matches("[Yy]")) {
+            if (boolRead.matches("[Tt]rue") || boolRead.matches("1") || boolRead.matches("[Yy]es")|| boolRead.matches("[Yy]") || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes")) || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes.short"))) {
                 return true;
-            } else if (boolRead.matches("[Ff]alse") || boolRead.matches("0") || boolRead.matches("[Nn]o") || boolRead.matches("[Nn]" )){
+            } else if (boolRead.matches("[Ff]alse") || boolRead.matches("0") || boolRead.matches("[Nn]o") || boolRead.matches("[Nn]" ) || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no")) || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no.short"))){
                 return false;
             } else {
                 appLogger.error("Incorrect value specified. Please try again.");
