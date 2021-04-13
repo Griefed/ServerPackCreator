@@ -1,11 +1,16 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.IncorrectLanguageException;
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.List;
 
 public class Main {
     private static final Logger appLogger = LogManager.getLogger(Main.class);
@@ -27,21 +32,21 @@ public class Main {
                 LocalizationManager.init(Reference.langPropertiesFile);
             } catch (IncorrectLanguageException e) {
                 appLogger.error("Incorrect language specified, falling back to English (United States)...");
-                LocalizationManager.init();
-            }
-        } else {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
-                boolean langCreated = Reference.langPropertiesFile.createNewFile();
-                if (langCreated) {
-                    appLogger.debug(LocalizationManager.getLocalizedString("debug.lang_file_created"));
-                } else {
-                    appLogger.debug(LocalizationManager.getLocalizedString("debug.lang_file_failed"));
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+                    if (!Reference.langPropertiesFile.exists()) {
+                        boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                        if (langCreated) {
+                            appLogger.debug("Lang properties file created successfully.");
+                        } else {
+                            appLogger.debug("Lang properties file not created.");
+                        }
+                    }
+                    writer.write(String.format("# Supported languages: %s%n", Arrays.toString(LocalizationManager.getSupportedLanguages())));
+                    writer.write(String.format("lang=en_us%n"));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-                writer.write(String.format("# Supported languages: %s%n", Arrays.toString(LocalizationManager.getSupportedLanguages())));
-                writer.write(String.format("lang=en_us%n"));
                 LocalizationManager.init();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
         
