@@ -23,7 +23,9 @@ public class Reference {
     static final File fabricLinuxFile = new File("start-fabric.sh");
     
     public static final String[] SUPPORTED_LANGUAGES = {
-            "en_us"
+            "en_us",
+            "uk_ua",
+            "de_de"
     };
 
     static Config config;

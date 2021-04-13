@@ -23,7 +23,7 @@ import java.util.*;
 public class LocalizationManager {
 
 
-    private static final Logger logger = LogManager.getLogger("LocaleLogger");
+    private static final Logger logger = LogManager.getLogger(LocalizationManager.class);
     /**
      * Current language of application, mapped for easier further reference.
      */
@@ -67,7 +67,7 @@ public class LocalizationManager {
         } else {
             throw new IncorrectLanguageException();
         }
-        localeResources = ResourceBundle.getBundle(String.format("i18n.lang.lang_%s", locale));
+        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", locale));
         logger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
         if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
             logger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
@@ -113,7 +113,7 @@ public class LocalizationManager {
             throw new IncorrectLanguageException();
         }
 
-        localeResources = ResourceBundle.getBundle(String.format("resources.i18n.lang_%s", langProperties.getProperty("lang")), new Locale(currentLanguage.get(LANGUAGE_MAP_PATH), currentLanguage.get(COUNTRY_MAP_PATH)));
+        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("lang")), new Locale(currentLanguage.get(LANGUAGE_MAP_PATH), currentLanguage.get(COUNTRY_MAP_PATH)));
         logger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
         if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
             logger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
