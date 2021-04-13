@@ -6,6 +6,7 @@ import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import com.typesafe.config.*;
 import de.griefed.serverpackcreator.curseforgemodpack.Modpack;
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
@@ -34,11 +35,11 @@ class ConfigCheck {
      */
     public boolean checkConfig() {
         boolean configHasError;
-        appLogger.info("Checking configuration...");
+        appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.start"));
         try {
             Reference.config = ConfigFactory.parseFile(Reference.configFile);
         } catch (ConfigException ex) {
-            appLogger.error("Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkconfig.start"));
         }
 
         Reference.clientMods = Reference.config.getStringList("clientMods");
@@ -70,9 +71,9 @@ class ConfigCheck {
                 Reference.includeZipCreation);
 
         if (!configHasError) {
-            appLogger.info("Config check successful. No errors encountered.");
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.success"));
         } else {
-            appLogger.error("Config check not successful. Check your config for errors.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkconfig.failure"));
         }
         return configHasError;
     }
@@ -111,11 +112,11 @@ class ConfigCheck {
             } else { configHasError = true; }
 
         } else {
-            appLogger.info("Server installation disabled. Skipping check of:");
-            appLogger.info("    Java path");
-            appLogger.info("    Minecraft version");
-            appLogger.info("    Modloader");
-            appLogger.info("    Modloader version");
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.skipstart"));
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.skipjava"));
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.skipminecraft"));
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.skipmodlaoder"));
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.skipmodloaderversion"));
         }
         return configHasError;
     }
@@ -132,12 +133,12 @@ class ConfigCheck {
                 try { projectName = CurseAPI.project(Reference.projectID).get().name();
 
                     try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).displayName(); }
-                        catch (NullPointerException npe) { appLogger.info("INFO: Display name not found. Setting display name as file name on disk.");
+                        catch (NullPointerException npe) { appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.display"));
 
                     try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).nameOnDisk(); }
                         catch (NullPointerException npe2) { displayName = String.format("%d", Reference.projectFileID); } } }
 
-                catch (CurseException cex) { appLogger.error("Error: Could not retrieve CurseForge project and file."); }
+                catch (CurseException cex) { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
 
                 Reference.modpackDir = String.format("./%s/%s", projectName, displayName);
 
@@ -161,14 +162,14 @@ class ConfigCheck {
                                 .replace("[", "");
 
                         if (containsFabric(modpack)) {
-                            appLogger.info("Please make sure to check the configuration for the used Fabric version after serverpackcreator is done setting up the modpack and new config file.");
+                            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.fabric"));
                             Reference.modLoader = "Fabric";
                             Reference.modLoaderVersion = latestFabricLoader(Reference.modpackDir);
                         } else {
                             Reference.modLoader = setModloader(modLoaderVersion[0]);
                             Reference.modLoaderVersion = modLoaderVersion[1];
                         }
-                    } catch (IOException ex) { appLogger.error("Error: There was a fault during json parsing.", ex); }
+                    } catch (IOException ex) { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.json"), ex); }
 
                     if (checkJavaPath(Reference.config.getString("javaPath"))) {
                         Reference.javaPath = Reference.config.getString("javaPath");
@@ -179,7 +180,7 @@ class ConfigCheck {
                         }
                     }
                     Reference.copyDirs = suggestCopyDirs(Reference.modpackDir);
-                    appLogger.info("Your old config file will now be replaced by a new one, with values gathered from the downloaded modpack.");
+                    appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.replace"));
                     Reference.filesSetup.writeConfigToFile(
                             Reference.modpackDir,
                             Reference.cliSetup.buildString(Reference.clientMods.toString()),
@@ -193,7 +194,7 @@ class ConfigCheck {
                 }
             }
         } catch (CurseException cex) {
-            appLogger.error(String.format("Error: Project with ID %s could not be found", Reference.projectID), cex);
+            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.project"), Reference.projectID), cex);
             configHasError = true;
         }
         return configHasError;
@@ -209,7 +210,7 @@ class ConfigCheck {
             String[] mods;
             mods = modpack.getFiles().get(i).toString().split(",");
             if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
-                appLogger.info("Fabric detected. Setting modloader to Fabric.");
+                appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.containsfabric"));
                 hasJumploader = true;
             }
         }
@@ -221,7 +222,7 @@ class ConfigCheck {
      * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only directories which would not be needed by a server pack. If you have suggestions to this list, open an issue on https://github.com/Griefed/ServerPackCreator/issues
      */
     private List<String> suggestCopyDirs(String modpackDir) {
-        appLogger.info("Preparing a list of directories to include in server pack...");
+        appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.suggestcopydirs.start"));
 
         String[] dirsNotToCopy = {
                 "overrides",
@@ -241,11 +242,11 @@ class ConfigCheck {
                 dirList.remove(doNotCopyList.get(i));
             }
             copyDirs = dirList.toArray(new String[0]);
-            appLogger.info(String.format("Modpack directory checked. Suggested directories for copyDirs-setting are: %s", dirList));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.suggestcopydirs.list"), dirList));
 
             return Arrays.asList(copyDirs.clone());
 
-        } else { appLogger.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues."); }
+        } else { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.suggestcopydirs")); }
 
         return Arrays.asList(copyDirs.clone());
     }
@@ -263,13 +264,13 @@ class ConfigCheck {
             Reference.projectID = Integer.parseInt(projectFileIds[0]);
             Reference.projectFileID = Integer.parseInt(projectFileIds[1]);
 
-            appLogger.info("You specified a CurseForge projectID and fileID combination.");
-            appLogger.info(String.format("You entered: ProjectID %s | FileID %s.", Reference.projectID, Reference.projectFileID));
-            appLogger.warn("WARNING: This functionality is experimental and prone to errors. If you encounter any errors, please open an issue on https://github.com/Griefed/ServerPackCreator/issues");
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.info"));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.return"), Reference.projectID, Reference.projectFileID));
+            appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.checkcurseforge.warn"));
 
             configCorrect = true;
 
-        } else { appLogger.error("INFO: You did not specify a CurseForge projectID,fileID combination or you specified an incorrect one."); }
+        } else { appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.checkcurseforge.warn2")); }
 
         return configCorrect;
     }
@@ -293,7 +294,7 @@ class ConfigCheck {
 
             returnBoolean = false;
         } else {
-            appLogger.warn("Warning. Couldn't parse boolean. Assuming false.");
+            appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.converttoboolean.warn"));
             returnBoolean = false;
         }
         return returnBoolean;
@@ -325,31 +326,31 @@ class ConfigCheck {
                             boolean includeProperties,
                             boolean includeScripts,
                             boolean includeZip) {
-        appLogger.info("Your configuration is:");
-        appLogger.info(String.format("Modpack directory: %s", modpackDirectory));
+        appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.start"));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.modpackdir"), modpackDirectory));
         if (clientsideMods.toArray().length == 0) {
-            appLogger.warn("No client mods specified");
+            appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.printconfig.noclientmods"));
         } else {
-            appLogger.info("Client mods specified. Client mods are:");
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.clientmods"));
             for (int i = 0; i < clientsideMods.toArray().length; i++) {
                 appLogger.info(String.format("    %s", clientsideMods.get(i))); }
         }
 
-        appLogger.info("Directories to copy:");
+        appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.copydirs"));
         if (copyDirectories != null) {
             for (int i = 0; i < copyDirectories.toArray().length; i++) {
                 appLogger.info(String.format("    %s", copyDirectories.get(i))); }
-        } else { appLogger.error("Error: List of directories to copy is empty."); }
+        } else { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.printconfig.copydirs")); }
 
-        appLogger.info(String.format("Include server installation:      %s", installServer));
-        appLogger.info(String.format("Java Installation path:           %s", javaInstallPath));
-        appLogger.info(String.format("Minecraft version:                %s", minecraftVer));
-        appLogger.info(String.format("Modloader:                        %s", modloader));
-        appLogger.info(String.format("Modloader Version:                %s", modloaderVersion));
-        appLogger.info(String.format("Include server icon:              %s", includeIcon));
-        appLogger.info(String.format("Include server properties:        %s", includeProperties));
-        appLogger.info(String.format("Include start scripts:            %s", includeScripts));
-        appLogger.info(String.format("Create zip-archive of serverpack: %s", includeZip));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.server"), installServer));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.javapath"), javaInstallPath));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.minecraftversion"), minecraftVer));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.modloader"), modloader));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.modloaderversion"), modloaderVersion));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.icon"), includeIcon));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.properties"), includeProperties));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.scripts"), includeScripts));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.zip"), includeZip));
     }
 
     /** Check whether the specified modpack directory exists.
@@ -359,9 +360,9 @@ class ConfigCheck {
     boolean checkModpackDir(String modpackDir) {
         boolean configCorrect = false;
         if (modpackDir.equals("")) {
-            appLogger.error("Error: Modpack directory not specified. Please specify an existing directory.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodpackdir"));
         } else if (!(new File(modpackDir).isDirectory())) {
-            appLogger.warn(String.format("Warning: Couldn't find a directory with setting %s. Checking for CurseForge projectID,fileID next...", modpackDir));
+            appLogger.warn(String.format(LocalizationManager.getLocalizedString("configcheck.log.warn.checkmodpackdir"), modpackDir));
         } else {
             configCorrect = true;
         }
@@ -376,13 +377,13 @@ class ConfigCheck {
     boolean checkCopyDirs(List<String> copyDirs, String modpackDir) {
         boolean configCorrect = true;
         if (copyDirs.isEmpty()) {
-            appLogger.error("Error: No directories specified for copying. This would result in an empty serverpack.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkcopydirs.empty"));
             configCorrect = false;
         } else {
             for (int i = 0; i < copyDirs.toArray().length; i++) {
                 File directory = new File(String.format("%s/%s", modpackDir, copyDirs.get(i)));
                 if (!directory.exists() || !directory.isDirectory()) {
-                    appLogger.error(String.format("Error: Specified directory %s does not exist. Please specify existing directories.", directory.getAbsolutePath()));
+                    appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkcopydirs.notfound"), directory.getAbsolutePath()));
                     configCorrect = false;
                 }
             }
@@ -397,15 +398,15 @@ class ConfigCheck {
     String getJavaPath(String enteredPath) {
         String autoJavaPath;
         if (enteredPath.equals("")) {
-            appLogger.warn("You didn't specify the path to your Java installation. serverpackcreator will try to determine it for you...");
+            appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.getjavapath.empty"));
             autoJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
             if (autoJavaPath.startsWith("C:")) {
                 autoJavaPath = String.format("%s.exe", autoJavaPath);
             }
-            appLogger.warn(String.format("serverpackcreator set the path to your Java installation to: %s", autoJavaPath));
+            appLogger.warn(String.format(LocalizationManager.getLocalizedString("configcheck.log.warn.getjavapath.set"), autoJavaPath));
             return autoJavaPath;
         } else {
-            appLogger.info(String.format("serverpackcreator set the path to your Java installation to: %s", enteredPath));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.warn.getjavapath.set"), enteredPath));
             return enteredPath;
         }
     }
@@ -421,7 +422,7 @@ class ConfigCheck {
         } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
             configCorrect = true;
         } else {
-            appLogger.error("Incorrect Java path specified.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkjavapath"));
         }
         return configCorrect;
     }
@@ -435,7 +436,7 @@ class ConfigCheck {
         if (modloader.equalsIgnoreCase("Forge") || modloader.equalsIgnoreCase("Fabric")) {
             configCorrect = true;
         } else {
-            appLogger.error("Error: Invalid modloader specified. Modloader must bei either Forge or Fabric.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"));
         }
         return configCorrect;
     }
@@ -467,7 +468,7 @@ class ConfigCheck {
         } else if (modloader.equalsIgnoreCase("Fabric") && isFabricVersionCorrect(modloaderVersion)) {
             isVersionCorrect = true;
         } else {
-            appLogger.error("Specified incorrect modloader version. Please check your modpack for the correct version and enter again.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloaderversion"));
         }
         return isVersionCorrect;
     }
@@ -486,15 +487,15 @@ class ConfigCheck {
                 try {
                     downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
                 } catch (FileNotFoundException ex) {
-                    appLogger.debug("Couldn't find mcmanifest.json", ex);
+                    appLogger.debug(LocalizationManager.getLocalizedString("configcheck.log.debug.isminecraftversioncorrect"), ex);
                     File file = new File("mcmanifest.json");
                     if (!file.exists()) {
-                        appLogger.info("Manifest JSON File does not exist, creating...");
+                        appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.create"));
                         boolean jsonCreated = file.createNewFile();
                         if (jsonCreated) {
-                            appLogger.info("Manifest JSON File created");
+                            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.created"));
                         } else {
-                            appLogger.error("Error. Could not create Manifest JSON File.");
+                            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.parse"));
                         }
                     }
                     downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
@@ -516,11 +517,11 @@ class ConfigCheck {
                 manifestJsonFile.deleteOnExit();
                 return contains;
             } catch (Exception ex) {
-                appLogger.error(String.format("Error: Could not validate Minecraft version %s.", minecraftVersion), ex);
+                appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.validate"), minecraftVersion), ex);
                 return false;
             }
         } else {
-            appLogger.error("You didn't specify your Minecraft version.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.empty"));
             return false;
         }
     }
@@ -538,15 +539,15 @@ class ConfigCheck {
             try {
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
             } catch (FileNotFoundException ex) {
-                appLogger.debug("Couldn't find fabric-manifest.xml.", ex);
+                appLogger.debug(LocalizationManager.getLocalizedString("configcheck.log.debug.isfabricversioncorrect"), ex);
                 File file = new File("fabric-manifest.xml");
                 if (!file.exists()){
-                    appLogger.info("Fabric Manifest XML File does not exist, creating...");
+                    appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.create"));
                     boolean jsonCreated = file.createNewFile();
                     if (jsonCreated) {
-                        appLogger.info("Fabric Manifest XML File created");
+                        appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.created"));
                     } else {
-                        appLogger.error("Error. Could not create Fabric Manifest XML File.");
+                        appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.parse"));
                     }
                 }
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
@@ -575,7 +576,7 @@ class ConfigCheck {
             manifestXMLFile.deleteOnExit();
             return contains;
         } catch (Exception ex) {
-            appLogger.error("An error occurred during Minecraft version validation.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.validate"), ex);
             return false;
         }
     }
@@ -594,15 +595,15 @@ class ConfigCheck {
             try {
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
             } catch (FileNotFoundException ex) {
-                appLogger.debug("Couldn't find forge-manifest.json", ex);
+                appLogger.debug(LocalizationManager.getLocalizedString("configcheck.log.debug.isforgeversioncorrect"), ex);
                 File file = new File("forge-manifest.json");
                 if (!file.exists()){
-                    appLogger.info("Forge Manifest JSON File does not exist, creating...");
+                    appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.create"));
                     boolean jsonCreated = file.createNewFile();
                     if (jsonCreated) {
-                        appLogger.info("Forge Manifest JSON File created");
+                        appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.created"));
                     } else {
-                        appLogger.error("Error. Could not create Forge Manifest JSON File.");
+                        appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.parse"));
                     }
                 }
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
@@ -630,7 +631,7 @@ class ConfigCheck {
 
             return manifestJSON.trim().contains(String.format("%s-%s", minecraftVersion, forgeVersion));
         } catch (Exception ex) {
-            appLogger.error("An error occurred during Forge version validation.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.validate"), ex);
             return false;
         }
     }
@@ -639,6 +640,7 @@ class ConfigCheck {
      * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
+    @SuppressWarnings({"ReturnInsideFinallyBlock", "finally"})
     private String latestFabricLoader(String modpackDir) {
         String result = "0.11.3";
         try {
@@ -660,23 +662,11 @@ class ConfigCheck {
             XPath xpath = xPathFactory.newXPath();
 
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
-            appLogger.info("Successfully retrieved Fabric-Loader XML.");
+            appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.latestfabricloader.created"));
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-            appLogger.error("Could not retrieve XML file. Defaulting to Loader version 0.11.3.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.latestfabricloader.parse"), ex);
         } finally {
             return result;
         }
-    }
-
-    /** Splits a string into an array with the separator being ",". Used to get the CurseForge projectID and fileID as separate string so they can later be parsed into integers and used with the CurseForgeAPI make downloads and gather information.
-     * @param modpackDir String. The string which to split with the "," separator.
-     * @return Array, String. Returns the array consisting of the projectID at 0 and the fileID at 1.
-     */
-    @SuppressWarnings("unused")
-    private String[] splitString(String modpackDir) {
-        String[] projectFileIds;
-        projectFileIds = modpackDir.split(",");
-        appLogger.info(String.format("You entered: ProjectID %s | FileID %s.", projectFileIds[0], projectFileIds[1]));
-        return projectFileIds;
     }
 }

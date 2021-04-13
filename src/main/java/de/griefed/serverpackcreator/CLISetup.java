@@ -216,18 +216,16 @@ class CLISetup {
         String boolRead;
         while (true) {
             boolRead = readerBoolean.nextLine();
-            if (
-                    boolRead.matches("1")       ||
-                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.true")) ||
-                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes"))  ||
-                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes.short"))) {
+            if (boolRead.matches("1")                                                           ||
+                boolRead.matches(LocalizationManager.getLocalizedString("cli.input.true")) ||
+                boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes"))  ||
+                boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes.short"))) {
                 return true;
 
-            } else if (
-                    boolRead.matches("0")           ||
-                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.false")) ||
-                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no"))    ||
-                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no.short"))) {
+            } else if (boolRead.matches("0")                                                            ||
+                       boolRead.matches(LocalizationManager.getLocalizedString("cli.input.false")) ||
+                       boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no"))    ||
+                       boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no.short"))) {
                 return false;
 
             } else {
