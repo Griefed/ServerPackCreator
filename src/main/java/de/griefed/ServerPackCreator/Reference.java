@@ -21,6 +21,12 @@ class Reference {
     static final File forgeLinuxFile = new File("start-forge.sh");
     static final File fabricWindowsFile = new File("start-fabric.bat");
     static final File fabricLinuxFile = new File("start-fabric.sh");
+    
+    public static final String[] SUPPORTED_LANGUAGES = {
+            "en_us",
+            "uk_ua",
+            "ru_ru"
+    };
 
     static Config config;
 
