@@ -29,8 +29,10 @@ class CreateModpackTest {
 
     @BeforeEach
     void setUp() {
+        Reference.filesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
+
 
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ResultOfMethodCallIgnored"})
     @Test

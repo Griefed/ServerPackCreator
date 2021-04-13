@@ -27,25 +27,9 @@ class ServerSetupTest {
 
     @BeforeEach
     void setUp() {
+        Reference.filesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
-
-    /*
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Deprecated
-    @Test
-    void testDeleteClientMods() throws IOException {
-        String modpackDir = "./src/test/resources/forge_tests";
-        Files.createDirectories(Paths.get(String.format("%s/server_pack",modpackDir)));
-        Files.createDirectories(Paths.get(String.format("%s/server_pack/mods",modpackDir)));
-        List<String> clientMods = Arrays.asList("AmbientSounds","BackTools","BetterAdvancement","BetterPing","cherished","ClientTweaks","Controlling","DefaultOptions","durability","DynamicSurroundings","itemzoom","jei-professions","jeiintegration","JustEnoughResources","MouseTweaks","Neat","OldJavaWarning","PackMenu","preciseblockplacing","SimpleDiscordRichPresence","SpawnerFix","TipTheScales","WorldNameRandomizer");
-        for (int i = 0; i < clientMods.toArray().length; i++) {
-            File file = new File(String.format("%s/server_pack/mods/%s.jar",modpackDir,clientMods.get(i)));
-            file.createNewFile();
-        }
-        ServerSetup.deleteClientMods(modpackDir, clientMods);
-    }
-    */
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test

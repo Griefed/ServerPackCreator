@@ -27,6 +27,7 @@ class ConfigCheckTest {
 
     @BeforeEach
     void setUp() {
+        Reference.filesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 
@@ -57,7 +58,7 @@ class ConfigCheckTest {
     @SuppressWarnings("ConstantConditions")
     @Test
     void testPrintConfig() {
-        String modpackDir = "./src/test/resources/forge_tests";
+        String modpackDir = "src/test/resources/forge_tests";
         List<String> clientMods = Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
@@ -99,7 +100,8 @@ class ConfigCheckTest {
         boolean includeServerProperties = true;
         boolean includeStartScripts = true;
         boolean includeZipCreation = true;
-        Reference.configCheck.printConfig(modpackDir,
+        Reference.configCheck.printConfig(
+                modpackDir,
                 clientMods,
                 copyDirs,
                 includeServerInstallation,

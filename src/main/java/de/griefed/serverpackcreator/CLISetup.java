@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator;
 
-import com.sun.org.apache.bcel.internal.generic.LoadClass;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

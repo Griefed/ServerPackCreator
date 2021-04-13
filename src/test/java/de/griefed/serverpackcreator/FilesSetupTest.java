@@ -26,6 +26,7 @@ class FilesSetupTest {
 
     @BeforeEach
     void setUp() {
+        Reference.filesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 
