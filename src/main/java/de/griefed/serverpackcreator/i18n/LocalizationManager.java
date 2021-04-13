@@ -42,11 +42,6 @@ public class LocalizationManager {
     private static final String COUNTRY_MAP_PATH = "country";
 
     /**
-     * List pf the languages that application supports. Must be formatted like this: en_us, de_de etc. Fields are case insensitive.
-     */
-
-
-    /**
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by SPC or specified in the invalid format.
      * @param locale Locale to be used by application in this run.
      */
@@ -73,7 +68,7 @@ public class LocalizationManager {
         if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
             logger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
         }
-        FilesSetup.writeLocaleToFile(locale);
+        Reference.filesSetup.writeLocaleToFile(locale);
     }
 
     /**

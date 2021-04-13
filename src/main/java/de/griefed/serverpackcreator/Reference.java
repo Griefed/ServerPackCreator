@@ -18,12 +18,15 @@ public class Reference {
 
     static final File oldConfigFile     = new File("creator.conf");
     static final File configFile        = new File("serverpackcreator.conf");
+
     static final File propertiesFile    = new File("server.properties");
     static final File iconFile          = new File("server-icon.png");
     static final File forgeWindowsFile  = new File("start-forge.bat");
     static final File forgeLinuxFile    = new File("start-forge.sh");
-    static final File langPropertiesFile = new File("lang.properties");
+    static final File fabricWindowsFile = new File("start-fabric.bat");
+    static final File fabricLinuxFile = new File("start-fabric.sh");
 
+    static final File langPropertiesFile = new File("lang.properties");
 
     public static final String[] SUPPORTED_LANGUAGES = {
             "en_us",

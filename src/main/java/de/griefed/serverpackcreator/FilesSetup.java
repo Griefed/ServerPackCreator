@@ -241,7 +241,7 @@ public class FilesSetup {
         return firstRun;
     }
 
-    public static void checkLocaleFile() {
+    public void checkLocaleFile() {
         if (Reference.langPropertiesFile.exists()) {
             try {
                 LocalizationManager.init(Reference.langPropertiesFile);
@@ -289,7 +289,7 @@ public class FilesSetup {
         }
     }
 
-    public static void writeLocaleToFile(String locale) {
+    public void writeLocaleToFile(String locale) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
 
             if (!Reference.langPropertiesFile.exists()) {
