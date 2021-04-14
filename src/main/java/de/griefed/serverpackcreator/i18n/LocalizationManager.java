@@ -122,7 +122,7 @@ public class LocalizationManager {
         try {
             init("en_us");
         } catch (IncorrectLanguageException e) {
-            e.printStackTrace();
+            localeLogger.error("Error during default localization initialization.");
         }
     }
 
