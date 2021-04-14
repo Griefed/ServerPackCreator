@@ -38,10 +38,10 @@ public class Handler {
         }
 
         appLogger.warn("################################################################");
-        appLogger.warn("#                      WORK IN PROGRESS!                       #");
-        appLogger.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
-        appLogger.warn("#        I WILL NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
-        appLogger.warn("#                    YOU HAVE BEEN WARNED!                     #");
+        appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip1"));
+        appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip2"));
+        appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip3"));
+        appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip4"));
         appLogger.warn("################################################################");
 
         try {
@@ -51,17 +51,17 @@ public class Handler {
             osArch = System.getProperty("os.arch");
             osName = System.getProperty("os.name");
             osVersion = System.getProperty("os.version");
-            appLogger.info("SYSTEM INFORMATION:");
-            appLogger.info(String.format("JAR Path: %s", jarPath));
-            appLogger.info(String.format("JAR Name: %s", jarName));
-            appLogger.info(String.format("Java version: %s", javaVersion));
-            appLogger.info(String.format("OS architecture: %s", osArch));
-            appLogger.info(String.format("OS name: %s", osName));
-            appLogger.info(String.format("OS version: %s", osVersion));
-            appLogger.info("Include this information when reporting an issue on GitHub.");
+            appLogger.info("handler.log.info.system.enter");
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.jarpath"), jarPath));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.jarname"), jarName));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.java"), javaVersion));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.osarchitecture"), osArch));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.osname"), osName));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.osversion"), osVersion));
+            appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.system.include"));
 
         } catch (URISyntaxException ex) {
-            appLogger.error("Error getting system properties.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("handler.log.error.system.properties"), ex);
         }
 
         if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT)){
@@ -95,35 +95,35 @@ public class Handler {
             try {
                 Reference.copyFiles.copyFiles(Reference.modpackDir, Reference.copyDirs, Reference.clientMods);
             } catch (IOException ex) {
-                appLogger.error("There was an error calling the copyFiles method.", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("handler.log.error.runincli.copyfiles"), ex);
             }
             Reference.copyFiles.copyStartScripts(Reference.modpackDir, Reference.modLoader, Reference.includeStartScripts);
             if (Reference.includeServerInstallation) {
                 Reference.serverSetup.installServer(Reference.modLoader, Reference.modpackDir, Reference.minecraftVersion, Reference.modLoaderVersion, Reference.javaPath);
             } else {
-                appLogger.info("Not installing modded server.");
+                appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.server"));
             }
             if (Reference.includeServerIcon) {
                 Reference.copyFiles.copyIcon(Reference.modpackDir);
             } else {
-                appLogger.info("Not including servericon.");
+                appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.icon"));
             }
             if (Reference.includeServerProperties) {
                 Reference.copyFiles.copyProperties(Reference.modpackDir);
             } else {
-                appLogger.info("Not including server.properties.");
+                appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.properties"));
             }
             if (Reference.includeZipCreation) {
                 Reference.serverSetup.zipBuilder(Reference.modpackDir, Reference.modLoader, Reference.includeServerInstallation);
             } else {
-                appLogger.info("Not creating zip archive of serverpack.");
+                appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.zip"));
             }
-            appLogger.info(String.format("Server pack available at: %s/server_pack", Reference.modpackDir));
-            appLogger.info(String.format("Server pack archive available at : %s/server_pack.zip", Reference.modpackDir));
-            appLogger.info("Done!");
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.serverpack"), Reference.modpackDir));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.archive"), Reference.modpackDir));
+            appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.finish"));
             System.exit(0);
         } else {
-            appLogger.error("ERROR: Please check your serverpackcreator.conf for any incorrect settings. This message is also displayed if serverpackcreator downloaded and setup a modpack from a projectID,fileID for modpackDir.");
+            appLogger.error(LocalizationManager.getLocalizedString("handler.log.error.runincli"));
             System.exit(1);
         }
     }
