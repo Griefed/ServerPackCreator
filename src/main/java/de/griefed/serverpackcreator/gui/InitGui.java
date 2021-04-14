@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.gui;
 
-import de.griefed.serverpackcreator.Reference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -8,8 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public class TabbedPane extends JPanel {
-    private static final Logger appLogger = LogManager.getLogger(TabbedPane.class);
+public class InitGui extends JPanel {
+    private static final Logger appLogger = LogManager.getLogger(InitGui.class);
 
     public void main() {
         SwingUtilities.invokeLater(() -> {
@@ -41,10 +40,10 @@ public class TabbedPane extends JPanel {
 
         frame.setIconImage(ReferenceGUI.icon);
         JLabel banner = new JLabel(ReferenceGUI.bannerIcon);
-        banner.setOpaque(true);
+        banner.setOpaque(false);
 
         frame.add(banner, BorderLayout.PAGE_START);
-        frame.add(new TabbedPane(), BorderLayout.CENTER);
+        frame.add(new InitGui(), BorderLayout.CENTER);
 
         frame.setMinimumSize(ReferenceGUI.panelDimension);
         frame.setPreferredSize(ReferenceGUI.panelDimension);
@@ -56,7 +55,7 @@ public class TabbedPane extends JPanel {
     }
 
 
-    public TabbedPane() {
+    public InitGui() {
         super(new GridLayout(1, 1));
 
         JTabbedPane tabbedPane = new JTabbedPane();

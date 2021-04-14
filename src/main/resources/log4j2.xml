@@ -2,10 +2,10 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
+            <PatternLayout pattern="%d{ISO8601}%5p (%F:%L) - %m%n" />
         </Console>
 		<RollingFile name="ApplicationLogger" fileName="logs/serverpackcreator.log" filePattern="logs/serverpackcreator.log.%i">
-            <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
+            <PatternLayout pattern="%d{ISO8601}%5p (%F:%L) - %m%n" />
             <Policies>
                 <OnStartupTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="10 MB" />
@@ -13,7 +13,7 @@
             <DefaultRolloverStrategy max="5" />
         </RollingFile>
         <RollingFile name="InstallerLogger" fileName="logs/modloader_installer.log" filePattern="logs/modloader_installer.log.%i">
-            <PatternLayout pattern="%d{ISO8601} %5p [%t] (%F:%L) - %m%n" />
+            <PatternLayout pattern="%d{ISO8601}%5p (%F:%L) - %m%n" />
             <Policies>
                 <OnStartupTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="10 MB" />

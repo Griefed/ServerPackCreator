@@ -1,38 +1,73 @@
 package de.griefed.serverpackcreator.gui;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class ServerPackCreatorLog extends Component {
+    private static final Logger appLogger = LogManager.getLogger(ServerPackCreatorLog.class);
 
     JComponent serverPackCreatorLog() {
         JComponent serverPackCreatorLog = new JPanel(false);
-        serverPackCreatorLog.setPreferredSize(ReferenceGUI.panelDimension);
+        serverPackCreatorLog.setLayout(new GridBagLayout());
+        GridBagConstraints constraints = new GridBagConstraints();
 
-        JButton setModpackDir = new JButton();
-        setModpackDir.setIcon(ReferenceGUI.folderIcon);
-        setModpackDir.setBounds(50,50,24, 24);
-        serverPackCreatorLog.add(setModpackDir);
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = 3;
 
-        JButton setJavaPath = new JButton();
-        setJavaPath.setIcon(ReferenceGUI.folderIcon);
-        setJavaPath.setBounds(50,250,24, 24);
-        serverPackCreatorLog.add(setJavaPath);
+        //Log Panel
+        JTextArea textArea = new JTextArea();
+        textArea.setEditable(false);
 
-        JButton jButton3 = new JButton();
-        jButton3.setIcon(ReferenceGUI.serverPackCreatorIcon);
-        jButton3.setBounds(500,50,50, 50);
-        serverPackCreatorLog.add(jButton3);
+        try { textArea.read(new FileReader("./logs/serverpackcreator.log"),null); }
+        catch (IOException ex) { appLogger.error("Error reading the serverpackcreator.log.", ex); }
 
-        JButton jButton4 = new JButton();
-        jButton4.setIcon(ReferenceGUI.serverPackCreatorIcon);
-        jButton4.setBounds(500,250,50, 50);
-        serverPackCreatorLog.add(jButton4);
+        JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPane.setMinimumSize(new Dimension(getMaximumSize().width,520));
+        scrollPane.setPreferredSize(new Dimension(getMaximumSize().width,520));
+        scrollPane.setMaximumSize(new Dimension(getMaximumSize().width,520));
+        serverPackCreatorLog.add(scrollPane, constraints);
 
-        JButton jButton5 = new JButton();
-        jButton5.setIcon(ReferenceGUI.serverPackCreatorIcon);
-        jButton5.setBounds(500,450,50, 50);
-        serverPackCreatorLog.add(jButton5);
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.insets = new Insets(15,10,10,10);
+        constraints.weightx = 0.1;
+        constraints.weighty = 0;
+        constraints.ipady = 40;
+        constraints.gridwidth = 1;
+
+        //Button to upload log file to pastebin
+        JButton buttonCreatePasteBin = new JButton();
+        buttonCreatePasteBin.setToolTipText("Upload ServerPackCreator.log to PasteBin.");
+        buttonCreatePasteBin.setIcon(ReferenceGUI.folderIcon);
+        buttonCreatePasteBin.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        serverPackCreatorLog.add(buttonCreatePasteBin, constraints);
+
+        //Button to open a new issue on GitHub
+        JButton buttonOpenIssue = new JButton();
+        buttonOpenIssue.setToolTipText("Create an issue on GitHub.");
+        buttonOpenIssue.setIcon(ReferenceGUI.folderIcon);
+        buttonOpenIssue.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        constraints.gridx = 1;
+        constraints.gridy = 1;
+        serverPackCreatorLog.add(buttonOpenIssue, constraints);
+
+        //Button to open the invite link to the discord server
+        JButton buttonDiscord = new JButton();
+        buttonDiscord.setToolTipText("Get support on the ServerPackCreator Discord server.");
+        buttonDiscord.setIcon(ReferenceGUI.folderIcon);
+        buttonDiscord.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        constraints.gridx = 2;
+        constraints.gridy = 1;
+        serverPackCreatorLog.add(buttonDiscord, constraints);
 
         return serverPackCreatorLog;
     }

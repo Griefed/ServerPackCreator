@@ -2,7 +2,7 @@ package de.griefed.serverpackcreator;
 
 import com.typesafe.config.Config;
 import de.griefed.serverpackcreator.curseforgemodpack.CreateModpack;
-import de.griefed.serverpackcreator.gui.TabbedPane;
+import de.griefed.serverpackcreator.gui.InitGui;
 
 import java.io.File;
 import java.util.List;
@@ -36,7 +36,7 @@ public class Reference {
 
     public static final CreateModpack createModpack = new CreateModpack();
 
-    static final TabbedPane mainGUI = new TabbedPane();
+    static final InitGui initGui = new InitGui();
 
     public static final FilesSetup filesSetup    = new FilesSetup();
     static final Handler handler                 = new Handler();

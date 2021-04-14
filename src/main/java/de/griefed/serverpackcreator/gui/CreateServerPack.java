@@ -141,31 +141,31 @@ public class CreateServerPack extends Component  {
         constraints.fill = GridBagConstraints.NONE;
 
         //Checkbox installServer
-        JCheckBox checkBoxServer = new JCheckBox();
+        JCheckBox checkBoxServer = new JCheckBox("",true);
         constraints.gridx = 1;
         constraints.gridy = 18;
         createServerPackPanel.add(checkBoxServer, constraints);
 
         //Checkbox copyIcon
-        JCheckBox checkBoxIcon = new JCheckBox();
+        JCheckBox checkBoxIcon = new JCheckBox("",true);
         constraints.gridx = 1;
         constraints.gridy = 20;
         createServerPackPanel.add(checkBoxIcon, constraints);
 
         //Checkbox copyProperties
-        JCheckBox checkBoxProperties = new JCheckBox();
+        JCheckBox checkBoxProperties = new JCheckBox("",true);
         constraints.gridx = 1;
         constraints.gridy = 22;
         createServerPackPanel.add(checkBoxProperties, constraints);
 
         //Checkbox copyScripts
-        JCheckBox checkBoxScripts = new JCheckBox();
+        JCheckBox checkBoxScripts = new JCheckBox("",true);
         constraints.gridx = 1;
         constraints.gridy = 24;
         createServerPackPanel.add(checkBoxScripts, constraints);
 
         //Checkbox createZIP
-        JCheckBox checkBoxZIP = new JCheckBox();
+        JCheckBox checkBoxZIP = new JCheckBox("",true);
         constraints.gridx = 1;
         constraints.gridy = 26;
         createServerPackPanel.add(checkBoxZIP, constraints);
@@ -227,4 +227,6 @@ public class CreateServerPack extends Component  {
 
         return createServerPackPanel;
     }
+
+
 }
