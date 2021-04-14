@@ -37,12 +37,12 @@ public class Handler {
             Reference.filesSetup.checkLocaleFile();
         }
 
-        appLogger.warn("################################################################");
+        appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip0"));
         appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip1"));
         appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip2"));
         appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip3"));
         appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip4"));
-        appLogger.warn("################################################################");
+        appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip0"));
 
         try {
             jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
@@ -82,7 +82,7 @@ public class Handler {
 
             System.exit(0);
         } else {
-            Reference.mainGUI.main();
+            Reference.initGui.main();
         }
     }
 

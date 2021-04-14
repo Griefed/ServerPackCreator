@@ -36,11 +36,11 @@ public class FilesSetup {
                 doesPropertiesExist    ||
                 doesIconExist) {
 
-            appLogger.warn("################################################################");
+            appLogger.warn(LocalizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
             appLogger.warn(LocalizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning1"));
             appLogger.warn(LocalizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning2"));
             appLogger.warn(LocalizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning3"));
-            appLogger.warn("################################################################");
+            appLogger.warn(LocalizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
 
         } else {
             appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.filessetup.finish"));
