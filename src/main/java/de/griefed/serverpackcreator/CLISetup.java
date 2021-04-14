@@ -215,13 +215,19 @@ class CLISetup {
         String boolRead;
         while (true) {
             boolRead = readerBoolean.nextLine();
-            if (boolRead.matches("1")                                                           ||
+            if (boolRead.matches("[Tt]rue") ||
+                boolRead.matches("[Yy]es")  ||
+                boolRead.matches("[Yy]")    ||
+                boolRead.matches("1")                                                           ||
                 boolRead.matches(LocalizationManager.getLocalizedString("cli.input.true")) ||
                 boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes"))  ||
                 boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes.short"))) {
                 return true;
 
-            } else if (boolRead.matches("0")                                                            ||
+            } else if (boolRead.matches("[Ff]alse") ||
+                       boolRead.matches("[Nn]o")    ||
+                       boolRead.matches("[Nn]" )    ||
+                       boolRead.matches("0")                                                            ||
                        boolRead.matches(LocalizationManager.getLocalizedString("cli.input.false")) ||
                        boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no"))    ||
                        boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no.short"))) {
