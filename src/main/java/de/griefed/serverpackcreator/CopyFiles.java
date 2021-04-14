@@ -99,7 +99,7 @@ class CopyFiles {
                 appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copystartscripts"), ex);
             }
         } else {
-            appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copystartscripts.modloader"));
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"));
         }
     }
 

@@ -84,7 +84,7 @@ class ServerSetup {
                 appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.installserver.forgefail"), ex);
             }
         } else {
-            appLogger.error(String.format(LocalizationManager.getLocalizedString("serversetup.log.error.installserver"), modLoader));
+            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
         }
         Reference.serverUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         Reference.serverUtilities.cleanUpServerPack(
