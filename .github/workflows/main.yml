@@ -1,0 +1,44 @@
+name: Contributors
+
+on:
+  schedule:
+    - cron: '0 6 1/16 * *'
+  workflow_dispatch:
+
+jobs:
+  contributors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: bubkoo/contributors-list@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          truncate: 0
+          affiliation: 'all'
+          svgWidth: 600
+          userNameHeight: 19
+          round: false
+          svgTemplate: >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              version="1.1"
+              width="{{ width }}"
+              height="{{#sum}} {{ contributorsHeight }} + {{ botsHeight }} + {{ collaboratorsHeight }} + 32 + 32 + 32 {{/sum}}"
+            >
+              <style>.contributor-link { cursor: pointer; }</style>
+            
+              <text x="5" y="5" text-anchor="start" alignment-baseline="before-edge" font-size="24">Contributors</text>
+              <g transform="translate(0, 32)">
+                {{{ contributors }}}
+              </g>
+            
+              <text x="5" y="{{#sum}} {{ contributorsHeight }} + 32 + 8 {{/sum}}" text-anchor="start" alignment-baseline="before-edge" font-size="24">Bots</text>
+              <g transform="translate(0, {{#sum}} {{ contributorsHeight }} + 32 + 32 {{/sum}})">
+                {{{ bots }}}
+              </g>
+            
+              <text x="5" y="{{#sum}} {{ contributorsHeight }} + {{ botsHeight }} + 32 + 32 + 8 {{/sum}}" text-anchor="start" alignment-baseline="before-edge" font-size="24">Collaborators</text>
+              <g transform="translate(0, {{#sum}} {{ contributorsHeight }} + {{ botsHeight }} + 32 + 32 + 32 {{/sum}})">
+                {{{ collaborators }}}
+              </g>
+            </svg>
