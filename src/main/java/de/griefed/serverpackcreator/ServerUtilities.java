@@ -164,7 +164,8 @@ class ServerUtilities {
         boolean downloaded = false;
         try {
             appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.downloadfabricjar.enter"));
-            URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller(modpackDir), latestFabricInstaller(modpackDir)));
+            String latestFabricInstaller = latestFabricInstaller(modpackDir);
+            URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller, latestFabricInstaller));
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
             FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.jar", modpackDir));

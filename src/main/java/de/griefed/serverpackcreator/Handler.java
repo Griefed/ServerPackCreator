@@ -51,7 +51,7 @@ public class Handler {
             osArch = System.getProperty("os.arch");
             osName = System.getProperty("os.name");
             osVersion = System.getProperty("os.version");
-            appLogger.info("handler.log.info.system.enter");
+            appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.system.enter"));
             appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.jarpath"), jarPath));
             appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.jarname"), jarName));
             appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.system.java"), javaVersion));

@@ -131,8 +131,8 @@ public class CreateModpack {
 
             Modpack modpack = objectMapper.readValue(jsonData, Modpack.class);
             Random randInt = new Random();
-            for (int i = 0; i < modpack.getFiles().toArray().length; i++) {
-                if (randInt.nextInt(modpack.getFiles().toArray().length)==i) {
+            for (int i = 0; i < modpack.getFiles().size(); i++) {
+                if (randInt.nextInt(modpack.getFiles().size())==i) {
                     appLogger.info(String.format("%s", Splines.getSplines()));
                 }
                 String[] mods = modpack.getFiles().get(i).toString().split(",");
@@ -151,7 +151,7 @@ public class CreateModpack {
                     appLogger.error(LocalizationManager.getLocalizedString("createmodpack.log.error.downloadmods.curseforgeinfo"), cex);
                 }
                 try {
-                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createmodpack.log.info.downloadmods.specificmod"), i+1, modpack.getFiles().toArray().length, modName, modFileName));
+                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createmodpack.log.info.downloadmods.specificmod"), i+1, modpack.getFiles().size(), modName, modFileName));
                     CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
                     try { Thread.sleep(1000); }
                     catch (InterruptedException iex) { appLogger.debug(LocalizationManager.getLocalizedString("createmodpack.log.debug.downloadmods.sleep"), iex); }
@@ -172,8 +172,8 @@ public class CreateModpack {
         } catch (IOException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("createmodpack.log.error.downloadmods.fail"));
         }
-        if (failedDownloads.toArray().length != 0) {
-            for (int i = 0; i <= failedDownloads.toArray().length; i++) {
+        if (failedDownloads.size() != 0) {
+            for (int i = 0; i <= failedDownloads.size(); i++) {
                 appLogger.error(String.format(LocalizationManager.getLocalizedString("createmodpack.log.error.downloadmods.urllist"), failedDownloads.get(i)));
             }
         }

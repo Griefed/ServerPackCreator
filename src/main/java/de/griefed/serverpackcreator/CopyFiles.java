@@ -112,7 +112,7 @@ class CopyFiles {
     void copyFiles(String modpackDir, List<String> copyDirs, List<String> clientMods) throws IOException {
         String serverPath = String.format("%s/server_pack", modpackDir);
         Files.createDirectories(Paths.get(serverPath));
-        for (int i = 0; i < copyDirs.toArray().length; i++) {
+        for (int i = 0; i < copyDirs.size(); i++) {
             String clientDir = String.format("%s/%s", modpackDir,copyDirs.get(i));
             String serverDir = String.format("%s/%s", serverPath,copyDirs.get(i));
             appLogger.info(String.format(LocalizationManager.getLocalizedString("copyfiles.log.info.copyfiles.setup"), serverDir));
@@ -122,12 +122,15 @@ class CopyFiles {
                     Stream<Path> files = Files.walk(Paths.get(clientDir));
                     files.forEach(file -> {
                         try {
+
                             Files.copy(
                                     file,
                                     Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)),
                                     REPLACE_EXISTING
                             );
+
                             appLogger.debug(String.format(LocalizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath().toString()));
+
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
                                 appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.saves"), ex);
@@ -137,17 +140,20 @@ class CopyFiles {
                 } catch (IOException ex) {
                     appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.saves.world"), ex);
                 }
-            } else if (copyDirs.get(i).startsWith("mods") && clientMods.toArray().length > 0) {
+            } else if (copyDirs.get(i).startsWith("mods") && clientMods.size() > 0) {
                 List<String> listOfFiles = excludeClientMods(clientDir, clientMods);
                 Files.createDirectories(Paths.get(serverDir));
-                for (int in = 0; in < listOfFiles.toArray().length; in++) {
+                for (int in = 0; in < listOfFiles.size(); in++) {
                     try {
+
                         Files.copy(
                                 Paths.get(listOfFiles.get(in)),
                                 Paths.get(String.format("%s/%s",serverDir, new File(listOfFiles.get(in)).getName())),
                                 REPLACE_EXISTING
                         );
+
                         appLogger.debug(String.format(LocalizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), listOfFiles.get(in)));
+
                     } catch (IOException ex) {
                         if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
                             appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);
@@ -159,11 +165,13 @@ class CopyFiles {
                     Stream<Path> files = Files.walk(Paths.get(clientDir));
                     files.forEach(file -> {
                         try {
+
                             Files.copy(
                                     file,
                                     Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
                                     REPLACE_EXISTING
                             );
+
                             appLogger.debug(String.format("Copying: %s", file.toAbsolutePath().toString()));
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
@@ -189,12 +197,18 @@ class CopyFiles {
         appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.excludeclientmods"));
         String[] copyMods = new String[0];
         List<String> modpackModList = new ArrayList<>();
+
         try (Stream<Path> walk = Files.walk(Paths.get(modsDir))) {
+
             modpackModList = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
-            for (int in = 0; in < modpackModList.toArray().length; in++) {
-                for (int i = 0; i < clientMods.toArray().length; i++) {
+
+            for (int in = 0; in < modpackModList.size(); in++) {
+
+                for (int i = 0; i < clientMods.size(); i++) {
+
                     String modpackMod = modpackModList.get(in);
                     String clientMod = clientMods.get(i);
+
                     if (modpackMod.contains(clientMod)) {
                         modpackModList.remove(in);
                     }
@@ -202,6 +216,7 @@ class CopyFiles {
             }
             copyMods = modpackModList.toArray(new String[0]);
             return Arrays.asList(copyMods.clone());
+
         } catch (IOException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.excludeclientmods"), ex);
         }
@@ -214,11 +229,13 @@ class CopyFiles {
     void copyIcon(String modpackDir) {
         appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copyicon"));
         try {
+
             Files.copy(
                     Paths.get(String.format("./server_files/%s", Reference.iconFile)),
                     Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.iconFile)),
                     REPLACE_EXISTING
             );
+
         } catch (IOException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyicon"), ex);
         }
@@ -230,11 +247,13 @@ class CopyFiles {
     void copyProperties(String modpackDir) {
         appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copyproperties"));
         try {
+
             Files.copy(
                     Paths.get(String.format("./server_files/%s", Reference.propertiesFile)),
                     Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.propertiesFile)),
                     REPLACE_EXISTING
             );
+
         } catch (IOException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyproperties"), ex);
         }

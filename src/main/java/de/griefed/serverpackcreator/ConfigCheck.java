@@ -206,7 +206,7 @@ class ConfigCheck {
      */
     private boolean containsFabric(Modpack modpack) {
         boolean hasJumploader = false;
-        for (int i = 0; i < modpack.getFiles().toArray().length; i++) {
+        for (int i = 0; i < modpack.getFiles().size(); i++) {
             String[] mods;
             mods = modpack.getFiles().get(i).toString().split(",");
             if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
@@ -328,17 +328,17 @@ class ConfigCheck {
                             boolean includeZip) {
         appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.start"));
         appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.modpackdir"), modpackDirectory));
-        if (clientsideMods.toArray().length == 0) {
+        if (clientsideMods.size() == 0) {
             appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.printconfig.noclientmods"));
         } else {
             appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.clientmods"));
-            for (int i = 0; i < clientsideMods.toArray().length; i++) {
+            for (int i = 0; i < clientsideMods.size(); i++) {
                 appLogger.info(String.format("    %s", clientsideMods.get(i))); }
         }
 
         appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.copydirs"));
         if (copyDirectories != null) {
-            for (int i = 0; i < copyDirectories.toArray().length; i++) {
+            for (int i = 0; i < copyDirectories.size(); i++) {
                 appLogger.info(String.format("    %s", copyDirectories.get(i))); }
         } else { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.printconfig.copydirs")); }
 
@@ -380,7 +380,7 @@ class ConfigCheck {
             appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkcopydirs.empty"));
             configCorrect = false;
         } else {
-            for (int i = 0; i < copyDirs.toArray().length; i++) {
+            for (int i = 0; i < copyDirs.size(); i++) {
                 File directory = new File(String.format("%s/%s", modpackDir, copyDirs.get(i)));
                 if (!directory.exists() || !directory.isDirectory()) {
                     appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkcopydirs.notfound"), directory.getAbsolutePath()));
@@ -650,6 +650,7 @@ class ConfigCheck {
             FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-loader.xml", modpackDir));
             FileChannel downloadFabricXmlFileChannel = downloadFabricXmlFileOutputStream.getChannel();
             downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
+
             downloadFabricXmlFileOutputStream.flush();
             downloadFabricXmlFileOutputStream.close();
             downloadFabricXmlReadableByteChannel.close();
