@@ -46,7 +46,7 @@ Consider major version incompatible to each other. Meaning, configs from 1.x.x a
 Version mask | Description
 -------------|------------
 **1.x.x** | CLI exclusive
-**2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI.
+**2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
 
 ## Configuration
 
