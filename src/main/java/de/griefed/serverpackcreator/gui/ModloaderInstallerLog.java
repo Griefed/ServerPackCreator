@@ -7,6 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ModloaderInstallerLog extends Component {
     private static final Logger appLogger = LogManager.getLogger(ModloaderInstallerLog.class);
@@ -26,8 +29,16 @@ public class ModloaderInstallerLog extends Component {
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
 
-        try { textArea.read(new FileReader("./logs/modloader_installer.log"),null); }
-        catch (IOException ex) { appLogger.error("Error reading the modloader_installer.log.", ex); }
+        final ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
+        ses.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                try { textArea.read(new FileReader("./logs/modloader_installer.log"),null); }
+                catch (IOException ex) { appLogger.error("Error reading the modloader_installer.log.", ex); }
+            }
+        }, 2, 1, TimeUnit.SECONDS);
+
+
 
         JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setMinimumSize(new Dimension(getMaximumSize().width,520));
