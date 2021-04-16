@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id 'pmd'
-    id 'edu.sc.seis.launch4j' version '2.4.9'
+    id 'edu.sc.seis.launch4j' version '2.5.0'
 }
 
 //noinspection GroovyUnusedAssignment
