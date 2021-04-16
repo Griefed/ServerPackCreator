@@ -64,7 +64,7 @@ public class InitGui extends JPanel {
         tabbedPane.addTab("Create Server Pack", null, new CreateServerPack().createServerPack() , "Configure and start generation of server pack.");
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-        tabbedPane.addTab("serverpackcreator Log",null, new ServerPackCreatorLog().serverPackCreatorLog(), "Latest serverpackcreator log tail.");
+        tabbedPane.addTab("ServerPackCreator Log",null, new ServerPackCreatorLog().serverPackCreatorLog(), "Latest serverpackcreator log tail.");
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
         tabbedPane.addTab("Modloader-Installer Log",null, new ModloaderInstallerLog().modloaderInstallerLog(), "Latest modloader-installer log tail.");
