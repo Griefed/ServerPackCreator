@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.List;
 
 public class Handler {
     private static final Logger appLogger = LogManager.getLogger(Handler.class);
@@ -23,20 +21,6 @@ public class Handler {
                 osArch = null,
                 osName = null,
                 osVersion = null;
-
-        List<String> programArgs = Arrays.asList(args);
-
-        if (Arrays.asList(args).contains(Reference.LANG_ARGUMENT)) {
-            try {
-                LocalizationManager.init(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
-            } catch (IncorrectLanguageException e) {
-                appLogger.info(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
-                appLogger.error("Incorrect language specified, falling back to English (United States)...");
-                LocalizationManager.init();
-            }
-        } else {
-            Reference.filesSetup.checkLocaleFile();
-        }
 
         appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip0"));
         appLogger.warn(LocalizationManager.getLocalizedString("handler.log.warn.wip1"));

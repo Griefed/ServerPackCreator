@@ -77,6 +77,7 @@ class ServerSetup {
                     reader.close();
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.details"));
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver"));
+                    process.destroy();
                 } else {
                     appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.installserver.forge"));
                 }
@@ -86,6 +87,7 @@ class ServerSetup {
         } else {
             appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
         }
+
         Reference.serverUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         Reference.serverUtilities.cleanUpServerPack(
                 fabricInstaller,
@@ -93,6 +95,7 @@ class ServerSetup {
                 modLoader,
                 modpackDir,
                 minecraftVersion, modLoaderVersion);
+
     }
     /** Create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
      * With help from https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java

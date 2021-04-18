@@ -31,7 +31,7 @@ public class ServerPackCreatorLog extends Component {
         //Log Panel
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
-
+        /* TODO: Find more efficient way of displaying logs in UI. This way bloats memory usage by ungodly amounts.
         final ScheduledExecutorService readLogExecutor = Executors.newSingleThreadScheduledExecutor();
         readLogExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -41,12 +41,14 @@ public class ServerPackCreatorLog extends Component {
             }
         }, 2, 1, TimeUnit.SECONDS);
 
+         */
+
 
 
         JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scrollPane.setMinimumSize(new Dimension(getMaximumSize().width,getMaximumSize().height));
-        scrollPane.setPreferredSize(new Dimension(getMaximumSize().width,getMaximumSize().height));
-        scrollPane.setMaximumSize(new Dimension(getMaximumSize().width,getMaximumSize().height));
+        scrollPane.setMinimumSize(new Dimension(775,getMaximumSize().height));
+        scrollPane.setPreferredSize(new Dimension(775,getMaximumSize().height));
+        scrollPane.setMaximumSize(new Dimension(775,getMaximumSize().height));
         serverPackCreatorLog.add(scrollPane, constraints);
 
         return serverPackCreatorLog;

@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui;
 
+import de.griefed.serverpackcreator.Reference;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,7 @@ public class TabbedPane extends JPanel {
     private static final Logger appLogger = LogManager.getLogger(TabbedPane.class);
 
     public void mainGUI() {
+
         SwingUtilities.invokeLater(() -> {
             //Bold fonts = true, else false
             UIManager.put("swing.boldMetal", true);
@@ -37,7 +39,7 @@ public class TabbedPane extends JPanel {
 
     private void createAndShowGUI() {
 
-        JFrame frame = new JFrame("serverpackcreator");
+        JFrame frame = new JFrame("ServerPackCreator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setIconImage(ReferenceGUI.icon);
@@ -60,7 +62,6 @@ public class TabbedPane extends JPanel {
 
     public TabbedPane() {
         super(new GridLayout(1, 1));
-
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setBackground(ReferenceGUI.backgroundColour);

@@ -270,7 +270,7 @@ class ServerUtilities {
      */
     void deleteMinecraftJar(String modLoader, String modpackDir) {
         if (modLoader.equalsIgnoreCase("Forge")) {
-            appLogger.info("serverutilities.log.info.deleteminecraftjar.enter");
+            appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.deleteminecraftjar.enter"));
 
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
