@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui;
 
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,7 +18,7 @@ public class TabbedPane extends JPanel {
             try {
                 UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-                appLogger.error("Error: There was an error setting the look and feel.", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("tabbedpane.log.error"), ex);
             }
             createAndShowGUI();
         });

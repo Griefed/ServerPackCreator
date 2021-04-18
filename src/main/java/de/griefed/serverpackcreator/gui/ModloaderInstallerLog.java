@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui;
 
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -7,7 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +36,7 @@ public class ModloaderInstallerLog extends Component {
             @Override
             public void run() {
                 try { textArea.read(new FileReader("./logs/modloader_installer.log"),null); }
-                catch (IOException ex) { appLogger.error("Error reading the modloader_installer.log.", ex); }
+                catch (IOException ex) { appLogger.error(LocalizationManager.getLocalizedString("modloaderinstallerlog.log.error"), ex); }
             }
         }, 2, 1, TimeUnit.SECONDS);
 
