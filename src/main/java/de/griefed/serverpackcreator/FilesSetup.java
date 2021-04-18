@@ -331,9 +331,11 @@ public class FilesSetup {
      * @param includeProperties Boolean. Whether to include a properties file in the server pack.
      * @param includeScripts Boolean. Whether to include start scripts in the server pack.
      * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server jar.
+     * @param fileName The name under which to write the new file.
+     * @param isTemporary Decides whether to delete existing config-file. If isTemporary is false, existing config files will be deleted before writing the new file.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
      */
-    boolean writeConfigToFile(String modpackDir,
+    public boolean writeConfigToFile(String modpackDir,
                                      String clientMods,
                                      String copyDirs,
                                      boolean includeServer,
@@ -344,7 +346,9 @@ public class FilesSetup {
                                      boolean includeIcon,
                                      boolean includeProperties,
                                      boolean includeScripts,
-                                     boolean includeZip ) {
+                                     boolean includeZip,
+                                     File fileName,
+                                     boolean isTemporary) {
         boolean configWritten = false;
         String configString = String.format(
                         "# Path to your modpack. Can be either relative or absolute.\n" +
@@ -419,22 +423,26 @@ public class FilesSetup {
                 includeScripts,
                 includeZip
         );
-        if (Reference.configFile.exists()) {
-            boolean delConf = Reference.configFile.delete();
-            if (delConf) {
-                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.config")); }
-            else {
-                appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile.config")); }
-        }
-        if (Reference.oldConfigFile.exists()) {
-            boolean delOldConf = Reference.oldConfigFile.delete();
-            if (delOldConf) {
-                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.old")); }
-            else {
-                appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile.old")); }
+        if (!isTemporary) {
+            if (Reference.configFile.exists()) {
+                boolean delConf = Reference.configFile.delete();
+                if (delConf) {
+                    appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.config"));
+                } else {
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile.config"));
+                }
+            }
+            if (Reference.oldConfigFile.exists()) {
+                boolean delOldConf = Reference.oldConfigFile.delete();
+                if (delOldConf) {
+                    appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.old"));
+                } else {
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile.old"));
+                }
+            }
         }
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.configFile));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
             writer.write(configString);
             writer.close();
             configWritten = true;

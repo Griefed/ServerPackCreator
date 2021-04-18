@@ -244,7 +244,9 @@ class FilesSetupTest {
                 true,
                 true,
                 true,
-                true
+                true,
+                Reference.configFile,
+                false
         );
         Assertions.assertTrue(result);
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
@@ -303,7 +305,9 @@ class FilesSetupTest {
                 true,
                 true,
                 true,
-                true
+                true,
+                Reference.configFile,
+                false
         );
         Assertions.assertTrue(result);
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
