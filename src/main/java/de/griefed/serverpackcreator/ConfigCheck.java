@@ -27,17 +27,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-class ConfigCheck {
+public class ConfigCheck {
     private static final Logger appLogger = LogManager.getLogger(ConfigCheck.class);
 
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
+     * @param configFile The configuration file to check. Must be a valid configuration file for ServerPackCreator to work.
      * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
-    public boolean checkConfig() {
+    public boolean checkConfigFile(File configFile) {
         boolean configHasError;
         appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.start"));
         try {
-            Reference.config = ConfigFactory.parseFile(Reference.configFile);
+            Reference.config = ConfigFactory.parseFile(configFile);
         } catch (ConfigException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkconfig.start"));
         }
@@ -189,7 +190,9 @@ class ConfigCheck {
                             Reference.minecraftVersion, Reference.modLoader,
                             Reference.modLoaderVersion, Reference.includeServerIcon,
                             Reference.includeServerProperties, Reference.includeStartScripts,
-                            Reference.includeZipCreation
+                            Reference.includeZipCreation,
+                            Reference.configFile,
+                            false
                     );
                 }
             }
@@ -279,7 +282,7 @@ class ConfigCheck {
      * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
      * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
      */
-    private boolean convertToBoolean(String stringBoolean) {
+    public boolean convertToBoolean(String stringBoolean) {
         boolean returnBoolean;
         if (stringBoolean.matches("[Tt]rue") ||
             stringBoolean.matches("1")       ||
