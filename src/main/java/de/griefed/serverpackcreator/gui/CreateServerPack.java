@@ -3,6 +3,7 @@ package de.griefed.serverpackcreator.gui;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import de.griefed.serverpackcreator.Reference;
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -198,9 +199,9 @@ public class CreateServerPack extends Component  {
             if (folderChooser.showOpenDialog(folderChooser) == JFileChooser.APPROVE_OPTION) {
                 try {
                     textModpackDir.setText(folderChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
-                    appLogger.info(String.format("Selected modpack directory: %s", folderChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
+                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonmodpack"), folderChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
                 } catch (IOException ex) {
-                    appLogger.error("Error getting directory from modpack directory chooser.",ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttonmodpack"),ex);
                 }
             }
         });
@@ -242,7 +243,7 @@ public class CreateServerPack extends Component  {
                 }
 
                 textClientMods.setText(ReferenceGUI.cliSetup.buildString(Arrays.toString(clientModsFilenames.toArray(new String[0]))));
-                appLogger.info(String.format("Selected mods: %s", clientModsFilenames));
+                appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
             }
         });
         constraints.gridx = 1;
@@ -281,7 +282,7 @@ public class CreateServerPack extends Component  {
                 }
 
                 textCopyDirs.setText(ReferenceGUI.cliSetup.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
-                appLogger.info(String.format("Selected directories: %s", copyDirsNames));
+                appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
             }
         });
         constraints.gridx = 1;
@@ -309,9 +310,9 @@ public class CreateServerPack extends Component  {
             if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
                 try {
                     textJavaPath.setText(fileChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
-                    appLogger.info(String.format("Set path to Java executable to: %s", fileChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
+                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonjavapath"), fileChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
                 } catch (IOException ex) {
-                    appLogger.error("Error getting directory from modpack directory chooser.",ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttonjavapath"),ex);
                 }
             }
         });
@@ -343,9 +344,9 @@ public class CreateServerPack extends Component  {
 
                 try {
                     newConfigFile = ConfigFactory.parseFile(new File(fileChooser.getSelectedFile().getCanonicalPath()));
-                    appLogger.info(String.format("Loading from configuration file: %s", fileChooser.getSelectedFile().getCanonicalPath()));
+                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"), fileChooser.getSelectedFile().getCanonicalPath()));
                 } catch (IOException ex) {
-                    appLogger.error("Error loading configuration from selected file.",ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"),ex);
                 }
 
                 if (newConfigFile != null) {
@@ -374,7 +375,7 @@ public class CreateServerPack extends Component  {
 
                     checkBoxZIP.setSelected(ReferenceGUI.configCheck.convertToBoolean(newConfigFile.getString("includeZipCreation")));
 
-                    appLogger.info("Configuration successfully loaded.");
+                    appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
                 }
             }
         });
@@ -401,9 +402,12 @@ public class CreateServerPack extends Component  {
         buttonGenerateServerPack.setIcon(ReferenceGUI.startGeneration);
         buttonGenerateServerPack.setPreferredSize(ReferenceGUI.startGenerationButton);
         buttonGenerateServerPack.addActionListener(e -> {
+
             buttonGenerateServerPack.setEnabled(false);
-            appLogger.info("Checking entered configuration.");
-            labelGenerateServerPack.setText("Checking entered configuration.");
+
+            appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
+            labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
+
             Reference.filesSetup.writeConfigToFile(
                     textModpackDir.getText(),
                     textClientMods.getText(),
@@ -421,22 +425,22 @@ public class CreateServerPack extends Component  {
                     true
             );
             if (!ReferenceGUI.configCheck.checkConfigFile(new File("serverpackcreator.tmp"))) {
-                appLogger.info("Configuration checked successfully.");
-                labelGenerateServerPack.setText("Configuration checked successfully.");
+                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
+                labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
                 if (new File("serverpackcreator.tmp").exists()) {
                     boolean delTmp = new File("serverpackcreator.tmp").delete();
                     if (delTmp) {
-                        labelGenerateServerPack.setText("Deleted temporary config file.");
-                        appLogger.info("Deleted temporary config file.");
+                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+                        appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
                     } else {
-                        labelGenerateServerPack.setText("Could not delete temporary config file.");
-                        appLogger.error("Could not delete temporary config file.");
+                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
+                        appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
                     }
                 }
 
-                appLogger.info("Writing configuration to file.");
-                labelGenerateServerPack.setText("Writing configuration to file.");
+                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
+                labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
                 Reference.filesSetup.writeConfigToFile(
                         textModpackDir.getText(),
                         textClientMods.getText(),
@@ -454,8 +458,8 @@ public class CreateServerPack extends Component  {
                         false
                 );
 
-                appLogger.info("Generating server pack.");
-                labelGenerateServerPack.setText("Generating server pack. Check the ServerPackCreator Log and Modloader-Installer Log tabs.");
+                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
+                labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
                 final ScheduledExecutorService readLogExecutor = Executors.newSingleThreadScheduledExecutor();
                 readLogExecutor.scheduleWithFixedDelay(() -> {
                     try {
@@ -466,20 +470,20 @@ public class CreateServerPack extends Component  {
                                 if (text == null) { break; }
                                 labelGenerateServerPack.setText(text.substring(23));
                             } catch (IOException ex) {
-                                appLogger.error("Error reading log.", ex);
+                                appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.log"), ex);
                             }
                         }}
-                    catch (IOException ex) { appLogger.error("Log file not found.", ex); }
+                    catch (IOException ex) { appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.lognotfound"), ex); }
                 }, 2, 1, TimeUnit.SECONDS);
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
                     if (ReferenceGUI.handler.run()) {
-                        labelGenerateServerPack.setText("ServerPackCreator ready.");
+                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         buttonGenerateServerPack.setEnabled(true);
                         readLogExecutor.shutdown();
                         executorService.shutdown();
                     } else {
-                        labelGenerateServerPack.setText("ServerPackCreator ready.");
+                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         buttonGenerateServerPack.setEnabled(true);
                         readLogExecutor.shutdown();
                         executorService.shutdown();
@@ -501,7 +505,7 @@ public class CreateServerPack extends Component  {
                 File configFile = new File("serverpackcreator.conf");
                 Config config = ConfigFactory.parseFile(configFile);
 
-                appLogger.info("Loading configuration from file.");
+                appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"), configFile));
 
                 textModpackDir.setText(config.getString("modpackDir"));
 
@@ -527,10 +531,10 @@ public class CreateServerPack extends Component  {
 
                 checkBoxZIP.setSelected(ReferenceGUI.configCheck.convertToBoolean(config.getString("includeZipCreation")));
 
-                appLogger.info("Configuration successfully loaded.");
+                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
             }
         } catch (NullPointerException ex) {
-            appLogger.error("File or config string not found.");
+            appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.loadconfig"));
         }
 
         return createServerPackPanel;

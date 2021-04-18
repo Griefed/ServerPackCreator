@@ -11,8 +11,9 @@ public class ReferenceGUI extends Reference {
     static final ImageIcon startGeneration          = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/start_generation.png")));
     static final ImageIcon bannerIcon               = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/banner.png")));
     static final ImageIcon loadIcon                 = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/load.png")));
-    // static final ImageIcon configIcon               = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/config.png")));
-    // static final ImageIcon settingsIcon             = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/settings.png")));
+    static final ImageIcon issueIcon                = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/issue.png")));
+    static final ImageIcon pastebinIcon             = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/pastebin.png")));
+    static final ImageIcon prosperIcon              = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/prosper.png")));
 
     static final Image icon = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/app.png")));
 

@@ -1,12 +1,14 @@
 package de.griefed.serverpackcreator.gui;
 
-
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
 
 public class About extends Component {
     private static final Logger appLogger = LogManager.getLogger(About.class);
@@ -54,7 +56,7 @@ public class About extends Component {
                 "Whitebear60\n",
                 attributeSet
         ); } catch (BadLocationException ex) {
-            appLogger.error("Error inserting string into document.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("about.log.error.document"), ex);
         }
 
         about.add(textPane, constraints);
@@ -68,28 +70,61 @@ public class About extends Component {
         constraints.gridwidth = 1;
 
         //Button to upload log file to pastebin
-        JButton buttonCheckForUpdate = new JButton();
-        buttonCheckForUpdate.setToolTipText("Check for updates!");
-        buttonCheckForUpdate.setIcon(ReferenceGUI.loadIcon);
-        buttonCheckForUpdate.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        JButton buttonCreatePasteBin = new JButton();
+        buttonCreatePasteBin.setToolTipText("Open pastebin in your browser to create pastes of logs files or config files.");
+        buttonCreatePasteBin.setIcon(ReferenceGUI.pastebinIcon);
+        buttonCreatePasteBin.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        buttonCreatePasteBin.addActionListener(e -> {
+
+            try {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(URI.create("https://pastebin.com"));
+                }
+            } catch (IOException ex) {
+                appLogger.error(LocalizationManager.getLocalizedString("about.log.error.browser"), ex);
+            }
+
+        });
         constraints.gridx = 0;
         constraints.gridy = 1;
-        about.add(buttonCheckForUpdate, constraints);
+        about.add(buttonCreatePasteBin, constraints);
 
         //Button to open a new issue on GitHub
-        JButton buttonGitHub = new JButton();
-        buttonGitHub.setToolTipText("Visit the GitHub repository!");
-        buttonGitHub.setIcon(ReferenceGUI.folderIcon);
-        buttonGitHub.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        JButton buttonOpenIssue = new JButton();
+        buttonOpenIssue.setToolTipText("Create an issue on GitHub.");
+        buttonOpenIssue.setIcon(ReferenceGUI.issueIcon);
+        buttonOpenIssue.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        buttonOpenIssue.addActionListener(e -> {
+
+            try {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
+                }
+            } catch (IOException ex) {
+                appLogger.error(LocalizationManager.getLocalizedString("about.log.error.browser"), ex);
+            }
+
+        });
         constraints.gridx = 1;
         constraints.gridy = 1;
-        about.add(buttonGitHub, constraints);
+        about.add(buttonOpenIssue, constraints);
 
         //Button to open the invite link to the discord server
         JButton buttonDiscord = new JButton();
-        buttonDiscord.setToolTipText("Join the community on Discord!");
-        buttonDiscord.setIcon(ReferenceGUI.folderIcon);
+        buttonDiscord.setToolTipText("Get support and chat on Griefed's Discord server.");
+        buttonDiscord.setIcon(ReferenceGUI.prosperIcon);
         buttonDiscord.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        buttonDiscord.addActionListener(e -> {
+
+            try {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop().browse(URI.create("https://discord.griefed.de"));
+                }
+            } catch (IOException ex) {
+                appLogger.error(LocalizationManager.getLocalizedString("about.log.error.browser"), ex);
+            }
+
+        });
         constraints.gridx = 2;
         constraints.gridy = 1;
         about.add(buttonDiscord, constraints);
