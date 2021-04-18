@@ -91,6 +91,7 @@ java {
 }
 
 jar {
+    //noinspection GroovyAssignabilityCheck
     manifest {
         attributes(
                 "Main-Class"     : "de.griefed.serverpackcreator.Main",
@@ -120,7 +121,6 @@ jar {
             )
         }
     }
-
 }
 
 publishing {
