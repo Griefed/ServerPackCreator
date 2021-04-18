@@ -7,10 +7,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public class InitGui extends JPanel {
-    private static final Logger appLogger = LogManager.getLogger(InitGui.class);
+public class TabbedPane extends JPanel {
+    private static final Logger appLogger = LogManager.getLogger(TabbedPane.class);
 
-    public void main() {
+    public void mainGUI() {
         SwingUtilities.invokeLater(() -> {
             //Bold fonts = true, else false
             UIManager.put("swing.boldMetal", true);
@@ -35,6 +35,7 @@ public class InitGui extends JPanel {
     }
 
     private void createAndShowGUI() {
+
         JFrame frame = new JFrame("serverpackcreator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -43,20 +44,22 @@ public class InitGui extends JPanel {
         banner.setOpaque(false);
 
         frame.add(banner, BorderLayout.PAGE_START);
-        frame.add(new InitGui(), BorderLayout.CENTER);
+        frame.add(new TabbedPane(), BorderLayout.CENTER);
 
-        frame.setMinimumSize(ReferenceGUI.panelDimension);
-        frame.setPreferredSize(ReferenceGUI.panelDimension);
-        frame.setMaximumSize(ReferenceGUI.panelDimension);
+        frame.setMinimumSize(ReferenceGUI.windowDimension);
+        frame.setPreferredSize(ReferenceGUI.windowDimension);
+        frame.setMaximumSize(ReferenceGUI.windowDimension);
         frame.setResizable(false);
 
         frame.pack();
+
         frame.setVisible(true);
     }
 
 
-    public InitGui() {
+    public TabbedPane() {
         super(new GridLayout(1, 1));
+
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setBackground(ReferenceGUI.backgroundColour);
