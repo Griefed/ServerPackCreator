@@ -25,6 +25,7 @@ public class Handler {
                 osVersion = null;
 
         List<String> programArgs = Arrays.asList(args);
+
         if (Arrays.asList(args).contains(Reference.LANG_ARGUMENT)) {
             try {
                 LocalizationManager.init(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
@@ -68,29 +69,39 @@ public class Handler {
 
             Reference.cliSetup.setup();
             Reference.filesSetup.filesSetup();
-            runInCli();
 
-            System.exit(0);
+            if (run()) {
+                System.exit(0);
+            } else {
+                System.exit(1);
+            }
 
         } else if (Arrays.asList(args).contains(Reference.RUN_CLI_ARGUMENT)) {
             if (!Reference.oldConfigFile.exists() && !Reference.configFile.exists()) {
 
                 Reference.cliSetup.setup();
-                Reference.filesSetup.filesSetup();
             }
-            runInCli();
+            Reference.filesSetup.filesSetup();
 
-            System.exit(0);
+            if (run()) {
+                System.exit(0);
+            } else {
+                System.exit(1);
+            }
+
         } else {
-            Reference.initGui.main();
+            Reference.filesSetup.filesSetup();
+
+            Reference.tabbedPane.mainGUI();
         }
     }
 
     /**
      * Run when ServerPackCreator is run in either -cli or -cgen mode. Runs what used to be the main content in Main in pre-1.x.x. times. Inits config checks and, if config checks are successfull, calls methods to create the server pack.
+     * @return Return true if the serverpack was successfully generated, false if not.
      */
-    private void runInCli() {
-        if (!Reference.configCheck.checkConfig()) {
+    public boolean run() {
+        if (!Reference.configCheck.checkConfigFile(Reference.configFile)) {
             Reference.copyFiles.cleanupEnvironment(Reference.modpackDir);
             try {
                 Reference.copyFiles.copyFiles(Reference.modpackDir, Reference.copyDirs, Reference.clientMods);
@@ -121,10 +132,10 @@ public class Handler {
             appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.serverpack"), Reference.modpackDir));
             appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.archive"), Reference.modpackDir));
             appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.finish"));
-            System.exit(0);
+            return true;
         } else {
             appLogger.error(LocalizationManager.getLocalizedString("handler.log.error.runincli"));
-            System.exit(1);
+            return false;
         }
     }
 }
