@@ -18,7 +18,6 @@ public class Main {
      */
     public static void main(String[] args) {
         List<String> programArgs = Arrays.asList(args);
-
         if (Arrays.asList(args).contains(Reference.LANG_ARGUMENT)) {
             try {
                 LocalizationManager.init(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));

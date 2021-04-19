@@ -1,19 +1,16 @@
 package de.griefed.serverpackcreator.gui;
 
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.io.input.Tailer;
+import org.apache.commons.io.input.TailerListenerAdapter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+
 
 public class ModloaderInstallerLog extends Component {
-    private static final Logger appLogger = LogManager.getLogger(ModloaderInstallerLog.class);
+
+    private volatile StringBuffer stringBuffer = new StringBuffer(10000);
 
     JComponent modloaderInstallerLog() {
         JComponent modloaderInstallerLog = new JPanel(false);
@@ -30,18 +27,17 @@ public class ModloaderInstallerLog extends Component {
         //Log Panel
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
-        /* TODO: Find more efficient way of displaying logs in UI. This way bloats memory usage by ungodly amounts.
-        final ScheduledExecutorService readLogExecutor = Executors.newSingleThreadScheduledExecutor();
-        readLogExecutor.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                try { textArea.read(new FileReader("./logs/modloader_installer.log"),null); }
-                catch (IOException ex) { appLogger.error(LocalizationManager.getLocalizedString("modloaderinstallerlog.log.error"), ex); }
+
+        Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
+            public void handle(String line) {
+                synchronized (this) {
+                    if (stringBuffer.length() + line.length() > 5000) {
+                        stringBuffer = new StringBuffer();
+                    }
+                    textArea.append(line + "\n");
+                }
             }
-        }, 2, 1, TimeUnit.SECONDS);
-
-         */
-
+        }, 2000, false);
 
 
         JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);

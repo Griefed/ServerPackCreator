@@ -467,11 +467,13 @@ public class CreateServerPack extends Component  {
                         labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         buttonGenerateServerPack.setEnabled(true);
                         System.gc();
+                        System.runFinalization();
                         executorService.shutdown();
                     } else {
                         labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         buttonGenerateServerPack.setEnabled(true);
                         System.gc();
+                        System.runFinalization();
                         executorService.shutdown();
                     }
                 });
