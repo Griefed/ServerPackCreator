@@ -1,5 +1,6 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import net.fabricmc.installer.util.LauncherMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,7 +43,7 @@ class ServerUtilities {
             forgeShell(modpackDir, minecraftVersion);
             forgeBatch(modpackDir, minecraftVersion);
         } else {
-            appLogger.error(String.format("Specified invalid Modloader: %s", modLoader));
+            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
         }
     }
     /** Generates download scripts for Mojang's Minecraft server for Fabric,Linux.
@@ -65,11 +66,11 @@ class ServerUtilities {
             byte[] strToBytesSh = shFabric.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
-            appLogger.debug(String.format("fabricShell.readSh was: %s", readSh));
+            appLogger.debug(String.format(LocalizationManager.getLocalizedString("serverutilities.log.debug.fabricshell"), readSh));
         } catch (IOException ex) {
-            appLogger.error("Error creating shell script for Fabric.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.fabricshell"), ex);
         }
-        appLogger.info("Fabric shell script generated.");
+        appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.fabricshell"));
     }
     /** Generates download scripts for Mojang's Minecraft server for Fabric,Windows.
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
@@ -91,11 +92,11 @@ class ServerUtilities {
             byte[] strToBytesBat = batFabric.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
-            appLogger.debug(String.format("fabricBatch.readBat was: %s", readBat));
+            appLogger.debug(String.format(LocalizationManager.getLocalizedString("serverutilities.log.debug.fabricbatch"), readBat));
         } catch (IOException ex) {
-            appLogger.error("Error creating batch script for Fabric.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.fabricbatch"), ex);
         }
-        appLogger.info("Fabric batch script generated.");
+        appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.fabricbatch"));
     }
     /** Generates download scripts for Mojang's Minecraft server for Forge,Linux.
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
@@ -117,11 +118,11 @@ class ServerUtilities {
             byte[] strToBytesSh = shForge.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
-            appLogger.debug(String.format("forgeShell.readSh was: %s", readSh));
+            appLogger.debug(String.format(LocalizationManager.getLocalizedString("serverutilities.log.debug.forgeshell"), readSh));
         } catch (IOException ex) {
-            appLogger.error("Error creating shell script for Forge.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.forgeshell"), ex);
         }
-        appLogger.info("Forge shell script generated.");
+        appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.forgeshell"));
     }
     /** Generates download scripts for Mojang's Minecraft server for Forge,Windows.
      * @param modpackDir String. /server_pack The directory where the scripts will be placed in.
@@ -143,11 +144,11 @@ class ServerUtilities {
             byte[] strToBytesBat = batForge.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
-            appLogger.debug(String.format("forgeBatch.readBat was: %s", readBat));
+            appLogger.debug(String.format(LocalizationManager.getLocalizedString("serverutilities.log.debug.forgebatch"), readBat));
         } catch (IOException ex) {
-            appLogger.error("Error creating shell script for Forge.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.forgebatch"), ex);
         }
-        appLogger.info("Forge batch script generated.");
+        appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.forgebatch"));
     }
     /** Downloads the specified version of Fabric.
      * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
@@ -156,7 +157,7 @@ class ServerUtilities {
     static boolean downloadFabricJar(String modpackDir) {
         boolean downloaded = false;
         try {
-            appLogger.info("Trying to download Fabric installer...");
+            appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.downloadfabricjar.enter"));
             URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller(modpackDir), latestFabricInstaller(modpackDir)));
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
@@ -170,12 +171,12 @@ class ServerUtilities {
             downloadFabricFileChannel.close();
 
         } catch (IOException e) {
-            appLogger.error("An error occurred downloading Fabric: ", e);
+            appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.downloadfabricjar.download"), e);
             if (new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists()) {
                 try {
                     Files.delete(Paths.get(String.format("%s/server_pack/fabric-installer.jar", modpackDir)));
                 } catch (IOException ex) {
-                    appLogger.error("Couldn't delete corrupted Fabric installer.", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.downloadfabricjar.delete"), ex);
                 }
             }
         }
@@ -210,9 +211,9 @@ class ServerUtilities {
             XPath xpath = xPathFactory.newXPath();
 
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
-            appLogger.info("Successfully retrieved Fabric-Installer XML.");
+            appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.latestfabricinstaller"));
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-            appLogger.error("Could not retrieve Installer XML file. Defaulting to Installer version 0.7.2.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.latestfabricinstaller"), ex);
             result = "0.7.2";
         }
         return result;
@@ -226,7 +227,7 @@ class ServerUtilities {
     static boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
         boolean downloaded = false;
         try {
-            appLogger.info("Trying to download specified Forge installer...");
+            appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.downloadforgejar.enter"));
             URL downloadForge = new URL(String.format("https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar", minecraftVersion, modLoaderVersion, minecraftVersion, modLoaderVersion));
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
@@ -240,10 +241,10 @@ class ServerUtilities {
             downloadForgeFileChannel.close();
 
         } catch (IOException e) {
-            appLogger.error("An error occurred downloading Forge: ", e);
+            appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.downloadforgejar.download"), e);
             if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists()) {
                 if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete()) {
-                 appLogger.debug("Deleted incomplete Forge-installer...");
+                    appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.debug.downloadforgejar"));
                 }
             }
         }
@@ -259,7 +260,7 @@ class ServerUtilities {
      */
     static void deleteMinecraftJar(String modLoader, String modpackDir) {
         if (modLoader.equalsIgnoreCase("Forge")) {
-            appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
+            appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.deleteminecraftjar.enter"));
 
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
@@ -271,12 +272,12 @@ class ServerUtilities {
             try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
                 Path pathInZipfile = zipfs.getPath("minecraft_server.1.16.5.jar");
                 Files.delete(pathInZipfile);
-                appLogger.info("File successfully deleted");
+                appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.deleteminecraftjar.success"));
             } catch (IOException ex) {
-                appLogger.error("Error deleting minecraft-server.jar from archive.", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.deleteminecraftjar.delete"), ex);
             }
         } else if (modLoader.equalsIgnoreCase("Fabric")) {
-            appLogger.info("Deleting minecraft_server.jar from server_pack.zip.");
+            appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.deleteminecraftjar.enter"));
 
             Map<String, String> zip_properties = new HashMap<>();
             zip_properties.put("create", "false");
@@ -288,12 +289,12 @@ class ServerUtilities {
             try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
                 Path pathInZipfile = zipfs.getPath("server.jar");
                 Files.delete(pathInZipfile);
-                appLogger.info("File successfully deleted");
+                appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.deleteminecraftjar.success"));
             } catch (IOException ex) {
-                appLogger.error("Error deleting minecraft-server.jar from archive.", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.deleteminecraftjar.delete"), ex);
             }
         } else {
-            appLogger.error("Specified invalid modloader: " + modLoader);
+            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
         }
     }
     /** Deletes remnant files from Fabric/Forge installation no longer needed.
@@ -305,20 +306,20 @@ class ServerUtilities {
      * @param modLoaderVersion String. Needed for renaming the Forge server jar to work with launch scripts provided by ServerPackCreator.
      */
     static void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
-        appLogger.info("Cleanup after modloader server installation.");
+        appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.enter"));
         if (modLoader.equalsIgnoreCase("Fabric")) {
             File fabricXML = new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
             boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
             if (isXmlDeleted)
-                { appLogger.info(String.format("Deleted %s", fabricXML.getName())); }
+                { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricXML.getName())); }
             else
-                { appLogger.error(String.format("Could not delete %s", fabricXML.getName())); }
+                { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricXML.getName())); }
 
             if (isInstallerDeleted)
-                { appLogger.info(String.format("Deleted %s", fabricInstaller.getName())); }
+                { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricInstaller.getName())); }
             else
-                { appLogger.error(String.format("Could not delete %s", fabricInstaller.getName())); }
+            { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricInstaller.getName())); }
 
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
@@ -331,20 +332,20 @@ class ServerUtilities {
                 boolean isInstallerDeleted = forgeInstaller.delete();
 
                 if ((isOldJarDeleted) && (new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists()))
-                    { appLogger.info("Renamed forge.jar and deleted old one."); }
+                    { appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.rename")); }
                 else
-                    { appLogger.error("There was an error during renaming or deletion of the forge server jar."); }
+                    { appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.rename")); }
 
                 if (isInstallerDeleted)
-                    { appLogger.info(String.format("Deleted %s", forgeInstaller.getName())); }
+                    { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), forgeInstaller.getName())); }
                 else
-                    { appLogger.error(String.format("Could not delete %s", forgeInstaller.getName())); }
+                    { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), forgeInstaller.getName())); }
 
             } catch (IOException ex) {
-                appLogger.error("Error during Forge cleanup.", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack"), ex);
             }
         } else {
-            appLogger.error(String.format("Specified invalid modloader: %s", modLoader));
+            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
         }
     }
 }

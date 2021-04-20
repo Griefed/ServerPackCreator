@@ -15,11 +15,11 @@ public class FilesSetup {
      * @return Boolean. Returns true if no default file has been generated. False if any default file was generated.
      */
     static boolean filesSetup() {
-        appLogger.info("Checking for default files...");
+        appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.filessetup.enter"));
         try {
             Files.createDirectories(Paths.get("./server_files"));
         } catch (IOException ex) {
-            appLogger.error("Could not create server_files directory.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.filessetup"), ex);
         }
         boolean doesConfigExist         = checkForConfig();
         boolean doesFabricLinuxExist    = checkForFabricLinux();
@@ -38,7 +38,7 @@ public class FilesSetup {
                 doesIconExist) {
             return false;
         } else {
-            appLogger.info("Setup completed.");
+            appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.filessetup.finish"));
             return true;
         }
     }
@@ -53,11 +53,11 @@ public class FilesSetup {
 
                 boolean isOldConfigDeleted = Reference.oldConfigFile.delete();
                 if (isOldConfigDeleted) {
-                    appLogger.info("creator.conf migrated to serverpackcreator.conf");
+                    appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.chechforconfig.old"));
                 }
 
             } catch (IOException ex) {
-                appLogger.error("Error renaming creator.conf to serverpackcreator.conf", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforconfig.old"), ex);
             }
         } else if (!Reference.configFile.exists()) {
             try {
@@ -68,12 +68,12 @@ public class FilesSetup {
                     link.close();
                 }
 
-                appLogger.info("serverpackcreator.conf generated. Please customize.");
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.checkforconfig.config"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error("Could not extract default config-file", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforconfig.config"), ex);
                     firstRun = true;
                 }
             }
@@ -94,12 +94,12 @@ public class FilesSetup {
                     link.close();
                 }
 
-                appLogger.info("start-fabric.sh generated. Please customize if you intend on using it.");
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.checkforfabriclinux"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error("Could not extract default Fabric Linux start file", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforfabriclinux"), ex);
                     firstRun = true;
                 }
             }
@@ -120,12 +120,12 @@ public class FilesSetup {
                     link.close();
                 }
 
-                appLogger.info("start-fabric.bat generated. Please customize if you intend on using it.");
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.checkforfabricwindows"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error("Could not extract default Fabric Windows start file", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforfabricwindows"), ex);
                     firstRun = true;
                 }
             }
@@ -146,12 +146,12 @@ public class FilesSetup {
                     link.close();
                 }
 
-                appLogger.info("start-forge.sh generated. Please customize if you intend on using it.");
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.checkforforgelinux"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error("Could not extract default Forge Linux start file", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforforgelinux"), ex);
                     firstRun = true;
                 }
             }
@@ -172,12 +172,12 @@ public class FilesSetup {
                     link.close();
                 }
 
-                appLogger.info("start-forge.bat generated. Please customize if you intend on using it.");
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.checkforforgewindows"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error("Could not extract default Forge Windows start file", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforforgewindows"), ex);
                     firstRun = true;
                 }
             }
@@ -198,12 +198,12 @@ public class FilesSetup {
                     link.close();
                 }
 
-                appLogger.info("server.properties generated. Please customize if you intend on using it.");
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.checkforproperties"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error("Could not extract default server.properties file", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforproperties"), ex);
                     firstRun = true;
                 }
             }
@@ -224,12 +224,12 @@ public class FilesSetup {
                     link.close();
                 }
 
-                appLogger.info("server-icon.png generated. Please customize if you intend on using it.");
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.checkforicon"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error("Could not extract default server-icon.png file", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforicon"), ex);
                     firstRun = true;
                 }
             }
@@ -409,16 +409,16 @@ public class FilesSetup {
         if (Reference.configFile.exists()) {
             boolean delConf = Reference.configFile.delete();
             if (delConf) {
-                appLogger.info("Deleted existing config file to replace with new one."); }
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.config")); }
             else {
-                appLogger.error("Could not delete existing config file."); }
+                appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile.config")); }
         }
         if (Reference.oldConfigFile.exists()) {
             boolean delOldConf = Reference.oldConfigFile.delete();
             if (delOldConf) {
-                appLogger.info("Deleted old existing config file from previous versions of SPC, to ensure new one is always used."); }
+                appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.old")); }
             else {
-                appLogger.error("Could not delete old existing config file from previous versions of SPC."); }
+                appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile.old")); }
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.configFile));
@@ -426,7 +426,7 @@ public class FilesSetup {
             writer.close();
             configWritten = true;
         } catch (IOException ex) {
-            appLogger.error("Error: Couldn't write serverpackcreator.conf.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile"), ex);
         }
         return configWritten;
     }

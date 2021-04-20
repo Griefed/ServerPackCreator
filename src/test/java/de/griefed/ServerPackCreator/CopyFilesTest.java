@@ -29,6 +29,7 @@ class CopyFilesTest {
 
     @BeforeEach
     void setUp() {
+        FilesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 
