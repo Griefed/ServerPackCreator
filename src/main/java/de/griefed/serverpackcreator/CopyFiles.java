@@ -172,7 +172,7 @@ class CopyFiles {
                                     REPLACE_EXISTING
                             );
 
-                            appLogger.debug(String.format("Copying: %s", file.toAbsolutePath().toString()));
+                            appLogger.debug(String.format(LocalizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath().toString()));
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
                                 appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);
