@@ -5,11 +5,11 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
 
 public class ServerPackCreatorLog extends Component {
 
-    private volatile StringBuffer stringBuffer = new StringBuffer(10000);
+    //private volatile StringBuffer stringBuffer = new StringBuffer(10000);
 
     JComponent serverPackCreatorLog() {
         JComponent serverPackCreatorLog = new JPanel(false);
@@ -30,9 +30,12 @@ public class ServerPackCreatorLog extends Component {
         Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
+                    /*
                     if (stringBuffer.length() + line.length() > 5000) {
                         stringBuffer = new StringBuffer();
                     }
+
+                     */
                     textArea.append(line + "\n");
                 }
             }
