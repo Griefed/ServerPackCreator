@@ -461,6 +461,28 @@ public class CreateServerPack extends Component  {
                 appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
                 labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
 
+                final ScheduledExecutorService readLogExecutor = Executors.newSingleThreadScheduledExecutor();
+                readLogExecutor.scheduleWithFixedDelay(() -> {
+                    synchronized (this) {
+                        try {
+                            BufferedReader reader = new BufferedReader(new FileReader("./logs/serverpackcreator.log"));
+                            while (true) {
+                                try {
+                                    String text = reader.readLine();
+                                    if (text == null) {
+                                        break;
+                                    }
+                                    labelGenerateServerPack.setText(text.substring(text.indexOf(") - ")+4));
+                                } catch (IOException ex) {
+                                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.log"), ex);
+                                }
+                            }
+                        } catch (IOException ex) {
+                            appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.lognotfound"), ex);
+                        }
+                    }
+                }, 2, 1, TimeUnit.SECONDS);
+
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
                     if (ReferenceGUI.handler.run()) {
@@ -468,12 +490,14 @@ public class CreateServerPack extends Component  {
                         buttonGenerateServerPack.setEnabled(true);
                         System.gc();
                         System.runFinalization();
+                        readLogExecutor.shutdown();
                         executorService.shutdown();
                     } else {
                         labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         buttonGenerateServerPack.setEnabled(true);
                         System.gc();
                         System.runFinalization();
+                        readLogExecutor.shutdown();
                         executorService.shutdown();
                     }
                 });
