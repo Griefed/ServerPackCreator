@@ -107,7 +107,7 @@ class CLISetup {
             do {
                 System.out.print("Modloader version: ");
                 modLoaderVersion = reader.nextLine();
-            } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
+            } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion));
             appLogger.info(String.format("You entered: %s", modLoaderVersion));
             System.out.println();
 
