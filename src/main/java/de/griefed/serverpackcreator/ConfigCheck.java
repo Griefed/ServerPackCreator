@@ -43,7 +43,11 @@ public class ConfigCheck {
             appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkconfig.start"));
         }
 
-        Reference.clientMods = Reference.config.getStringList("clientMods");
+        if (Reference.config.getStringList("clientMods").isEmpty()) {
+            Reference.clientMods = Reference.fallbackModsList;
+        } else {
+            Reference.clientMods = Reference.config.getStringList("clientMods");
+        }
         Reference.includeServerInstallation = convertToBoolean(Reference.config.getString("includeServerInstallation"));
         Reference.includeServerIcon = convertToBoolean(Reference.config.getString("includeServerIcon"));
         Reference.includeServerProperties = convertToBoolean(Reference.config.getString("includeServerProperties"));
