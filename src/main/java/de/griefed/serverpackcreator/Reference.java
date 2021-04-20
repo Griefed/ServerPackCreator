@@ -5,6 +5,7 @@ import de.griefed.serverpackcreator.curseforgemodpack.CreateModpack;
 import de.griefed.serverpackcreator.gui.TabbedPane;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 public class Reference {
@@ -48,6 +49,32 @@ public class Reference {
            static final ServerUtilities serverUtilities = new ServerUtilities();
 
     public static Config config;
+
+    public static final List<String> fallbackModsList = Arrays.asList(
+        "AmbientSounds",
+        "BackTools",
+        "BetterAdvancement",
+        "BetterPing",
+        "cherished",
+        "ClientTweaks",
+        "Controlling",
+        "DefaultOptions",
+        "durability",
+        "DynamicSurroundings",
+        "itemzoom",
+        "jei-professions",
+        "jeiintegration",
+        "JustEnoughResources",
+        "MouseTweaks",
+        "Neat",
+        "OldJavaWarning",
+        "PackMenu",
+        "preciseblockplacing",
+        "SimpleDiscordRichPresence",
+        "SpawnerFix",
+        "TipTheScales",
+        "WorldNameRandomizer"
+    );
 
     public static List<String>
             clientMods,
