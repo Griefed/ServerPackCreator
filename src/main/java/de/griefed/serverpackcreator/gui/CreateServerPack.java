@@ -481,7 +481,7 @@ public class CreateServerPack extends Component  {
                             appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.lognotfound"), ex);
                         }
                     }
-                }, 2, 1, TimeUnit.SECONDS);
+                }, 1, 1, TimeUnit.SECONDS);
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
