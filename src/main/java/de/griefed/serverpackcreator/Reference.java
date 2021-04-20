@@ -9,14 +9,12 @@ import java.util.List;
 
 public class Reference {
     static final String MINECRAFT_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-    static final String FORGE_MANIFEST_URL     = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/maven-metadata.json";
+    static final String FORGE_MANIFEST_URL     = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
     static final String FABRIC_MANIFEST_URL    = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
 
     public static final String LANG_ARGUMENT       = "-lang";
            static final String CONFIG_GEN_ARGUMENT = "-cgen";
            static final String RUN_CLI_ARGUMENT    = "-cli";
-
-    public static List<String> programArgs;
 
     public static final File configFile        = new File("serverpackcreator.conf");
            static final File oldConfigFile     = new File("creator.conf");

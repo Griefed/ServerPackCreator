@@ -114,7 +114,7 @@ public class CLISetup {
             do {
                 System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.modloaderversion.cli"));
                 modLoaderVersion = reader.nextLine();
-            } while (!Reference.configCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
+            } while (!Reference.configCheck.checkModloaderVersion(modLoader, modLoaderVersion));
             appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), modLoaderVersion));
             System.out.println();
 

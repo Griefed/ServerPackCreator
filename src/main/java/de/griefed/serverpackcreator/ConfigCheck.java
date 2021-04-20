@@ -108,7 +108,7 @@ public class ConfigCheck {
                 Reference.modLoader = setModloader(Reference.config.getString("modLoader"));
             } else { configHasError = true; }
 
-            if (checkModloaderVersion(Reference.modLoader, Reference.config.getString("modLoaderVersion"), Reference.minecraftVersion)) {
+            if (checkModloaderVersion(Reference.modLoader, Reference.config.getString("modLoaderVersion"))) {
                 Reference.modLoaderVersion = Reference.config.getString("modLoaderVersion");
             } else { configHasError = true; }
 
@@ -461,12 +461,11 @@ public class ConfigCheck {
     /** Determine whether to check for correct Forge or correct Fabric modloader version.
      * @param modloader String. Determines whether the check for Forge or Fabric is called.
      * @param modloaderVersion String. The version of the modloader to check for.
-     * @param minecraftVersion String. The version of Minecraft for which to check for if modloader is Forge.
      * @return Boolean. Returns true if the specified modloader version is correct. False if not.
      */
-    boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
+    boolean checkModloaderVersion(String modloader, String modloaderVersion) {
         boolean isVersionCorrect = false;
-        if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion, minecraftVersion)) {
+        if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion)) {
             isVersionCorrect = true;
         } else if (modloader.equalsIgnoreCase("Fabric") && isFabricVersionCorrect(modloaderVersion)) {
             isVersionCorrect = true;
@@ -586,10 +585,9 @@ public class ConfigCheck {
 
     /** Checks Forge version for errors (basically for its availability in Forge manifest)
      * @param forgeVersion String. The Forge version to check.
-     * @param minecraftVersion String. The Minecraft version that the modpack uses. Needed to prevent usage of Forge, for example, from MC version 1.7.10, with 1.12.2.
      * @return Boolean. Returns true if Forge version correct and false if it isn't correct.
      */
-    boolean isForgeVersionCorrect(String forgeVersion, String minecraftVersion) {
+    boolean isForgeVersionCorrect(String forgeVersion) {
         try {
             URL manifestJsonURL = new URL(Reference.FORGE_MANIFEST_URL);
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
@@ -632,7 +630,7 @@ public class ConfigCheck {
             jsonReader.close();
             manifestJSON = manifestJSON.replaceAll("\\s", "");
 
-            return manifestJSON.trim().contains(String.format("%s-%s", minecraftVersion, forgeVersion));
+            return manifestJSON.trim().contains(String.format("%s", forgeVersion));
         } catch (Exception ex) {
             appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.validate"), ex);
             return false;
