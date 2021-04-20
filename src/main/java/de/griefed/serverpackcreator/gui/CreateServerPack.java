@@ -477,6 +477,9 @@ public class CreateServerPack extends Component  {
                         executorService.shutdown();
                     }
                 });
+            } else {
+                labelGenerateServerPack.setText("Config check not successfull. Check your configuration.");
+                buttonGenerateServerPack.setEnabled(true);
             }
         });
         constraints.gridx = 0;
