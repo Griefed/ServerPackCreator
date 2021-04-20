@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui;
 
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
@@ -8,8 +9,6 @@ import java.awt.*;
 import java.io.File;
 
 public class ServerPackCreatorLog extends Component {
-
-    //private volatile StringBuffer stringBuffer = new StringBuffer(10000);
 
     JComponent serverPackCreatorLog() {
         JComponent serverPackCreatorLog = new JPanel(false);
@@ -26,17 +25,15 @@ public class ServerPackCreatorLog extends Component {
         //Log Panel
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
+        textArea.setAutoscrolls(true);
 
         Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-                    /*
-                    if (stringBuffer.length() + line.length() > 5000) {
-                        stringBuffer = new StringBuffer();
+                    if (line.contains(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
+                        textArea.setText("");
                     }
-
-                     */
-                    textArea.append(line + "\n");
+                    textArea.append(line.substring(line.indexOf(") - ")+4) + "\n");
                 }
             }
         }, 2000, false);

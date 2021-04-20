@@ -26,6 +26,7 @@ class ServerSetup {
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
                 appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.enter"));
+                installerLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.enter"));
                 if (Reference.serverUtilities.downloadFabricJar(modpackDir)) {
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.download"));
                     ProcessBuilder processBuilder = new ProcessBuilder(
@@ -45,6 +46,7 @@ class ServerSetup {
                         if (line == null) { break; }
                         installerLogger.info(line);
                     }
+                    installerLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver"));
                     reader.close();
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.details"));
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver"));
@@ -57,6 +59,7 @@ class ServerSetup {
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
                 appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.enter"));
+                installerLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.enter"));
                 if (Reference.serverUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.download"));
                     ProcessBuilder processBuilder = new ProcessBuilder(
@@ -74,6 +77,7 @@ class ServerSetup {
                         if (line == null) { break; }
                         installerLogger.info(line);
                     }
+                    installerLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver"));
                     reader.close();
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.details"));
                     appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver"));

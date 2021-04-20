@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui;
 
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
@@ -8,8 +9,6 @@ import java.awt.*;
 import java.io.File;
 
 public class ModloaderInstallerLog extends Component {
-
-    //private volatile StringBuffer stringBuffer = new StringBuffer(10000);
 
     JComponent modloaderInstallerLog() {
         JComponent modloaderInstallerLog = new JPanel(false);
@@ -26,21 +25,18 @@ public class ModloaderInstallerLog extends Component {
         //Log Panel
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
+        textArea.setAutoscrolls(true);
 
         Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-                    /*
-                    if (stringBuffer.length() + line.length() > 5000) {
-                        stringBuffer = new StringBuffer();
+                    if (line.contains(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.enter")) || line.contains(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.enter"))) {
+                        textArea.setText("");
                     }
-
-                     */
-                    textArea.append(line + "\n");
+                    textArea.append(line.substring(line.indexOf(") - ")+4) + "\n");
                 }
             }
         }, 2000, false);
-
 
         JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setMinimumSize(new Dimension(775,getMaximumSize().height));
