@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator.gui;
 
-import de.griefed.serverpackcreator.Reference;
+import de.griefed.serverpackcreator.FilesSetup;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +13,6 @@ public class TabbedPane extends JPanel {
     private static final Logger appLogger = LogManager.getLogger(TabbedPane.class);
 
     public void mainGUI() {
-
         SwingUtilities.invokeLater(() -> {
             //Bold fonts = true, else false
             UIManager.put("swing.boldMetal", true);
@@ -39,7 +38,7 @@ public class TabbedPane extends JPanel {
 
     private void createAndShowGUI() {
 
-        JFrame frame = new JFrame("ServerPackCreator");
+        JFrame frame = new JFrame(LocalizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setIconImage(ReferenceGUI.icon);
@@ -59,29 +58,31 @@ public class TabbedPane extends JPanel {
         frame.setVisible(true);
     }
 
-
     public TabbedPane() {
         super(new GridLayout(1, 1));
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setBackground(ReferenceGUI.backgroundColour);
+        if (FilesSetup.checkLocaleFile()) {
 
-        tabbedPane.addTab("Create Server Pack", null, new CreateServerPack().createServerPack() , "Configure and start generation of server pack.");
-        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+            JTabbedPane tabbedPane = new JTabbedPane();
+            tabbedPane.setBackground(ReferenceGUI.backgroundColour);
 
-        tabbedPane.addTab("ServerPackCreator Log",null, new ServerPackCreatorLog().serverPackCreatorLog(), "Latest serverpackcreator log tail.");
-        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+            tabbedPane.addTab(LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"), null, new CreateServerPack().createServerPack(), LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
+            tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-        tabbedPane.addTab("Modloader-Installer Log",null, new ModloaderInstallerLog().modloaderInstallerLog(), "Latest modloader-installer log tail.");
-        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+            tabbedPane.addTab(LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"), null, new ServerPackCreatorLog().serverPackCreatorLog(), LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
+            tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-        tabbedPane.addTab("About", null, new About().about(), "Info, Updates, Support.");
-        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
+            tabbedPane.addTab(LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.title"), null, new ModloaderInstallerLog().modloaderInstallerLog(), "createserverpack.gui.tabbedpane.modloaderinstallerlog.tip");
+            tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
-        //Add the tabbed pane to this panel.
-        add(tabbedPane);
+            tabbedPane.addTab(LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.title"), null, new About().about(), LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
+            tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
-        //The following line enables to use scrolling tabs.
-        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+            //Add the tabbed pane to this panel.
+            add(tabbedPane);
+
+            //The following line enables to use scrolling tabs.
+            tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        }
     }
 }
