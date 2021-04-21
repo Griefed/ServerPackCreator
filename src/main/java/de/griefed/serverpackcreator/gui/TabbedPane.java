@@ -1,5 +1,8 @@
 package de.griefed.serverpackcreator.gui;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigFactory;
 import de.griefed.serverpackcreator.FilesSetup;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
@@ -8,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.File;
 
 public class TabbedPane extends JPanel {
     private static final Logger appLogger = LogManager.getLogger(TabbedPane.class);
@@ -17,23 +21,30 @@ public class TabbedPane extends JPanel {
             //Bold fonts = true, else false
             UIManager.put("swing.boldMetal", true);
             try {
-                UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-                appLogger.error(LocalizationManager.getLocalizedString("tabbedpane.log.error"), ex);
+                if (new File("serverpackcreator.conf").exists()) {
+                    File configFile = new File("serverpackcreator.conf");
+                    Config secret = ConfigFactory.parseFile(configFile);
+                    if (secret.getString("topsicrets") != null && !secret.getString("topsicrets").equals("") && secret.getString("topsicrets").length() > 0) {
+                        appLogger.info(LocalizationManager.getLocalizedString("topsicrets"));
+                        appLogger.info(LocalizationManager.getLocalizedString("topsicrets.moar"));
+                        for (UIManager.LookAndFeelInfo look : UIManager.getInstalledLookAndFeels()) {
+                            appLogger.info(look.getClassName());
+                        }
+
+                        UIManager.setLookAndFeel(secret.getString("topsicrets"));
+                    } else {
+                        UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+                    }
+                }
+            } catch (ConfigException | NullPointerException | ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ignored) {
+                try {
+                    UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+                    appLogger.error(LocalizationManager.getLocalizedString("tabbedpane.log.error"), ex);
+                }
             }
             createAndShowGUI();
         });
-        /*
-        LOOK AND FEEL:
-        Possibly restricted to platforms:
-        com.sun.java.swing.plaf.motif.MotifLookAndFeel
-        com.sun.java.swing.plaf.windows.WindowsLookAndFeel
-        com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel
-
-        Possibly cross-platform:
-        javax.swing.plaf.nimbus.NimbusLookAndFeel
-        javax.swing.plaf.metal.MetalLookAndFeel
-         */
     }
 
     private void createAndShowGUI() {
