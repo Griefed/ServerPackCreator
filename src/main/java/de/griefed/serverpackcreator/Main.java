@@ -29,9 +29,8 @@ public class Main {
                 Reference.handler.main(args);
             }
         } else {
-            Reference.filesSetup.checkLocaleFile();
+            FilesSetup.checkLocaleFile();
             Reference.handler.main(args);
         }
-
     }
 }
