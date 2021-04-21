@@ -244,6 +244,7 @@ public class FilesSetup {
     /**
      * Check for existence of a lang.properties-file and if found assign language specified therein. If assigning the specified language fails because it is not supported, default to en_US.
      * This method should not contain the Localizationmanager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
+     * @return Always returns true. Dirty hack until I one day figure out how to init Localization before UI start correctly.
      */
     public static boolean checkLocaleFile() {
         if (Reference.langPropertiesFile.exists()) {
