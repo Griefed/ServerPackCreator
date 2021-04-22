@@ -4,22 +4,20 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import de.griefed.serverpackcreator.Reference;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.input.Tailer;
+import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class CreateServerPack extends Component  {
     private static final Logger appLogger = LogManager.getLogger(CreateServerPack.class);
@@ -461,27 +459,14 @@ public class CreateServerPack extends Component  {
                 appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
                 labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
 
-                final ScheduledExecutorService readLogExecutor = Executors.newSingleThreadScheduledExecutor();
-                readLogExecutor.scheduleWithFixedDelay(() -> {
-                    synchronized (this) {
-                        try {
-                            BufferedReader reader = new BufferedReader(new FileReader("./logs/serverpackcreator.log"));
-                            while (true) {
-                                try {
-                                    String text = reader.readLine();
-                                    if (text == null) {
-                                        break;
-                                    }
-                                    labelGenerateServerPack.setText(text.substring(text.indexOf(") - ")+4));
-                                } catch (IOException ex) {
-                                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.log"), ex);
-                                }
-                            }
-                        } catch (IOException ex) {
-                            appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.lognotfound"), ex);
+
+                Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
+                    public void handle(String line) {
+                        synchronized (this) {
+                            labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
                         }
                     }
-                }, 1, 1, TimeUnit.SECONDS);
+                }, 100, false);
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
@@ -490,14 +475,14 @@ public class CreateServerPack extends Component  {
                         buttonGenerateServerPack.setEnabled(true);
                         System.gc();
                         System.runFinalization();
-                        readLogExecutor.shutdown();
+                        tailer.stop();
                         executorService.shutdown();
                     } else {
                         labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         buttonGenerateServerPack.setEnabled(true);
                         System.gc();
                         System.runFinalization();
-                        readLogExecutor.shutdown();
+                        tailer.stop();
                         executorService.shutdown();
                     }
                 });
