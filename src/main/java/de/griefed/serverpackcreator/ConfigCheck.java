@@ -54,9 +54,9 @@ public class ConfigCheck {
         Reference.includeStartScripts = convertToBoolean(Reference.config.getString("includeStartScripts"));
         Reference.includeZipCreation = convertToBoolean(Reference.config.getString("includeZipCreation"));
 
-        if (checkModpackDir(Reference.config.getString("modpackDir"))) {
-            configHasError = isDir(Reference.config.getString("modpackDir"));
-        } else if (checkCurseForge(Reference.config.getString("modpackDir"))) {
+        if (checkModpackDir(Reference.config.getString("modpackDir").replace("\\","/"))) {
+            configHasError = isDir(Reference.config.getString("modpackDir").replace("\\","/"));
+        } else if (checkCurseForge(Reference.config.getString("modpackDir").replace("\\","/"))) {
             configHasError = isCurse();
         } else {
             configHasError = true;
@@ -176,10 +176,10 @@ public class ConfigCheck {
                         }
                     } catch (IOException ex) { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.json"), ex); }
 
-                    if (checkJavaPath(Reference.config.getString("javaPath"))) {
-                        Reference.javaPath = Reference.config.getString("javaPath");
+                    if (checkJavaPath(Reference.config.getString("javaPath").replace("\\","/"))) {
+                        Reference.javaPath = Reference.config.getString("javaPath").replace("\\","/");
                     } else {
-                        String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath"));
+                        String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath").replace("\\","/"));
                         if (checkJavaPath(tmpJavaPath)) {
                             Reference.javaPath = tmpJavaPath;
                         }

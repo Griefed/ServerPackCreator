@@ -412,11 +412,11 @@ public class FilesSetup {
                         "# Create zip-archive of serverpack. Must be true or false.\n" +
                         "# Default value is true.\n" +
                         "includeZipCreation = %b\n",
-                modpackDir,
+                modpackDir.replace("\\","/"),
                 clientMods,
                 copyDirs,
                 includeServer,
-                javaPath,
+                javaPath.replace("\\","/"),
                 minecraftVersion,
                 modLoader,
                 modLoaderVersion,
