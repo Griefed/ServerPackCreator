@@ -20,11 +20,15 @@ public class TabbedPane extends JPanel {
         SwingUtilities.invokeLater(() -> {
             //Bold fonts = true, else false
             UIManager.put("swing.boldMetal", true);
+
             try {
                 if (new File("serverpackcreator.conf").exists()) {
+
                     File configFile = new File("serverpackcreator.conf");
                     Config secret = ConfigFactory.parseFile(configFile);
+
                     if (secret.getString("topsicrets") != null && !secret.getString("topsicrets").equals("") && secret.getString("topsicrets").length() > 0) {
+
                         appLogger.info(LocalizationManager.getLocalizedString("topsicrets"));
                         appLogger.info(LocalizationManager.getLocalizedString("topsicrets.moar"));
                         for (UIManager.LookAndFeelInfo look : UIManager.getInstalledLookAndFeels()) {
@@ -32,13 +36,18 @@ public class TabbedPane extends JPanel {
                         }
 
                         UIManager.setLookAndFeel(secret.getString("topsicrets"));
+
                     } else {
-                        UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+                        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     }
+
+                } else {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 }
+
             } catch (ConfigException | NullPointerException | ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ignored) {
                 try {
-                    UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
                     appLogger.error(LocalizationManager.getLocalizedString("tabbedpane.log.error"), ex);
                 }
