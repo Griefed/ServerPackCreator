@@ -38,6 +38,11 @@ Use at your own risk! Be aware that data loss is possible.
 7. **Include a server-icon.png-file in your server pack**
 8. **Include a server.properties-file in your server pack**
 9. **Create a ZIP-archive of your server pack**
+10. **GUI to fully configure and run ServerPackCreator**
+    1. Load existing config
+    1. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
+    1. Logs from last run in separate tabs
+    1. About ServerPackCreator-tab with links to GitHub issues, PasteBin, Discord
 
 ## Versions
 
