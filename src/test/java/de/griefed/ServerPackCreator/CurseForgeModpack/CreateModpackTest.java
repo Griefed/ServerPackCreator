@@ -2,6 +2,8 @@ package de.griefed.ServerPackCreator.CurseForgeModpack;
 
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
+import de.griefed.ServerPackCreator.FilesSetup;
+import de.griefed.ServerPackCreator.Reference;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +29,7 @@ class CreateModpackTest {
 
     @BeforeEach
     void setUp() {
+        FilesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 

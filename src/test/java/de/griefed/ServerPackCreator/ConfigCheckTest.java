@@ -27,6 +27,7 @@ class ConfigCheckTest {
 
     @BeforeEach
     void setUp() {
+        FilesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 
@@ -219,8 +220,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionFabric() {
         String modLoader = "Fabric";
         String modLoaderVersion = "0.11.3";
-        String minecraftVersion = "1.16.5";
-        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
+        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertTrue(result);
         new File("fabric-manifest.xml").delete();
     }
@@ -230,8 +230,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionFabricIncorrect() {
         String modLoader = "Fabric";
         String modLoaderVersion = "0.90.3";
-        String minecraftVersion = "1.16.5";
-        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
+        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertFalse(result);
         new File("fabric-manifest.xml").delete();
     }
@@ -241,8 +240,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionForge() {
         String modLoader = "Forge";
         String modLoaderVersion = "36.1.2";
-        String minecraftVersion = "1.16.5";
-        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
+        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertTrue(result);
         new File("forge-manifest.json").delete();
     }
@@ -252,8 +250,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionForgeIncorrect() {
         String modLoader = "Forge";
         String modLoaderVersion = "90.0.0";
-        String minecraftVersion = "1.16.5";
-        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion);
+        boolean result = ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertFalse(result);
         new File("forge-manifest.json").delete();
     }
@@ -298,8 +295,7 @@ class ConfigCheckTest {
     @Test
     void testIsForgeVersionCorrect() {
         String forgeVersion = "36.1.2";
-        String minecraftVersion = "1.16.5";
-        boolean result = ConfigCheck.isForgeVersionCorrect(forgeVersion, minecraftVersion);
+        boolean result = ConfigCheck.isForgeVersionCorrect(forgeVersion);
         Assertions.assertTrue(result);
         new File("forge-manifest.json").delete();
     }
@@ -308,8 +304,7 @@ class ConfigCheckTest {
     @Test
     void testIsForgeVersionFalse() {
         String forgeVersion = "99.0.0";
-        String minecraftVersion = "1.16.5";
-        boolean result = ConfigCheck.isForgeVersionCorrect(forgeVersion, minecraftVersion);
+        boolean result = ConfigCheck.isForgeVersionCorrect(forgeVersion);
         Assertions.assertFalse(result);
         new File("forge-manifest.json").delete();
     }

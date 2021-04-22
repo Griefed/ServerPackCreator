@@ -1,5 +1,6 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,7 +24,7 @@ class CopyFiles {
      */
     static void cleanupEnvironment(String modpackDir) {
         if (new File(String.format("%s/server_pack", modpackDir)).exists()) {
-            appLogger.info("Found old server_pack. Cleaning up...");
+            appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.cleanupenvironment.folder.enter"));
             Path serverPack = Paths.get(String.format("%s/server_pack", modpackDir));
             try {
                 Files.walkFileTree(serverPack,
@@ -43,18 +44,18 @@ class CopyFiles {
                             }
                         });
             } catch (IOException ex) {
-                appLogger.error(String.format("Error deleting file from %s/server_pack", modpackDir));
+                appLogger.error(String.format(LocalizationManager.getLocalizedString("copyfiles.log.error.cleanupenvironment.folder.delete"), modpackDir));
             } finally {
-                appLogger.info("Cleanup of previous server_pack completed.");
+                appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.cleanupenvironment.folder.complete"));
             }
         }
         if (new File(String.format("%s/server_pack.zip", modpackDir)).exists()) {
-            appLogger.info("Found old server_pack.zip. Cleaning up...");
+            appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.cleanupenvironment.zip.enter"));
             boolean isZipDeleted = new File(String.format("%s/server_pack.zip", modpackDir)).delete();
             if (isZipDeleted) {
-                appLogger.info("Old server_pack.zip deleted.");
+                appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.cleanupenvironment.zip.complete"));
             } else {
-                appLogger.error("Error deleting old zip archive.");
+                appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.cleanupenvironment.zip.delete"));
             }
         }
     }
@@ -66,7 +67,7 @@ class CopyFiles {
      */
     static void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
         if (modLoader.equalsIgnoreCase("Forge") && includeStartScripts) {
-            appLogger.info("Copying Forge start scripts...");
+            appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copystartscripts.forge"));
             try {
                 Files.copy(
                         Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)),
@@ -79,10 +80,10 @@ class CopyFiles {
                         REPLACE_EXISTING
                 );
             } catch (IOException ex) {
-                appLogger.error("An error occurred while copying files: ", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copystartscripts"), ex);
             }
         } else if (modLoader.equalsIgnoreCase("Fabric") && includeStartScripts) {
-            appLogger.info("Copying Fabric start scripts...");
+            appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copystartscripts.fabric"));
             try {
                 Files.copy(
                         Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)),
@@ -95,10 +96,10 @@ class CopyFiles {
                         REPLACE_EXISTING
                 );
             } catch (IOException ex) {
-                appLogger.error("An error occurred while copying files: ", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copystartscripts"), ex);
             }
         } else {
-            appLogger.info("Specified invalid modloader. Must be either Forge or Fabric.");
+            appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"));
         }
     }
 
@@ -114,7 +115,7 @@ class CopyFiles {
         for (int i = 0; i < copyDirs.toArray().length; i++) {
             String clientDir = String.format("%s/%s", modpackDir,copyDirs.get(i));
             String serverDir = String.format("%s/%s", serverPath,copyDirs.get(i));
-            appLogger.info(String.format("Setting up %s files.", serverDir));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("copyfiles.log.info.copyfiles.setup"), serverDir));
             if (copyDirs.get(i).startsWith("saves/")) {
                 String savesDir = String.format("%s/%s", serverPath, copyDirs.get(i).substring(6));
                 try {
@@ -126,15 +127,15 @@ class CopyFiles {
                                     Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)),
                                     REPLACE_EXISTING
                             );
-                            appLogger.debug(String.format("Copying: %s", file.toAbsolutePath().toString()));
+                            appLogger.debug(String.format(LocalizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath().toString()));
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                appLogger.error("An error occurred during copy operation.", ex);
+                                appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.saves"), ex);
                             }
                         }
                     });
                 } catch (IOException ex) {
-                    appLogger.error("An error occurred copying the specified world.", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.saves.world"), ex);
                 }
             } else if (copyDirs.get(i).startsWith("mods") && clientMods.toArray().length > 0) {
                 List<String> listOfFiles = excludeClientMods(clientDir, clientMods);
@@ -146,10 +147,10 @@ class CopyFiles {
                                 Paths.get(String.format("%s/%s",serverDir, new File(listOfFiles.get(in)).getName())),
                                 REPLACE_EXISTING
                         );
-                        appLogger.debug(String.format("Copying: %s", listOfFiles.get(in)));
+                        appLogger.debug(String.format(LocalizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), listOfFiles.get(in)));
                     } catch (IOException ex) {
                         if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                            appLogger.error("An error occurred copying files to the serverpack.", ex);
+                            appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);
                         }
                     }
                 }
@@ -166,13 +167,13 @@ class CopyFiles {
                             appLogger.debug(String.format("Copying: %s", file.toAbsolutePath().toString()));
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                appLogger.error("An error occurred copying files to the serverpack.", ex);
+                                appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);
                             }
                         }
                     });
                     files.close();
                 } catch (IOException ex) {
-                    appLogger.error("An error occurred during the copy-procedure to the serverpack.", ex);
+                    appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyfiles"), ex);
                 }
             }
         }
@@ -185,7 +186,7 @@ class CopyFiles {
      */
     @SuppressWarnings("UnusedAssignment")
     private static List<String> excludeClientMods(String modsDir, List<String> clientMods) {
-        appLogger.info("Preparing a list of mods to include in server pack...");
+        appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.excludeclientmods"));
         String[] copyMods = new String[0];
         List<String> modpackModList = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(Paths.get(modsDir))) {
@@ -202,7 +203,7 @@ class CopyFiles {
             copyMods = modpackModList.toArray(new String[0]);
             return Arrays.asList(copyMods.clone());
         } catch (IOException ex) {
-            appLogger.error("Error: There was an error during the acquisition of files in mods directory.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.excludeclientmods"), ex);
         }
         return Arrays.asList(copyMods.clone());
     }
@@ -211,7 +212,7 @@ class CopyFiles {
      * @param modpackDir String. /server_pack. Directory where the server-icon.png will be copied to.
      */
     static void copyIcon(String modpackDir) {
-        appLogger.info("Copying server-icon.png...");
+        appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copyicon"));
         try {
             Files.copy(
                     Paths.get(String.format("./server_files/%s", Reference.iconFile)),
@@ -219,7 +220,7 @@ class CopyFiles {
                     REPLACE_EXISTING
             );
         } catch (IOException ex) {
-            appLogger.error("An error occurred trying to copy the server icon.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyicon"), ex);
         }
     }
 
@@ -227,7 +228,7 @@ class CopyFiles {
      * @param modpackDir String. /server_pack. Directory where the server.properties. will be copied to.
      */
     static void copyProperties(String modpackDir) {
-        appLogger.info("Copying server.properties...");
+        appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copyproperties"));
         try {
             Files.copy(
                     Paths.get(String.format("./server_files/%s", Reference.propertiesFile)),
@@ -235,7 +236,7 @@ class CopyFiles {
                     REPLACE_EXISTING
             );
         } catch (IOException ex) {
-            appLogger.error("An error occurred trying to copy the server.properties-file.", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("copyfiles.log.error.copyproperties"), ex);
         }
     }
 }

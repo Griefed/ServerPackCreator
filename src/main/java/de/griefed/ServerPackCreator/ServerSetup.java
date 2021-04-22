@@ -1,5 +1,6 @@
 package de.griefed.ServerPackCreator;
 
+import de.griefed.ServerPackCreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,9 +28,9 @@ class ServerSetup {
         File forgeInstaller = new File(String.format("%s/server_pack/forge-installer.jar", modpackDir));
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
-                appLogger.info("Starting Fabric installation.");
+                appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.enter"));
                 if (ServerUtilities.downloadFabricJar(modpackDir)) {
-                    appLogger.info("Fabric installer successfully downloaded. Installing Fabric. This may take a while...");
+                    appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.download"));
                     ProcessBuilder processBuilder = new ProcessBuilder(
                             javaPath,
                             "-jar",
@@ -48,19 +49,19 @@ class ServerSetup {
                         installerLogger.info(line);
                     }
                     reader.close();
-                    appLogger.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log");
-                    appLogger.info("Returning to ServerPackCreator.");
+                    appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.details"));
+                    appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver"));
                 } else {
-                    appLogger.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
+                    appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.installserver.fabric"));
                 }
             } catch (IOException ex) {
-                appLogger.error("An error occurred during Fabric installation.", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.installserver.fabricfail"), ex);
             }
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
-                appLogger.info("Starting Forge installation.");
+                appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.enter"));
                 if (ServerUtilities.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
-                    appLogger.info("Forge installer successfully downloaded. Installing Forge. This may take a while...");
+                    appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.download"));
                     ProcessBuilder processBuilder = new ProcessBuilder(
                             javaPath,
                             "-jar",
@@ -77,16 +78,16 @@ class ServerSetup {
                         installerLogger.info(line);
                     }
                     reader.close();
-                    appLogger.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log");
-                    appLogger.info("Returning to ServerPackCreator.");
+                    appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.details"));
+                    appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.installserver"));
                 } else {
-                    appLogger.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
+                    appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.installserver.forge"));
                 }
             } catch (IOException ex) {
-                appLogger.error("An error occurred during Forge installation.", ex);
+                appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.installserver.forgefail"), ex);
             }
         } else {
-            appLogger.error(String.format("Specified invalid modloader: %s", modLoader));
+            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
         }
         ServerUtilities.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
         ServerUtilities.cleanUpServerPack(
@@ -105,7 +106,7 @@ class ServerSetup {
     static void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation) {
         final Path sourceDir = Paths.get(String.format("%s/server_pack", modpackDir));
         String zipFileName = sourceDir.toString().concat(".zip");
-        appLogger.info("Creating zip archive of serverpack...");
+        appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.zipbuilder.enter"));
         try {
             final ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFileName));
             Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
@@ -118,22 +119,22 @@ class ServerSetup {
                         outputStream.write(bytes, 0, bytes.length);
                         outputStream.closeEntry();
                     } catch (IOException ex) {
-                        appLogger.error("There was an error during zip creation", ex);
+                        appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
                     }
                     return FileVisitResult.CONTINUE;
                 }
             });
             outputStream.close();
         } catch (IOException ex) {
-            appLogger.error("There was an error during zip creation", ex);
+            appLogger.error(LocalizationManager.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
         }
         if (includeServerInstallation) {
             ServerUtilities.deleteMinecraftJar(modLoader, modpackDir);
-            appLogger.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
-            appLogger.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
-            appLogger.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+            appLogger.warn(LocalizationManager.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar1"));
+            appLogger.warn(LocalizationManager.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar2"));
+            appLogger.warn(LocalizationManager.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar3"));
         }
-        appLogger.info("Finished creation of zip archive.");
+        appLogger.info(LocalizationManager.getLocalizedString("serversetup.log.info.zipbuilder.finish"));
     }
     /** Deletes client-side-only mods in server_pack, if specified.
      * @param modpackDir String. /server_pack/mods The directory where the files will be deleted.

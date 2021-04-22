@@ -37,112 +37,112 @@ class CLISetup {
                tmpModpackDir;
 
         Scanner reader = new Scanner(System.in);
-        appLogger.info(String.format("You started ServerPackCreator with the \"%s\" argument. Step-by-step generation of config file initiated...", Reference.CONFIG_GEN_ARGUMENT));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.start"), Reference.CONFIG_GEN_ARGUMENT));
         do {
-            appLogger.info("Please enter your modpack path. This path can be relative to ServerPackCreator, or absolute.");
-            appLogger.info("Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.modpack.enter"));
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.modpack.example"));
 
             do {
-                System.out.print("Path to modpack directory: ");
+                System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.modpack.cli"));
                 tmpModpackDir = reader.nextLine();
             } while (!ConfigCheck.checkModpackDir(tmpModpackDir));
 
             modpackDir = tmpModpackDir.replace("\\", "/");
-            appLogger.info(String.format("You entered: %s", modpackDir));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), modpackDir));
             System.out.println();
 
-            appLogger.info("Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.clientmods.enter"));
             do {
                 clientMods.addAll(readStringArray());
-                appLogger.info(String.format("You entered: %s", clientMods));
-                appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
-                System.out.print("Answer: ");
+                appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
+                appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.clientmods.checkreturninfo"));
+                System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.answer"));
             } while (!readBoolean());
-            appLogger.info(String.format("You entered: %s", clientMods));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
             tmpClientMods = new String[clientMods.size()];
             clientMods.toArray(tmpClientMods);
             System.out.println();
 
-            appLogger.info("Which directories should be copied to the server pack? These are folder names inside your modpack directory.");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.copydirs.enter"));
             do {
                 do {
 
                     copyDirs.clear();
-                    appLogger.info("Specify your directories you want to be copied:");
+                    appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.copydirs.specify"));
                     copyDirs.addAll(readStringArray());
                 } while (!ConfigCheck.checkCopyDirs(copyDirs, modpackDir));
 
-                appLogger.info(String.format("You entered: %s", copyDirs));
-                appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
-                System.out.print("Answer: ");
+                appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), copyDirs));
+                appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.copydirs.checkreturninfo"));
+                System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.answer"));
             } while (!readBoolean());
-            appLogger.info(String.format("You entered: %s", copyDirs));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), copyDirs));
             tmpCopyDirs = new String[copyDirs.size()];
             copyDirs.toArray(tmpCopyDirs);
             System.out.println();
 
-            appLogger.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
-            System.out.print("Include modloader server installation: ");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.server.enter"));
+            System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.server.include"));
             includeServerInstallation = readBoolean();
-            appLogger.info(String.format("You entered: %s", includeServerInstallation));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), includeServerInstallation));
 
-            appLogger.info("Which version of Minecraft does your modpack use?");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.minecraft.enter"));
             do {
-                System.out.print("Minecraft version: ");
+                System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.minecraft.specify"));
                 minecraftVersion = reader.nextLine();
             } while (!ConfigCheck.isMinecraftVersionCorrect(minecraftVersion));
-            appLogger.info(String.format("You entered: %s", minecraftVersion));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), minecraftVersion));
             System.out.println();
 
-            appLogger.info("What modloader does your modpack use?");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.modloader.enter"));
             do {
-                System.out.print("Modloader: ");
+                System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.modloader.cli"));
                 modLoader = reader.nextLine();
             } while (!ConfigCheck.checkModloader(modLoader));
             modLoader = ConfigCheck.setModloader(modLoader);
-            appLogger.info(String.format("You entered: %s", modLoader));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), modLoader));
             System.out.println();
 
-            appLogger.info(String.format("What version of %s does your modpack use?", modLoader));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.modloaderversion.enter"), modLoader));
             do {
-                System.out.print("Modloader version: ");
+                System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.modloaderversion.cli"));
                 modLoaderVersion = reader.nextLine();
-            } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
-            appLogger.info(String.format("You entered: %s", modLoaderVersion));
+            } while (!ConfigCheck.checkModloaderVersion(modLoader, modLoaderVersion));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), modLoaderVersion));
             System.out.println();
 
-            appLogger.info("Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.");
-            appLogger.info("If you leave this empty, ServerPackCreator will try to determine the path for you.");
-            appLogger.info("Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.java.enter"));
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.java.enter2"));
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.java.example"));
             do {
-                System.out.print("Path to your Java installation: ");
+                System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.java.cli"));
                 String tmpJavaPath = reader.nextLine();
                 javaPath = ConfigCheck.getJavaPath(tmpJavaPath);
             } while (!ConfigCheck.checkJavaPath(javaPath));
             System.out.println();
 
-            appLogger.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
-            System.out.print("Include server-icon.png: ");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.icon.enter"));
+            System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.icon.cli"));
             includeServerIcon = readBoolean();
-            appLogger.info(String.format("You entered: %s", includeServerIcon));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), includeServerIcon));
             System.out.println();
 
-            appLogger.info("Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
-            System.out.print("Include server.properties: ");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.properties.enter"));
+            System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.properties.cli"));
             includeServerProperties = readBoolean();
-            appLogger.info(String.format("You entered: %s", includeServerProperties));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), includeServerProperties));
             System.out.println();
 
-            appLogger.info("Do you want ServerPackCreator to include start scripts for Linux and Windows in your server pack? Must be true or false.");
-            System.out.print("Include start scripts: ");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.scripts.enter"));
+            System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.scripts.cli"));
             includeStartScripts = readBoolean();
-            appLogger.info(String.format("You entered: %s", includeStartScripts));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), includeStartScripts));
             System.out.println();
 
-            appLogger.info("Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
-            System.out.print("Create ZIP-archive: ");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.zip.enter"));
+            System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.zip.cli"));
             includeZipCreation = readBoolean();
-            appLogger.info(String.format("You entered: %s", includeZipCreation));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.checkreturn"), includeZipCreation));
 
             ConfigCheck.printConfig(modpackDir,
                     clientMods,
@@ -156,8 +156,8 @@ class CLISetup {
                     includeServerProperties,
                     includeStartScripts,
                     includeZipCreation);
-            appLogger.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
-            System.out.print("Answer: ");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.config.enter"));
+            System.out.print(LocalizationManager.getLocalizedString("clisetup.log.info.answer"));
         } while (!readBoolean());
         reader.close();
 
@@ -175,7 +175,7 @@ class CLISetup {
                 includeStartScripts,
                 includeZipCreation
         )) {
-            appLogger.info("New config file successfully written. Thanks go to Whitebear60 for initially writing the CLI-Config-Generation.");
+            appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.config.written"));
         }
     }
 
@@ -208,19 +208,33 @@ class CLISetup {
     }
 
     /** A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
-    * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
-    */
+     * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
+     */
     private static boolean readBoolean() {
         Scanner readerBoolean = new Scanner(System.in);
         String boolRead;
         while (true) {
             boolRead = readerBoolean.nextLine();
-            if (boolRead.matches("[Tt]rue") || boolRead.matches("1") || boolRead.matches("[Yy]es")|| boolRead.matches("[Yy]") || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes")) || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes.short"))) {
+            if (boolRead.matches("[Tt]rue") ||
+                    boolRead.matches("[Yy]es")  ||
+                    boolRead.matches("[Yy]")    ||
+                    boolRead.matches("1")                                                           ||
+                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.true")) ||
+                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes"))  ||
+                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.yes.short"))) {
                 return true;
-            } else if (boolRead.matches("[Ff]alse") || boolRead.matches("0") || boolRead.matches("[Nn]o") || boolRead.matches("[Nn]" ) || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no")) || boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no.short"))){
+
+            } else if (boolRead.matches("[Ff]alse") ||
+                    boolRead.matches("[Nn]o")    ||
+                    boolRead.matches("[Nn]" )    ||
+                    boolRead.matches("0")                                                            ||
+                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.false")) ||
+                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no"))    ||
+                    boolRead.matches(LocalizationManager.getLocalizedString("cli.input.no.short"))) {
                 return false;
+
             } else {
-                appLogger.error("Incorrect value specified. Please try again.");
+                appLogger.error(LocalizationManager.getLocalizedString("clisetup.log.error.answer"));
             }
         }
     }
