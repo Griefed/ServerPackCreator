@@ -402,7 +402,6 @@ public class CreateServerPack extends Component  {
         JButton buttonGenerateServerPack = new JButton();
         buttonGenerateServerPack.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.tip"));
         buttonGenerateServerPack.setIcon(ReferenceGUI.startGeneration);
-        //buttonGenerateServerPack.setPreferredSize(ReferenceGUI.startGenerationButton);
         buttonGenerateServerPack.addActionListener(e -> {
 
             buttonGenerateServerPack.setEnabled(false);
