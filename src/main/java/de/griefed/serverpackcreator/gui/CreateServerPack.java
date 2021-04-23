@@ -300,12 +300,18 @@ public class CreateServerPack extends Component  {
         buttonJavaPath.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
 
-            fileChooser.setCurrentDirectory(new File("."));
+            if (new File(String.format("%s/bin/",System.getProperty("java.home").replace("\\", "/"))).isDirectory()) {
+                fileChooser.setCurrentDirectory(new File(String.format("%s/bin/",System.getProperty("java.home").replace("\\", "/"))));
+            } else {
+                fileChooser.setCurrentDirectory(new File("."));
+            }
+
             fileChooser.setDialogTitle(LocalizationManager.getLocalizedString("createserverpack.gui.buttonjavapath.tile"));
+
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.setFileFilter(new FileNameExtensionFilter(LocalizationManager.getLocalizedString("createserverpack.gui.buttonjavapath.filter"), "java", "exe"));
-            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.setAcceptAllFileFilterUsed(true);
             fileChooser.setMultiSelectionEnabled(false);
+
             fileChooser.setPreferredSize(ReferenceGUI.chooserDimension);
 
             if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
