@@ -300,7 +300,7 @@ public class FilesSetup {
      * @param locale The locale the user specified when they ran ServerPackCreator with -lang -your_locale.
      * This method should not contain the Localizationmanager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
      */
-    public void writeLocaleToFile(String locale) {
+    public static void writeLocaleToFile(String locale) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
 
             if (!Reference.langPropertiesFile.exists()) {

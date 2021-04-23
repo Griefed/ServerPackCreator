@@ -2,6 +2,7 @@ package de.griefed.serverpackcreator.gui;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import de.griefed.serverpackcreator.Handler;
 import de.griefed.serverpackcreator.Reference;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.input.Tailer;
@@ -470,7 +471,7 @@ public class CreateServerPack extends Component  {
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
-                    if (ReferenceGUI.handler.run()) {
+                    if (Handler.run()) {
                         labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         buttonGenerateServerPack.setEnabled(true);
                         System.gc();

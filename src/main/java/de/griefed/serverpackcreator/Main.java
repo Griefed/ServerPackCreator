@@ -26,11 +26,11 @@ public class Main {
                 appLogger.error("Incorrect language specified, falling back to English (United States)...");
                 LocalizationManager.init();
             } finally {
-                Reference.handler.main(args);
+                Handler.main(args);
             }
         } else {
             FilesSetup.checkLocaleFile();
-            Reference.handler.main(args);
+            Handler.main(args);
         }
     }
 }

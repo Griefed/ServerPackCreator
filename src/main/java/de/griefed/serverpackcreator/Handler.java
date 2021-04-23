@@ -14,7 +14,7 @@ public class Handler {
     /** Handler-class makes the calls to every other class where the actual magic is happening. The main class of ServerPackCreator should never contain code which does work on the server pack itself.
      * @param args Command Line Argument determines whether ServerPackCreator will start into normal operation mode or with a step-by-step generation of a configuration file.
      */
-    void main(String[] args) {
+    static void main(String[] args) {
         String jarPath = null,
                 jarName = null,
                 javaVersion = null,
@@ -84,7 +84,7 @@ public class Handler {
      * Run when ServerPackCreator is run in either -cli or -cgen mode. Runs what used to be the main content in Main in pre-1.x.x. times. Inits config checks and, if config checks are successfull, calls methods to create the server pack.
      * @return Return true if the serverpack was successfully generated, false if not.
      */
-    public boolean run() {
+    public static boolean run() {
         if (!Reference.configCheck.checkConfigFile(Reference.configFile)) {
             Reference.copyFiles.cleanupEnvironment(Reference.modpackDir);
             try {

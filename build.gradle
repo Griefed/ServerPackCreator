@@ -89,41 +89,24 @@ java {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+
     //noinspection GroovyAssignabilityCheck
     manifest {
         attributes(
                 "Main-Class"     : "de.griefed.serverpackcreator.Main",
-                "Classpath"      : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
+                "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
                 "Description"    : "Create server packs from Minecraft modpacks.",
                 "Built-By"       : System.getProperty("user.name"),
                 "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 "Created-By"     : "Gradle ${gradle.gradleVersion}",
                 "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
                 "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
-                "Dependencies"   : 'org.slf4j.slf4j-log4j12, org.apache.logging.log4j.log4j-slf4j-impl, com.typesafe.config, com.github.FabricMC.fabric-installer, com.github.TheRandomLabs.CurseAPI, com.fasterxml.jackson.core.jackson-databind'
         )
-    }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from sourceSets.main.output
-    dependsOn configurations.embed
-    from {
-        configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
-    }
-    configurations.embed.each { dep ->
-        from(project.zipTree(dep)) {
-            exclude (
-                    'META-INF/org',
-                    'META-INF/org/**',
-                    'META-INF/versions',
-                    'META-INF/versions/**',
-                    'META-INF/DEPENDENCIES',
-                    'META-INF/LICENSE',
-                    'META-INF/NOTICE',
-                    'Log4j-**',
-                    'icon.png',
-                    'profile_icon.png'
-            )
-        }
     }
 }
 

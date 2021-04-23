@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.i18n;
 
+import de.griefed.serverpackcreator.FilesSetup;
 import de.griefed.serverpackcreator.Reference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,7 +68,7 @@ public class LocalizationManager {
         if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
             localeLogger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
         }
-        Reference.filesSetup.writeLocaleToFile(locale);
+        FilesSetup.writeLocaleToFile(locale);
     }
 
     /**
