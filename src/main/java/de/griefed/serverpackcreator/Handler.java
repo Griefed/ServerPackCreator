@@ -1,9 +1,11 @@
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.gui.TabbedPane;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -61,6 +63,20 @@ public class Handler {
             }
 
         } else if (Arrays.asList(args).contains(Reference.RUN_CLI_ARGUMENT)) {
+
+            if (!Reference.oldConfigFile.exists() && !Reference.configFile.exists()) {
+
+                Reference.cliSetup.setup();
+            }
+            Reference.filesSetup.filesSetup();
+
+            if (run()) {
+                System.exit(0);
+            } else {
+                System.exit(1);
+            }
+        } else if (GraphicsEnvironment.isHeadless()) {
+
             if (!Reference.oldConfigFile.exists() && !Reference.configFile.exists()) {
 
                 Reference.cliSetup.setup();
@@ -76,7 +92,8 @@ public class Handler {
         } else {
             Reference.filesSetup.filesSetup();
 
-            Reference.tabbedPane.mainGUI();
+            TabbedPane tabbedPane = new TabbedPane();
+            tabbedPane.mainGUI();
         }
     }
 

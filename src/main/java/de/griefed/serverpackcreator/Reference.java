@@ -13,9 +13,9 @@ public class Reference {
     static final String FORGE_MANIFEST_URL     = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
     static final String FABRIC_MANIFEST_URL    = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
 
-    public static final String LANG_ARGUMENT       = "-lang";
-           static final String CONFIG_GEN_ARGUMENT = "-cgen";
-           static final String RUN_CLI_ARGUMENT    = "-cli";
+     static final String LANG_ARGUMENT       = "-lang";
+     static final String CONFIG_GEN_ARGUMENT = "-cgen";
+     static final String RUN_CLI_ARGUMENT    = "-cli";
 
     public static final File configFile        = new File("serverpackcreator.conf");
            static final File oldConfigFile     = new File("creator.conf");
@@ -38,12 +38,9 @@ public class Reference {
 
     public static final CreateModpack createModpack = new CreateModpack();
 
-    static final TabbedPane tabbedPane = new TabbedPane();
-
     public static final FilesSetup      filesSetup      = new FilesSetup();
     public static final CLISetup        cliSetup        = new CLISetup();
     public static final ConfigCheck     configCheck     = new ConfigCheck();
-    public static final Handler         handler         = new Handler();
            static final CopyFiles       copyFiles       = new CopyFiles();
            static final ServerSetup     serverSetup     = new ServerSetup();
            static final ServerUtilities serverUtilities = new ServerUtilities();
