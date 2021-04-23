@@ -108,6 +108,18 @@ jar {
                 "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
         )
     }
+    exclude (
+            'META-INF/org',
+            'META-INF/org/**',
+            'META-INF/versions',
+            'META-INF/versions/**',
+            'META-INF/DEPENDENCIES',
+            'META-INF/LICENSE',
+            'META-INF/NOTICE',
+            'Log4j-**',
+            'icon.png',
+            'profile_icon.png'
+    )
 }
 
 publishing {
