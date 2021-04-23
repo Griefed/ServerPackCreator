@@ -30,6 +30,7 @@ public class CreateServerPack extends Component  {
 
 // ----------------------------------------------------------------------------------------LABELS AND TEXTFIELDS--------
         constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridwidth = 2;
         constraints.weightx = 0.7;
 
         //Label and textfield modpackDir
@@ -132,6 +133,7 @@ public class CreateServerPack extends Component  {
 
 // ----------------------------------------------------------------------------------------LABELS AND CHECKBOXES--------
         constraints.insets = new Insets(10,10,0,0);
+        constraints.gridwidth = 1;
 
         //Checkboxes
         constraints.anchor = GridBagConstraints.SOUTHWEST;
@@ -147,29 +149,29 @@ public class CreateServerPack extends Component  {
         //Checkbox copyIcon
         JCheckBox checkBoxIcon = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon"),true);
         checkBoxIcon.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon.tip"));
-        constraints.gridx = 0;
-        constraints.gridy = 15;
+        constraints.gridx = 1;
+        constraints.gridy = 14;
         createServerPackPanel.add(checkBoxIcon, constraints);
 
         //Checkbox copyProperties
         JCheckBox checkBoxProperties = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties"),true);
         checkBoxProperties.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties.tip"));
         constraints.gridx = 0;
-        constraints.gridy = 16;
+        constraints.gridy = 15;
         createServerPackPanel.add(checkBoxProperties, constraints);
 
         //Checkbox copyScripts
         JCheckBox checkBoxScripts = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts"),true);
         checkBoxScripts.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts.tip"));
-        constraints.gridx = 0;
-        constraints.gridy = 17;
+        constraints.gridx = 1;
+        constraints.gridy = 15;
         createServerPackPanel.add(checkBoxScripts, constraints);
 
         //Checkbox createZIP
         JCheckBox checkBoxZIP = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip"),true);
         checkBoxZIP.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip.tip"));
         constraints.gridx = 0;
-        constraints.gridy = 18;
+        constraints.gridy = 16;
         createServerPackPanel.add(checkBoxZIP, constraints);
 
 // ------------------------------------------------------------------------------------------------------BUTTONS--------
@@ -204,7 +206,7 @@ public class CreateServerPack extends Component  {
                 }
             }
         });
-        constraints.gridx = 1;
+        constraints.gridx = 2;
         constraints.gridy = 1;
         createServerPackPanel.add(buttonModpackDir, constraints);
 
@@ -245,7 +247,7 @@ public class CreateServerPack extends Component  {
                 appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
             }
         });
-        constraints.gridx = 1;
+        constraints.gridx = 2;
         constraints.gridy = 3;
         createServerPackPanel.add(buttonClientMods, constraints);
 
@@ -284,7 +286,7 @@ public class CreateServerPack extends Component  {
                 appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
             }
         });
-        constraints.gridx = 1;
+        constraints.gridx = 2;
         constraints.gridy = 5;
         createServerPackPanel.add(buttonCopyDirs, constraints);
 
@@ -315,7 +317,7 @@ public class CreateServerPack extends Component  {
                 }
             }
         });
-        constraints.gridx = 1;
+        constraints.gridx = 2;
         constraints.gridy = 7;
         createServerPackPanel.add(buttonJavaPath, constraints);
 
@@ -379,27 +381,28 @@ public class CreateServerPack extends Component  {
             }
         });
         constraints.anchor = GridBagConstraints.CENTER;
-        constraints.gridx = 2;
+        constraints.gridx = 3;
         constraints.gridy = 1;
         constraints.gridheight = 3;
         createServerPackPanel.add(buttonLoadConfigFromFile, constraints);
 
 // ---------------------------------------------------------------------------------MAIN ACTION BUTTON AND LABEL--------
-        constraints.weighty = 1.0;
-        constraints.weightx = 1.0;
         constraints.fill = GridBagConstraints.NONE;
         constraints.insets = new Insets(5,0,5,0);
 
         JLabel labelGenerateServerPack = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.ready"));
         constraints.gridx = 0;
-        constraints.gridy = 19;
-        constraints.gridwidth = 3;
-        constraints.anchor = GridBagConstraints.PAGE_START;
+        constraints.gridy = 18;
+        constraints.gridwidth = 4;
+        constraints.weightx = 0;
+        constraints.weighty = 0;
+        constraints.anchor = GridBagConstraints.PAGE_END;
         createServerPackPanel.add(labelGenerateServerPack, constraints);
+
         JButton buttonGenerateServerPack = new JButton();
         buttonGenerateServerPack.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.tip"));
         buttonGenerateServerPack.setIcon(ReferenceGUI.startGeneration);
-        buttonGenerateServerPack.setPreferredSize(ReferenceGUI.startGenerationButton);
+        //buttonGenerateServerPack.setPreferredSize(ReferenceGUI.startGenerationButton);
         buttonGenerateServerPack.addActionListener(e -> {
 
             buttonGenerateServerPack.setEnabled(false);
@@ -493,9 +496,13 @@ public class CreateServerPack extends Component  {
             }
         });
         constraints.gridx = 0;
-        constraints.gridy = 20;
-        constraints.gridwidth = 3;
-        constraints.anchor = GridBagConstraints.PAGE_END;
+        constraints.gridy = 17;
+        constraints.gridwidth = 4;
+        constraints.weightx = 1;
+        constraints.weighty = 1;
+        constraints.fill = GridBagConstraints.VERTICAL;
+        constraints.ipadx = 80;
+        constraints.anchor = GridBagConstraints.CENTER;
         createServerPackPanel.add(buttonGenerateServerPack, constraints);
 
 // --------------------------------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
