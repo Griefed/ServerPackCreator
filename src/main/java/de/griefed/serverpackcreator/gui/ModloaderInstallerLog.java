@@ -5,6 +5,7 @@ import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
 import javax.swing.*;
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.io.File;
 
@@ -25,7 +26,6 @@ public class ModloaderInstallerLog extends Component {
         //Log Panel
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
-        textArea.setAutoscrolls(true);
 
         Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
             public void handle(String line) {
@@ -38,7 +38,11 @@ public class ModloaderInstallerLog extends Component {
             }
         }, 2000, false);
 
-        JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        JScrollPane scrollPane = new JScrollPane(
+                textArea,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
         scrollPane.setMinimumSize(new Dimension(775,getMaximumSize().height));
         scrollPane.setPreferredSize(new Dimension(775,getMaximumSize().height));
         scrollPane.setMaximumSize(new Dimension(775,getMaximumSize().height));

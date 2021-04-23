@@ -25,7 +25,6 @@ public class ServerPackCreatorLog extends Component {
         //Log Panel
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
-        textArea.setAutoscrolls(true);
 
         Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
             public void handle(String line) {
@@ -38,7 +37,11 @@ public class ServerPackCreatorLog extends Component {
             }
         }, 2000, false);
 
-        JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        JScrollPane scrollPane = new JScrollPane(
+                textArea,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
         scrollPane.setMinimumSize(new Dimension(775,getMaximumSize().height));
         scrollPane.setPreferredSize(new Dimension(775,getMaximumSize().height));
         scrollPane.setMaximumSize(new Dimension(775,getMaximumSize().height));
