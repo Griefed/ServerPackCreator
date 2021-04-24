@@ -58,8 +58,13 @@ public class About extends Component {
         ); } catch (BadLocationException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("about.log.error.document"), ex);
         }
-
         about.add(textPane, constraints);
+
+
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        about.add(new JSeparator(JSeparator.HORIZONTAL), constraints);
 
         //Buttons
         constraints.anchor = GridBagConstraints.CENTER;
@@ -86,7 +91,7 @@ public class About extends Component {
 
         });
         constraints.gridx = 0;
-        constraints.gridy = 1;
+        constraints.gridy = 2;
         about.add(buttonCreatePasteBin, constraints);
 
         //Button to open a new issue on GitHub
@@ -106,7 +111,7 @@ public class About extends Component {
 
         });
         constraints.gridx = 1;
-        constraints.gridy = 1;
+        constraints.gridy = 2;
         about.add(buttonOpenIssue, constraints);
 
         //Button to open the invite link to the discord server
@@ -126,7 +131,7 @@ public class About extends Component {
 
         });
         constraints.gridx = 2;
-        constraints.gridy = 1;
+        constraints.gridy = 2;
         about.add(buttonDiscord, constraints);
 
         return about;
