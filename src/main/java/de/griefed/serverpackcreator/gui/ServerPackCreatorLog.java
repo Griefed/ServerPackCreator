@@ -19,8 +19,8 @@ public class ServerPackCreatorLog extends Component {
         constraints.fill = GridBagConstraints.BOTH;
         constraints.gridx = 0;
         constraints.gridy = 0;
-        constraints.gridwidth = 3;
-        constraints.weighty = 0.9;
+        constraints.weighty = 1;
+        constraints.weightx = 1;
 
         //Log Panel
         JTextArea textArea = new JTextArea();
@@ -40,11 +40,7 @@ public class ServerPackCreatorLog extends Component {
         JScrollPane scrollPane = new JScrollPane(
                 textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-        scrollPane.setMinimumSize(new Dimension(775,getMaximumSize().height));
-        scrollPane.setPreferredSize(new Dimension(775,getMaximumSize().height));
-        scrollPane.setMaximumSize(new Dimension(775,getMaximumSize().height));
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         serverPackCreatorLog.add(scrollPane, constraints);
 
