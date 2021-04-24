@@ -296,8 +296,8 @@ public class FilesSetup {
     }
 
     /**
-     * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every subsequent start of ServerPackCreator is executed using said locale.
-     * @param locale The locale the user specified when they ran ServerPackCreator with -lang -your_locale.
+     * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every subsequent start of serverpackcreator is executed using said locale.
+     * @param locale The locale the user specified when they ran serverpackcreator with -lang -your_locale.
      * This method should not contain the Localizationmanager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
      */
     public static void writeLocaleToFile(String locale) {

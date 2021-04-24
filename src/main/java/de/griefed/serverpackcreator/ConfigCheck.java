@@ -31,7 +31,7 @@ public class ConfigCheck {
     private static final Logger appLogger = LogManager.getLogger(ConfigCheck.class);
 
     /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
-     * @param configFile The configuration file to check. Must be a valid configuration file for ServerPackCreator to work.
+     * @param configFile The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
      * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
      */
     public boolean checkConfigFile(File configFile) {

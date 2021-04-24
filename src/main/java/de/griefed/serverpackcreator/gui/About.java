@@ -44,7 +44,7 @@ public class About extends Component {
         try {
             document.insertString(
                     document.getLength(),
-                    "ServerPackCreator was made as a training ground for Java \n" +
+                    "serverpackcreator was made as a training ground for Java \n" +
                             "and because I wanted an easier way to update/make server packs for updates to my modpack.\n" +
                             "It has grown substantially since the first release, which was when it was CLI only.\n" +
                             "Now it provides a GUI as well!\n" +
