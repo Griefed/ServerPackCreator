@@ -2,7 +2,6 @@ package de.griefed.serverpackcreator;
 
 import com.typesafe.config.Config;
 import de.griefed.serverpackcreator.curseforgemodpack.CreateModpack;
-import de.griefed.serverpackcreator.gui.TabbedPane;
 
 import java.io.File;
 import java.util.Arrays;
@@ -30,6 +29,7 @@ public class Reference {
 
     static final File langPropertiesFile = new File("lang.properties");
 
+//-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     public static final String[] SUPPORTED_LANGUAGES = {
             "en_us",
             "uk_ua",
@@ -47,6 +47,7 @@ public class Reference {
 
     public static Config config;
 
+//-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     public static final List<String> fallbackModsList = Arrays.asList(
         "AmbientSounds",
         "BackTools",
