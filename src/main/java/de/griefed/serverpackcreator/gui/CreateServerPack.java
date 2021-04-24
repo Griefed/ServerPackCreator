@@ -505,7 +505,6 @@ public class CreateServerPack extends Component  {
         constraints.gridwidth = 4;
         constraints.weightx = 1;
         constraints.weighty = 1;
-        constraints.fill = GridBagConstraints.VERTICAL;
         constraints.ipadx = 80;
         constraints.anchor = GridBagConstraints.CENTER;
         createServerPackPanel.add(buttonGenerateServerPack, constraints);
