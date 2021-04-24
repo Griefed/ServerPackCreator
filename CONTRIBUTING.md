@@ -2,7 +2,7 @@
 
 ## Code
 
-- **The Main-class:** The Main-class of ServerPackCreator should never contain any code which does actual work on the server pack itself. It is supposed to be the anchor-point from wich all calls to the rest of the program are made. This let's us coders keep a better overview over when what happens where. So, if you were to add support for, say, another modloader, Main would never see any changes to it's code, but rather ServerSetup or any other class, depending on what your changes do.
+- **The Main-class:** The Main-class of ServerPackCreator only passes the arguments from execution to the Handler-class.
 
 - **Config file:** If you want to contribute to SPC, please make sure you do not change the `serverpackcreator.conf`-file. Ideally, any version of SPC will work with any config file, as they all have the same content. Chaning what's inside the `serverpackcreator.conf`-file would make versions incompatible to each other, but I want users to be able to simply download the newest version **without** having to migrate their config file or even worrying about such a thing.
 Therefor, I ask that you do not touch the `serverpackcreator.conf`-file.
@@ -19,7 +19,7 @@ If you want to contribute to SPC, please make sure your commits follow the conve
 
 For completeness' sake:
 
-```git
+```
 type(category): description [flag]
 ```
 

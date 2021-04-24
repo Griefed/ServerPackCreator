@@ -11,18 +11,13 @@ plugins {
 //noinspection GroovyUnusedAssignment
 sourceCompatibility = targetCompatibility = '1.8'
 
-if(JavaVersion.current() != JavaVersion.VERSION_1_8)
-    throw new GradleException(
-            "This project requires Java 8, but it's running on " + JavaVersion.current()
-    )
-
 repositories {
     mavenCentral()
-    jcenter()
     maven { url "https://jitpack.io" }
 }
 
 group 'de.griefed'
+
 sourceSets {
     //noinspection GroovyAssignabilityCheck
     main {
@@ -33,10 +28,17 @@ sourceSets {
 }
 
 launch4j {
+    fileDescription = "An application to create a server pack from any given Forge or Fabric Minecraft modpack."
+    version = System.getenv("NEW_VERSION").toString()
+    textVersion = System.getenv("NEW_VERSION").toString()
+    windowTitle = "serverpackcreator"
+    copyright = "GNU Lesser General Public License v2.1"
+    downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
+    supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
     libraryDir = 'libraries'
     outputDir = 'libs'
-    mainClassName = 'de.griefed.ServerPackCreator.Main'
-    icon = "${projectDir}/img/icon.ico"
+    mainClassName = 'de.griefed.serverpackcreator.Main'
+    icon = "${projectDir}/src/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
 pmd {
@@ -49,16 +51,17 @@ pmd {
 
 configurations {
     embed
-    compile.extendsFrom(embed)
+    implementation.extendsFrom(embed)
 }
 
 dependencies {
     embed group: 'org.slf4j', name: 'slf4j-log4j12', version: '2.0.0-alpha1'
     embed group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.14.1'
     embed group: 'com.typesafe', name: 'config', version: '1.4.1'
-    embed group: 'com.github.FabricMC', name:'fabric-installer', version:'master-SNAPSHOT'
-    embed group: 'com.github.TheRandomLabs', name:'CurseAPI', version:'master-SNAPSHOT'
     embed group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.3'
+    embed group: 'commons-io', name: 'commons-io', version: '2.8.0'
+    embed group: 'com.github.FabricMC', name: 'fabric-installer', version: 'master-SNAPSHOT'
+    embed group: 'com.github.TheRandomLabs', name: 'CurseAPI', version: 'master-SNAPSHOT'
 
     testImplementation 'org.mockito:mockito-core:3.9.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
@@ -87,41 +90,43 @@ java {
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    configurations.embed.each { dep ->
-        from(project.zipTree(dep)) {
-            exclude (
-                    'META-INF/org',
-                    'META-INF/org/**',
-                    'META-INF/versions',
-                    'META-INF/versions/**',
-                    'META-INF/DEPENDENCIES',
-                    'META-INF/LICENSE',
-                    'META-INF/NOTICE',
-                    'Log4j-**',
-                    'icon.png',
-                    'profile_icon.png'
-            )
-        }
+
+    from {
+        configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
+
+    //noinspection GroovyAssignabilityCheck
     manifest {
         attributes(
-                'Main-Class'     : 'de.griefed.ServerPackCreator.Main',
-                'Description'    : 'Create serverpacks from Minecraft modpacks.',
-                'Built-By'       : System.properties['user.name'],
-                'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                'Created-By'     : "Gradle ${gradle.gradleVersion}",
-                'Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
-                'Build-OS'       : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
-                'Dependencies'   : 'org.slf4j.slf4j-log4j12, org.apache.logging.log4j.log4j-slf4j-impl, com.typesafe.config, com.github.FabricMC.fabric-installer, com.github.TheRandomLabs.CurseAPI, com.fasterxml.jackson.core.jackson-databind'
+                "Main-Class"     : "de.griefed.serverpackcreator.Main",
+                "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
+                "Description"    : "Create server packs from Minecraft modpacks.",
+                "Built-By"       : System.getProperty("user.name"),
+                "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+                "Created-By"     : "Gradle ${gradle.gradleVersion}",
+                "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
+                "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
         )
     }
+    exclude (
+            'META-INF/org',
+            'META-INF/org/**',
+            'META-INF/versions',
+            'META-INF/versions/**',
+            'META-INF/DEPENDENCIES',
+            'META-INF/LICENSE',
+            'META-INF/NOTICE',
+            'Log4j-**',
+            'icon.png',
+            'profile_icon.png'
+    )
 }
 
 publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Griefed/ServerPackCreator")
+            url = uri("https://maven.pkg.github.com/Griefed/serverpackcreator")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")

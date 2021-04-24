@@ -18,7 +18,6 @@
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
 [![GitHub Repo stars](https://img.shields.io/github/stars/Griefed/serverpackcreator?label=GitHub%20Stars&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
-[![GitHub all releases](https://img.shields.io/github/downloads/Griefed/ServerPackCreator/total?color=c0ffee&logo=GitHub&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases)
 
 **ServerPackCreator is a Command Line Interface (CLI) program which creates a serverpack from any given Forge or Fabric modpack. Customize the configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.**
@@ -39,6 +38,20 @@ Use at your own risk! Be aware that data loss is possible.
 7. **Include a server-icon.png-file in your server pack**
 8. **Include a server.properties-file in your server pack**
 9. **Create a ZIP-archive of your server pack**
+10. **GUI to fully configure and run ServerPackCreator**
+    1. Load existing config
+    1. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
+    1. Logs from last run in separate tabs
+    1. About ServerPackCreator-tab with links to GitHub issues, PasteBin, Discord
+
+## Versions
+
+Consider major version incompatible to each other. Meaning, configs from 1.x.x are incompatible with version 2.x.x etc.
+
+Version mask | Description
+-------------|------------
+**1.x.x** | CLI exclusive
+**2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
 
 ## Configuration
 
