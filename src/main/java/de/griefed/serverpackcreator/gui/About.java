@@ -42,20 +42,20 @@ public class About extends Component {
         document.setParagraphAttributes(0, document.getLength(), attributeSet, false);
 
         try {
-        document.insertString(
-                document.getLength(),
-                "ServerPackCreator was made as a training ground for Java \n" +
-                "and because I wanted an easier way to update/make server packs for updates to my modpack.\n" +
-                "It has grown substantially since the first release, which was when it was CLI only.\n" +
-                "Now it provides a GUI as well!\n" +
-                "The fact that this is, and always will be, a playground for me, in Java, still remains though. As with every application, bugs are bound to appear, and I will try to fix them whenever I can.\n" +
-                "I am working on this program in my spare time, please keep that in mind when reporting issues or requesting new features to be added.\n" +
-                "\n" +
-                "This project would not be where it is today without the help from my contributors:\n" +
-                "\n" +
-                "Whitebear60\n",
-                attributeSet
-        ); } catch (BadLocationException ex) {
+            document.insertString(
+                    document.getLength(),
+                    "ServerPackCreator was made as a training ground for Java \n" +
+                            "and because I wanted an easier way to update/make server packs for updates to my modpack.\n" +
+                            "It has grown substantially since the first release, which was when it was CLI only.\n" +
+                            "Now it provides a GUI as well!\n" +
+                            "The fact that this is, and always will be, a playground for me, in Java, still remains though. As with every application, bugs are bound to appear, and I will try to fix them whenever I can.\n" +
+                            "I am working on this program in my spare time, please keep that in mind when reporting issues or requesting new features to be added.\n" +
+                            "\n" +
+                            "This project would not be where it is today without the help from my contributors:\n" +
+                            "\n" +
+                            "Whitebear60\n",
+                    attributeSet
+            ); } catch (BadLocationException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("about.log.error.document"), ex);
         }
         about.add(textPane, constraints);

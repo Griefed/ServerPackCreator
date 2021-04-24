@@ -253,7 +253,7 @@ class ServerUtilities {
             appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.downloadforgejar.download"), e);
             if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists()) {
                 if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete()) {
-                 appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.debug.downloadforgejar"));
+                    appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.debug.downloadforgejar"));
                 }
             }
         }
@@ -323,14 +323,14 @@ class ServerUtilities {
             boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
             if (isXmlDeleted)
-                { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricXML.getName())); }
+            { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricXML.getName())); }
             else
-                { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricXML.getName())); }
+            { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricXML.getName())); }
 
             if (isInstallerDeleted)
-                { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricInstaller.getName())); }
+            { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricInstaller.getName())); }
             else
-                { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricInstaller.getName())); }
+            { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricInstaller.getName())); }
 
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
@@ -343,14 +343,14 @@ class ServerUtilities {
                 boolean isInstallerDeleted = forgeInstaller.delete();
 
                 if ((isOldJarDeleted) && (new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists()))
-                    { appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.rename")); }
+                { appLogger.info(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.rename")); }
                 else
-                    { appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.rename")); }
+                { appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.rename")); }
 
                 if (isInstallerDeleted)
-                    { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), forgeInstaller.getName())); }
+                { appLogger.info(String.format(LocalizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), forgeInstaller.getName())); }
                 else
-                    { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), forgeInstaller.getName())); }
+                { appLogger.error(String.format(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), forgeInstaller.getName())); }
 
             } catch (IOException ex) {
                 appLogger.error(LocalizationManager.getLocalizedString("serverutilities.log.error.cleanupserverpack"), ex);

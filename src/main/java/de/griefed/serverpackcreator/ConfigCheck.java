@@ -138,9 +138,9 @@ public class ConfigCheck {
                 try { projectName = CurseAPI.project(Reference.projectID).get().name();
 
                     try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).displayName(); }
-                        catch (NullPointerException npe) { appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.display"));
+                    catch (NullPointerException npe) { appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.display"));
 
-                    try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).nameOnDisk(); }
+                        try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).nameOnDisk(); }
                         catch (NullPointerException npe2) { displayName = String.format("%d", Reference.projectFileID); } } }
 
                 catch (CurseException cex) { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
@@ -289,15 +289,15 @@ public class ConfigCheck {
     public boolean convertToBoolean(String stringBoolean) {
         boolean returnBoolean;
         if (stringBoolean.matches("[Tt]rue") ||
-            stringBoolean.matches("1")       ||
-            stringBoolean.matches("[Yy]es")  ||
-            stringBoolean.matches("[Yy]"))    {
+                stringBoolean.matches("1")       ||
+                stringBoolean.matches("[Yy]es")  ||
+                stringBoolean.matches("[Yy]"))    {
 
             returnBoolean = true;
         } else if (stringBoolean.matches("[Ff]alse") ||
-                   stringBoolean.matches("0")        ||
-                   stringBoolean.matches("[Nn]o")    ||
-                   stringBoolean.matches("[Nn]" ))    {
+                stringBoolean.matches("0")        ||
+                stringBoolean.matches("[Nn]o")    ||
+                stringBoolean.matches("[Nn]" ))    {
 
             returnBoolean = false;
         } else {
@@ -322,17 +322,17 @@ public class ConfigCheck {
      * @param includeZip Boolean. Whether to create a zip-archive of the server pack.
      */
     void printConfig(String modpackDirectory,
-                            List<String> clientsideMods,
-                            List<String> copyDirectories,
-                            boolean installServer,
-                            String javaInstallPath,
-                            String minecraftVer,
-                            String modloader,
-                            String modloaderVersion,
-                            boolean includeIcon,
-                            boolean includeProperties,
-                            boolean includeScripts,
-                            boolean includeZip) {
+                     List<String> clientsideMods,
+                     List<String> copyDirectories,
+                     boolean installServer,
+                     String javaInstallPath,
+                     String minecraftVer,
+                     String modloader,
+                     String modloaderVersion,
+                     boolean includeIcon,
+                     boolean includeProperties,
+                     boolean includeScripts,
+                     boolean includeZip) {
         appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.start"));
         appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.printconfig.modpackdir"), modpackDirectory));
         if (clientsideMods.size() == 0) {

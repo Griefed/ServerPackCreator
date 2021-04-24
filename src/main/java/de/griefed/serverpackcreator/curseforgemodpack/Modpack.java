@@ -55,7 +55,7 @@ public class Modpack {
     @Override
     public String toString() {
         return String.format(
-                        "**** Modpack details ****\n" +
+                "**** Modpack details ****\n" +
                         "Version & Modloader: %s\n" +
                         "Name: %s\n" +
                         "Version: %s\n" +

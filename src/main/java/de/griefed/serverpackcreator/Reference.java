@@ -17,7 +17,7 @@ public class Reference {
     static final String RUN_CLI_ARGUMENT    = "-cli";
 
     public static final File configFile        = new File("serverpackcreator.conf");
-           static final File oldConfigFile     = new File("creator.conf");
+    static final File oldConfigFile     = new File("creator.conf");
 
 
     static final File propertiesFile    = new File("server.properties");
@@ -29,7 +29,7 @@ public class Reference {
 
     static final File langPropertiesFile = new File("lang.properties");
 
-//-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
+    //-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     public static final String[] SUPPORTED_LANGUAGES = {
             "en_us",
             "uk_ua",
@@ -41,37 +41,37 @@ public class Reference {
     public static final FilesSetup      filesSetup      = new FilesSetup();
     public static final CLISetup        cliSetup        = new CLISetup();
     public static final ConfigCheck     configCheck     = new ConfigCheck();
-           static final CopyFiles       copyFiles       = new CopyFiles();
-           static final ServerSetup     serverSetup     = new ServerSetup();
-           static final ServerUtilities serverUtilities = new ServerUtilities();
+    static final CopyFiles       copyFiles       = new CopyFiles();
+    static final ServerSetup     serverSetup     = new ServerSetup();
+    static final ServerUtilities serverUtilities = new ServerUtilities();
 
     public static Config config;
 
-//-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
+    //-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     public static final List<String> fallbackModsList = Arrays.asList(
-        "AmbientSounds",
-        "BackTools",
-        "BetterAdvancement",
-        "BetterPing",
-        "cherished",
-        "ClientTweaks",
-        "Controlling",
-        "DefaultOptions",
-        "durability",
-        "DynamicSurroundings",
-        "itemzoom",
-        "jei-professions",
-        "jeiintegration",
-        "JustEnoughResources",
-        "MouseTweaks",
-        "Neat",
-        "OldJavaWarning",
-        "PackMenu",
-        "preciseblockplacing",
-        "SimpleDiscordRichPresence",
-        "SpawnerFix",
-        "TipTheScales",
-        "WorldNameRandomizer"
+            "AmbientSounds",
+            "BackTools",
+            "BetterAdvancement",
+            "BetterPing",
+            "cherished",
+            "ClientTweaks",
+            "Controlling",
+            "DefaultOptions",
+            "durability",
+            "DynamicSurroundings",
+            "itemzoom",
+            "jei-professions",
+            "jeiintegration",
+            "JustEnoughResources",
+            "MouseTweaks",
+            "Neat",
+            "OldJavaWarning",
+            "PackMenu",
+            "preciseblockplacing",
+            "SimpleDiscordRichPresence",
+            "SpawnerFix",
+            "TipTheScales",
+            "WorldNameRandomizer"
     );
 
     public static List<String>

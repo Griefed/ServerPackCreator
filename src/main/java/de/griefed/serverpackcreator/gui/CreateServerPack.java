@@ -221,8 +221,8 @@ public class CreateServerPack extends Component  {
             JFileChooser fileChooser = new JFileChooser();
 
             if (textModpackDir.getText().length() > 0 &&
-                new File(textModpackDir.getText()).isDirectory() &&
-                new File(String.format("%s/mods",textModpackDir.getText())).isDirectory()) {
+                    new File(textModpackDir.getText()).isDirectory() &&
+                    new File(String.format("%s/mods",textModpackDir.getText())).isDirectory()) {
 
                 fileChooser.setCurrentDirectory(new File(String.format("%s/mods",textModpackDir.getText())));
             } else {

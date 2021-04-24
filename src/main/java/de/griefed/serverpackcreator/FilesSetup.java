@@ -353,7 +353,7 @@ public class FilesSetup {
                                      boolean isTemporary) {
         boolean configWritten = false;
         String configString = String.format(
-                        "# Path to your modpack. Can be either relative or absolute.\n" +
+                "# Path to your modpack. Can be either relative or absolute.\n" +
                         "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
                         "# Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4 4.6.7: \"390331,3215793\"\n" +
                         "modpackDir = \"%s\"\n" +
