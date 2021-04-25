@@ -70,13 +70,13 @@ class CopyFiles {
             appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copystartscripts.forge"));
             try {
                 Files.copy(
-                        Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)),
-                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.forgeWindowsFile)),
+                        Paths.get(String.format("./server_files/%s", Reference.getForgeWindowsFile())),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.getForgeWindowsFile())),
                         REPLACE_EXISTING
                 );
                 Files.copy(
-                        Paths.get(String.format("./server_files/%s", Reference.forgeLinuxFile)),
-                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.forgeLinuxFile)),
+                        Paths.get(String.format("./server_files/%s", Reference.getForgeLinuxFile())),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.getForgeLinuxFile())),
                         REPLACE_EXISTING
                 );
             } catch (IOException ex) {
@@ -86,13 +86,13 @@ class CopyFiles {
             appLogger.info(LocalizationManager.getLocalizedString("copyfiles.log.info.copystartscripts.fabric"));
             try {
                 Files.copy(
-                        Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)),
-                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.fabricWindowsFile)),
+                        Paths.get(String.format("./server_files/%s", Reference.getFabricWindowsFile())),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.getFabricWindowsFile())),
                         REPLACE_EXISTING
                 );
                 Files.copy(
-                        Paths.get(String.format("./server_files/%s", Reference.fabricLinuxFile)),
-                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.fabricLinuxFile)),
+                        Paths.get(String.format("./server_files/%s", Reference.getFabricLinuxFile())),
+                        Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.getFabricLinuxFile())),
                         REPLACE_EXISTING
                 );
             } catch (IOException ex) {
@@ -231,8 +231,8 @@ class CopyFiles {
         try {
 
             Files.copy(
-                    Paths.get(String.format("./server_files/%s", Reference.iconFile)),
-                    Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.iconFile)),
+                    Paths.get(String.format("./server_files/%s", Reference.getIconFile())),
+                    Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.getIconFile())),
                     REPLACE_EXISTING
             );
 
@@ -249,8 +249,8 @@ class CopyFiles {
         try {
 
             Files.copy(
-                    Paths.get(String.format("./server_files/%s", Reference.propertiesFile)),
-                    Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.propertiesFile)),
+                    Paths.get(String.format("./server_files/%s", Reference.getPropertiesFile())),
+                    Paths.get(String.format("%s/server_pack/%s", modpackDir, Reference.getPropertiesFile())),
                     REPLACE_EXISTING
             );
 

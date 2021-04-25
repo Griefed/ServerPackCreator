@@ -35,8 +35,8 @@ class ConfigCheckTest {
     @Test
     void testCheckConfig() throws IOException {
         Files.copy(Paths.get("./src/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        Reference.config = ConfigFactory.parseFile(Reference.configFile);
-        boolean result = Reference.configCheck.checkConfigFile(Reference.configFile);
+        Reference.config = ConfigFactory.parseFile(Reference.getConfigFile());
+        boolean result = Reference.configCheck.checkConfigFile(Reference.getConfigFile());
         Assertions.assertFalse(result);
         new File("./serverpackcreator.conf").delete();
     }

@@ -17,11 +17,11 @@ public class Main {
      */
     public static void main(String[] args) {
         List<String> programArgs = Arrays.asList(args);
-        if (Arrays.asList(args).contains(Reference.LANG_ARGUMENT)) {
+        if (Arrays.asList(args).contains(Reference.getLangArgument())) {
             try {
-                LocalizationManager.init(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
+                LocalizationManager.init(programArgs.get(programArgs.indexOf(Reference.getLangArgument()) + 1));
             } catch (IncorrectLanguageException e) {
-                appLogger.info(programArgs.get(programArgs.indexOf(Reference.LANG_ARGUMENT) + 1));
+                appLogger.info(programArgs.get(programArgs.indexOf(Reference.getLangArgument()) + 1));
                 appLogger.error("Incorrect language specified, falling back to English (United States)...");
                 LocalizationManager.init();
             } finally {

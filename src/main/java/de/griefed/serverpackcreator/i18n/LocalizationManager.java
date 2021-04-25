@@ -47,7 +47,7 @@ public class LocalizationManager {
      */
     public static void init(String locale) throws IncorrectLanguageException {
         boolean isLanguageExists = false;
-        for (String lang: Reference.SUPPORTED_LANGUAGES) {
+        for (String lang: Reference.getSupportedLanguages()) {
             if (lang.equalsIgnoreCase(locale)) {
                 localeLogger.debug("Lang is correct");
                 isLanguageExists = true;
@@ -89,7 +89,7 @@ public class LocalizationManager {
 
         boolean isLanguageExists = false;
 
-        for (String lang: Reference.SUPPORTED_LANGUAGES) {
+        for (String lang: Reference.getSupportedLanguages()) {
             if (lang.equalsIgnoreCase(langProp)) {
                 localeLogger.debug("Lang is correct");
                 isLanguageExists = true;
@@ -148,6 +148,6 @@ public class LocalizationManager {
     }
 
     public static String[] getSupportedLanguages() {
-        return Reference.SUPPORTED_LANGUAGES;
+        return Reference.getSupportedLanguages();
     }
 }

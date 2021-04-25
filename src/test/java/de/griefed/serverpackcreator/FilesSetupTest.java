@@ -26,7 +26,7 @@ class FilesSetupTest {
 
     @BeforeEach
     void setUp() {
-        Reference.filesSetup.checkLocaleFile();
+        FilesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 
@@ -245,7 +245,7 @@ class FilesSetupTest {
                 true,
                 true,
                 true,
-                Reference.configFile,
+                Reference.getConfigFile(),
                 false
         );
         Assertions.assertTrue(result);
@@ -306,7 +306,7 @@ class FilesSetupTest {
                 true,
                 true,
                 true,
-                Reference.configFile,
+                Reference.getConfigFile(),
                 false
         );
         Assertions.assertTrue(result);

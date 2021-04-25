@@ -51,11 +51,11 @@ public class FilesSetup {
      */
     boolean checkForConfig() {
         boolean firstRun = false;
-        if (Reference.oldConfigFile.exists()) {
+        if (Reference.getOldConfigFile().exists()) {
             try {
-                Files.copy(Reference.oldConfigFile.getAbsoluteFile().toPath(), Reference.configFile.getAbsoluteFile().toPath());
+                Files.copy(Reference.getOldConfigFile().getAbsoluteFile().toPath(), Reference.getConfigFile().getAbsoluteFile().toPath());
 
-                boolean isOldConfigDeleted = Reference.oldConfigFile.delete();
+                boolean isOldConfigDeleted = Reference.getOldConfigFile().delete();
                 if (isOldConfigDeleted) {
                     appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.chechforconfig.old"));
                 }
@@ -63,12 +63,12 @@ public class FilesSetup {
             } catch (IOException ex) {
                 appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.checkforconfig.old"), ex);
             }
-        } else if (!Reference.configFile.exists()) {
+        } else if (!Reference.getConfigFile().exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", Reference.configFile.getName())));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", Reference.getConfigFile().getName())));
 
                 if (link != null) {
-                    Files.copy(link, Reference.configFile.getAbsoluteFile().toPath());
+                    Files.copy(link, Reference.getConfigFile().getAbsoluteFile().toPath());
                     link.close();
                 }
 
@@ -90,11 +90,11 @@ public class FilesSetup {
      */
     boolean checkForFabricLinux() {
         boolean firstRun = false;
-        if (!Reference.fabricLinuxFile.exists()) {
+        if (!Reference.getFabricLinuxFile().exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.fabricLinuxFile.getName())));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.getFabricLinuxFile().getName())));
                 if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricLinuxFile)));
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.getFabricLinuxFile())));
                     link.close();
                 }
 
@@ -116,11 +116,11 @@ public class FilesSetup {
      */
     boolean checkForFabricWindows() {
         boolean firstRun = false;
-        if (!Reference.fabricWindowsFile.exists()) {
+        if (!Reference.getFabricWindowsFile().exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.fabricWindowsFile.getName())));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.getFabricWindowsFile().getName())));
                 if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.fabricWindowsFile)));
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.getFabricWindowsFile())));
                     link.close();
                 }
 
@@ -142,11 +142,11 @@ public class FilesSetup {
      */
     boolean checkForForgeLinux() {
         boolean firstRun = false;
-        if (!Reference.forgeLinuxFile.exists()) {
+        if (!Reference.getForgeLinuxFile().exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.forgeLinuxFile.getName())));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.getForgeLinuxFile().getName())));
                 if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeLinuxFile)));
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.getForgeLinuxFile())));
                     link.close();
                 }
 
@@ -168,11 +168,11 @@ public class FilesSetup {
      */
     boolean checkForForgeWindows() {
         boolean firstRun = false;
-        if (!Reference.forgeWindowsFile.exists()) {
+        if (!Reference.getForgeWindowsFile().exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.forgeWindowsFile.getName())));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.getForgeWindowsFile().getName())));
                 if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.forgeWindowsFile)));
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.getForgeWindowsFile())));
                     link.close();
                 }
 
@@ -194,11 +194,11 @@ public class FilesSetup {
      */
     boolean checkForProperties() {
         boolean firstRun = false;
-        if (!Reference.propertiesFile.exists()) {
+        if (!Reference.getPropertiesFile().exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.propertiesFile.getName())));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.getPropertiesFile().getName())));
                 if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.propertiesFile)));
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.getPropertiesFile())));
                     link.close();
                 }
 
@@ -220,11 +220,11 @@ public class FilesSetup {
      */
     boolean checkForIcon() {
         boolean firstRun = false;
-        if (!Reference.iconFile.exists()) {
+        if (!Reference.getIconFile().exists()) {
             try {
-                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.iconFile.getName())));
+                InputStream link = (CopyFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", Reference.getIconFile().getName())));
                 if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.iconFile)));
+                    Files.copy(link, Paths.get(String.format("./server_files/%s", Reference.getIconFile())));
                     link.close();
                 }
 
@@ -247,16 +247,16 @@ public class FilesSetup {
      * @return Always returns true. Dirty hack until I one day figure out how to init Localization before UI start correctly.
      */
     public static boolean checkLocaleFile() {
-        if (Reference.langPropertiesFile.exists()) {
+        if (Reference.getLangPropertiesFile().exists()) {
             try {
-                LocalizationManager.init(Reference.langPropertiesFile);
+                LocalizationManager.init(Reference.getLangPropertiesFile());
             } catch (IncorrectLanguageException e) {
 
                 appLogger.error("Incorrect language specified, falling back to English (United States)...");
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.getLangPropertiesFile()))) {
 
-                    if (!Reference.langPropertiesFile.exists()) {
-                        boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                    if (!Reference.getLangPropertiesFile().exists()) {
+                        boolean langCreated = Reference.getLangPropertiesFile().createNewFile();
                         if (langCreated) {
                             appLogger.debug("Lang properties file created successfully.");
                         } else {
@@ -273,10 +273,10 @@ public class FilesSetup {
                 LocalizationManager.init();
             }
         } else {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.getLangPropertiesFile()))) {
 
-                if (!Reference.langPropertiesFile.exists()) {
-                    boolean langCreated = Reference.langPropertiesFile.createNewFile();
+                if (!Reference.getLangPropertiesFile().exists()) {
+                    boolean langCreated = Reference.getLangPropertiesFile().createNewFile();
                     if (langCreated) {
                         appLogger.debug("Lang properties file created successfully.");
                     } else {
@@ -301,10 +301,10 @@ public class FilesSetup {
      * This method should not contain the Localizationmanager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
      */
     public static void writeLocaleToFile(String locale) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.langPropertiesFile))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.getLangPropertiesFile()))) {
 
-            if (!Reference.langPropertiesFile.exists()) {
-                boolean langCreated = Reference.langPropertiesFile.createNewFile();
+            if (!Reference.getLangPropertiesFile().exists()) {
+                boolean langCreated = Reference.getLangPropertiesFile().createNewFile();
                 if (langCreated) {
                     appLogger.debug("Lang properties file created successfully.");
                 } else {
@@ -426,16 +426,16 @@ public class FilesSetup {
                 includeZip
         );
         if (!isTemporary) {
-            if (Reference.configFile.exists()) {
-                boolean delConf = Reference.configFile.delete();
+            if (Reference.getConfigFile().exists()) {
+                boolean delConf = Reference.getConfigFile().delete();
                 if (delConf) {
                     appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.config"));
                 } else {
                     appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile.config"));
                 }
             }
-            if (Reference.oldConfigFile.exists()) {
-                boolean delOldConf = Reference.oldConfigFile.delete();
+            if (Reference.getOldConfigFile().exists()) {
+                boolean delOldConf = Reference.getOldConfigFile().delete();
                 if (delOldConf) {
                     appLogger.info(LocalizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.old"));
                 } else {

@@ -51,7 +51,7 @@ public class Handler {
             appLogger.error(LocalizationManager.getLocalizedString("handler.log.error.system.properties"), ex);
         }
 
-        if (Arrays.asList(args).contains(Reference.CONFIG_GEN_ARGUMENT)){
+        if (Arrays.asList(args).contains(Reference.getConfigGenArgument())){
 
             Reference.cliSetup.setup();
             Reference.filesSetup.filesSetup();
@@ -62,9 +62,9 @@ public class Handler {
                 System.exit(1);
             }
 
-        } else if (Arrays.asList(args).contains(Reference.RUN_CLI_ARGUMENT)) {
+        } else if (Arrays.asList(args).contains(Reference.getRunCliArgument())) {
 
-            if (!Reference.oldConfigFile.exists() && !Reference.configFile.exists()) {
+            if (!Reference.getOldConfigFile().exists() && !Reference.getConfigFile().exists()) {
 
                 Reference.cliSetup.setup();
             }
@@ -77,7 +77,7 @@ public class Handler {
             }
         } else if (GraphicsEnvironment.isHeadless()) {
 
-            if (!Reference.oldConfigFile.exists() && !Reference.configFile.exists()) {
+            if (!Reference.getOldConfigFile().exists() && !Reference.getConfigFile().exists()) {
 
                 Reference.cliSetup.setup();
             }
@@ -102,36 +102,36 @@ public class Handler {
      * @return Return true if the serverpack was successfully generated, false if not.
      */
     public static boolean run() {
-        if (!Reference.configCheck.checkConfigFile(Reference.configFile)) {
-            Reference.copyFiles.cleanupEnvironment(Reference.modpackDir);
+        if (!Reference.configCheck.checkConfigFile(Reference.getConfigFile())) {
+            Reference.copyFiles.cleanupEnvironment(Reference.getModpackDir());
             try {
-                Reference.copyFiles.copyFiles(Reference.modpackDir, Reference.copyDirs, Reference.clientMods);
+                Reference.copyFiles.copyFiles(Reference.getModpackDir(), Reference.getCopyDirs(), Reference.getClientMods());
             } catch (IOException ex) {
                 appLogger.error(LocalizationManager.getLocalizedString("handler.log.error.runincli.copyfiles"), ex);
             }
-            Reference.copyFiles.copyStartScripts(Reference.modpackDir, Reference.modLoader, Reference.includeStartScripts);
-            if (Reference.includeServerInstallation) {
-                Reference.serverSetup.installServer(Reference.modLoader, Reference.modpackDir, Reference.minecraftVersion, Reference.modLoaderVersion, Reference.javaPath);
+            Reference.copyFiles.copyStartScripts(Reference.getModpackDir(), Reference.getModLoader(), Reference.getIncludeStartScripts());
+            if (Reference.getIncludeServerInstallation()) {
+                Reference.serverSetup.installServer(Reference.getModLoader(), Reference.getModpackDir(), Reference.getMinecraftVersion(), Reference.getModLoaderVersion(), Reference.getJavaPath());
             } else {
                 appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.server"));
             }
-            if (Reference.includeServerIcon) {
-                Reference.copyFiles.copyIcon(Reference.modpackDir);
+            if (Reference.getIncludeServerIcon()) {
+                Reference.copyFiles.copyIcon(Reference.getModpackDir());
             } else {
                 appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.icon"));
             }
-            if (Reference.includeServerProperties) {
-                Reference.copyFiles.copyProperties(Reference.modpackDir);
+            if (Reference.getIncludeServerProperties()) {
+                Reference.copyFiles.copyProperties(Reference.getModpackDir());
             } else {
                 appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.properties"));
             }
-            if (Reference.includeZipCreation) {
-                Reference.serverSetup.zipBuilder(Reference.modpackDir, Reference.modLoader, Reference.includeServerInstallation);
+            if (Reference.getIncludeZipCreation()) {
+                Reference.serverSetup.zipBuilder(Reference.getModpackDir(), Reference.getModLoader(), Reference.getIncludeServerInstallation());
             } else {
                 appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.zip"));
             }
-            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.serverpack"), Reference.modpackDir));
-            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.archive"), Reference.modpackDir));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.serverpack"), Reference.getModpackDir()));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("handler.log.info.runincli.archive"), Reference.getModpackDir()));
             appLogger.info(LocalizationManager.getLocalizedString("handler.log.info.runincli.finish"));
             return true;
         } else {

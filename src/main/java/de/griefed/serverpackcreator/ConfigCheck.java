@@ -44,15 +44,16 @@ public class ConfigCheck {
         }
 
         if (Reference.config.getStringList("clientMods").isEmpty()) {
-            Reference.clientMods = Reference.fallbackModsList;
+            appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.checkconfig.clientmods"));
+            Reference.setClientMods(Reference.getFallbackModsList());
         } else {
-            Reference.clientMods = Reference.config.getStringList("clientMods");
+            Reference.setClientMods(Reference.config.getStringList("clientMods"));
         }
-        Reference.includeServerInstallation = convertToBoolean(Reference.config.getString("includeServerInstallation"));
-        Reference.includeServerIcon = convertToBoolean(Reference.config.getString("includeServerIcon"));
-        Reference.includeServerProperties = convertToBoolean(Reference.config.getString("includeServerProperties"));
-        Reference.includeStartScripts = convertToBoolean(Reference.config.getString("includeStartScripts"));
-        Reference.includeZipCreation = convertToBoolean(Reference.config.getString("includeZipCreation"));
+        Reference.setIncludeServerInstallation(convertToBoolean(Reference.config.getString("includeServerInstallation")));
+        Reference.setIncludeServerIcon(convertToBoolean(Reference.config.getString("includeServerIcon")));
+        Reference.setIncludeServerProperties(convertToBoolean(Reference.config.getString("includeServerProperties")));
+        Reference.setIncludeStartScripts(convertToBoolean(Reference.config.getString("includeStartScripts")));
+        Reference.setIncludeZipCreation(convertToBoolean(Reference.config.getString("includeZipCreation")));
 
         if (checkModpackDir(Reference.config.getString("modpackDir").replace("\\","/"))) {
             configHasError = isDir(Reference.config.getString("modpackDir").replace("\\","/"));
@@ -62,18 +63,18 @@ public class ConfigCheck {
             configHasError = true;
         }
 
-        printConfig(Reference.modpackDir,
-                Reference.clientMods,
-                Reference.copyDirs,
-                Reference.includeServerInstallation,
-                Reference.javaPath,
-                Reference.minecraftVersion,
-                Reference.modLoader,
-                Reference.modLoaderVersion,
-                Reference.includeServerIcon,
-                Reference.includeServerProperties,
-                Reference.includeStartScripts,
-                Reference.includeZipCreation);
+        printConfig(Reference.getModpackDir(),
+                Reference.getClientMods(),
+                Reference.getCopyDirs(),
+                Reference.getIncludeServerInstallation(),
+                Reference.getJavaPath(),
+                Reference.getMinecraftVersion(),
+                Reference.getModLoader(),
+                Reference.getModLoaderVersion(),
+                Reference.getIncludeServerIcon(),
+                Reference.getIncludeServerProperties(),
+                Reference.getIncludeStartScripts(),
+                Reference.getIncludeZipCreation());
 
         if (!configHasError) {
             appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.success"));
@@ -89,31 +90,31 @@ public class ConfigCheck {
      */
     private boolean isDir(String modpackDir) {
         boolean configHasError = false;
-        Reference.modpackDir = modpackDir;
+        Reference.setModpackDir(modpackDir);
 
-        if (checkCopyDirs(Reference.config.getStringList("copyDirs"), Reference.modpackDir)) {
-            Reference.copyDirs = Reference.config.getStringList("copyDirs");
+        if (checkCopyDirs(Reference.config.getStringList("copyDirs"), Reference.getModpackDir())) {
+            Reference.setCopyDirs(Reference.config.getStringList("copyDirs"));
         } else { configHasError = true; }
 
-        if (Reference.includeServerInstallation) {
+        if (Reference.getIncludeServerInstallation()) {
             if (checkJavaPath(Reference.config.getString("javaPath"))) {
-                Reference.javaPath = Reference.config.getString("javaPath");
+                Reference.setJavaPath(Reference.config.getString("javaPath"));
             } else {
                 String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath"));
                 if (checkJavaPath(tmpJavaPath)) {
-                    Reference.javaPath = tmpJavaPath;
+                    Reference.setJavaPath(tmpJavaPath);
                 } else { configHasError = true; } }
 
             if (isMinecraftVersionCorrect(Reference.config.getString("minecraftVersion"))) {
-                Reference.minecraftVersion = Reference.config.getString("minecraftVersion");
+                Reference.setMinecraftVersion(Reference.config.getString("minecraftVersion"));
             } else { configHasError = true; }
 
             if (checkModloader(Reference.config.getString("modLoader"))) {
-                Reference.modLoader = setModloader(Reference.config.getString("modLoader"));
+                Reference.setModLoader(setModloader(Reference.config.getString("modLoader")));
             } else { configHasError = true; }
 
-            if (checkModloaderVersion(Reference.modLoader, Reference.config.getString("modLoaderVersion"))) {
-                Reference.modLoaderVersion = Reference.config.getString("modLoaderVersion");
+            if (checkModloaderVersion(Reference.getModLoader(), Reference.config.getString("modLoaderVersion"))) {
+                Reference.setModLoaderVersion(Reference.config.getString("modLoaderVersion"));
             } else { configHasError = true; }
 
         } else {
@@ -132,24 +133,24 @@ public class ConfigCheck {
     private boolean isCurse() {
         boolean configHasError = false;
         try {
-            if (CurseAPI.project(Reference.projectID).isPresent()) {
+            if (CurseAPI.project(Reference.getProjectID()).isPresent()) {
                 String projectName, displayName;
                 projectName = displayName = "";
-                try { projectName = CurseAPI.project(Reference.projectID).get().name();
+                try { projectName = CurseAPI.project(Reference.getProjectID()).get().name();
 
-                    try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).displayName(); }
+                    try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.getProjectID()).get().files().fileWithID(Reference.getProjectFileID())).displayName(); }
                     catch (NullPointerException npe) { appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.display"));
 
-                        try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.projectID).get().files().fileWithID(Reference.projectFileID)).nameOnDisk(); }
-                        catch (NullPointerException npe2) { displayName = String.format("%d", Reference.projectFileID); } } }
+                        try { displayName = Objects.requireNonNull(CurseAPI.project(Reference.getProjectID()).get().files().fileWithID(Reference.getProjectFileID())).nameOnDisk(); }
+                        catch (NullPointerException npe2) { displayName = String.format("%d", Reference.getProjectFileID()); } } }
 
                 catch (CurseException cex) { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
 
-                Reference.modpackDir = String.format("./%s/%s", projectName, displayName);
+                Reference.setModpackDir(String.format("./%s/%s", projectName, displayName));
 
-                if (Reference.createModpack.curseForgeModpack(Reference.modpackDir, Reference.projectID, Reference.projectFileID)) {
+                if (Reference.createModpack.curseForgeModpack(Reference.getModpackDir(), Reference.getProjectID(), Reference.getProjectFileID())) {
                     try {
-                        byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", Reference.modpackDir)));
+                        byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", Reference.getModpackDir())));
                         ObjectMapper objectMapper = new ObjectMapper();
                         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
                         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
@@ -163,45 +164,45 @@ public class ConfigCheck {
                                 .replace("[", "")
                                 .replace("]", "")
                                 .split("-");
-                        Reference.minecraftVersion = minecraftLoaderVersions[0]
-                                .replace("[", "");
+                        Reference.setMinecraftVersion(minecraftLoaderVersions[0]
+                                .replace("[", ""));
 
                         if (containsFabric(modpack)) {
                             appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.fabric"));
-                            Reference.modLoader = "Fabric";
-                            Reference.modLoaderVersion = latestFabricLoader(Reference.modpackDir);
+                            Reference.setModLoader("Fabric");
+                            Reference.setModLoaderVersion(latestFabricLoader(Reference.getModpackDir()));
                         } else {
-                            Reference.modLoader = setModloader(modLoaderVersion[0]);
-                            Reference.modLoaderVersion = modLoaderVersion[1];
+                            Reference.setModLoader(setModloader(modLoaderVersion[0]));
+                            Reference.setModLoaderVersion(modLoaderVersion[1]);
                         }
                     } catch (IOException ex) { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.json"), ex); }
 
                     if (checkJavaPath(Reference.config.getString("javaPath").replace("\\","/"))) {
-                        Reference.javaPath = Reference.config.getString("javaPath").replace("\\","/");
+                        Reference.setJavaPath(Reference.config.getString("javaPath").replace("\\","/"));
                     } else {
                         String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath").replace("\\","/"));
                         if (checkJavaPath(tmpJavaPath)) {
-                            Reference.javaPath = tmpJavaPath;
+                            Reference.setJavaPath(tmpJavaPath);
                         }
                     }
-                    Reference.copyDirs = suggestCopyDirs(Reference.modpackDir);
+                    Reference.setCopyDirs(suggestCopyDirs(Reference.getModpackDir()));
                     appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.iscurse.replace"));
                     Reference.filesSetup.writeConfigToFile(
-                            Reference.modpackDir,
-                            Reference.cliSetup.buildString(Reference.clientMods.toString()),
-                            Reference.cliSetup.buildString(Reference.copyDirs.toString()),
-                            Reference.includeServerInstallation, Reference.javaPath,
-                            Reference.minecraftVersion, Reference.modLoader,
-                            Reference.modLoaderVersion, Reference.includeServerIcon,
-                            Reference.includeServerProperties, Reference.includeStartScripts,
-                            Reference.includeZipCreation,
-                            Reference.configFile,
+                            Reference.getModpackDir(),
+                            Reference.cliSetup.buildString(Reference.getClientMods().toString()),
+                            Reference.cliSetup.buildString(Reference.getCopyDirs().toString()),
+                            Reference.getIncludeServerInstallation(), Reference.getJavaPath(),
+                            Reference.getMinecraftVersion(), Reference.getModLoader(),
+                            Reference.getModLoaderVersion(), Reference.getIncludeServerIcon(),
+                            Reference.getIncludeServerProperties(), Reference.getIncludeStartScripts(),
+                            Reference.getIncludeZipCreation(),
+                            Reference.getConfigFile(),
                             false
                     );
                 }
             }
         } catch (CurseException cex) {
-            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.project"), Reference.projectID), cex);
+            appLogger.error(String.format(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.project"), Reference.getProjectID()), cex);
             configHasError = true;
         }
         return configHasError;
@@ -268,11 +269,11 @@ public class ConfigCheck {
 
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
             projectFileIds = modpackDir.split(",");
-            Reference.projectID = Integer.parseInt(projectFileIds[0]);
-            Reference.projectFileID = Integer.parseInt(projectFileIds[1]);
+            Reference.setProjectID(Integer.parseInt(projectFileIds[0]));
+            Reference.setProjectFileID(Integer.parseInt(projectFileIds[1]));
 
             appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.info"));
-            appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.return"), Reference.projectID, Reference.projectFileID));
+            appLogger.info(String.format(LocalizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.return"), Reference.getProjectID(), Reference.getProjectFileID()));
             appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.checkcurseforge.warn"));
 
             configCorrect = true;
@@ -486,7 +487,7 @@ public class ConfigCheck {
     boolean isMinecraftVersionCorrect(String minecraftVersion) {
         if (!minecraftVersion.equals("")) {
             try {
-                URL manifestJsonURL = new URL(Reference.MINECRAFT_MANIFEST_URL);
+                URL manifestJsonURL = new URL(Reference.getMinecraftManifestUrl());
                 ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
                 FileOutputStream downloadManifestOutputStream;
 
@@ -538,7 +539,7 @@ public class ConfigCheck {
      */
     boolean isFabricVersionCorrect(String fabricVersion) {
         try {
-            URL manifestJsonURL = new URL(Reference.FABRIC_MANIFEST_URL);
+            URL manifestJsonURL = new URL(Reference.getFabricManifestUrl());
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
             FileOutputStream downloadManifestOutputStream;
 
@@ -593,7 +594,7 @@ public class ConfigCheck {
      */
     boolean isForgeVersionCorrect(String forgeVersion) {
         try {
-            URL manifestJsonURL = new URL(Reference.FORGE_MANIFEST_URL);
+            URL manifestJsonURL = new URL(Reference.getForgeManifestUrl());
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
             FileOutputStream downloadManifestOutputStream;
 
@@ -649,7 +650,7 @@ public class ConfigCheck {
     private String latestFabricLoader(String modpackDir) {
         String result = "0.11.3";
         try {
-            URL downloadFabricXml = new URL(Reference.FABRIC_MANIFEST_URL);
+            URL downloadFabricXml = new URL(Reference.getFabricManifestUrl());
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
 
             FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-loader.xml", modpackDir));

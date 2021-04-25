@@ -2,6 +2,7 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
+import de.griefed.serverpackcreator.FilesSetup;
 import de.griefed.serverpackcreator.Reference;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +30,7 @@ class CreateModpackTest {
 
     @BeforeEach
     void setUp() {
-        Reference.filesSetup.checkLocaleFile();
+        FilesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 
@@ -48,11 +49,19 @@ class CreateModpackTest {
                     .fileWithID(fileID))
                     .displayName();
             String modpackDir = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
-            boolean result = Reference.createModpack.curseForgeModpack(modpackDir, 238298, 3174854);
+            boolean result = Reference.createModpack.curseForgeModpack(modpackDir, projectID, fileID);
             Assertions.assertTrue(result);
-            String delete = String.format("./src/test/resources/forge_tests/%s", projectName);
-            if (new File(delete).isDirectory()) {
-                Path pathToBeDeleted = Paths.get(delete);
+            String deleteFile = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
+            if (new File(deleteFile).isDirectory()) {
+                Path pathToBeDeleted = Paths.get(deleteFile);
+                Files.walk(pathToBeDeleted)
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
+            String deleteProject = String.format("./src/test/resources/forge_tests/%s", projectName);
+            if (new File(deleteProject).isDirectory()) {
+                Path pathToBeDeleted = Paths.get(deleteProject);
                 Files.walk(pathToBeDeleted)
                         .sorted(Comparator.reverseOrder())
                         .map(Path::toFile)

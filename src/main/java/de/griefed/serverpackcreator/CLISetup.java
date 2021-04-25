@@ -37,7 +37,7 @@ public class CLISetup {
                 tmpModpackDir;
 
         Scanner reader = new Scanner(System.in);
-        appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.start"), Reference.CONFIG_GEN_ARGUMENT));
+        appLogger.info(String.format(LocalizationManager.getLocalizedString("clisetup.log.info.start"), Reference.getConfigGenArgument()));
         do {
 //--------------------------------------------------------------------------------------------MODPACK DIRECTORY---------
             appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.modpack.enter"));
@@ -188,7 +188,7 @@ public class CLISetup {
                 includeServerProperties,
                 includeStartScripts,
                 includeZipCreation,
-                Reference.configFile,
+                Reference.getConfigFile(),
                 false
         )) {
             appLogger.info(LocalizationManager.getLocalizedString("clisetup.log.info.config.written"));
