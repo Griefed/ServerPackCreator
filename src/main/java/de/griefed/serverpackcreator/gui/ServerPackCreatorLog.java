@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-public class ServerPackCreatorLog extends Component {
+class ServerPackCreatorLog extends Component {
 
     JComponent serverPackCreatorLog() {
         JComponent serverPackCreatorLog = new JPanel(false);

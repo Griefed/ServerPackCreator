@@ -2,7 +2,7 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 
 import java.util.Random;
 
-public class Splines {
+class Splines {
     /*
     Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained.
     Additional thanks to Larsz on GameFAQs for providing a list of all these messages: https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135

@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class CreateServerPack extends Component  {
+class CreateServerPack extends Component {
     private static final Logger appLogger = LogManager.getLogger(CreateServerPack.class);
 
     private final ImageIcon loadIcon              = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/load.png")));

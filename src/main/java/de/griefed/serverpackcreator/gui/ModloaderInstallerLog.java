@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-public class ModloaderInstallerLog extends Component {
+class ModloaderInstallerLog extends Component {
 
     JComponent modloaderInstallerLog() {
         JComponent modloaderInstallerLog = new JPanel(false);

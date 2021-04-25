@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 
-public class About extends Component {
+class About extends Component {
     private static final Logger appLogger = LogManager.getLogger(About.class);
 
     private final Dimension miscButtonDimension = new Dimension(50,50);

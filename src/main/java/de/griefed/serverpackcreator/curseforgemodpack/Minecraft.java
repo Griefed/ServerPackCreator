@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-public class Minecraft {
+class Minecraft {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String version;
     private List<ModLoaders> modLoaders;

@@ -21,7 +21,7 @@ import java.util.*;
  * For example: lang_en_us.lang.</p>
  * Currently supports only strings to be used in localized fields.
  */
-public class LocalizationManager {
+public class LocalizationManager extends Reference {
 
 
     private static final Logger localeLogger = LogManager.getLogger(LocalizationManager.class);
