@@ -9,9 +9,15 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Objects;
 
 public class About extends Component {
     private static final Logger appLogger = LogManager.getLogger(About.class);
+
+    private final Dimension miscButtonDimension = new Dimension(50,50);
+    private final ImageIcon issueIcon           = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/issue.png")));
+    private final ImageIcon pastebinIcon        = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/pastebin.png")));
+    private final ImageIcon prosperIcon         = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/prosper.png")));
 
     JComponent about() {
         JComponent about = new JPanel(false);
@@ -77,8 +83,8 @@ public class About extends Component {
         //Button to upload log file to pastebin
         JButton buttonCreatePasteBin = new JButton();
         buttonCreatePasteBin.setToolTipText("Open pastebin in your browser to create pastes of logs files or config files.");
-        buttonCreatePasteBin.setIcon(ReferenceGUI.pastebinIcon);
-        buttonCreatePasteBin.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        buttonCreatePasteBin.setIcon(pastebinIcon);
+        buttonCreatePasteBin.setPreferredSize(miscButtonDimension);
         buttonCreatePasteBin.addActionListener(e -> {
 
             try {
@@ -97,8 +103,8 @@ public class About extends Component {
         //Button to open a new issue on GitHub
         JButton buttonOpenIssue = new JButton();
         buttonOpenIssue.setToolTipText("Create an issue on GitHub.");
-        buttonOpenIssue.setIcon(ReferenceGUI.issueIcon);
-        buttonOpenIssue.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        buttonOpenIssue.setIcon(issueIcon);
+        buttonOpenIssue.setPreferredSize(miscButtonDimension);
         buttonOpenIssue.addActionListener(e -> {
 
             try {
@@ -117,8 +123,8 @@ public class About extends Component {
         //Button to open the invite link to the discord server
         JButton buttonDiscord = new JButton();
         buttonDiscord.setToolTipText("Get support and chat on Griefed's Discord server.");
-        buttonDiscord.setIcon(ReferenceGUI.prosperIcon);
-        buttonDiscord.setPreferredSize(ReferenceGUI.miscButtonDimension);
+        buttonDiscord.setIcon(prosperIcon);
+        buttonDiscord.setPreferredSize(miscButtonDimension);
         buttonDiscord.addActionListener(e -> {
 
             try {
