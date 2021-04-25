@@ -38,26 +38,26 @@ public class ConfigCheck {
         boolean configHasError;
         appLogger.info(LocalizationManager.getLocalizedString("configcheck.log.info.checkconfig.start"));
         try {
-            Reference.config = ConfigFactory.parseFile(configFile);
+            Reference.setConfig(ConfigFactory.parseFile(configFile));
         } catch (ConfigException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.checkconfig.start"));
         }
 
-        if (Reference.config.getStringList("clientMods").isEmpty()) {
+        if (Reference.getConfig().getStringList("clientMods").isEmpty()) {
             appLogger.warn(LocalizationManager.getLocalizedString("configcheck.log.warn.checkconfig.clientmods"));
             Reference.setClientMods(Reference.getFallbackModsList());
         } else {
-            Reference.setClientMods(Reference.config.getStringList("clientMods"));
+            Reference.setClientMods(Reference.getConfig().getStringList("clientMods"));
         }
-        Reference.setIncludeServerInstallation(convertToBoolean(Reference.config.getString("includeServerInstallation")));
-        Reference.setIncludeServerIcon(convertToBoolean(Reference.config.getString("includeServerIcon")));
-        Reference.setIncludeServerProperties(convertToBoolean(Reference.config.getString("includeServerProperties")));
-        Reference.setIncludeStartScripts(convertToBoolean(Reference.config.getString("includeStartScripts")));
-        Reference.setIncludeZipCreation(convertToBoolean(Reference.config.getString("includeZipCreation")));
+        Reference.setIncludeServerInstallation(convertToBoolean(Reference.getConfig().getString("includeServerInstallation")));
+        Reference.setIncludeServerIcon(convertToBoolean(Reference.getConfig().getString("includeServerIcon")));
+        Reference.setIncludeServerProperties(convertToBoolean(Reference.getConfig().getString("includeServerProperties")));
+        Reference.setIncludeStartScripts(convertToBoolean(Reference.getConfig().getString("includeStartScripts")));
+        Reference.setIncludeZipCreation(convertToBoolean(Reference.getConfig().getString("includeZipCreation")));
 
-        if (checkModpackDir(Reference.config.getString("modpackDir").replace("\\","/"))) {
-            configHasError = isDir(Reference.config.getString("modpackDir").replace("\\","/"));
-        } else if (checkCurseForge(Reference.config.getString("modpackDir").replace("\\","/"))) {
+        if (checkModpackDir(Reference.getConfig().getString("modpackDir").replace("\\","/"))) {
+            configHasError = isDir(Reference.getConfig().getString("modpackDir").replace("\\","/"));
+        } else if (checkCurseForge(Reference.getConfig().getString("modpackDir").replace("\\","/"))) {
             configHasError = isCurse();
         } else {
             configHasError = true;
@@ -92,29 +92,29 @@ public class ConfigCheck {
         boolean configHasError = false;
         Reference.setModpackDir(modpackDir);
 
-        if (checkCopyDirs(Reference.config.getStringList("copyDirs"), Reference.getModpackDir())) {
-            Reference.setCopyDirs(Reference.config.getStringList("copyDirs"));
+        if (checkCopyDirs(Reference.getConfig().getStringList("copyDirs"), Reference.getModpackDir())) {
+            Reference.setCopyDirs(Reference.getConfig().getStringList("copyDirs"));
         } else { configHasError = true; }
 
         if (Reference.getIncludeServerInstallation()) {
-            if (checkJavaPath(Reference.config.getString("javaPath"))) {
-                Reference.setJavaPath(Reference.config.getString("javaPath"));
+            if (checkJavaPath(Reference.getConfig().getString("javaPath"))) {
+                Reference.setJavaPath(Reference.getConfig().getString("javaPath"));
             } else {
-                String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath"));
+                String tmpJavaPath = getJavaPath(Reference.getConfig().getString("javaPath"));
                 if (checkJavaPath(tmpJavaPath)) {
                     Reference.setJavaPath(tmpJavaPath);
                 } else { configHasError = true; } }
 
-            if (isMinecraftVersionCorrect(Reference.config.getString("minecraftVersion"))) {
-                Reference.setMinecraftVersion(Reference.config.getString("minecraftVersion"));
+            if (isMinecraftVersionCorrect(Reference.getConfig().getString("minecraftVersion"))) {
+                Reference.setMinecraftVersion(Reference.getConfig().getString("minecraftVersion"));
             } else { configHasError = true; }
 
-            if (checkModloader(Reference.config.getString("modLoader"))) {
-                Reference.setModLoader(setModloader(Reference.config.getString("modLoader")));
+            if (checkModloader(Reference.getConfig().getString("modLoader"))) {
+                Reference.setModLoader(setModloader(Reference.getConfig().getString("modLoader")));
             } else { configHasError = true; }
 
-            if (checkModloaderVersion(Reference.getModLoader(), Reference.config.getString("modLoaderVersion"))) {
-                Reference.setModLoaderVersion(Reference.config.getString("modLoaderVersion"));
+            if (checkModloaderVersion(Reference.getModLoader(), Reference.getConfig().getString("modLoaderVersion"))) {
+                Reference.setModLoaderVersion(Reference.getConfig().getString("modLoaderVersion"));
             } else { configHasError = true; }
 
         } else {
@@ -177,10 +177,10 @@ public class ConfigCheck {
                         }
                     } catch (IOException ex) { appLogger.error(LocalizationManager.getLocalizedString("configcheck.log.error.iscurse.json"), ex); }
 
-                    if (checkJavaPath(Reference.config.getString("javaPath").replace("\\","/"))) {
-                        Reference.setJavaPath(Reference.config.getString("javaPath").replace("\\","/"));
+                    if (checkJavaPath(Reference.getConfig().getString("javaPath").replace("\\","/"))) {
+                        Reference.setJavaPath(Reference.getConfig().getString("javaPath").replace("\\","/"));
                     } else {
-                        String tmpJavaPath = getJavaPath(Reference.config.getString("javaPath").replace("\\","/"));
+                        String tmpJavaPath = getJavaPath(Reference.getConfig().getString("javaPath").replace("\\","/"));
                         if (checkJavaPath(tmpJavaPath)) {
                             Reference.setJavaPath(tmpJavaPath);
                         }

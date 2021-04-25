@@ -23,7 +23,7 @@ class ServerUtilitiesTest {
 
     @BeforeEach
     void setUp() {
-        Reference.filesSetup.checkLocaleFile();
+        FilesSetup.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 

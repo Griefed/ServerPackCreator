@@ -41,11 +41,11 @@ public class Reference {
     public static final FilesSetup      filesSetup      = new FilesSetup();
     public static final CLISetup        cliSetup        = new CLISetup();
     public static final ConfigCheck     configCheck     = new ConfigCheck();
-    static final CopyFiles       copyFiles       = new CopyFiles();
-    static final ServerSetup     serverSetup     = new ServerSetup();
-    static final ServerUtilities serverUtilities = new ServerUtilities();
+           static final CopyFiles       copyFiles       = new CopyFiles();
+           static final ServerSetup     serverSetup     = new ServerSetup();
+           static final ServerUtilities serverUtilities = new ServerUtilities();
 
-    public static Config config;
+    private static Config config;
 
     //-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     private static final List<String> fallbackModsList = Arrays.asList(
@@ -96,32 +96,32 @@ public class Reference {
             projectID,
             projectFileID;
 
-    public static String getMinecraftManifestUrl() {
+    static String getMinecraftManifestUrl() {
         return MINECRAFT_MANIFEST_URL;
     }
 
 
-    public static String getForgeManifestUrl() {
+    static String getForgeManifestUrl() {
         return FORGE_MANIFEST_URL;
     }
 
 
-    public static String getFabricManifestUrl() {
+    static String getFabricManifestUrl() {
         return FABRIC_MANIFEST_URL;
     }
 
 
-    public static String getLangArgument() {
+    static String getLangArgument() {
         return LANG_ARGUMENT;
     }
 
 
-    public static String getConfigGenArgument() {
+    static String getConfigGenArgument() {
         return CONFIG_GEN_ARGUMENT;
     }
 
 
-    public static String getRunCliArgument() {
+    static String getRunCliArgument() {
         return RUN_CLI_ARGUMENT;
     }
 
@@ -131,166 +131,174 @@ public class Reference {
     }
 
 
-    public static File getOldConfigFile() {
+    static File getOldConfigFile() {
         return oldConfigFile;
     }
 
 
-    public static File getPropertiesFile() {
+    static File getPropertiesFile() {
         return propertiesFile;
     }
 
 
-    public static File getIconFile() {
+    static File getIconFile() {
         return iconFile;
     }
 
 
-    public static File getForgeWindowsFile() {
+    static File getForgeWindowsFile() {
         return forgeWindowsFile;
     }
 
 
-    public static File getForgeLinuxFile() {
+    static File getForgeLinuxFile() {
         return forgeLinuxFile;
     }
 
 
-    public static File getFabricWindowsFile() {
+    static File getFabricWindowsFile() {
         return fabricWindowsFile;
     }
 
 
-    public static File getFabricLinuxFile() {
+    static File getFabricLinuxFile() {
         return fabricLinuxFile;
     }
 
 
-    public static File getLangPropertiesFile() {
+    static File getLangPropertiesFile() {
         return langPropertiesFile;
     }
 
 
-    public static String[] getSupportedLanguages() {
+    protected static String[] getSupportedLanguages() {
         return SUPPORTED_LANGUAGES;
     }
 
 
-    public static List<String> getFallbackModsList() {
+    public static Config getConfig() {
+        return config;
+    }
+    public static void setConfig(Config newConfig) {
+        config = newConfig;
+    }
+
+
+    static List<String> getFallbackModsList() {
         return fallbackModsList;
     }
 
 
-    public static List<String> getClientMods() {
+    static List<String> getClientMods() {
         return clientMods;
     }
-    public static void setClientMods(List<String> newClientMods) {
+    static void setClientMods(List<String> newClientMods) {
         clientMods = newClientMods;
     }
 
 
-    public static List<String> getCopyDirs() {
+    static List<String> getCopyDirs() {
         return copyDirs;
     }
-    public static void setCopyDirs(List<String> newCopyDirs) {
+    static void setCopyDirs(List<String> newCopyDirs) {
         copyDirs = newCopyDirs;
     }
 
 
-    public static String getModpackDir() {
+    static String getModpackDir() {
         return modpackDir;
     }
-    public static void setModpackDir(String newModpackDir) {
+    static void setModpackDir(String newModpackDir) {
         newModpackDir = newModpackDir.replace("\\","/");
         modpackDir = newModpackDir;
     }
 
 
-    public static String getJavaPath() {
+    static String getJavaPath() {
         return javaPath;
     }
-    public static void setJavaPath(String newJavaPath) {
+    static void setJavaPath(String newJavaPath) {
         newJavaPath = newJavaPath.replace("\\", "/");
         javaPath = newJavaPath;
     }
 
 
-    public static String getMinecraftVersion() {
+    static String getMinecraftVersion() {
         return minecraftVersion;
     }
-    public static void setMinecraftVersion(String newMinecraftVersion) {
+    static void setMinecraftVersion(String newMinecraftVersion) {
         minecraftVersion = newMinecraftVersion;
     }
 
 
-    public static String getModLoader() {
+    static String getModLoader() {
         return modLoader;
     }
-    public static void setModLoader(String newModLoader) {
+    static void setModLoader(String newModLoader) {
         modLoader = newModLoader;
     }
 
 
-    public static String getModLoaderVersion() {
+    static String getModLoaderVersion() {
         return modLoaderVersion;
     }
-    public static void setModLoaderVersion(String newModLoaderVersion) {
+    static void setModLoaderVersion(String newModLoaderVersion) {
         modLoaderVersion = newModLoaderVersion;
     }
 
 
-    public static boolean getIncludeServerInstallation() {
+    static boolean getIncludeServerInstallation() {
         return includeServerInstallation;
     }
-    public static void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
+    static void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
         includeServerInstallation = newIncludeServerInstallation;
     }
 
 
-    public static boolean getIncludeServerIcon() {
+    static boolean getIncludeServerIcon() {
         return includeServerIcon;
     }
-    public static void setIncludeServerIcon(boolean newIncludeServerIcon) {
+    static void setIncludeServerIcon(boolean newIncludeServerIcon) {
         includeServerIcon = newIncludeServerIcon;
     }
 
 
-    public static boolean getIncludeServerProperties() {
+    static boolean getIncludeServerProperties() {
         return includeServerProperties;
     }
-    public static void setIncludeServerProperties(boolean newIncludeServerProperties) {
+    static void setIncludeServerProperties(boolean newIncludeServerProperties) {
         includeServerProperties = newIncludeServerProperties;
     }
 
 
-    public static boolean getIncludeStartScripts() {
+    static boolean getIncludeStartScripts() {
         return includeStartScripts;
     }
-    public static void setIncludeStartScripts(boolean newIncludeStartScripts) {
+    static void setIncludeStartScripts(boolean newIncludeStartScripts) {
         includeStartScripts = newIncludeStartScripts;
     }
 
 
-    public static boolean getIncludeZipCreation() {
+    static boolean getIncludeZipCreation() {
         return includeZipCreation;
     }
-    public static void setIncludeZipCreation(boolean newIncludeZipCreation) {
+    static void setIncludeZipCreation(boolean newIncludeZipCreation) {
         includeZipCreation = newIncludeZipCreation;
     }
 
 
-    public static int getProjectID() {
+    static int getProjectID() {
         return projectID;
     }
-    public static void setProjectID(int newProjectID) {
+    static void setProjectID(int newProjectID) {
         projectID = newProjectID;
     }
 
 
-    public static int getProjectFileID() {
+    static int getProjectFileID() {
         return projectFileID;
     }
-    public static void setProjectFileID(int newProjectFileID) {
+    static void setProjectFileID(int newProjectFileID) {
         projectFileID = newProjectFileID;
     }
 }
