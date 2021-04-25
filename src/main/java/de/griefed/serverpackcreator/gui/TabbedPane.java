@@ -3,7 +3,6 @@ package de.griefed.serverpackcreator.gui;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
-import de.griefed.serverpackcreator.FilesSetup;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,9 +11,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.Objects;
 
 public class TabbedPane extends JPanel {
     private static final Logger appLogger = LogManager.getLogger(TabbedPane.class);
+
+    private final ImageIcon bannerIcon      = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/banner.png")));
+    private final Image icon                = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/app.png")));
+    private final Dimension windowDimension = new Dimension(800,860);
 
     public void mainGUI() {
         SwingUtilities.invokeLater(() -> {
@@ -61,16 +65,16 @@ public class TabbedPane extends JPanel {
         JFrame frame = new JFrame(LocalizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        frame.setIconImage(ReferenceGUI.icon);
-        JLabel banner = new JLabel(ReferenceGUI.bannerIcon);
+        frame.setIconImage(icon);
+        JLabel banner = new JLabel(bannerIcon);
         banner.setOpaque(false);
 
         frame.add(banner, BorderLayout.PAGE_START);
         frame.add(new TabbedPane(), BorderLayout.CENTER);
 
-        frame.setMinimumSize(ReferenceGUI.windowDimension);
-        frame.setPreferredSize(ReferenceGUI.windowDimension);
-        frame.setMaximumSize(ReferenceGUI.windowDimension);
+        frame.setMinimumSize(windowDimension);
+        frame.setPreferredSize(windowDimension);
+        frame.setMaximumSize(windowDimension);
         frame.setResizable(false);
 
         frame.pack();
@@ -82,7 +86,8 @@ public class TabbedPane extends JPanel {
         super(new GridLayout(1, 1));
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setBackground(ReferenceGUI.backgroundColour);
+        Color backgroundColour = new Color(255, 248, 235);
+        tabbedPane.setBackground(backgroundColour);
 
         tabbedPane.addTab(LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"), null, new CreateServerPack().createServerPack(), LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);

@@ -17,11 +17,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CreateServerPack extends Component  {
     private static final Logger appLogger = LogManager.getLogger(CreateServerPack.class);
+
+    private final ImageIcon loadIcon              = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/load.png")));
+    private final ImageIcon folderIcon            = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/folder.png")));
+    private final ImageIcon startGeneration       = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/start_generation.png")));
+    private final Dimension folderButtonDimension = new Dimension(24,24);
+    private final Dimension miscButtonDimension   = new Dimension(50,50);
+    private final Dimension chooserDimension      = new Dimension(750,450);
+
 
     JComponent createServerPack() {
         JComponent createServerPackPanel = new JPanel(false);
@@ -183,10 +192,10 @@ public class CreateServerPack extends Component  {
         //Select modpackDir button
         JButton buttonModpackDir = new JButton();
         buttonModpackDir.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonmodpackdir"));
-        buttonModpackDir.setIcon(ReferenceGUI.folderIcon);
-        buttonModpackDir.setMinimumSize(ReferenceGUI.folderButtonDimension);
-        buttonModpackDir.setPreferredSize(ReferenceGUI.folderButtonDimension);
-        buttonModpackDir.setMaximumSize(ReferenceGUI.folderButtonDimension);
+        buttonModpackDir.setIcon(folderIcon);
+        buttonModpackDir.setMinimumSize(folderButtonDimension);
+        buttonModpackDir.setPreferredSize(folderButtonDimension);
+        buttonModpackDir.setMaximumSize(folderButtonDimension);
         buttonModpackDir.addActionListener(e -> {
             JFileChooser folderChooser = new JFileChooser();
 
@@ -195,7 +204,7 @@ public class CreateServerPack extends Component  {
             folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             folderChooser.setAcceptAllFileFilterUsed(false);
             folderChooser.setMultiSelectionEnabled(false);
-            folderChooser.setPreferredSize(ReferenceGUI.chooserDimension);
+            folderChooser.setPreferredSize(chooserDimension);
 
             if (folderChooser.showOpenDialog(folderChooser) == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -213,10 +222,10 @@ public class CreateServerPack extends Component  {
         //Select clientside-mods button
         JButton buttonClientMods = new JButton();
         buttonClientMods.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonclientmods"));
-        buttonClientMods.setIcon(ReferenceGUI.folderIcon);
-        buttonClientMods.setMinimumSize(ReferenceGUI.folderButtonDimension);
-        buttonClientMods.setPreferredSize(ReferenceGUI.folderButtonDimension);
-        buttonClientMods.setMaximumSize(ReferenceGUI.folderButtonDimension);
+        buttonClientMods.setIcon(folderIcon);
+        buttonClientMods.setMinimumSize(folderButtonDimension);
+        buttonClientMods.setPreferredSize(folderButtonDimension);
+        buttonClientMods.setMaximumSize(folderButtonDimension);
         buttonClientMods.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
 
@@ -233,7 +242,7 @@ public class CreateServerPack extends Component  {
             fileChooser.setFileFilter(new FileNameExtensionFilter(LocalizationManager.getLocalizedString("createserverpack.gui.buttonclientmods.filter"),"jar"));
             fileChooser.setAcceptAllFileFilterUsed(false);
             fileChooser.setMultiSelectionEnabled(true);
-            fileChooser.setPreferredSize(ReferenceGUI.chooserDimension);
+            fileChooser.setPreferredSize(chooserDimension);
 
             if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
                 File[] clientMods = fileChooser.getSelectedFiles();
@@ -243,7 +252,7 @@ public class CreateServerPack extends Component  {
                     clientModsFilenames.add(clientMods[i].getName());
                 }
 
-                textClientMods.setText(ReferenceGUI.cliSetup.buildString(Arrays.toString(clientModsFilenames.toArray(new String[0]))));
+                textClientMods.setText(Reference.cliSetup.buildString(Arrays.toString(clientModsFilenames.toArray(new String[0]))));
                 appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
             }
         });
@@ -254,10 +263,10 @@ public class CreateServerPack extends Component  {
         //Select directories to copy to server pack button
         JButton buttonCopyDirs = new JButton();
         buttonCopyDirs.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttoncopydirs"));
-        buttonCopyDirs.setIcon(ReferenceGUI.folderIcon);
-        buttonCopyDirs.setMinimumSize(ReferenceGUI.folderButtonDimension);
-        buttonCopyDirs.setPreferredSize(ReferenceGUI.folderButtonDimension);
-        buttonCopyDirs.setMaximumSize(ReferenceGUI.folderButtonDimension);
+        buttonCopyDirs.setIcon(folderIcon);
+        buttonCopyDirs.setMinimumSize(folderButtonDimension);
+        buttonCopyDirs.setPreferredSize(folderButtonDimension);
+        buttonCopyDirs.setMaximumSize(folderButtonDimension);
         buttonCopyDirs.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
 
@@ -272,7 +281,7 @@ public class CreateServerPack extends Component  {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setAcceptAllFileFilterUsed(false);
             fileChooser.setMultiSelectionEnabled(true);
-            fileChooser.setPreferredSize(ReferenceGUI.chooserDimension);
+            fileChooser.setPreferredSize(chooserDimension);
 
             if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
                 File[] copyDirs = fileChooser.getSelectedFiles();
@@ -282,7 +291,7 @@ public class CreateServerPack extends Component  {
                     copyDirsNames.add(copyDirs[i].getName());
                 }
 
-                textCopyDirs.setText(ReferenceGUI.cliSetup.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+                textCopyDirs.setText(Reference.cliSetup.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
                 appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
             }
         });
@@ -293,10 +302,10 @@ public class CreateServerPack extends Component  {
         //Select javaPath button
         JButton buttonJavaPath = new JButton();
         buttonJavaPath.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonjavapath"));
-        buttonJavaPath.setIcon(ReferenceGUI.folderIcon);
-        buttonJavaPath.setMinimumSize(ReferenceGUI.folderButtonDimension);
-        buttonJavaPath.setPreferredSize(ReferenceGUI.folderButtonDimension);
-        buttonJavaPath.setMaximumSize(ReferenceGUI.folderButtonDimension);
+        buttonJavaPath.setIcon(folderIcon);
+        buttonJavaPath.setMinimumSize(folderButtonDimension);
+        buttonJavaPath.setPreferredSize(folderButtonDimension);
+        buttonJavaPath.setMaximumSize(folderButtonDimension);
         buttonJavaPath.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
 
@@ -312,7 +321,7 @@ public class CreateServerPack extends Component  {
             fileChooser.setAcceptAllFileFilterUsed(true);
             fileChooser.setMultiSelectionEnabled(false);
 
-            fileChooser.setPreferredSize(ReferenceGUI.chooserDimension);
+            fileChooser.setPreferredSize(chooserDimension);
 
             if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -330,10 +339,10 @@ public class CreateServerPack extends Component  {
         //Load config from file
         JButton buttonLoadConfigFromFile = new JButton();
         buttonLoadConfigFromFile.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig"));
-        buttonLoadConfigFromFile.setIcon(ReferenceGUI.loadIcon);
-        buttonLoadConfigFromFile.setMinimumSize(ReferenceGUI.miscButtonDimension);
-        buttonLoadConfigFromFile.setPreferredSize(ReferenceGUI.miscButtonDimension);
-        buttonLoadConfigFromFile.setMaximumSize(ReferenceGUI.miscButtonDimension);
+        buttonLoadConfigFromFile.setIcon(loadIcon);
+        buttonLoadConfigFromFile.setMinimumSize(miscButtonDimension);
+        buttonLoadConfigFromFile.setPreferredSize(miscButtonDimension);
+        buttonLoadConfigFromFile.setMaximumSize(miscButtonDimension);
         buttonLoadConfigFromFile.addActionListener(e -> {
 
             JFileChooser fileChooser = new JFileChooser();
@@ -343,7 +352,7 @@ public class CreateServerPack extends Component  {
             fileChooser.setFileFilter(new FileNameExtensionFilter(LocalizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),"conf"));
             fileChooser.setAcceptAllFileFilterUsed(false);
             fileChooser.setMultiSelectionEnabled(false);
-            fileChooser.setPreferredSize(ReferenceGUI.chooserDimension);
+            fileChooser.setPreferredSize(chooserDimension);
 
             if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
 
@@ -360,9 +369,9 @@ public class CreateServerPack extends Component  {
 
                     textModpackDir.setText(newConfigFile.getString("modpackDir"));
 
-                    textClientMods.setText(ReferenceGUI.cliSetup.buildString(newConfigFile.getStringList("clientMods").toString()));
+                    textClientMods.setText(Reference.cliSetup.buildString(newConfigFile.getStringList("clientMods").toString()));
 
-                    textCopyDirs.setText(ReferenceGUI.cliSetup.buildString(newConfigFile.getStringList("copyDirs").toString()));
+                    textCopyDirs.setText(Reference.cliSetup.buildString(newConfigFile.getStringList("copyDirs").toString()));
 
                     textJavaPath.setText(newConfigFile.getString("javaPath"));
 
@@ -372,15 +381,15 @@ public class CreateServerPack extends Component  {
 
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
 
-                    checkBoxServer.setSelected(ReferenceGUI.configCheck.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
+                    checkBoxServer.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
 
-                    checkBoxIcon.setSelected(ReferenceGUI.configCheck.convertToBoolean(newConfigFile.getString("includeServerIcon")));
+                    checkBoxIcon.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeServerIcon")));
 
-                    checkBoxProperties.setSelected(ReferenceGUI.configCheck.convertToBoolean(newConfigFile.getString("includeServerProperties")));
+                    checkBoxProperties.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeServerProperties")));
 
-                    checkBoxScripts.setSelected(ReferenceGUI.configCheck.convertToBoolean(newConfigFile.getString("includeStartScripts")));
+                    checkBoxScripts.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeStartScripts")));
 
-                    checkBoxZIP.setSelected(ReferenceGUI.configCheck.convertToBoolean(newConfigFile.getString("includeZipCreation")));
+                    checkBoxZIP.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeZipCreation")));
 
                     appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
                 }
@@ -407,7 +416,7 @@ public class CreateServerPack extends Component  {
 
         JButton buttonGenerateServerPack = new JButton();
         buttonGenerateServerPack.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.tip"));
-        buttonGenerateServerPack.setIcon(ReferenceGUI.startGeneration);
+        buttonGenerateServerPack.setIcon(startGeneration);
         buttonGenerateServerPack.addActionListener(e -> {
 
             buttonGenerateServerPack.setEnabled(false);
@@ -431,7 +440,7 @@ public class CreateServerPack extends Component  {
                     new File("serverpackcreator.tmp"),
                     true
             );
-            if (!ReferenceGUI.configCheck.checkConfigFile(new File("serverpackcreator.tmp"))) {
+            if (!Reference.configCheck.checkConfigFile(new File("serverpackcreator.tmp"))) {
                 appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
                 labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
@@ -461,7 +470,7 @@ public class CreateServerPack extends Component  {
                         checkBoxProperties.isSelected(),
                         checkBoxScripts.isSelected(),
                         checkBoxZIP.isSelected(),
-                        ReferenceGUI.configFile,
+                        Reference.getConfigFile(),
                         false
                 );
 
@@ -480,18 +489,24 @@ public class CreateServerPack extends Component  {
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
                     if (Handler.run()) {
-                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
-                        buttonGenerateServerPack.setEnabled(true);
+                        tailer.stop();
+
                         System.gc();
                         System.runFinalization();
-                        tailer.stop();
+
+                        buttonGenerateServerPack.setEnabled(true);
+                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+
                         executorService.shutdown();
                     } else {
-                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
-                        buttonGenerateServerPack.setEnabled(true);
+                        tailer.stop();
+
                         System.gc();
                         System.runFinalization();
-                        tailer.stop();
+
+                        buttonGenerateServerPack.setEnabled(true);
+                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+
                         executorService.shutdown();
                     }
                 });
@@ -521,9 +536,9 @@ public class CreateServerPack extends Component  {
 
                 textModpackDir.setText(config.getString("modpackDir"));
 
-                textClientMods.setText(ReferenceGUI.cliSetup.buildString(config.getStringList("clientMods").toString()));
+                textClientMods.setText(Reference.cliSetup.buildString(config.getStringList("clientMods").toString()));
 
-                textCopyDirs.setText(ReferenceGUI.cliSetup.buildString(config.getStringList("copyDirs").toString()));
+                textCopyDirs.setText(Reference.cliSetup.buildString(config.getStringList("copyDirs").toString()));
 
                 textJavaPath.setText(config.getString("javaPath"));
 
@@ -533,15 +548,15 @@ public class CreateServerPack extends Component  {
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
 
-                checkBoxServer.setSelected(ReferenceGUI.configCheck.convertToBoolean(config.getString("includeServerInstallation")));
+                checkBoxServer.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeServerInstallation")));
 
-                checkBoxIcon.setSelected(ReferenceGUI.configCheck.convertToBoolean(config.getString("includeServerIcon")));
+                checkBoxIcon.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeServerIcon")));
 
-                checkBoxProperties.setSelected(ReferenceGUI.configCheck.convertToBoolean(config.getString("includeServerProperties")));
+                checkBoxProperties.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeServerProperties")));
 
-                checkBoxScripts.setSelected(ReferenceGUI.configCheck.convertToBoolean(config.getString("includeStartScripts")));
+                checkBoxScripts.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeStartScripts")));
 
-                checkBoxZIP.setSelected(ReferenceGUI.configCheck.convertToBoolean(config.getString("includeZipCreation")));
+                checkBoxZIP.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeZipCreation")));
 
                 appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
             }
