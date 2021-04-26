@@ -61,10 +61,10 @@ Inside it are files you can customize, so they suit your modpack and server pack
 2. server-icon.png
 3. server.properties
 
-If you wish to re-generate the default-files, simply delete any one of the previously mentioned files, run ServerPackCreator again, and a new template-file will be generated in `server_files`
+If you wish to re-generate the default-files, simply delete any one of the previously mentioned files, run ServerPackCreator again, and the new template-file(s) will be generated in `server_files`
 
-The initial run of ServerPackCreator.jar will guide you through the generation of a config-file, should none exist or ServerPackCreator be run with the `-cgen` argument.
-Should you be using ServerPackCreator.exe, the default/template-files will be generated if they do not exist. You will need to customize your `serverpackcreator.conf` to your liking before running again.
+Running ServerPackCreator.jar with the `-cli`-argument will guide you through the generation of a config-file, should none exist. Alternatively, run ServerPackCreator with the `-cgen` argument to create a new config file.
+Should you be using ServerPackCreator.exe, the default/template-files will be generated automatically, if they do not exist yet. 
 An example for a fully configured `serverpackcreator.conf` can be viewed [here](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/examples/serverpackcreator.example).
 Detailed list of all template files:
 
@@ -99,13 +99,17 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 
 # Running
 
+In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
+The `.exe` can be executed as usual by simply double-clicking it. It only works in Windows, though. Please keep that in mind.
+
 ## Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
-1. Run `java -jar ServerPackCreator-X-X-X.jar -lang your_locale` for example `java -jar ServerPackCreator-X-X-X.jar -lang en_us`
-2. Create a `lang.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and input your locale like this `lang=your_locale` for example `lang=en_us`
+1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the lang.properties-file with your specified locale.
+2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will set the locale to en_us by default and create the lang.properties-file.
+3. Create a `lang.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and input your locale like this `lang=your_locale` for example `lang=en_us`
 
-See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/c4512e19f9276ba1abc84f2731b83cfc05e2ef4e/src/main/java/de/griefed/ServerPackCreator/Reference.java) in `Reference.java` for a list of supported locales.
+See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/java/de/griefed/serverpackcreator/Reference.java) in `Reference.java` for a list of supported locales.
 
 ## Commandline
 
