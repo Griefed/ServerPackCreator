@@ -32,7 +32,7 @@ class ModloaderInstallerLog extends Component {
                     if (line.contains(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.enter")) || line.contains(LocalizationManager.getLocalizedString("serversetup.log.info.installserver.forge.enter"))) {
                         textArea.setText("");
                     }
-                    textArea.append(line.substring(line.indexOf(") - ")+4) + "\n");
+                    textArea.append(line + "\n");
                 }
             }
         }, 2000, false);

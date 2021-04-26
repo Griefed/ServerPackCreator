@@ -32,7 +32,7 @@ class ServerPackCreatorLog extends Component {
                     if (line.contains(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
                         textArea.setText("");
                     }
-                    textArea.append(line.substring(line.indexOf(") - ")+4) + "\n");
+                    textArea.append(line + "\n");
                 }
             }
         }, 2000, false);
