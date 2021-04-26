@@ -72,10 +72,9 @@ public class TabbedPane extends JPanel {
         frame.add(banner, BorderLayout.PAGE_START);
         frame.add(new TabbedPane(), BorderLayout.CENTER);
 
-        frame.setMinimumSize(windowDimension);
         frame.setPreferredSize(windowDimension);
         frame.setMaximumSize(windowDimension);
-        frame.setResizable(false);
+        frame.setResizable(true);
 
         frame.pack();
 
