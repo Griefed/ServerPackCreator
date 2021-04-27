@@ -50,22 +50,12 @@ class About extends Component {
         try {
             document.insertString(
                     document.getLength(),
-                    "serverpackcreator was made as a training ground for Java \n" +
-                            "and because I wanted an easier way to update/make server packs for updates to my modpack.\n" +
-                            "It has grown substantially since the first release, which was when it was CLI only.\n" +
-                            "Now it provides a GUI as well!\n" +
-                            "The fact that this is, and always will be, a playground for me, in Java, still remains though. As with every application, bugs are bound to appear, and I will try to fix them whenever I can.\n" +
-                            "I am working on this program in my spare time, please keep that in mind when reporting issues or requesting new features to be added.\n" +
-                            "\n" +
-                            "This project would not be where it is today without the help from my contributors:\n" +
-                            "\n" +
-                            "Whitebear60\n",
+                    LocalizationManager.getLocalizedString("createserverpack.gui.about.text"),
                     attributeSet
             ); } catch (BadLocationException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("about.log.error.document"), ex);
         }
         about.add(textPane, constraints);
-
 
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -82,7 +72,7 @@ class About extends Component {
 
         //Button to upload log file to pastebin
         JButton buttonCreatePasteBin = new JButton();
-        buttonCreatePasteBin.setToolTipText("Open pastebin in your browser to create pastes of logs files or config files.");
+        buttonCreatePasteBin.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.about.pastebin"));
         buttonCreatePasteBin.setIcon(pastebinIcon);
         buttonCreatePasteBin.setPreferredSize(miscButtonDimension);
         buttonCreatePasteBin.addActionListener(e -> {
@@ -102,7 +92,7 @@ class About extends Component {
 
         //Button to open a new issue on GitHub
         JButton buttonOpenIssue = new JButton();
-        buttonOpenIssue.setToolTipText("Create an issue on GitHub.");
+        buttonOpenIssue.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.about.issue"));
         buttonOpenIssue.setIcon(issueIcon);
         buttonOpenIssue.setPreferredSize(miscButtonDimension);
         buttonOpenIssue.addActionListener(e -> {
@@ -122,7 +112,7 @@ class About extends Component {
 
         //Button to open the invite link to the discord server
         JButton buttonDiscord = new JButton();
-        buttonDiscord.setToolTipText("Get support and chat on Griefed's Discord server.");
+        buttonDiscord.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.about.discord"));
         buttonDiscord.setIcon(prosperIcon);
         buttonDiscord.setPreferredSize(miscButtonDimension);
         buttonDiscord.addActionListener(e -> {
