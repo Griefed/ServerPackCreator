@@ -352,7 +352,9 @@ public class FilesSetup {
                                      boolean includeZip,
                                      File fileName,
                                      boolean isTemporary) {
+
         boolean configWritten = false;
+
         String configString = String.format(
                 "%s\"%s\"\n\n%s[%s]\n\n%s[%s]\n\n%s%b\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s%b\n\n%s%b\n\n%s%b\n\n%s%b",
                 LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.modpackdir"),
@@ -380,6 +382,7 @@ public class FilesSetup {
                 LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.includezipcreation"),
                 includeZip
         );
+
         if (!isTemporary) {
             if (Reference.getConfigFile().exists()) {
                 boolean delConf = Reference.getConfigFile().delete();
@@ -398,6 +401,7 @@ public class FilesSetup {
                 }
             }
         }
+
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
             writer.write(configString);
@@ -406,6 +410,7 @@ public class FilesSetup {
         } catch (IOException ex) {
             appLogger.error(LocalizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile"), ex);
         }
+
         return configWritten;
     }
 }
