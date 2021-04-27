@@ -243,9 +243,10 @@ public class FilesSetup {
 
     /**
      * Check for existence of a lang.properties-file and if found assign language specified therein. If assigning the specified language fails because it is not supported, default to en_US.
-     * This method should not contain the Localizationmanager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
+     * This method should not contain the LocalizationManager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
      * @return Always returns true. Dirty hack until I one day figure out how to init Localization before UI start correctly.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public static boolean checkLocaleFile() {
         if (Reference.getLangPropertiesFile().exists()) {
             try {
@@ -298,7 +299,7 @@ public class FilesSetup {
     /**
      * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every subsequent start of serverpackcreator is executed using said locale.
      * @param locale The locale the user specified when they ran serverpackcreator with -lang -your_locale.
-     * This method should not contain the Localizationmanager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
+     * This method should not contain the LocalizationManager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
      */
     public static void writeLocaleToFile(String locale) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(Reference.getLangPropertiesFile()))) {
@@ -353,76 +354,30 @@ public class FilesSetup {
                                      boolean isTemporary) {
         boolean configWritten = false;
         String configString = String.format(
-                "# Path to your modpack. Can be either relative or absolute.\n" +
-                        "# Example: \"./Some Modpack\" or \"C:\\Minecraft\\Some Modpack\"\n" +
-                        "# Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4 4.6.7: \"390331,3215793\"\n" +
-                        "modpackDir = \"%s\"\n" +
-                        "\n" +
-                        "# List of client-only mods to delete from serverpack.\n" +
-                        "# No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n" +
-                        "# Example: [AmbientSounds,ClientTweaks,PackMenu,BetterAdvancement,jeiintegration]\n" +
-                        "clientMods = [%s]\n" +
-                        "\n" +
-                        "# Name of directories to include in serverpack.\n" +
-                        "# When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n" +
-                        "# for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n" +
-                        "# Example: [config,mods,scripts]\n" +
-                        "copyDirs = [%s]\n" +
-                        "\n" +
-                        "# Whether to install a Forge/Fabric server for the serverpack. Must be true or false.\n" +
-                        "# Default value is true.\n" +
-                        "includeServerInstallation = %b\n" +
-                        "\n" +
-                        "# Path to the Java executable. On Linux systems it would be something like \"/usr/bin/java\".\n" +
-                        "# Only needed if includeServerInstallation is true.\n" +
-                        "javaPath = \"%s\"\n" +
-                        "\n" +
-                        "# Which Minecraft version to use. Example: \"1.16.5\".\n" +
-                        "# Automatically set when projectID,fileID for modpackDir has been specified.\n" +
-                        "# Only needed if includeServerInstallation is true.\n" +
-                        "minecraftVersion = \"%s\"\n" +
-                        "\n" +
-                        "# Which modloader to install. Must be either \"Forge\" or \"Fabric\".\n" +
-                        "# Automatically set when projectID,fileID for modpackDir has been specified.\n" +
-                        "# Only needed if includeServerInstallation is true.\n" +
-                        "modLoader = \"%s\"\n" +
-                        "\n" +
-                        "# The version of the modloader you want to install. Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n" +
-                        "# Automatically set when projectID,fileID for modpackDir has been specified.\n" +
-                        "# Only needed if includeServerInstallation is true.\n" +
-                        "modLoaderVersion = \"%s\"\n" +
-                        "\n" +
-                        "# Include a server-icon.png in your serverpack. Must be true or false.\n" +
-                        "# Customize server-icon.png in ./server_files.\n" +
-                        "# Dimensions must be 64x64!\n" +
-                        "# Default value is true.\n" +
-                        "includeServerIcon = %b\n" +
-                        "\n" +
-                        "# Include a server.properties in your serverpack. Must be true or false.\n" +
-                        "# Customize server.properties in ./server_files.\n" +
-                        "# If no server.properties is provided but is set to true, a default one will be provided.\n" +
-                        "# Default value is true.\n" +
-                        "includeServerProperties = %b\n" +
-                        "\n" +
-                        "# Include start scripts for windows and linux systems. Must be true or false.\n" +
-                        "# Customize files beginning with \"start-\" in ./server_files.\n" +
-                        "# Default value is true.\n" +
-                        "includeStartScripts = %b\n" +
-                        "\n" +
-                        "# Create zip-archive of serverpack. Must be true or false.\n" +
-                        "# Default value is true.\n" +
-                        "includeZipCreation = %b\n",
+                "%s\"%s\"\n\n%s[%s]\n\n%s[%s]\n\n%s%b\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s%b\n\n%s%b\n\n%s%b\n\n%s%b",
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.modpackdir"),
                 modpackDir.replace("\\","/"),
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.clientmods"),
                 clientMods,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.copydirs"),
                 copyDirs,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.includeserverinstallation"),
                 includeServer,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.javapath"),
                 javaPath.replace("\\","/"),
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.minecraftversion"),
                 minecraftVersion,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.modloader"),
                 modLoader,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.modloaderversion"),
                 modLoaderVersion,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.includeservericon"),
                 includeIcon,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.includeserverproperties"),
                 includeProperties,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.includestartscripts"),
                 includeScripts,
+                LocalizationManager.getLocalizedString("filessetup.writeconfigtofile.includezipcreation"),
                 includeZip
         );
         if (!isTemporary) {
