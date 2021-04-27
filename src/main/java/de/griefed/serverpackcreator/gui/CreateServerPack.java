@@ -13,6 +13,8 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,10 +29,10 @@ class CreateServerPack extends Component {
     private final ImageIcon loadIcon              = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/load.png")));
     private final ImageIcon folderIcon            = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/folder.png")));
     private final ImageIcon startGeneration       = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/start_generation.png")));
+    private final ImageIcon helpIcon              = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/help.png")));
     private final Dimension folderButtonDimension = new Dimension(24,24);
     private final Dimension miscButtonDimension   = new Dimension(50,50);
     private final Dimension chooserDimension      = new Dimension(750,450);
-
 
     JComponent createServerPack() {
         JComponent createServerPackPanel = new JPanel(false);
@@ -400,6 +402,96 @@ class CreateServerPack extends Component {
         constraints.gridy = 1;
         constraints.gridheight = 3;
         createServerPackPanel.add(buttonLoadConfigFromFile, constraints);
+
+        //Load config from file
+        JButton buttonInfoWindow = new JButton();
+        buttonInfoWindow.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig"));
+        buttonInfoWindow.setIcon(helpIcon);
+        buttonInfoWindow.setMinimumSize(miscButtonDimension);
+        buttonInfoWindow.setPreferredSize(miscButtonDimension);
+        buttonInfoWindow.setMaximumSize(miscButtonDimension);
+        buttonInfoWindow.addActionListener(e -> {
+
+            JTextArea textArea = new JTextArea("Modpack directory:\n" +
+                    "The directory containing your modpack. This directory contains all files of your modpack like the mods directory, or your worlds\n" +
+                    "or any and all configuration files regarding your modpack.\n" +
+                    "\n" +
+                    "Clientside mods:\n" +
+                    "Mods which are NOT supposed to be in your server pack. Usually mods which only add visual content to the game, ambient sounds or shaders or some such.\n" +
+                    "Every entry must be separated by a \",\" and NOT contain special characters such as [ ] ( ) \\ / ; \n" +
+                    "\n" +
+                    "Directories to include in server pack:\n" +
+                    "These are the directories which are to be included in the generated server pack. The simplest example is the \"mods\"-folder, as without it,\n" +
+                    "the server would have no mods. As with Clientside mods,every entry must be separated by a \",\" and NOT contain special characters such as [ ] ( ) \\ / ;\n" +
+                    "\n" +
+                    "Path to Java:\n" +
+                    "This is the path to your java binary (Linux) or java.exe (Windows), including the file. Setting this path is required if you plan on having ServerPackCreator\n" +
+                    "install the server for your chosen modloader. Pressing the button next to the textfield will try to locate the directory of your Java installation,\n" +
+                    "to make it easier to select the needed file. Should you leave this textfield empty, ServerPackCreator will try to determine the path during the generation of a server pack.\n" +
+                    "\n" +
+                    "Minecraft version:\n" +
+                    "This is the Minecraft version your modpack uses and which the server pack will use as well. This field is required if you plan on having ServerPackCreator install the\n" +
+                    "modloader-server in the generated server pack.\n" +
+                    "\n" +
+                    "Modloader:\n" +
+                    "The modloader your modpack uses and which the server pack will use as well. This field is required if you plan on having ServerPackCreator install the modloader-server\n" +
+                    "in the generated server pack. Must be either Forge or Fabric. Other modloaders are not supported.\n" +
+                    "\n" +
+                    "Modloader version:\n" +
+                    "The modloader version your modpack uses and which the server pack will use as well. This field is required if you plan on having ServerPackCreator install the\n" +
+                    "modloader-server in the generated server pack.\n" +
+                    "\n" +
+                    "Install modloader server in server pack?\n" +
+                    "Whether ServerPackCreator should install the server for the specified modloader, modloader version and Minecraft version. Checking this box enables the installation and requires\n" +
+                    "said textfields to be filled out correctly.\n" +
+                    "\n" +
+                    "Include server.properties in server pack?\n" +
+                    "Whether ServerPackCreator should copy the server.properties file from the \"./server_files/\"-directory to the server pack. Checking this box will tell ServerPackCreator to copy\n" +
+                    "said file to the generated server pack. Make sure to customize the file in the aforementioned directory if you plan on using this feature.\n" +
+                    "\n" +
+                    "Include start scripts in server pack?\n" +
+                    "Whether ServerPackCreator should copy the start scripts from the \"./server_files/\"-directory to the server pack. Requires the modloader textfield to be set. Checking this box will\n" +
+                    "tell ServerPackCreator to copy said files to the generated server pack. Make sure to customize the files in the aforementioned directory if you plan on using this feature.\n" +
+                    "\n" +
+                    "Include server-icon.png in server pack?\n" +
+                    "Whether ServerPackCreator should copy the server-icon.png from the \"./server_files/\"-directory to the server pack. Checking this box will tell ServerPackCreator to copy said file to the\n" +
+                    "generated server pack. Make sure to customize the file in the aforementioned directory if you plan on using this feature.\n" +
+                    "\n" +
+                    "Create ZIP-archive of server pack?\n" +
+                    "Whether ServerPackCreator should create a ZIP-archive of the generated server pack. Checking this box will tell ServerPackCreator to create said ZIP-archive which will be placed\n" +
+                    "in the root of your modpack directory.\n");
+            textArea.setEditable(false);
+            textArea.setOpaque(false);
+
+            JScrollPane scrollPane = new JScrollPane(
+                    textArea,
+                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+            );
+            scrollPane.setBorder(null);
+
+            textArea.addHierarchyListener(
+                    new HierarchyListener() {
+                        @Override
+                        public void hierarchyChanged(HierarchyEvent e) {
+                            Window window = SwingUtilities.getWindowAncestor(textArea);
+                            if (window instanceof Dialog) {
+                                Dialog dialog = (Dialog) window;
+                                if (!dialog.isResizable()) {
+                                    dialog.setResizable(true);
+                                }
+                            }
+                        }
+                    });
+
+            JOptionPane.showMessageDialog(new JFrame(), scrollPane, "ServerPackCreator Help", JOptionPane.INFORMATION_MESSAGE, helpIcon);
+
+        });
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.gridx = 3;
+        constraints.gridy = 5;
+        constraints.gridheight = 3;
+        createServerPackPanel.add(buttonInfoWindow, constraints);
 
 // ---------------------------------------------------------------------------------MAIN ACTION BUTTON AND LABEL--------
         constraints.fill = GridBagConstraints.NONE;
