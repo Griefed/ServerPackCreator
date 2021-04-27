@@ -85,8 +85,6 @@ public class TabbedPane extends JPanel {
         super(new GridLayout(1, 1));
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-        Color backgroundColour = new Color(255, 248, 235);
-        tabbedPane.setBackground(backgroundColour);
 
         tabbedPane.addTab(LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"), null, new CreateServerPack().createServerPack(), LocalizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
