@@ -556,7 +556,35 @@ class CreateServerPack extends Component {
                         buttonGenerateServerPack.setEnabled(true);
                         labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
+                        JTextArea textArea = new JTextArea();
+                        textArea.setOpaque(false);
+                        textArea.setText(String.format(
+                                "%s\n%s",
+                                LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
+                                String.format(
+                                        "%s/server_pack",
+                                        textModpackDir.getText()
+                                        )
+                                )
+                        );
+
+                        if (JOptionPane.showConfirmDialog(
+                                createServerPackPanel,
+                                textArea,
+                                LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.INFORMATION_MESSAGE) == 0) {
+                            try {
+                                Desktop.getDesktop().open(new File(String.format("%s/server_pack",textModpackDir.getText())));
+                            } catch (IOException ex) {
+                                appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.browserserverpack"));
+                            }
+                        }
                         executorService.shutdown();
+
+
+
+
                     } else {
                         tailer.stop();
 
