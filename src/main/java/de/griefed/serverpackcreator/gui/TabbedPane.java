@@ -84,7 +84,7 @@ public class TabbedPane extends JPanel {
     public TabbedPane() {
         super(new GridLayout(1, 1));
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         Color backgroundColour = new Color(255, 248, 235);
         tabbedPane.setBackground(backgroundColour);
 
