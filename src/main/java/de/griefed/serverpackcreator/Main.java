@@ -36,9 +36,9 @@ public class Main {
 
         if (Arrays.asList(args).contains("-lang")) {
             try {
-                localizationManager.init(programArgs.get(programArgs.indexOf("-lang" + 1)));
+                localizationManager.init(programArgs.get(programArgs.indexOf("-lang") + 1));
             } catch (IncorrectLanguageException e) {
-                appLogger.info(programArgs.get(programArgs.indexOf("-lang" + 1)));
+                appLogger.info(programArgs.get(programArgs.indexOf("-lang") + 1));
                 appLogger.error("Incorrect language specified, falling back to English (United States)...");
                 localizationManager.init();
             }
