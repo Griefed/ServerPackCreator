@@ -38,8 +38,9 @@ public class Configuration {
     public Configuration(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
+        } else {
+            this.localizationManager = injectedLocalizationManager;
         }
-        this.localizationManager = injectedLocalizationManager;
     }
 
     //-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
