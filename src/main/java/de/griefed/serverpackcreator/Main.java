@@ -20,21 +20,9 @@ public class Main {
      * @param args Commandline arguments with which ServerPackCreator is run. Passed to Handler-class which then decides what to do corresponding to input.
      */
     public static void main(String[] args) {
-        LocalizationManager localizationManager = new LocalizationManager();
-        Configuration configuration = new Configuration(localizationManager);
-        FilesSetup filesSetup = new FilesSetup(localizationManager);
-        CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration);
-
-
         List<String> programArgs = Arrays.asList(args);
 
-        String jarPath = null,
-                jarName = null,
-                javaVersion = null,
-                osArch = null,
-                osName = null,
-                osVersion = null;
-
+        LocalizationManager localizationManager = new LocalizationManager();
         if (Arrays.asList(args).contains("-lang")) {
             try {
                 localizationManager.init(programArgs.get(programArgs.indexOf("-lang") + 1));
@@ -46,6 +34,18 @@ public class Main {
         } else {
             localizationManager.checkLocaleFile();
         }
+
+        Configuration configuration = new Configuration(localizationManager);
+        FilesSetup filesSetup = new FilesSetup(localizationManager);
+        CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration);
+        CreateGui tabbedPane = new CreateGui(localizationManager, configuration);
+
+        String jarPath = null,
+                jarName = null,
+                javaVersion = null,
+                osArch = null,
+                osName = null,
+                osVersion = null;
 
         appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
         appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip1"));
@@ -75,7 +75,6 @@ public class Main {
         }
 
         filesSetup.filesSetup();
-
 
         if (Arrays.asList(args).contains("-cgen")) {
 
@@ -114,7 +113,6 @@ public class Main {
 
         } else {
 
-            CreateGui tabbedPane = new CreateGui(localizationManager, configuration);
             tabbedPane.mainGUI();
 
         }
