@@ -28,14 +28,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class ConfigCheck {
+public class Configuration {
 
-    private static final Logger appLogger = LogManager.getLogger(ConfigCheck.class);
+    private static final Logger appLogger = LogManager.getLogger(Configuration.class);
     private final File oldConfigFile = new File("creator.conf");
     private final File configFile = new File("serverpackcreator.conf");
     private LocalizationManager localizationManager;
 
-    public ConfigCheck(LocalizationManager injectedLocalizationManager) {
+    public Configuration(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         }

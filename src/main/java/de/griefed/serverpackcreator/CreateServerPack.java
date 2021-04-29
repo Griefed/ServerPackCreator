@@ -34,7 +34,7 @@ public class CreateServerPack {
     private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
     private static final Logger installerLogger = LogManager.getLogger("InstallerLogger");
 
-    private ConfigCheck configCheck;
+    private Configuration configuration;
     private LocalizationManager localizationManager;
     private final File propertiesFile    = new File("server.properties");
     private final File iconFile          = new File("server-icon.png");
@@ -44,7 +44,7 @@ public class CreateServerPack {
     private final File fabricLinuxFile   = new File("start-fabric.sh");
 
 
-    public CreateServerPack(LocalizationManager injectedLocalizationManager, ConfigCheck injectedConfigCheck) {
+    public CreateServerPack(LocalizationManager injectedLocalizationManager, Configuration injectedConfigCheck) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         }
@@ -52,10 +52,10 @@ public class CreateServerPack {
         this.localizationManager = injectedLocalizationManager;
 
         if (injectedConfigCheck == null) {
-            this.configCheck = new ConfigCheck(localizationManager);
+            this.configuration = new Configuration(localizationManager);
         }
 
-        this.configCheck = injectedConfigCheck;
+        this.configuration = injectedConfigCheck;
     }
 
     public File getPropertiesFile() {
@@ -87,36 +87,36 @@ public class CreateServerPack {
      * @return Return true if the serverpack was successfully generated, false if not.
      */
     public boolean run() {
-        if (!configCheck.checkConfigFile(configCheck.getConfigFile())) {
-            cleanupEnvironment(configCheck.getModpackDir());
+        if (!configuration.checkConfigFile(configuration.getConfigFile())) {
+            cleanupEnvironment(configuration.getModpackDir());
             try {
-                copyFiles(configCheck.getModpackDir(), configCheck.getCopyDirs(), configCheck.getClientMods());
+                copyFiles(configuration.getModpackDir(), configuration.getCopyDirs(), configuration.getClientMods());
             } catch (IOException ex) {
                 appLogger.error(localizationManager.getLocalizedString("handler.log.error.runincli.copyfiles"), ex);
             }
-            copyStartScripts(configCheck.getModpackDir(), configCheck.getModLoader(), configCheck.getIncludeStartScripts());
-            if (configCheck.getIncludeServerInstallation()) {
-                installServer(configCheck.getModLoader(), configCheck.getModpackDir(), configCheck.getMinecraftVersion(), configCheck.getModLoaderVersion(), configCheck.getJavaPath());
+            copyStartScripts(configuration.getModpackDir(), configuration.getModLoader(), configuration.getIncludeStartScripts());
+            if (configuration.getIncludeServerInstallation()) {
+                installServer(configuration.getModLoader(), configuration.getModpackDir(), configuration.getMinecraftVersion(), configuration.getModLoaderVersion(), configuration.getJavaPath());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.server"));
             }
-            if (configCheck.getIncludeServerIcon()) {
-                copyIcon(configCheck.getModpackDir());
+            if (configuration.getIncludeServerIcon()) {
+                copyIcon(configuration.getModpackDir());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.icon"));
             }
-            if (configCheck.getIncludeServerProperties()) {
-                copyProperties(configCheck.getModpackDir());
+            if (configuration.getIncludeServerProperties()) {
+                copyProperties(configuration.getModpackDir());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.properties"));
             }
-            if (configCheck.getIncludeZipCreation()) {
-                zipBuilder(configCheck.getModpackDir(), configCheck.getModLoader(), configCheck.getIncludeServerInstallation(), configCheck.getMinecraftVersion());
+            if (configuration.getIncludeZipCreation()) {
+                zipBuilder(configuration.getModpackDir(), configuration.getModLoader(), configuration.getIncludeServerInstallation(), configuration.getMinecraftVersion());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.zip"));
             }
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.runincli.serverpack"), configCheck.getModpackDir()));
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.runincli.archive"), configCheck.getModpackDir()));
+            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.runincli.serverpack"), configuration.getModpackDir()));
+            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.runincli.archive"), configuration.getModpackDir()));
             appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.finish"));
             return true;
         } else {

@@ -27,11 +27,11 @@ class CreateServerPackTest {
     private CreateServerPack createServerPack;
     private FilesSetup filesSetup;
     private LocalizationManager localizationManager;
-    private ConfigCheck configCheck;
+    private Configuration configCheck;
 
     CreateServerPackTest() {
         localizationManager = new LocalizationManager();
-        configCheck = new ConfigCheck(localizationManager);
+        configCheck = new Configuration(localizationManager);
         createServerPack = new CreateServerPack(localizationManager, configCheck);
         filesSetup = new FilesSetup(localizationManager);
     }

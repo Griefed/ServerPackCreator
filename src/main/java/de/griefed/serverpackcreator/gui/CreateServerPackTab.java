@@ -2,7 +2,7 @@ package de.griefed.serverpackcreator.gui;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import de.griefed.serverpackcreator.ConfigCheck;
+import de.griefed.serverpackcreator.Configuration;
 import de.griefed.serverpackcreator.CreateServerPack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.input.Tailer;
@@ -34,10 +34,10 @@ public class CreateServerPackTab extends Component {
     private final Dimension miscButtonDimension   = new Dimension(50,50);
     private final Dimension chooserDimension      = new Dimension(750,450);
 
-    private ConfigCheck configCheck;
+    private Configuration configuration;
     private LocalizationManager localizationManager;
 
-    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, ConfigCheck injectedConfigCheck) {
+    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfigCheck) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         } else {
@@ -45,9 +45,9 @@ public class CreateServerPackTab extends Component {
         }
 
         if (injectedConfigCheck == null) {
-            this.configCheck = new ConfigCheck(localizationManager);
+            this.configuration = new Configuration(localizationManager);
         } else {
-            this.configCheck = injectedConfigCheck;
+            this.configuration = injectedConfigCheck;
         }
 
     }
@@ -272,7 +272,7 @@ public class CreateServerPackTab extends Component {
                     clientModsFilenames.add(clientMods[i].getName());
                 }
 
-                textClientMods.setText(configCheck.buildString(Arrays.toString(clientModsFilenames.toArray(new String[0]))));
+                textClientMods.setText(configuration.buildString(Arrays.toString(clientModsFilenames.toArray(new String[0]))));
                 appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
             }
         });
@@ -311,7 +311,7 @@ public class CreateServerPackTab extends Component {
                     copyDirsNames.add(copyDirs[i].getName());
                 }
 
-                textCopyDirs.setText(configCheck.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+                textCopyDirs.setText(configuration.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
                 appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
             }
         });
@@ -389,9 +389,9 @@ public class CreateServerPackTab extends Component {
 
                     textModpackDir.setText(newConfigFile.getString("modpackDir"));
 
-                    textClientMods.setText(configCheck.buildString(newConfigFile.getStringList("clientMods").toString()));
+                    textClientMods.setText(configuration.buildString(newConfigFile.getStringList("clientMods").toString()));
 
-                    textCopyDirs.setText(configCheck.buildString(newConfigFile.getStringList("copyDirs").toString()));
+                    textCopyDirs.setText(configuration.buildString(newConfigFile.getStringList("copyDirs").toString()));
 
                     textJavaPath.setText(newConfigFile.getString("javaPath"));
 
@@ -401,15 +401,15 @@ public class CreateServerPackTab extends Component {
 
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
 
-                    checkBoxServer.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
+                    checkBoxServer.setSelected(configuration.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
 
-                    checkBoxIcon.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeServerIcon")));
+                    checkBoxIcon.setSelected(configuration.convertToBoolean(newConfigFile.getString("includeServerIcon")));
 
-                    checkBoxProperties.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeServerProperties")));
+                    checkBoxProperties.setSelected(configuration.convertToBoolean(newConfigFile.getString("includeServerProperties")));
 
-                    checkBoxScripts.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeStartScripts")));
+                    checkBoxScripts.setSelected(configuration.convertToBoolean(newConfigFile.getString("includeStartScripts")));
 
-                    checkBoxZIP.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeZipCreation")));
+                    checkBoxZIP.setSelected(configuration.convertToBoolean(newConfigFile.getString("includeZipCreation")));
 
                     appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
                 }
@@ -501,7 +501,7 @@ public class CreateServerPackTab extends Component {
             appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
             labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
 
-            configCheck.writeConfigToFile(
+            configuration.writeConfigToFile(
                     textModpackDir.getText(),
                     textClientMods.getText(),
                     textCopyDirs.getText(),
@@ -517,7 +517,7 @@ public class CreateServerPackTab extends Component {
                     new File("serverpackcreator.tmp"),
                     true
             );
-            if (!configCheck.checkConfigFile(new File("serverpackcreator.tmp"))) {
+            if (!configuration.checkConfigFile(new File("serverpackcreator.tmp"))) {
                 appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
                 labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
@@ -534,7 +534,7 @@ public class CreateServerPackTab extends Component {
 
                 appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
                 labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-                configCheck.writeConfigToFile(
+                configuration.writeConfigToFile(
                         textModpackDir.getText(),
                         textClientMods.getText(),
                         textCopyDirs.getText(),
@@ -547,7 +547,7 @@ public class CreateServerPackTab extends Component {
                         checkBoxProperties.isSelected(),
                         checkBoxScripts.isSelected(),
                         checkBoxZIP.isSelected(),
-                        configCheck.getConfigFile(),
+                        configuration.getConfigFile(),
                         false
                 );
 
@@ -565,7 +565,7 @@ public class CreateServerPackTab extends Component {
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
-                    CreateServerPack createServerPack = new CreateServerPack(localizationManager, configCheck);
+                    CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration);
                     if (createServerPack.run()) {
                         tailer.stop();
 
@@ -642,9 +642,9 @@ public class CreateServerPackTab extends Component {
 
                 textModpackDir.setText(config.getString("modpackDir"));
 
-                textClientMods.setText(configCheck.buildString(config.getStringList("clientMods").toString()));
+                textClientMods.setText(configuration.buildString(config.getStringList("clientMods").toString()));
 
-                textCopyDirs.setText(configCheck.buildString(config.getStringList("copyDirs").toString()));
+                textCopyDirs.setText(configuration.buildString(config.getStringList("copyDirs").toString()));
 
                 textJavaPath.setText(config.getString("javaPath"));
 
@@ -654,15 +654,15 @@ public class CreateServerPackTab extends Component {
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
 
-                checkBoxServer.setSelected(configCheck.convertToBoolean(config.getString("includeServerInstallation")));
+                checkBoxServer.setSelected(configuration.convertToBoolean(config.getString("includeServerInstallation")));
 
-                checkBoxIcon.setSelected(configCheck.convertToBoolean(config.getString("includeServerIcon")));
+                checkBoxIcon.setSelected(configuration.convertToBoolean(config.getString("includeServerIcon")));
 
-                checkBoxProperties.setSelected(configCheck.convertToBoolean(config.getString("includeServerProperties")));
+                checkBoxProperties.setSelected(configuration.convertToBoolean(config.getString("includeServerProperties")));
 
-                checkBoxScripts.setSelected(configCheck.convertToBoolean(config.getString("includeStartScripts")));
+                checkBoxScripts.setSelected(configuration.convertToBoolean(config.getString("includeStartScripts")));
 
-                checkBoxZIP.setSelected(configCheck.convertToBoolean(config.getString("includeZipCreation")));
+                checkBoxZIP.setSelected(configuration.convertToBoolean(config.getString("includeZipCreation")));
 
                 appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
             }

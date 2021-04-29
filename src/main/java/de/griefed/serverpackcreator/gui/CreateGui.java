@@ -3,7 +3,7 @@ package de.griefed.serverpackcreator.gui;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
-import de.griefed.serverpackcreator.ConfigCheck;
+import de.griefed.serverpackcreator.Configuration;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,9 +22,9 @@ public class CreateGui extends JPanel {
     private final Dimension windowDimension = new Dimension(800,860);
 
     private LocalizationManager localizationManager;
-    private ConfigCheck configCheck;
+    private Configuration configuration;
 
-    public CreateGui(LocalizationManager injectedLocalizationManager, ConfigCheck injectedConfigCheck) {
+    public CreateGui(LocalizationManager injectedLocalizationManager, Configuration injectedConfigCheck) {
         super(new GridLayout(1, 1));
 
         if (injectedLocalizationManager == null) {
@@ -34,14 +34,14 @@ public class CreateGui extends JPanel {
         }
 
         if (injectedConfigCheck == null) {
-            this.configCheck = new ConfigCheck(localizationManager);
+            this.configuration = new Configuration(localizationManager);
         } else {
-            this.configCheck = injectedConfigCheck;
+            this.configuration = injectedConfigCheck;
         }
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
-        tabbedPane.addTab(localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"), null, new CreateServerPackTab(localizationManager, configCheck).createServerPackTab(), localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
+        tabbedPane.addTab(localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"), null, new CreateServerPackTab(localizationManager, configuration).createServerPackTab(), localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
         tabbedPane.addTab(localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"), null, new ServerPackCreatorLogTab(localizationManager).serverPackCreatorLogTab(), localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
@@ -110,7 +110,7 @@ public class CreateGui extends JPanel {
         banner.setOpaque(false);
 
         frame.add(banner, BorderLayout.PAGE_START);
-        frame.add(new CreateGui(localizationManager, configCheck), BorderLayout.CENTER);
+        frame.add(new CreateGui(localizationManager, configuration), BorderLayout.CENTER);
 
         frame.setPreferredSize(windowDimension);
         frame.setMaximumSize(windowDimension);

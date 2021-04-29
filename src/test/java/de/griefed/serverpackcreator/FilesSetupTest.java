@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -23,13 +22,13 @@ class FilesSetupTest {
     Logger appLogger;
 
     private FilesSetup filesSetup;
-    private ConfigCheck configCheck;
+    private Configuration configCheck;
     private LocalizationManager localizationManager;
 
     FilesSetupTest() {
         localizationManager = new LocalizationManager();
         filesSetup = new FilesSetup(localizationManager);
-        configCheck = new ConfigCheck(localizationManager);
+        configCheck = new Configuration(localizationManager);
     }
 
     @BeforeEach

@@ -21,9 +21,10 @@ public class Main {
      */
     public static void main(String[] args) {
         LocalizationManager localizationManager = new LocalizationManager();
-        ConfigCheck configCheck = new ConfigCheck(localizationManager);
+        Configuration configuration = new Configuration(localizationManager);
         FilesSetup filesSetup = new FilesSetup(localizationManager);
-        CreateServerPack createServerPack = new CreateServerPack(localizationManager, configCheck);
+        CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration);
+        CreateGui tabbedPane = new CreateGui(localizationManager, configuration);
 
         List<String> programArgs = Arrays.asList(args);
 
@@ -78,7 +79,7 @@ public class Main {
 
         if (Arrays.asList(args).contains("-cgen")) {
 
-            configCheck.createConfigurationFile();
+            configuration.createConfigurationFile();
 
             if (createServerPack.run()) {
                 System.exit(0);
@@ -90,7 +91,7 @@ public class Main {
 
             if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
-                configCheck.createConfigurationFile();
+                configuration.createConfigurationFile();
             }
 
             if (createServerPack.run()) {
@@ -102,7 +103,7 @@ public class Main {
 
             if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
-                configCheck.createConfigurationFile();
+                configuration.createConfigurationFile();
             }
 
             if (createServerPack.run()) {
@@ -113,7 +114,6 @@ public class Main {
 
         } else {
 
-            CreateGui tabbedPane = new CreateGui(localizationManager, configCheck);
             tabbedPane.mainGUI();
 
         }
