@@ -638,8 +638,6 @@ public class CreateServerPackTab extends Component {
                 File configFile = new File("serverpackcreator.conf");
                 Config config = ConfigFactory.parseFile(configFile);
 
-                appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"), configFile));
-
                 textModpackDir.setText(config.getString("modpackDir"));
 
                 textClientMods.setText(configuration.buildString(config.getStringList("clientMods").toString()));
@@ -663,12 +661,8 @@ public class CreateServerPackTab extends Component {
                 checkBoxScripts.setSelected(configuration.convertToBoolean(config.getString("includeStartScripts")));
 
                 checkBoxZIP.setSelected(configuration.convertToBoolean(config.getString("includeZipCreation")));
-
-                appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
             }
-        } catch (NullPointerException ignored) {
-
-        }
+        } catch (NullPointerException ignored) {}
 
         return createServerPackPanel;
     }
