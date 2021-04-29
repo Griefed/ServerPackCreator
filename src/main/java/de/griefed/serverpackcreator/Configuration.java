@@ -34,12 +34,19 @@ public class Configuration {
     private final File oldConfigFile = new File("creator.conf");
     private final File configFile = new File("serverpackcreator.conf");
     private LocalizationManager localizationManager;
+    private CurseCreateModpack curseCreateModpack;
 
-    public Configuration(LocalizationManager injectedLocalizationManager) {
+    public Configuration(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         } else {
             this.localizationManager = injectedLocalizationManager;
+        }
+
+        if (injectedCurseCreateModpack == null) {
+            this.curseCreateModpack = new CurseCreateModpack(localizationManager);
+        } else {
+            this.curseCreateModpack = injectedCurseCreateModpack;
         }
     }
 
@@ -343,8 +350,6 @@ public class Configuration {
 
                 setModpackDir(String.format("./%s/%s", projectName, displayName));
 
-                CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
-
                 if (curseCreateModpack.curseForgeModpack(getModpackDir(), getProjectID(), getProjectFileID())) {
                     try {
                         byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", getModpackDir())));
@@ -357,6 +362,7 @@ public class Configuration {
                                 .getMinecraft()
                                 .toString()
                                 .split(",");
+
                         String[] modLoaderVersion = minecraftLoaderVersions[1]
                                 .replace("[", "")
                                 .replace("]", "")
@@ -366,24 +372,34 @@ public class Configuration {
 
                         if (containsFabric(modpack)) {
                             appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.fabric"));
+
                             setModLoader("Fabric");
                             setModLoaderVersion(latestFabricLoader(getModpackDir()));
+
                         } else {
+
                             setModLoader(setModloader(modLoaderVersion[0]));
                             setModLoaderVersion(modLoaderVersion[1]);
+
                         }
                     } catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.json"), ex); }
 
                     if (checkJavaPath(getConfig().getString("javaPath").replace("\\","/"))) {
+
                         setJavaPath(getConfig().getString("javaPath").replace("\\","/"));
+
                     } else {
                         String tmpJavaPath = getJavaPath(getConfig().getString("javaPath").replace("\\","/"));
+
                         if (checkJavaPath(tmpJavaPath)) {
                             setJavaPath(tmpJavaPath);
                         }
+
                     }
                     setCopyDirs(suggestCopyDirs(getModpackDir()));
+
                     appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.replace"));
+
                     writeConfigToFile(
                             getModpackDir(),
                             buildString(getClientMods().toString()),
@@ -411,9 +427,11 @@ public class Configuration {
      */
     private boolean containsFabric(CurseModpack modpack) {
         boolean hasJumploader = false;
+
         for (int i = 0; i < modpack.getFiles().size(); i++) {
-            String[] mods;
-            mods = modpack.getFiles().get(i).toString().split(",");
+
+            String[] mods = modpack.getFiles().get(i).toString().split(",");
+
             if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
                 appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.containsfabric"));
                 hasJumploader = true;
@@ -434,6 +452,7 @@ public class Configuration {
                 "packmenu",
                 "resourcepacks"
         };
+
         String[] copyDirs = new String[0];
         List<String> dirList;
         File directories = new File(modpackDir);
@@ -441,12 +460,16 @@ public class Configuration {
         String[] dirArray = directories.list((current, name) -> new File(current, name).isDirectory());
 
         if (dirArray != null) {
+
             dirList = new ArrayList<>(Arrays.asList(dirArray));
             List<String> doNotCopyList = new ArrayList<>(Arrays.asList(dirsNotToCopy));
+
             for (int i = 0; i < dirsNotToCopy.length; i++) {
                 dirList.remove(doNotCopyList.get(i));
             }
+
             copyDirs = dirList.toArray(new String[0]);
+
             appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.suggestcopydirs.list"), dirList));
 
             return Arrays.asList(copyDirs.clone());
@@ -465,8 +488,11 @@ public class Configuration {
         boolean configCorrect = false;
 
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
+
             projectFileIds = modpackDir.split(",");
+
             setProjectID(Integer.parseInt(projectFileIds[0]));
+
             setProjectFileID(Integer.parseInt(projectFileIds[1]));
 
             appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.info"));
@@ -486,22 +512,26 @@ public class Configuration {
      */
     public boolean convertToBoolean(String stringBoolean) {
         boolean returnBoolean;
+
         if (stringBoolean.matches("[Tt]rue") ||
                 stringBoolean.matches("1")       ||
                 stringBoolean.matches("[Yy]es")  ||
                 stringBoolean.matches("[Yy]"))    {
 
             returnBoolean = true;
+
         } else if (stringBoolean.matches("[Ff]alse") ||
                 stringBoolean.matches("0")        ||
                 stringBoolean.matches("[Nn]o")    ||
                 stringBoolean.matches("[Nn]" ))    {
 
             returnBoolean = false;
+
         } else {
             appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.converttoboolean.warn"));
             returnBoolean = false;
         }
+
         return returnBoolean;
     }
 
@@ -531,21 +561,30 @@ public class Configuration {
                      boolean includeProperties,
                      boolean includeScripts,
                      boolean includeZip) {
+
         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.printconfig.start"));
         appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.printconfig.modpackdir"), modpackDirectory));
+
         if (clientsideMods.size() == 0) {
             appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.printconfig.noclientmods"));
         } else {
+
             appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.printconfig.clientmods"));
             for (int i = 0; i < clientsideMods.size(); i++) {
                 appLogger.info(String.format("    %s", clientsideMods.get(i))); }
+
         }
 
         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.printconfig.copydirs"));
+
         if (copyDirectories != null) {
+
             for (int i = 0; i < copyDirectories.size(); i++) {
                 appLogger.info(String.format("    %s", copyDirectories.get(i))); }
-        } else { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.printconfig.copydirs")); }
+
+        } else {
+            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.printconfig.copydirs"));
+        }
 
         appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.printconfig.server"), installServer));
         appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.printconfig.javapath"), javaInstallPath));
@@ -564,12 +603,19 @@ public class Configuration {
      */
     boolean checkModpackDir(String modpackDir) {
         boolean configCorrect = false;
+
         if (modpackDir.equals("")) {
+
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.checkmodpackdir"));
+
         } else if (!(new File(modpackDir).isDirectory())) {
+
             appLogger.warn(String.format(localizationManager.getLocalizedString("configcheck.log.warn.checkmodpackdir"), modpackDir));
+
         } else {
+
             configCorrect = true;
+
         }
         return configCorrect;
     }
@@ -581,13 +627,20 @@ public class Configuration {
      */
     boolean checkCopyDirs(List<String> copyDirs, String modpackDir) {
         boolean configCorrect = true;
+
         if (copyDirs.isEmpty()) {
+
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.checkcopydirs.empty"));
             configCorrect = false;
+
         } else {
+
             for (int i = 0; i < copyDirs.size(); i++) {
+
                 File directory = new File(String.format("%s/%s", modpackDir, copyDirs.get(i)));
+
                 if (!directory.exists() || !directory.isDirectory()) {
+
                     appLogger.error(String.format(localizationManager.getLocalizedString("configcheck.log.error.checkcopydirs.notfound"), directory.getAbsolutePath()));
                     configCorrect = false;
                 }
@@ -602,15 +655,22 @@ public class Configuration {
      */
     String getJavaPath(String enteredPath) {
         String autoJavaPath;
+
         if (enteredPath.equals("")) {
+
             appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.getjavapath.empty"));
             autoJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
+
             if (autoJavaPath.startsWith("C:")) {
+
                 autoJavaPath = String.format("%s.exe", autoJavaPath);
             }
+
             appLogger.warn(String.format(localizationManager.getLocalizedString("configcheck.log.warn.getjavapath.set"), autoJavaPath));
             return autoJavaPath;
+
         } else {
+
             appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.warn.getjavapath.set"), enteredPath));
             return enteredPath;
         }
@@ -622,10 +682,15 @@ public class Configuration {
      */
     boolean checkJavaPath(String pathToJava) {
         boolean configCorrect = false;
+
         if (new File(pathToJava).exists() && pathToJava.endsWith("java.exe")) {
+
             configCorrect = true;
+
         } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
+
             configCorrect = true;
+
         } else {
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.checkjavapath"));
         }
@@ -638,9 +703,13 @@ public class Configuration {
      */
     boolean checkModloader(String modloader) {
         boolean configCorrect = false;
+
         if (modloader.equalsIgnoreCase("Forge") || modloader.equalsIgnoreCase("Fabric")) {
+
             configCorrect = true;
+
         } else {
+
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.checkmodloader"));
         }
         return configCorrect;
@@ -652,9 +721,13 @@ public class Configuration {
      */
     String setModloader(String modloader) {
         String returnLoader = null;
+
         if (modloader.equalsIgnoreCase("Forge")) {
+
             returnLoader = "Forge";
+
         } else if (modloader.equalsIgnoreCase("Fabric")) {
+
             returnLoader = "Fabric";
         }
         return returnLoader;
@@ -667,10 +740,15 @@ public class Configuration {
      */
     boolean checkModloaderVersion(String modloader, String modloaderVersion) {
         boolean isVersionCorrect = false;
+
         if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion)) {
+
             isVersionCorrect = true;
+
         } else if (modloader.equalsIgnoreCase("Fabric") && isFabricVersionCorrect(modloaderVersion)) {
+
             isVersionCorrect = true;
+
         } else {
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.checkmodloaderversion"));
         }
@@ -691,36 +769,50 @@ public class Configuration {
                 try {
                     downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
                 } catch (FileNotFoundException ex) {
+
                     appLogger.debug(localizationManager.getLocalizedString("configcheck.log.debug.isminecraftversioncorrect"), ex);
+
                     File file = new File("mcmanifest.json");
+
                     if (!file.exists()) {
+
                         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.create"));
                         boolean jsonCreated = file.createNewFile();
+
                         if (jsonCreated) {
+
                             appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.created"));
+
                         } else {
+
                             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.parse"));
                         }
                     }
                     downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
                 }
                 FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
                 downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
                 downloadManifestOutputStream.flush();
                 downloadManifestOutputStream.close();
+
                 readableByteChannel.close();
                 downloadManifestOutputStreamChannel.close();
 
                 File manifestJsonFile = new File("mcmanifest.json");
                 Scanner jsonReader = new Scanner(manifestJsonFile);
+
                 String jsonData = jsonReader.nextLine();
                 jsonReader.close();
+
                 jsonData = jsonData.replaceAll("\\s", "");
 
                 boolean contains = jsonData.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
                 manifestJsonFile.deleteOnExit();
+
                 return contains;
             } catch (Exception ex) {
+
                 appLogger.error(String.format(localizationManager.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.validate"), minecraftVersion), ex);
                 return false;
             }
@@ -737,19 +829,27 @@ public class Configuration {
     boolean isFabricVersionCorrect(String fabricVersion) {
         try {
             URL manifestJsonURL = new URL(getFabricManifestUrl());
+
             ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+
             FileOutputStream downloadManifestOutputStream;
 
             try {
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
             } catch (FileNotFoundException ex) {
+
                 appLogger.debug(localizationManager.getLocalizedString("configcheck.log.debug.isfabricversioncorrect"), ex);
                 File file = new File("fabric-manifest.xml");
+
                 if (!file.exists()){
+
                     appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.create"));
                     boolean jsonCreated = file.createNewFile();
+
                     if (jsonCreated) {
+
                         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.created"));
+
                     } else {
                         appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.parse"));
                     }
@@ -757,29 +857,42 @@ public class Configuration {
                 downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
             }
             FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
             downloadManifestOutputStream.close();
+
             readableByteChannel.close();
             downloadManifestOutputStreamChannel.close();
 
             File manifestXMLFile = new File("fabric-manifest.xml");
             Scanner xmlReader = new Scanner(manifestXMLFile);
+
             ArrayList<String> dataList = new ArrayList<>();
+
             while (xmlReader.hasNextLine()) {
                 dataList.add(xmlReader.nextLine());
             }
+
             String[] dataArray = new String[dataList.size()];
+
             String manifestXML;
+
             dataList.toArray(dataArray);
+
             manifestXML = Arrays.toString(dataArray);
+
             xmlReader.close();
+
             manifestXML = manifestXML.replaceAll("\\s", "");
 
             boolean contains = manifestXML.trim().contains(String.format("%s", fabricVersion));
+
             manifestXMLFile.deleteOnExit();
+
             return contains;
         } catch (Exception ex) {
+
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.validate"), ex);
             return false;
         }
@@ -796,44 +909,67 @@ public class Configuration {
             FileOutputStream downloadManifestOutputStream;
 
             try {
+
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
+
             } catch (FileNotFoundException ex) {
+
                 appLogger.debug(localizationManager.getLocalizedString("configcheck.log.debug.isforgeversioncorrect"), ex);
                 File file = new File("forge-manifest.json");
+
                 if (!file.exists()){
+
                     appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.create"));
+
                     boolean jsonCreated = file.createNewFile();
+
                     if (jsonCreated) {
+
                         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.created"));
                     } else {
+
                         appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.parse"));
                     }
                 }
                 downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
             }
             FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
             downloadManifestOutputStream.close();
+
             readableByteChannel.close();
             downloadManifestOutputStreamChannel.close();
 
             File manifestJsonFile = new File("forge-manifest.json");
+
             manifestJsonFile.deleteOnExit();
+
             Scanner jsonReader = new Scanner(manifestJsonFile);
+
             ArrayList<String> dataList = new ArrayList<>();
+
             while (jsonReader.hasNextLine()) {
                 dataList.add(jsonReader.nextLine());
             }
+
             String[] dataArray = new String[dataList.size()];
+
             String manifestJSON;
+
             dataList.toArray(dataArray);
+
             manifestJSON = Arrays.toString(dataArray);
+
             jsonReader.close();
+
             manifestJSON = manifestJSON.replaceAll("\\s", "");
 
             return manifestJSON.trim().contains(String.format("%s", forgeVersion));
+
         } catch (Exception ex) {
+
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.validate"), ex);
             return false;
         }
@@ -878,19 +1014,19 @@ public class Configuration {
      * Generate new configuration file from CLI input. Prompts user to enter config file values and then generates a config file with values entered by user.
      */
     void createConfigurationFile() {
-        List<String> clientMods,
-                copyDirs;
+        List<String> clientMods, copyDirs;
 
         clientMods = new ArrayList<>(0);
         copyDirs = new ArrayList<>(0);
 
-        String[] tmpClientMods,
-                tmpCopyDirs;
+        String[] tmpClientMods, tmpCopyDirs;
+
         boolean includeServerInstallation,
                 includeServerIcon,
                 includeServerProperties,
                 includeStartScripts,
                 includeZipCreation;
+
         String modpackDir,
                 javaPath,
                 minecraftVersion,
@@ -899,6 +1035,7 @@ public class Configuration {
                 tmpModpackDir;
 
         Scanner reader = new Scanner(System.in);
+
         appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.start"), "-cgen"));
         do {
 //--------------------------------------------------------------------------------------------MODPACK DIRECTORY---------
@@ -1151,6 +1288,7 @@ public class Configuration {
 
         boolean configWritten = false;
 
+        //Griefed: What the fuck. This reads like someone having a stroke. What have I created here?
         String configString = String.format(
                 "%s\"%s\"\n\n%s[%s]\n\n%s[%s]\n\n%s%b\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s%b\n\n%s%b\n\n%s%b\n\n%s%b",
                 localizationManager.getLocalizedString("filessetup.writeconfigtofile.modpackdir"),

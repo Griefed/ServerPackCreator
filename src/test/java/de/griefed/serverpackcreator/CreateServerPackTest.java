@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -26,13 +27,15 @@ class CreateServerPackTest {
 
     private CreateServerPack createServerPack;
     private FilesSetup filesSetup;
+    private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
     private Configuration configCheck;
 
     CreateServerPackTest() {
         localizationManager = new LocalizationManager();
-        configCheck = new Configuration(localizationManager);
-        createServerPack = new CreateServerPack(localizationManager, configCheck);
+        curseCreateModpack = new CurseCreateModpack(localizationManager);
+        configCheck = new Configuration(localizationManager, curseCreateModpack);
+        createServerPack = new CreateServerPack(localizationManager, configCheck, curseCreateModpack);
         filesSetup = new FilesSetup(localizationManager);
     }
 

@@ -4,6 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import de.griefed.serverpackcreator.Configuration;
 import de.griefed.serverpackcreator.CreateServerPack;
+import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -36,8 +37,9 @@ public class CreateServerPackTab extends Component {
 
     private Configuration configuration;
     private LocalizationManager localizationManager;
+    private CurseCreateModpack curseCreateModpack;
 
-    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration) {
+    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectectedCurseCreateModpack) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         } else {
@@ -45,7 +47,13 @@ public class CreateServerPackTab extends Component {
         }
 
         if (injectedConfiguration == null) {
-            this.configuration = new Configuration(localizationManager);
+            this.curseCreateModpack = new CurseCreateModpack(localizationManager);
+        } else {
+            this.curseCreateModpack = injectectedCurseCreateModpack;
+        }
+
+        if (injectedConfiguration == null) {
+            this.configuration = new Configuration(localizationManager, curseCreateModpack);
         } else {
             this.configuration = injectedConfiguration;
         }
@@ -565,7 +573,7 @@ public class CreateServerPackTab extends Component {
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
-                    CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration);
+                    CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
                     if (createServerPack.run()) {
                         tailer.stop();
 

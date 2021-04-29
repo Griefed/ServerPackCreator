@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.gui.CreateGui;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -35,10 +36,11 @@ public class Main {
             localizationManager.checkLocaleFile();
         }
 
-        Configuration configuration = new Configuration(localizationManager);
+        CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
+        Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
         FilesSetup filesSetup = new FilesSetup(localizationManager);
-        CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration);
-        CreateGui tabbedPane = new CreateGui(localizationManager, configuration);
+        CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
+        CreateGui tabbedPane = new CreateGui(localizationManager, configuration, curseCreateModpack);
 
         String jarPath = null,
                 jarName = null,

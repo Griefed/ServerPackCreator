@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import net.fabricmc.installer.util.LauncherMeta;
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +36,7 @@ public class CreateServerPack {
     private static final Logger installerLogger = LogManager.getLogger("InstallerLogger");
 
     private Configuration configuration;
+    private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
     private final File propertiesFile    = new File("server.properties");
     private final File iconFile          = new File("server-icon.png");
@@ -44,15 +46,21 @@ public class CreateServerPack {
     private final File fabricLinuxFile   = new File("start-fabric.sh");
 
 
-    public CreateServerPack(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration) {
+    public CreateServerPack(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         } else {
             this.localizationManager = injectedLocalizationManager;
         }
 
+        if (injectedCurseCreateModpack == null) {
+            this.curseCreateModpack = new CurseCreateModpack(localizationManager);
+        } else {
+            this.curseCreateModpack = injectedCurseCreateModpack;
+        }
+
         if (injectedConfiguration == null) {
-            this.configuration = new Configuration(localizationManager);
+            this.configuration = new Configuration(localizationManager, curseCreateModpack);
         } else {
             this.configuration = injectedConfiguration;
         }

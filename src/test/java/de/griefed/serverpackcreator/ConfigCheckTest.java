@@ -1,6 +1,7 @@
 package de.griefed.serverpackcreator;
 
 import com.typesafe.config.ConfigFactory;
+import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -23,11 +24,13 @@ class ConfigCheckTest {
     Logger appLogger;
 
     private Configuration configCheck;
+    private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
 
     ConfigCheckTest() {
         localizationManager = new LocalizationManager();
-        configCheck = new Configuration(localizationManager);
+        curseCreateModpack = new CurseCreateModpack(localizationManager);
+        configCheck = new Configuration(localizationManager, curseCreateModpack);
     }
 
     @BeforeEach
