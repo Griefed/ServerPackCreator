@@ -25,8 +25,9 @@ public class FilesSetup {
     public FilesSetup(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
+        } else {
+            this.localizationManager = injectedLocalizationManager;
         }
-        this.localizationManager = injectedLocalizationManager;
     }
 
     public File getConfigFile() {

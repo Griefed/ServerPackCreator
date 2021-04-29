@@ -47,15 +47,15 @@ public class CreateServerPack {
     public CreateServerPack(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
+        } else {
+            this.localizationManager = injectedLocalizationManager;
         }
-
-        this.localizationManager = injectedLocalizationManager;
 
         if (injectedConfiguration == null) {
             this.configuration = new Configuration(localizationManager);
+        } else {
+            this.configuration = injectedConfiguration;
         }
-
-        this.configuration = injectedConfiguration;
     }
 
     public File getPropertiesFile() {
