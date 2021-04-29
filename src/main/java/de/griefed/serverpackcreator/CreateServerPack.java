@@ -111,7 +111,7 @@ public class CreateServerPack {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.properties"));
             }
             if (configCheck.getIncludeZipCreation()) {
-                zipBuilder(configCheck.getModpackDir(), configCheck.getModLoader(), configCheck.getIncludeServerInstallation());
+                zipBuilder(configCheck.getModpackDir(), configCheck.getModLoader(), configCheck.getIncludeServerInstallation(), configCheck.getMinecraftVersion());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.zip"));
             }
@@ -450,7 +450,8 @@ public class CreateServerPack {
                 forgeInstaller,
                 modLoader,
                 modpackDir,
-                minecraftVersion, modLoaderVersion);
+                minecraftVersion,
+                modLoaderVersion);
 
     }
     /** Create a zip-archive of the serverpack, excluding Mojang's minecraft_server.jar.
@@ -458,8 +459,9 @@ public class CreateServerPack {
      * @param modpackDir String. The directory where the zip-archive will be created and saved in.
      * @param modLoader String. Determines the name of Minecraft#s server jar which will be deleted from the zip-archive.
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server jar needs to be deleted from the zip-archive.
+     * @param minecraftVersion String. The Minecraft version of which to delete the server jar. Used if modloader is Forge.
      */
-    void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation) {
+    void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation, String minecraftVersion) {
         final Path sourceDir = Paths.get(String.format("%s/server_pack", modpackDir));
         String zipFileName = sourceDir.toString().concat(".zip");
         appLogger.info(localizationManager.getLocalizedString("serversetup.log.info.zipbuilder.enter"));
@@ -485,7 +487,7 @@ public class CreateServerPack {
             appLogger.error(localizationManager.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
         }
         if (includeServerInstallation) {
-            deleteMinecraftJar(modLoader, modpackDir);
+            deleteMinecraftJar(modLoader, modpackDir, minecraftVersion);
             appLogger.warn(localizationManager.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar1"));
             appLogger.warn(localizationManager.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar2"));
             appLogger.warn(localizationManager.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar3"));
@@ -729,8 +731,9 @@ public class CreateServerPack {
      * With help from https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python and https://bugs.openjdk.java.net/browse/JDK-8186227
      * @param modLoader String. Determines the name of the file to delete.
      * @param modpackDir String. /server_pack The directory in which the file will be deleted.
+     * @param minecraftVersion String. The Minecraft version of which to delete the server jar. Used if modloader is Forge.
      */
-    void deleteMinecraftJar(String modLoader, String modpackDir) {
+    void deleteMinecraftJar(String modLoader, String modpackDir, String minecraftVersion) {
         if (modLoader.equalsIgnoreCase("Forge")) {
             appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.deleteminecraftjar.enter"));
 
@@ -742,7 +745,7 @@ public class CreateServerPack {
             URI zipUri = URI.create("jar:" + serverpackZip.toUri());
 
             try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
-                Path pathInZipfile = zipfs.getPath("minecraft_server.1.16.5.jar");
+                Path pathInZipfile = zipfs.getPath(String.format("minecraft_server.%s.jar", minecraftVersion));
                 Files.delete(pathInZipfile);
                 appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.deleteminecraftjar.success"));
             } catch (IOException ex) {

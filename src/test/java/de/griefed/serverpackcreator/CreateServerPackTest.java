@@ -300,22 +300,26 @@ class CreateServerPackTest {
     }
 
     @Test
-    void testZipBuilderFabric() {
+    void testZipBuilderFabric() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
+            Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
+            String minecraftVersion = "1.16.5";
             String modLoader = "Fabric";
-            String modpackDir = "./src/test/resources/fabric_tests";
-            createServerPack.zipBuilder(modpackDir, modLoader, Boolean.TRUE);
+            String modpackDir = "src/test/resources/fabric_tests";
+            createServerPack.zipBuilder(modpackDir, modLoader, Boolean.TRUE, minecraftVersion);
         }
     }
 
     @Test
-    void testZipBuilderForge() {
+    void testZipBuilderForge() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
         if (!new File("/home/runner").isDirectory()) {
+            Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
+            String minecraftVersion = "1.16.5";
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
-            createServerPack.zipBuilder(modpackDir, modLoader, Boolean.TRUE);
+            createServerPack.zipBuilder(modpackDir, modLoader, Boolean.TRUE, minecraftVersion);
         }
     }
 
@@ -383,17 +387,19 @@ class CreateServerPackTest {
     @Test
     void testDeleteMinecraftJarFabric() throws IOException {
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
+        String minecraftVersion = "1.16.5";
         String modLoader = "Fabric";
-        String modpackDir = "./src/test/resources/forge_tests";
-        createServerPack.deleteMinecraftJar(modLoader, modpackDir);
+        String modpackDir = "./src/test/resources/fabric_tests";
+        createServerPack.deleteMinecraftJar(modLoader, modpackDir, minecraftVersion);
     }
 
     @Test
     void testDeleteMinecraftJarForge() throws IOException {
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
+        String minecraftVersion = "1.16.5";
         String modLoader = "Forge";
         String modpackDir = "./src/test/resources/forge_tests";
-        createServerPack.deleteMinecraftJar(modLoader, modpackDir);
+        createServerPack.deleteMinecraftJar(modLoader, modpackDir, minecraftVersion);
     }
 
     @Test
