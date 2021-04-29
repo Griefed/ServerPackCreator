@@ -3,12 +3,11 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.FilesSetup;
-import de.griefed.serverpackcreator.Reference;
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -21,16 +20,21 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Objects;
 
-class CreateModpackTest {
+class CurseCreateModpackTest {
     @Mock
     Logger appLogger;
 
-    @InjectMocks
-    CreateModpack createModpack;
+    private CurseCreateModpack curseCreateModpack;
+    private LocalizationManager localizationManager;
+
+    CurseCreateModpackTest() {
+        localizationManager = new LocalizationManager();
+        curseCreateModpack = new CurseCreateModpack(localizationManager);
+    }
 
     @BeforeEach
     void setUp() {
-        FilesSetup.checkLocaleFile();
+        localizationManager.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
     }
 
@@ -49,7 +53,7 @@ class CreateModpackTest {
                     .fileWithID(fileID))
                     .displayName();
             String modpackDir = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
-            boolean result = Reference.createModpack.curseForgeModpack(modpackDir, projectID, fileID);
+            boolean result = curseCreateModpack.curseForgeModpack(modpackDir, projectID, fileID);
             Assertions.assertTrue(result);
             String deleteFile = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
             if (new File(deleteFile).isDirectory()) {
@@ -72,13 +76,13 @@ class CreateModpackTest {
 
     @Test
     void testSetModloaderFabric() {
-        String result = Reference.createModpack.setModloader("fAbRiC");
+        String result = curseCreateModpack.setModloader("fAbRiC");
         Assertions.assertEquals("Fabric", result);
     }
 
     @Test
     void testSetModloaderForge() {
-        String result = Reference.createModpack.setModloader("fOrGe");
+        String result = curseCreateModpack.setModloader("fOrGe");
         Assertions.assertEquals("Forge", result);
     }
 }

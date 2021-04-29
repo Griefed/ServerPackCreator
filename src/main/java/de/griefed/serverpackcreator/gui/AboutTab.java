@@ -11,17 +11,27 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 
-class About extends Component {
-    private static final Logger appLogger = LogManager.getLogger(About.class);
+class AboutTab extends Component {
+    private static final Logger appLogger = LogManager.getLogger(AboutTab.class);
 
     private final Dimension miscButtonDimension = new Dimension(50,50);
-    private final ImageIcon issueIcon           = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/issue.png")));
-    private final ImageIcon pastebinIcon        = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/pastebin.png")));
-    private final ImageIcon prosperIcon         = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/prosper.png")));
+    private final ImageIcon issueIcon           = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/issue.png")));
+    private final ImageIcon pastebinIcon        = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/pastebin.png")));
+    private final ImageIcon prosperIcon         = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/prosper.png")));
 
-    JComponent about() {
-        JComponent about = new JPanel(false);
-        about.setLayout(new GridBagLayout());
+    private LocalizationManager localizationManager;
+
+    public AboutTab(LocalizationManager injectedLocalizationManager) {
+        if (injectedLocalizationManager == null) {
+            this.localizationManager = new LocalizationManager();
+        } else {
+            this.localizationManager = injectedLocalizationManager;
+        }
+    }
+
+    JComponent aboutTab() {
+        JComponent aboutPanel = new JPanel(false);
+        aboutPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.anchor = GridBagConstraints.CENTER;
@@ -50,17 +60,17 @@ class About extends Component {
         try {
             document.insertString(
                     document.getLength(),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.about.text"),
+                    localizationManager.getLocalizedString("createserverpack.gui.about.text"),
                     attributeSet
             ); } catch (BadLocationException ex) {
-            appLogger.error(LocalizationManager.getLocalizedString("about.log.error.document"), ex);
+            appLogger.error(localizationManager.getLocalizedString("about.log.error.document"), ex);
         }
-        about.add(textPane, constraints);
+        aboutPanel.add(textPane, constraints);
 
         constraints.gridx = 0;
         constraints.gridy = 1;
         constraints.fill = GridBagConstraints.HORIZONTAL;
-        about.add(new JSeparator(JSeparator.HORIZONTAL), constraints);
+        aboutPanel.add(new JSeparator(JSeparator.HORIZONTAL), constraints);
 
         //Buttons
         constraints.anchor = GridBagConstraints.CENTER;
@@ -72,7 +82,7 @@ class About extends Component {
 
         //Button to upload log file to pastebin
         JButton buttonCreatePasteBin = new JButton();
-        buttonCreatePasteBin.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.about.pastebin"));
+        buttonCreatePasteBin.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.pastebin"));
         buttonCreatePasteBin.setIcon(pastebinIcon);
         buttonCreatePasteBin.setPreferredSize(miscButtonDimension);
         buttonCreatePasteBin.addActionListener(e -> {
@@ -82,17 +92,17 @@ class About extends Component {
                     Desktop.getDesktop().browse(URI.create("https://pastebin.com"));
                 }
             } catch (IOException ex) {
-                appLogger.error(LocalizationManager.getLocalizedString("about.log.error.browser"), ex);
+                appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
             }
 
         });
         constraints.gridx = 0;
         constraints.gridy = 2;
-        about.add(buttonCreatePasteBin, constraints);
+        aboutPanel.add(buttonCreatePasteBin, constraints);
 
         //Button to open a new issue on GitHub
         JButton buttonOpenIssue = new JButton();
-        buttonOpenIssue.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.about.issue"));
+        buttonOpenIssue.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.issue"));
         buttonOpenIssue.setIcon(issueIcon);
         buttonOpenIssue.setPreferredSize(miscButtonDimension);
         buttonOpenIssue.addActionListener(e -> {
@@ -102,17 +112,17 @@ class About extends Component {
                     Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
                 }
             } catch (IOException ex) {
-                appLogger.error(LocalizationManager.getLocalizedString("about.log.error.browser"), ex);
+                appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
             }
 
         });
         constraints.gridx = 1;
         constraints.gridy = 2;
-        about.add(buttonOpenIssue, constraints);
+        aboutPanel.add(buttonOpenIssue, constraints);
 
         //Button to open the invite link to the discord server
         JButton buttonDiscord = new JButton();
-        buttonDiscord.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.about.discord"));
+        buttonDiscord.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.discord"));
         buttonDiscord.setIcon(prosperIcon);
         buttonDiscord.setPreferredSize(miscButtonDimension);
         buttonDiscord.addActionListener(e -> {
@@ -122,15 +132,15 @@ class About extends Component {
                     Desktop.getDesktop().browse(URI.create("https://discord.griefed.de"));
                 }
             } catch (IOException ex) {
-                appLogger.error(LocalizationManager.getLocalizedString("about.log.error.browser"), ex);
+                appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
             }
 
         });
         constraints.gridx = 2;
         constraints.gridy = 2;
-        about.add(buttonDiscord, constraints);
+        aboutPanel.add(buttonDiscord, constraints);
 
-        return about;
+        return aboutPanel;
     }
 
 }

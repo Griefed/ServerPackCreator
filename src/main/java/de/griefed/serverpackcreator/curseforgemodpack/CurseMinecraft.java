@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-class Minecraft {
+class CurseMinecraft {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String version;
-    private List<ModLoaders> modLoaders;
+    private List<CurseModLoaders> modLoaders;
 
     public String getVersion() {
         return version;
@@ -17,11 +17,11 @@ class Minecraft {
         this.version = version;
     }
 
-    public List<ModLoaders> getModLoaders() {
+    public List<CurseModLoaders> getModLoaders() {
         return modLoaders;
     }
 
-    public void setModLoaders(List<ModLoaders> modLoaders) {
+    public void setModLoaders(List<CurseModLoaders> modLoaders) {
         this.modLoaders = modLoaders;
     }
 

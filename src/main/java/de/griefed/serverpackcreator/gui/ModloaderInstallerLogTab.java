@@ -8,11 +8,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-class ServerPackCreatorLog extends Component {
+class ModloaderInstallerLogTab extends Component {
 
-    JComponent serverPackCreatorLog() {
-        JComponent serverPackCreatorLog = new JPanel(false);
-        serverPackCreatorLog.setLayout(new GridBagLayout());
+    private LocalizationManager localizationManager;
+
+    public ModloaderInstallerLogTab(LocalizationManager injectedLocalizationManager) {
+        if (injectedLocalizationManager == null) {
+            this.localizationManager = new LocalizationManager();
+        } else {
+            this.localizationManager = injectedLocalizationManager;
+        }
+    }
+
+    JComponent modloaderInstallerLogTab() {
+        JComponent modloaderInstallerLogPanel = new JPanel(false);
+        modloaderInstallerLogPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.anchor = GridBagConstraints.CENTER;
@@ -26,10 +36,11 @@ class ServerPackCreatorLog extends Component {
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
 
-        Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
+        Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-                    if (line.contains(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
+                    if (line.contains(localizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.enter")) ||
+                            line.contains(localizationManager.getLocalizedString("serversetup.log.info.installserver.forge.enter"))) {
                         textArea.setText("");
                     }
                     textArea.append(line + "\n");
@@ -42,8 +53,8 @@ class ServerPackCreatorLog extends Component {
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        serverPackCreatorLog.add(scrollPane, constraints);
+        modloaderInstallerLogPanel.add(scrollPane, constraints);
 
-        return serverPackCreatorLog;
+        return modloaderInstallerLogPanel;
     }
 }

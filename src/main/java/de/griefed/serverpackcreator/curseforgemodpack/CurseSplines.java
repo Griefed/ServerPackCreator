@@ -2,12 +2,12 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 
 import java.util.Random;
 
-class Splines {
+class CurseSplines {
     /*
     Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained.
     Additional thanks to Larsz on GameFAQs for providing a list of all these messages: https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135
      */
-    private static final String[] reticulating = {"Adding Hidden Agendas","Adjusting Bell Curves","Aesthesizing Industrial Areas",
+    private final String[] reticulating = {"Adding Hidden Agendas","Adjusting Bell Curves","Aesthesizing Industrial Areas",
             "Aligning Covariance Matrices","Applying Feng Shui Shaders","Applying Theatre Soda Layer",
             "Asserting Packed Exemplars","Attempting to Lock Back-Buffer","Binding Sapling Root System","Breeding Fauna",
             "Building Data Trees","Bureacritizing Bureaucracies","Calculating Inverse Probability Matrices",
@@ -45,16 +45,16 @@ class Splines {
             "Synthesizing Wavelets","Time-Compressing Simulator Clock","Unable to Reveal Current Activity",
             "Weathering Buildings","Zeroing Crime Network"};
 
-    private static int getRandomInt() {
+    private int getRandomInt() {
         Random randInt = new Random();
         return randInt.nextInt(reticulating.length);
     }
 
-    private static String setSplines() {
-        return Splines.reticulating[getRandomInt()];
+    private String getSpline() {
+        return reticulating[getRandomInt()];
     }
 
-    public static String getSplines() {
-        return setSplines();
+    public String reticulate() {
+        return getSpline();
     }
 }

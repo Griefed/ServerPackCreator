@@ -2,8 +2,8 @@ package de.griefed.serverpackcreator.gui;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import de.griefed.serverpackcreator.Handler;
-import de.griefed.serverpackcreator.Reference;
+import de.griefed.serverpackcreator.ConfigCheck;
+import de.griefed.serverpackcreator.CreateServerPack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -23,18 +23,36 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-class CreateServerPack extends Component {
-    private static final Logger appLogger = LogManager.getLogger(CreateServerPack.class);
+public class CreateServerPackTab extends Component {
+    private static final Logger appLogger = LogManager.getLogger(CreateServerPackTab.class);
 
-    private final ImageIcon loadIcon              = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/load.png")));
-    private final ImageIcon folderIcon            = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/folder.png")));
-    private final ImageIcon startGeneration       = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/start_generation.png")));
-    private final ImageIcon helpIcon              = new ImageIcon(Objects.requireNonNull(TabbedPane.class.getResource("/de/griefed/resources/gui/help.png")));
+    private final ImageIcon loadIcon              = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/load.png")));
+    private final ImageIcon folderIcon            = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/folder.png")));
+    private final ImageIcon startGeneration       = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/start_generation.png")));
+    private final ImageIcon helpIcon              = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/help.png")));
     private final Dimension folderButtonDimension = new Dimension(24,24);
     private final Dimension miscButtonDimension   = new Dimension(50,50);
     private final Dimension chooserDimension      = new Dimension(750,450);
 
-    JComponent createServerPack() {
+    private ConfigCheck configCheck;
+    private LocalizationManager localizationManager;
+
+    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, ConfigCheck injectedConfigCheck) {
+        if (injectedLocalizationManager == null) {
+            this.localizationManager = new LocalizationManager();
+        } else {
+            this.localizationManager = injectedLocalizationManager;
+        }
+
+        if (injectedConfigCheck == null) {
+            this.configCheck = new ConfigCheck(localizationManager);
+        } else {
+            this.configCheck = injectedConfigCheck;
+        }
+
+    }
+
+    JComponent createServerPackTab() {
         JComponent createServerPackPanel = new JPanel(false);
         createServerPackPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -45,98 +63,98 @@ class CreateServerPack extends Component {
         constraints.weightx = 0.7;
 
         //Label and textfield modpackDir
-        JLabel labelModpackDir = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir"));
-        labelModpackDir.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
+        JLabel labelModpackDir = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir"));
+        labelModpackDir.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModpackDir, constraints);
         JTextField textModpackDir = new JTextField("");
-        textModpackDir.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
+        textModpackDir.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
         constraints.gridx = 0;
         constraints.gridy = 1;
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textModpackDir, constraints);
 
         //Label and textfield clientMods
-        JLabel labelClientMods = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods"));
-        labelClientMods.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods.tip"));
+        JLabel labelClientMods = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods"));
+        labelClientMods.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods.tip"));
         constraints.gridx = 0;
         constraints.gridy = 2;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelClientMods, constraints);
         JTextField textClientMods = new JTextField("");
-        textClientMods.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods.tip"));
+        textClientMods.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods.tip"));
         constraints.gridx = 0;
         constraints.gridy = 3;
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textClientMods, constraints);
 
         //Label and textfield copyDirs
-        JLabel labelCopyDirs = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs"));
-        labelCopyDirs.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
+        JLabel labelCopyDirs = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs"));
+        labelCopyDirs.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
         constraints.gridx = 0;
         constraints.gridy = 4;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelCopyDirs, constraints);
         JTextField textCopyDirs = new JTextField("");
-        textCopyDirs.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
+        textCopyDirs.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
         constraints.gridx = 0;
         constraints.gridy = 5;
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textCopyDirs, constraints);
 
         //Label and textfield javaPath
-        JLabel labelJavaPath = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath"));
-        labelJavaPath.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
+        JLabel labelJavaPath = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath"));
+        labelJavaPath.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
         constraints.gridx = 0;
         constraints.gridy = 6;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelJavaPath, constraints);
         JTextField textJavaPath = new JTextField("");
-        textJavaPath.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
+        textJavaPath.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
         constraints.gridx = 0;
         constraints.gridy = 7;
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textJavaPath, constraints);
 
         //Label and textfield minecraftVersion
-        JLabel labelMinecraftVersion = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft"));
-        labelMinecraftVersion.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft.tip"));
+        JLabel labelMinecraftVersion = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft"));
+        labelMinecraftVersion.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft.tip"));
         constraints.gridx = 0;
         constraints.gridy = 8;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelMinecraftVersion, constraints);
         JTextField textMinecraftVersion = new JTextField("");
-        textMinecraftVersion.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft.tip"));
+        textMinecraftVersion.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft.tip"));
         constraints.gridx = 0;
         constraints.gridy = 9;
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textMinecraftVersion, constraints);
 
         //Label and textfield Modloader
-        JLabel labelModloader = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader"));
-        labelModloader.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader.tip"));
+        JLabel labelModloader = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader"));
+        labelModloader.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader.tip"));
         constraints.gridx = 0;
         constraints.gridy = 10;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModloader, constraints);
         JTextField textModloader = new JTextField("");
-        textModloader.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader.tip"));
+        textModloader.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader.tip"));
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textModloader, constraints);
 
         //Label and textfield modloaderVersion
-        JLabel labelModloaderVersion = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion"));
-        labelModloaderVersion.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
+        JLabel labelModloaderVersion = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion"));
+        labelModloaderVersion.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
         constraints.gridx = 0;
         constraints.gridy = 12;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModloaderVersion, constraints);
         JTextField textModloaderVersion = new JTextField("");
-        textModloaderVersion.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
+        textModloaderVersion.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
         constraints.gridx = 0;
         constraints.gridy = 13;
         constraints.insets = new Insets(0,10,0,0);
@@ -151,36 +169,36 @@ class CreateServerPack extends Component {
         constraints.fill = GridBagConstraints.NONE;
 
         //Checkbox installServer
-        JCheckBox checkBoxServer = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver"),true);
-        checkBoxServer.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.tip"));
+        JCheckBox checkBoxServer = new JCheckBox(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver"),true);
+        checkBoxServer.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.tip"));
         constraints.gridx = 0;
         constraints.gridy = 14;
         createServerPackPanel.add(checkBoxServer, constraints);
 
         //Checkbox copyIcon
-        JCheckBox checkBoxIcon = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon"),true);
-        checkBoxIcon.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon.tip"));
+        JCheckBox checkBoxIcon = new JCheckBox(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon"),true);
+        checkBoxIcon.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon.tip"));
         constraints.gridx = 1;
         constraints.gridy = 14;
         createServerPackPanel.add(checkBoxIcon, constraints);
 
         //Checkbox copyProperties
-        JCheckBox checkBoxProperties = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties"),true);
-        checkBoxProperties.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties.tip"));
+        JCheckBox checkBoxProperties = new JCheckBox(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties"),true);
+        checkBoxProperties.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties.tip"));
         constraints.gridx = 0;
         constraints.gridy = 15;
         createServerPackPanel.add(checkBoxProperties, constraints);
 
         //Checkbox copyScripts
-        JCheckBox checkBoxScripts = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts"),true);
-        checkBoxScripts.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts.tip"));
+        JCheckBox checkBoxScripts = new JCheckBox(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts"),true);
+        checkBoxScripts.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts.tip"));
         constraints.gridx = 1;
         constraints.gridy = 15;
         createServerPackPanel.add(checkBoxScripts, constraints);
 
         //Checkbox createZIP
-        JCheckBox checkBoxZIP = new JCheckBox(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip"),true);
-        checkBoxZIP.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip.tip"));
+        JCheckBox checkBoxZIP = new JCheckBox(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip"),true);
+        checkBoxZIP.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip.tip"));
         constraints.gridx = 0;
         constraints.gridy = 16;
         createServerPackPanel.add(checkBoxZIP, constraints);
@@ -193,7 +211,7 @@ class CreateServerPack extends Component {
 
         //Select modpackDir button
         JButton buttonModpackDir = new JButton();
-        buttonModpackDir.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonmodpackdir"));
+        buttonModpackDir.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonmodpackdir"));
         buttonModpackDir.setIcon(folderIcon);
         buttonModpackDir.setMinimumSize(folderButtonDimension);
         buttonModpackDir.setPreferredSize(folderButtonDimension);
@@ -202,7 +220,7 @@ class CreateServerPack extends Component {
             JFileChooser folderChooser = new JFileChooser();
 
             folderChooser.setCurrentDirectory(new File("."));
-            folderChooser.setDialogTitle(LocalizationManager.getLocalizedString("createserverpack.gui.buttonmodpackdir.title"));
+            folderChooser.setDialogTitle(localizationManager.getLocalizedString("createserverpack.gui.buttonmodpackdir.title"));
             folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             folderChooser.setAcceptAllFileFilterUsed(false);
             folderChooser.setMultiSelectionEnabled(false);
@@ -211,9 +229,9 @@ class CreateServerPack extends Component {
             if (folderChooser.showOpenDialog(folderChooser) == JFileChooser.APPROVE_OPTION) {
                 try {
                     textModpackDir.setText(folderChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
-                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonmodpack"), folderChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
+                    appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonmodpack"), folderChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
                 } catch (IOException ex) {
-                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttonmodpack"),ex);
+                    appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.buttonmodpack"),ex);
                 }
             }
         });
@@ -223,7 +241,7 @@ class CreateServerPack extends Component {
 
         //Select clientside-mods button
         JButton buttonClientMods = new JButton();
-        buttonClientMods.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonclientmods"));
+        buttonClientMods.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonclientmods"));
         buttonClientMods.setIcon(folderIcon);
         buttonClientMods.setMinimumSize(folderButtonDimension);
         buttonClientMods.setPreferredSize(folderButtonDimension);
@@ -239,9 +257,9 @@ class CreateServerPack extends Component {
             } else {
                 fileChooser.setCurrentDirectory(new File("."));
             }
-            fileChooser.setDialogTitle(LocalizationManager.getLocalizedString("createserverpack.gui.buttonclientmods.title"));
+            fileChooser.setDialogTitle(localizationManager.getLocalizedString("createserverpack.gui.buttonclientmods.title"));
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.setFileFilter(new FileNameExtensionFilter(LocalizationManager.getLocalizedString("createserverpack.gui.buttonclientmods.filter"),"jar"));
+            fileChooser.setFileFilter(new FileNameExtensionFilter(localizationManager.getLocalizedString("createserverpack.gui.buttonclientmods.filter"),"jar"));
             fileChooser.setAcceptAllFileFilterUsed(false);
             fileChooser.setMultiSelectionEnabled(true);
             fileChooser.setPreferredSize(chooserDimension);
@@ -254,8 +272,8 @@ class CreateServerPack extends Component {
                     clientModsFilenames.add(clientMods[i].getName());
                 }
 
-                textClientMods.setText(Reference.cliSetup.buildString(Arrays.toString(clientModsFilenames.toArray(new String[0]))));
-                appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
+                textClientMods.setText(configCheck.buildString(Arrays.toString(clientModsFilenames.toArray(new String[0]))));
+                appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
             }
         });
         constraints.gridx = 2;
@@ -264,7 +282,7 @@ class CreateServerPack extends Component {
 
         //Select directories to copy to server pack button
         JButton buttonCopyDirs = new JButton();
-        buttonCopyDirs.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttoncopydirs"));
+        buttonCopyDirs.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttoncopydirs"));
         buttonCopyDirs.setIcon(folderIcon);
         buttonCopyDirs.setMinimumSize(folderButtonDimension);
         buttonCopyDirs.setPreferredSize(folderButtonDimension);
@@ -279,7 +297,7 @@ class CreateServerPack extends Component {
             } else {
                 fileChooser.setCurrentDirectory(new File("."));
             }
-            fileChooser.setDialogTitle(LocalizationManager.getLocalizedString("createserverpack.gui.buttoncopydirs.title"));
+            fileChooser.setDialogTitle(localizationManager.getLocalizedString("createserverpack.gui.buttoncopydirs.title"));
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setAcceptAllFileFilterUsed(false);
             fileChooser.setMultiSelectionEnabled(true);
@@ -293,8 +311,8 @@ class CreateServerPack extends Component {
                     copyDirsNames.add(copyDirs[i].getName());
                 }
 
-                textCopyDirs.setText(Reference.cliSetup.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
-                appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
+                textCopyDirs.setText(configCheck.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+                appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
             }
         });
         constraints.gridx = 2;
@@ -303,7 +321,7 @@ class CreateServerPack extends Component {
 
         //Select javaPath button
         JButton buttonJavaPath = new JButton();
-        buttonJavaPath.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonjavapath"));
+        buttonJavaPath.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonjavapath"));
         buttonJavaPath.setIcon(folderIcon);
         buttonJavaPath.setMinimumSize(folderButtonDimension);
         buttonJavaPath.setPreferredSize(folderButtonDimension);
@@ -317,7 +335,7 @@ class CreateServerPack extends Component {
                 fileChooser.setCurrentDirectory(new File("."));
             }
 
-            fileChooser.setDialogTitle(LocalizationManager.getLocalizedString("createserverpack.gui.buttonjavapath.tile"));
+            fileChooser.setDialogTitle(localizationManager.getLocalizedString("createserverpack.gui.buttonjavapath.tile"));
 
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             fileChooser.setAcceptAllFileFilterUsed(true);
@@ -328,9 +346,9 @@ class CreateServerPack extends Component {
             if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
                 try {
                     textJavaPath.setText(fileChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
-                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonjavapath"), fileChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
+                    appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonjavapath"), fileChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
                 } catch (IOException ex) {
-                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttonjavapath"),ex);
+                    appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.buttonjavapath"),ex);
                 }
             }
         });
@@ -340,7 +358,7 @@ class CreateServerPack extends Component {
 
         //Load config from file
         JButton buttonLoadConfigFromFile = new JButton();
-        buttonLoadConfigFromFile.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig"));
+        buttonLoadConfigFromFile.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig"));
         buttonLoadConfigFromFile.setIcon(loadIcon);
         buttonLoadConfigFromFile.setMinimumSize(miscButtonDimension);
         buttonLoadConfigFromFile.setPreferredSize(miscButtonDimension);
@@ -349,9 +367,9 @@ class CreateServerPack extends Component {
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setCurrentDirectory(new File("."));
-            fileChooser.setDialogTitle(LocalizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig.title"));
+            fileChooser.setDialogTitle(localizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig.title"));
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.setFileFilter(new FileNameExtensionFilter(LocalizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),"conf"));
+            fileChooser.setFileFilter(new FileNameExtensionFilter(localizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),"conf"));
             fileChooser.setAcceptAllFileFilterUsed(false);
             fileChooser.setMultiSelectionEnabled(false);
             fileChooser.setPreferredSize(chooserDimension);
@@ -362,18 +380,18 @@ class CreateServerPack extends Component {
 
                 try {
                     newConfigFile = ConfigFactory.parseFile(new File(fileChooser.getSelectedFile().getCanonicalPath()));
-                    appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"), fileChooser.getSelectedFile().getCanonicalPath()));
+                    appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"), fileChooser.getSelectedFile().getCanonicalPath()));
                 } catch (IOException ex) {
-                    appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"),ex);
+                    appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"),ex);
                 }
 
                 if (newConfigFile != null) {
 
                     textModpackDir.setText(newConfigFile.getString("modpackDir"));
 
-                    textClientMods.setText(Reference.cliSetup.buildString(newConfigFile.getStringList("clientMods").toString()));
+                    textClientMods.setText(configCheck.buildString(newConfigFile.getStringList("clientMods").toString()));
 
-                    textCopyDirs.setText(Reference.cliSetup.buildString(newConfigFile.getStringList("copyDirs").toString()));
+                    textCopyDirs.setText(configCheck.buildString(newConfigFile.getStringList("copyDirs").toString()));
 
                     textJavaPath.setText(newConfigFile.getString("javaPath"));
 
@@ -383,17 +401,17 @@ class CreateServerPack extends Component {
 
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
 
-                    checkBoxServer.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
+                    checkBoxServer.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
 
-                    checkBoxIcon.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeServerIcon")));
+                    checkBoxIcon.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeServerIcon")));
 
-                    checkBoxProperties.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeServerProperties")));
+                    checkBoxProperties.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeServerProperties")));
 
-                    checkBoxScripts.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeStartScripts")));
+                    checkBoxScripts.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeStartScripts")));
 
-                    checkBoxZIP.setSelected(Reference.configCheck.convertToBoolean(newConfigFile.getString("includeZipCreation")));
+                    checkBoxZIP.setSelected(configCheck.convertToBoolean(newConfigFile.getString("includeZipCreation")));
 
-                    appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
+                    appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
                 }
             }
         });
@@ -405,7 +423,7 @@ class CreateServerPack extends Component {
 
         //Load config from file
         JButton buttonInfoWindow = new JButton();
-        buttonInfoWindow.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.button"));
+        buttonInfoWindow.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.button"));
         buttonInfoWindow.setIcon(helpIcon);
         buttonInfoWindow.setMinimumSize(miscButtonDimension);
         buttonInfoWindow.setPreferredSize(miscButtonDimension);
@@ -414,18 +432,18 @@ class CreateServerPack extends Component {
 
             JTextArea textArea = new JTextArea(String.format(
                     "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.directories"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.modloader"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.installserver"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
-                    LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.directories"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.modloader"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.installserver"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
             ));
             textArea.setEditable(false);
             textArea.setOpaque(false);
@@ -451,7 +469,7 @@ class CreateServerPack extends Component {
                         }
                     });
 
-            JOptionPane.showMessageDialog(new JFrame(), scrollPane, LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.title"), JOptionPane.INFORMATION_MESSAGE, helpIcon);
+            JOptionPane.showMessageDialog(new JFrame(), scrollPane, localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.title"), JOptionPane.INFORMATION_MESSAGE, helpIcon);
 
         });
         constraints.anchor = GridBagConstraints.CENTER;
@@ -464,7 +482,7 @@ class CreateServerPack extends Component {
         constraints.fill = GridBagConstraints.NONE;
         constraints.insets = new Insets(5,0,5,0);
 
-        JLabel labelGenerateServerPack = new JLabel(LocalizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.ready"));
+        JLabel labelGenerateServerPack = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.ready"));
         constraints.gridx = 0;
         constraints.gridy = 18;
         constraints.gridwidth = 4;
@@ -474,16 +492,16 @@ class CreateServerPack extends Component {
         createServerPackPanel.add(labelGenerateServerPack, constraints);
 
         JButton buttonGenerateServerPack = new JButton();
-        buttonGenerateServerPack.setToolTipText(LocalizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.tip"));
+        buttonGenerateServerPack.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.tip"));
         buttonGenerateServerPack.setIcon(startGeneration);
         buttonGenerateServerPack.addActionListener(e -> {
 
             buttonGenerateServerPack.setEnabled(false);
 
-            appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
-            labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
+            appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
+            labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
 
-            Reference.filesSetup.writeConfigToFile(
+            configCheck.writeConfigToFile(
                     textModpackDir.getText(),
                     textClientMods.getText(),
                     textCopyDirs.getText(),
@@ -499,24 +517,24 @@ class CreateServerPack extends Component {
                     new File("serverpackcreator.tmp"),
                     true
             );
-            if (!Reference.configCheck.checkConfigFile(new File("serverpackcreator.tmp"))) {
-                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
-                labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
+            if (!configCheck.checkConfigFile(new File("serverpackcreator.tmp"))) {
+                appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
+                labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
                 if (new File("serverpackcreator.tmp").exists()) {
                     boolean delTmp = new File("serverpackcreator.tmp").delete();
                     if (delTmp) {
-                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
-                        appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+                        labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+                        appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
                     } else {
-                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
-                        appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
+                        labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
+                        appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
                     }
                 }
 
-                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-                labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-                Reference.filesSetup.writeConfigToFile(
+                appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
+                labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
+                configCheck.writeConfigToFile(
                         textModpackDir.getText(),
                         textClientMods.getText(),
                         textCopyDirs.getText(),
@@ -529,12 +547,12 @@ class CreateServerPack extends Component {
                         checkBoxProperties.isSelected(),
                         checkBoxScripts.isSelected(),
                         checkBoxZIP.isSelected(),
-                        Reference.getConfigFile(),
+                        configCheck.getConfigFile(),
                         false
                 );
 
-                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
-                labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
+                appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
+                labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
 
 
                 Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
@@ -547,20 +565,21 @@ class CreateServerPack extends Component {
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
-                    if (Handler.run()) {
+                    CreateServerPack createServerPack = new CreateServerPack(localizationManager, configCheck);
+                    if (createServerPack.run()) {
                         tailer.stop();
 
                         System.gc();
                         System.runFinalization();
 
                         buttonGenerateServerPack.setEnabled(true);
-                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+                        labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
                         JTextArea textArea = new JTextArea();
                         textArea.setOpaque(false);
                         textArea.setText(String.format(
                                 "%s\n%s",
-                                LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
+                                localizationManager.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
                                 String.format(
                                         "%s/server_pack",
                                         textModpackDir.getText()
@@ -571,13 +590,13 @@ class CreateServerPack extends Component {
                         if (JOptionPane.showConfirmDialog(
                                 createServerPackPanel,
                                 textArea,
-                                LocalizationManager.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
+                                localizationManager.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE) == 0) {
                             try {
                                 Desktop.getDesktop().open(new File(String.format("%s/server_pack",textModpackDir.getText())));
                             } catch (IOException ex) {
-                                appLogger.error(LocalizationManager.getLocalizedString("createserverpack.log.error.browserserverpack"));
+                                appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.browserserverpack"));
                             }
                         }
                         executorService.shutdown();
@@ -592,13 +611,13 @@ class CreateServerPack extends Component {
                         System.runFinalization();
 
                         buttonGenerateServerPack.setEnabled(true);
-                        labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+                        labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
                         executorService.shutdown();
                     }
                 });
             } else {
-                labelGenerateServerPack.setText(LocalizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
+                labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
                 buttonGenerateServerPack.setEnabled(true);
             }
         });
@@ -619,13 +638,13 @@ class CreateServerPack extends Component {
                 File configFile = new File("serverpackcreator.conf");
                 Config config = ConfigFactory.parseFile(configFile);
 
-                appLogger.info(String.format(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"), configFile));
+                appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"), configFile));
 
                 textModpackDir.setText(config.getString("modpackDir"));
 
-                textClientMods.setText(Reference.cliSetup.buildString(config.getStringList("clientMods").toString()));
+                textClientMods.setText(configCheck.buildString(config.getStringList("clientMods").toString()));
 
-                textCopyDirs.setText(Reference.cliSetup.buildString(config.getStringList("copyDirs").toString()));
+                textCopyDirs.setText(configCheck.buildString(config.getStringList("copyDirs").toString()));
 
                 textJavaPath.setText(config.getString("javaPath"));
 
@@ -635,17 +654,17 @@ class CreateServerPack extends Component {
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
 
-                checkBoxServer.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeServerInstallation")));
+                checkBoxServer.setSelected(configCheck.convertToBoolean(config.getString("includeServerInstallation")));
 
-                checkBoxIcon.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeServerIcon")));
+                checkBoxIcon.setSelected(configCheck.convertToBoolean(config.getString("includeServerIcon")));
 
-                checkBoxProperties.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeServerProperties")));
+                checkBoxProperties.setSelected(configCheck.convertToBoolean(config.getString("includeServerProperties")));
 
-                checkBoxScripts.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeStartScripts")));
+                checkBoxScripts.setSelected(configCheck.convertToBoolean(config.getString("includeStartScripts")));
 
-                checkBoxZIP.setSelected(Reference.configCheck.convertToBoolean(config.getString("includeZipCreation")));
+                checkBoxZIP.setSelected(configCheck.convertToBoolean(config.getString("includeZipCreation")));
 
-                appLogger.info(LocalizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
+                appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
             }
         } catch (NullPointerException ignored) {
 

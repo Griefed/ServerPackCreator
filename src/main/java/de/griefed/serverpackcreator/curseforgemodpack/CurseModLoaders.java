@@ -2,7 +2,7 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-class ModLoaders {
+class CurseModLoaders {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String id;
 

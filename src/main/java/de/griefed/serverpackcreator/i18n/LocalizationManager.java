@@ -1,14 +1,9 @@
 package de.griefed.serverpackcreator.i18n;
 
-import de.griefed.serverpackcreator.FilesSetup;
-import de.griefed.serverpackcreator.Reference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -21,33 +16,51 @@ import java.util.*;
  * For example: lang_en_us.lang.</p>
  * Currently supports only strings to be used in localized fields.
  */
-public class LocalizationManager extends Reference {
-
+public class LocalizationManager {
 
     private static final Logger localeLogger = LogManager.getLogger(LocalizationManager.class);
+    private final File langPropertiesFile = new File("lang.properties");
+
     /**
      * Current language of application, mapped for easier further reference.
      */
-    private static Map<String, String> currentLanguage = new HashMap<>();
+    private Map<String, String> currentLanguage = new HashMap<>();
 
     /**
      * Localized strings that application uses.
      */
-    private static ResourceBundle localeResources;
+    private ResourceBundle localeResources;
 
     /**
      * Keys that used for current language mapping.
      */
-    private static final String LANGUAGE_MAP_PATH = "language";
-    private static final String COUNTRY_MAP_PATH = "country";
+    private final String LANGUAGE_MAP_PATH = "language";
+    private final String COUNTRY_MAP_PATH = "country";
+    private final String[] SUPPORTED_LANGUAGES = {
+            "en_us",
+            "uk_ua",
+            "de_de"
+    };
+
+    String[] getSupportedLanguages() {
+        return SUPPORTED_LANGUAGES;
+    }
+
+    File getLangPropertiesFile() {
+        return langPropertiesFile;
+    }
+
+    public String getLocale() {
+        return String.format("%s_%s", currentLanguage.get(LANGUAGE_MAP_PATH), currentLanguage.get(COUNTRY_MAP_PATH));
+    }
 
     /**
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by SPC or specified in the invalid format.
      * @param locale Locale to be used by application in this run.
      */
-    public static void init(String locale) throws IncorrectLanguageException {
+    public void init(String locale) throws IncorrectLanguageException {
         boolean isLanguageExists = false;
-        for (String lang: Reference.getSupportedLanguages()) {
+        for (String lang: getSupportedLanguages()) {
             if (lang.equalsIgnoreCase(locale)) {
                 localeLogger.debug("Lang is correct");
                 isLanguageExists = true;
@@ -68,14 +81,14 @@ public class LocalizationManager extends Reference {
         if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
             localeLogger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
         }
-        FilesSetup.writeLocaleToFile(locale);
+        writeLocaleToFile(locale);
     }
 
     /**
      * @param localePropertiesFile Path to the properties file with the language specified.
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by SPC or specified in the invalid format.
      */
-    public static void init(File localePropertiesFile) throws IncorrectLanguageException{
+    public void init(File localePropertiesFile) throws IncorrectLanguageException{
         Properties langProperties = new Properties();
         try (FileInputStream fis = new FileInputStream(localePropertiesFile)){
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
@@ -89,7 +102,7 @@ public class LocalizationManager extends Reference {
 
         boolean isLanguageExists = false;
 
-        for (String lang: Reference.getSupportedLanguages()) {
+        for (String lang: getSupportedLanguages()) {
             if (lang.equalsIgnoreCase(langProp)) {
                 localeLogger.debug("Lang is correct");
                 isLanguageExists = true;
@@ -119,7 +132,7 @@ public class LocalizationManager extends Reference {
     /**
      * Initializer with default localization properties path.
      */
-    public static void init() {
+    public void init() {
         try {
             init("en_us");
         } catch (IncorrectLanguageException e) {
@@ -132,7 +145,7 @@ public class LocalizationManager extends Reference {
      * @param languageKey The language key to search for.
      * @return Localized string that is referred by the language key.
      */
-    public static String getLocalizedString(String languageKey) {
+    public String getLocalizedString(String languageKey) {
         try {
             String value =  localeResources.getString(languageKey);
             return new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
@@ -143,11 +156,83 @@ public class LocalizationManager extends Reference {
         return null;
     }
 
-    public static String getLocale() {
-        return String.format("%s_%s", currentLanguage.get(LANGUAGE_MAP_PATH), currentLanguage.get(COUNTRY_MAP_PATH));
+    /**
+     * Check for existence of a lang.properties-file and if found assign language specified therein. If assigning the specified language fails because it is not supported, default to en_US.
+     * This method should not contain the LocalizationManager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
+     * @return Always returns true. Dirty hack until I one day figure out how to init Localization before UI start correctly.
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public boolean checkLocaleFile() {
+        if (getLangPropertiesFile().exists()) {
+            try {
+                init(getLangPropertiesFile());
+            } catch (IncorrectLanguageException e) {
+
+                localeLogger.error("Incorrect language specified, falling back to English (United States)...");
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(getLangPropertiesFile()))) {
+
+                    if (!getLangPropertiesFile().exists()) {
+                        boolean langCreated = getLangPropertiesFile().createNewFile();
+                        if (langCreated) {
+                            localeLogger.debug("Lang properties file created successfully.");
+                        } else {
+                            localeLogger.debug("Lang properties file not created.");
+                        }
+                    }
+
+                    writer.write(String.format("# Supported languages: %s%n", Arrays.toString(getSupportedLanguages())));
+                    writer.write(String.format("lang=en_us%n"));
+
+                } catch (IOException ex) {
+                    localeLogger.error("Error: There was an error writing the localization properties file.", ex);
+                }
+                init();
+            }
+        } else {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(getLangPropertiesFile()))) {
+
+                if (!getLangPropertiesFile().exists()) {
+                    boolean langCreated = getLangPropertiesFile().createNewFile();
+                    if (langCreated) {
+                        localeLogger.debug("Lang properties file created successfully.");
+                    } else {
+                        localeLogger.debug("Lang properties file not created.");
+                    }
+                }
+
+                writer.write(String.format("# Supported languages: %s%n", Arrays.toString(getSupportedLanguages())));
+                writer.write(String.format("lang=en_us%n"));
+
+            } catch (IOException ex) {
+                localeLogger.error("Error: There was an error writing the localization properties file.", ex);
+            }
+            init();
+        }
+        return true;
     }
 
-    public static String[] getSupportedLanguages() {
-        return Reference.getSupportedLanguages();
+    /**
+     * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every subsequent start of serverpackcreator is executed using said locale.
+     * @param locale The locale the user specified when they ran serverpackcreator with -lang -your_locale.
+     * This method should not contain the LocalizationManager, as the initialization of said manager is called from here. Therefore, localized string are not yet available.
+     */
+    void writeLocaleToFile(String locale) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(getLangPropertiesFile()))) {
+
+            if (!getLangPropertiesFile().exists()) {
+                boolean langCreated = getLangPropertiesFile().createNewFile();
+                if (langCreated) {
+                    localeLogger.debug("Lang properties file created successfully.");
+                } else {
+                    localeLogger.debug("Lang properties file not created.");
+                }
+            }
+
+            writer.write(String.format("# Supported languages: %s%n", Arrays.toString(getSupportedLanguages())));
+            writer.write(String.format("lang=%s%n", locale));
+
+        } catch (IOException ex) {
+            localeLogger.error("Error: There was an error writing the localization properties file.", ex);
+        }
     }
 }

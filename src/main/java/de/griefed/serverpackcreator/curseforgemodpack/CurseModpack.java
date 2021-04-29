@@ -4,19 +4,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-public class Modpack {
+public class CurseModpack {
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private List<Minecraft> minecraft;
+    private List<CurseMinecraft> minecraft;
     private String name;
     private String version;
     private String author;
-    private List<Files> files;
+    private List<CurseFiles> files;
 
-    public List<Minecraft> getMinecraft() {
+    public List<CurseMinecraft> getMinecraft() {
         return minecraft;
     }
 
-    public void setMinecraft(List<Minecraft> minecraft) {
+    public void setMinecraft(List<CurseMinecraft> minecraft) {
         this.minecraft = minecraft;
     }
 
@@ -40,15 +40,11 @@ public class Modpack {
         return author;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public List<Files> getFiles() {
+    public List<CurseFiles> getFiles() {
         return files;
     }
 
-    public void setFiles(List<Files> files) {
+    public void setFiles(List<CurseFiles> files) {
         this.files = files;
     }
 

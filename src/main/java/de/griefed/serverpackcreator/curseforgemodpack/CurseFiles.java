@@ -2,7 +2,7 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class Files {
+public class CurseFiles {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String projectID;
     private String fileID;
