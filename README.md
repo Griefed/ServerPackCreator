@@ -201,11 +201,3 @@ docker create \
 
 If you're a Java Pro and your eyes bulge when looking at my code, by all means, you're welcome to help me improve it in any way, shape, or form.
 You're welcome to make [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md), or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
-
-## Translating ServerPackCreator
-
-To add a new language to the app you need:
-
-Create resources/de/griefed/resources/lang/lang_language code.lang file.
-Add language code to the SUPPORTED_LANGUAGES list in Reference.
-Translate the app!
