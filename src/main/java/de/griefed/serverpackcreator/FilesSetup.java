@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 
 public class FilesSetup {
 
-    private final Logger appLogger = LogManager.getLogger(FilesSetup.class);
+    private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
 
     private final File configFile = new File("serverpackcreator.conf");
     private final File oldConfigFile     = new File("creator.conf");
