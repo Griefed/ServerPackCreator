@@ -24,7 +24,7 @@ public class CreateGui extends JPanel {
     private LocalizationManager localizationManager;
     private Configuration configuration;
 
-    public CreateGui(LocalizationManager injectedLocalizationManager, Configuration injectedConfigCheck) {
+    public CreateGui(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration) {
         super(new GridLayout(1, 1));
 
         if (injectedLocalizationManager == null) {
@@ -33,10 +33,10 @@ public class CreateGui extends JPanel {
             this.localizationManager = injectedLocalizationManager;
         }
 
-        if (injectedConfigCheck == null) {
+        if (injectedConfiguration == null) {
             this.configuration = new Configuration(localizationManager);
         } else {
-            this.configuration = injectedConfigCheck;
+            this.configuration = injectedConfiguration;
         }
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);

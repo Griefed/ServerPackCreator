@@ -24,7 +24,7 @@ public class Main {
         Configuration configuration = new Configuration(localizationManager);
         FilesSetup filesSetup = new FilesSetup(localizationManager);
         CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration);
-        CreateGui tabbedPane = new CreateGui(localizationManager, configuration);
+
 
         List<String> programArgs = Arrays.asList(args);
 
@@ -114,6 +114,7 @@ public class Main {
 
         } else {
 
+            CreateGui tabbedPane = new CreateGui(localizationManager, configuration);
             tabbedPane.mainGUI();
 
         }

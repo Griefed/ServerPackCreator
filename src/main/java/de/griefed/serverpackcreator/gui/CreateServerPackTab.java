@@ -37,17 +37,17 @@ public class CreateServerPackTab extends Component {
     private Configuration configuration;
     private LocalizationManager localizationManager;
 
-    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfigCheck) {
+    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         } else {
             this.localizationManager = injectedLocalizationManager;
         }
 
-        if (injectedConfigCheck == null) {
+        if (injectedConfiguration == null) {
             this.configuration = new Configuration(localizationManager);
         } else {
-            this.configuration = injectedConfigCheck;
+            this.configuration = injectedConfiguration;
         }
 
     }

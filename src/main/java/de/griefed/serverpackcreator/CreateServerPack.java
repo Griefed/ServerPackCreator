@@ -44,18 +44,18 @@ public class CreateServerPack {
     private final File fabricLinuxFile   = new File("start-fabric.sh");
 
 
-    public CreateServerPack(LocalizationManager injectedLocalizationManager, Configuration injectedConfigCheck) {
+    public CreateServerPack(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         }
 
         this.localizationManager = injectedLocalizationManager;
 
-        if (injectedConfigCheck == null) {
+        if (injectedConfiguration == null) {
             this.configuration = new Configuration(localizationManager);
         }
 
-        this.configuration = injectedConfigCheck;
+        this.configuration = injectedConfiguration;
     }
 
     public File getPropertiesFile() {
