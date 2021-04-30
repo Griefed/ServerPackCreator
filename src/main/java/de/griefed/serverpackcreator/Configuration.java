@@ -1,3 +1,22 @@
+/* Copyright (C) 2021  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -27,7 +46,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-
+//TODO: Write table of contents
 public class Configuration {
 
     private static final Logger appLogger = LogManager.getLogger(Configuration.class);
@@ -1289,6 +1308,7 @@ public class Configuration {
         boolean configWritten = false;
 
         //Griefed: What the fuck. This reads like someone having a stroke. What have I created here?
+        //TODO: Fix language keys and config variable
         String configString = String.format(
                 "%s\"%s\"\n\n%s[%s]\n\n%s[%s]\n\n%s%b\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s%b\n\n%s%b\n\n%s%b\n\n%s%b",
                 localizationManager.getLocalizedString("filessetup.writeconfigtofile.modpackdir"),
