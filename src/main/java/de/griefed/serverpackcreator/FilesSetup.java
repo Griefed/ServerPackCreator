@@ -29,23 +29,23 @@ import java.nio.file.Paths;
 /**
  * <strong>Table of methods</strong>
  * <p>
- * {@link #FilesSetup(LocalizationManager)}<p>
- * {@link #getConfigFile()}<p>
- * {@link #getOldConfigFile()}<p>
- * {@link #getPropertiesFile()}<p>
- * {@link #getIconFile()}<p>
- * {@link #getForgeWindowsFile()}<p>
- * {@link #getForgeLinuxFile()}<p>
- * {@link #getFabricWindowsFile()}
- * {@link #getFabricLinuxFile()}
- * {@link #filesSetup()}<p>
- * {@link #checkForConfig()}<p>
- * {@link #checkForFabricLinux()}<p>
- * {@link #checkForFabricWindows()}<p>
- * {@link #checkForForgeLinux()}<p>
- * {@link #checkForForgeWindows()}<p>
- * {@link #checkForProperties()}<p>
- * {@link #checkForIcon()}
+ * 1. {@link #FilesSetup(LocalizationManager)}<p>
+ * 2. {@link #getConfigFile()}<p>
+ * 3. {@link #getOldConfigFile()}<p>
+ * 4. {@link #getPropertiesFile()}<p>
+ * 5. {@link #getIconFile()}<p>
+ * 6. {@link #getForgeWindowsFile()}<p>
+ * 7. {@link #getForgeLinuxFile()}<p>
+ * 8. {@link #getFabricWindowsFile()}
+ * 9. {@link #getFabricLinuxFile()}
+ * 10.{@link #filesSetup()}<p>
+ * 11.{@link #checkForConfig()}<p>
+ * 12.{@link #checkForFabricLinux()}<p>
+ * 13.{@link #checkForFabricWindows()}<p>
+ * 14.{@link #checkForForgeLinux()}<p>
+ * 15.{@link #checkForForgeWindows()}<p>
+ * 16.{@link #checkForProperties()}<p>
+ * 17.{@link #checkForIcon()}
  * <p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
