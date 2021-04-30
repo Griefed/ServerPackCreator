@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
 package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
@@ -33,12 +32,47 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * <strong>Table of methods</strong>
+ * <p>
+ * {@link #main(String[])}
+ * <p>
+ * Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
+ * one of the following modes will be entered:<p>
+ * <strong>-cgen</strong><p>
+ * When ServerPackCreator is run with the <code>-cgen</code>-argument, you will be guided through a step-by-step
+ * generation of a new configuration file.<p>
+ * This mode is also entered if:<p>
+ * ServerPackCreator is run with the <code>-cli</code>-argument <strong>AND</strong> if no configuration-file exists.<p>
+ * ServerPackCreator can not find any configuration-file when run in cli-mode, for whatever reason.
+ * <p>
+ * <strong>-cli</strong><p>
+ * When ServerPackCreator is run with the <code>-cli</code>-argument, it will be executed in commandline-mode only.
+ * Use this argument if you explicitly want to execute ServerPackCreator without GUI. *
+ * <p>
+ * <strong>-lang</strong><p>
+ * Specifies the locale with which ServerPackCreator is run. If no locale is specified or if this argument is not
+ * used, ServerPackCreator will use the default locale <code>en_us</code><p>
+ * Correct usage is:<p>
+ * <code>-lang your_locale</code><p>
+ * Examples:<p>
+ * <code>-lang de_de</code><p>
+ * <code>-lang en_us</code><p>
+ * <strong>Headless environments</strong><p>
+ * If ServerPackCreator is run in a headless environment, without any graphical environment, it should automatically
+ * enter <code>-cli</code>-mode.
+ */
 public class Main {
     private static final Logger appLogger = LogManager.getLogger(Main.class);
 
     /**
-     * Init and "main" has been moved to Handler-class. Main now only inits the LocalizationManager and passes the cli args, if any,  to Handler, which then runs the usual operations as they used to be in pre-2.x.x
-     * @param args Commandline arguments with which ServerPackCreator is run. Passed to Handler-class which then decides what to do corresponding to input.
+     * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.
+     * Calls {@link FilesSetup} so all default files are available.
+     * Checks arguments to determine which mode to enter.
+     * Lists a couple of environment variables important for reporting issues.
+     *
+     * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
+     * will enter and which locale is used.
      */
     public static void main(String[] args) {
         List<String> programArgs = Arrays.asList(args);
