@@ -17,6 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
+//TODO: Write table of contents
 package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -46,7 +47,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-//TODO: Write table of contents
+//TODO: Write docs for class
 public class Configuration {
 
     private static final Logger appLogger = LogManager.getLogger(Configuration.class);
@@ -1308,33 +1309,31 @@ public class Configuration {
         boolean configWritten = false;
 
         //Griefed: What the fuck. This reads like someone having a stroke. What have I created here?
-        //TODO: Fix language keys and config variable
         String configString = String.format(
-                "%s\"%s\"\n\n%s[%s]\n\n%s[%s]\n\n%s%b\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s\"%s\"\n\n%s%b\n\n%s%b\n\n%s%b\n\n%s%b",
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.modpackdir"),
-                modpackDir.replace("\\","/"),
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.clientmods"),
-                clientMods,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.copydirs"),
-                copyDirs,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includeserverinstallation"),
-                includeServer,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.javapath"),
-                javaPath.replace("\\","/"),
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.minecraftversion"),
-                minecraftVersion,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.modloader"),
-                modLoader,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.modloaderversion"),
-                modLoaderVersion,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includeservericon"),
-                includeIcon,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includeserverproperties"),
-                includeProperties,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includestartscripts"),
-                includeScripts,
-                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includezipcreation"),
-                includeZip
+                        "%s\nmodpackDir = \"%s\"\n\n" +
+                        "%s\nclientMods = [%s]\n\n" +
+                        "%s\ncopyDirs =[%s]\n\n" +
+                        "%s\nincludeServerInstallation = %b\n\n" +
+                        "%s\njavaPath = \"%s\"\n\n" +
+                        "%s\nminecraftVersion = \"%s\"\n\n" +
+                        "%s\nmodLoader = \"%s\"\n\n" +
+                        "%s\nmodLoaderVersion = \"%s\"\n\n" +
+                        "%s\nincludeServerIcon = %b\n\n" +
+                        "%s\nincludeServerProperties = %b\n\n" +
+                        "%s\nincludeStartScripts = %b\n\n" +
+                        "%s\nincludeZipCreation = %b\n",
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.clientmods"), clientMods,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.copydirs"), copyDirs,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includeserverinstallation"), includeServer,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.javapath"), javaPath.replace("\\","/"),
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.minecraftversion"), minecraftVersion,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.modloader"), modLoader,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.modloaderversion"), modLoaderVersion,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includeservericon"), includeIcon,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includeserverproperties"), includeProperties,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includestartscripts"), includeScripts,
+                localizationManager.getLocalizedString("filessetup.writeconfigtofile.includezipcreation"), includeZip
         );
 
         if (!isTemporary) {
