@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
 package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -26,12 +25,49 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-//TODO: Write table of contents
+
+/**
+ * <strong>Table of methods</strong>
+ * <p>
+ * {@link #FilesSetup(LocalizationManager)}<p>
+ * {@link #getConfigFile()}<p>
+ * {@link #getOldConfigFile()}<p>
+ * {@link #getPropertiesFile()}<p>
+ * {@link #getIconFile()}<p>
+ * {@link #getForgeWindowsFile()}<p>
+ * {@link #getForgeLinuxFile()}<p>
+ * {@link #getFabricWindowsFile()}
+ * {@link #getFabricLinuxFile()}
+ * {@link #filesSetup()}<p>
+ * {@link #checkForConfig()}<p>
+ * {@link #checkForFabricLinux()}<p>
+ * {@link #checkForFabricWindows()}<p>
+ * {@link #checkForForgeLinux()}<p>
+ * {@link #checkForForgeWindows()}<p>
+ * {@link #checkForProperties()}<p>
+ * {@link #checkForIcon()}
+ * <p>
+ * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
+ * <p>
+ * Ensures all files needed by ServerPackCreator are available. If any one is missing, a new one is generated from the
+ * template. Among the default files are:<p>
+ * <strong>serverpackcreator.conf</strong><p>
+ * <strong>server.properties</strong><p>
+ * <strong>server-icon.png</strong><p>
+ * <strong>start-forge.bar</strong><p>
+ * <strong>start-forge.sh</strong><p>
+ * <strong>start-fabric.bat</strong><p>
+ * <strong>start-fabric.sh</strong>
+ * <p>
+ *
+ * Should an old configuration file, <em>creator.conf</em>, be detected, it is renamed to <em>serverpackcreator.conf</em>
+ * to ensure a configuration file is present at all times.<p>
+ */
 public class FilesSetup {
 
     private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
 
-    private final File configFile = new File("serverpackcreator.conf");
+    private final File configFile        = new File("serverpackcreator.conf");
     private final File oldConfigFile     = new File("creator.conf");
     private final File propertiesFile    = new File("server.properties");
     private final File iconFile          = new File("server-icon.png");
@@ -42,6 +78,12 @@ public class FilesSetup {
 
     private LocalizationManager localizationManager;
 
+    /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection. Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     */
     public FilesSetup(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
@@ -50,39 +92,75 @@ public class FilesSetup {
         }
     }
 
+    /**
+     * Getter for serverpackcreator.conf.
+     * @return Returns the serverpackcreator.conf-file for use in {@link #checkForConfig()}
+     */
     public File getConfigFile() {
         return configFile;
     }
 
+    /**
+     * Getter for creator.conf.
+     * @return Returns the creator.conf-file for use in {@link #checkForConfig()}.
+     */
     public File getOldConfigFile() {
         return oldConfigFile;
     }
 
+    /**
+     * Getter for server.properties.
+     * @return Returns the server.properties-file for use in {@link #checkForProperties()}
+     */
     public File getPropertiesFile() {
         return propertiesFile;
     }
 
+    /**
+     * Getter for server-icon.png
+     * @return Returns the server-icon.png-file for use in {@link #checkForIcon()}
+     */
     public File getIconFile() {
         return iconFile;
     }
 
+    /**
+     * Getter for start-forge.bat.
+     * @return Returns the start-forge.bat-file for use in {@link #checkForForgeWindows()}
+     */
     public File getForgeWindowsFile() {
         return forgeWindowsFile;
     }
 
+    /**
+     * Getter for start-forge.sh.
+     * @return Returns the start-forge.sh-file for use in {@link #checkForForgeLinux()}
+     */
     public File getForgeLinuxFile() {
         return forgeLinuxFile;
     }
 
+    /**
+     * Getter for start-fabric.bat.
+     * @return Returns the start-fabric.bat-file for use in {@link #checkForFabricWindows()}
+     */
     public File getFabricWindowsFile() {
         return fabricWindowsFile;
     }
 
+    /**
+     * Getter for start-fabric.sh.
+     * @return Returns the start-fabric.sh-file for use in {@link #checkForFabricLinux()}
+     */
     public File getFabricLinuxFile() {
         return fabricLinuxFile;
     }
 
-    /** Calls individual methods which check for existence of default files. If any of these methods return true, serverpackcreator will exit, giving the user the chance to customize it before the program runs in production.
+    /** Calls individual methods which check for existence of default files. Only this method should be called to check
+     * for existence of all default files.<p>
+     * If any file was newly generated from it's template, a warning is printed informing the user about said newly
+     * generated file. If every file was present and none was generated, "Setup completed." is printed to the console
+     * and log.
      */
     void filesSetup() {
         appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.filessetup.enter"));
@@ -117,8 +195,10 @@ public class FilesSetup {
             appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.filessetup.finish"));
         }
     }
-    /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new config file is generated.
-     * @return Boolean. Returns true if new config file was generated.
+    /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new
+     * config file is generated.
+     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
+     * said newly generated file.
      */
     boolean checkForConfig() {
         boolean firstRun = false;
@@ -157,7 +237,8 @@ public class FilesSetup {
     }
 
     /** Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
-     * @return Boolean. Returns true if the file was generated.
+     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
+     * said newly generated file.
      */
     boolean checkForFabricLinux() {
         boolean firstRun = false;
@@ -183,7 +264,8 @@ public class FilesSetup {
     }
 
     /** Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
-     * @return Boolean. Returns true if the file was generated.
+     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
+     * said newly generated file.
      */
     boolean checkForFabricWindows() {
         boolean firstRun = false;
@@ -209,7 +291,8 @@ public class FilesSetup {
     }
 
     /** Checks for existence of Forge start script for Linux. If it is not found, it is generated.
-     * @return Boolean. Returns true if the file was generated.
+     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
+     * said newly generated file.
      */
     boolean checkForForgeLinux() {
         boolean firstRun = false;
@@ -235,7 +318,8 @@ public class FilesSetup {
     }
 
     /** Checks for existence of Forge start script for Windows. If it is not found, it is generated.
-     * @return Boolean. Returns true if the file was generated.
+     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
+     * said newly generated file.
      */
     boolean checkForForgeWindows() {
         boolean firstRun = false;
@@ -261,7 +345,8 @@ public class FilesSetup {
     }
 
     /** Checks for existence of server.properties file. If it is not found, it is generated.
-     * @return Boolean. Returns true if the file was generated.
+     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
+     * said newly generated file.
      */
     boolean checkForProperties() {
         boolean firstRun = false;
@@ -287,7 +372,8 @@ public class FilesSetup {
     }
 
     /** Checks for existence of server-icon.png file. If it is not found, it is generated.
-     * @return Boolean. Returns true if the file was generated.
+     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
+     * said newly generated file.
      */
     boolean checkForIcon() {
         boolean firstRun = false;
