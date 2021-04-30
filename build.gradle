@@ -118,6 +118,10 @@ jar {
             'META-INF/DEPENDENCIES',
             'META-INF/LICENSE',
             'META-INF/NOTICE',
+            'META-INF/CHANGES',
+            'META-INF/LICENSE.txt',
+            'META-INF/NOTICE.txt',
+            'META-INF/README.md',
             'Log4j-**',
             'icon.png',
             'profile_icon.png'
