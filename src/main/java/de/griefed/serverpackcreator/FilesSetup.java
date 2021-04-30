@@ -61,7 +61,7 @@ import java.nio.file.Paths;
  * <p>
  *
  * Should an old configuration file, <em>creator.conf</em>, be detected, it is renamed to <em>serverpackcreator.conf</em>
- * to ensure a configuration file is present at all times.<p>
+ * to ensure a configuration file is present at all times.
  */
 public class FilesSetup {
 

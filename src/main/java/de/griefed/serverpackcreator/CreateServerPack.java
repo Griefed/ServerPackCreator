@@ -78,7 +78,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * {@link #latestFabricInstaller(String)}<p>
  * {@link #downloadForgeJar(String, String, String)}<p>
  * {@link #deleteMinecraftJar(String, String, String)}<p>
- * {@link #cleanUpServerPack(File, File, String, String, String, String)}<p>
+ * {@link #cleanUpServerPack(File, File, String, String, String, String)}
  * <p>
  * Requires an instance of {@link Configuration} from which to get all required information about the modpack and the
  * then to be generated server pack.
