@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
+//TODO: Write table of contents
 package de.griefed.serverpackcreator.curseforgemodpack;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -33,16 +33,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
+//TODO: Write docs for class
 public class CurseCreateModpack {
     private static final Logger appLogger = LogManager.getLogger(CurseCreateModpack.class);
     private String projectName;
@@ -59,6 +58,20 @@ public class CurseCreateModpack {
         }
     }
 
+    /** Standardize the specified modloader.
+     * @param modloader String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..
+     * @return String. Returns a standardized String of the specified modloader.
+     */
+    String setModloaderCase(String modloader) {
+        String returnLoader = null;
+        if (modloader.equalsIgnoreCase("Forge")) {
+            returnLoader = "Forge";
+        } else if (modloader.equalsIgnoreCase("Fabric")) {
+            returnLoader = "Fabric";
+        }
+        return returnLoader;
+    }
+
     /** Gets the names of the specified project and file and makes calls to methods which create the modpack so we can then create a server pack from it.
      * @param modpackDir String. Combination of project name and file name. Created during download procedure and later added to config file.
      * @param projectID Integer. The ID of the project. Used to gather information and to download the modpack.
@@ -68,6 +81,7 @@ public class CurseCreateModpack {
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     public boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
+
         try {
             if (CurseAPI.project(projectID).isPresent()) {
                 Optional<CurseProject> curseProject = CurseAPI.project(projectID);
@@ -126,7 +140,7 @@ public class CurseCreateModpack {
             appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modpackversion"), modpack.getVersion()));
             appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modpackauthor"), modpack.getAuthor()));
             appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modpackminecraftversion"), minecraftLoaderVersions[0].replace("[", "")));
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modloader"), setModloader(modLoaderVersion[0])));
+            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modloader"), setModloaderCase(modLoaderVersion[0])));
             appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modloaderversion"), modLoaderVersion[1]));
 
         } catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.initializemodpack.readmodpack"), ex); }
@@ -243,7 +257,7 @@ public class CurseCreateModpack {
             appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.checkcurseforgedir.create"));
         } else {
             appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.checkcurseforgedir"));
-            isModpackPresent = true;
+            isModpackPresent = cleanupEnvironment(modpackDir);
         }
         return isModpackPresent;
     }
@@ -314,17 +328,40 @@ public class CurseCreateModpack {
         return destFile;
     }
 
-    /** Standardize the specified modloader.
-     * @param modloader String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..
-     * @return String. Returns a standardized String of the specified modloader.
+    /** Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
+     * server pack is as clean as possible.
+     * @param modpackDir String. The server_pack directory and ZIP-archive will be deleted inside the modpack directory.
+     * @return Boolean. Returns false if every file and folder was successfully deleted.
      */
-    String setModloader(String modloader) {
-        String returnLoader = null;
-        if (modloader.equalsIgnoreCase("Forge")) {
-            returnLoader = "Forge";
-        } else if (modloader.equalsIgnoreCase("Fabric")) {
-            returnLoader = "Fabric";
+    private boolean cleanupEnvironment(String modpackDir) {
+        boolean cleanedUp = false;
+        if (new File(modpackDir).exists()) {
+            appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.cleanupenvironment.enter"));
+            Path modpackPath = Paths.get(modpackDir);
+            try {
+                Files.walkFileTree(modpackPath,
+                        new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult postVisitDirectory(
+                                    Path dir, IOException exc) throws IOException {
+                                Files.delete(dir);
+                                return FileVisitResult.CONTINUE;
+                            }
+                            @Override
+                            public FileVisitResult visitFile(
+                                    Path file, BasicFileAttributes attrs)
+                                    throws IOException {
+                                Files.delete(file);
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+            } catch (IOException ex) {
+                cleanedUp = true;
+                appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.cleanupenvironment"), modpackDir));
+            } finally {
+                appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.cleanupenvironment.complete"));
+            }
         }
-        return returnLoader;
+        return cleanedUp;
     }
 }

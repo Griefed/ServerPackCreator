@@ -95,13 +95,13 @@ class CurseCreateModpackTest {
 
     @Test
     void testSetModloaderFabric() {
-        String result = curseCreateModpack.setModloader("fAbRiC");
+        String result = curseCreateModpack.setModloaderCase("fAbRiC");
         Assertions.assertEquals("Fabric", result);
     }
 
     @Test
     void testSetModloaderForge() {
-        String result = curseCreateModpack.setModloader("fOrGe");
+        String result = curseCreateModpack.setModloaderCase("fOrGe");
         Assertions.assertEquals("Forge", result);
     }
 }
