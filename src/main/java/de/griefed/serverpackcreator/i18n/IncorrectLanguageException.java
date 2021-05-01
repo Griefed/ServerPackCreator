@@ -19,8 +19,17 @@
  */
 
 package de.griefed.serverpackcreator.i18n;
-//TODO: Write docs for class
+
+/**
+ * <strong>Table of Exceptions</strong><br>
+ * {@link #IncorrectLanguageException()}<br>
+ * {@link #IncorrectLanguageException(String)}<br>
+ * {@link #IncorrectLanguageException(Throwable)}<br>
+ * {@link #IncorrectLanguageException(String, Throwable)}<p>
+ * Provides exceptions to {@link LocalizationManager}
+ */
 public class IncorrectLanguageException extends Exception {
+
     public IncorrectLanguageException() {
         super("Incorrect language specified");
     }
