@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-//TODO: Write table of contents
 package de.griefed.serverpackcreator.gui;
 
 import com.typesafe.config.Config;
@@ -35,7 +34,17 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.Objects;
-//TODO: Write docs for class
+
+/**
+ * <strong>Table of methods</strong><br>
+ * {@link #CreateGui(LocalizationManager, Configuration, CurseCreateModpack, CreateServerPack)}<br>
+ * {@link #mainGUI()}<br>
+ * {@link #createAndShowGUI()}<p>
+ * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
+ * which then calls {@link #createAndShowGUI()} in order to create and show the GUI of ServerPackCreator. Instances of
+ * the {@link CreateServerPackTab}, {@link ServerPackCreatorLogTab}, {@link ModloaderInstallerLogTab}, {@link AboutTab}
+ * are created in the constructor of this class to make sure they are ready when the GUI is created and shown to the user.
+ */
 public class CreateGui extends JPanel {
     private static final Logger appLogger = LogManager.getLogger(CreateGui.class);
 
@@ -48,7 +57,22 @@ public class CreateGui extends JPanel {
     private CurseCreateModpack curseCreateModpack;
     private CreateServerPack createServerPack;
 
-    public CreateGui(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectectedCurseCreateModpack, CreateServerPack injectedCreateServerPack) {
+    /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection.<p>
+     * Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.<p>
+     * Receives an instance of {@link Configuration} required to successfully and correctly create the server pack.<p>
+     * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
+     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * Receives an instance of {@link CreateServerPack} which is required to generate a server pack.
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedConfiguration Instance of {@link Configuration} required to successfully and correctly create the server pack.
+     * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
+     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * @param injectedCreateServerPack Instance of {@link CreateServerPack} required for the generation of server packs.
+     */
+    public CreateGui(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack, CreateServerPack injectedCreateServerPack) {
         super(new GridLayout(1, 1));
 
         if (injectedLocalizationManager == null) {
@@ -60,7 +84,7 @@ public class CreateGui extends JPanel {
         if (injectedConfiguration == null) {
             this.curseCreateModpack = new CurseCreateModpack(localizationManager);
         } else {
-            this.curseCreateModpack = injectectedCurseCreateModpack;
+            this.curseCreateModpack = injectedCurseCreateModpack;
         }
 
         if (injectedConfiguration == null) {
@@ -77,25 +101,53 @@ public class CreateGui extends JPanel {
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
-        tabbedPane.addTab(localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"), null, new CreateServerPackTab(localizationManager, configuration, curseCreateModpack, createServerPack).createServerPackTab(), localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
+        tabbedPane.addTab(
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
+                null,
+                new CreateServerPackTab(localizationManager, configuration, curseCreateModpack, createServerPack).createServerPackTab(),
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
+
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-        tabbedPane.addTab(localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"), null, new ServerPackCreatorLogTab(localizationManager).serverPackCreatorLogTab(), localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
+        tabbedPane.addTab(
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
+                null,
+                new ServerPackCreatorLogTab(localizationManager).serverPackCreatorLogTab(),
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
+
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-        tabbedPane.addTab(localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.title"), null, new ModloaderInstallerLogTab(localizationManager).modloaderInstallerLogTab(), localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.tip"));
+        tabbedPane.addTab(
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.title"),
+                null,
+                new ModloaderInstallerLogTab(localizationManager).modloaderInstallerLogTab(),
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.tip"));
+
         tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
-        tabbedPane.addTab(localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.title"), null, new AboutTab(localizationManager).aboutTab(), localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
+        tabbedPane.addTab(
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.title"),
+                null,
+                new AboutTab(localizationManager).aboutTab(),
+                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
+
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
-        //Add the tabbed pane to this panel.
         add(tabbedPane);
 
-        //The following line enables to use scrolling tabs.
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
+    private JFrame serverPackCreatorFrame;
+    private JLabel serverPackCreatorBanner;
+    private File secretFile;
+    private Config secret;
+
+    /**
+     * Shows the GUI from the EDT by using SwingUtilities and it's invokeLater method by calling {@link #createAndShowGUI()}.
+     * Sets the font to bold, which may be overridden by the LookAndFeel which gets automatically determined and depends
+     * on the OS ServerPackCreator is run on.
+     */
     public void mainGUI() {
         SwingUtilities.invokeLater(() -> {
             //Bold fonts = true, else false
@@ -104,8 +156,8 @@ public class CreateGui extends JPanel {
             try {
                 if (new File("serverpackcreator.conf").exists()) {
 
-                    File configFile = new File("serverpackcreator.conf");
-                    Config secret = ConfigFactory.parseFile(configFile);
+                    secretFile = new File("serverpackcreator.conf");
+                    secret = ConfigFactory.parseFile(secretFile);
 
                     if (secret.getString("topsicrets") != null && !secret.getString("topsicrets").equals("") && secret.getString("topsicrets").length() > 0) {
 
@@ -136,24 +188,27 @@ public class CreateGui extends JPanel {
         });
     }
 
+    /**
+     * Creates the frame in which the banner, tabbed pane with all the tabs, icon and title are displayed and shows it.
+     */
     private void createAndShowGUI() {
 
-        JFrame frame = new JFrame(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        serverPackCreatorFrame = new JFrame(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
+        serverPackCreatorFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        frame.setIconImage(icon);
-        JLabel banner = new JLabel(bannerIcon);
-        banner.setOpaque(false);
+        serverPackCreatorFrame.setIconImage(icon);
+        serverPackCreatorBanner = new JLabel(bannerIcon);
+        serverPackCreatorBanner.setOpaque(false);
 
-        frame.add(banner, BorderLayout.PAGE_START);
-        frame.add(new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack), BorderLayout.CENTER);
+        serverPackCreatorFrame.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
+        serverPackCreatorFrame.add(new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack), BorderLayout.CENTER);
 
-        frame.setPreferredSize(windowDimension);
-        frame.setMaximumSize(windowDimension);
-        frame.setResizable(true);
+        serverPackCreatorFrame.setPreferredSize(windowDimension);
+        serverPackCreatorFrame.setMaximumSize(windowDimension);
+        serverPackCreatorFrame.setResizable(true);
 
-        frame.pack();
+        serverPackCreatorFrame.pack();
 
-        frame.setVisible(true);
+        serverPackCreatorFrame.setVisible(true);
     }
 }
