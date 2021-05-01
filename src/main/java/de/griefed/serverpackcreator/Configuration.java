@@ -307,7 +307,7 @@ public class Configuration {
      * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isCurse()}
      */
-    List<String> getCopyDirs() {
+    public List<String> getCopyDirs() {
         return copyDirs;
     }
 
@@ -317,6 +317,14 @@ public class Configuration {
      * @param newCopyDirs The new list of directories to include in server pack to store.
      */
     void setCopyDirs(List<String> newCopyDirs) {
+        for (int i = 0; i < newCopyDirs.size(); i++) {
+            if (newCopyDirs.get(i).equalsIgnoreCase("server_pack")) {
+                newCopyDirs.remove(i);
+            }
+        }
+
+//        String string_server_pack = "server_pack";
+//        newCopyDirs.removeIf(n -> Objects.equals(n, string_server_pack));
         this.copyDirs = newCopyDirs;
     }
 
@@ -327,7 +335,7 @@ public class Configuration {
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}
      */
-    String getModpackDir() {
+    public String getModpackDir() {
         return modpackDir;
     }
 
@@ -747,7 +755,7 @@ public class Configuration {
 
                         } else {
 
-                            setModLoaderCase(modLoaderVersion[0]);
+                            setModLoader("Forge");
                             setModLoaderVersion(modLoaderVersion[1]);
 
                         }
@@ -773,10 +781,14 @@ public class Configuration {
                             getModpackDir(),
                             buildString(getClientMods().toString()),
                             buildString(getCopyDirs().toString()),
-                            getIncludeServerInstallation(), getJavaPath(),
-                            getMinecraftVersion(), getModLoader(),
-                            getModLoaderVersion(), getIncludeServerIcon(),
-                            getIncludeServerProperties(), getIncludeStartScripts(),
+                            getIncludeServerInstallation(),
+                            getJavaPath(),
+                            getMinecraftVersion(),
+                            getModLoader(),
+                            getModLoaderVersion(),
+                            getIncludeServerIcon(),
+                            getIncludeServerProperties(),
+                            getIncludeStartScripts(),
                             getIncludeZipCreation(),
                             getConfigFile(),
                             false
@@ -830,7 +842,8 @@ public class Configuration {
         String[] dirsNotToCopy = {
                 "overrides",
                 "packmenu",
-                "resourcepacks"
+                "resourcepacks",
+                "server_pack"
         };
 
         String[] copyDirs = new String[0];
@@ -1857,6 +1870,7 @@ public class Configuration {
             writer.write(configString);
             writer.close();
             configWritten = true;
+            appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.writeconfigtofile.confignew"));
         } catch (IOException ex) {
             appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.writeconfigtofile"), ex);
         }

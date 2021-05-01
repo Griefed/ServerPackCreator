@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
+//TODO: Write table of contents
 package de.griefed.serverpackcreator.gui;
 
 import com.typesafe.config.Config;
@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+//TODO: Write docs for class
 public class CreateServerPackTab extends Component {
     private static final Logger appLogger = LogManager.getLogger(CreateServerPackTab.class);
 
@@ -58,8 +58,9 @@ public class CreateServerPackTab extends Component {
     private Configuration configuration;
     private LocalizationManager localizationManager;
     private CurseCreateModpack curseCreateModpack;
+    private CreateServerPack createServerPack;
 
-    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectectedCurseCreateModpack) {
+    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectectedCurseCreateModpack, CreateServerPack injectedCreateServerPack) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
         } else {
@@ -78,6 +79,11 @@ public class CreateServerPackTab extends Component {
             this.configuration = injectedConfiguration;
         }
 
+        if (createServerPack == null) {
+            this.createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
+        } else {
+            this.createServerPack = injectedCreateServerPack;
+        }
     }
 
     JComponent createServerPackTab() {
@@ -511,6 +517,7 @@ public class CreateServerPackTab extends Component {
         constraints.insets = new Insets(5,0,5,0);
 
         JLabel labelGenerateServerPack = new JLabel(localizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.ready"));
+        labelGenerateServerPack.setFont(new Font(labelGenerateServerPack.getFont().getName(), Font.BOLD, labelGenerateServerPack.getFont().getSize()));
         constraints.gridx = 0;
         constraints.gridy = 18;
         constraints.gridwidth = 4;
@@ -545,7 +552,7 @@ public class CreateServerPackTab extends Component {
                     new File("serverpackcreator.tmp"),
                     true
             );
-            if (!configuration.checkConfigFile(new File("serverpackcreator.tmp"))) {
+            if (!configuration.checkConfigFile(new File("serverpackcreator.tmp"), false)) {
                 appLogger.info(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
                 labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
@@ -593,7 +600,6 @@ public class CreateServerPackTab extends Component {
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
-                    CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
                     if (createServerPack.run()) {
                         tailer.stop();
 
@@ -602,16 +608,15 @@ public class CreateServerPackTab extends Component {
 
                         buttonGenerateServerPack.setEnabled(true);
                         labelGenerateServerPack.setText(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+                        textModpackDir.setText(configuration.getModpackDir());
+                        textCopyDirs.setText(configuration.getCopyDirs().toString().replace("[","").replace("]",""));
 
                         JTextArea textArea = new JTextArea();
                         textArea.setOpaque(false);
                         textArea.setText(String.format(
                                 "%s\n%s",
                                 localizationManager.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                                String.format(
-                                        "%s/server_pack",
-                                        textModpackDir.getText()
-                                        )
+                                String.format("%s/server_pack",configuration.getModpackDir())
                                 )
                         );
 
@@ -622,15 +627,16 @@ public class CreateServerPackTab extends Component {
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE) == 0) {
                             try {
-                                Desktop.getDesktop().open(new File(String.format("%s/server_pack",textModpackDir.getText())));
+                                Desktop.getDesktop().open(new File(String.format("%s/server_pack",configuration.getModpackDir())));
                             } catch (IOException ex) {
                                 appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.browserserverpack"));
                             }
                         }
+                        buttonGenerateServerPack.setEnabled(true);
+                        System.gc();
+                        System.runFinalization();
+                        tailer.stop();
                         executorService.shutdown();
-
-
-
 
                     } else {
                         tailer.stop();

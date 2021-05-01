@@ -202,7 +202,7 @@ public class CreateServerPack {
      * @return Boolean. Returns true if the server pack was successfully generated.
      */
     public boolean run() {
-        if (!configuration.checkConfigFile(configuration.getConfigFile())) {
+        if (!configuration.checkConfigFile(configuration.getConfigFile(), true)) {
 
             cleanupEnvironment(configuration.getModpackDir());
 

@@ -34,29 +34,44 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-class ConfigCheckTest {
+class ConfigurationTest {
     @Mock
     Logger appLogger;
 
-    private Configuration configCheck;
+    private Configuration configuration;
     private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
 
-    ConfigCheckTest() {
+    ConfigurationTest() {
         localizationManager = new LocalizationManager();
         curseCreateModpack = new CurseCreateModpack(localizationManager);
-        configCheck = new Configuration(localizationManager, curseCreateModpack);
+        configuration = new Configuration(localizationManager, curseCreateModpack);
     }
 
     @BeforeEach
     void setUp() {
         localizationManager.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testSetCopyDirs() {
+        List<String> testList = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs",
+                "server_pack"
+        ));
+        configuration.setCopyDirs(testList);
+        Assertions.assertFalse(configuration.getCopyDirs().contains("server_pack"));
     }
 
     @Test
@@ -68,7 +83,7 @@ class ConfigCheckTest {
                 "seeds",
                 "defaultconfigs"
         );
-        String result = configCheck.buildString(args.toString());
+        String result = configuration.buildString(args.toString());
         Assertions.assertEquals(args.toString(), String.format("[%s]",result));
     }
 
@@ -76,8 +91,8 @@ class ConfigCheckTest {
     @Test
     void testCheckConfig() throws IOException {
         Files.copy(Paths.get("./src/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configCheck.setConfig(ConfigFactory.parseFile(configCheck.getConfigFile()));
-        boolean result = configCheck.checkConfigFile(configCheck.getConfigFile());
+        configuration.setConfig(ConfigFactory.parseFile(configuration.getConfigFile()));
+        boolean result = configuration.checkConfigFile(configuration.getConfigFile(), true);
         Assertions.assertFalse(result);
         new File("./serverpackcreator.conf").delete();
     }
@@ -85,14 +100,14 @@ class ConfigCheckTest {
     @Test
     void testCheckCurseForgeCorrect() {
         String modpackDir = "238298,3174854";
-        boolean result = configCheck.checkCurseForge(modpackDir);
+        boolean result = configuration.checkCurseForge(modpackDir);
         Assertions.assertTrue(result);
     }
 
     @Test
     void testCheckCurseForgeFalse() {
         String modpackDir = "1,1234";
-        boolean result = configCheck.checkCurseForge(modpackDir);
+        boolean result = configuration.checkCurseForge(modpackDir);
         Assertions.assertFalse(result);
     }
 
@@ -141,7 +156,7 @@ class ConfigCheckTest {
         boolean includeServerProperties = true;
         boolean includeStartScripts = true;
         boolean includeZipCreation = true;
-        configCheck.printConfig(
+        configuration.printConfig(
                 modpackDir,
                 clientMods,
                 copyDirs,
@@ -159,13 +174,13 @@ class ConfigCheckTest {
     @Test
     void testCheckModpackDirCorrect() {
         String modpackDir = "./src/test/resources/forge_tests";
-        boolean result = configCheck.checkModpackDir(modpackDir);
+        boolean result = configuration.checkModpackDir(modpackDir);
         Assertions.assertTrue(result);
     }
 
     @Test
     void testCheckModpackDirFalse() {
-        boolean result = configCheck.checkModpackDir("modpackDir");
+        boolean result = configuration.checkModpackDir("modpackDir");
         Assertions.assertFalse(result);
     }
 
@@ -179,7 +194,7 @@ class ConfigCheckTest {
                 "seeds",
                 "defaultconfigs"
         );
-        boolean result = configCheck.checkCopyDirs(copyDirs, modpackDir);
+        boolean result = configuration.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertTrue(result);
     }
 
@@ -193,13 +208,13 @@ class ConfigCheckTest {
                 "seedss",
                 "defaultconfigss"
         );
-        boolean result = configCheck.checkCopyDirs(copyDirs, modpackDir);
+        boolean result = configuration.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertFalse(result);
     }
 
     @Test
     void testGetJavaPath() {
-        String result = configCheck.getJavaPath("");
+        String result = configuration.getJavaPathFromSystem("");
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
         if (autoJavaPath.startsWith("C:")) {
             autoJavaPath = String.format("%s.exe", autoJavaPath);
@@ -221,39 +236,39 @@ class ConfigCheckTest {
         } else {
             javaPath = autoJavaPath;
         }
-        boolean result = configCheck.checkJavaPath(javaPath);
+        boolean result = configuration.checkJavaPath(javaPath);
         Assertions.assertTrue(result);
     }
 
     @Test
     void testCheckModloaderFabric() {
         String modLoader = "Fabric";
-        boolean result = configCheck.checkModloader(modLoader);
+        boolean result = configuration.checkModloader(modLoader);
         Assertions.assertTrue(result);
     }
 
     @Test
     void testCheckModloaderForge() {
         String modLoader = "Forge";
-        boolean result = configCheck.checkModloader(modLoader);
+        boolean result = configuration.checkModloader(modLoader);
         Assertions.assertTrue(result);
     }
 
     @Test
     void testCheckModloaderFalse() {
-        boolean result = configCheck.checkModloader("modloader");
+        boolean result = configuration.checkModloader("modloader");
         Assertions.assertFalse(result);
     }
 
     @Test
     void testSetModloaderFabric() {
-        String result = configCheck.setModloader("fAbRiC");
+        String result = configuration.setModLoaderCase("fAbRiC");
         Assertions.assertEquals("Fabric", result);
     }
 
     @Test
     void testSetModloaderForge() {
-        String result = configCheck.setModloader("fOrGe");
+        String result = configuration.setModLoaderCase("fOrGe");
         Assertions.assertEquals("Forge", result);
     }
 
@@ -262,7 +277,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionFabric() {
         String modLoader = "Fabric";
         String modLoaderVersion = "0.11.3";
-        boolean result = configCheck.checkModloaderVersion(modLoader, modLoaderVersion);
+        boolean result = configuration.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertTrue(result);
         new File("fabric-manifest.xml").delete();
     }
@@ -272,7 +287,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionFabricIncorrect() {
         String modLoader = "Fabric";
         String modLoaderVersion = "0.90.3";
-        boolean result = configCheck.checkModloaderVersion(modLoader, modLoaderVersion);
+        boolean result = configuration.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertFalse(result);
         new File("fabric-manifest.xml").delete();
     }
@@ -282,7 +297,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionForge() {
         String modLoader = "Forge";
         String modLoaderVersion = "36.1.2";
-        boolean result = configCheck.checkModloaderVersion(modLoader, modLoaderVersion);
+        boolean result = configuration.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertTrue(result);
         new File("forge-manifest.json").delete();
     }
@@ -292,7 +307,7 @@ class ConfigCheckTest {
     void testCheckModloaderVersionForgeIncorrect() {
         String modLoader = "Forge";
         String modLoaderVersion = "90.0.0";
-        boolean result = configCheck.checkModloaderVersion(modLoader, modLoaderVersion);
+        boolean result = configuration.checkModloaderVersion(modLoader, modLoaderVersion);
         Assertions.assertFalse(result);
         new File("forge-manifest.json").delete();
     }
@@ -301,7 +316,7 @@ class ConfigCheckTest {
     @Test
     void testIsMinecraftVersionCorrect() {
         String minecraftVersion = "1.16.5";
-        boolean result = configCheck.isMinecraftVersionCorrect(minecraftVersion);
+        boolean result = configuration.isMinecraftVersionCorrect(minecraftVersion);
         Assertions.assertTrue(result);
         new File("mcmanifest.json").delete();
     }
@@ -310,7 +325,7 @@ class ConfigCheckTest {
     @Test
     void testIsMinecraftVersionFalse() {
         String minecraftVersion = "1.99.5";
-        boolean result = configCheck.isMinecraftVersionCorrect(minecraftVersion);
+        boolean result = configuration.isMinecraftVersionCorrect(minecraftVersion);
         Assertions.assertFalse(result);
         new File("mcmanifest.json").delete();
     }
@@ -319,7 +334,7 @@ class ConfigCheckTest {
     @Test
     void testIsFabricVersionCorrect() {
         String fabricVersion = "0.11.3";
-        boolean result = configCheck.isFabricVersionCorrect(fabricVersion);
+        boolean result = configuration.isFabricVersionCorrect(fabricVersion);
         Assertions.assertTrue(result);
         new File("fabric-manifest.xml").delete();
     }
@@ -328,7 +343,7 @@ class ConfigCheckTest {
     @Test
     void testIsFabricVersionFalse() {
         String fabricVersion = "0.90.3";
-        boolean result = configCheck.isFabricVersionCorrect(fabricVersion);
+        boolean result = configuration.isFabricVersionCorrect(fabricVersion);
         Assertions.assertFalse(result);
         new File("fabric-manifest.xml").delete();
     }
@@ -337,7 +352,7 @@ class ConfigCheckTest {
     @Test
     void testIsForgeVersionCorrect() {
         String forgeVersion = "36.1.2";
-        boolean result = configCheck.isForgeVersionCorrect(forgeVersion);
+        boolean result = configuration.isForgeVersionCorrect(forgeVersion);
         Assertions.assertTrue(result);
         new File("forge-manifest.json").delete();
     }
@@ -346,7 +361,7 @@ class ConfigCheckTest {
     @Test
     void testIsForgeVersionFalse() {
         String forgeVersion = "99.0.0";
-        boolean result = configCheck.isForgeVersionCorrect(forgeVersion);
+        boolean result = configuration.isForgeVersionCorrect(forgeVersion);
         Assertions.assertFalse(result);
         new File("forge-manifest.json").delete();
     }
