@@ -259,6 +259,7 @@ public class Configuration {
     /**
      * Setter for a {@link Config} containing a parsed configuration-file.
      * For use in {@link #checkConfigFile(File)}
+     * @param newConfig The new Typesafe Config to store.
      */
     public void setConfig(Config newConfig) {
         this.config = newConfig;
@@ -285,6 +286,7 @@ public class Configuration {
     /**
      * Setter for the list of clientside-only mods to exclude from server pack.
      * For use in {@link #checkConfigFile(File)}
+     * @param newClientMods The new list of clientside-only mods to store.
      */
     void setClientMods(List<String> newClientMods) {
         this.clientMods = newClientMods;
@@ -303,6 +305,7 @@ public class Configuration {
     /**
      * Setter for the list of directories in the modpack to copy to the server pack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @param newCopyDirs The new list of directories to include in server pack to store.
      */
     void setCopyDirs(List<String> newCopyDirs) {
         this.copyDirs = newCopyDirs;
@@ -322,6 +325,7 @@ public class Configuration {
     /**
      * Setter for the path to the modpack directory. Replaces any occurrences of \ with /.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @param newModpackDir The new modpack directory path to store.
      */
     void setModpackDir(String newModpackDir) {
         newModpackDir = newModpackDir.replace("\\","/");
@@ -339,6 +343,7 @@ public class Configuration {
     /**
      * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @param newJavaPath The new Java path to store.
      */
     void setJavaPath(String newJavaPath) {
         newJavaPath = newJavaPath.replace("\\", "/");
@@ -347,7 +352,7 @@ public class Configuration {
 
     /**
      * Getter for the version of Minecraft used by the modpack.
-     * @return String. Returns the  for use in {@link #}
+     * @return String. Returns the  for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
      */
     String getMinecraftVersion() {
         return minecraftVersion;
@@ -356,6 +361,7 @@ public class Configuration {
     /**
      * Setter for the Minecraft version used by the modpack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @param newMinecraftVersion The new Minecraft version to store.
      */
     void setMinecraftVersion(String newMinecraftVersion) {
         this.minecraftVersion = newMinecraftVersion;
@@ -375,6 +381,7 @@ public class Configuration {
     /**
      * Setter for the modloader used by the modpack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @param newModLoader The new modloader to store.
      */
     void setModLoader(String newModLoader) {
         this.modLoader = newModLoader;
@@ -391,6 +398,7 @@ public class Configuration {
     /**
      * Setter for the version of the modloader used by the modpack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @param newModLoaderVersion The new modloader version to store.
      */
     void setModLoaderVersion(String newModLoaderVersion) {
         this.modLoaderVersion = newModLoaderVersion;
@@ -410,6 +418,7 @@ public class Configuration {
     /**
      * Setter for whether the modloader server installation should be included.
      * For use in {@link #checkConfigFile(File)}
+     * @param newIncludeServerInstallation The new boolean to store.
      */
     void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
         this.includeServerInstallation = newIncludeServerInstallation;
@@ -427,6 +436,7 @@ public class Configuration {
     /**
      * Setter for whether the server-icon.png should be included in the server pack.
      * For use in {@link #checkConfigFile(File)}
+     * @param newIncludeServerIcon The new boolean to store.
      */
     void setIncludeServerIcon(boolean newIncludeServerIcon) {
         this.includeServerIcon = newIncludeServerIcon;
@@ -434,7 +444,8 @@ public class Configuration {
 
     /**
      * Getter for whether the server.properties should be included in the server pack.
-     * @return Boolean. Returns whether the server.properties should be included in the server pack, for use in {@link #}
+     * @return Boolean. Returns whether the server.properties should be included in the server pack, for use in
+     * {@link #checkConfigFile(File)} and {@link #isCurse()}
      */
     boolean getIncludeServerProperties() {
         return includeServerProperties;
@@ -443,6 +454,7 @@ public class Configuration {
     /**
      * Setter for whether the server.properties should be included in the server pack.
      * For use in {@link #checkConfigFile(File)}
+     * @param newIncludeServerProperties The new boolean to store.
      */
     void setIncludeServerProperties(boolean newIncludeServerProperties) {
         this.includeServerProperties = newIncludeServerProperties;
@@ -459,6 +471,7 @@ public class Configuration {
     /**
      * Setter for whether the start scripts should be included in the server pack.
      * For use in {@link #checkConfigFile(File)}
+     * @param newIncludeStartScripts The new boolean to store.
      */
     void setIncludeStartScripts(boolean newIncludeStartScripts) {
         this.includeStartScripts = newIncludeStartScripts;
@@ -475,6 +488,7 @@ public class Configuration {
     /**
      * Setter for whether a ZIP-archive of the server pack should be created.
      * For use in {@link #checkConfigFile(File)}
+     * @param newIncludeZipCreation The new boolean to store.
      */
     void setIncludeZipCreation(boolean newIncludeZipCreation) {
         this.includeZipCreation = newIncludeZipCreation;
@@ -491,6 +505,7 @@ public class Configuration {
     /**
      * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
+     * @param newProjectID The new projectID to store.
      */
     void setProjectID(int newProjectID) {
         this.projectID = newProjectID;
@@ -507,6 +522,7 @@ public class Configuration {
     /**
      * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
+     * @param newProjectFileID The new projectFileID to store.
      */
     void setProjectFileID(int newProjectFileID) {
         this.projectFileID = newProjectFileID;
