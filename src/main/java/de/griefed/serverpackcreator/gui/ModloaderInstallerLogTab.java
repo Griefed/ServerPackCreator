@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
 package de.griefed.serverpackcreator.gui;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -27,11 +26,21 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-//TODO: Write docs for class
+
+/**
+ * This class creates the tab which display the latest modloader_installer.log tailer.
+ */
 public class ModloaderInstallerLogTab extends Component {
 
     private LocalizationManager localizationManager;
 
+    /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection.<p>
+     * Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     */
     public ModloaderInstallerLogTab(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
@@ -40,10 +49,23 @@ public class ModloaderInstallerLogTab extends Component {
         }
     }
 
+    private JComponent modloaderInstallerLogPanel;
+    private GridBagConstraints constraints;
+    private JTextArea textArea;
+    private JScrollPane scrollPane;
+
+    /**
+     * Create the tab for the modloader_installer.log tailer in a JScrollPane with an always available vertical scrollbar
+     * and a horizontal scrollbar available as needed. Uses Apache commons-io's {@link Tailer} to keep the JTextArea up
+     * to date with the latest log entries. Should any line contain "Starting Fabric installation." or
+     * "Starting Forge installation." the textarea is cleared.
+     * @return JComponent. Returns a JPanel containing a JScrollPane containing the JTextArea with the latest
+     * modloader_installer.log entries.
+     */
     JComponent modloaderInstallerLogTab() {
-        JComponent modloaderInstallerLogPanel = new JPanel(false);
+        modloaderInstallerLogPanel = new JPanel(false);
         modloaderInstallerLogPanel.setLayout(new GridBagLayout());
-        GridBagConstraints constraints = new GridBagConstraints();
+        constraints = new GridBagConstraints();
 
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.BOTH;
@@ -53,7 +75,7 @@ public class ModloaderInstallerLogTab extends Component {
         constraints.weightx = 1;
 
         //Log Panel
-        JTextArea textArea = new JTextArea();
+        textArea = new JTextArea();
         textArea.setEditable(false);
 
         Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
@@ -68,7 +90,7 @@ public class ModloaderInstallerLogTab extends Component {
             }
         }, 2000, false);
 
-        JScrollPane scrollPane = new JScrollPane(
+        scrollPane = new JScrollPane(
                 textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
