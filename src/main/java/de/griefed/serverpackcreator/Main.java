@@ -94,7 +94,7 @@ public class Main {
         Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
         FilesSetup filesSetup = new FilesSetup(localizationManager);
         CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
-        CreateGui tabbedPane = new CreateGui(localizationManager, configuration, curseCreateModpack);
+        CreateGui tabbedPane = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack);
 
         String jarPath = null,
                 jarName = null,
