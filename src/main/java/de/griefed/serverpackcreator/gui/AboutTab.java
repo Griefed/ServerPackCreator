@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-//TODO: Write table of contents
 package de.griefed.serverpackcreator.gui;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -30,17 +29,24 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
-//TODO: Write docs for class
+
+/**
+ * This class creates the tab which displays the About-tab, with the about text, the list of contributors, buttons for
+ * opening PasteBin in your browser, opening ServerPackCreator's issue page on GitHub and for opening the invite link
+ * to Griefed#s discord server in your browser.
+ */
 public class AboutTab extends Component {
     private static final Logger appLogger = LogManager.getLogger(AboutTab.class);
 
-    private final Dimension miscButtonDimension = new Dimension(50,50);
-    private final ImageIcon issueIcon           = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/issue.png")));
-    private final ImageIcon pastebinIcon        = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/pastebin.png")));
-    private final ImageIcon prosperIcon         = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/prosper.png")));
-
     private LocalizationManager localizationManager;
 
+    /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection.<p>
+     * Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     */
     public AboutTab(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
@@ -49,10 +55,33 @@ public class AboutTab extends Component {
         }
     }
 
+    private final Dimension miscButtonDimension = new Dimension(50,50);
+    private final ImageIcon issueIcon           = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/issue.png")));
+    private final ImageIcon pastebinIcon        = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/pastebin.png")));
+    private final ImageIcon prosperIcon         = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/prosper.png")));
+
+    private JComponent aboutPanel;
+    private GridBagConstraints constraints;
+    private JTextPane textPane;
+    private SimpleAttributeSet attributeSet;
+    private StyledDocument document;
+    private JButton buttonCreatePasteBin;
+    private JButton buttonOpenIssue;
+    private JButton buttonDiscord;
+
+    /**
+     * Create the tab for the About-page of ServerpackCreator. This tab displays the about text, the list of contributors
+     * to ServerPackCreator and offers three buttons to the user. Left to right: Open PasteBin in the user's browser to
+     * create pastes of the the log files or configuration files or whatever they wish. Open ServerPackCreator's issues
+     * page on GitHub in case the user wants to report an issue. Open the invite link to Griefed's discord server in the
+     * users browser.
+     * @return JComponent. Returns a JPanel containing a JTextPane with the about text in a styled document, as well as
+     * the three aforementioned buttons.
+     */
     JComponent aboutTab() {
-        JComponent aboutPanel = new JPanel(false);
+        aboutPanel = new JPanel(false);
         aboutPanel.setLayout(new GridBagLayout());
-        GridBagConstraints constraints = new GridBagConstraints();
+        constraints = new GridBagConstraints();
 
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.BOTH;
@@ -61,19 +90,19 @@ public class AboutTab extends Component {
         constraints.gridwidth = 3;
 
         //About Panel
-        JTextPane textPane = new JTextPane();
+        textPane = new JTextPane();
         textPane.setEditable(false);
         textPane.setOpaque(false);
         textPane.setMinimumSize(new Dimension(getMaximumSize().width,520));
         textPane.setPreferredSize(new Dimension(getMaximumSize().width,520));
         textPane.setMaximumSize(new Dimension(getMaximumSize().width,520));
 
-        SimpleAttributeSet attributeSet = new SimpleAttributeSet();
+        attributeSet = new SimpleAttributeSet();
         StyleConstants.setBold(attributeSet, true);
         StyleConstants.setFontSize(attributeSet, 14);
         textPane.setCharacterAttributes(attributeSet, true);
 
-        StyledDocument document = textPane.getStyledDocument();
+        document = textPane.getStyledDocument();
         StyleConstants.setAlignment(attributeSet, StyleConstants.ALIGN_CENTER);
         document.setParagraphAttributes(0, document.getLength(), attributeSet, false);
 
@@ -101,7 +130,7 @@ public class AboutTab extends Component {
         constraints.gridwidth = 1;
 
         //Button to upload log file to pastebin
-        JButton buttonCreatePasteBin = new JButton();
+        buttonCreatePasteBin = new JButton();
         buttonCreatePasteBin.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.pastebin"));
         buttonCreatePasteBin.setIcon(pastebinIcon);
         buttonCreatePasteBin.setPreferredSize(miscButtonDimension);
@@ -121,7 +150,7 @@ public class AboutTab extends Component {
         aboutPanel.add(buttonCreatePasteBin, constraints);
 
         //Button to open a new issue on GitHub
-        JButton buttonOpenIssue = new JButton();
+        buttonOpenIssue = new JButton();
         buttonOpenIssue.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.issue"));
         buttonOpenIssue.setIcon(issueIcon);
         buttonOpenIssue.setPreferredSize(miscButtonDimension);
@@ -141,7 +170,7 @@ public class AboutTab extends Component {
         aboutPanel.add(buttonOpenIssue, constraints);
 
         //Button to open the invite link to the discord server
-        JButton buttonDiscord = new JButton();
+        buttonDiscord = new JButton();
         buttonDiscord.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.discord"));
         buttonDiscord.setIcon(prosperIcon);
         buttonDiscord.setPreferredSize(miscButtonDimension);
