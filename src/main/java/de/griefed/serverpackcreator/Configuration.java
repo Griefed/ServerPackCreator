@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-//TODO: Write table of contents
 package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -47,15 +46,94 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-//TODO: Write docs for class
-public class Configuration {
 
+/**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #Configuration(LocalizationManager, CurseCreateModpack)}<br>
+ * 2. {@link #getOldConfigFile()}<br>
+ * 3. {@link #getConfigFile()}<br>
+ * 4. {@link #getMinecraftManifestUrl()}<br>
+ * 5. {@link #getForgeManifestUrl()}<br>
+ * 6. {@link #getFabricManifestUrl()}<br>
+ * 7. {@link #getConfig()}<br>
+ * 8. {@link #setConfig(Config)}<br>
+ * 9. {@link #getFallbackModsList()}<br>
+ * 10.{@link #getClientMods()}<br>
+ * 11.{@link #setClientMods(List)}<br>
+ * 12.{@link #getCopyDirs()}<br>
+ * 13.{@link #setCopyDirs(List)}<br>
+ * 14.{@link #getModpackDir()}<br>
+ * 15.{@link #setModpackDir(String)}<br>
+ * 16.{@link #getJavaPath()}<br>
+ * 17.{@link #setJavaPath(String)}<br>
+ * 18.{@link #getMinecraftVersion()}<br>
+ * 19.{@link #setMinecraftVersion(String)}<br>
+ * 20.{@link #getModLoader()}<br>
+ * 21.{@link #setModLoader(String)}<br>
+ * 22.{@link #getModLoaderVersion()}<br>
+ * 23.{@link #setModLoaderVersion(String)}<br>
+ * 24.{@link #getIncludeServerInstallation()}<br>
+ * 25.{@link #setIncludeServerInstallation(boolean)}<br>
+ * 26.{@link #getIncludeServerIcon()}<br>
+ * 27.{@link #setIncludeServerIcon(boolean)}<br>
+ * 28.{@link #getIncludeServerProperties()}<br>
+ * 29.{@link #setIncludeServerProperties(boolean)}<br>
+ * 30.{@link #getIncludeStartScripts()}<br>
+ * 31.{@link #setIncludeStartScripts(boolean)}<br>
+ * 32.{@link #getIncludeZipCreation()}<br>
+ * 33.{@link #setIncludeZipCreation(boolean)}<br>
+ * 34.{@link #getProjectID()}<br>
+ * 35.{@link #setProjectID(int)}<br>
+ * 36.{@link #getProjectFileID()}<br>
+ * 37.{@link #setProjectFileID(int)}<br>
+ * 38.{@link #checkConfigFile(File)}<br>
+ * 39.{@link #isDir(String)}<br>
+ * 40.{@link #isCurse()}<br>
+ * 41.{@link #containsFabric(CurseModpack)}<br>
+ * 42.{@link #suggestCopyDirs(String)}<br>
+ * 43.{@link #checkCurseForge(String)}<br>
+ * 44.{@link #convertToBoolean(String)}<br>
+ * 45.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
+ * 46.{@link #checkModpackDir(String)}<br>
+ * 47.{@link #checkCopyDirs(List, String)}<br>
+ * 48.{@link #getJavaPathFromSystem(String)}<br>
+ * 49.{@link #checkJavaPath(String)}<br>
+ * 50.{@link #checkModloader(String)}<br>
+ * 51.{@link #setModLoaderCase(String)}<br>
+ * 52.{@link #checkModloaderVersion(String, String)}<br>
+ * 53.{@link #isMinecraftVersionCorrect(String)}<br>
+ * 54.{@link #isFabricVersionCorrect(String)}<br>
+ * 55.{@link #isForgeVersionCorrect(String)}<br>
+ * 56.{@link #latestFabricLoader(String)}<br>
+ * 57.{@link #createConfigurationFile()}<br>
+ * 58.{@link #readStringArray()}<br>
+ * 59.{@link #buildString(String...)}<br>
+ * 60.{@link #readBoolean()}<br>
+ * 61.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+ * <p>
+ * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should {@link #modpackDir}
+ * be a combination of a CurseForge projectID and fileID.<p>
+ * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
+ * Loads a configuration from a serverpackcreator.conf-file in the same directory in which ServerPackCreator resides in.
+ * 
+ */
+public class Configuration {
     private static final Logger appLogger = LogManager.getLogger(Configuration.class);
-    private final File oldConfigFile = new File("creator.conf");
-    private final File configFile = new File("serverpackcreator.conf");
+
     private LocalizationManager localizationManager;
     private CurseCreateModpack curseCreateModpack;
 
+    /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection.<p>
+     * Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.<p>
+     * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
+     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
+     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     */
     public Configuration(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
@@ -70,7 +148,10 @@ public class Configuration {
         }
     }
 
-    //-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
+    private final File oldConfigFile = new File("creator.conf");
+    private final File configFile = new File("serverpackcreator.conf");
+
+//-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     private final List<String> fallbackModsList = Arrays.asList(
             "AmbientSounds",
             "BackTools",
@@ -121,140 +202,336 @@ public class Configuration {
 
     private Config config;
 
+    /**
+     * Getter for creator.conf.
+     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+     */
     public File getOldConfigFile() {
         return oldConfigFile;
     }
 
+    /**
+     * Getter for serverpackcreator.conf.
+     * @return File. Returns the serverpackcreator.conf-file for use in <br>
+     * {@link #isCurse()},<br>
+     * {@link #createConfigurationFile()},<br>
+     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+     */
     public File getConfigFile() {
         return configFile;
     }
 
+    /**
+     * Getter for Mojang's Minecraft version-manifest.
+     * @return String. Returns the URL to the JSON-file for use in {@link #isMinecraftVersionCorrect(String)}
+     */
     String getMinecraftManifestUrl() {
         return "https://launchermeta.mojang.com/mc/game/version_manifest.json";
     }
 
+    /**
+     * Getter for Forge's version-manifest.
+     * @return String. Returns the URL to the JSON-file for use in {@link #isForgeVersionCorrect(String)}
+     */
     String getForgeManifestUrl() {
         return "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
     }
 
+    /**
+     * Getter for Fabric's version-manifest.
+     * @return String. Returns the URL to the JSON-file for use in {@link #isFabricVersionCorrect(String)}
+     */
     String getFabricManifestUrl() {
         return "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
     }
 
-    public com.typesafe.config.Config getConfig() {
+    /**
+     * Getter for a {@link Config} containing a parsed configuration-file.
+     * @return Config. Returns parsed serverpackcreator.conf for use in<br>
+     * {@link #checkConfigFile(File)}<br>
+     * {@link #isDir(String)}<br>
+     * {@link #isCurse()}
+     */
+    public Config getConfig() {
         return config;
     }
-    public void setConfig(com.typesafe.config.Config newConfig) {
+
+    /**
+     * Setter for a {@link Config} containing a parsed configuration-file.
+     * For use in {@link #checkConfigFile(File)}
+     */
+    public void setConfig(Config newConfig) {
         this.config = newConfig;
     }
 
+    /**
+     * Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.
+     * @return List String. Returns the fallback clientside-only mods-list for use in {@link #checkConfigFile(File)}
+     */
     List<String> getFallbackModsList() {
         return fallbackModsList;
     }
 
+    /**
+     * Getter for a list of clientside-only mods to exclude from server pack.
+     * @return List String. Returns the list of clientside-only mods for use in<br>
+     * {@link #checkConfigFile(File)}<br>
+     * {@link #isCurse()}
+     */
     List<String> getClientMods() {
         return clientMods;
     }
+
+    /**
+     * Setter for the list of clientside-only mods to exclude from server pack.
+     * For use in {@link #checkConfigFile(File)}
+     */
     void setClientMods(List<String> newClientMods) {
         this.clientMods = newClientMods;
     }
 
+    /**
+     * Getter for the list of directories in the modpack to copy to the server pack.
+     * @return List String. Returns the list of directories to copy to the server pack for use in<br>
+     * {@link #checkConfigFile(File)}<br>
+     * {@link #isCurse()}
+     */
     List<String> getCopyDirs() {
         return copyDirs;
     }
+
+    /**
+     * Setter for the list of directories in the modpack to copy to the server pack.
+     * For use in {@link #isDir(String)} and {@link #isCurse()}
+     */
     void setCopyDirs(List<String> newCopyDirs) {
         this.copyDirs = newCopyDirs;
     }
 
+    /**
+     * Getter for the path to the modpack directory.
+     * @return String. Returns the path to the modpack directory for use in<br>
+     * {@link #checkConfigFile(File)}<br>
+     * {@link #isDir(String)}<br>
+     * {@link #isCurse()}
+     */
     String getModpackDir() {
         return modpackDir;
     }
+
+    /**
+     * Setter for the path to the modpack directory. Replaces any occurrences of \ with /.
+     * For use in {@link #isDir(String)} and {@link #isCurse()}
+     */
     void setModpackDir(String newModpackDir) {
         newModpackDir = newModpackDir.replace("\\","/");
         this.modpackDir = newModpackDir;
     }
 
+    /**
+     * Getter for the path to the Java executable/binary.
+     * @return String. Returns the path to the Java executable/binary for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     */
     String getJavaPath() {
         return javaPath;
     }
+
+    /**
+     * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.
+     * For use in {@link #isDir(String)} and {@link #isCurse()}
+     */
     void setJavaPath(String newJavaPath) {
         newJavaPath = newJavaPath.replace("\\", "/");
         this.javaPath = newJavaPath;
     }
 
+    /**
+     * Getter for the version of Minecraft used by the modpack.
+     * @return String. Returns the  for use in {@link #}
+     */
     String getMinecraftVersion() {
         return minecraftVersion;
     }
+
+    /**
+     * Setter for the Minecraft version used by the modpack.
+     * For use in {@link #isDir(String)} and {@link #isCurse()}
+     */
     void setMinecraftVersion(String newMinecraftVersion) {
         this.minecraftVersion = newMinecraftVersion;
     }
 
+    /**
+     * Getter for the modloader used by the modpack.
+     * @return String. Returns the modloader used by the modpack for use in<br>
+     * {@link #checkConfigFile(File)}<br>
+     * {@link #isDir(String)}<br>
+     * {@link #isCurse()}
+     */
     String getModLoader() {
         return modLoader;
     }
+
+    /**
+     * Setter for the modloader used by the modpack.
+     * For use in {@link #isDir(String)} and {@link #isCurse()}
+     */
     void setModLoader(String newModLoader) {
         this.modLoader = newModLoader;
     }
 
+    /**
+     * Getter for the version of the modloader used by the modpack.
+     * @return String. Returns the version of the modloader used by the modpack for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     */
     String getModLoaderVersion() {
         return modLoaderVersion;
     }
+
+    /**
+     * Setter for the version of the modloader used by the modpack.
+     * For use in {@link #isDir(String)} and {@link #isCurse()}
+     */
     void setModLoaderVersion(String newModLoaderVersion) {
         this.modLoaderVersion = newModLoaderVersion;
     }
 
+    /**
+     * Getter for whether the modloader server installation should be included.
+     * @return Boolean. Returns whether the server installation should be included, for use in<br>
+     * {@link #checkConfigFile(File)}<br>
+     * {@link #isDir(String)}<br>
+     * {@link #isCurse()}
+     */
     boolean getIncludeServerInstallation() {
         return includeServerInstallation;
     }
+
+    /**
+     * Setter for whether the modloader server installation should be included.
+     * For use in {@link #checkConfigFile(File)}
+     */
     void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
         this.includeServerInstallation = newIncludeServerInstallation;
     }
 
+    /**
+     * Getter for whether the server-icon.png should be included in the server pack.
+     * @return Boolean. Returns whether the server-icon.png should be included in the server pack, for use in {@link #checkConfigFile(File)}
+     * and {@link #isCurse()}
+     */
     boolean getIncludeServerIcon() {
         return includeServerIcon;
     }
+
+    /**
+     * Setter for whether the server-icon.png should be included in the server pack.
+     * For use in {@link #checkConfigFile(File)}
+     */
     void setIncludeServerIcon(boolean newIncludeServerIcon) {
         this.includeServerIcon = newIncludeServerIcon;
     }
 
+    /**
+     * Getter for whether the server.properties should be included in the server pack.
+     * @return Boolean. Returns whether the server.properties should be included in the server pack, for use in {@link #}
+     */
     boolean getIncludeServerProperties() {
         return includeServerProperties;
     }
+
+    /**
+     * Setter for whether the server.properties should be included in the server pack.
+     * For use in {@link #checkConfigFile(File)}
+     */
     void setIncludeServerProperties(boolean newIncludeServerProperties) {
         this.includeServerProperties = newIncludeServerProperties;
     }
 
+    /**
+     * Getter for whether the start scripts should be included in the server pack.
+     * @return Boolean. Returns the whether the start scripts should be included in the server pack, for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     */
     boolean getIncludeStartScripts() {
         return includeStartScripts;
     }
+
+    /**
+     * Setter for whether the start scripts should be included in the server pack.
+     * For use in {@link #checkConfigFile(File)}
+     */
     void setIncludeStartScripts(boolean newIncludeStartScripts) {
         this.includeStartScripts = newIncludeStartScripts;
     }
 
+    /**
+     * Getter for whether a ZIP-archive of the server pack should be created.
+     * @return Boolean. Returns whether a ZIP-archive of the server pack should be created, for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     */
     boolean getIncludeZipCreation() {
         return includeZipCreation;
     }
+
+    /**
+     * Setter for whether a ZIP-archive of the server pack should be created.
+     * For use in {@link #checkConfigFile(File)}
+     */
     void setIncludeZipCreation(boolean newIncludeZipCreation) {
         this.includeZipCreation = newIncludeZipCreation;
     }
 
+    /**
+     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * @return Integer. Returns the CurseForge projectID of a modpack, for use in {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)} and {@link #checkCurseForge(String)}
+     */
     int getProjectID() {
         return projectID;
     }
+
+    /**
+     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * For use in {@link #checkCurseForge(String)}
+     */
     void setProjectID(int newProjectID) {
         this.projectID = newProjectID;
     }
 
+    /**
+     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * @return Integer. Returns the CurseForge fileID of a modpack, for use in {@link #isCurse()} and {@link #checkCurseForge(String)}
+     */
     int getProjectFileID() {
         return projectFileID;
     }
+
+    /**
+     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * For use in {@link #checkCurseForge(String)}
+     */
     void setProjectFileID(int newProjectFileID) {
         this.projectFileID = newProjectFileID;
     }
 
-    /** Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.
+    /**
+     * Sets {@link #setConfig(Config)} and calls checks for the provided configuration-file. If any check returns <code>true</code>
+     * then the server pack will not be created. In order to find out which check failed, the user has to check their
+     * serverpackcreator.log in the logs directory. Calls<br>
+     * {@link #setConfig(Config)}<br>
+     * {@link #getConfig()}<br>
+     * {@link #setClientMods(List)}<br>
+     * {@link #getFallbackModsList()}<br>
+     * {@link #setIncludeServerInstallation(boolean)}<br>
+     * {@link #setIncludeServerIcon(boolean)}<br>
+     * {@link #setIncludeServerProperties(boolean)}<br>
+     * {@link #setIncludeStartScripts(boolean)}<br>
+     * {@link #setIncludeZipCreation(boolean)}<br>
+     * {@link #checkModpackDir(String)}<br>
+     * {@link #checkCurseForge(String)}<br>
+     * {@link #isDir(String)}<br>
+     * {@link #isCurse()}<br>
+     * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}
      * @param configFile The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
-     * @return Return true if error is found in user's configuration. If an error is found, the application will exit in main.
+     * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
     public boolean checkConfigFile(File configFile) {
         boolean configHasError;
@@ -306,9 +583,29 @@ public class Configuration {
         return configHasError;
     }
 
-    /** Checks whether the specified modpack exists. If it does, the config file is checked for errors. Should any error be found, it will return true so the configCheck method informs the user about an invalid configuration.
-     * @param modpackDir String. Should an existing modpack be specified, all configurations are read from local file and the server pack is created, if config is correct.
-     * @return Boolean. Returns true if an error is found during configuration check. False if the configuration is deemed valid.
+    /**
+     * If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration
+     * of: directories to copy to server pack,<br>
+     * if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.
+     * Calls<br>
+     * {@link #setModpackDir(String)}<br>
+     * {@link #getModpackDir()}<br>
+     * {@link #checkCopyDirs(List, String)}<br>
+     * {@link #setCopyDirs(List)}<br>
+     * {@link #getIncludeServerInstallation()}<br>
+     * {@link #checkJavaPath(String)}<br>
+     * {@link #setJavaPath(String)}<br>
+     * {@link #getJavaPathFromSystem(String)}<br>
+     * {@link #isMinecraftVersionCorrect(String)}<br>
+     * {@link #setMinecraftVersion(String)}<br>
+     * {@link #checkModloader(String)}<br>
+     * {@link #setModLoader(String)}<br>
+     * {@link #setModLoaderCase(String)}<br>
+     * {@link #checkModloaderVersion(String, String)}<br>
+     * {@link #setModLoaderVersion(String)}<br>
+     * @param modpackDir String. Should an existing modpack be specified, all configurations are read from the provided
+     *                   configuration file and checks are made in this directory.
+     * @return Boolean. Returns true if an error is found during configuration check.
      */
     private boolean isDir(String modpackDir) {
         boolean configHasError = false;
@@ -322,7 +619,7 @@ public class Configuration {
             if (checkJavaPath(getConfig().getString("javaPath"))) {
                 setJavaPath(getConfig().getString("javaPath"));
             } else {
-                String tmpJavaPath = getJavaPath(getConfig().getString("javaPath"));
+                String tmpJavaPath = getJavaPathFromSystem(getConfig().getString("javaPath"));
                 if (checkJavaPath(tmpJavaPath)) {
                     setJavaPath(tmpJavaPath);
                 } else { configHasError = true; } }
@@ -332,7 +629,7 @@ public class Configuration {
             } else { configHasError = true; }
 
             if (checkModloader(getConfig().getString("modLoader"))) {
-                setModLoader(setModloader(getConfig().getString("modLoader")));
+                setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
             } else { configHasError = true; }
 
             if (checkModloaderVersion(getModLoader(), getConfig().getString("modLoaderVersion"))) {
@@ -349,8 +646,29 @@ public class Configuration {
         return configHasError;
     }
 
-    /** Checks whether the specified projectID,fileID combination is a valid CurseForge project and file and whether the resulting directory exists. If the directory does not exist, make calls to other methods which create the modpack. Parses information gathered from the modpack to later replace the previous configuration file.
-     * @return Boolean. Currently always returns true so serverpackcreator does not go straight into server pack creation after the creation of the specified modpack. Gives the user the chance to check their config before actually creating the server pack.
+    /**
+     * If modpackDir in the configuration file is a CurseForge projectID,fileID combination, then the modpack is first
+     * created from said combination, using {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)},
+     * before proceeding to checking the rest of the configuration. If everything passes and the modpack was created,
+     * a new configuration file is created, replacing the one used to create the modpack in the first place, with the
+     * modpackDir field pointing to the newly created modpack. Calls<br>
+     * {@link CurseAPI} and various methods of it.<br>
+     * {@link #setModpackDir(String)}<br>
+     * {@link #getModpackDir()}<br>
+     * {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}<br>
+     * {@link CurseModpack}<br>
+     * {@link #containsFabric(CurseModpack)}<br>
+     * {@link #setModLoader(String)}<br>
+     * {@link #setModLoaderVersion(String)}<br>
+     * {@link #setModLoaderCase(String)}<br>
+     * {@link #checkJavaPath(String)}<br>
+     * {@link #setJavaPath(String)}<br>
+     * {@link #getJavaPathFromSystem(String)}<br>
+     * {@link #setCopyDirs(List)}<br>
+     * {@link #suggestCopyDirs(String)}<br>
+     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}<br>
+     * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
+     * project name and displayname, or when the creation of the modpack fails.
      */
     private boolean isCurse() {
         boolean configHasError = false;
@@ -364,7 +682,9 @@ public class Configuration {
                     catch (NullPointerException npe) { appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.display"));
 
                         try { displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).nameOnDisk(); }
-                        catch (NullPointerException npe2) { displayName = String.format("%d", getProjectFileID()); } } }
+                        catch (NullPointerException npe2) { displayName = String.format("%d", getProjectFileID()); }
+                    }
+                }
 
                 catch (CurseException cex) { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
 
@@ -398,7 +718,7 @@ public class Configuration {
 
                         } else {
 
-                            setModLoader(setModloader(modLoaderVersion[0]));
+                            setModLoaderCase(modLoaderVersion[0]);
                             setModLoaderVersion(modLoaderVersion[1]);
 
                         }
@@ -409,7 +729,7 @@ public class Configuration {
                         setJavaPath(getConfig().getString("javaPath").replace("\\","/"));
 
                     } else {
-                        String tmpJavaPath = getJavaPath(getConfig().getString("javaPath").replace("\\","/"));
+                        String tmpJavaPath = getJavaPathFromSystem(getConfig().getString("javaPath").replace("\\","/"));
 
                         if (checkJavaPath(tmpJavaPath)) {
                             setJavaPath(tmpJavaPath);
@@ -432,6 +752,9 @@ public class Configuration {
                             getConfigFile(),
                             false
                     );
+
+                } else {
+                    configHasError = true;
                 }
             }
         } catch (CurseException cex) {
@@ -441,9 +764,12 @@ public class Configuration {
         return configHasError;
     }
 
-    /** Checks for the Jumploader mod in the project list of the modpack. If Jumploader is found, the modloader in the configuration will be set to Fabric.
-     * @param modpack Object. Contains information about our modpack. Used to get a list of all projects used in the modpack.
-     * @return Boolean. Returns true if Jumploader is found, false if not found.
+    /**
+     * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
+     * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
+     * @param modpack CurseModpack. Contains information about the CurseForge modpack. Used to get a list of all projects
+     *               required by the modpack.
+     * @return Boolean. Returns true if Jumploader is found.
      */
     private boolean containsFabric(CurseModpack modpack) {
         boolean hasJumploader = false;
@@ -460,9 +786,14 @@ public class Configuration {
         return hasJumploader;
     }
 
-    /** Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
-     * @param modpackDir String. The directory for which to gather a list of directories.
-     * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only directories which would not be needed by a server pack. If you have suggestions to this list, open an issue on https://github.com/Griefed/ServerPackCreator/issues
+    /**
+     * Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
+     * The list of directories to include in the server pack which is generated by this method excludes well know directories
+     * which would not be needed by a server pack. If you have suggestions to this list, open an issue on
+     * <a href=https://github.com/Griefed/ServerPackCreator/issues>GitHub</a>
+     * @param modpackDir String. The directory for which to gather a list of directories to copy to the server pack.
+     * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only
+     * directories.
      */
     private List<String> suggestCopyDirs(String modpackDir) {
         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.suggestcopydirs.start"));
@@ -499,52 +830,97 @@ public class Configuration {
         return Arrays.asList(copyDirs.clone());
     }
 
-    /** Checks whether the modpackDir contains a valid projectID,fileID combination. ProjectIDs must be at least two digits long, fileIDs must be at least 5 digits long. Must be numbers separated by a ",".
+    /**
+     * Checks whether the specified modpack directory contains a valid projectID,fileID combination.
+     * ProjectIDs must be at least two digits long, fileIDs must be at least 5 digits long.
+     * Must be numbers separated by a ",". If modpackDir successfully matched a projectID,fileID combination, CurseForge
+     * is then checked for existence of said projectID and fileID. If the project can not be found or the file returns null
+     * then false is returned and the check is considered failed.
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
     boolean checkCurseForge(String modpackDir) {
-        String[] projectFileIds;
+        String[] curseForgeIDCombination;
         boolean configCorrect = false;
 
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
 
-            projectFileIds = modpackDir.split(",");
+            curseForgeIDCombination = modpackDir.split(",");
+            int curseProjectID = Integer.parseInt(curseForgeIDCombination[0]);
+            int curseFileID= Integer.parseInt(curseForgeIDCombination[1]);
 
-            setProjectID(Integer.parseInt(projectFileIds[0]));
+            try {
+                if (CurseAPI.project(curseProjectID).isPresent()) {
+                    setProjectID(curseProjectID);
+                    configCorrect = true;
+                }
+            } catch (CurseException cex) {
+                appLogger.error(String.format(localizationManager.getLocalizedString("configcheck.log.error.iscurse.project"), curseProjectID),cex);
+                configCorrect = false;
+            }
 
-            setProjectFileID(Integer.parseInt(projectFileIds[1]));
+            try {
+                if (CurseAPI.project(curseProjectID).get().files().fileWithID(curseFileID) != null) {
+                    setProjectFileID(curseFileID);
+                    configCorrect = true;
+                }
+            } catch (CurseException cex) {
+                appLogger.error(String.format(localizationManager.getLocalizedString("configcheck.log.error.iscurse.file"), curseFileID), cex);
+                configCorrect = false;
+            }
 
             appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.info"));
             appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.checkcurseforge.return"), getProjectID(), getProjectFileID()));
             appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.checkcurseforge.warn"));
 
-            configCorrect = true;
 
         } else { appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.checkcurseforge.warn2")); }
 
         return configCorrect;
     }
 
-    /** Converts various strings to booleans.
+    /**
+     * Converts various strings to booleans, by using regex, to allow for more variations in input.<br>
+     * <strong>Converted to <code>TRUE</code> are:<br></strong>
+     * <code>[Tt]rue</code><br>
+     * <code>1</code><br>
+     * <code>[Yy]es</code><br>
+     * <code>[Yy]</code><br>
+     * Language Key <code>cli.input.true</code><br>
+     * Language Key <code>cli.input.yes</code><br>
+     * Language Key <code>cli.input.yes.short</code><br>
+     * <strong>Converted to <code>FALSE</code> are:<br></strong>
+     * <code>[Ff]alse</code><br>
+     * <code>0</code><br>
+     * <code>[Nn]o</code><br>
+     * <code>[Nn]</code><br>
+     * Language Key <code>cli.input.false</code><br>
+     * Language Key <code>cli.input.no</code><br>
+     * Language Key <code>cli.input.no.short</code><br>
      * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
      * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
      */
     public boolean convertToBoolean(String stringBoolean) {
         boolean returnBoolean;
 
-        if (stringBoolean.matches("[Tt]rue") ||
-                stringBoolean.matches("1")       ||
-                stringBoolean.matches("[Yy]es")  ||
-                stringBoolean.matches("[Yy]"))    {
-
+        if (stringBoolean.matches("[Tt]rue")    ||
+                stringBoolean.matches("1")      ||
+                stringBoolean.matches("[Yy]es") ||
+                stringBoolean.matches("[Yy]")   ||
+                stringBoolean.matches(localizationManager.getLocalizedString("cli.input.true")) ||
+                stringBoolean.matches(localizationManager.getLocalizedString("cli.input.yes"))  ||
+                stringBoolean.matches(localizationManager.getLocalizedString("cli.input.yes.short"))
+        ){
             returnBoolean = true;
 
         } else if (stringBoolean.matches("[Ff]alse") ||
-                stringBoolean.matches("0")        ||
-                stringBoolean.matches("[Nn]o")    ||
-                stringBoolean.matches("[Nn]" ))    {
-
+                stringBoolean.matches("0")           ||
+                stringBoolean.matches("[Nn]o")       ||
+                stringBoolean.matches("[Nn]" )       ||
+                stringBoolean.matches(localizationManager.getLocalizedString("cli.input.false")) ||
+                stringBoolean.matches(localizationManager.getLocalizedString("cli.input.no"))    ||
+                stringBoolean.matches(localizationManager.getLocalizedString("cli.input.no.short"))
+        ){
             returnBoolean = false;
 
         } else {
@@ -555,19 +931,24 @@ public class Configuration {
         return returnBoolean;
     }
 
-    /** Prints the configuration.
-     * @param modpackDirectory String. Path to modpack directory.
-     * @param clientsideMods String List. List of clientside mods to delete from server pack.
-     * @param copyDirectories String List. List of directories to copy to server pack.
-     * @param installServer Boolean. Whether to install the modloader server.
-     * @param javaInstallPath String. Path to Java installation needed to install modloader server.
-     * @param minecraftVer String. Minecraft version the modpack uses.
-     * @param modloader String. Modloader the modpack uses.
-     * @param modloaderVersion String. Version of the modloader the modpack uses.
+    /**
+     * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the configuration before
+     * ServerPackCreator starts the generation of the server pack or, if checks failed, to show the user their last
+     * configuration so they can more easily identify problems with said configuration.<br>
+     * Should a user report an issue on GitHub and include their logs (which I hope they do....), this would also
+     * help me help them. Logging is good. People should use more logging.
+     * @param modpackDirectory String. The used modpackDir field either from a configuration file or from configuration setup.
+     * @param clientsideMods String List. List of clientside-only mods to exclude from the server pack..
+     * @param copyDirectories String List. List of directories in the modpack which are to be included in the server pack.
+     * @param installServer Boolean. Whether to install the modloader server in the server pack.
+     * @param javaInstallPath String. Path to the Java executable/binary needed for installing the modloader server in the server pack.
+     * @param minecraftVer String. The Minecraft version the modpack uses.
+     * @param modloader String. The modloader the modpack uses.
+     * @param modloaderVersion String. The version of the modloader the modpack uses.
      * @param includeIcon Boolean. Whether to include the server-icon.png in the server pack.
      * @param includeProperties Boolean. Whether to include the server.properties in the server pack.
-     * @param includeScripts Boolean. Whether to include start scripts for the specified modloader in the server pack.
-     * @param includeZip Boolean. Whether to create a zip-archive of the server pack.
+     * @param includeScripts Boolean. Whether to include the start scripts for the specified modloader in the server pack.
+     * @param includeZip Boolean. Whether to create a zip-archive of the server pack, excluding the Minecraft server JAR according to Mojang's TOS and EULA.
      */
     void printConfig(String modpackDirectory,
                      List<String> clientsideMods,
@@ -585,7 +966,7 @@ public class Configuration {
         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.printconfig.start"));
         appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.printconfig.modpackdir"), modpackDirectory));
 
-        if (clientsideMods.size() == 0) {
+        if (clientsideMods.isEmpty()) {
             appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.printconfig.noclientmods"));
         } else {
 
@@ -617,9 +998,13 @@ public class Configuration {
         appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.printconfig.zip"), includeZip));
     }
 
-    /** Check whether the specified modpack directory exists.
-     * @param modpackDir String. The path to the modpack directory.
-     * @return Boolean. Returns true if the directory exists. False if not.
+    /**
+     * Checks whether the passed String is empty and if it is empty, prints the corresponding message to the console and
+     * serverpackcreator.log so the user knows what went wrong.<br>
+     * Checks whether the passed String is a directory and if it is not, prints the corresponding message to the console
+     * and serverpackcreator.log so the user knows what went wrong.
+     * @param modpackDir String. The path to the modpack directory to check whether it is empty and whether it is a directory.
+     * @return Boolean. Returns true if the directory exists.
      */
     boolean checkModpackDir(String modpackDir) {
         boolean configCorrect = false;
@@ -640,10 +1025,16 @@ public class Configuration {
         return configCorrect;
     }
 
-    /** Check whether the specified directories exist in the modpack directory.
-     * @param copyDirs String. The directories for which to check.
-     * @param modpackDir String. The path to the modpack directory in which to check for directories.
-     * @return Boolean. Returns true if all directories exist. False if any one does not.
+    /**
+     * Checks whether the passed list of directories which are supposed to be in the modpack directory is empty and
+     * prints a message to the console and serverpackcreator.log if it is.<br>
+     * Checks whether all directories in the list exist in the modpack directory and prints a message to the console
+     * and serverpackcreator.log if any one of the directories could not be found.
+     * @param copyDirs List String. The list of directories to check for existence.
+     * @param modpackDir String. The path to the modpack directory in which to check for existence of the passed list of
+     *                  directories.
+     * @return Boolean. Returns true if every directory was found in the modpack directory. If any single one was not found,
+     * false is returned.
      */
     boolean checkCopyDirs(List<String> copyDirs, String modpackDir) {
         boolean configCorrect = true;
@@ -669,11 +1060,15 @@ public class Configuration {
         return configCorrect;
     }
 
-    /** Automatically set Java path if none is specified
+    /**
+     * Checks the passed String whether it is empty, and if it is, automatically acquires the path to the users Java
+     * installation and appends bin/java.exe or bin/java depending on whether the path to said installation starts with
+     * Windows-typical C: prefix.
      * @param enteredPath String. The path to check whether it is empty.
-     * @return String. Return the entered Java path if it is not empty. Automatically determine path if empty.
+     * @return String. Returns the passed String as is if it is not empty. Returns the automatically acquired path to the
+     * Java executable/binary if the passed String was empty.
      */
-    String getJavaPath(String enteredPath) {
+    String getJavaPathFromSystem(String enteredPath) {
         String autoJavaPath;
 
         if (enteredPath.equals("")) {
@@ -696,9 +1091,10 @@ public class Configuration {
         }
     }
 
-    /** Checks whether the correct path to the Java installation was set.
-     * @param pathToJava String. The path to check for java.exe or java.
-     * @return Boolean. Returns true if the path was correctly set. False if not.
+    /**
+     * Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.
+     * @param pathToJava String. The path to check for java.exe and java.
+     * @return Boolean. Returns true if the String ends with java.exe or java, and if either of these files exist.
      */
     boolean checkJavaPath(String pathToJava) {
         boolean configCorrect = false;
@@ -717,9 +1113,10 @@ public class Configuration {
         return configCorrect;
     }
 
-    /** Checks whether Forge or Fabric were specified as modloader.
+    /**
+     * Checks whether either Forge or Fabric were specified as the modloader.
      * @param modloader String. Check case insensitive for Forge or Fabric.
-     * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if not.
+     * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if neither.
      */
     boolean checkModloader(String modloader) {
         boolean configCorrect = false;
@@ -735,11 +1132,14 @@ public class Configuration {
         return configCorrect;
     }
 
-    /** Standardize the specified modloader.
-     * @param modloader String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..
-     * @return String. Returns a standardized String of the specified modloader.
+    /**
+     * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically allows the user to
+     * input Forge or Fabric in any combination of upper- and lowercase and ServerPackCreator will still be able to
+     * work with the users input.
+     * @param modloader String. The String to check for case-insensitive cases of either Forge or Fabric.
+     * @return String. Returns a normalized String of the specified modloader.
      */
-    String setModloader(String modloader) {
+    String setModLoaderCase(String modloader) {
         String returnLoader = null;
 
         if (modloader.equalsIgnoreCase("Forge")) {
@@ -753,10 +1153,16 @@ public class Configuration {
         return returnLoader;
     }
 
-    /** Determine whether to check for correct Forge or correct Fabric modloader version.
-     * @param modloader String. Determines whether the check for Forge or Fabric is called.
-     * @param modloaderVersion String. The version of the modloader to check for.
-     * @return Boolean. Returns true if the specified modloader version is correct. False if not.
+    /**
+     * Depending on whether Forge or Fabric was specified as the modloader, this will call the corresponding version check
+     * to verify that the user correctly set their modloader version.<br>
+     * If the user specified Forge as their modloader, {@link #isForgeVersionCorrect(String)} is called and the version
+     * the user specified is checked against Forge's version manifest..<br>
+     * If the user specified Fabric as their modloader, {@link #isFabricVersionCorrect(String)} is called and the version
+     * the user specified is checked against Fabric's version manifest.
+     * @param modloader String. The passed modloader which determines whether the check for Forge or Fabric is called.
+     * @param modloaderVersion String. The version of the modloader which is checked against the corresponding modloaders manifest.
+     * @return Boolean. Returns true if the specified modloader version was found in the corresponding manifest.
      */
     boolean checkModloaderVersion(String modloader, String modloaderVersion) {
         boolean isVersionCorrect = false;
@@ -775,9 +1181,11 @@ public class Configuration {
         return isVersionCorrect;
     }
 
-    /** Check the specified Minecraft version against Mojang's version manifest to validate the version.
-     * @param minecraftVersion Minecraft version to check.
-     * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest. False if not.
+    /**
+     * Checks whether the passed String is empty and if it is not. check the String against Mojang's version manifest
+     * to validate the version.
+     * @param minecraftVersion String. The version to check for in Mojang's version manifest.
+     * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.
      */
     boolean isMinecraftVersionCorrect(String minecraftVersion) {
         if (!minecraftVersion.equals("")) {
@@ -842,161 +1250,182 @@ public class Configuration {
         }
     }
 
-    /** Check the specified Fabric version against Fabric's version manifest to validate the version.
-     * @param fabricVersion String. The Fabric version to check.
-     * @return Boolean. Returns true if the specified Fabric version could be found in Fabric's manifest. False if not.
+    /**
+     * Checks whether the passed String is empty and if it is not. check the String against Fabric's version manifest
+     * to validate the version.
+     * @param fabricVersion String. The version to check for in Fabric's version manifest.
+     * @return Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.
      */
     boolean isFabricVersionCorrect(String fabricVersion) {
-        try {
-            URL manifestJsonURL = new URL(getFabricManifestUrl());
-
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-
-            FileOutputStream downloadManifestOutputStream;
-
+        if (!fabricVersion.equals("")) {
             try {
-                downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
-            } catch (FileNotFoundException ex) {
+                URL manifestJsonURL = new URL(getFabricManifestUrl());
 
-                appLogger.debug(localizationManager.getLocalizedString("configcheck.log.debug.isfabricversioncorrect"), ex);
-                File file = new File("fabric-manifest.xml");
+                ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
 
-                if (!file.exists()){
+                FileOutputStream downloadManifestOutputStream;
 
-                    appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.create"));
-                    boolean jsonCreated = file.createNewFile();
+                try {
+                    downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
+                } catch (FileNotFoundException ex) {
 
-                    if (jsonCreated) {
+                    appLogger.debug(localizationManager.getLocalizedString("configcheck.log.debug.isfabricversioncorrect"), ex);
+                    File file = new File("fabric-manifest.xml");
 
-                        appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.created"));
+                    if (!file.exists()) {
 
-                    } else {
-                        appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.parse"));
+                        appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.create"));
+                        boolean jsonCreated = file.createNewFile();
+
+                        if (jsonCreated) {
+
+                            appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isfabricversioncorrect.created"));
+
+                        } else {
+                            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.parse"));
+                        }
                     }
+                    downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
                 }
-                downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
+                FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
+                downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                downloadManifestOutputStream.flush();
+                downloadManifestOutputStream.close();
+
+                readableByteChannel.close();
+                downloadManifestOutputStreamChannel.close();
+
+                File manifestXMLFile = new File("fabric-manifest.xml");
+                Scanner xmlReader = new Scanner(manifestXMLFile);
+
+                ArrayList<String> dataList = new ArrayList<>();
+
+                while (xmlReader.hasNextLine()) {
+                    dataList.add(xmlReader.nextLine());
+                }
+
+                String[] dataArray = new String[dataList.size()];
+
+                String manifestXML;
+
+                dataList.toArray(dataArray);
+
+                manifestXML = Arrays.toString(dataArray);
+
+                xmlReader.close();
+
+                manifestXML = manifestXML.replaceAll("\\s", "");
+
+                boolean contains = manifestXML.trim().contains(String.format("%s", fabricVersion));
+
+                manifestXMLFile.deleteOnExit();
+
+                return contains;
+
+            } catch (Exception ex) {
+
+                appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.validate"), ex);
+                return false;
             }
-            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
 
-            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            downloadManifestOutputStream.flush();
-            downloadManifestOutputStream.close();
+        } else {
 
-            readableByteChannel.close();
-            downloadManifestOutputStreamChannel.close();
-
-            File manifestXMLFile = new File("fabric-manifest.xml");
-            Scanner xmlReader = new Scanner(manifestXMLFile);
-
-            ArrayList<String> dataList = new ArrayList<>();
-
-            while (xmlReader.hasNextLine()) {
-                dataList.add(xmlReader.nextLine());
-            }
-
-            String[] dataArray = new String[dataList.size()];
-
-            String manifestXML;
-
-            dataList.toArray(dataArray);
-
-            manifestXML = Arrays.toString(dataArray);
-
-            xmlReader.close();
-
-            manifestXML = manifestXML.replaceAll("\\s", "");
-
-            boolean contains = manifestXML.trim().contains(String.format("%s", fabricVersion));
-
-            manifestXMLFile.deleteOnExit();
-
-            return contains;
-        } catch (Exception ex) {
-
-            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.validate"), ex);
+            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isfabricversioncorrect.empty"));
             return false;
         }
     }
 
-    /** Checks Forge version for errors (basically for its availability in Forge manifest)
-     * @param forgeVersion String. The Forge version to check.
-     * @return Boolean. Returns true if Forge version correct and false if it isn't correct.
+    /**
+     * Checks whether the passed String is empty and if it is not. check the String against Forge's version manifest
+     * to validate the version.
+     * @param forgeVersion String. The version to check for in Forge's version manifest.
+     * @return Boolean. Returns true if the specified Forge version could be found in Forge's manifest.
      */
     boolean isForgeVersionCorrect(String forgeVersion) {
-        try {
-            URL manifestJsonURL = new URL(getForgeManifestUrl());
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-            FileOutputStream downloadManifestOutputStream;
-
+        if (!forgeVersion.equals("")) {
             try {
+                URL manifestJsonURL = new URL(getForgeManifestUrl());
+                ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+                FileOutputStream downloadManifestOutputStream;
 
-                downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
+                try {
 
-            } catch (FileNotFoundException ex) {
+                    downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
 
-                appLogger.debug(localizationManager.getLocalizedString("configcheck.log.debug.isforgeversioncorrect"), ex);
-                File file = new File("forge-manifest.json");
+                } catch (FileNotFoundException ex) {
 
-                if (!file.exists()){
+                    appLogger.debug(localizationManager.getLocalizedString("configcheck.log.debug.isforgeversioncorrect"), ex);
+                    File file = new File("forge-manifest.json");
 
-                    appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.create"));
+                    if (!file.exists()) {
 
-                    boolean jsonCreated = file.createNewFile();
+                        appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.create"));
 
-                    if (jsonCreated) {
+                        boolean jsonCreated = file.createNewFile();
 
-                        appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.created"));
-                    } else {
+                        if (jsonCreated) {
 
-                        appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.parse"));
+                            appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.isforgeversioncorrect.created"));
+                        } else {
+
+                            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.parse"));
+                        }
                     }
+                    downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
                 }
-                downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
+                FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
+                downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                downloadManifestOutputStream.flush();
+                downloadManifestOutputStream.close();
+
+                readableByteChannel.close();
+                downloadManifestOutputStreamChannel.close();
+
+                File manifestJsonFile = new File("forge-manifest.json");
+
+                manifestJsonFile.deleteOnExit();
+
+                Scanner jsonReader = new Scanner(manifestJsonFile);
+
+                ArrayList<String> dataList = new ArrayList<>();
+
+                while (jsonReader.hasNextLine()) {
+                    dataList.add(jsonReader.nextLine());
+                }
+
+                String[] dataArray = new String[dataList.size()];
+
+                String manifestJSON;
+
+                dataList.toArray(dataArray);
+
+                manifestJSON = Arrays.toString(dataArray);
+
+                jsonReader.close();
+
+                manifestJSON = manifestJSON.replaceAll("\\s", "");
+
+                return manifestJSON.trim().contains(String.format("%s", forgeVersion));
+
+            } catch (Exception ex) {
+
+                appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.validate"), ex);
+                return false;
             }
-            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+        } else {
 
-            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            downloadManifestOutputStream.flush();
-            downloadManifestOutputStream.close();
-
-            readableByteChannel.close();
-            downloadManifestOutputStreamChannel.close();
-
-            File manifestJsonFile = new File("forge-manifest.json");
-
-            manifestJsonFile.deleteOnExit();
-
-            Scanner jsonReader = new Scanner(manifestJsonFile);
-
-            ArrayList<String> dataList = new ArrayList<>();
-
-            while (jsonReader.hasNextLine()) {
-                dataList.add(jsonReader.nextLine());
-            }
-
-            String[] dataArray = new String[dataList.size()];
-
-            String manifestJSON;
-
-            dataList.toArray(dataArray);
-
-            manifestJSON = Arrays.toString(dataArray);
-
-            jsonReader.close();
-
-            manifestJSON = manifestJSON.replaceAll("\\s", "");
-
-            return manifestJSON.trim().contains(String.format("%s", forgeVersion));
-
-        } catch (Exception ex) {
-
-            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.validate"), ex);
+            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.isforgeversioncorrect.empty"));
             return false;
         }
     }
 
-    /** Returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.
-     * @param modpackDir String. /server_pack The directory where the Fabric installer will be placed in.
+    /**
+     * Returns the latest version for the Fabric-loader. If Fabric's version manifest should be unreachable for whatever
+     * reason, version 0.11.3 is returned by default.
+     * @param modpackDir String. The Fabric-loader manifest will be stored inside the server_pack directory inside the modpack
+     *                   directory.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
     @SuppressWarnings({"ReturnInsideFinallyBlock", "finally"})
@@ -1031,7 +1460,30 @@ public class Configuration {
     }
 
     /**
-     * Generate new configuration file from CLI input. Prompts user to enter config file values and then generates a config file with values entered by user.
+     * Walk the user through the generation of a new ServerPackCreator configuration file by asking them for input,
+     * step-by-step, regarding their modpack. At the end of this method a fully configured serverpackcreator.conf file
+     * is saved and any previously existing configuration file replaced by the new one.<br>
+     * After every input, said input is displayed to the user and they're asked whether they are satisfied with said
+     * input. The user can then decide whether they would like to restart the entry of the field they just configured,
+     * or agree and move to the next one.<br>
+     * At the end of this method, the user will have a newly configured and created configuration file for ServerPackCreator.<br>
+     * <br>
+     * Most user-input is checked after entry to ensure the configuration is already in working-condition after completion
+     * of this method.<br>
+     * Calls<br>
+     * {@link #checkModpackDir(String)}<br>
+     * {@link #readBoolean()}<br>
+     * {@link #getFallbackModsList()}<br>
+     * {@link #readStringArray()}<br>
+     * {@link #checkCopyDirs(List, String)}<br>
+     * {@link #isMinecraftVersionCorrect(String)}<br>
+     * {@link #checkModloader(String)}<br>
+     * {@link #setModLoaderCase(String)}<br>
+     * {@link #checkModloaderVersion(String, String)}<br>
+     * {@link #getJavaPathFromSystem(String)}<br>
+     * {@link #checkJavaPath(String)}<br>
+     * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
+     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
      */
     void createConfigurationFile() {
         List<String> clientMods, copyDirs;
@@ -1078,6 +1530,14 @@ public class Configuration {
                 appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
                 appLogger.info(localizationManager.getLocalizedString("clisetup.log.info.clientmods.checkreturninfo"));
                 System.out.print(localizationManager.getLocalizedString("clisetup.log.info.answer"));
+                if (clientMods.isEmpty()) {
+                    clientMods = getFallbackModsList();
+                    appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.checkconfig.clientmods"));
+
+                    for (int i = 0; i < clientMods.size(); i++) {
+                        appLogger.warn(String.format("    %s", clientMods.get(i))); }
+                    //TODO: @Griefed Test whether this works
+                }
             } while (!readBoolean());
             appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
             tmpClientMods = new String[clientMods.size()];
@@ -1124,7 +1584,7 @@ public class Configuration {
                 System.out.print(localizationManager.getLocalizedString("clisetup.log.info.modloader.cli"));
                 modLoader = reader.nextLine();
             } while (!checkModloader(modLoader));
-            modLoader = setModloader(modLoader);
+            modLoader = setModLoaderCase(modLoader);
             appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.checkreturn"), modLoader));
             System.out.println();
 
@@ -1144,7 +1604,7 @@ public class Configuration {
             do {
                 System.out.print(localizationManager.getLocalizedString("clisetup.log.info.java.cli"));
                 String tmpJavaPath = reader.nextLine();
-                javaPath = getJavaPath(tmpJavaPath);
+                javaPath = getJavaPathFromSystem(tmpJavaPath);
             } while (!checkJavaPath(javaPath));
             System.out.println();
 
@@ -1214,8 +1674,11 @@ public class Configuration {
         }
     }
 
-    /** A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.
-     * @return String List. Returns list with user input values that will be stored in config.
+    /**
+     * A helper method for {@link #createConfigurationFile()}. Prompts the user to enter the values which will make up
+     * a String List in the new configuration file. If the user enters an empty line, the method is exited and the
+     * String List returned.
+     * @return String List. Returns the list of values entered by the user.
      */
     private List<String> readStringArray() {
         Scanner readerArray = new Scanner(System.in);
@@ -1231,7 +1694,8 @@ public class Configuration {
         }
     }
 
-    /** Converts list of strings into concatenated string.
+    /**
+     * Converts a sequence of Strings, for example from a list, into a concatenated String.
      * @param args Strings that will be concatenated into one string
      * @return String. Returns concatenated string that contains all provided values.
      */
@@ -1242,8 +1706,11 @@ public class Configuration {
         return stringBuilder.toString();
     }
 
-    /** A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.
-     * @return Boolean. Converts to boolean and returns value entered by user that will be stored in config.
+    /**
+     * A helper method for {@link #createConfigurationFile()}. Prompts the user to enter values which will then be
+     * converted to booleans, either <code>TRUE</code> or <code>FALSE</code>. This prevents any non-boolean values
+     * from being written to the new configuration file.
+     * @return Boolean. True or False, depending on user input.
      */
     private boolean readBoolean() {
         Scanner readerBoolean = new Scanner(System.in);
@@ -1274,20 +1741,21 @@ public class Configuration {
         }
     }
 
-    /** Writes a new configuration file with the parameters passed to it.
+    /** Writes a new configuration file with the parameters passed to it.<br>
+     * Calls {@link #getConfigFile()}<br>
      * @param modpackDir String. The path to the modpack.
      * @param clientMods List, String. List of clientside-only mods.
      * @param copyDirs List, String. List of directories to include in server pack.
-     * @param includeServer Boolean. Whether to include a modloader server installation.
-     * @param javaPath String. Path to the java executable.
+     * @param includeServer Boolean. Whether the modloader server software should be installed.
+     * @param javaPath String. Path to the java executable/binary.
      * @param minecraftVersion String. Minecraft version used by the modpack and server pack.
      * @param modLoader String. Modloader used by the modpack and server pack. Ether Forge or Fabric.
      * @param modLoaderVersion String. Modloader version used by the modpack and server pack.
      * @param includeIcon Boolean. Whether to include a server-icon in the server pack.
      * @param includeProperties Boolean. Whether to include a properties file in the server pack.
      * @param includeScripts Boolean. Whether to include start scripts in the server pack.
-     * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server jar.
-     * @param fileName The name under which to write the new file.
+     * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server JAR.
+     * @param fileName The name under which to write the new configuration file.
      * @param isTemporary Decides whether to delete existing config-file. If isTemporary is false, existing config files will be deleted before writing the new file.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
      */

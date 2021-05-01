@@ -29,52 +29,42 @@ import java.nio.file.Paths;
 /**
  * <strong>Table of methods</strong>
  * <p>
- * 1. {@link #FilesSetup(LocalizationManager)}<p>
- * 2. {@link #getConfigFile()}<p>
- * 3. {@link #getOldConfigFile()}<p>
- * 4. {@link #getPropertiesFile()}<p>
- * 5. {@link #getIconFile()}<p>
- * 6. {@link #getForgeWindowsFile()}<p>
- * 7. {@link #getForgeLinuxFile()}<p>
- * 8. {@link #getFabricWindowsFile()}
- * 9. {@link #getFabricLinuxFile()}
- * 10.{@link #filesSetup()}<p>
- * 11.{@link #checkForConfig()}<p>
- * 12.{@link #checkForFabricLinux()}<p>
- * 13.{@link #checkForFabricWindows()}<p>
- * 14.{@link #checkForForgeLinux()}<p>
- * 15.{@link #checkForForgeWindows()}<p>
- * 16.{@link #checkForProperties()}<p>
+ * 1. {@link #FilesSetup(LocalizationManager)}<br>
+ * 2. {@link #getConfigFile()}<br>
+ * 3. {@link #getOldConfigFile()}<br>
+ * 4. {@link #getPropertiesFile()}<br>
+ * 5. {@link #getIconFile()}<br>
+ * 6. {@link #getForgeWindowsFile()}<br>
+ * 7. {@link #getForgeLinuxFile()}<br>
+ * 8. {@link #getFabricWindowsFile()}<br>
+ * 9. {@link #getFabricLinuxFile()}<br>
+ * 10.{@link #filesSetup()}<br>
+ * 11.{@link #checkForConfig()}<br>
+ * 12.{@link #checkForFabricLinux()}<br>
+ * 13.{@link #checkForFabricWindows()}<br>
+ * 14.{@link #checkForForgeLinux()}<br>
+ * 15.{@link #checkForForgeWindows()}<br>
+ * 16.{@link #checkForProperties()}<br>
  * 17.{@link #checkForIcon()}
  * <p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
  * Ensures all files needed by ServerPackCreator are available. If any one is missing, a new one is generated from the
  * template. Among the default files are:<p>
- * <strong>serverpackcreator.conf</strong><p>
- * <strong>server.properties</strong><p>
- * <strong>server-icon.png</strong><p>
- * <strong>start-forge.bar</strong><p>
- * <strong>start-forge.sh</strong><p>
- * <strong>start-fabric.bat</strong><p>
+ * <strong>serverpackcreator.conf</strong><br>
+ * <strong>server.properties</strong><br>
+ * <strong>server-icon.png</strong><br>
+ * <strong>start-forge.bar</strong><br>
+ * <strong>start-forge.sh</strong><br>
+ * <strong>start-fabric.bat</strong><br>
  * <strong>start-fabric.sh</strong>
  * <p>
- *
  * Should an old configuration file, <em>creator.conf</em>, be detected, it is renamed to <em>serverpackcreator.conf</em>
  * to ensure a configuration file is present at all times.
  */
 public class FilesSetup {
 
     private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
-
-    private final File configFile        = new File("serverpackcreator.conf");
-    private final File oldConfigFile     = new File("creator.conf");
-    private final File propertiesFile    = new File("server.properties");
-    private final File iconFile          = new File("server-icon.png");
-    private final File forgeWindowsFile  = new File("start-forge.bat");
-    private final File forgeLinuxFile    = new File("start-forge.sh");
-    private final File fabricWindowsFile = new File("start-fabric.bat");
-    private final File fabricLinuxFile   = new File("start-fabric.sh");
 
     private LocalizationManager localizationManager;
 
@@ -91,6 +81,15 @@ public class FilesSetup {
             this.localizationManager = injectedLocalizationManager;
         }
     }
+
+    private final File configFile        = new File("serverpackcreator.conf");
+    private final File oldConfigFile     = new File("creator.conf");
+    private final File propertiesFile    = new File("server.properties");
+    private final File iconFile          = new File("server-icon.png");
+    private final File forgeWindowsFile  = new File("start-forge.bat");
+    private final File forgeLinuxFile    = new File("start-forge.sh");
+    private final File fabricWindowsFile = new File("start-fabric.bat");
+    private final File fabricLinuxFile   = new File("start-fabric.sh");
 
     /**
      * Getter for serverpackcreator.conf.

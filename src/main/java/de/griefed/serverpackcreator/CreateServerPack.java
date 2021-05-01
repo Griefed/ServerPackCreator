@@ -51,33 +51,32 @@ import java.util.zip.ZipOutputStream;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
- * <strong>Table of methods</strong>
- * <p>
- * 1. {@link #CreateServerPack(LocalizationManager, Configuration, CurseCreateModpack)}<p>
- * 2. {@link #getPropertiesFile()}<p>
- * 3. {@link #getIconFile()}<p>
- * 4. {@link #getForgeWindowsFile()}<p>
- * 5. {@link #getForgeLinuxFile()}<p>
- * 6. {@link #getFabricWindowsFile()}<p>
- * 7. {@link #getFabricLinuxFile()}<p>
- * 8. {@link #run()}<p>
- * 9. {@link #cleanupEnvironment(String)}<p>
- * 10.{@link #copyStartScripts(String, String, boolean)}<p>
- * 11.{@link #copyFiles(String, List, List)}<p>
- * 12.{@link #excludeClientMods(String, List)}<p>
- * 13.{@link #copyIcon(String)}<p>
- * 14.{@link #copyProperties(String)}<p>
- * 15.{@link #installServer(String, String, String, String, String)}<p>
- * 16.{@link #zipBuilder(String, String, Boolean, String)}<p>
- * 17.{@link #generateDownloadScripts(String, String, String)}<p>
- * 18.{@link #fabricShell(String, String)}<p>
- * 19.{@link #fabricBatch(String, String)}<p>
- * 20.{@link #forgeShell(String, String)}<p>
- * 21.{@link #forgeBatch(String, String)}<p>
- * 22.{@link #downloadFabricJar(String)}<p>
- * 23.{@link #latestFabricInstaller(String)}<p>
- * 24.{@link #downloadForgeJar(String, String, String)}<p>
- * 25.{@link #deleteMinecraftJar(String, String, String)}<p>
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #CreateServerPack(LocalizationManager, Configuration, CurseCreateModpack)}<br>
+ * 2. {@link #getPropertiesFile()}<br>
+ * 3. {@link #getIconFile()}<br>
+ * 4. {@link #getForgeWindowsFile()}<br>
+ * 5. {@link #getForgeLinuxFile()}<br>
+ * 6. {@link #getFabricWindowsFile()}<br>
+ * 7. {@link #getFabricLinuxFile()}<br>
+ * 8. {@link #run()}<br>
+ * 9. {@link #cleanupEnvironment(String)}<br>
+ * 10.{@link #copyStartScripts(String, String, boolean)}<br>
+ * 11.{@link #copyFiles(String, List, List)}<br>
+ * 12.{@link #excludeClientMods(String, List)}<br>
+ * 13.{@link #copyIcon(String)}<br>
+ * 14.{@link #copyProperties(String)}<br>
+ * 15.{@link #installServer(String, String, String, String, String)}<br>
+ * 16.{@link #zipBuilder(String, String, Boolean, String)}<br>
+ * 17.{@link #generateDownloadScripts(String, String, String)}<br>
+ * 18.{@link #fabricShell(String, String)}<br>
+ * 19.{@link #fabricBatch(String, String)}<br>
+ * 20.{@link #forgeShell(String, String)}<br>
+ * 21.{@link #forgeBatch(String, String)}<br>
+ * 22.{@link #downloadFabricJar(String)}<br>
+ * 23.{@link #latestFabricInstaller(String)}<br>
+ * 24.{@link #downloadForgeJar(String, String, String)}<br>
+ * 25.{@link #deleteMinecraftJar(String, String, String)}<br>
  * 26.{@link #cleanUpServerPack(File, File, String, String, String, String)}
  * <p>
  * Requires an instance of {@link Configuration} from which to get all required information about the modpack and the
@@ -97,12 +96,6 @@ public class CreateServerPack {
     private Configuration configuration;
     private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
-    private final File propertiesFile    = new File("server.properties");
-    private final File iconFile          = new File("server-icon.png");
-    private final File forgeWindowsFile  = new File("start-forge.bat");
-    private final File forgeLinuxFile    = new File("start-forge.sh");
-    private final File fabricWindowsFile = new File("start-fabric.bat");
-    private final File fabricLinuxFile   = new File("start-fabric.sh");
 
     /**
      * <strong>Constructor</strong><p>
@@ -136,6 +129,13 @@ public class CreateServerPack {
             this.configuration = injectedConfiguration;
         }
     }
+
+    private final File propertiesFile    = new File("server.properties");
+    private final File iconFile          = new File("server-icon.png");
+    private final File forgeWindowsFile  = new File("start-forge.bat");
+    private final File forgeLinuxFile    = new File("start-forge.sh");
+    private final File fabricWindowsFile = new File("start-fabric.bat");
+    private final File fabricLinuxFile   = new File("start-fabric.sh");
 
     /**
      * Getter for server.properties.
