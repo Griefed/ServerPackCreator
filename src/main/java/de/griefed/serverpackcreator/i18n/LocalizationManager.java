@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
+//TODO: Write table of contents
 package de.griefed.serverpackcreator.i18n;
 
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
+//TODO: Write docs for class
 /**
  * This class is localization manager for your application.
  * <p>To use it, firstly run LocalizationManager.init().

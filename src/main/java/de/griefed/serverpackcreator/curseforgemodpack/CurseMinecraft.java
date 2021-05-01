@@ -23,8 +23,8 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
-
-class CurseMinecraft {
+//TODO: Write docs for class
+public class CurseMinecraft {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String version;
     private List<CurseModLoaders> modLoaders;

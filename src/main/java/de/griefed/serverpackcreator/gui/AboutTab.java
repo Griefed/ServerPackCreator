@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
+//TODO: Write table of contents
 package de.griefed.serverpackcreator.gui;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -30,8 +30,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
-
-class AboutTab extends Component {
+//TODO: Write docs for class
+public class AboutTab extends Component {
     private static final Logger appLogger = LogManager.getLogger(AboutTab.class);
 
     private final Dimension miscButtonDimension = new Dimension(50,50);

@@ -27,8 +27,8 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-
-class ModloaderInstallerLogTab extends Component {
+//TODO: Write docs for class
+public class ModloaderInstallerLogTab extends Component {
 
     private LocalizationManager localizationManager;
 
