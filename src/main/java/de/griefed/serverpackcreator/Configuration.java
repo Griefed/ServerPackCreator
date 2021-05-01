@@ -86,7 +86,7 @@ import java.util.*;
  * 35.{@link #setProjectID(int)}<br>
  * 36.{@link #getProjectFileID()}<br>
  * 37.{@link #setProjectFileID(int)}<br>
- * 38.{@link #checkConfigFile(File)}<br>
+ * 38.{@link #checkConfigFile(File, boolean)}<br>
  * 39.{@link #isDir(String)}<br>
  * 40.{@link #isCurse()}<br>
  * 41.{@link #containsFabric(CurseModpack)}<br>
@@ -202,6 +202,15 @@ public class Configuration {
 
     private Config config;
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    public ObjectMapper getObjectMapper() {
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        this.objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
+    }
+
     /**
      * Getter for creator.conf.
      * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
@@ -248,7 +257,7 @@ public class Configuration {
     /**
      * Getter for a {@link Config} containing a parsed configuration-file.
      * @return Config. Returns parsed serverpackcreator.conf for use in<br>
-     * {@link #checkConfigFile(File)}<br>
+     * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}
      */
@@ -258,7 +267,7 @@ public class Configuration {
 
     /**
      * Setter for a {@link Config} containing a parsed configuration-file.
-     * For use in {@link #checkConfigFile(File)}
+     * For use in {@link #checkConfigFile(File, boolean)}
      * @param newConfig The new Typesafe Config to store.
      */
     public void setConfig(Config newConfig) {
@@ -267,7 +276,7 @@ public class Configuration {
 
     /**
      * Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.
-     * @return List String. Returns the fallback clientside-only mods-list for use in {@link #checkConfigFile(File)}
+     * @return List String. Returns the fallback clientside-only mods-list for use in {@link #checkConfigFile(File, boolean)}
      */
     List<String> getFallbackModsList() {
         return fallbackModsList;
@@ -276,7 +285,7 @@ public class Configuration {
     /**
      * Getter for a list of clientside-only mods to exclude from server pack.
      * @return List String. Returns the list of clientside-only mods for use in<br>
-     * {@link #checkConfigFile(File)}<br>
+     * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isCurse()}
      */
     List<String> getClientMods() {
@@ -285,7 +294,7 @@ public class Configuration {
 
     /**
      * Setter for the list of clientside-only mods to exclude from server pack.
-     * For use in {@link #checkConfigFile(File)}
+     * For use in {@link #checkConfigFile(File, boolean)}
      * @param newClientMods The new list of clientside-only mods to store.
      */
     void setClientMods(List<String> newClientMods) {
@@ -295,7 +304,7 @@ public class Configuration {
     /**
      * Getter for the list of directories in the modpack to copy to the server pack.
      * @return List String. Returns the list of directories to copy to the server pack for use in<br>
-     * {@link #checkConfigFile(File)}<br>
+     * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isCurse()}
      */
     List<String> getCopyDirs() {
@@ -314,7 +323,7 @@ public class Configuration {
     /**
      * Getter for the path to the modpack directory.
      * @return String. Returns the path to the modpack directory for use in<br>
-     * {@link #checkConfigFile(File)}<br>
+     * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}
      */
@@ -334,7 +343,7 @@ public class Configuration {
 
     /**
      * Getter for the path to the Java executable/binary.
-     * @return String. Returns the path to the Java executable/binary for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     * @return String. Returns the path to the Java executable/binary for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     String getJavaPath() {
         return javaPath;
@@ -352,7 +361,7 @@ public class Configuration {
 
     /**
      * Getter for the version of Minecraft used by the modpack.
-     * @return String. Returns the  for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     * @return String. Returns the  for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     String getMinecraftVersion() {
         return minecraftVersion;
@@ -370,7 +379,7 @@ public class Configuration {
     /**
      * Getter for the modloader used by the modpack.
      * @return String. Returns the modloader used by the modpack for use in<br>
-     * {@link #checkConfigFile(File)}<br>
+     * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}
      */
@@ -389,7 +398,7 @@ public class Configuration {
 
     /**
      * Getter for the version of the modloader used by the modpack.
-     * @return String. Returns the version of the modloader used by the modpack for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     * @return String. Returns the version of the modloader used by the modpack for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     String getModLoaderVersion() {
         return modLoaderVersion;
@@ -407,7 +416,7 @@ public class Configuration {
     /**
      * Getter for whether the modloader server installation should be included.
      * @return Boolean. Returns whether the server installation should be included, for use in<br>
-     * {@link #checkConfigFile(File)}<br>
+     * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}
      */
@@ -417,7 +426,7 @@ public class Configuration {
 
     /**
      * Setter for whether the modloader server installation should be included.
-     * For use in {@link #checkConfigFile(File)}
+     * For use in {@link #checkConfigFile(File, boolean)}
      * @param newIncludeServerInstallation The new boolean to store.
      */
     void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
@@ -426,7 +435,7 @@ public class Configuration {
 
     /**
      * Getter for whether the server-icon.png should be included in the server pack.
-     * @return Boolean. Returns whether the server-icon.png should be included in the server pack, for use in {@link #checkConfigFile(File)}
+     * @return Boolean. Returns whether the server-icon.png should be included in the server pack, for use in {@link #checkConfigFile(File, boolean)}
      * and {@link #isCurse()}
      */
     boolean getIncludeServerIcon() {
@@ -435,7 +444,7 @@ public class Configuration {
 
     /**
      * Setter for whether the server-icon.png should be included in the server pack.
-     * For use in {@link #checkConfigFile(File)}
+     * For use in {@link #checkConfigFile(File, boolean)}
      * @param newIncludeServerIcon The new boolean to store.
      */
     void setIncludeServerIcon(boolean newIncludeServerIcon) {
@@ -445,7 +454,7 @@ public class Configuration {
     /**
      * Getter for whether the server.properties should be included in the server pack.
      * @return Boolean. Returns whether the server.properties should be included in the server pack, for use in
-     * {@link #checkConfigFile(File)} and {@link #isCurse()}
+     * {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     boolean getIncludeServerProperties() {
         return includeServerProperties;
@@ -453,7 +462,7 @@ public class Configuration {
 
     /**
      * Setter for whether the server.properties should be included in the server pack.
-     * For use in {@link #checkConfigFile(File)}
+     * For use in {@link #checkConfigFile(File, boolean)}
      * @param newIncludeServerProperties The new boolean to store.
      */
     void setIncludeServerProperties(boolean newIncludeServerProperties) {
@@ -462,7 +471,7 @@ public class Configuration {
 
     /**
      * Getter for whether the start scripts should be included in the server pack.
-     * @return Boolean. Returns the whether the start scripts should be included in the server pack, for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     * @return Boolean. Returns the whether the start scripts should be included in the server pack, for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     boolean getIncludeStartScripts() {
         return includeStartScripts;
@@ -470,7 +479,7 @@ public class Configuration {
 
     /**
      * Setter for whether the start scripts should be included in the server pack.
-     * For use in {@link #checkConfigFile(File)}
+     * For use in {@link #checkConfigFile(File, boolean)}
      * @param newIncludeStartScripts The new boolean to store.
      */
     void setIncludeStartScripts(boolean newIncludeStartScripts) {
@@ -479,7 +488,7 @@ public class Configuration {
 
     /**
      * Getter for whether a ZIP-archive of the server pack should be created.
-     * @return Boolean. Returns whether a ZIP-archive of the server pack should be created, for use in {@link #checkConfigFile(File)} and {@link #isCurse()}
+     * @return Boolean. Returns whether a ZIP-archive of the server pack should be created, for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     boolean getIncludeZipCreation() {
         return includeZipCreation;
@@ -487,7 +496,7 @@ public class Configuration {
 
     /**
      * Setter for whether a ZIP-archive of the server pack should be created.
-     * For use in {@link #checkConfigFile(File)}
+     * For use in {@link #checkConfigFile(File, boolean)}
      * @param newIncludeZipCreation The new boolean to store.
      */
     void setIncludeZipCreation(boolean newIncludeZipCreation) {
@@ -546,11 +555,12 @@ public class Configuration {
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}<br>
      * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}
-     * @param configFile The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
+     * @param configFile File. The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
+     * @param shouldModpackBeCreated Boolean. Whether the CurseForge modpack should be downloaded and created.
      * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
-    public boolean checkConfigFile(File configFile) {
-        boolean configHasError;
+    public boolean checkConfigFile(File configFile, boolean shouldModpackBeCreated) {
+        boolean configHasError = false;
         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.checkconfig.start"));
         try {
             setConfig(ConfigFactory.parseFile(configFile));
@@ -573,7 +583,11 @@ public class Configuration {
         if (checkModpackDir(getConfig().getString("modpackDir").replace("\\","/"))) {
             configHasError = isDir(getConfig().getString("modpackDir").replace("\\","/"));
         } else if (checkCurseForge(getConfig().getString("modpackDir").replace("\\","/"))) {
-            configHasError = isCurse();
+            if (shouldModpackBeCreated) {
+                configHasError = isCurse();
+            } else {
+                appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.checkconfig.skipmodpackcreation"));
+            }
         } else {
             configHasError = true;
         }
@@ -709,10 +723,8 @@ public class Configuration {
                 if (curseCreateModpack.curseForgeModpack(getModpackDir(), getProjectID(), getProjectFileID())) {
                     try {
                         byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", getModpackDir())));
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-                        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-                        CurseModpack modpack = objectMapper.readValue(jsonData, CurseModpack.class);
+
+                        CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
 
                         String[] minecraftLoaderVersions = modpack
                                 .getMinecraft()
@@ -723,6 +735,7 @@ public class Configuration {
                                 .replace("[", "")
                                 .replace("]", "")
                                 .split("-");
+
                         setMinecraftVersion(minecraftLoaderVersions[0]
                                 .replace("[", ""));
 
