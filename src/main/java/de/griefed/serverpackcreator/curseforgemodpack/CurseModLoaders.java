@@ -55,7 +55,7 @@ public class CurseModLoaders {
 
     /**
      * String containing information about the CurseForge modpack's used modloader and the modloader version.
-     * @return String. Returns the String with information about the modlaoder and modloader version used by the
+     * @return String. Returns the String with information about the modloader and modloader version used by the
      * CurseForge modpack.
      */
     @Override
