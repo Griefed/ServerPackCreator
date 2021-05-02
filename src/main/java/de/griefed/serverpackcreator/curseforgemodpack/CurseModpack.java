@@ -17,14 +17,34 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
 package de.griefed.serverpackcreator.curseforgemodpack;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
-//TODO: Write docs for class
+
+/**
+ * <strong>Table of methods</strong><br>
+ * {@link #getMinecraft()}<br>
+ * {@link #setMinecraft(List)}<br>
+ * {@link #getName()}<br>
+ * {@link #setName(String)}<br>
+ * {@link #getVersion()}<br>
+ * {@link #setVersion(String)}<br>
+ * {@link #getAuthor()}<br>
+ * {@link #setAuthor(String)}<br>
+ * {@link #getFiles()}<br>
+ * {@link #setFiles(List)}<br>
+ * {@link #toString()}<p>
+ * Retrieve information about a CurseForge Minecraft modpack by using {@link com.fasterxml.jackson.databind} JSON parsing.
+ * This class retrieves the name, version and author of a modpack.
+ */
 public class CurseModpack {
+    /**
+     * Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
+     * property allows us setup the class to only gather the information we want, so we don't have to worry about any
+     * additions to the source-data being made, which would otherwise cause an "Unknown property" exception.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private List<CurseMinecraft> minecraft;
     private String name;
@@ -32,52 +52,97 @@ public class CurseModpack {
     private String author;
     private List<CurseFiles> files;
 
+    /**
+     * Getter for Minecraft related information using {@link CurseMinecraft}.
+     * @return List CurseMinecraft. Returns an instance of CurseMinecraft.class with information related to Minecraft.
+     */
     public List<CurseMinecraft> getMinecraft() {
         return minecraft;
     }
 
-    public void setMinecraft(List<CurseMinecraft> minecraft) {
-        this.minecraft = minecraft;
+    /**
+     * Setter for Minecraft related information using {@link CurseMinecraft}
+     * @param newMinecraft Receives an instance of the CurseMinecraft.class.
+     */
+    public void setMinecraft(List<CurseMinecraft> newMinecraft) {
+        this.minecraft = newMinecraft;
     }
 
+    /**
+     * Getter for the name of the CurseForge modpack.
+     * @return String. Returns the name of modpack acquired from CurseForge.
+     */
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    /**
+     * Setter for the name of the CurseForge modpack.
+     * @param newName Receives the name of the CurseForge modpack.
+     */
+    public void setName(String newName) {
+        this.name = newName;
     }
 
+    /**
+     * Getter for the version of the CurseForge modpack.
+     * @return String. Returns the version of the modpack acquired from CurseForge.
+     */
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    /**
+     * Setter for the version of the CurseForge modpack.
+     * @param newVersion Receives the version of the modpack acquired from CurseForge.
+     */
+    public void setVersion(String newVersion) {
+        this.version = newVersion;
     }
 
+    /**
+     * Getter for the author of the CurseForge modpack.
+     * @return String. Returns the author of the modpack acquired from CurseForge.
+     */
     public String getAuthor() {
         return author;
     }
 
+    /**
+     * Setter for the author of the CurseForge modpack.
+     * @param newAuthor Receives the author of the modpack acquired from CurseForge.
+     */
+    public void setAuthor(String newAuthor) {
+        this.author = newAuthor;
+    }
+
+    /**
+     * Getter for the files on which the CurseForge modpack depends by using {@link CurseFiles}.
+     * @return List CurseFiles. Returns an instance of CurseFiles.class with information related to the files included
+     * in the CurseForge modpack.
+     */
     public List<CurseFiles> getFiles() {
         return files;
     }
 
-    public void setFiles(List<CurseFiles> files) {
-        this.files = files;
+    /**
+     * Setter for the CurseForge modpack files on which it depends.
+     * @param newFiles Receives an instance of CurseFiles.class with information about the files on which the modpack depends.
+     */
+    public void setFiles(List<CurseFiles> newFiles) {
+        this.files = newFiles;
     }
 
+    /**
+     * String containing information about the CurseForge modpack. Included are {@link #getMinecraft()},
+     * {@link #getName()}, {@link #getVersion()}, {@link #getAuthor()}, {@link #getFiles()}.
+     * @return String. Returns String with information about the CurseForge modpack.
+     */
     @Override
     public String toString() {
         return String.format(
-                "**** Modpack details ****\n" +
-                        "Version & Modloader: %s\n" +
-                        "Name: %s\n" +
-                        "Version: %s\n" +
-                        "Author: %s\n" +
-                        "Files: %s",
-                minecraft, name, version, author, files
+                "Modpack details: Version & Modloader: %s Name: %s Version: %s Author: %s Files: %s",
+                getMinecraft(), getName(), getVersion(), getAuthor(), getFiles()
         );
     }
 }
