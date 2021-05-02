@@ -118,6 +118,17 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">CreateServerPackTab</span>
 extends java.awt.Component</pre>
+<div class="block">This class creates the tab which displays the labels, textfields, buttons and functions in order to create a new
+ server pack. Available are:<br>
+ JLabels and JTextFields for modpackDir, clientMods, copyDirs, javaPath, minecraftVersion, modLoader, modLoaderVersion<br>
+ Checkboxes for Include- serverInstallation, serverIcon, serverProperties, startScripts, ZIParchive<br>
+ Buttons opening the file explorer and choosing: modpackDir, clientMods, copyDirs, javaPath, loadConfigFromFile<br>
+ A button for displaying an information windows which provides detailed explanation of the important parts of the GUI.<br>
+ The button start the generation of a new server pack.<br>
+ The label under the button to start the generation of a new server pack, which displays the latest log entry of the
+ serverpackcreator.log <em>during</em> the creation of a new server pack.<p>
+     If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
+ </p></div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../serialized-form.html#de.griefed.serverpackcreator.gui.CreateServerPackTab">Serialized Form</a></dd>
@@ -160,24 +171,144 @@ extends java.awt.Component</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#appLogger">appLogger</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JButton</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#buttonClientMods">buttonClientMods</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JButton</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#buttonCopyDirs">buttonCopyDirs</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JButton</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#buttonGenerateServerPack">buttonGenerateServerPack</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JButton</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#buttonInfoWindow">buttonInfoWindow</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JButton</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#buttonJavaPath">buttonJavaPath</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JButton</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#buttonLoadConfigFromFile">buttonLoadConfigFromFile</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JButton</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#buttonModpackDir">buttonModpackDir</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JCheckBox</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#checkBoxIcon">checkBoxIcon</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JCheckBox</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#checkBoxProperties">checkBoxProperties</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JCheckBox</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#checkBoxScripts">checkBoxScripts</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JCheckBox</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#checkBoxServer">checkBoxServer</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JCheckBox</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#checkBoxZIP">checkBoxZIP</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>private java.awt.Dimension</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#chooserDimension">chooserDimension</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JFileChooser</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#clientModsChooser">clientModsChooser</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JFileChooser</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#configChooser">configChooser</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#configuration">configuration</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private java.awt.GridBagConstraints</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#constraints">constraints</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JFileChooser</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#copyDirsChooser">copyDirsChooser</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#createServerPack">createServerPack</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JComponent</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#createServerPackPanel">createServerPackPanel</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#curseCreateModpack">curseCreateModpack</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>private java.awt.Dimension</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#folderButtonDimension">folderButtonDimension</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private javax.swing.ImageIcon</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#folderIcon">folderIcon</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private javax.swing.ImageIcon</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#helpIcon">helpIcon</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JScrollPane</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#helpScrollPane">helpScrollPane</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JTextArea</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#helpTextArea">helpTextArea</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JFileChooser</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#javaChooser">javaChooser</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelClientMods">labelClientMods</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelCopyDirs">labelCopyDirs</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelGenerateServerPack">labelGenerateServerPack</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelJavaPath">labelJavaPath</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelMinecraftVersion">labelMinecraftVersion</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelModloader">labelModloader</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelModloaderVersion">labelModloaderVersion</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JLabel</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#labelModpackDir">labelModpackDir</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private javax.swing.ImageIcon</code></td>
@@ -192,8 +323,40 @@ extends java.awt.Component</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#miscButtonDimension">miscButtonDimension</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JFileChooser</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#modpackDirChooser">modpackDirChooser</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>private javax.swing.ImageIcon</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#startGeneration">startGeneration</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JTextField</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#textClientMods">textClientMods</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JTextField</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#textCopyDirs">textCopyDirs</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JTextField</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#textJavaPath">textJavaPath</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JTextField</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#textMinecraftVersion">textMinecraftVersion</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JTextField</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#textModloader">textModloader</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JTextField</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#textModloaderVersion">textModloaderVersion</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JTextField</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#textModpackDir">textModpackDir</a></span></code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -224,8 +387,13 @@ extends java.awt.Component</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#CreateServerPackTab-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.Configuration-">CreateServerPackTab</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-                   <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a>&nbsp;injectedConfigCheck)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#CreateServerPackTab-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.Configuration-de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack-de.griefed.serverpackcreator.CreateServerPack-">CreateServerPackTab</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+                   <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a>&nbsp;injectedConfiguration,
+                   <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack,
+                   <a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a>&nbsp;injectedCreateServerPack)</code>
+<div class="block"><strong>Constructor</strong>
+ Used for Dependency Injection.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -244,7 +412,9 @@ extends java.awt.Component</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>(package private) javax.swing.JComponent</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#createServerPackTab--">createServerPackTab</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html#createServerPackTab--">createServerPackTab</a></span>()</code>
+<div class="block">Create the tab which displays every component related to configuring ServerPackCreator and creating a server pack.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -282,6 +452,42 @@ extends java.awt.Component</pre>
 <li class="blockList">
 <h4>appLogger</h4>
 <pre>private static final&nbsp;org.apache.logging.log4j.Logger appLogger</pre>
+</li>
+</ul>
+<a name="configuration">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>configuration</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a> configuration</pre>
+</li>
+</ul>
+<a name="localizationManager">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>localizationManager</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> localizationManager</pre>
+</li>
+</ul>
+<a name="curseCreateModpack">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>curseCreateModpack</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a> curseCreateModpack</pre>
+</li>
+</ul>
+<a name="createServerPack">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>createServerPack</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a> createServerPack</pre>
 </li>
 </ul>
 <a name="loadIcon">
@@ -347,22 +553,328 @@ extends java.awt.Component</pre>
 <pre>private final&nbsp;java.awt.Dimension chooserDimension</pre>
 </li>
 </ul>
-<a name="configuration">
+<a name="createServerPackPanel">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>configuration</h4>
-<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a> configuration</pre>
+<h4>createServerPackPanel</h4>
+<pre>private&nbsp;javax.swing.JComponent createServerPackPanel</pre>
 </li>
 </ul>
-<a name="localizationManager">
+<a name="helpScrollPane">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>helpScrollPane</h4>
+<pre>private&nbsp;javax.swing.JScrollPane helpScrollPane</pre>
+</li>
+</ul>
+<a name="constraints">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>constraints</h4>
+<pre>private&nbsp;java.awt.GridBagConstraints constraints</pre>
+</li>
+</ul>
+<a name="labelModpackDir">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelModpackDir</h4>
+<pre>private&nbsp;javax.swing.JLabel labelModpackDir</pre>
+</li>
+</ul>
+<a name="labelClientMods">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelClientMods</h4>
+<pre>private&nbsp;javax.swing.JLabel labelClientMods</pre>
+</li>
+</ul>
+<a name="labelCopyDirs">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelCopyDirs</h4>
+<pre>private&nbsp;javax.swing.JLabel labelCopyDirs</pre>
+</li>
+</ul>
+<a name="labelJavaPath">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelJavaPath</h4>
+<pre>private&nbsp;javax.swing.JLabel labelJavaPath</pre>
+</li>
+</ul>
+<a name="labelMinecraftVersion">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelMinecraftVersion</h4>
+<pre>private&nbsp;javax.swing.JLabel labelMinecraftVersion</pre>
+</li>
+</ul>
+<a name="labelModloader">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelModloader</h4>
+<pre>private&nbsp;javax.swing.JLabel labelModloader</pre>
+</li>
+</ul>
+<a name="labelModloaderVersion">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelModloaderVersion</h4>
+<pre>private&nbsp;javax.swing.JLabel labelModloaderVersion</pre>
+</li>
+</ul>
+<a name="labelGenerateServerPack">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>labelGenerateServerPack</h4>
+<pre>private&nbsp;javax.swing.JLabel labelGenerateServerPack</pre>
+</li>
+</ul>
+<a name="textModpackDir">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textModpackDir</h4>
+<pre>private&nbsp;javax.swing.JTextField textModpackDir</pre>
+</li>
+</ul>
+<a name="textClientMods">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textClientMods</h4>
+<pre>private&nbsp;javax.swing.JTextField textClientMods</pre>
+</li>
+</ul>
+<a name="textCopyDirs">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textCopyDirs</h4>
+<pre>private&nbsp;javax.swing.JTextField textCopyDirs</pre>
+</li>
+</ul>
+<a name="textJavaPath">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textJavaPath</h4>
+<pre>private&nbsp;javax.swing.JTextField textJavaPath</pre>
+</li>
+</ul>
+<a name="textMinecraftVersion">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textMinecraftVersion</h4>
+<pre>private&nbsp;javax.swing.JTextField textMinecraftVersion</pre>
+</li>
+</ul>
+<a name="textModloader">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textModloader</h4>
+<pre>private&nbsp;javax.swing.JTextField textModloader</pre>
+</li>
+</ul>
+<a name="textModloaderVersion">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textModloaderVersion</h4>
+<pre>private&nbsp;javax.swing.JTextField textModloaderVersion</pre>
+</li>
+</ul>
+<a name="helpTextArea">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>helpTextArea</h4>
+<pre>private&nbsp;javax.swing.JTextArea helpTextArea</pre>
+</li>
+</ul>
+<a name="checkBoxServer">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkBoxServer</h4>
+<pre>private&nbsp;javax.swing.JCheckBox checkBoxServer</pre>
+</li>
+</ul>
+<a name="checkBoxIcon">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkBoxIcon</h4>
+<pre>private&nbsp;javax.swing.JCheckBox checkBoxIcon</pre>
+</li>
+</ul>
+<a name="checkBoxProperties">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkBoxProperties</h4>
+<pre>private&nbsp;javax.swing.JCheckBox checkBoxProperties</pre>
+</li>
+</ul>
+<a name="checkBoxScripts">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkBoxScripts</h4>
+<pre>private&nbsp;javax.swing.JCheckBox checkBoxScripts</pre>
+</li>
+</ul>
+<a name="checkBoxZIP">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkBoxZIP</h4>
+<pre>private&nbsp;javax.swing.JCheckBox checkBoxZIP</pre>
+</li>
+</ul>
+<a name="buttonModpackDir">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>buttonModpackDir</h4>
+<pre>private&nbsp;javax.swing.JButton buttonModpackDir</pre>
+</li>
+</ul>
+<a name="buttonClientMods">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>buttonClientMods</h4>
+<pre>private&nbsp;javax.swing.JButton buttonClientMods</pre>
+</li>
+</ul>
+<a name="buttonCopyDirs">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>buttonCopyDirs</h4>
+<pre>private&nbsp;javax.swing.JButton buttonCopyDirs</pre>
+</li>
+</ul>
+<a name="buttonJavaPath">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>buttonJavaPath</h4>
+<pre>private&nbsp;javax.swing.JButton buttonJavaPath</pre>
+</li>
+</ul>
+<a name="buttonLoadConfigFromFile">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>buttonLoadConfigFromFile</h4>
+<pre>private&nbsp;javax.swing.JButton buttonLoadConfigFromFile</pre>
+</li>
+</ul>
+<a name="buttonInfoWindow">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>buttonInfoWindow</h4>
+<pre>private&nbsp;javax.swing.JButton buttonInfoWindow</pre>
+</li>
+</ul>
+<a name="buttonGenerateServerPack">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>buttonGenerateServerPack</h4>
+<pre>private&nbsp;javax.swing.JButton buttonGenerateServerPack</pre>
+</li>
+</ul>
+<a name="modpackDirChooser">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>modpackDirChooser</h4>
+<pre>private&nbsp;javax.swing.JFileChooser modpackDirChooser</pre>
+</li>
+</ul>
+<a name="clientModsChooser">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>clientModsChooser</h4>
+<pre>private&nbsp;javax.swing.JFileChooser clientModsChooser</pre>
+</li>
+</ul>
+<a name="copyDirsChooser">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>copyDirsChooser</h4>
+<pre>private&nbsp;javax.swing.JFileChooser copyDirsChooser</pre>
+</li>
+</ul>
+<a name="javaChooser">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>javaChooser</h4>
+<pre>private&nbsp;javax.swing.JFileChooser javaChooser</pre>
+</li>
+</ul>
+<a name="configChooser">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>localizationManager</h4>
-<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> localizationManager</pre>
+<h4>configChooser</h4>
+<pre>private&nbsp;javax.swing.JFileChooser configChooser</pre>
 </li>
 </ul>
 </li>
@@ -373,14 +885,32 @@ extends java.awt.Component</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="CreateServerPackTab-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.Configuration-">
+<a name="CreateServerPackTab-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.Configuration-de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack-de.griefed.serverpackcreator.CreateServerPack-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>CreateServerPackTab</h4>
 <pre>public&nbsp;CreateServerPackTab(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-                           <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a>&nbsp;injectedConfigCheck)</pre>
+                           <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a>&nbsp;injectedConfiguration,
+                           <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack,
+                           <a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a>&nbsp;injectedCreateServerPack)</pre>
+<div class="block"><strong>Constructor</strong><p>
+ Used for Dependency Injection.<p>
+ Receives an instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
+ one is null. Required for use of localization.<p>
+ Receives an instance of <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator"><code>Configuration</code></a> required to successfully and correctly create the server pack.<p>
+ Receives an instance of <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseCreateModpack</code></a> in case the modpack has to be created from a combination of
+ CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+ Receives an instance of <a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator"><code>CreateServerPack</code></a> which is required to generate a server pack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
+<dd><code>injectedConfiguration</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator"><code>Configuration</code></a> required to successfully and correctly create the server pack.</dd>
+<dd><code>injectedCurseCreateModpack</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseCreateModpack</code></a> in case the modpack has to be created from a combination of
+ CurseForge projectID and fileID, from which to <em>then</em> create the server pack.</dd>
+<dd><code>injectedCreateServerPack</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator"><code>CreateServerPack</code></a> required for the generation of server packs.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -398,6 +928,11 @@ extends java.awt.Component</pre>
 <li class="blockList">
 <h4>createServerPackTab</h4>
 <pre>javax.swing.JComponent&nbsp;createServerPackTab()</pre>
+<div class="block">Create the tab which displays every component related to configuring ServerPackCreator and creating a server pack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>JComponent. Returns a JPanel everything needed for displaying the CreateServerPackTab.</dd>
+</dl>
 </li>
 </ul>
 </li>

@@ -116,8 +116,13 @@ var activeTableTab = "activeTableTab";
 </dl>
 <hr>
 <br>
-<pre>class <span class="typeNameLabel">ServerPackCreatorLogTab</span>
+<pre>public class <span class="typeNameLabel">ServerPackCreatorLogTab</span>
 extends java.awt.Component</pre>
+<div class="block">This class creates the tab which display the latest serverpackcreator.log tailer.</div>
+<dl>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../../serialized-form.html#de.griefed.serverpackcreator.gui.ServerPackCreatorLogTab">Serialized Form</a></dd>
+</dl>
 </li>
 </ul>
 </div>
@@ -152,8 +157,24 @@ extends java.awt.Component</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>private java.awt.GridBagConstraints</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#constraints">constraints</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#localizationManager">localizationManager</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JScrollPane</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#scrollPane">scrollPane</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private javax.swing.JComponent</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#serverPackCreatorLogPanel">serverPackCreatorLogPanel</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private javax.swing.JTextArea</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#textArea">textArea</a></span></code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -184,7 +205,10 @@ extends java.awt.Component</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#ServerPackCreatorLogTab-de.griefed.serverpackcreator.i18n.LocalizationManager-">ServerPackCreatorLogTab</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#ServerPackCreatorLogTab-de.griefed.serverpackcreator.i18n.LocalizationManager-">ServerPackCreatorLogTab</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</code>
+<div class="block"><strong>Constructor</strong>
+ Used for Dependency Injection.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -203,7 +227,10 @@ extends java.awt.Component</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>(package private) javax.swing.JComponent</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#serverPackCreatorLogTab--">serverPackCreatorLogTab</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html#serverPackCreatorLogTab--">serverPackCreatorLogTab</a></span>()</code>
+<div class="block">Create the tab for the serverpackcreator.log tailer in a JScrollPane with an always available vertical scrollbar
+ and a horizontal scrollbar available as needed.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -237,10 +264,46 @@ extends java.awt.Component</pre>
 <a name="localizationManager">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>localizationManager</h4>
 <pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> localizationManager</pre>
+</li>
+</ul>
+<a name="serverPackCreatorLogPanel">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>serverPackCreatorLogPanel</h4>
+<pre>private&nbsp;javax.swing.JComponent serverPackCreatorLogPanel</pre>
+</li>
+</ul>
+<a name="constraints">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>constraints</h4>
+<pre>private&nbsp;java.awt.GridBagConstraints constraints</pre>
+</li>
+</ul>
+<a name="textArea">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>textArea</h4>
+<pre>private&nbsp;javax.swing.JTextArea textArea</pre>
+</li>
+</ul>
+<a name="scrollPane">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>scrollPane</h4>
+<pre>private&nbsp;javax.swing.JScrollPane scrollPane</pre>
 </li>
 </ul>
 </li>
@@ -258,6 +321,14 @@ extends java.awt.Component</pre>
 <li class="blockList">
 <h4>ServerPackCreatorLogTab</h4>
 <pre>public&nbsp;ServerPackCreatorLogTab(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</pre>
+<div class="block"><strong>Constructor</strong><p>
+ Used for Dependency Injection.<p>
+ Receives an instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
+ one is null. Required for use of localization.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -275,6 +346,15 @@ extends java.awt.Component</pre>
 <li class="blockList">
 <h4>serverPackCreatorLogTab</h4>
 <pre>javax.swing.JComponent&nbsp;serverPackCreatorLogTab()</pre>
+<div class="block">Create the tab for the serverpackcreator.log tailer in a JScrollPane with an always available vertical scrollbar
+ and a horizontal scrollbar available as needed. Uses Apache commons-io's <code>Tailer</code> to keep the JTextArea up
+ to date with the latest log entries. Should any line contain "Checking entered configuration." the textarea is
+ cleared.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>JComponent. Returns a JPanel containing a JScrollPane containing the JTextArea with the latest
+ serverpackcreator.log entries.</dd>
+</dl>
 </li>
 </ul>
 </li>

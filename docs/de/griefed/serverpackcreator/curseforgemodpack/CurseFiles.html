@@ -109,6 +109,15 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">CurseFiles</span>
 extends java.lang.Object</pre>
+<div class="block"><strong>Table of methods</strong><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#getProjectID--"><code>getProjectID()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#setProjectID-java.lang.String-"><code>setProjectID(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#getFileID--"><code>getFileID()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#setFileID-java.lang.String-"><code>setFileID(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#toString--"><code>toString()</code></a><p>
+ Retrieves information about a CurseForge Minecraft modpack by using <code>com.fasterxml.jackson.databind</code> JSON parsing.
+ This class retrieves the projectIDs and fileIDs a modpack acquired from CurseForge depends on. These can be mods,
+ resource packs, worlds etc. etc.</div>
 </li>
 </ul>
 </div>
@@ -133,7 +142,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#projectID">projectID</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#projectID">projectID</a></span></code>
+<div class="block">Ignore unknown values/object.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -169,23 +180,33 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#getFileID--">getFileID</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#getFileID--">getFileID</a></span>()</code>
+<div class="block">Getter for a fileID of a dependency in the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#getProjectID--">getProjectID</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#getProjectID--">getProjectID</a></span>()</code>
+<div class="block">Getter for a projectID of a dependency in the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#setFileID-java.lang.String-">setFileID</a></span>(java.lang.String&nbsp;fileID)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#setFileID-java.lang.String-">setFileID</a></span>(java.lang.String&nbsp;fileID)</code>
+<div class="block">Setter for a fileID of a dependency in the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#setProjectID-java.lang.String-">setProjectID</a></span>(java.lang.String&nbsp;projectID)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#setProjectID-java.lang.String-">setProjectID</a></span>(java.lang.String&nbsp;projectID)</code>
+<div class="block">Setter for a projectID of a dependency in the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#toString--">toString</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html#toString--">toString</a></span>()</code>
+<div class="block">A comma separated combination of a dependency projectID and fileID of a CurseForge modpack.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -216,6 +237,9 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>projectID</h4>
 <pre>private&nbsp;java.lang.String projectID</pre>
+<div class="block">Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
+ property allows us setup the class to only gather the information we want, so we don't have to worry about any
+ additions to the source-data being made, which would otherwise cause an "Unknown property" exception.</div>
 </li>
 </ul>
 <a name="fileID">
@@ -259,6 +283,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getProjectID</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getProjectID()</pre>
+<div class="block">Getter for a projectID of a dependency in the CurseForge modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns a projectID of a dependency in the modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="setProjectID-java.lang.String-">
@@ -268,6 +297,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setProjectID</h4>
 <pre>public&nbsp;void&nbsp;setProjectID(java.lang.String&nbsp;projectID)</pre>
+<div class="block">Setter for a projectID of a dependency in the CurseForge modpack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>projectID</code> - Receives the projectID of a dependency in the modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="getFileID--">
@@ -277,6 +311,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getFileID</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getFileID()</pre>
+<div class="block">Getter for a fileID of a dependency in the CurseForge modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns a fileID of a dependency in the modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="setFileID-java.lang.String-">
@@ -286,6 +325,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setFileID</h4>
 <pre>public&nbsp;void&nbsp;setFileID(java.lang.String&nbsp;fileID)</pre>
+<div class="block">Setter for a fileID of a dependency in the CurseForge modpack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileID</code> - Receives the fileID of a dependency in the modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="toString--">
@@ -295,9 +339,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>toString</h4>
 <pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<div class="block">A comma separated combination of a dependency projectID and fileID of a CurseForge modpack.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns a comma separated projectID,fileID combination of a dependency of a modpack acquired from
+ CurseForge.</dd>
 </dl>
 </li>
 </ul>

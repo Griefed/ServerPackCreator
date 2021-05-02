@@ -107,8 +107,14 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>class <span class="typeNameLabel">CurseModLoaders</span>
+<pre>public class <span class="typeNameLabel">CurseModLoaders</span>
 extends java.lang.Object</pre>
+<div class="block"><strong>Table of methods</strong><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#getId--"><code>getId()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#setId-java.lang.String-"><code>setId(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#toString--"><code>toString()</code></a><p>
+ Retrieves information about a CurseForge Minecraft modpack by using <code>com.fasterxml.jackson.databind</code> JSON parsing.
+ This class retrieves the modloader and modloader version of a modpack.</div>
 </li>
 </ul>
 </div>
@@ -129,7 +135,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#id">id</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#id">id</a></span></code>
+<div class="block">Ignore unknown values/object.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -165,15 +173,21 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#getId--">getId</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#getId--">getId</a></span>()</code>
+<div class="block">Getter for the modloader and modloader version used by the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#setId-java.lang.String-">setId</a></span>(java.lang.String&nbsp;id)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#setId-java.lang.String-">setId</a></span>(java.lang.String&nbsp;id)</code>
+<div class="block">Setter for the modloader and modloader version used by the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#toString--">toString</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModLoaders.html#toString--">toString</a></span>()</code>
+<div class="block">String containing information about the CurseForge modpack's used modloader and the modloader version.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -204,6 +218,9 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>id</h4>
 <pre>private&nbsp;java.lang.String id</pre>
+<div class="block">Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
+ property allows us setup the class to only gather the information we want, so we don't have to worry about any
+ additions to the source-data being made, which would otherwise cause an "Unknown property" exception.</div>
 </li>
 </ul>
 </li>
@@ -220,7 +237,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>CurseModLoaders</h4>
-<pre>CurseModLoaders()</pre>
+<pre>public&nbsp;CurseModLoaders()</pre>
 </li>
 </ul>
 </li>
@@ -238,6 +255,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getId</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getId()</pre>
+<div class="block">Getter for the modloader and modloader version used by the CurseForge modpack. It's a single string in the
+ manifest.json which contains the modloader and the version of said modloader, for example <code>"id": "forge-36.1.4"</code></div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the id of the modpack acquired from CurseForge containing information about the modloader
+ and the version of said modloader.</dd>
+</dl>
 </li>
 </ul>
 <a name="setId-java.lang.String-">
@@ -247,6 +271,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setId</h4>
 <pre>public&nbsp;void&nbsp;setId(java.lang.String&nbsp;id)</pre>
+<div class="block">Setter for the modloader and modloader version used by the CurseForge modpack. It's a single string in the
+ manifest.json which contains the modloader and the version of said modloader, for example <code>"id": "forge-36.1.4"</code></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - Receives the id of the CurseForge modpack containing information about the modloader
+ and the version of said modloader.</dd>
+</dl>
 </li>
 </ul>
 <a name="toString--">
@@ -256,9 +287,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>toString</h4>
 <pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<div class="block">String containing information about the CurseForge modpack's used modloader and the modloader version.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the String with information about the modloader and modloader version used by the
+ CurseForge modpack.</dd>
 </dl>
 </li>
 </ul>

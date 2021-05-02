@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -109,6 +109,33 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">CurseCreateModpack</span>
 extends java.lang.Object</pre>
+<div class="block"><strong>Table of methods</strong><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-"><code>CurseCreateModpack(LocalizationManager)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#setModloaderCase-java.lang.String-"><code>setModloaderCase(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>curseForgeModpack(String, Integer, Integer)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#initializeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>initializeModpack(String, Integer, Integer)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#downloadMods-java.lang.String-"><code>downloadMods(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#copyOverride-java.lang.String-"><code>copyOverride(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#checkCurseForgeDir-java.lang.String-"><code>checkCurseForgeDir(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#unzipArchive-java.lang.String-java.lang.String-"><code>unzipArchive(String, String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#newFile-java.io.File-java.util.zip.ZipEntry-"><code>newFile(File, ZipEntry)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#cleanupEnvironment-java.lang.String-"><code>cleanupEnvironment(String)</code></a><p>
+ Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
+ override directory to the parent directory, download all mods in said modpack, and delete no longer needed files.
+ Modpacks are create in a ProjectName/FileDisplayName structure. Before a modpack is created, the FileDisplayName folder
+ is checked for existence and deleted should it already exist. The reason for this is the order in which ServerPackCreator
+ checks and uses the configuration file.<p>
+ First: the configuration is checked for a valid CurseForge projectID,fileID combination.<br>
+ Second: The folder structure is checked for an already existing folder with FileDisplayName and if it exists it is deleted.<br>
+ Third: The modpack is created and all mods are downloaded etc., files are copied, etc.<br>
+ Fourth: Information about the modpack is acquired from the modpack's manifest.json and written to a new configuration file
+ with said information. The configuration for modpackDir, which previously contained a projectID,fileID is replaced
+ with the path to the new modpack at ProjectName/FileDisplayName.<br>
+ If modpackDir holds a projectID,fileID combination we have to assume the modpack has yet to be created, thus
+ we need to make sure the target directory is empty in order to create a clean and fresh modpack.<br>
+ If modpackDir does not hold a projectID,fileID we have to assume it is a path pointing at a directory which already
+ contains a modpack we can work with and create a server pack from. Thus, we clean up the environment if modpackDir holds
+ a projectID,fileID.</div>
 </li>
 </ul>
 </div>
@@ -162,7 +189,10 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-">CurseCreateModpack</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-">CurseCreateModpack</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</code>
+<div class="block"><strong>Constructor</strong>
+ Used for Dependency Injection.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -182,56 +212,64 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>private boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#checkCurseForgeDir-java.lang.String-">checkCurseForgeDir</a></span>(java.lang.String&nbsp;modpackDir)</code>
-<div class="block">Check whether the folder for the specified CurseForge projectID/fileID exists.</div>
+<div class="block">Check whether the folder for the specified CurseForge projectID/fileID exists and if it does exist, delete it
+ recursively to ensure we are working with a clean environment when creating a modpack from CurseForge.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#copyOverride-java.lang.String-">copyOverride</a></span>(java.lang.String&nbsp;modpackDir)</code>
-<div class="block">Copies all folders and the files therein to the parent modpack directory.</div>
+<td class="colFirst"><code>private boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#cleanupEnvironment-java.lang.String-">cleanupEnvironment</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
+ clean environment when creating a new modpack from CurseForge.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>private void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#copyOverride-java.lang.String-">copyOverride</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Recursively copy all folders and files from the override directory to the parent directory, our modpack directory.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-">curseForgeModpack</a></span>(java.lang.String&nbsp;modpackDir,
                  java.lang.Integer&nbsp;projectID,
                  java.lang.Integer&nbsp;fileID)</code>
-<div class="block">Gets the names of the specified project and file and makes calls to methods which create the modpack so we can then create a server pack from it.</div>
+<div class="block">Acquires the names of the CurseForge project and file.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>private void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#downloadMods-java.lang.String-">downloadMods</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Downloads all mods specified in the modpack's manifest.json file.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>private void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#initializeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-">initializeModpack</a></span>(java.lang.String&nbsp;modpackDir,
                  java.lang.Integer&nbsp;projectID,
                  java.lang.Integer&nbsp;fileID)</code>
-<div class="block">Downloads the specified file of the specified project to a directory which is the combination of the project name and file display name.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#newFile-java.io.File-java.util.zip.ZipEntry-">newFile</a></span>(java.io.File&nbsp;destinationDir,
-       java.util.zip.ZipEntry&nbsp;zipEntry)</code>
-<div class="block">Helper-Method for unzipArchive.</div>
+<div class="block">Downloads the specified file of the specified project to a directory which is the combination of the project
+ name and file display name.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#setModloader-java.lang.String-">setModloader</a></span>(java.lang.String&nbsp;modloader)</code>
-<div class="block">Standardize the specified modloader.</div>
+<td class="colFirst"><code>private java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#newFile-java.io.File-java.util.zip.ZipEntry-">newFile</a></span>(java.io.File&nbsp;destinationDir,
+       java.util.zip.ZipEntry&nbsp;zipEntry)</code>
+<div class="block">With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
+<td class="colFirst"><code>(package private) java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#setModloaderCase-java.lang.String-">setModloaderCase</a></span>(java.lang.String&nbsp;modloader)</code>
+<div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>private void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#unzipArchive-java.lang.String-java.lang.String-">unzipArchive</a></span>(java.lang.String&nbsp;zipFile,
             java.lang.String&nbsp;modpackDir)</code>
-<div class="block">With help from: https://www.baeldung.com/java-compress-and-uncompress
- Unzips the downloaded modpack archive to a directory.</div>
+<div class="block">With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.</div>
 </td>
 </tr>
 </table>
@@ -316,6 +354,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>CurseCreateModpack</h4>
 <pre>public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</pre>
+<div class="block"><strong>Constructor</strong><p>
+ Used for Dependency Injection.<p>
+ Receives an instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
+ one is null. Required for use of localization.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -326,6 +372,24 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="setModloaderCase-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setModloaderCase</h4>
+<pre>java.lang.String&nbsp;setModloaderCase(java.lang.String&nbsp;modloader)</pre>
+<div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case. Basically allows the user to
+ input Forge or Fabric in any combination of upper- and lowercase and ServerPackCreator will still be able to
+ work with the users input.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modloader</code> - String. The String to check for case-insensitive cases of either Forge or Fabric.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns a normalized String of the specified modloader.</dd>
+</dl>
+</li>
+</ul>
 <a name="curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-">
 <!--   -->
 </a>
@@ -335,14 +399,22 @@ extends java.lang.Object</pre>
 <pre>public&nbsp;boolean&nbsp;curseForgeModpack(java.lang.String&nbsp;modpackDir,
                                  java.lang.Integer&nbsp;projectID,
                                  java.lang.Integer&nbsp;fileID)</pre>
-<div class="block">Gets the names of the specified project and file and makes calls to methods which create the modpack so we can then create a server pack from it.</div>
+<div class="block">Acquires the names of the CurseForge project and file. Should no filename exist, we will use the fileDiskName as
+ fallback to ensure we always have a folder-structure of projectName/FileDisplayName at hand in which the modpack
+ will be created. Calls<br>
+ <code>CurseAPI</code> and various methods of it in order to acquire information about the modpack.<br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#checkCurseForgeDir-java.lang.String-"><code>checkCurseForgeDir(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#initializeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>initializeModpack(String, Integer, Integer)</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. Combination of project name and file name. Created during download procedure and later added to config file.</dd>
-<dd><code>projectID</code> - Integer. The ID of the project. Used to gather information and to download the modpack.</dd>
-<dd><code>fileID</code> - Integer. The ID of the file. Used to gather information and to download the modpack.</dd>
+<dd><code>modpackDir</code> - String. Combination of project name and file name. Created during download procedure
+                  and later replaces the modpackDir variable in the configuration file.</dd>
+<dd><code>projectID</code> - Integer. The ID of the project. Used to gather information about the CurseForge project and to
+                 download the modpack.</dd>
+<dd><code>fileID</code> - Integer. The ID of the file. Used to gather information about the CurseForge file and to download
+              the modpack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the modpack was freshly created.</dd>
+<dd>Boolean. Returns true if the modpack was successfully created.</dd>
 </dl>
 </li>
 </ul>
@@ -355,10 +427,17 @@ extends java.lang.Object</pre>
 <pre>private&nbsp;void&nbsp;initializeModpack(java.lang.String&nbsp;modpackDir,
                                java.lang.Integer&nbsp;projectID,
                                java.lang.Integer&nbsp;fileID)</pre>
-<div class="block">Downloads the specified file of the specified project to a directory which is the combination of the project name and file display name. Unzips the downloaded modpack archive, gathers and displays information about the specified project/file and makes calls to methods which further setup the modpack.</div>
+<div class="block">Downloads the specified file of the specified project to a directory which is the combination of the project
+ name and file display name. Unzips the downloaded modpack ZIP-archive, gathers and displays information about the
+ specified project/file and makes calls to methods which further setup the modpack. Calls<br>
+ <code>CurseAPI</code> and various methods of it to create the modpack.<br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#unzipArchive-java.lang.String-java.lang.String-"><code>unzipArchive(String, String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#copyOverride-java.lang.String-"><code>copyOverride(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#downloadMods-java.lang.String-"><code>downloadMods(String)</code></a><br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. Combination of project name and file name. Created during download procedure and later added to config file.</dd>
+<dd><code>modpackDir</code> - String. Combination of project name and file name. Created during download procedure and later
+                  replaces the modpackDir variable in the configuration file.</dd>
 <dd><code>projectID</code> - Integer. The ID of the project. Used to gather information and to download the modpack.</dd>
 <dd><code>fileID</code> - Integer. The ID of the file. Used to gather information and to download the modpack.</dd>
 </dl>
@@ -371,10 +450,16 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>downloadMods</h4>
 <pre>private&nbsp;void&nbsp;downloadMods(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Downloads all mods specified in the modpack's manifest.json file. If a download fails, one retry will be made, if said retry fails, too, then the download url will be sent to the log.</div>
+<div class="block">Downloads all mods specified in the modpack's manifest.json file. If a download of a mod fails, it will be
+ retried once before treating it as "currently unavailable" and adding the URL to the failed download
+ to a list which will be printed to the console and logs after the method has finished. The user will need to
+ download these failed mods themself as ServerPackCreator couldn't, for whatever reason, successfully download them.
+ If the acquisition of the download URL fails as well....well we're out of luck, then. The user will have to figure
+ this out on their own. Possible reasons for a failed download and failed URL acquisition might be that the file
+ was taken down, no longer exists, CurseForge is unavailable etc. etc. There's nothing we can do about that.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. All mods are downloaded to a child directory 'mods'</dd>
+<dd><code>modpackDir</code> - String. All mods are downloaded to the child-directory "mods" inside the modpack directory.</dd>
 </dl>
 </li>
 </ul>
@@ -385,10 +470,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>copyOverride</h4>
 <pre>private&nbsp;void&nbsp;copyOverride(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Copies all folders and the files therein to the parent modpack directory.</div>
+<div class="block">Recursively copy all folders and files from the override directory to the parent directory, our modpack directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. The overrides directory resides in this directory. All folders and files within overrides are copied here.</dd>
+<dd><code>modpackDir</code> - String. The overrides directory resides in this directory. All folders and files within overrides
+                  are copied to the parent directory, the modpack directory.</dd>
 </dl>
 </li>
 </ul>
@@ -399,12 +485,16 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkCurseForgeDir</h4>
 <pre>private&nbsp;boolean&nbsp;checkCurseForgeDir(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Check whether the folder for the specified CurseForge projectID/fileID exists.</div>
+<div class="block">Check whether the folder for the specified CurseForge projectID/fileID exists and if it does exist, delete it
+ recursively to ensure we are working with a clean environment when creating a modpack from CurseForge.<br>
+ Calls <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#cleanupEnvironment-java.lang.String-"><code>cleanupEnvironment(String)</code></a> to ensure a clean environment when we create a new modpack from CurseForge.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The path to the modpack directory, a combination of project name and file display name.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the directory exists. False if not.</dd>
+<dd>Boolean. Returns true if something went wrong during the cleanup of the modpack directory. If the cleanup
+ procedure finished successfully and we have a clean environment, false is returned. Returns false if the modpack
+ directory could not be found, indicating a clean environment.</dd>
 </dl>
 </li>
 </ul>
@@ -416,12 +506,13 @@ extends java.lang.Object</pre>
 <h4>unzipArchive</h4>
 <pre>private&nbsp;void&nbsp;unzipArchive(java.lang.String&nbsp;zipFile,
                           java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">With help from: https://www.baeldung.com/java-compress-and-uncompress
- Unzips the downloaded modpack archive to a directory.</div>
+<div class="block">With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.<br>
+ Unzips the downloaded modpack ZIP-archive to the specified directory. Calls <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#newFile-java.io.File-java.util.zip.ZipEntry-"><code>newFile(File, ZipEntry)</code></a> as
+ a helper method.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipFile</code> - String. The name of the zipfile to extract.</dd>
-<dd><code>modpackDir</code> - The directory where the archive resides in and will be extracted to.</dd>
+<dd><code>zipFile</code> - String. The path to the ZIP-archive which we want to unzip.</dd>
+<dd><code>modpackDir</code> - The directory into which the ZIP-archive will be unzipped into.</dd>
 </dl>
 </li>
 </ul>
@@ -433,29 +524,34 @@ extends java.lang.Object</pre>
 <h4>newFile</h4>
 <pre>private&nbsp;java.io.File&nbsp;newFile(java.io.File&nbsp;destinationDir,
                              java.util.zip.ZipEntry&nbsp;zipEntry)</pre>
-<div class="block">Helper-Method for unzipArchive. With help from: https://www.baeldung.com/java-compress-and-uncompress</div>
+<div class="block">With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.<br>
+ Helper-Method for unzipArchive. This method guards us against writing any file to the file system <em>outside</em>
+ of the target folder, thus ensuring all files are successfully unzipped into the desired target directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>destinationDir</code> - Check whether the file is outside of the directory it is supposed to be in.</dd>
-<dd><code>zipEntry</code> - Zip entry with which to check for location.</dd>
+<dd><code>destinationDir</code> - The directory into which a file from the ZIP-archive is to be unzipped.</dd>
+<dd><code>zipEntry</code> - File in the ZIP-archive which is to be unzipped from the ZIP-archive into the desired target
+                 directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the correct destination for the new file.</dd>
+<dd>File. Returns a file from the ZIP-archive with the path pointing to the desired directory, ensuring proper
+ unzipping of the ZIP-archive.</dd>
 </dl>
 </li>
 </ul>
-<a name="setModloader-java.lang.String-">
+<a name="cleanupEnvironment-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>setModloader</h4>
-<pre>java.lang.String&nbsp;setModloader(java.lang.String&nbsp;modloader)</pre>
-<div class="block">Standardize the specified modloader.</div>
+<h4>cleanupEnvironment</h4>
+<pre>private&nbsp;boolean&nbsp;cleanupEnvironment(java.lang.String&nbsp;modpackDir)</pre>
+<div class="block">Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
+ clean environment when creating a new modpack from CurseForge.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..</dd>
+<dd><code>modpackDir</code> - String. The directory we want to delete.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns a standardized String of the specified modloader.</dd>
+<dd>Boolean. Returns false if every file and folder was, recursively and successfully, deleted.</dd>
 </dl>
 </li>
 </ul>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -109,6 +109,20 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">CurseModpack</span>
 extends java.lang.Object</pre>
+<div class="block"><strong>Table of methods</strong><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getMinecraft--"><code>getMinecraft()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setMinecraft-java.util.List-"><code>setMinecraft(List)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getName--"><code>getName()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setName-java.lang.String-"><code>setName(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getVersion--"><code>getVersion()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setVersion-java.lang.String-"><code>setVersion(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getAuthor--"><code>getAuthor()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setAuthor-java.lang.String-"><code>setAuthor(String)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getFiles--"><code>getFiles()</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setFiles-java.util.List-"><code>setFiles(List)</code></a><br>
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#toString--"><code>toString()</code></a><p>
+ Retrieve information about a CurseForge Minecraft modpack by using <code>com.fasterxml.jackson.databind</code> JSON parsing.
+ This class retrieves the name, version and author of a modpack.</div>
 </li>
 </ul>
 </div>
@@ -137,7 +151,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#minecraft">minecraft</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#minecraft">minecraft</a></span></code>
+<div class="block">Ignore unknown values/object.</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
@@ -181,43 +197,69 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getAuthor--">getAuthor</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getAuthor--">getAuthor</a></span>()</code>
+<div class="block">Getter for the author of the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseFiles</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getFiles--">getFiles</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getFiles--">getFiles</a></span>()</code>
+<div class="block">Getter for the files on which the CurseForge modpack depends by using <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseFiles</code></a>.</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getMinecraft--">getMinecraft</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getMinecraft--">getMinecraft</a></span>()</code>
+<div class="block">Getter for Minecraft related information using <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseMinecraft</code></a>.</div>
+</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getName--">getName</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getName--">getName</a></span>()</code>
+<div class="block">Getter for the name of the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getVersion--">getVersion</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getVersion--">getVersion</a></span>()</code>
+<div class="block">Getter for the version of the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setFiles-java.util.List-">setFiles</a></span>(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseFiles</a>&gt;&nbsp;files)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setAuthor-java.lang.String-">setAuthor</a></span>(java.lang.String&nbsp;newAuthor)</code>
+<div class="block">Setter for the author of the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setMinecraft-java.util.List-">setMinecraft</a></span>(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt;&nbsp;minecraft)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setFiles-java.util.List-">setFiles</a></span>(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseFiles</a>&gt;&nbsp;newFiles)</code>
+<div class="block">Setter for the CurseForge modpack files on which it depends.</div>
+</td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setName-java.lang.String-">setName</a></span>(java.lang.String&nbsp;name)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setMinecraft-java.util.List-">setMinecraft</a></span>(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt;&nbsp;newMinecraft)</code>
+<div class="block">Setter for Minecraft related information using <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseMinecraft</code></a></div>
+</td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setVersion-java.lang.String-">setVersion</a></span>(java.lang.String&nbsp;version)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setName-java.lang.String-">setName</a></span>(java.lang.String&nbsp;newName)</code>
+<div class="block">Setter for the name of the CurseForge modpack.</div>
+</td>
 </tr>
 <tr id="i9" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#setVersion-java.lang.String-">setVersion</a></span>(java.lang.String&nbsp;newVersion)</code>
+<div class="block">Setter for the version of the CurseForge modpack.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#toString--">toString</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#toString--">toString</a></span>()</code>
+<div class="block">String containing information about the CurseForge modpack.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -248,6 +290,9 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>minecraft</h4>
 <pre>private&nbsp;java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt; minecraft</pre>
+<div class="block">Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
+ property allows us setup the class to only gather the information we want, so we don't have to worry about any
+ additions to the source-data being made, which would otherwise cause an "Unknown property" exception.</div>
 </li>
 </ul>
 <a name="name">
@@ -318,6 +363,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getMinecraft</h4>
 <pre>public&nbsp;java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt;&nbsp;getMinecraft()</pre>
+<div class="block">Getter for Minecraft related information using <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseMinecraft</code></a>.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List CurseMinecraft. Returns an instance of CurseMinecraft.class with information related to Minecraft.</dd>
+</dl>
 </li>
 </ul>
 <a name="setMinecraft-java.util.List-">
@@ -326,7 +376,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setMinecraft</h4>
-<pre>public&nbsp;void&nbsp;setMinecraft(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt;&nbsp;minecraft)</pre>
+<pre>public&nbsp;void&nbsp;setMinecraft(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseMinecraft</a>&gt;&nbsp;newMinecraft)</pre>
+<div class="block">Setter for Minecraft related information using <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseMinecraft.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseMinecraft</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newMinecraft</code> - Receives an instance of the CurseMinecraft.class.</dd>
+</dl>
 </li>
 </ul>
 <a name="getName--">
@@ -336,6 +391,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getName</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getName()</pre>
+<div class="block">Getter for the name of the CurseForge modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the name of modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="setName-java.lang.String-">
@@ -344,7 +404,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setName</h4>
-<pre>public&nbsp;void&nbsp;setName(java.lang.String&nbsp;name)</pre>
+<pre>public&nbsp;void&nbsp;setName(java.lang.String&nbsp;newName)</pre>
+<div class="block">Setter for the name of the CurseForge modpack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newName</code> - Receives the name of the CurseForge modpack.</dd>
+</dl>
 </li>
 </ul>
 <a name="getVersion--">
@@ -354,6 +419,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getVersion</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getVersion()</pre>
+<div class="block">Getter for the version of the CurseForge modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the version of the modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="setVersion-java.lang.String-">
@@ -362,7 +432,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setVersion</h4>
-<pre>public&nbsp;void&nbsp;setVersion(java.lang.String&nbsp;version)</pre>
+<pre>public&nbsp;void&nbsp;setVersion(java.lang.String&nbsp;newVersion)</pre>
+<div class="block">Setter for the version of the CurseForge modpack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newVersion</code> - Receives the version of the modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="getAuthor--">
@@ -372,6 +447,25 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getAuthor</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getAuthor()</pre>
+<div class="block">Getter for the author of the CurseForge modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the author of the modpack acquired from CurseForge.</dd>
+</dl>
+</li>
+</ul>
+<a name="setAuthor-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setAuthor</h4>
+<pre>public&nbsp;void&nbsp;setAuthor(java.lang.String&nbsp;newAuthor)</pre>
+<div class="block">Setter for the author of the CurseForge modpack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newAuthor</code> - Receives the author of the modpack acquired from CurseForge.</dd>
+</dl>
 </li>
 </ul>
 <a name="getFiles--">
@@ -381,6 +475,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getFiles</h4>
 <pre>public&nbsp;java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseFiles</a>&gt;&nbsp;getFiles()</pre>
+<div class="block">Getter for the files on which the CurseForge modpack depends by using <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseFiles</code></a>.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List CurseFiles. Returns an instance of CurseFiles.class with information related to the files included
+ in the CurseForge modpack.</dd>
+</dl>
 </li>
 </ul>
 <a name="setFiles-java.util.List-">
@@ -389,7 +489,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setFiles</h4>
-<pre>public&nbsp;void&nbsp;setFiles(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseFiles</a>&gt;&nbsp;files)</pre>
+<pre>public&nbsp;void&nbsp;setFiles(java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseFiles.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseFiles</a>&gt;&nbsp;newFiles)</pre>
+<div class="block">Setter for the CurseForge modpack files on which it depends.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newFiles</code> - Receives an instance of CurseFiles.class with information about the files on which the modpack depends.</dd>
+</dl>
 </li>
 </ul>
 <a name="toString--">
@@ -399,9 +504,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>toString</h4>
 <pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<div class="block">String containing information about the CurseForge modpack. Included are <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getMinecraft--"><code>getMinecraft()</code></a>,
+ <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getName--"><code>getName()</code></a>, <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getVersion--"><code>getVersion()</code></a>, <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getAuthor--"><code>getAuthor()</code></a>, <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html#getFiles--"><code>getFiles()</code></a>.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns String with information about the CurseForge modpack.</dd>
 </dl>
 </li>
 </ul>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10,"i49":10,"i50":10,"i51":10,"i52":10,"i53":10,"i54":10,"i55":10,"i56":10,"i57":10,"i58":10,"i59":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10,"i49":10,"i50":10,"i51":10,"i52":10,"i53":10,"i54":10,"i55":10,"i56":10,"i57":10,"i58":10,"i59":10,"i60":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -109,6 +109,73 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">Configuration</span>
 extends java.lang.Object</pre>
+<div class="block"><strong>Table of methods</strong><p>
+ 1. <a href="../../../de/griefed/serverpackcreator/Configuration.html#Configuration-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack-"><code>Configuration(LocalizationManager, CurseCreateModpack)</code></a><br>
+ 2. <a href="../../../de/griefed/serverpackcreator/Configuration.html#getOldConfigFile--"><code>getOldConfigFile()</code></a><br>
+ 3. <a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfigFile--"><code>getConfigFile()</code></a><br>
+ 4. <a href="../../../de/griefed/serverpackcreator/Configuration.html#getMinecraftManifestUrl--"><code>getMinecraftManifestUrl()</code></a><br>
+ 5. <a href="../../../de/griefed/serverpackcreator/Configuration.html#getForgeManifestUrl--"><code>getForgeManifestUrl()</code></a><br>
+ 6. <a href="../../../de/griefed/serverpackcreator/Configuration.html#getFabricManifestUrl--"><code>getFabricManifestUrl()</code></a><br>
+ 7. <a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfig--"><code>getConfig()</code></a><br>
+ 8. <a href="../../../de/griefed/serverpackcreator/Configuration.html#setConfig-com.typesafe.config.Config-"><code>setConfig(Config)</code></a><br>
+ 9. <a href="../../../de/griefed/serverpackcreator/Configuration.html#getFallbackModsList--"><code>getFallbackModsList()</code></a><br>
+ 10.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getClientMods--"><code>getClientMods()</code></a><br>
+ 11.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setClientMods-java.util.List-"><code>setClientMods(List)</code></a><br>
+ 12.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getCopyDirs--"><code>getCopyDirs()</code></a><br>
+ 13.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setCopyDirs-java.util.List-"><code>setCopyDirs(List)</code></a><br>
+ 14.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getModpackDir--"><code>getModpackDir()</code></a><br>
+ 15.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setModpackDir-java.lang.String-"><code>setModpackDir(String)</code></a><br>
+ 16.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPath--"><code>getJavaPath()</code></a><br>
+ 17.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setJavaPath-java.lang.String-"><code>setJavaPath(String)</code></a><br>
+ 18.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getMinecraftVersion--"><code>getMinecraftVersion()</code></a><br>
+ 19.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setMinecraftVersion-java.lang.String-"><code>setMinecraftVersion(String)</code></a><br>
+ 20.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getModLoader--"><code>getModLoader()</code></a><br>
+ 21.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoader-java.lang.String-"><code>setModLoader(String)</code></a><br>
+ 22.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getModLoaderVersion--"><code>getModLoaderVersion()</code></a><br>
+ 23.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderVersion-java.lang.String-"><code>setModLoaderVersion(String)</code></a><br>
+ 24.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerInstallation--"><code>getIncludeServerInstallation()</code></a><br>
+ 25.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerInstallation-boolean-"><code>setIncludeServerInstallation(boolean)</code></a><br>
+ 26.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerIcon--"><code>getIncludeServerIcon()</code></a><br>
+ 27.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerIcon-boolean-"><code>setIncludeServerIcon(boolean)</code></a><br>
+ 28.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerProperties--"><code>getIncludeServerProperties()</code></a><br>
+ 29.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerProperties-boolean-"><code>setIncludeServerProperties(boolean)</code></a><br>
+ 30.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeStartScripts--"><code>getIncludeStartScripts()</code></a><br>
+ 31.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeStartScripts-boolean-"><code>setIncludeStartScripts(boolean)</code></a><br>
+ 32.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeZipCreation--"><code>getIncludeZipCreation()</code></a><br>
+ 33.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeZipCreation-boolean-"><code>setIncludeZipCreation(boolean)</code></a><br>
+ 34.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getProjectID--"><code>getProjectID()</code></a><br>
+ 35.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setProjectID-int-"><code>setProjectID(int)</code></a><br>
+ 36.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getProjectFileID--"><code>getProjectFileID()</code></a><br>
+ 37.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setProjectFileID-int-"><code>setProjectFileID(int)</code></a><br>
+ 38.<a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a><br>
+ 39.<a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a><br>
+ 40.<a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a><br>
+ 41.<a href="../../../de/griefed/serverpackcreator/Configuration.html#containsFabric-de.griefed.serverpackcreator.curseforgemodpack.CurseModpack-"><code>containsFabric(CurseModpack)</code></a><br>
+ 42.<a href="../../../de/griefed/serverpackcreator/Configuration.html#suggestCopyDirs-java.lang.String-"><code>suggestCopyDirs(String)</code></a><br>
+ 43.<a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCurseForge-java.lang.String-"><code>checkCurseForge(String)</code></a><br>
+ 44.<a href="../../../de/griefed/serverpackcreator/Configuration.html#convertToBoolean-java.lang.String-"><code>convertToBoolean(String)</code></a><br>
+ 45.<a href="../../../de/griefed/serverpackcreator/Configuration.html#printConfig-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-"><code>printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)</code></a><br>
+ 46.<a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModpackDir-java.lang.String-"><code>checkModpackDir(String)</code></a><br>
+ 47.<a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCopyDirs-java.util.List-java.lang.String-"><code>checkCopyDirs(List, String)</code></a><br>
+ 48.<a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPathFromSystem-java.lang.String-"><code>getJavaPathFromSystem(String)</code></a><br>
+ 49.<a href="../../../de/griefed/serverpackcreator/Configuration.html#checkJavaPath-java.lang.String-"><code>checkJavaPath(String)</code></a><br>
+ 50.<a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloader-java.lang.String-"><code>checkModloader(String)</code></a><br>
+ 51.<a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderCase-java.lang.String-"><code>setModLoaderCase(String)</code></a><br>
+ 52.<a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloaderVersion-java.lang.String-java.lang.String-"><code>checkModloaderVersion(String, String)</code></a><br>
+ 53.<a href="../../../de/griefed/serverpackcreator/Configuration.html#isMinecraftVersionCorrect-java.lang.String-"><code>isMinecraftVersionCorrect(String)</code></a><br>
+ 54.<a href="../../../de/griefed/serverpackcreator/Configuration.html#isFabricVersionCorrect-java.lang.String-"><code>isFabricVersionCorrect(String)</code></a><br>
+ 55.<a href="../../../de/griefed/serverpackcreator/Configuration.html#isForgeVersionCorrect-java.lang.String-"><code>isForgeVersionCorrect(String)</code></a><br>
+ 56.<a href="../../../de/griefed/serverpackcreator/Configuration.html#latestFabricLoader-java.lang.String-"><code>latestFabricLoader(String)</code></a><br>
+ 57.<a href="../../../de/griefed/serverpackcreator/Configuration.html#createConfigurationFile--"><code>createConfigurationFile()</code></a><br>
+ 58.<a href="../../../de/griefed/serverpackcreator/Configuration.html#readStringArray--"><code>readStringArray()</code></a><br>
+ 59.<a href="../../../de/griefed/serverpackcreator/Configuration.html#buildString-java.lang.String...-"><code>buildString(String...)</code></a><br>
+ 60.<a href="../../../de/griefed/serverpackcreator/Configuration.html#readBoolean--"><code>readBoolean()</code></a><br>
+ 61.<a href="../../../de/griefed/serverpackcreator/Configuration.html#writeConfigToFile-java.lang.String-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.io.File-boolean-"><code>writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)</code></a>
+ <p>
+ Requires an instance of <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseCreateModpack</code></a> in order to create a modpack from scratch should <a href="../../../de/griefed/serverpackcreator/Configuration.html#modpackDir"><code>modpackDir</code></a>
+ be a combination of a CurseForge projectID and fileID.<p>
+ Requires an instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> for use of localization, but creates one if injected one is null.<p>
+ Loads a configuration from a serverpackcreator.conf-file in the same directory in which ServerPackCreator resides in.</div>
 </li>
 </ul>
 </div>
@@ -148,52 +215,60 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#copyDirs">copyDirs</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#curseCreateModpack">curseCreateModpack</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#fallbackModsList">fallbackModsList</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private java.lang.Boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#includeServerIcon">includeServerIcon</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private java.lang.Boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#includeServerInstallation">includeServerInstallation</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private java.lang.Boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#includeServerProperties">includeServerProperties</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private java.lang.Boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#includeStartScripts">includeStartScripts</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private java.lang.Boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#includeZipCreation">includeZipCreation</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#javaPath">javaPath</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#localizationManager">localizationManager</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#minecraftVersion">minecraftVersion</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#modLoader">modLoader</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#modLoaderVersion">modLoaderVersion</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#modpackDir">modpackDir</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private com.fasterxml.jackson.databind.ObjectMapper</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#objectMapper">objectMapper</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private java.io.File</code></td>
@@ -222,7 +297,11 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#Configuration-de.griefed.serverpackcreator.i18n.LocalizationManager-">Configuration</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#Configuration-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack-">Configuration</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+             <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack)</code>
+<div class="block"><strong>Constructor</strong>
+ Used for Dependency Injection.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -242,198 +321,258 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#buildString-java.lang.String...-">buildString</a></span>(java.lang.String...&nbsp;args)</code>
-<div class="block">Converts list of strings into concatenated string.</div>
+<div class="block">Converts a sequence of Strings, for example from a list, into a concatenated String.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-">checkConfigFile</a></span>(java.io.File&nbsp;configFile)</code>
-<div class="block">Check the config file for configuration errors.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-">checkConfigFile</a></span>(java.io.File&nbsp;configFile,
+               boolean&nbsp;shouldModpackBeCreated)</code>
+<div class="block">Sets <a href="../../../de/griefed/serverpackcreator/Configuration.html#setConfig-com.typesafe.config.Config-"><code>setConfig(Config)</code></a> and calls checks for the provided configuration-file.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCopyDirs-java.util.List-java.lang.String-">checkCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
              java.lang.String&nbsp;modpackDir)</code>
-<div class="block">Check whether the specified directories exist in the modpack directory.</div>
+<div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory is empty and
+ prints a message to the console and serverpackcreator.log if it is.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCurseForge-java.lang.String-">checkCurseForge</a></span>(java.lang.String&nbsp;modpackDir)</code>
-<div class="block">Checks whether the modpackDir contains a valid projectID,fileID combination.</div>
+<div class="block">Checks whether the specified modpack directory contains a valid projectID,fileID combination.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkJavaPath-java.lang.String-">checkJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block">Checks whether the correct path to the Java installation was set.</div>
+<div class="block">Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloader-java.lang.String-">checkModloader</a></span>(java.lang.String&nbsp;modloader)</code>
-<div class="block">Checks whether Forge or Fabric were specified as modloader.</div>
+<div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloaderVersion-java.lang.String-java.lang.String-">checkModloaderVersion</a></span>(java.lang.String&nbsp;modloader,
                      java.lang.String&nbsp;modloaderVersion)</code>
-<div class="block">Determine whether to check for correct Forge or correct Fabric modloader version.</div>
+<div class="block">Depending on whether Forge or Fabric was specified as the modloader, this will call the corresponding version check
+ to verify that the user correctly set their modloader version.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModpackDir-java.lang.String-">checkModpackDir</a></span>(java.lang.String&nbsp;modpackDir)</code>
-<div class="block">Check whether the specified modpack directory exists.</div>
+<div class="block">Checks whether the passed String is empty and if it is empty, prints the corresponding message to the console and
+ serverpackcreator.log so the user knows what went wrong.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>private boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#containsFabric-de.griefed.serverpackcreator.curseforgemodpack.CurseModpack-">containsFabric</a></span>(<a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseModpack</a>&nbsp;modpack)</code>
-<div class="block">Checks for the Jumploader mod in the project list of the modpack.</div>
+<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#convertToBoolean-java.lang.String-">convertToBoolean</a></span>(java.lang.String&nbsp;stringBoolean)</code>
-<div class="block">Converts various strings to booleans.</div>
+<div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#createConfigurationFile--">createConfigurationFile</a></span>()</code>
-<div class="block">Generate new configuration file from CLI input.</div>
+<div class="block">Walk the user through the generation of a new ServerPackCreator configuration file by asking them for input,
+ step-by-step, regarding their modpack.</div>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>(package private) java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getClientMods--">getClientMods</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getClientMods--">getClientMods</a></span>()</code>
+<div class="block">Getter for a list of clientside-only mods to exclude from server pack.</div>
+</td>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>com.typesafe.config.Config</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfig--">getConfig</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfig--">getConfig</a></span>()</code>
+<div class="block">Getter for a <code>Config</code> containing a parsed configuration-file.</div>
+</td>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfigFile--">getConfigFile</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfigFile--">getConfigFile</a></span>()</code>
+<div class="block">Getter for serverpackcreator.conf.</div>
+</td>
 </tr>
 <tr id="i14" class="altColor">
-<td class="colFirst"><code>(package private) java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getCopyDirs--">getCopyDirs</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getCopyDirs--">getCopyDirs</a></span>()</code>
+<div class="block">Getter for the list of directories in the modpack to copy to the server pack.</div>
+</td>
 </tr>
 <tr id="i15" class="rowColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getFabricManifestUrl--">getFabricManifestUrl</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getFabricManifestUrl--">getFabricManifestUrl</a></span>()</code>
+<div class="block">Getter for Fabric's version-manifest.</div>
+</td>
 </tr>
 <tr id="i16" class="altColor">
 <td class="colFirst"><code>(package private) java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getFallbackModsList--">getFallbackModsList</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getFallbackModsList--">getFallbackModsList</a></span>()</code>
+<div class="block">Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.</div>
+</td>
 </tr>
 <tr id="i17" class="rowColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getForgeManifestUrl--">getForgeManifestUrl</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getForgeManifestUrl--">getForgeManifestUrl</a></span>()</code>
+<div class="block">Getter for Forge's version-manifest.</div>
+</td>
 </tr>
 <tr id="i18" class="altColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerIcon--">getIncludeServerIcon</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerIcon--">getIncludeServerIcon</a></span>()</code>
+<div class="block">Getter for whether the server-icon.png should be included in the server pack.</div>
+</td>
 </tr>
 <tr id="i19" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerInstallation--">getIncludeServerInstallation</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerInstallation--">getIncludeServerInstallation</a></span>()</code>
+<div class="block">Getter for whether the modloader server installation should be included.</div>
+</td>
 </tr>
 <tr id="i20" class="altColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerProperties--">getIncludeServerProperties</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerProperties--">getIncludeServerProperties</a></span>()</code>
+<div class="block">Getter for whether the server.properties should be included in the server pack.</div>
+</td>
 </tr>
 <tr id="i21" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeStartScripts--">getIncludeStartScripts</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeStartScripts--">getIncludeStartScripts</a></span>()</code>
+<div class="block">Getter for whether the start scripts should be included in the server pack.</div>
+</td>
 </tr>
 <tr id="i22" class="altColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeZipCreation--">getIncludeZipCreation</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeZipCreation--">getIncludeZipCreation</a></span>()</code>
+<div class="block">Getter for whether a ZIP-archive of the server pack should be created.</div>
+</td>
 </tr>
 <tr id="i23" class="rowColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPath--">getJavaPath</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPath--">getJavaPath</a></span>()</code>
+<div class="block">Getter for the path to the Java executable/binary.</div>
+</td>
 </tr>
 <tr id="i24" class="altColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPath-java.lang.String-">getJavaPath</a></span>(java.lang.String&nbsp;enteredPath)</code>
-<div class="block">Automatically set Java path if none is specified</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPathFromSystem-java.lang.String-">getJavaPathFromSystem</a></span>(java.lang.String&nbsp;enteredPath)</code>
+<div class="block">Checks the passed String whether it is empty, and if it is, automatically acquires the path to the users Java
+ installation and appends bin/java.exe or bin/java depending on whether the path to said installation starts with
+ Windows-typical C: prefix.</div>
 </td>
 </tr>
 <tr id="i25" class="rowColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getMinecraftManifestUrl--">getMinecraftManifestUrl</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getMinecraftManifestUrl--">getMinecraftManifestUrl</a></span>()</code>
+<div class="block">Getter for Mojang's Minecraft version-manifest.</div>
+</td>
 </tr>
 <tr id="i26" class="altColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getMinecraftVersion--">getMinecraftVersion</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getMinecraftVersion--">getMinecraftVersion</a></span>()</code>
+<div class="block">Getter for the version of Minecraft used by the modpack.</div>
+</td>
 </tr>
 <tr id="i27" class="rowColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getModLoader--">getModLoader</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getModLoader--">getModLoader</a></span>()</code>
+<div class="block">Getter for the modloader used by the modpack.</div>
+</td>
 </tr>
 <tr id="i28" class="altColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getModLoaderVersion--">getModLoaderVersion</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getModLoaderVersion--">getModLoaderVersion</a></span>()</code>
+<div class="block">Getter for the version of the modloader used by the modpack.</div>
+</td>
 </tr>
 <tr id="i29" class="rowColor">
-<td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getModpackDir--">getModpackDir</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getModpackDir--">getModpackDir</a></span>()</code>
+<div class="block">Getter for the path to the modpack directory.</div>
+</td>
 </tr>
 <tr id="i30" class="altColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getOldConfigFile--">getOldConfigFile</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>com.fasterxml.jackson.databind.ObjectMapper</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getObjectMapper--">getObjectMapper</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i31" class="rowColor">
-<td class="colFirst"><code>(package private) int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getProjectFileID--">getProjectFileID</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getOldConfigFile--">getOldConfigFile</a></span>()</code>
+<div class="block">Getter for creator.conf.</div>
+</td>
 </tr>
 <tr id="i32" class="altColor">
 <td class="colFirst"><code>(package private) int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getProjectID--">getProjectID</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getProjectFileID--">getProjectFileID</a></span>()</code>
+<div class="block">Getter for the CurseForge file of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.</div>
+</td>
 </tr>
 <tr id="i33" class="rowColor">
-<td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--">isCurse</a></span>()</code>
-<div class="block">Checks whether the specified projectID,fileID combination is a valid CurseForge project and file and whether the resulting directory exists.</div>
+<td class="colFirst"><code>(package private) int</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#getProjectID--">getProjectID</a></span>()</code>
+<div class="block">Getter for the CurseForge projectID of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.</div>
 </td>
 </tr>
 <tr id="i34" class="altColor">
 <td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-">isDir</a></span>(java.lang.String&nbsp;modpackDir)</code>
-<div class="block">Checks whether the specified modpack exists.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--">isCurse</a></span>()</code>
+<div class="block">If modpackDir in the configuration file is a CurseForge projectID,fileID combination, then the modpack is first
+ created from said combination, using <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>,
+ before proceeding to checking the rest of the configuration.</div>
 </td>
 </tr>
 <tr id="i35" class="rowColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isFabricVersionCorrect-java.lang.String-">isFabricVersionCorrect</a></span>(java.lang.String&nbsp;fabricVersion)</code>
-<div class="block">Check the specified Fabric version against Fabric's version manifest to validate the version.</div>
+<td class="colFirst"><code>private boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-">isDir</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration
+ of: directories to copy to server pack,<br>
+ if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.</div>
 </td>
 </tr>
 <tr id="i36" class="altColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isForgeVersionCorrect-java.lang.String-">isForgeVersionCorrect</a></span>(java.lang.String&nbsp;forgeVersion)</code>
-<div class="block">Checks Forge version for errors (basically for its availability in Forge manifest)</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isFabricVersionCorrect-java.lang.String-">isFabricVersionCorrect</a></span>(java.lang.String&nbsp;fabricVersion)</code>
+<div class="block">Checks whether the passed String is empty and if it is not. check the String against Fabric's version manifest
+ to validate the version.</div>
 </td>
 </tr>
 <tr id="i37" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isMinecraftVersionCorrect-java.lang.String-">isMinecraftVersionCorrect</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Check the specified Minecraft version against Mojang's version manifest to validate the version.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isForgeVersionCorrect-java.lang.String-">isForgeVersionCorrect</a></span>(java.lang.String&nbsp;forgeVersion)</code>
+<div class="block">Checks whether the passed String is empty and if it is not. check the String against Forge's version manifest
+ to validate the version.</div>
 </td>
 </tr>
 <tr id="i38" class="altColor">
-<td class="colFirst"><code>private java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#latestFabricLoader-java.lang.String-">latestFabricLoader</a></span>(java.lang.String&nbsp;modpackDir)</code>
-<div class="block">Returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.</div>
+<td class="colFirst"><code>(package private) boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#isMinecraftVersionCorrect-java.lang.String-">isMinecraftVersionCorrect</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Checks whether the passed String is empty and if it is not. check the String against Mojang's version manifest
+ to validate the version.</div>
 </td>
 </tr>
 <tr id="i39" class="rowColor">
+<td class="colFirst"><code>private java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#latestFabricLoader-java.lang.String-">latestFabricLoader</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Returns the latest version for the Fabric-loader.</div>
+</td>
+</tr>
+<tr id="i40" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#printConfig-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-">printConfig</a></span>(java.lang.String&nbsp;modpackDirectory,
            java.util.List&lt;java.lang.String&gt;&nbsp;clientsideMods,
@@ -447,94 +586,124 @@ extends java.lang.Object</pre>
            boolean&nbsp;includeProperties,
            boolean&nbsp;includeScripts,
            boolean&nbsp;includeZip)</code>
-<div class="block">Prints the configuration.</div>
-</td>
-</tr>
-<tr id="i40" class="altColor">
-<td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#readBoolean--">readBoolean</a></span>()</code>
-<div class="block">A helper method for config setup.</div>
+<div class="block">Prints all passed fields to the console and serverpackcreator.log.</div>
 </td>
 </tr>
 <tr id="i41" class="rowColor">
-<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#readStringArray--">readStringArray</a></span>()</code>
-<div class="block">A helper method for config setup.</div>
+<td class="colFirst"><code>private boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#readBoolean--">readBoolean</a></span>()</code>
+<div class="block">A helper method for <a href="../../../de/griefed/serverpackcreator/Configuration.html#createConfigurationFile--"><code>createConfigurationFile()</code></a>.</div>
 </td>
 </tr>
 <tr id="i42" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setClientMods-java.util.List-">setClientMods</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;newClientMods)</code>&nbsp;</td>
+<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#readStringArray--">readStringArray</a></span>()</code>
+<div class="block">A helper method for <a href="../../../de/griefed/serverpackcreator/Configuration.html#createConfigurationFile--"><code>createConfigurationFile()</code></a>.</div>
+</td>
 </tr>
 <tr id="i43" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setConfig-com.typesafe.config.Config-">setConfig</a></span>(com.typesafe.config.Config&nbsp;newConfig)</code>&nbsp;</td>
+<td class="colFirst"><code>(package private) void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setClientMods-java.util.List-">setClientMods</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;newClientMods)</code>
+<div class="block">Setter for the list of clientside-only mods to exclude from server pack.</div>
+</td>
 </tr>
 <tr id="i44" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setCopyDirs-java.util.List-">setCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;newCopyDirs)</code>&nbsp;</td>
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setConfig-com.typesafe.config.Config-">setConfig</a></span>(com.typesafe.config.Config&nbsp;newConfig)</code>
+<div class="block">Setter for a <code>Config</code> containing a parsed configuration-file.</div>
+</td>
 </tr>
 <tr id="i45" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerIcon-boolean-">setIncludeServerIcon</a></span>(boolean&nbsp;newIncludeServerIcon)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setCopyDirs-java.util.List-">setCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;newCopyDirs)</code>
+<div class="block">Setter for the list of directories in the modpack to copy to the server pack.</div>
+</td>
 </tr>
 <tr id="i46" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerInstallation-boolean-">setIncludeServerInstallation</a></span>(boolean&nbsp;newIncludeServerInstallation)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerIcon-boolean-">setIncludeServerIcon</a></span>(boolean&nbsp;newIncludeServerIcon)</code>
+<div class="block">Setter for whether the server-icon.png should be included in the server pack.</div>
+</td>
 </tr>
 <tr id="i47" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerProperties-boolean-">setIncludeServerProperties</a></span>(boolean&nbsp;newIncludeServerProperties)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerInstallation-boolean-">setIncludeServerInstallation</a></span>(boolean&nbsp;newIncludeServerInstallation)</code>
+<div class="block">Setter for whether the modloader server installation should be included.</div>
+</td>
 </tr>
 <tr id="i48" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeStartScripts-boolean-">setIncludeStartScripts</a></span>(boolean&nbsp;newIncludeStartScripts)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerProperties-boolean-">setIncludeServerProperties</a></span>(boolean&nbsp;newIncludeServerProperties)</code>
+<div class="block">Setter for whether the server.properties should be included in the server pack.</div>
+</td>
 </tr>
 <tr id="i49" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeZipCreation-boolean-">setIncludeZipCreation</a></span>(boolean&nbsp;newIncludeZipCreation)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeStartScripts-boolean-">setIncludeStartScripts</a></span>(boolean&nbsp;newIncludeStartScripts)</code>
+<div class="block">Setter for whether the start scripts should be included in the server pack.</div>
+</td>
 </tr>
 <tr id="i50" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setJavaPath-java.lang.String-">setJavaPath</a></span>(java.lang.String&nbsp;newJavaPath)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeZipCreation-boolean-">setIncludeZipCreation</a></span>(boolean&nbsp;newIncludeZipCreation)</code>
+<div class="block">Setter for whether a ZIP-archive of the server pack should be created.</div>
+</td>
 </tr>
 <tr id="i51" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setMinecraftVersion-java.lang.String-">setMinecraftVersion</a></span>(java.lang.String&nbsp;newMinecraftVersion)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setJavaPath-java.lang.String-">setJavaPath</a></span>(java.lang.String&nbsp;newJavaPath)</code>
+<div class="block">Setter for the path to the Java executable/binary.</div>
+</td>
 </tr>
 <tr id="i52" class="altColor">
-<td class="colFirst"><code>(package private) java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModloader-java.lang.String-">setModloader</a></span>(java.lang.String&nbsp;modloader)</code>
-<div class="block">Standardize the specified modloader.</div>
+<td class="colFirst"><code>(package private) void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setMinecraftVersion-java.lang.String-">setMinecraftVersion</a></span>(java.lang.String&nbsp;newMinecraftVersion)</code>
+<div class="block">Setter for the Minecraft version used by the modpack.</div>
 </td>
 </tr>
 <tr id="i53" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoader-java.lang.String-">setModLoader</a></span>(java.lang.String&nbsp;newModLoader)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoader-java.lang.String-">setModLoader</a></span>(java.lang.String&nbsp;newModLoader)</code>
+<div class="block">Setter for the modloader used by the modpack.</div>
+</td>
 </tr>
 <tr id="i54" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderVersion-java.lang.String-">setModLoaderVersion</a></span>(java.lang.String&nbsp;newModLoaderVersion)</code>&nbsp;</td>
+<td class="colFirst"><code>(package private) java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderCase-java.lang.String-">setModLoaderCase</a></span>(java.lang.String&nbsp;modloader)</code>
+<div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case.</div>
+</td>
 </tr>
 <tr id="i55" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModpackDir-java.lang.String-">setModpackDir</a></span>(java.lang.String&nbsp;newModpackDir)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderVersion-java.lang.String-">setModLoaderVersion</a></span>(java.lang.String&nbsp;newModLoaderVersion)</code>
+<div class="block">Setter for the version of the modloader used by the modpack.</div>
+</td>
 </tr>
 <tr id="i56" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setProjectFileID-int-">setProjectFileID</a></span>(int&nbsp;newProjectFileID)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setModpackDir-java.lang.String-">setModpackDir</a></span>(java.lang.String&nbsp;newModpackDir)</code>
+<div class="block">Setter for the path to the modpack directory.</div>
+</td>
 </tr>
 <tr id="i57" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setProjectID-int-">setProjectID</a></span>(int&nbsp;newProjectID)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setProjectFileID-int-">setProjectFileID</a></span>(int&nbsp;newProjectFileID)</code>
+<div class="block">Setter for the CurseForge file of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.</div>
+</td>
 </tr>
 <tr id="i58" class="altColor">
+<td class="colFirst"><code>(package private) void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#setProjectID-int-">setProjectID</a></span>(int&nbsp;newProjectID)</code>
+<div class="block">Setter for the CurseForge projectID of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.</div>
+</td>
+</tr>
+<tr id="i59" class="rowColor">
 <td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#suggestCopyDirs-java.lang.String-">suggestCopyDirs</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.</div>
 </td>
 </tr>
-<tr id="i59" class="rowColor">
+<tr id="i60" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Configuration.html#writeConfigToFile-java.lang.String-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.io.File-boolean-">writeConfigToFile</a></span>(java.lang.String&nbsp;modpackDir,
                  java.lang.String&nbsp;clientMods,
@@ -584,6 +753,24 @@ extends java.lang.Object</pre>
 <pre>private static final&nbsp;org.apache.logging.log4j.Logger appLogger</pre>
 </li>
 </ul>
+<a name="localizationManager">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>localizationManager</h4>
+<pre>private&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> localizationManager</pre>
+</li>
+</ul>
+<a name="curseCreateModpack">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>curseCreateModpack</h4>
+<pre>private&nbsp;<a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a> curseCreateModpack</pre>
+</li>
+</ul>
 <a name="oldConfigFile">
 <!--   -->
 </a>
@@ -600,15 +787,6 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>configFile</h4>
 <pre>private final&nbsp;java.io.File configFile</pre>
-</li>
-</ul>
-<a name="localizationManager">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>localizationManager</h4>
-<pre>private&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> localizationManager</pre>
 </li>
 </ul>
 <a name="fallbackModsList">
@@ -749,10 +927,19 @@ extends java.lang.Object</pre>
 <a name="config">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>config</h4>
 <pre>private&nbsp;com.typesafe.config.Config config</pre>
+</li>
+</ul>
+<a name="objectMapper">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>objectMapper</h4>
+<pre>private&nbsp;com.fasterxml.jackson.databind.ObjectMapper objectMapper</pre>
 </li>
 </ul>
 </li>
@@ -763,13 +950,26 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="Configuration-de.griefed.serverpackcreator.i18n.LocalizationManager-">
+<a name="Configuration-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Configuration</h4>
-<pre>public&nbsp;Configuration(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</pre>
+<pre>public&nbsp;Configuration(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+                     <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack)</pre>
+<div class="block"><strong>Constructor</strong><p>
+ Used for Dependency Injection.<p>
+ Receives an instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
+ one is null. Required for use of localization.<p>
+ Receives an instance of <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseCreateModpack</code></a> in case the modpack has to be created from a combination of
+ CurseForge projectID and fileID, from which to <em>then</em> create the server pack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
+<dd><code>injectedCurseCreateModpack</code> - Instance of <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseCreateModpack</code></a> in case the modpack has to be created from a combination of
+ CurseForge projectID and fileID, from which to <em>then</em> create the server pack.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -780,6 +980,15 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getObjectMapper--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getObjectMapper</h4>
+<pre>public&nbsp;com.fasterxml.jackson.databind.ObjectMapper&nbsp;getObjectMapper()</pre>
+</li>
+</ul>
 <a name="getOldConfigFile--">
 <!--   -->
 </a>
@@ -787,6 +996,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getOldConfigFile</h4>
 <pre>public&nbsp;java.io.File&nbsp;getOldConfigFile()</pre>
+<div class="block">Getter for creator.conf.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>File. Returns the creator.conf-file for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#writeConfigToFile-java.lang.String-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.io.File-boolean-"><code>writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="getConfigFile--">
@@ -796,6 +1010,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getConfigFile</h4>
 <pre>public&nbsp;java.io.File&nbsp;getConfigFile()</pre>
+<div class="block">Getter for serverpackcreator.conf.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>File. Returns the serverpackcreator.conf-file for use in <br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a>,<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#createConfigurationFile--"><code>createConfigurationFile()</code></a>,<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#writeConfigToFile-java.lang.String-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.io.File-boolean-"><code>writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="getMinecraftManifestUrl--">
@@ -805,6 +1027,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getMinecraftManifestUrl</h4>
 <pre>java.lang.String&nbsp;getMinecraftManifestUrl()</pre>
+<div class="block">Getter for Mojang's Minecraft version-manifest.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the URL to the JSON-file for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isMinecraftVersionCorrect-java.lang.String-"><code>isMinecraftVersionCorrect(String)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="getForgeManifestUrl--">
@@ -814,6 +1041,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getForgeManifestUrl</h4>
 <pre>java.lang.String&nbsp;getForgeManifestUrl()</pre>
+<div class="block">Getter for Forge's version-manifest.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the URL to the JSON-file for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isForgeVersionCorrect-java.lang.String-"><code>isForgeVersionCorrect(String)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="getFabricManifestUrl--">
@@ -823,6 +1055,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getFabricManifestUrl</h4>
 <pre>java.lang.String&nbsp;getFabricManifestUrl()</pre>
+<div class="block">Getter for Fabric's version-manifest.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the URL to the JSON-file for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isFabricVersionCorrect-java.lang.String-"><code>isFabricVersionCorrect(String)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="getConfig--">
@@ -832,6 +1069,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getConfig</h4>
 <pre>public&nbsp;com.typesafe.config.Config&nbsp;getConfig()</pre>
+<div class="block">Getter for a <code>Config</code> containing a parsed configuration-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Config. Returns parsed serverpackcreator.conf for use in<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setConfig-com.typesafe.config.Config-">
@@ -841,6 +1086,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setConfig</h4>
 <pre>public&nbsp;void&nbsp;setConfig(com.typesafe.config.Config&nbsp;newConfig)</pre>
+<div class="block">Setter for a <code>Config</code> containing a parsed configuration-file.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newConfig</code> - The new Typesafe Config to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getFallbackModsList--">
@@ -850,6 +1101,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getFallbackModsList</h4>
 <pre>java.util.List&lt;java.lang.String&gt;&nbsp;getFallbackModsList()</pre>
+<div class="block">Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List String. Returns the fallback clientside-only mods-list for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="getClientMods--">
@@ -859,6 +1115,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getClientMods</h4>
 <pre>java.util.List&lt;java.lang.String&gt;&nbsp;getClientMods()</pre>
+<div class="block">Getter for a list of clientside-only mods to exclude from server pack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List String. Returns the list of clientside-only mods for use in<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setClientMods-java.util.List-">
@@ -868,6 +1131,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setClientMods</h4>
 <pre>void&nbsp;setClientMods(java.util.List&lt;java.lang.String&gt;&nbsp;newClientMods)</pre>
+<div class="block">Setter for the list of clientside-only mods to exclude from server pack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newClientMods</code> - The new list of clientside-only mods to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getCopyDirs--">
@@ -876,7 +1145,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getCopyDirs</h4>
-<pre>java.util.List&lt;java.lang.String&gt;&nbsp;getCopyDirs()</pre>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getCopyDirs()</pre>
+<div class="block">Getter for the list of directories in the modpack to copy to the server pack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List String. Returns the list of directories to copy to the server pack for use in<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setCopyDirs-java.util.List-">
@@ -886,6 +1162,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setCopyDirs</h4>
 <pre>void&nbsp;setCopyDirs(java.util.List&lt;java.lang.String&gt;&nbsp;newCopyDirs)</pre>
+<div class="block">Setter for the list of directories in the modpack to copy to the server pack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newCopyDirs</code> - The new list of directories to include in server pack to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getModpackDir--">
@@ -894,7 +1176,15 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getModpackDir</h4>
-<pre>java.lang.String&nbsp;getModpackDir()</pre>
+<pre>public&nbsp;java.lang.String&nbsp;getModpackDir()</pre>
+<div class="block">Getter for the path to the modpack directory.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the path to the modpack directory for use in<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setModpackDir-java.lang.String-">
@@ -904,6 +1194,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setModpackDir</h4>
 <pre>void&nbsp;setModpackDir(java.lang.String&nbsp;newModpackDir)</pre>
+<div class="block">Setter for the path to the modpack directory. Replaces any occurrences of \ with /.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newModpackDir</code> - The new modpack directory path to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getJavaPath--">
@@ -913,6 +1209,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getJavaPath</h4>
 <pre>java.lang.String&nbsp;getJavaPath()</pre>
+<div class="block">Getter for the path to the Java executable/binary.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the path to the Java executable/binary for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setJavaPath-java.lang.String-">
@@ -922,6 +1223,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setJavaPath</h4>
 <pre>void&nbsp;setJavaPath(java.lang.String&nbsp;newJavaPath)</pre>
+<div class="block">Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newJavaPath</code> - The new Java path to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getMinecraftVersion--">
@@ -931,6 +1238,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getMinecraftVersion</h4>
 <pre>java.lang.String&nbsp;getMinecraftVersion()</pre>
+<div class="block">Getter for the version of Minecraft used by the modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the  for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setMinecraftVersion-java.lang.String-">
@@ -940,6 +1252,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setMinecraftVersion</h4>
 <pre>void&nbsp;setMinecraftVersion(java.lang.String&nbsp;newMinecraftVersion)</pre>
+<div class="block">Setter for the Minecraft version used by the modpack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newMinecraftVersion</code> - The new Minecraft version to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getModLoader--">
@@ -949,6 +1267,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getModLoader</h4>
 <pre>java.lang.String&nbsp;getModLoader()</pre>
+<div class="block">Getter for the modloader used by the modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the modloader used by the modpack for use in<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setModLoader-java.lang.String-">
@@ -958,6 +1284,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setModLoader</h4>
 <pre>void&nbsp;setModLoader(java.lang.String&nbsp;newModLoader)</pre>
+<div class="block">Setter for the modloader used by the modpack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newModLoader</code> - The new modloader to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getModLoaderVersion--">
@@ -967,6 +1299,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getModLoaderVersion</h4>
 <pre>java.lang.String&nbsp;getModLoaderVersion()</pre>
+<div class="block">Getter for the version of the modloader used by the modpack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the version of the modloader used by the modpack for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setModLoaderVersion-java.lang.String-">
@@ -976,6 +1313,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setModLoaderVersion</h4>
 <pre>void&nbsp;setModLoaderVersion(java.lang.String&nbsp;newModLoaderVersion)</pre>
+<div class="block">Setter for the version of the modloader used by the modpack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newModLoaderVersion</code> - The new modloader version to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getIncludeServerInstallation--">
@@ -985,6 +1328,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getIncludeServerInstallation</h4>
 <pre>boolean&nbsp;getIncludeServerInstallation()</pre>
+<div class="block">Getter for whether the modloader server installation should be included.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns whether the server installation should be included, for use in<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setIncludeServerInstallation-boolean-">
@@ -994,6 +1345,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setIncludeServerInstallation</h4>
 <pre>void&nbsp;setIncludeServerInstallation(boolean&nbsp;newIncludeServerInstallation)</pre>
+<div class="block">Setter for whether the modloader server installation should be included.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newIncludeServerInstallation</code> - The new boolean to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getIncludeServerIcon--">
@@ -1003,6 +1360,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getIncludeServerIcon</h4>
 <pre>boolean&nbsp;getIncludeServerIcon()</pre>
+<div class="block">Getter for whether the server-icon.png should be included in the server pack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns whether the server-icon.png should be included in the server pack, for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a>
+ and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setIncludeServerIcon-boolean-">
@@ -1012,6 +1375,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setIncludeServerIcon</h4>
 <pre>void&nbsp;setIncludeServerIcon(boolean&nbsp;newIncludeServerIcon)</pre>
+<div class="block">Setter for whether the server-icon.png should be included in the server pack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newIncludeServerIcon</code> - The new boolean to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getIncludeServerProperties--">
@@ -1021,6 +1390,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getIncludeServerProperties</h4>
 <pre>boolean&nbsp;getIncludeServerProperties()</pre>
+<div class="block">Getter for whether the server.properties should be included in the server pack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns whether the server.properties should be included in the server pack, for use in
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setIncludeServerProperties-boolean-">
@@ -1030,6 +1405,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setIncludeServerProperties</h4>
 <pre>void&nbsp;setIncludeServerProperties(boolean&nbsp;newIncludeServerProperties)</pre>
+<div class="block">Setter for whether the server.properties should be included in the server pack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newIncludeServerProperties</code> - The new boolean to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getIncludeStartScripts--">
@@ -1039,6 +1420,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getIncludeStartScripts</h4>
 <pre>boolean&nbsp;getIncludeStartScripts()</pre>
+<div class="block">Getter for whether the start scripts should be included in the server pack.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns the whether the start scripts should be included in the server pack, for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setIncludeStartScripts-boolean-">
@@ -1048,6 +1434,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setIncludeStartScripts</h4>
 <pre>void&nbsp;setIncludeStartScripts(boolean&nbsp;newIncludeStartScripts)</pre>
+<div class="block">Setter for whether the start scripts should be included in the server pack.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newIncludeStartScripts</code> - The new boolean to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getIncludeZipCreation--">
@@ -1057,6 +1449,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getIncludeZipCreation</h4>
 <pre>boolean&nbsp;getIncludeZipCreation()</pre>
+<div class="block">Getter for whether a ZIP-archive of the server pack should be created.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns whether a ZIP-archive of the server pack should be created, for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setIncludeZipCreation-boolean-">
@@ -1066,6 +1463,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setIncludeZipCreation</h4>
 <pre>void&nbsp;setIncludeZipCreation(boolean&nbsp;newIncludeZipCreation)</pre>
+<div class="block">Setter for whether a ZIP-archive of the server pack should be created.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkConfigFile-java.io.File-boolean-"><code>checkConfigFile(File, boolean)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newIncludeZipCreation</code> - The new boolean to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getProjectID--">
@@ -1075,6 +1478,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getProjectID</h4>
 <pre>int&nbsp;getProjectID()</pre>
+<div class="block">Getter for the CurseForge projectID of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Integer. Returns the CurseForge projectID of a modpack, for use in <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCurseForge-java.lang.String-"><code>checkCurseForge(String)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setProjectID-int-">
@@ -1084,6 +1492,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setProjectID</h4>
 <pre>void&nbsp;setProjectID(int&nbsp;newProjectID)</pre>
+<div class="block">Setter for the CurseForge projectID of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCurseForge-java.lang.String-"><code>checkCurseForge(String)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newProjectID</code> - The new projectID to store.</dd>
+</dl>
 </li>
 </ul>
 <a name="getProjectFileID--">
@@ -1093,6 +1507,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getProjectFileID</h4>
 <pre>int&nbsp;getProjectFileID()</pre>
+<div class="block">Getter for the CurseForge file of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Integer. Returns the CurseForge fileID of a modpack, for use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a> and <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCurseForge-java.lang.String-"><code>checkCurseForge(String)</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setProjectFileID-int-">
@@ -1102,21 +1521,45 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setProjectFileID</h4>
 <pre>void&nbsp;setProjectFileID(int&nbsp;newProjectFileID)</pre>
+<div class="block">Setter for the CurseForge file of a modpack, which will be created by <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>.
+ For use in <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCurseForge-java.lang.String-"><code>checkCurseForge(String)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>newProjectFileID</code> - The new projectFileID to store.</dd>
+</dl>
 </li>
 </ul>
-<a name="checkConfigFile-java.io.File-">
+<a name="checkConfigFile-java.io.File-boolean-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>checkConfigFile</h4>
-<pre>public&nbsp;boolean&nbsp;checkConfigFile(java.io.File&nbsp;configFile)</pre>
-<div class="block">Check the config file for configuration errors. If an error is found, the log file will tell the user where the error is, so they can fix their config.</div>
+<pre>public&nbsp;boolean&nbsp;checkConfigFile(java.io.File&nbsp;configFile,
+                               boolean&nbsp;shouldModpackBeCreated)</pre>
+<div class="block">Sets <a href="../../../de/griefed/serverpackcreator/Configuration.html#setConfig-com.typesafe.config.Config-"><code>setConfig(Config)</code></a> and calls checks for the provided configuration-file. If any check returns <code>true</code>
+ then the server pack will not be created. In order to find out which check failed, the user has to check their
+ serverpackcreator.log in the logs directory. Calls<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setConfig-com.typesafe.config.Config-"><code>setConfig(Config)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfig--"><code>getConfig()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setClientMods-java.util.List-"><code>setClientMods(List)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getFallbackModsList--"><code>getFallbackModsList()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerInstallation-boolean-"><code>setIncludeServerInstallation(boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerIcon-boolean-"><code>setIncludeServerIcon(boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeServerProperties-boolean-"><code>setIncludeServerProperties(boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeStartScripts-boolean-"><code>setIncludeStartScripts(boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setIncludeZipCreation-boolean-"><code>setIncludeZipCreation(boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModpackDir-java.lang.String-"><code>checkModpackDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCurseForge-java.lang.String-"><code>checkCurseForge(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isDir-java.lang.String-"><code>isDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isCurse--"><code>isCurse()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#printConfig-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-"><code>printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configFile</code> - The configuration file to check. Must be a valid configuration file for serverpackcreator to work.</dd>
+<dd><code>configFile</code> - File. The configuration file to check. Must be a valid configuration file for serverpackcreator to work.</dd>
+<dd><code>shouldModpackBeCreated</code> - Boolean. Whether the CurseForge modpack should be downloaded and created.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Return true if error is found in user's configuration. If an error is found, the application will exit in main.</dd>
+<dd>Boolean. Returns <code>false</code> if all checks are passed.</dd>
 </dl>
 </li>
 </ul>
@@ -1127,12 +1570,31 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>isDir</h4>
 <pre>private&nbsp;boolean&nbsp;isDir(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Checks whether the specified modpack exists. If it does, the config file is checked for errors. Should any error be found, it will return true so the configCheck method informs the user about an invalid configuration.</div>
+<div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration
+ of: directories to copy to server pack,<br>
+ if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.
+ Calls<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModpackDir-java.lang.String-"><code>setModpackDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getModpackDir--"><code>getModpackDir()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCopyDirs-java.util.List-java.lang.String-"><code>checkCopyDirs(List, String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setCopyDirs-java.util.List-"><code>setCopyDirs(List)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getIncludeServerInstallation--"><code>getIncludeServerInstallation()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkJavaPath-java.lang.String-"><code>checkJavaPath(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setJavaPath-java.lang.String-"><code>setJavaPath(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPathFromSystem-java.lang.String-"><code>getJavaPathFromSystem(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isMinecraftVersionCorrect-java.lang.String-"><code>isMinecraftVersionCorrect(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setMinecraftVersion-java.lang.String-"><code>setMinecraftVersion(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloader-java.lang.String-"><code>checkModloader(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoader-java.lang.String-"><code>setModLoader(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderCase-java.lang.String-"><code>setModLoaderCase(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloaderVersion-java.lang.String-java.lang.String-"><code>checkModloaderVersion(String, String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderVersion-java.lang.String-"><code>setModLoaderVersion(String)</code></a><br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. Should an existing modpack be specified, all configurations are read from local file and the server pack is created, if config is correct.</dd>
+<dd><code>modpackDir</code> - String. Should an existing modpack be specified, all configurations are read from the provided
+                   configuration file and checks are made in this directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if an error is found during configuration check. False if the configuration is deemed valid.</dd>
+<dd>Boolean. Returns true if an error is found during configuration check.</dd>
 </dl>
 </li>
 </ul>
@@ -1143,10 +1605,30 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>isCurse</h4>
 <pre>private&nbsp;boolean&nbsp;isCurse()</pre>
-<div class="block">Checks whether the specified projectID,fileID combination is a valid CurseForge project and file and whether the resulting directory exists. If the directory does not exist, make calls to other methods which create the modpack. Parses information gathered from the modpack to later replace the previous configuration file.</div>
+<div class="block">If modpackDir in the configuration file is a CurseForge projectID,fileID combination, then the modpack is first
+ created from said combination, using <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a>,
+ before proceeding to checking the rest of the configuration. If everything passes and the modpack was created,
+ a new configuration file is created, replacing the one used to create the modpack in the first place, with the
+ modpackDir field pointing to the newly created modpack. Calls<br>
+ <code>CurseAPI</code> and various methods of it.<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModpackDir-java.lang.String-"><code>setModpackDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getModpackDir--"><code>getModpackDir()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html#curseForgeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-"><code>CurseCreateModpack.curseForgeModpack(String, Integer, Integer)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack"><code>CurseModpack</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#containsFabric-de.griefed.serverpackcreator.curseforgemodpack.CurseModpack-"><code>containsFabric(CurseModpack)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoader-java.lang.String-"><code>setModLoader(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderVersion-java.lang.String-"><code>setModLoaderVersion(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderCase-java.lang.String-"><code>setModLoaderCase(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkJavaPath-java.lang.String-"><code>checkJavaPath(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setJavaPath-java.lang.String-"><code>setJavaPath(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPathFromSystem-java.lang.String-"><code>getJavaPathFromSystem(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setCopyDirs-java.util.List-"><code>setCopyDirs(List)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#suggestCopyDirs-java.lang.String-"><code>suggestCopyDirs(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#writeConfigToFile-java.lang.String-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.io.File-boolean-"><code>writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)</code></a><br></div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Currently always returns true so serverpackcreator does not go straight into server pack creation after the creation of the specified modpack. Gives the user the chance to check their config before actually creating the server pack.</dd>
+<dd>Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
+ project name and displayname, or when the creation of the modpack fails.</dd>
 </dl>
 </li>
 </ul>
@@ -1157,12 +1639,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>containsFabric</h4>
 <pre>private&nbsp;boolean&nbsp;containsFabric(<a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseModpack</a>&nbsp;modpack)</pre>
-<div class="block">Checks for the Jumploader mod in the project list of the modpack. If Jumploader is found, the modloader in the configuration will be set to Fabric.</div>
+<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
+ If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpack</code> - Object. Contains information about our modpack. Used to get a list of all projects used in the modpack.</dd>
+<dd><code>modpack</code> - CurseModpack. Contains information about the CurseForge modpack. Used to get a list of all projects
+               required by the modpack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if Jumploader is found, false if not found.</dd>
+<dd>Boolean. Returns true if Jumploader is found.</dd>
 </dl>
 </li>
 </ul>
@@ -1173,12 +1657,16 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>suggestCopyDirs</h4>
 <pre>private&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;suggestCopyDirs(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.</div>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
+ The list of directories to include in the server pack which is generated by this method excludes well know directories
+ which would not be needed by a server pack. If you have suggestions to this list, open an issue on
+ <a href=https://github.com/Griefed/ServerPackCreator/issues>GitHub</a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. The directory for which to gather a list of directories.</dd>
+<dd><code>modpackDir</code> - String. The directory for which to gather a list of directories to copy to the server pack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List, String. Returns a list of directories inside the modpack, excluding well known client-side only directories which would not be needed by a server pack. If you have suggestions to this list, open an issue on https://github.com/Griefed/ServerPackCreator/issues</dd>
+<dd>List, String. Returns a list of directories inside the modpack, excluding well known client-side only
+ directories.</dd>
 </dl>
 </li>
 </ul>
@@ -1189,7 +1677,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkCurseForge</h4>
 <pre>boolean&nbsp;checkCurseForge(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Checks whether the modpackDir contains a valid projectID,fileID combination. ProjectIDs must be at least two digits long, fileIDs must be at least 5 digits long. Must be numbers separated by a ",".</div>
+<div class="block">Checks whether the specified modpack directory contains a valid projectID,fileID combination.
+ ProjectIDs must be at least two digits long, fileIDs must be at least 5 digits long.
+ Must be numbers separated by a ",". If modpackDir successfully matched a projectID,fileID combination, CurseForge
+ is then checked for existence of said projectID and fileID. If the project can not be found or the file returns null
+ then false is returned and the check is considered failed.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The string which to check for a valid projectID,fileID combination.</dd>
@@ -1205,7 +1697,23 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>convertToBoolean</h4>
 <pre>public&nbsp;boolean&nbsp;convertToBoolean(java.lang.String&nbsp;stringBoolean)</pre>
-<div class="block">Converts various strings to booleans.</div>
+<div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.<br>
+ <strong>Converted to <code>TRUE</code> are:<br></strong>
+ <code>[Tt]rue</code><br>
+ <code>1</code><br>
+ <code>[Yy]es</code><br>
+ <code>[Yy]</code><br>
+ Language Key <code>cli.input.true</code><br>
+ Language Key <code>cli.input.yes</code><br>
+ Language Key <code>cli.input.yes.short</code><br>
+ <strong>Converted to <code>FALSE</code> are:<br></strong>
+ <code>[Ff]alse</code><br>
+ <code>0</code><br>
+ <code>[Nn]o</code><br>
+ <code>[Nn]</code><br>
+ Language Key <code>cli.input.false</code><br>
+ Language Key <code>cli.input.no</code><br>
+ Language Key <code>cli.input.no.short</code><br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>stringBoolean</code> - String. The string which should be converted to boolean if it matches certain patterns.</dd>
@@ -1232,21 +1740,25 @@ extends java.lang.Object</pre>
                  boolean&nbsp;includeProperties,
                  boolean&nbsp;includeScripts,
                  boolean&nbsp;includeZip)</pre>
-<div class="block">Prints the configuration.</div>
+<div class="block">Prints all passed fields to the console and serverpackcreator.log. Used to show the user the configuration before
+ ServerPackCreator starts the generation of the server pack or, if checks failed, to show the user their last
+ configuration so they can more easily identify problems with said configuration.<br>
+ Should a user report an issue on GitHub and include their logs (which I hope they do....), this would also
+ help me help them. Logging is good. People should use more logging.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDirectory</code> - String. Path to modpack directory.</dd>
-<dd><code>clientsideMods</code> - String List. List of clientside mods to delete from server pack.</dd>
-<dd><code>copyDirectories</code> - String List. List of directories to copy to server pack.</dd>
-<dd><code>installServer</code> - Boolean. Whether to install the modloader server.</dd>
-<dd><code>javaInstallPath</code> - String. Path to Java installation needed to install modloader server.</dd>
-<dd><code>minecraftVer</code> - String. Minecraft version the modpack uses.</dd>
-<dd><code>modloader</code> - String. Modloader the modpack uses.</dd>
-<dd><code>modloaderVersion</code> - String. Version of the modloader the modpack uses.</dd>
+<dd><code>modpackDirectory</code> - String. The used modpackDir field either from a configuration file or from configuration setup.</dd>
+<dd><code>clientsideMods</code> - String List. List of clientside-only mods to exclude from the server pack..</dd>
+<dd><code>copyDirectories</code> - String List. List of directories in the modpack which are to be included in the server pack.</dd>
+<dd><code>installServer</code> - Boolean. Whether to install the modloader server in the server pack.</dd>
+<dd><code>javaInstallPath</code> - String. Path to the Java executable/binary needed for installing the modloader server in the server pack.</dd>
+<dd><code>minecraftVer</code> - String. The Minecraft version the modpack uses.</dd>
+<dd><code>modloader</code> - String. The modloader the modpack uses.</dd>
+<dd><code>modloaderVersion</code> - String. The version of the modloader the modpack uses.</dd>
 <dd><code>includeIcon</code> - Boolean. Whether to include the server-icon.png in the server pack.</dd>
 <dd><code>includeProperties</code> - Boolean. Whether to include the server.properties in the server pack.</dd>
-<dd><code>includeScripts</code> - Boolean. Whether to include start scripts for the specified modloader in the server pack.</dd>
-<dd><code>includeZip</code> - Boolean. Whether to create a zip-archive of the server pack.</dd>
+<dd><code>includeScripts</code> - Boolean. Whether to include the start scripts for the specified modloader in the server pack.</dd>
+<dd><code>includeZip</code> - Boolean. Whether to create a zip-archive of the server pack, excluding the Minecraft server JAR according to Mojang's TOS and EULA.</dd>
 </dl>
 </li>
 </ul>
@@ -1257,12 +1769,15 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkModpackDir</h4>
 <pre>boolean&nbsp;checkModpackDir(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Check whether the specified modpack directory exists.</div>
+<div class="block">Checks whether the passed String is empty and if it is empty, prints the corresponding message to the console and
+ serverpackcreator.log so the user knows what went wrong.<br>
+ Checks whether the passed String is a directory and if it is not, prints the corresponding message to the console
+ and serverpackcreator.log so the user knows what went wrong.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. The path to the modpack directory.</dd>
+<dd><code>modpackDir</code> - String. The path to the modpack directory to check whether it is empty and whether it is a directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the directory exists. False if not.</dd>
+<dd>Boolean. Returns true if the directory exists.</dd>
 </dl>
 </li>
 </ul>
@@ -1274,29 +1789,37 @@ extends java.lang.Object</pre>
 <h4>checkCopyDirs</h4>
 <pre>boolean&nbsp;checkCopyDirs(java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
                       java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Check whether the specified directories exist in the modpack directory.</div>
+<div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory is empty and
+ prints a message to the console and serverpackcreator.log if it is.<br>
+ Checks whether all directories in the list exist in the modpack directory and prints a message to the console
+ and serverpackcreator.log if any one of the directories could not be found.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>copyDirs</code> - String. The directories for which to check.</dd>
-<dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for directories.</dd>
+<dd><code>copyDirs</code> - List String. The list of directories to check for existence.</dd>
+<dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for existence of the passed list of
+                  directories.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if all directories exist. False if any one does not.</dd>
+<dd>Boolean. Returns true if every directory was found in the modpack directory. If any single one was not found,
+ false is returned.</dd>
 </dl>
 </li>
 </ul>
-<a name="getJavaPath-java.lang.String-">
+<a name="getJavaPathFromSystem-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getJavaPath</h4>
-<pre>java.lang.String&nbsp;getJavaPath(java.lang.String&nbsp;enteredPath)</pre>
-<div class="block">Automatically set Java path if none is specified</div>
+<h4>getJavaPathFromSystem</h4>
+<pre>java.lang.String&nbsp;getJavaPathFromSystem(java.lang.String&nbsp;enteredPath)</pre>
+<div class="block">Checks the passed String whether it is empty, and if it is, automatically acquires the path to the users Java
+ installation and appends bin/java.exe or bin/java depending on whether the path to said installation starts with
+ Windows-typical C: prefix.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>enteredPath</code> - String. The path to check whether it is empty.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Return the entered Java path if it is not empty. Automatically determine path if empty.</dd>
+<dd>String. Returns the passed String as is if it is not empty. Returns the automatically acquired path to the
+ Java executable/binary if the passed String was empty.</dd>
 </dl>
 </li>
 </ul>
@@ -1307,12 +1830,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkJavaPath</h4>
 <pre>boolean&nbsp;checkJavaPath(java.lang.String&nbsp;pathToJava)</pre>
-<div class="block">Checks whether the correct path to the Java installation was set.</div>
+<div class="block">Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToJava</code> - String. The path to check for java.exe or java.</dd>
+<dd><code>pathToJava</code> - String. The path to check for java.exe and java.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the path was correctly set. False if not.</dd>
+<dd>Boolean. Returns true if the String ends with java.exe or java, and if either of these files exist.</dd>
 </dl>
 </li>
 </ul>
@@ -1323,28 +1846,30 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkModloader</h4>
 <pre>boolean&nbsp;checkModloader(java.lang.String&nbsp;modloader)</pre>
-<div class="block">Checks whether Forge or Fabric were specified as modloader.</div>
+<div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modloader</code> - String. Check case insensitive for Forge or Fabric.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified modloader is either Forge or Fabric. False if not.</dd>
+<dd>Boolean. Returns true if the specified modloader is either Forge or Fabric. False if neither.</dd>
 </dl>
 </li>
 </ul>
-<a name="setModloader-java.lang.String-">
+<a name="setModLoaderCase-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>setModloader</h4>
-<pre>java.lang.String&nbsp;setModloader(java.lang.String&nbsp;modloader)</pre>
-<div class="block">Standardize the specified modloader.</div>
+<h4>setModLoaderCase</h4>
+<pre>java.lang.String&nbsp;setModLoaderCase(java.lang.String&nbsp;modloader)</pre>
+<div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case. Basically allows the user to
+ input Forge or Fabric in any combination of upper- and lowercase and ServerPackCreator will still be able to
+ work with the users input.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..</dd>
+<dd><code>modloader</code> - String. The String to check for case-insensitive cases of either Forge or Fabric.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns a standardized String of the specified modloader.</dd>
+<dd>String. Returns a normalized String of the specified modloader.</dd>
 </dl>
 </li>
 </ul>
@@ -1356,13 +1881,18 @@ extends java.lang.Object</pre>
 <h4>checkModloaderVersion</h4>
 <pre>boolean&nbsp;checkModloaderVersion(java.lang.String&nbsp;modloader,
                               java.lang.String&nbsp;modloaderVersion)</pre>
-<div class="block">Determine whether to check for correct Forge or correct Fabric modloader version.</div>
+<div class="block">Depending on whether Forge or Fabric was specified as the modloader, this will call the corresponding version check
+ to verify that the user correctly set their modloader version.<br>
+ If the user specified Forge as their modloader, <a href="../../../de/griefed/serverpackcreator/Configuration.html#isForgeVersionCorrect-java.lang.String-"><code>isForgeVersionCorrect(String)</code></a> is called and the version
+ the user specified is checked against Forge's version manifest..<br>
+ If the user specified Fabric as their modloader, <a href="../../../de/griefed/serverpackcreator/Configuration.html#isFabricVersionCorrect-java.lang.String-"><code>isFabricVersionCorrect(String)</code></a> is called and the version
+ the user specified is checked against Fabric's version manifest.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - String. Determines whether the check for Forge or Fabric is called.</dd>
-<dd><code>modloaderVersion</code> - String. The version of the modloader to check for.</dd>
+<dd><code>modloader</code> - String. The passed modloader which determines whether the check for Forge or Fabric is called.</dd>
+<dd><code>modloaderVersion</code> - String. The version of the modloader which is checked against the corresponding modloaders manifest.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified modloader version is correct. False if not.</dd>
+<dd>Boolean. Returns true if the specified modloader version was found in the corresponding manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -1373,12 +1903,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>isMinecraftVersionCorrect</h4>
 <pre>boolean&nbsp;isMinecraftVersionCorrect(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Check the specified Minecraft version against Mojang's version manifest to validate the version.</div>
+<div class="block">Checks whether the passed String is empty and if it is not. check the String against Mojang's version manifest
+ to validate the version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - Minecraft version to check.</dd>
+<dd><code>minecraftVersion</code> - String. The version to check for in Mojang's version manifest.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest. False if not.</dd>
+<dd>Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -1389,12 +1920,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>isFabricVersionCorrect</h4>
 <pre>boolean&nbsp;isFabricVersionCorrect(java.lang.String&nbsp;fabricVersion)</pre>
-<div class="block">Check the specified Fabric version against Fabric's version manifest to validate the version.</div>
+<div class="block">Checks whether the passed String is empty and if it is not. check the String against Fabric's version manifest
+ to validate the version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fabricVersion</code> - String. The Fabric version to check.</dd>
+<dd><code>fabricVersion</code> - String. The version to check for in Fabric's version manifest.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified Fabric version could be found in Fabric's manifest. False if not.</dd>
+<dd>Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -1405,12 +1937,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>isForgeVersionCorrect</h4>
 <pre>boolean&nbsp;isForgeVersionCorrect(java.lang.String&nbsp;forgeVersion)</pre>
-<div class="block">Checks Forge version for errors (basically for its availability in Forge manifest)</div>
+<div class="block">Checks whether the passed String is empty and if it is not. check the String against Forge's version manifest
+ to validate the version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>forgeVersion</code> - String. The Forge version to check.</dd>
+<dd><code>forgeVersion</code> - String. The version to check for in Forge's version manifest.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if Forge version correct and false if it isn't correct.</dd>
+<dd>Boolean. Returns true if the specified Forge version could be found in Forge's manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -1421,10 +1954,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>latestFabricLoader</h4>
 <pre>private&nbsp;java.lang.String&nbsp;latestFabricLoader(java.lang.String&nbsp;modpackDir)</pre>
-<div class="block">Returns the latest installer version for the Fabric installer to be used in ServerSetup.installServer.</div>
+<div class="block">Returns the latest version for the Fabric-loader. If Fabric's version manifest should be unreachable for whatever
+ reason, version 0.11.3 is returned by default.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. /server_pack The directory where the Fabric installer will be placed in.</dd>
+<dd><code>modpackDir</code> - String. The Fabric-loader manifest will be stored inside the server_pack directory inside the modpack
+                   directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the download was successful. False if not.</dd>
 </dl>
@@ -1437,7 +1972,30 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>createConfigurationFile</h4>
 <pre>void&nbsp;createConfigurationFile()</pre>
-<div class="block">Generate new configuration file from CLI input. Prompts user to enter config file values and then generates a config file with values entered by user.</div>
+<div class="block">Walk the user through the generation of a new ServerPackCreator configuration file by asking them for input,
+ step-by-step, regarding their modpack. At the end of this method a fully configured serverpackcreator.conf file
+ is saved and any previously existing configuration file replaced by the new one.<br>
+ After every input, said input is displayed to the user and they're asked whether they are satisfied with said
+ input. The user can then decide whether they would like to restart the entry of the field they just configured,
+ or agree and move to the next one.<br>
+ At the end of this method, the user will have a newly configured and created configuration file for ServerPackCreator.<br>
+ <br>
+ Most user-input is checked after entry to ensure the configuration is already in working-condition after completion
+ of this method.<br>
+ Calls<br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModpackDir-java.lang.String-"><code>checkModpackDir(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#readBoolean--"><code>readBoolean()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getFallbackModsList--"><code>getFallbackModsList()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#readStringArray--"><code>readStringArray()</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkCopyDirs-java.util.List-java.lang.String-"><code>checkCopyDirs(List, String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#isMinecraftVersionCorrect-java.lang.String-"><code>isMinecraftVersionCorrect(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloader-java.lang.String-"><code>checkModloader(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#setModLoaderCase-java.lang.String-"><code>setModLoaderCase(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkModloaderVersion-java.lang.String-java.lang.String-"><code>checkModloaderVersion(String, String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#getJavaPathFromSystem-java.lang.String-"><code>getJavaPathFromSystem(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#checkJavaPath-java.lang.String-"><code>checkJavaPath(String)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#printConfig-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-"><code>printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)</code></a><br>
+ <a href="../../../de/griefed/serverpackcreator/Configuration.html#writeConfigToFile-java.lang.String-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.io.File-boolean-"><code>writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)</code></a></div>
 </li>
 </ul>
 <a name="readStringArray--">
@@ -1447,10 +2005,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>readStringArray</h4>
 <pre>private&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;readStringArray()</pre>
-<div class="block">A helper method for config setup. Prompts user to enter the values that will be stored in arrays in config.</div>
+<div class="block">A helper method for <a href="../../../de/griefed/serverpackcreator/Configuration.html#createConfigurationFile--"><code>createConfigurationFile()</code></a>. Prompts the user to enter the values which will make up
+ a String List in the new configuration file. If the user enters an empty line, the method is exited and the
+ String List returned.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String List. Returns list with user input values that will be stored in config.</dd>
+<dd>String List. Returns the list of values entered by the user.</dd>
 </dl>
 </li>
 </ul>
@@ -1461,7 +2021,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>buildString</h4>
 <pre>public&nbsp;java.lang.String&nbsp;buildString(java.lang.String...&nbsp;args)</pre>
-<div class="block">Converts list of strings into concatenated string.</div>
+<div class="block">Converts a sequence of Strings, for example from a list, into a concatenated String.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Strings that will be concatenated into one string</dd>
@@ -1477,10 +2037,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>readBoolean</h4>
 <pre>private&nbsp;boolean&nbsp;readBoolean()</pre>
-<div class="block">A helper method for config setup. Prompts user to enter boolean values that will be stored in config and checks entered values to prevent storing non-boolean values in boolean variables.</div>
+<div class="block">A helper method for <a href="../../../de/griefed/serverpackcreator/Configuration.html#createConfigurationFile--"><code>createConfigurationFile()</code></a>. Prompts the user to enter values which will then be
+ converted to booleans, either <code>TRUE</code> or <code>FALSE</code>. This prevents any non-boolean values
+ from being written to the new configuration file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Converts to boolean and returns value entered by user that will be stored in config.</dd>
+<dd>Boolean. True or False, depending on user input.</dd>
 </dl>
 </li>
 </ul>
@@ -1504,22 +2066,23 @@ extends java.lang.Object</pre>
                                  boolean&nbsp;includeZip,
                                  java.io.File&nbsp;fileName,
                                  boolean&nbsp;isTemporary)</pre>
-<div class="block">Writes a new configuration file with the parameters passed to it.</div>
+<div class="block">Writes a new configuration file with the parameters passed to it.<br>
+ Calls <a href="../../../de/griefed/serverpackcreator/Configuration.html#getConfigFile--"><code>getConfigFile()</code></a><br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The path to the modpack.</dd>
 <dd><code>clientMods</code> - List, String. List of clientside-only mods.</dd>
 <dd><code>copyDirs</code> - List, String. List of directories to include in server pack.</dd>
-<dd><code>includeServer</code> - Boolean. Whether to include a modloader server installation.</dd>
-<dd><code>javaPath</code> - String. Path to the java executable.</dd>
+<dd><code>includeServer</code> - Boolean. Whether the modloader server software should be installed.</dd>
+<dd><code>javaPath</code> - String. Path to the java executable/binary.</dd>
 <dd><code>minecraftVersion</code> - String. Minecraft version used by the modpack and server pack.</dd>
 <dd><code>modLoader</code> - String. Modloader used by the modpack and server pack. Ether Forge or Fabric.</dd>
 <dd><code>modLoaderVersion</code> - String. Modloader version used by the modpack and server pack.</dd>
 <dd><code>includeIcon</code> - Boolean. Whether to include a server-icon in the server pack.</dd>
 <dd><code>includeProperties</code> - Boolean. Whether to include a properties file in the server pack.</dd>
 <dd><code>includeScripts</code> - Boolean. Whether to include start scripts in the server pack.</dd>
-<dd><code>includeZip</code> - Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server jar.</dd>
-<dd><code>fileName</code> - The name under which to write the new file.</dd>
+<dd><code>includeZip</code> - Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server JAR.</dd>
+<dd><code>fileName</code> - The name under which to write the new configuration file.</dd>
 <dd><code>isTemporary</code> - Decides whether to delete existing config-file. If isTemporary is false, existing config files will be deleted before writing the new file.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the configuration file has been successfully written and old ones replaced.</dd>
