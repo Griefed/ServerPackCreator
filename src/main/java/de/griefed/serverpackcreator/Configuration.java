@@ -1557,9 +1557,17 @@ public class Configuration {
             appLogger.info(localizationManager.getLocalizedString("clisetup.log.info.modpack.example"));
 
             do {
-                System.out.print(localizationManager.getLocalizedString("clisetup.log.info.modpack.cli"));
-                tmpModpackDir = reader.nextLine();
-            } while (!checkModpackDir(tmpModpackDir));
+
+                do {
+                    System.out.print(localizationManager.getLocalizedString("clisetup.log.info.modpack.cli"));
+                    tmpModpackDir = reader.nextLine();
+                } while (!checkModpackDir(tmpModpackDir));
+
+                appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.checkreturn"), tmpModpackDir));
+                appLogger.info(localizationManager.getLocalizedString("clisetup.log.info.modpack.checkreturninfo"));
+                System.out.print(localizationManager.getLocalizedString("clisetup.log.info.answer"));
+
+            } while (!readBoolean());
 
             modpackDir = tmpModpackDir.replace("\\", "/");
             appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.checkreturn"), modpackDir));
@@ -1570,8 +1578,7 @@ public class Configuration {
             do {
                 clientMods.addAll(readStringArray());
                 appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
-                appLogger.info(localizationManager.getLocalizedString("clisetup.log.info.clientmods.checkreturninfo"));
-                System.out.print(localizationManager.getLocalizedString("clisetup.log.info.answer"));
+
                 if (clientMods.isEmpty()) {
                     clientMods = getFallbackModsList();
                     appLogger.warn(localizationManager.getLocalizedString("configcheck.log.warn.checkconfig.clientmods"));
@@ -1580,6 +1587,10 @@ public class Configuration {
                         appLogger.warn(String.format("    %s", clientMods.get(i))); }
                     //TODO: @Griefed Test whether this works
                 }
+
+                appLogger.info(localizationManager.getLocalizedString("clisetup.log.info.clientmods.checkreturninfo"));
+                System.out.print(localizationManager.getLocalizedString("clisetup.log.info.answer"));
+
             } while (!readBoolean());
             appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
             tmpClientMods = new String[clientMods.size()];
@@ -1588,6 +1599,9 @@ public class Configuration {
 
 //---------------------------------------------------------------------------DIRECTORIES TO COPY TO SERVER PACK---------
             appLogger.info(localizationManager.getLocalizedString("clisetup.log.info.copydirs.enter"));
+            File directories = new File(modpackDir);
+            List<String> dirList = Arrays.asList(Objects.requireNonNull(directories.list((current, name) -> new File(current, name).isDirectory())));
+            appLogger.info(String.format(localizationManager.getLocalizedString("clisetup.log.info.copydirs.dirsinmodpack"), dirList.toString().replace("[","").replace("]","")));
             do {
                 do {
                     copyDirs.clear();
