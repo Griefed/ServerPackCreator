@@ -1585,7 +1585,6 @@ public class Configuration {
 
                     for (int i = 0; i < clientMods.size(); i++) {
                         appLogger.warn(String.format("    %s", clientMods.get(i))); }
-                    //TODO: @Griefed Test whether this works
                 }
 
                 appLogger.info(localizationManager.getLocalizedString("clisetup.log.info.clientmods.checkreturninfo"));
