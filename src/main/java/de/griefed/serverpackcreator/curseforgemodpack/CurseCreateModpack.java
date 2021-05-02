@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-//TODO: Write table of contents
 package de.griefed.serverpackcreator.curseforgemodpack;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -41,7 +40,36 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-//TODO: Write docs for class
+
+/**
+ * <strong>Table of methods</strong><br>
+ * {@link #CurseCreateModpack(LocalizationManager)}<br>
+ * {@link #setModloaderCase(String)}<br>
+ * {@link #curseForgeModpack(String, Integer, Integer)}<br>
+ * {@link #initializeModpack(String, Integer, Integer)}<br>
+ * {@link #downloadMods(String)}<br>
+ * {@link #copyOverride(String)}<br>
+ * {@link #checkCurseForgeDir(String)}<br>
+ * {@link #unzipArchive(String, String)}<br>
+ * {@link #newFile(File, ZipEntry)}<br>
+ * {@link #cleanupEnvironment(String)}<p>
+ * Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
+ * override directory to the parent directory, download all mods in said modpack, and delete no longer needed files.
+ * Modpacks are create in a ProjectName/FileDisplayName structure. Before a modpack is created, the FileDisplayName folder
+ * is checked for existence and deleted should it already exist. The reason for this is the order in which ServerPackCreator
+ * checks and uses the configuration file.<p>
+ * First: the configuration is checked for a valid CurseForge projectID,fileID combination.<br>
+ * Second: The folder structure is checked for an already existing folder with FileDisplayName and if it exists it is deleted.<br>
+ * Third: The modpack is created and all mods are downloaded etc., files are copied, etc.<br>
+ * Fourth: Information about the modpack is acquired from the modpack's manifest.json and written to a new configuration file
+ * with said information. The configuration for modpackDir, which previously contained a projectID,fileID is replaced
+ * with the path to the new modpack at ProjectName/FileDisplayName.<br>
+ * If modpackDir holds a projectID,fileID combination we have to assume the modpack has yet to be created, thus
+ * we need to make sure the target directory is empty in order to create a clean and fresh modpack.<br>
+ * If modpackDir does not hold a projectID,fileID we have to assume it is a path pointing at a directory which already
+ * contains a modpack we can work with and create a server pack from. Thus, we clean up the environment if modpackDir holds
+ * a projectID,fileID.
+ */
 public class CurseCreateModpack {
     private static final Logger appLogger = LogManager.getLogger(CurseCreateModpack.class);
     private String projectName;
@@ -50,6 +78,13 @@ public class CurseCreateModpack {
 
     private LocalizationManager localizationManager;
 
+    /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection.<p>
+     * Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     */
     public CurseCreateModpack(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
             this.localizationManager = new LocalizationManager();
@@ -58,9 +93,12 @@ public class CurseCreateModpack {
         }
     }
 
-    /** Standardize the specified modloader.
-     * @param modloader String. If any case of Forge or Fabric was specified, return "Forge" or "Fabric", so users can enter "forge" or "fabric" or any combination of upper- and lowercase letters..
-     * @return String. Returns a standardized String of the specified modloader.
+    /**
+     * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically allows the user to
+     * input Forge or Fabric in any combination of upper- and lowercase and ServerPackCreator will still be able to
+     * work with the users input.
+     * @param modloader String. The String to check for case-insensitive cases of either Forge or Fabric.
+     * @return String. Returns a normalized String of the specified modloader.
      */
     String setModloaderCase(String modloader) {
         String returnLoader = null;
@@ -72,11 +110,20 @@ public class CurseCreateModpack {
         return returnLoader;
     }
 
-    /** Gets the names of the specified project and file and makes calls to methods which create the modpack so we can then create a server pack from it.
-     * @param modpackDir String. Combination of project name and file name. Created during download procedure and later added to config file.
-     * @param projectID Integer. The ID of the project. Used to gather information and to download the modpack.
-     * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
-     * @return Boolean. Returns true if the modpack was freshly created.
+    /**
+     * Acquires the names of the CurseForge project and file. Should no filename exist, we will use the fileDiskName as
+     * fallback to ensure we always have a folder-structure of projectName/FileDisplayName at hand in which the modpack
+     * will be created. Calls<br>
+     * {@link CurseAPI} and various methods of it in order to acquire information about the modpack.<br>
+     * {@link #checkCurseForgeDir(String)}<br>
+     * {@link #initializeModpack(String, Integer, Integer)}
+     * @param modpackDir String. Combination of project name and file name. Created during download procedure
+     *                  and later replaces the modpackDir variable in the configuration file.
+     * @param projectID Integer. The ID of the project. Used to gather information about the CurseForge project and to
+     *                 download the modpack.
+     * @param fileID Integer. The ID of the file. Used to gather information about the CurseForge file and to download
+     *              the modpack.
+     * @return Boolean. Returns true if the modpack was successfully created.
      */
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     public boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
@@ -106,8 +153,16 @@ public class CurseCreateModpack {
         return modpackCreated;
     }
 
-    /** Downloads the specified file of the specified project to a directory which is the combination of the project name and file display name. Unzips the downloaded modpack archive, gathers and displays information about the specified project/file and makes calls to methods which further setup the modpack.
-     * @param modpackDir String. Combination of project name and file name. Created during download procedure and later added to config file.
+    /**
+     * Downloads the specified file of the specified project to a directory which is the combination of the project
+     * name and file display name. Unzips the downloaded modpack ZIP-archive, gathers and displays information about the
+     * specified project/file and makes calls to methods which further setup the modpack. Calls<br>
+     * {@link CurseAPI} and various methods of it to create the modpack.<br>
+     * {@link #unzipArchive(String, String)}<br>
+     * {@link #copyOverride(String)}<br>
+     * {@link #downloadMods(String)}<br>
+     * @param modpackDir String. Combination of project name and file name. Created during download procedure and later
+     *                  replaces the modpackDir variable in the configuration file.
      * @param projectID Integer. The ID of the project. Used to gather information and to download the modpack.
      * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
      */
@@ -158,8 +213,15 @@ public class CurseCreateModpack {
         downloadMods(modpackDir);
     }
 
-    /** Downloads all mods specified in the modpack's manifest.json file. If a download fails, one retry will be made, if said retry fails, too, then the download url will be sent to the log.
-     * @param modpackDir String. All mods are downloaded to a child directory 'mods'
+    /**
+     * Downloads all mods specified in the modpack's manifest.json file. If a download of a mod fails, it will be
+     * retried once before treating it as "currently unavailable" and adding the URL to the failed download
+     * to a list which will be printed to the console and logs after the method has finished. The user will need to
+     * download these failed mods themself as ServerPackCreator couldn't, for whatever reason, successfully download them.
+     * If the acquisition of the download URL fails as well....well we're out of luck, then. The user will have to figure
+     * this out on their own. Possible reasons for a failed download and failed URL acquisition might be that the file
+     * was taken down, no longer exists, CurseForge is unavailable etc. etc. There's nothing we can do about that.
+     * @param modpackDir String. All mods are downloaded to the child-directory "mods" inside the modpack directory.
      */
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
     private void downloadMods(String modpackDir) {
@@ -190,25 +252,42 @@ public class CurseCreateModpack {
                 fileID = Integer.parseInt(mods[1]);
 
                 try {
+
                     modName = CurseAPI.project(modID).get().name();
                     modFileName = Objects.requireNonNull(CurseAPI.project(modID).get().files().fileWithID(fileID)).nameOnDisk();
+
                 } catch (CurseException cex) {
                     appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.curseforgeinfo"), cex);
                 }
+
                 try {
+
                     appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.downloadmods.specificmod"), i+1, curseModpack.getFiles().size(), modName, modFileName));
+                    //Download mod
                     CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
+
                     try { Thread.sleep(1000); }
                     catch (InterruptedException iex) { appLogger.debug(localizationManager.getLocalizedString("createmodpack.log.debug.downloadmods.sleep"), iex); }
-                } catch (CurseException cex) { appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.errordownload"), modName, modID, modFileName, fileID));
+
+                } catch (CurseException cex) {
+                    appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.errordownload"), modName, modID, modFileName, fileID));
+
                     try {
+
                         appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.downloadmods.tryagain"), modName, modID, modFileName, fileID));
+                        //Retry download if previous attempt failed
                         CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
+
                     } catch (CurseException cex2) {
+
                         appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.retryfail"), modName, modID, modFileName, fileID));
+
                         try {
+                            //Add URL of failed download to list
                             failedDownloads.add(String.format("Mod: %s, ID: %d. File: %s, ID: %d, URL: %s", modName, modID, modFileName, fileID, CurseAPI.fileDownloadURL(modID, fileID)));
+
                         } catch (CurseException cex3) {
+
                             appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.urlfail"));
                         }
                     }
@@ -218,14 +297,17 @@ public class CurseCreateModpack {
             appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.fail"));
         }
         if (failedDownloads.size() != 0) {
+            //Print the URLs of failed downloads, if there are any
             for (int i = 0; i <= failedDownloads.size(); i++) {
                 appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.urllist"), failedDownloads.get(i)));
             }
         }
     }
 
-    /** Copies all folders and the files therein to the parent modpack directory.
-     * @param modpackDir String. The overrides directory resides in this directory. All folders and files within overrides are copied here.
+    /**
+     * Recursively copy all folders and files from the override directory to the parent directory, our modpack directory.
+     * @param modpackDir String. The overrides directory resides in this directory. All folders and files within overrides
+     *                  are copied to the parent directory, the modpack directory.
      */
     private void copyOverride(String modpackDir) {
         appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.copyoverrides.info"));
@@ -247,9 +329,14 @@ public class CurseCreateModpack {
         }
     }
 
-    /** Check whether the folder for the specified CurseForge projectID/fileID exists.
+    /**
+     * Check whether the folder for the specified CurseForge projectID/fileID exists and if it does exist, delete it
+     * recursively to ensure we are working with a clean environment when creating a modpack from CurseForge.<br>
+     * Calls {@link #cleanupEnvironment(String)} to ensure a clean environment when we create a new modpack from CurseForge.
      * @param modpackDir String. The path to the modpack directory, a combination of project name and file display name.
-     * @return Boolean. Returns true if the directory exists. False if not.
+     * @return Boolean. Returns true if something went wrong during the cleanup of the modpack directory. If the cleanup
+     * procedure finished successfully and we have a clean environment, false is returned. Returns false if the modpack
+     * directory could not be found, indicating a clean environment.
      */
     private boolean checkCurseForgeDir(String modpackDir) {
         boolean isModpackPresent = false;
@@ -262,10 +349,12 @@ public class CurseCreateModpack {
         return isModpackPresent;
     }
 
-    /** With help from: https://www.baeldung.com/java-compress-and-uncompress
-     * Unzips the downloaded modpack archive to a directory.
-     * @param zipFile String. The name of the zipfile to extract.
-     * @param modpackDir The directory where the archive resides in and will be extracted to.
+    /**
+     * With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.<br>
+     * Unzips the downloaded modpack ZIP-archive to the specified directory. Calls {@link #newFile(File, ZipEntry)} as
+     * a helper method.
+     * @param zipFile String. The path to the ZIP-archive which we want to unzip.
+     * @param modpackDir The directory into which the ZIP-archive will be unzipped into.
      */
     private void unzipArchive(String zipFile, String modpackDir) {
         appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.unziparchive"));
@@ -301,10 +390,15 @@ public class CurseCreateModpack {
         }
     }
 
-    /** Helper-Method for unzipArchive. With help from: https://www.baeldung.com/java-compress-and-uncompress
-     * @param destinationDir Check whether the file is outside of the directory it is supposed to be in.
-     * @param zipEntry Zip entry with which to check for location.
-     * @return Returns the correct destination for the new file.
+    /**
+     * With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.<br>
+     * Helper-Method for unzipArchive. This method guards us against writing any file to the file system <em>outside</em>
+     * of the target folder, thus ensuring all files are successfully unzipped into the desired target directory.
+     * @param destinationDir The directory into which a file from the ZIP-archive is to be unzipped.
+     * @param zipEntry File in the ZIP-archive which is to be unzipped from the ZIP-archive into the desired target
+     *                 directory.
+     * @return File. Returns a file from the ZIP-archive with the path pointing to the desired directory, ensuring proper
+     * unzipping of the ZIP-archive.
      */
     private File newFile(File destinationDir, ZipEntry zipEntry) {
         File destFile = new File(destinationDir, zipEntry.getName());
@@ -328,10 +422,11 @@ public class CurseCreateModpack {
         return destFile;
     }
 
-    /** Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
-     * server pack is as clean as possible.
-     * @param modpackDir String. The server_pack directory and ZIP-archive will be deleted inside the modpack directory.
-     * @return Boolean. Returns false if every file and folder was successfully deleted.
+    /**
+     * Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
+     * clean environment when creating a new modpack from CurseForge.
+     * @param modpackDir String. The directory we want to delete.
+     * @return Boolean. Returns false if every file and folder was, recursively and successfully, deleted.
      */
     private boolean cleanupEnvironment(String modpackDir) {
         boolean cleanedUp = false;
