@@ -31,7 +31,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.HierarchyEvent;
@@ -112,6 +111,7 @@ public class CreateServerPackTab extends JComponent {
     private final ImageIcon helpIcon              = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/help.png")));
     private final Dimension folderButtonDimension = new Dimension(24,24);
     private final Dimension miscButtonDimension   = new Dimension(50,50);
+    private final Dimension startDimension        = new Dimension(64,64);
     private final Dimension chooserDimension      = new Dimension(750,450);
 
     private JComponent createServerPackPanel;
@@ -351,6 +351,15 @@ public class CreateServerPackTab extends JComponent {
                 }
             }
         });
+        buttonModpackDir.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                buttonModpackDir.setContentAreaFilled(true);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                buttonModpackDir.setContentAreaFilled(false);
+            }
+        });
         constraints.gridx = 2;
         constraints.gridy = 1;
         createServerPackPanel.add(buttonModpackDir, constraints);
@@ -403,6 +412,15 @@ public class CreateServerPackTab extends JComponent {
                 appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
             }
         });
+        buttonClientMods.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                buttonClientMods.setContentAreaFilled(true);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                buttonClientMods.setContentAreaFilled(false);
+            }
+        });
         constraints.gridx = 2;
         constraints.gridy = 3;
         createServerPackPanel.add(buttonClientMods, constraints);
@@ -442,6 +460,15 @@ public class CreateServerPackTab extends JComponent {
 
                 textCopyDirs.setText(configuration.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
                 appLogger.info(String.format(localizationManager.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
+            }
+        });
+        buttonCopyDirs.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                buttonCopyDirs.setContentAreaFilled(true);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                buttonCopyDirs.setContentAreaFilled(false);
             }
         });
         constraints.gridx = 2;
@@ -490,6 +517,15 @@ public class CreateServerPackTab extends JComponent {
                 }
             }
         });
+        buttonJavaPath.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                buttonJavaPath.setContentAreaFilled(true);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                buttonJavaPath.setContentAreaFilled(false);
+            }
+        });
         constraints.gridx = 2;
         constraints.gridy = 7;
         createServerPackPanel.add(buttonJavaPath, constraints);
@@ -497,6 +533,7 @@ public class CreateServerPackTab extends JComponent {
         //Load config from file
         buttonLoadConfigFromFile = new JButton();
         buttonLoadConfigFromFile.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonloadconfig"));
+        buttonLoadConfigFromFile.setContentAreaFilled(false);
         buttonLoadConfigFromFile.setIcon(loadIcon);
         buttonLoadConfigFromFile.setMinimumSize(miscButtonDimension);
         buttonLoadConfigFromFile.setPreferredSize(miscButtonDimension);
@@ -562,15 +599,25 @@ public class CreateServerPackTab extends JComponent {
                 }
             }
         });
+        buttonLoadConfigFromFile.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                buttonLoadConfigFromFile.setContentAreaFilled(true);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                buttonLoadConfigFromFile.setContentAreaFilled(false);
+            }
+        });
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.gridx = 3;
         constraints.gridy = 1;
         constraints.gridheight = 3;
         createServerPackPanel.add(buttonLoadConfigFromFile, constraints);
 
-        //Load config from file
+        //Open window with detailed information about the UI
         buttonInfoWindow = new JButton();
         buttonInfoWindow.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.button"));
+        buttonInfoWindow.setContentAreaFilled(false);
         buttonInfoWindow.setIcon(helpIcon);
         buttonInfoWindow.setMinimumSize(miscButtonDimension);
         buttonInfoWindow.setPreferredSize(miscButtonDimension);
@@ -626,6 +673,15 @@ public class CreateServerPackTab extends JComponent {
             );
 
         });
+        buttonInfoWindow.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                buttonInfoWindow.setContentAreaFilled(true);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                buttonInfoWindow.setContentAreaFilled(false);
+            }
+        });
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.gridx = 3;
         constraints.gridy = 5;
@@ -647,8 +703,12 @@ public class CreateServerPackTab extends JComponent {
         createServerPackPanel.add(labelGenerateServerPack, constraints);
 
         buttonGenerateServerPack = new JButton();
+        buttonGenerateServerPack.setContentAreaFilled(false);
         buttonGenerateServerPack.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttongenerateserverpack.tip"));
         buttonGenerateServerPack.setIcon(startGeneration);
+        buttonGenerateServerPack.setMinimumSize(startDimension);
+        buttonGenerateServerPack.setPreferredSize(startDimension);
+        buttonGenerateServerPack.setMaximumSize(startDimension);
         buttonGenerateServerPack.addActionListener(e -> {
 
             buttonGenerateServerPack.setEnabled(false);
@@ -775,12 +835,20 @@ public class CreateServerPackTab extends JComponent {
                 buttonGenerateServerPack.setEnabled(true);
             }
         });
+        buttonGenerateServerPack.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                buttonGenerateServerPack.setContentAreaFilled(true);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                buttonGenerateServerPack.setContentAreaFilled(false);
+            }
+        });
         constraints.gridx = 0;
         constraints.gridy = 17;
         constraints.gridwidth = 4;
         constraints.weightx = 1;
         constraints.weighty = 1;
-        constraints.ipadx = 80;
         constraints.anchor = GridBagConstraints.CENTER;
         createServerPackPanel.add(buttonGenerateServerPack, constraints);
 
