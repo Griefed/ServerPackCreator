@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.HierarchyEvent;
@@ -56,7 +57,7 @@ import java.util.concurrent.Executors;
  *     If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
  * </p>
  */
-public class CreateServerPackTab extends Component {
+public class CreateServerPackTab extends JComponent {
     private static final Logger appLogger = LogManager.getLogger(CreateServerPackTab.class);
 
     private Configuration configuration;
@@ -322,6 +323,7 @@ public class CreateServerPackTab extends Component {
         //Select modpackDir button
         buttonModpackDir = new JButton();
         buttonModpackDir.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonmodpackdir"));
+        buttonModpackDir.setContentAreaFilled(false);
         buttonModpackDir.setIcon(folderIcon);
         buttonModpackDir.setMinimumSize(folderButtonDimension);
         buttonModpackDir.setPreferredSize(folderButtonDimension);
@@ -356,6 +358,7 @@ public class CreateServerPackTab extends Component {
         //Select clientside-mods button
         buttonClientMods = new JButton();
         buttonClientMods.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonclientmods"));
+        buttonClientMods.setContentAreaFilled(false);
         buttonClientMods.setIcon(folderIcon);
         buttonClientMods.setMinimumSize(folderButtonDimension);
         buttonClientMods.setPreferredSize(folderButtonDimension);
@@ -407,6 +410,7 @@ public class CreateServerPackTab extends Component {
         //Select directories to copy to server pack button
         buttonCopyDirs = new JButton();
         buttonCopyDirs.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttoncopydirs"));
+        buttonCopyDirs.setContentAreaFilled(false);
         buttonCopyDirs.setIcon(folderIcon);
         buttonCopyDirs.setMinimumSize(folderButtonDimension);
         buttonCopyDirs.setPreferredSize(folderButtonDimension);
@@ -447,6 +451,7 @@ public class CreateServerPackTab extends Component {
         //Select javaPath button
         buttonJavaPath = new JButton();
         buttonJavaPath.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.buttonjavapath"));
+        buttonJavaPath.setContentAreaFilled(false);
         buttonJavaPath.setIcon(folderIcon);
         buttonJavaPath.setMinimumSize(folderButtonDimension);
         buttonJavaPath.setPreferredSize(folderButtonDimension);
