@@ -85,6 +85,7 @@ javadoc {
     options.memberLevel = JavadocMemberLevel.PRIVATE
     classpath = sourceSets.main.runtimeClasspath
 }
+
 java {
     withSourcesJar()
     withJavadocJar()

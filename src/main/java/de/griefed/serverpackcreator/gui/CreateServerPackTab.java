@@ -587,6 +587,7 @@ public class CreateServerPackTab extends Component {
                     localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
                     localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
             ));
+
             helpTextArea.setEditable(false);
             helpTextArea.setOpaque(false);
 
@@ -611,7 +612,13 @@ public class CreateServerPackTab extends Component {
                         }
                     });
 
-            JOptionPane.showMessageDialog(new JFrame(), helpScrollPane, localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.title"), JOptionPane.INFORMATION_MESSAGE, helpIcon);
+            JOptionPane.showMessageDialog(
+                    createServerPackPanel,
+                    helpScrollPane,
+                    localizationManager.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
+                    JOptionPane.INFORMATION_MESSAGE,
+                    helpIcon
+            );
 
         });
         constraints.anchor = GridBagConstraints.CENTER;

@@ -57,6 +57,11 @@ public class CreateGui extends JPanel {
     private CurseCreateModpack curseCreateModpack;
     private CreateServerPack createServerPack;
 
+    private CreateServerPackTab createServerPackTab;
+    private ServerPackCreatorLogTab serverPackCreatorLogTab;
+    private ModloaderInstallerLogTab modloaderInstallerLogTab;
+    private AboutTab aboutTab;
+
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -99,12 +104,17 @@ public class CreateGui extends JPanel {
             this.createServerPack = injectedCreateServerPack;
         }
 
+        createServerPackTab = new CreateServerPackTab(localizationManager, configuration, curseCreateModpack, createServerPack);
+        serverPackCreatorLogTab = new ServerPackCreatorLogTab(localizationManager);
+        modloaderInstallerLogTab = new ModloaderInstallerLogTab(localizationManager);
+        aboutTab = new AboutTab(localizationManager);
+
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
         tabbedPane.addTab(
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
                 null,
-                new CreateServerPackTab(localizationManager, configuration, curseCreateModpack, createServerPack).createServerPackTab(),
+                createServerPackTab.createServerPackTab(),
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
 
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
@@ -112,7 +122,7 @@ public class CreateGui extends JPanel {
         tabbedPane.addTab(
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
                 null,
-                new ServerPackCreatorLogTab(localizationManager).serverPackCreatorLogTab(),
+                serverPackCreatorLogTab.serverPackCreatorLogTab(),
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
 
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
@@ -120,7 +130,7 @@ public class CreateGui extends JPanel {
         tabbedPane.addTab(
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.title"),
                 null,
-                new ModloaderInstallerLogTab(localizationManager).modloaderInstallerLogTab(),
+                modloaderInstallerLogTab.modloaderInstallerLogTab(),
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.tip"));
 
         tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
@@ -128,7 +138,7 @@ public class CreateGui extends JPanel {
         tabbedPane.addTab(
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.title"),
                 null,
-                new AboutTab(localizationManager).aboutTab(),
+                aboutTab.aboutTab(),
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
 
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);

@@ -20,14 +20,19 @@
 package de.griefed.serverpackcreator.gui;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -56,18 +61,40 @@ public class AboutTab extends Component {
     }
 
     private final Dimension miscButtonDimension = new Dimension(50,50);
+
     private final ImageIcon issueIcon           = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/issue.png")));
-    private final ImageIcon pastebinIcon        = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/pastebin.png")));
+    private final ImageIcon hastebinIcon        = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
     private final ImageIcon prosperIcon         = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/prosper.png")));
 
     private JComponent aboutPanel;
+
     private GridBagConstraints constraints;
+
     private JTextPane textPane;
+
     private SimpleAttributeSet attributeSet;
+
     private StyledDocument document;
+
     private JButton buttonCreatePasteBin;
     private JButton buttonOpenIssue;
     private JButton buttonDiscord;
+
+    private JTextArea textArea;
+
+    private String configURL;
+    private String spclogURL;
+    private String textAreaContent;
+
+    private StringSelection stringSelection;
+
+    private Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+    private final File serverPackCreatorConf = new File("serverpackcreator.conf");
+    private final File serverPackCreatorLog = new File("logs/serverpackcreator.log");
+
+    private String[] options;
+    private int userResponse;
 
     /**
      * Create the tab for the About-page of ServerpackCreator. This tab displays the about text, the list of contributors
@@ -129,21 +156,65 @@ public class AboutTab extends Component {
         constraints.ipady = 40;
         constraints.gridwidth = 1;
 
-        //Button to upload log file to pastebin
+        //Button to upload log file to hastebin
         buttonCreatePasteBin = new JButton();
-        buttonCreatePasteBin.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.pastebin"));
-        buttonCreatePasteBin.setIcon(pastebinIcon);
+        buttonCreatePasteBin.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.hastebin"));
+        buttonCreatePasteBin.setIcon(hastebinIcon);
         buttonCreatePasteBin.setPreferredSize(miscButtonDimension);
         buttonCreatePasteBin.addActionListener(e -> {
 
-            try {
-                if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    Desktop.getDesktop().browse(URI.create("https://pastebin.com"));
-                }
-            } catch (IOException ex) {
-                appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
-            }
+            textArea = new JTextArea();
+            textArea.setOpaque(false);
+            configURL = createHasteBinFromFile(serverPackCreatorConf);
+            spclogURL = createHasteBinFromFile(serverPackCreatorLog);
+            textAreaContent = String.format(
+                    "%s\n%s\n" +
+                    "%s\n%s\n",
+                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.conf"),
+                    configURL,
+                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.spclog"),
+                    spclogURL
+            );
 
+            textArea.setText(textAreaContent);
+
+            options = new String[] {
+                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog.yes"),
+                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no"),
+                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog.clipboard"),
+            };
+
+            userResponse = JOptionPane.showOptionDialog(
+                    aboutPanel,
+                    textArea,
+                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    hastebinIcon,
+                    options,
+                    options[0]
+            );
+
+            switch (userResponse) {
+                case 0:
+                    try {
+                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+
+                            Desktop.getDesktop().browse(URI.create(configURL));
+                            Desktop.getDesktop().browse(URI.create(spclogURL));
+                        }
+                    } catch (IOException ex) {
+                        appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
+                    }
+                    break;
+                case 2:
+                    stringSelection = new StringSelection(textAreaContent);
+                    clipboard.setContents(stringSelection, null);
+                    break;
+                default:
+
+                    break;
+            }
         });
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -190,6 +261,76 @@ public class AboutTab extends Component {
         aboutPanel.add(buttonDiscord, constraints);
 
         return aboutPanel;
+    }
+
+    /**
+     * Create a HasteBin post from a given text file. The text file provided is read into a string and then passed onto
+     * <a href="https://haste.zneix.eu">Haste zneix</a> which creates a HasteBin post out of the passed String and
+     * returns the URL to the newly created post.<br>
+     * Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's hastebin.java (MIT License)</a>
+     * and edited to use HasteBin fork <a href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork
+     * of kaimu-kun's hastebin.java is available at <a href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.
+     * @param textFile The file which will be read into a String of which then to create a HasteBin post of.
+     * @return String. Returns a String containing the URL to the newly created HasteBin post.
+     */
+    private String createHasteBinFromFile(File textFile) {
+        String text = null;
+        String requestURL = "https://haste.zneix.eu/documents";
+        String response = null;
+
+        int postDataLength;
+
+        URL url = null;
+
+        HttpsURLConnection conn = null;
+
+        byte[] postData;
+
+        DataOutputStream dataOutputStream;
+
+        BufferedReader bufferedReader;
+
+        try { url = new URL(requestURL); }
+        catch (IOException ex) {appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.request"), ex);}
+
+        try { text = FileUtils.readFileToString(textFile, "UTF-8"); }
+        catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.readfile"),ex); }
+
+        postData = Objects.requireNonNull(text).getBytes(StandardCharsets.UTF_8);
+        postDataLength = postData.length;
+
+        try { conn = (HttpsURLConnection) Objects.requireNonNull(url).openConnection(); }
+        catch (IOException ex) {appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.connection"), ex);}
+
+        Objects.requireNonNull(conn).setDoOutput(true);
+        conn.setInstanceFollowRedirects(false);
+
+        try { conn.setRequestMethod("POST"); }
+        catch (ProtocolException ex) {appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.method"), ex);}
+
+        conn.setRequestProperty("User-Agent", "HasteBin-Creator for ServerPackCreator");
+        conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
+        conn.setUseCaches(false);
+
+        try {
+            dataOutputStream = new DataOutputStream(conn.getOutputStream());
+            dataOutputStream.write(postData);
+            bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            response = bufferedReader.readLine();
+        } catch (IOException ex) {
+            appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.response"), ex);
+        }
+
+        if (Objects.requireNonNull(response).contains("\"key\"")) {
+            response = "https://haste.zneix.eu/" + response.substring(response.indexOf(":") + 2, response.length() - 2);
+        }
+
+        if (response.contains("https://haste.zneix.eu")) {
+            return response;
+        } else {
+            return localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.response");
+        }
+
     }
 
 }
