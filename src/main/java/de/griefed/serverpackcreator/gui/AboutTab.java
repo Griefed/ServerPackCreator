@@ -197,6 +197,7 @@ public class AboutTab extends Component {
 
             switch (userResponse) {
                 case 0:
+
                     try {
                         if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
 
@@ -207,12 +208,14 @@ public class AboutTab extends Component {
                         appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
                     }
                     break;
+
                 case 2:
+
                     stringSelection = new StringSelection(textAreaContent);
                     clipboard.setContents(stringSelection, null);
                     break;
-                default:
 
+                default:
                     break;
             }
         });
