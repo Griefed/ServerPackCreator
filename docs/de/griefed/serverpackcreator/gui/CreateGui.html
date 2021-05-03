@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../de/griefed/serverpackcreator/gui/AboutTab.html" title="class in de.griefed.serverpackcreator.gui"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -200,20 +200,36 @@ extends javax.swing.JPanel</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/gui/AboutTab.html" title="class in de.griefed.serverpackcreator.gui">AboutTab</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#aboutTab">aboutTab</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#appLogger">appLogger</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui">BackgroundPanel</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#backgroundPanel">backgroundPanel</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private javax.swing.ImageIcon</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#bannerIcon">bannerIcon</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>private java.awt.image.BufferedImage</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#bufferedImage">bufferedImage</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#configuration">configuration</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#createServerPack">createServerPack</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui">CreateServerPackTab</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#createServerPackTab">createServerPackTab</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a></code></td>
@@ -228,22 +244,34 @@ extends javax.swing.JPanel</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#localizationManager">localizationManager</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/gui/ModloaderInstallerLogTab.html" title="class in de.griefed.serverpackcreator.gui">ModloaderInstallerLogTab</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#modloaderInstallerLogTab">modloaderInstallerLogTab</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>private com.typesafe.config.Config</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#secret">secret</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#secretFile">secretFile</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private javax.swing.JLabel</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#serverPackCreatorBanner">serverPackCreatorBanner</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private javax.swing.JFrame</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#serverPackCreatorFrame">serverPackCreatorFrame</a></span></code>&nbsp;</td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html" title="class in de.griefed.serverpackcreator.gui">ServerPackCreatorLogTab</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#serverPackCreatorLogTab">serverPackCreatorLogTab</a></span></code>&nbsp;</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private java.awt.Image</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#tile">tile</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>private java.awt.Dimension</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/gui/CreateGui.html#windowDimension">windowDimension</a></span></code>&nbsp;</td>
 </tr>
@@ -404,6 +432,24 @@ extends javax.swing.JPanel</pre>
 <pre>private final&nbsp;java.awt.Dimension windowDimension</pre>
 </li>
 </ul>
+<a name="tile">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>tile</h4>
+<pre>private final&nbsp;java.awt.Image tile</pre>
+</li>
+</ul>
+<a name="bufferedImage">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>bufferedImage</h4>
+<pre>private&nbsp;java.awt.image.BufferedImage bufferedImage</pre>
+</li>
+</ul>
 <a name="localizationManager">
 <!--   -->
 </a>
@@ -438,6 +484,51 @@ extends javax.swing.JPanel</pre>
 <li class="blockList">
 <h4>createServerPack</h4>
 <pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a> createServerPack</pre>
+</li>
+</ul>
+<a name="createServerPackTab">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>createServerPackTab</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui">CreateServerPackTab</a> createServerPackTab</pre>
+</li>
+</ul>
+<a name="serverPackCreatorLogTab">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>serverPackCreatorLogTab</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html" title="class in de.griefed.serverpackcreator.gui">ServerPackCreatorLogTab</a> serverPackCreatorLogTab</pre>
+</li>
+</ul>
+<a name="modloaderInstallerLogTab">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>modloaderInstallerLogTab</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/gui/ModloaderInstallerLogTab.html" title="class in de.griefed.serverpackcreator.gui">ModloaderInstallerLogTab</a> modloaderInstallerLogTab</pre>
+</li>
+</ul>
+<a name="aboutTab">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>aboutTab</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/gui/AboutTab.html" title="class in de.griefed.serverpackcreator.gui">AboutTab</a> aboutTab</pre>
+</li>
+</ul>
+<a name="backgroundPanel">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>backgroundPanel</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui">BackgroundPanel</a> backgroundPanel</pre>
 </li>
 </ul>
 <a name="serverPackCreatorFrame">
@@ -569,7 +660,7 @@ extends javax.swing.JPanel</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../de/griefed/serverpackcreator/gui/AboutTab.html" title="class in de.griefed.serverpackcreator.gui"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

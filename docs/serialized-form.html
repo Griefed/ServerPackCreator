@@ -96,8 +96,8 @@
 <pre>javax.swing.ImageIcon issueIcon</pre>
 </li>
 <li class="blockList">
-<h4>pastebinIcon</h4>
-<pre>javax.swing.ImageIcon pastebinIcon</pre>
+<h4>hastebinIcon</h4>
+<pre>javax.swing.ImageIcon hastebinIcon</pre>
 </li>
 <li class="blockList">
 <h4>prosperIcon</h4>
@@ -131,9 +131,85 @@
 <h4>buttonOpenIssue</h4>
 <pre>javax.swing.JButton buttonOpenIssue</pre>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>buttonDiscord</h4>
 <pre>javax.swing.JButton buttonDiscord</pre>
+</li>
+<li class="blockList">
+<h4>textArea</h4>
+<pre>javax.swing.JTextArea textArea</pre>
+</li>
+<li class="blockList">
+<h4>configURL</h4>
+<pre>java.lang.String configURL</pre>
+</li>
+<li class="blockList">
+<h4>spclogURL</h4>
+<pre>java.lang.String spclogURL</pre>
+</li>
+<li class="blockList">
+<h4>textAreaContent</h4>
+<pre>java.lang.String textAreaContent</pre>
+</li>
+<li class="blockList">
+<h4>stringSelection</h4>
+<pre>java.awt.datatransfer.StringSelection stringSelection</pre>
+</li>
+<li class="blockList">
+<h4>clipboard</h4>
+<pre>java.awt.datatransfer.Clipboard clipboard</pre>
+</li>
+<li class="blockList">
+<h4>serverPackCreatorConf</h4>
+<pre>java.io.File serverPackCreatorConf</pre>
+</li>
+<li class="blockList">
+<h4>serverPackCreatorLog</h4>
+<pre>java.io.File serverPackCreatorLog</pre>
+</li>
+<li class="blockList">
+<h4>options</h4>
+<pre>java.lang.String[] options</pre>
+</li>
+<li class="blockListLast">
+<h4>userResponse</h4>
+<pre>int userResponse</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.gui.BackgroundPanel">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.BackgroundPanel</a> extends javax.swing.JPanel implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockList">
+<h4>painter</h4>
+<pre>java.awt.Paint painter</pre>
+</li>
+<li class="blockList">
+<h4>image</h4>
+<pre>java.awt.Image image</pre>
+</li>
+<li class="blockList">
+<h4>style</h4>
+<pre>int style</pre>
+</li>
+<li class="blockList">
+<h4>alignmentX</h4>
+<pre>float alignmentX</pre>
+</li>
+<li class="blockList">
+<h4>alignmentY</h4>
+<pre>float alignmentY</pre>
+</li>
+<li class="blockListLast">
+<h4>isTransparentAdd</h4>
+<pre>boolean isTransparentAdd</pre>
 </li>
 </ul>
 </li>
@@ -160,6 +236,14 @@
 <pre>java.awt.Dimension windowDimension</pre>
 </li>
 <li class="blockList">
+<h4>tile</h4>
+<pre>java.awt.Image tile</pre>
+</li>
+<li class="blockList">
+<h4>bufferedImage</h4>
+<pre>java.awt.image.BufferedImage bufferedImage</pre>
+</li>
+<li class="blockList">
 <h4>localizationManager</h4>
 <pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> localizationManager</pre>
 </li>
@@ -174,6 +258,26 @@
 <li class="blockList">
 <h4>createServerPack</h4>
 <pre><a href="de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a> createServerPack</pre>
+</li>
+<li class="blockList">
+<h4>createServerPackTab</h4>
+<pre><a href="de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui">CreateServerPackTab</a> createServerPackTab</pre>
+</li>
+<li class="blockList">
+<h4>serverPackCreatorLogTab</h4>
+<pre><a href="de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html" title="class in de.griefed.serverpackcreator.gui">ServerPackCreatorLogTab</a> serverPackCreatorLogTab</pre>
+</li>
+<li class="blockList">
+<h4>modloaderInstallerLogTab</h4>
+<pre><a href="de/griefed/serverpackcreator/gui/ModloaderInstallerLogTab.html" title="class in de.griefed.serverpackcreator.gui">ModloaderInstallerLogTab</a> modloaderInstallerLogTab</pre>
+</li>
+<li class="blockList">
+<h4>aboutTab</h4>
+<pre><a href="de/griefed/serverpackcreator/gui/AboutTab.html" title="class in de.griefed.serverpackcreator.gui">AboutTab</a> aboutTab</pre>
+</li>
+<li class="blockList">
+<h4>backgroundPanel</h4>
+<pre><a href="de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui">BackgroundPanel</a> backgroundPanel</pre>
 </li>
 <li class="blockList">
 <h4>serverPackCreatorFrame</h4>
@@ -198,7 +302,7 @@
 <li class="blockList"><a name="de.griefed.serverpackcreator.gui.CreateServerPackTab">
 <!--   -->
 </a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.CreateServerPackTab</a> extends java.awt.Component implements Serializable</h3>
+<h3>Class <a href="de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.CreateServerPackTab</a> extends javax.swing.JComponent implements Serializable</h3>
 <ul class="blockList">
 <li class="blockList">
 <h3>Serialized Fields</h3>
@@ -242,6 +346,10 @@
 <li class="blockList">
 <h4>miscButtonDimension</h4>
 <pre>java.awt.Dimension miscButtonDimension</pre>
+</li>
+<li class="blockList">
+<h4>startDimension</h4>
+<pre>java.awt.Dimension startDimension</pre>
 </li>
 <li class="blockList">
 <h4>chooserDimension</h4>
@@ -398,7 +506,7 @@
 <li class="blockList"><a name="de.griefed.serverpackcreator.gui.ModloaderInstallerLogTab">
 <!--   -->
 </a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/ModloaderInstallerLogTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.ModloaderInstallerLogTab</a> extends java.awt.Component implements Serializable</h3>
+<h3>Class <a href="de/griefed/serverpackcreator/gui/ModloaderInstallerLogTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.ModloaderInstallerLogTab</a> extends javax.swing.JComponent implements Serializable</h3>
 <ul class="blockList">
 <li class="blockList">
 <h3>Serialized Fields</h3>
@@ -430,7 +538,7 @@
 <li class="blockList"><a name="de.griefed.serverpackcreator.gui.ServerPackCreatorLogTab">
 <!--   -->
 </a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.ServerPackCreatorLogTab</a> extends java.awt.Component implements Serializable</h3>
+<h3>Class <a href="de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.ServerPackCreatorLogTab</a> extends javax.swing.JComponent implements Serializable</h3>
 <ul class="blockList">
 <li class="blockList">
 <h3>Serialized Fields</h3>
