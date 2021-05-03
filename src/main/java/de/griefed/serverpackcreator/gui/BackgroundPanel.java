@@ -1,3 +1,22 @@
+/* Copyright (C) 2021  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator.gui;
 
 import javax.swing.*;
@@ -11,7 +30,7 @@ import java.awt.*;
  * for Swing.<br>
  * Links:<br>
  * <a href="https://tips4java.wordpress.com/2008/10/12/background-panel/">Background Panel by Rob Camick from October 12, 2008</a><br>
- * <a href="http://www.camick.com/java/source/BackgroundPanel.java">BackgroundPanel.java</a><br>
+ * <a href="https://www.camick.com/java/source/BackgroundPanel.java">BackgroundPanel.java</a><br>
  * Seriously, give this man an award, because this class is a <strong>BEAST</strong>.<p>
  * Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank you, thank you, thank you
  * so very much! You seriously made my day here.<br>
