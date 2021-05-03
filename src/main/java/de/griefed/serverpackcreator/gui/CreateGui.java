@@ -29,10 +29,13 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -51,6 +54,17 @@ public class CreateGui extends JPanel {
     private final ImageIcon bannerIcon      = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/banner.png")));
     private final Image icon                = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/app.png")));
     private final Dimension windowDimension = new Dimension(800,860);
+    private final Image tile                = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/tile.png")));
+    private BufferedImage bufferedImage;
+    {
+        try {
+            bufferedImage = ImageIO.read(getClass().getResource("/de/griefed/resources/gui/tile.png"));
+        } catch (IOException ex) {
+            //Can't use localization here.
+            appLogger.error("Could not read image for tiling.", ex);
+        }
+    }
+
 
     private LocalizationManager localizationManager;
     private Configuration configuration;
@@ -61,6 +75,7 @@ public class CreateGui extends JPanel {
     private ServerPackCreatorLogTab serverPackCreatorLogTab;
     private ModloaderInstallerLogTab modloaderInstallerLogTab;
     private AboutTab aboutTab;
+    private BackgroundPanel backgroundPanel;
 
     /**
      * <strong>Constructor</strong><p>
@@ -109,7 +124,11 @@ public class CreateGui extends JPanel {
         modloaderInstallerLogTab = new ModloaderInstallerLogTab(localizationManager);
         aboutTab = new AboutTab(localizationManager);
 
+        backgroundPanel = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
+
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+
+        setOpaque(false);
 
         tabbedPane.addTab(
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
@@ -144,7 +163,7 @@ public class CreateGui extends JPanel {
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
         add(tabbedPane);
-
+        tabbedPane.setOpaque(false);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
@@ -206,13 +225,18 @@ public class CreateGui extends JPanel {
         serverPackCreatorFrame = new JFrame(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
         serverPackCreatorFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        serverPackCreatorFrame.setContentPane(backgroundPanel);
+
         serverPackCreatorFrame.setIconImage(icon);
+
         serverPackCreatorBanner = new JLabel(bannerIcon);
         serverPackCreatorBanner.setOpaque(false);
 
         serverPackCreatorFrame.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
+
         serverPackCreatorFrame.add(new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack), BorderLayout.CENTER);
 
+        serverPackCreatorFrame.setSize(windowDimension);
         serverPackCreatorFrame.setPreferredSize(windowDimension);
         serverPackCreatorFrame.setMaximumSize(windowDimension);
         serverPackCreatorFrame.setResizable(true);
