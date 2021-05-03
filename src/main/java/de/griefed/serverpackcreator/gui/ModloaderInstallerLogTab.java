@@ -30,7 +30,7 @@ import java.io.File;
 /**
  * This class creates the tab which display the latest modloader_installer.log tailer.
  */
-public class ModloaderInstallerLogTab extends Component {
+public class ModloaderInstallerLogTab extends JComponent {
 
     private LocalizationManager localizationManager;
 

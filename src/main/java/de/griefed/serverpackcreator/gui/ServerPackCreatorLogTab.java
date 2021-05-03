@@ -30,7 +30,7 @@ import java.io.File;
 /**
  * This class creates the tab which display the latest serverpackcreator.log tailer.
  */
-public class ServerPackCreatorLogTab extends Component {
+public class ServerPackCreatorLogTab extends JComponent {
 
     private LocalizationManager localizationManager;
 
