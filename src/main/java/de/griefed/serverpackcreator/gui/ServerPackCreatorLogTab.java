@@ -53,6 +53,7 @@ public class ServerPackCreatorLogTab extends JComponent {
     private GridBagConstraints constraints;
     private JTextArea textArea;
     private JScrollPane scrollPane;
+    private SmartScroller smartScroller;
 
     /**
      * Create the tab for the serverpackcreator.log tailer in a JScrollPane with an always available vertical scrollbar
@@ -93,6 +94,8 @@ public class ServerPackCreatorLogTab extends JComponent {
                 textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        smartScroller = new SmartScroller(scrollPane);
 
         serverPackCreatorLogPanel.add(scrollPane, constraints);
 

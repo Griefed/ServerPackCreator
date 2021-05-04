@@ -53,6 +53,7 @@ public class ModloaderInstallerLogTab extends JComponent {
     private GridBagConstraints constraints;
     private JTextArea textArea;
     private JScrollPane scrollPane;
+    private SmartScroller smartScroller;
 
     /**
      * Create the tab for the modloader_installer.log tailer in a JScrollPane with an always available vertical scrollbar
@@ -94,6 +95,8 @@ public class ModloaderInstallerLogTab extends JComponent {
                 textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        smartScroller = new SmartScroller(scrollPane);
 
         modloaderInstallerLogPanel.add(scrollPane, constraints);
 
