@@ -31,6 +31,8 @@ import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -65,7 +67,6 @@ public class CreateGui extends JPanel {
         }
     }
 
-
     private LocalizationManager localizationManager;
     private Configuration configuration;
     private CurseCreateModpack curseCreateModpack;
@@ -76,6 +77,7 @@ public class CreateGui extends JPanel {
     private ModloaderInstallerLogTab modloaderInstallerLogTab;
     private AboutTab aboutTab;
     private BackgroundPanel backgroundPanel;
+    private JTabbedPane tabbedPane;
 
     /**
      * <strong>Constructor</strong><p>
@@ -123,12 +125,22 @@ public class CreateGui extends JPanel {
         serverPackCreatorLogTab = new ServerPackCreatorLogTab(localizationManager);
         modloaderInstallerLogTab = new ModloaderInstallerLogTab(localizationManager);
         aboutTab = new AboutTab(localizationManager);
-
+        serverPackCreatorFrame = new JFrame(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
         backgroundPanel = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
+        tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+        tabbedPane.setUI(new BasicTabbedPaneUI() {
+            private final Insets borderInsets = new Insets(0, 0, 0, 0);
 
-        setOpaque(false);
+            /*
+             * Remove the border insets so the panes fully fill out the area available to them. Prevents the image painted
+             * by BackgroundPanel from being displayed along the border of the pane.
+             */
+            @Override
+            protected Insets getContentBorderInsets(int tabPlacement) {
+                return borderInsets;
+            }
+        });
 
         tabbedPane.addTab(
                 localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
@@ -162,8 +174,15 @@ public class CreateGui extends JPanel {
 
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
+        tabbedPane.setOpaque(true);
+
         add(tabbedPane);
+
+        // We need both in order to have a transparent TabbedPane
+        // behind which we can see the image painted by BackgroundPanel
+        setOpaque(false);
         tabbedPane.setOpaque(false);
+
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
@@ -179,9 +198,15 @@ public class CreateGui extends JPanel {
      */
     public void mainGUI() {
         SwingUtilities.invokeLater(() -> {
-            //Bold fonts = true, else false
+            //Bold fonts = true
             UIManager.put("swing.boldMetal", true);
 
+            /*
+             * A little secret setting which allows the user to temporarily overwrite the Look and Feel of ServerPackCreator.
+             * Note: This setting is not carried over to new configuration files written by ServerPackCreator when,
+             * for example, the configuration file for a modpack acquired from CurseForge is written.
+             * It was just something I wanted to play around with. So I did.
+             */
             try {
                 if (new File("serverpackcreator.conf").exists()) {
 
@@ -213,6 +238,7 @@ public class CreateGui extends JPanel {
                     appLogger.error(localizationManager.getLocalizedString("tabbedpane.log.error"), ex);
                 }
             }
+
             createAndShowGUI();
         });
     }
@@ -222,7 +248,6 @@ public class CreateGui extends JPanel {
      */
     private void createAndShowGUI() {
 
-        serverPackCreatorFrame = new JFrame(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
         serverPackCreatorFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         serverPackCreatorFrame.setContentPane(backgroundPanel);
