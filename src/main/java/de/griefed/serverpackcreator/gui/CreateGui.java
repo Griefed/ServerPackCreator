@@ -129,13 +129,13 @@ public class CreateGui extends JPanel {
         backgroundPanel = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
         tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
+        /*
+         * Remove the border insets so the panes fully fill out the area available to them. Prevents the image
+         * painted by BackgroundPanel from being displayed along the border of the pane.
+         */
         tabbedPane.setUI(new BasicTabbedPaneUI() {
             private final Insets borderInsets = new Insets(0, 0, 0, 0);
 
-            /*
-             * Remove the border insets so the panes fully fill out the area available to them. Prevents the image painted
-             * by BackgroundPanel from being displayed along the border of the pane.
-             */
             @Override
             protected Insets getContentBorderInsets(int tabPlacement) {
                 return borderInsets;
@@ -178,8 +178,10 @@ public class CreateGui extends JPanel {
 
         add(tabbedPane);
 
-        // We need both in order to have a transparent TabbedPane
-        // behind which we can see the image painted by BackgroundPanel
+        /*
+         * We need both in order to have a transparent TabbedPane
+         * behind which we can see the image painted by BackgroundPanel
+         */
         setOpaque(false);
         tabbedPane.setOpaque(false);
 
