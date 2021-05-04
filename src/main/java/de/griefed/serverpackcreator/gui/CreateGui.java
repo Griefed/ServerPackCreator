@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
