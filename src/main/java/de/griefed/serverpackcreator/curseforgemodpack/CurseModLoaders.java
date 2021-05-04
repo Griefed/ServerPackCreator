@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * {@link #getId()}<br>
  * {@link #setId(String)}<br>
  * {@link #toString()}<p>
- * Retrieves information about a CurseForge Minecraft modpack by using {@link com.fasterxml.jackson.databind} JSON parsing.
+ * Retrieves information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the modloader and modloader version of a modpack.
  */
 public class CurseModLoaders {

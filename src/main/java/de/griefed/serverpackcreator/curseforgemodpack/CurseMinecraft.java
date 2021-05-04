@@ -30,7 +30,7 @@ import java.util.List;
  * {@link #getModLoaders()}<br>
  * {@link #setModLoaders(List)}<br>
  * {@link #toString()}<p>
- * Retrieves information about a CurseForge Minecraft modpack by using {@link com.fasterxml.jackson.databind} JSON parsing.
+ * Retrieves information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the Minecraft version of a modpack.
  */
 public class CurseMinecraft {

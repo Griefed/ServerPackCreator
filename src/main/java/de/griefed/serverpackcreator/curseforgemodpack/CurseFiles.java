@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * {@link #getFileID()}<br>
  * {@link #setFileID(String)}<br>
  * {@link #toString()}<p>
- * Retrieves information about a CurseForge Minecraft modpack by using {@link com.fasterxml.jackson.databind} JSON parsing.
+ * Retrieves information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the projectIDs and fileIDs a modpack acquired from CurseForge depends on. These can be mods,
  * resource packs, worlds etc. etc.
  */

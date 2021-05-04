@@ -36,7 +36,7 @@ import java.util.List;
  * {@link #getFiles()}<br>
  * {@link #setFiles(List)}<br>
  * {@link #toString()}<p>
- * Retrieve information about a CurseForge Minecraft modpack by using {@link com.fasterxml.jackson.databind} JSON parsing.
+ * Retrieve information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the name, version and author of a modpack.
  */
 public class CurseModpack {
