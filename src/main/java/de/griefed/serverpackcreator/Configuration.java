@@ -151,6 +151,10 @@ public class Configuration {
     private final File oldConfigFile = new File("creator.conf");
     private final File configFile = new File("serverpackcreator.conf");
 
+    private final String minecraftManifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+    private final String forgeManifest = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+    private final String fabricManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
+
 //-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     private final List<String> fallbackModsList = Arrays.asList(
             "AmbientSounds",
@@ -234,24 +238,33 @@ public class Configuration {
      * Getter for Mojang's Minecraft version-manifest.
      * @return String. Returns the URL to the JSON-file for use in {@link #isMinecraftVersionCorrect(String)}
      */
-    String getMinecraftManifestUrl() {
-        return "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+    URL getMinecraftManifestUrl() {
+        URL minecraftURL = null;
+        try { minecraftURL = new URL(minecraftManifest); }
+        catch (IOException ex) { appLogger.error(ex); }
+        return minecraftURL;
     }
 
     /**
      * Getter for Forge's version-manifest.
      * @return String. Returns the URL to the JSON-file for use in {@link #isForgeVersionCorrect(String)}
      */
-    String getForgeManifestUrl() {
-        return "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+    URL getForgeManifestUrl() {
+        URL forgeURL = null;
+        try { forgeURL = new URL(forgeManifest); }
+        catch (IOException ex) { appLogger.error(ex); }
+        return forgeURL;
     }
 
     /**
      * Getter for Fabric's version-manifest.
      * @return String. Returns the URL to the JSON-file for use in {@link #isFabricVersionCorrect(String)}
      */
-    String getFabricManifestUrl() {
-        return "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
+    URL getFabricManifestUrl() {
+        URL fabricURL = null;
+        try { fabricURL = new URL(fabricManifest); }
+        catch (IOException ex) { appLogger.error(ex); }
+        return fabricURL;
     }
 
     /**
@@ -1230,9 +1243,10 @@ public class Configuration {
      * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.
      */
     boolean isMinecraftVersionCorrect(String minecraftVersion) {
+        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
         if (!minecraftVersion.equals("")) {
             try {
-                URL manifestJsonURL = new URL(getMinecraftManifestUrl());
+                URL manifestJsonURL = getMinecraftManifestUrl();
                 ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
                 FileOutputStream downloadManifestOutputStream;
 
@@ -1299,9 +1313,10 @@ public class Configuration {
      * @return Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.
      */
     boolean isFabricVersionCorrect(String fabricVersion) {
+        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
         if (!fabricVersion.equals("")) {
             try {
-                URL manifestJsonURL = new URL(getFabricManifestUrl());
+                URL manifestJsonURL = getFabricManifestUrl();
 
                 ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
 
@@ -1385,9 +1400,10 @@ public class Configuration {
      * @return Boolean. Returns true if the specified Forge version could be found in Forge's manifest.
      */
     boolean isForgeVersionCorrect(String forgeVersion) {
+        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
         if (!forgeVersion.equals("")) {
             try {
-                URL manifestJsonURL = new URL(getForgeManifestUrl());
+                URL manifestJsonURL = getForgeManifestUrl();
                 ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
                 FileOutputStream downloadManifestOutputStream;
 
@@ -1472,9 +1488,10 @@ public class Configuration {
      */
     @SuppressWarnings({"ReturnInsideFinallyBlock", "finally"})
     private String latestFabricLoader(String modpackDir) {
+        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
         String result = "0.11.3";
         try {
-            URL downloadFabricXml = new URL(getFabricManifestUrl());
+            URL downloadFabricXml = getFabricManifestUrl();
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
 
             FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-loader.xml", modpackDir));

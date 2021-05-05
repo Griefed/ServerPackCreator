@@ -59,25 +59,26 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 5. {@link #getForgeLinuxFile()}<br>
  * 6. {@link #getFabricWindowsFile()}<br>
  * 7. {@link #getFabricLinuxFile()}<br>
- * 8. {@link #run()}<br>
- * 9. {@link #cleanupEnvironment(String)}<br>
- * 10.{@link #copyStartScripts(String, String, boolean)}<br>
- * 11.{@link #copyFiles(String, List, List)}<br>
- * 12.{@link #excludeClientMods(String, List)}<br>
- * 13.{@link #copyIcon(String)}<br>
- * 14.{@link #copyProperties(String)}<br>
- * 15.{@link #installServer(String, String, String, String, String)}<br>
- * 16.{@link #zipBuilder(String, String, Boolean, String)}<br>
- * 17.{@link #generateDownloadScripts(String, String, String)}<br>
- * 18.{@link #fabricShell(String, String)}<br>
- * 19.{@link #fabricBatch(String, String)}<br>
- * 20.{@link #forgeShell(String, String)}<br>
- * 21.{@link #forgeBatch(String, String)}<br>
- * 22.{@link #downloadFabricJar(String)}<br>
- * 23.{@link #latestFabricInstaller(String)}<br>
- * 24.{@link #downloadForgeJar(String, String, String)}<br>
- * 25.{@link #deleteMinecraftJar(String, String, String)}<br>
- * 26.{@link #cleanUpServerPack(File, File, String, String, String, String)}
+ * 8. {@link #getFabricInstallerManifest()}<br>
+ * 9. {@link #run()}<br>
+ * 10.{@link #cleanupEnvironment(String)}<br>
+ * 11.{@link #copyStartScripts(String, String, boolean)}<br>
+ * 12.{@link #copyFiles(String, List, List)}<br>
+ * 13.{@link #excludeClientMods(String, List)}<br>
+ * 14.{@link #copyIcon(String)}<br>
+ * 15.{@link #copyProperties(String)}<br>
+ * 16.{@link #installServer(String, String, String, String, String)}<br>
+ * 17.{@link #zipBuilder(String, String, Boolean, String)}<br>
+ * 18.{@link #generateDownloadScripts(String, String, String)}<br>
+ * 19.{@link #fabricShell(String, String)}<br>
+ * 20.{@link #fabricBatch(String, String)}<br>
+ * 21.{@link #forgeShell(String, String)}<br>
+ * 22.{@link #forgeBatch(String, String)}<br>
+ * 23.{@link #downloadFabricJar(String)}<br>
+ * 24.{@link #latestFabricInstaller(String)}<br>
+ * 25.{@link #downloadForgeJar(String, String, String)}<br>
+ * 26.{@link #deleteMinecraftJar(String, String, String)}<br>
+ * 27.{@link #cleanUpServerPack(File, File, String, String, String, String)}
  * <p>
  * Requires an instance of {@link Configuration} from which to get all required information about the modpack and the
  * then to be generated server pack.
@@ -137,6 +138,7 @@ public class CreateServerPack {
     private final File fabricWindowsFile = new File("start-fabric.bat");
     private final File fabricLinuxFile   = new File("start-fabric.sh");
 
+    private final String fabricInstallerManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml";
     /**
      * Getter for server.properties.
      * @return Returns the server.properties-file for use in {@link #copyProperties(String)}
@@ -183,6 +185,17 @@ public class CreateServerPack {
      */
     public File getFabricLinuxFile() {
         return fabricLinuxFile;
+    }
+
+    /**
+     * Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.
+     * @return Returns the URL to the Fabric Installer Manifest.
+     */
+    public URL getFabricInstallerManifest() {
+        URL downloadURL = null;
+        try { downloadURL = new URL(fabricInstallerManifest); }
+        catch (IOException ex) { appLogger.error(ex); }
+        return downloadURL;
     }
 
     /**
@@ -818,7 +831,8 @@ public class CreateServerPack {
     String latestFabricInstaller(String modpackDir) {
         String result;
         try {
-            URL downloadFabricXml = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
+            //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
+            URL downloadFabricXml = getFabricInstallerManifest();
 
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
             FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
@@ -840,7 +854,7 @@ public class CreateServerPack {
             appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.latestfabricinstaller"));
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             appLogger.error(localizationManager.getLocalizedString("serverutilities.log.error.latestfabricinstaller"), ex);
-            result = "0.7.2";
+            result = "0.7.3";
         }
         return result;
     }
