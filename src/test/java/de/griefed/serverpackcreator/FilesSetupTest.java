@@ -22,11 +22,9 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.io.File;
@@ -34,24 +32,45 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
+/**
+ * <strong>Table of tests</strong>
+ * <p>
+ * 1. {@link #FilesSetupTest()} tests {@link FilesSetup#FilesSetup(LocalizationManager)}<br>
+ * 2. {@link #getConfigFileTest()} tests {@link FilesSetup#getConfigFile()}<br>
+ * 3. {@link #getOldConfigFileTest()} tests {@link FilesSetup#getOldConfigFile()}<br>
+ * 4. {@link #getPropertiesFileTest()} tests {@link FilesSetup#getPropertiesFile()}<br>
+ * 5. {@link #getIconFileTest()} tests {@link FilesSetup#getIconFile()}<br>
+ * 6. {@link #getForgeWindowsFileTest()} tests {@link FilesSetup#getForgeWindowsFile()}<br>
+ * 7. {@link #getForgeLinuxFileTest()} tests {@link FilesSetup#getForgeLinuxFile()}<br>
+ * 8. {@link #getFabricWindowsFileTest()} tests {@link FilesSetup#getFabricWindowsFile()}<br>
+ * 9. {@link #getFabricLinuxFileTest()} tests {@link FilesSetup#getFabricLinuxFile()}<br>
+ * 10.{@link #checkForConfigTestOld} tests {@link FilesSetup#checkForConfig()}<br>
+ * 11.{@link #checkForConfigTest} tests {@link FilesSetup#checkForConfig()}<br>
+ * 12.{@link #checkForConfigTestNew} tests {@link FilesSetup#checkForConfig()}<br>
+ * 13.{@link #checkForFabricLinuxTest} tests {@link FilesSetup#checkForFabricLinux()}<br>
+ * 14.{@link #checkForFabricLinuxTestNew} tests {@link FilesSetup#checkForForgeLinux()}<br>
+ * 15.{@link #checkForFabricWindowsTest} tests {@link FilesSetup#checkForFabricWindows()}<br>
+ * 16.{@link #checkForFabricWindowsTestNew} tests {@link FilesSetup#checkForFabricWindows()}<br>
+ * 17.{@link #checkForForgeLinuxTest} tests {@link FilesSetup#checkForForgeLinux()}<br>
+ * 18.{@link #checkForForgeLinuxTestNew} tests {@link FilesSetup#checkForForgeLinux()}<br>
+ * 19.{@link #checkForForgeWindowsTest} tests {@link FilesSetup#checkForForgeWindows()}<br>
+ * 20.{@link #checkForForgeWindowsTestNew} tests {@link FilesSetup#checkForForgeWindows()}<br>
+ * 21.{@link #checkForPropertiesTest} tests {@link FilesSetup#checkForProperties()}<br>
+ * 22.{@link #checkForPropertiesTestNew} tests {@link FilesSetup#checkForProperties()}<br>
+ * 23.{@link #checkForIconTest} tests {@link FilesSetup#checkForIcon()}<br>
+ * 24.{@link #checkForIconTestNew} tests {@link FilesSetup#checkForIcon()}<br>
+ * 25.{@link #filesSetupTest} tests {@link FilesSetup#filesSetup()}
+ */
 class FilesSetupTest {
-    @Mock
-    Logger appLogger;
 
     private FilesSetup filesSetup;
-    private Configuration configCheck;
-    private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
 
     FilesSetupTest() {
         localizationManager = new LocalizationManager();
         filesSetup = new FilesSetup(localizationManager);
-        curseCreateModpack = new CurseCreateModpack(localizationManager);
-        configCheck = new Configuration(localizationManager, curseCreateModpack);
     }
 
     @BeforeEach
@@ -60,9 +79,57 @@ class FilesSetupTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    @Test
+    void getConfigFileTest() {
+        File file = filesSetup.getConfigFile();
+        Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getOldConfigFileTest() {
+        File file = filesSetup.getOldConfigFile();
+        Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getPropertiesFileTest() {
+        File file = filesSetup.getPropertiesFile();
+        Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getIconFileTest() {
+        File file = filesSetup.getIconFile();
+        Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getForgeWindowsFileTest() {
+        File file = filesSetup.getForgeWindowsFile();
+        Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getForgeLinuxFileTest() {
+        File file = filesSetup.getForgeLinuxFile();
+        Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getFabricWindowsFileTest() {
+        File file = filesSetup.getFabricWindowsFile();
+        Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getFabricLinuxFileTest() {
+        File file = filesSetup.getFabricLinuxFile();
+        Assertions.assertNotNull(file);
+    }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testRenameOldConfig() throws IOException {
+    void checkForConfigTestOld() throws IOException {
         File oldConfigFile = new File("creator.conf");
         oldConfigFile.createNewFile();
         Assertions.assertFalse(filesSetup.checkForConfig());
@@ -73,7 +140,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForConfig() throws IOException {
+    void checkForConfigTest() throws IOException {
         File configFile = new File("serverpackcreator.conf");
         configFile.createNewFile();
         Assertions.assertFalse(filesSetup.checkForConfig());
@@ -82,7 +149,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForConfigNew() {
+    void checkForConfigTestNew() {
         File configFile = new File("serverpackcreator.conf");
         Assertions.assertTrue(filesSetup.checkForConfig());
         configFile.delete();
@@ -90,7 +157,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForFabricLinux() throws IOException {
+    void checkForFabricLinuxTest() throws IOException {
         File fabricLinux = new File("start-fabric.sh");
         fabricLinux.createNewFile();
         Assertions.assertFalse(filesSetup.checkForFabricLinux());
@@ -99,7 +166,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForFabricLinuxNew() {
+    void checkForFabricLinuxTestNew() {
         File fabricLinux = new File("start-fabric.sh");
         Assertions.assertTrue(filesSetup.checkForFabricLinux());
         fabricLinux.delete();
@@ -107,7 +174,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForFabricWindows() throws IOException {
+    void checkForFabricWindowsTest() throws IOException {
         File fabricWindows = new File("start-fabric.bat");
         fabricWindows.createNewFile();
         Assertions.assertFalse(filesSetup.checkForFabricWindows());
@@ -116,7 +183,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForFabricWindowsNew() {
+    void checkForFabricWindowsTestNew() {
         File fabricWindows = new File("start-fabric.bat");
         Assertions.assertTrue(filesSetup.checkForFabricWindows());
         fabricWindows.delete();
@@ -124,7 +191,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForForgeLinux() throws IOException {
+    void checkForForgeLinuxTest() throws IOException {
         File forgeLinux = new File("start-forge.sh");
         forgeLinux.createNewFile();
         Assertions.assertFalse(filesSetup.checkForForgeLinux());
@@ -133,7 +200,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForForgeLinuxNew() {
+    void checkForForgeLinuxTestNew() {
         File forgeLinux = new File("start-forge.sh");
         Assertions.assertTrue(filesSetup.checkForForgeLinux());
         forgeLinux.delete();
@@ -141,7 +208,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForForgeWindows() throws IOException {
+    void checkForForgeWindowsTest() throws IOException {
         File forgeWindows = new File("start-forge.bat");
         forgeWindows.createNewFile();
         Assertions.assertFalse(filesSetup.checkForForgeWindows());
@@ -150,7 +217,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForForgeWindowsNew() {
+    void checkForForgeWindowsTestNew() {
         File forgeWindows = new File("start-forge.bat");
         Assertions.assertTrue(filesSetup.checkForForgeWindows());
         forgeWindows.delete();
@@ -158,7 +225,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForProperties() throws IOException {
+    void checkForPropertiesTest() throws IOException {
         File properties = new File("server.properties");
         properties.createNewFile();
         Assertions.assertFalse(filesSetup.checkForProperties());
@@ -167,7 +234,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForPropertiesNew() {
+    void checkForPropertiesTestNew() {
         File properties = new File("server.properties");
         Assertions.assertTrue(filesSetup.checkForProperties());
         properties.delete();
@@ -175,7 +242,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForIcon() throws IOException {
+    void checkForIconTest() throws IOException {
         File icon = new File("server-icon.png");
         icon.createNewFile();
         Assertions.assertFalse(filesSetup.checkForIcon());
@@ -184,7 +251,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testCheckForIconNew() {
+    void checkForIconTestNew() {
         File icon = new File("server-icon.png");
         Assertions.assertTrue(filesSetup.checkForIcon());
         icon.delete();
@@ -192,7 +259,7 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void testFilesSetup() throws IOException {
+    void filesSetupTest() throws IOException {
         filesSetup.filesSetup();
         Assertions.assertTrue(new File("./server_files").isDirectory());
         Assertions.assertTrue(new File("./server_files/server.properties").exists());
@@ -210,137 +277,6 @@ class FilesSetupTest {
                     .map(Path::toFile)
                     .forEach(File::delete);
         }
-        new File("./serverpackcreator.conf").delete();
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void testWriteConfigToFileFabric() {
-        String modpackDir = "./src/test/resources/fabric_tests";
-        List<String> clientMods = Arrays.asList(
-                "AmbientSounds",
-                "BackTools",
-                "BetterAdvancement",
-                "BetterPing",
-                "cherished",
-                "ClientTweaks",
-                "Controlling",
-                "DefaultOptions",
-                "durability",
-                "DynamicSurroundings",
-                "itemzoom",
-                "jei-professions",
-                "jeiintegration",
-                "JustEnoughResources",
-                "MouseTweaks",
-                "Neat",
-                "OldJavaWarning",
-                "PackMenu",
-                "preciseblockplacing",
-                "SimpleDiscordRichPresence",
-                "SpawnerFix",
-                "TipTheScales",
-                "WorldNameRandomizer"
-        );
-        List<String> copyDirs = Arrays.asList(
-                "config",
-                "mods",
-                "scripts",
-                "seeds",
-                "defaultconfigs"
-        );
-        String javaPath;
-        String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
-        if (autoJavaPath.startsWith("C:")) {
-            autoJavaPath = String.format("%s.exe", autoJavaPath);
-        }
-        if (new File("/usr/bin/java").exists()) {
-            javaPath = "/usr/bin/java";
-        } else {
-            javaPath = autoJavaPath;
-        }
-        String minecraftVersion = "1.16.5";
-        String modLoader = "Fabric";
-        String modLoaderVersion = "0.11.3";
-        boolean result = configCheck.writeConfigToFile(
-                modpackDir,
-                configCheck.buildString(clientMods.toString()),
-                configCheck.buildString(copyDirs.toString()),
-                true,
-                javaPath,
-                minecraftVersion,
-                modLoader,
-                modLoaderVersion,
-                true,
-                true,
-                true,
-                true,
-                configCheck.getConfigFile(),
-                false
-        );
-        Assertions.assertTrue(result);
-        Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
-        new File("./serverpackcreator.conf").delete();
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void testWriteConfigToFileForge() {
-        String modpackDir = "./src/test/resources/forge_tests";
-        List<String> clientMods = Arrays.asList(
-                "AmbientSounds",
-                "BackTools",
-                "BetterAdvancement",
-                "BetterPing",
-                "cherished",
-                "ClientTweaks",
-                "Controlling",
-                "DefaultOptions",
-                "durability",
-                "DynamicSurroundings",
-                "itemzoom",
-                "jei-professions",
-                "jeiintegration",
-                "JustEnoughResources",
-                "MouseTweaks",
-                "Neat",
-                "OldJavaWarning",
-                "PackMenu",
-                "preciseblockplacing",
-                "SimpleDiscordRichPresence",
-                "SpawnerFix",
-                "TipTheScales",
-                "WorldNameRandomizer"
-        );
-        List<String> copyDirs = Arrays.asList(
-                "config",
-                "mods",
-                "scripts",
-                "seeds",
-                "defaultconfigs"
-        );
-        String javaPath = "/use/bin/java";
-        String minecraftVersion = "1.16.5";
-        String modLoader = "Forge";
-        String modLoaderVersion = "36.1.2";
-        boolean result = configCheck.writeConfigToFile(
-                modpackDir,
-                configCheck.buildString(clientMods.toString()),
-                configCheck.buildString(copyDirs.toString()),
-                true,
-                javaPath,
-                minecraftVersion,
-                modLoader,
-                modLoaderVersion,
-                true,
-                true,
-                true,
-                true,
-                configCheck.getConfigFile(),
-                false
-        );
-        Assertions.assertTrue(result);
-        Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
         new File("./serverpackcreator.conf").delete();
     }
 }
