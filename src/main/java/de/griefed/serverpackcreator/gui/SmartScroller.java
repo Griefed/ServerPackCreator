@@ -28,8 +28,8 @@
  * We assume no responsibility for the code. You are free to use and/or modify and/or distribute any or all code posted
  * on the Java Tips Weblog without restriction. A credit in the code comments would be nice, but not in any way mandatory.
  *
- * “Give somebody a fish and they eat for a day.
- * Teach somebody to fish they eat for life!”
+ * "Give somebody a fish and they eat for a day.
+ * Teach somebody to fish they eat for life!"
  *
  * In following the philosophy of the above quote, whenever possible, I will also attempt to provide links for related
  * reading to help you better understand the suggested solution. These readings may include tips to help solve your next
