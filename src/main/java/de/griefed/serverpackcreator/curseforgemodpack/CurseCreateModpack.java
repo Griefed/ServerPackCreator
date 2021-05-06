@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
-import com.therandomlabs.curseapi.project.CurseProject;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,6 +93,85 @@ public class CurseCreateModpack {
     }
 
     /**
+     * Getter for the CurseForge project name.
+     * @return String. Returns the name of the CurseForge project name.
+     */
+    String getProjectName() {
+        return projectName;
+    }
+
+    /**
+     * Setter for the name of the CurseForge project name.
+     * @param newProjectID The ID of the new CurseForge project.
+     */
+    void setProjectName(int newProjectID) {
+        String newProjectName = null;
+        try {
+            if (CurseAPI.project(newProjectID).isPresent()) {
+                newProjectName = CurseAPI.project(newProjectID).get().name();
+            } else {
+                newProjectName = String.valueOf(newProjectID);
+            }
+        } catch (CurseException cex) {
+            appLogger.error(cex);
+            newProjectName = String.valueOf(newProjectID);
+        }
+        this.projectName = newProjectName;
+    }
+
+    /**
+     * Getter for the CurseForge file name.
+     * @return String. Returns the file name of the CurseForge project.
+     */
+    String getFileName() {
+        return fileName;
+    }
+
+    /**
+     * Setter for the CurseForge file name and file disk name.
+     * @param newProjectID The ID of the CurseForge project.
+     * @param newFileID The ID of the CurseForge file.
+     */
+    @SuppressWarnings("ConstantConditions")
+    void setFileNameAndDiskName(int newProjectID, int newFileID) {
+        String newFileName = null;
+        String newFileDiskName = null;
+
+        try {
+            if (CurseAPI.project(newProjectID).isPresent()) {
+                try {
+                    newFileName = CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).displayName();
+                }
+                catch (NullPointerException npe) {
+                    newFileName = CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
+                }
+
+                newFileDiskName = CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
+
+            } else {
+                newFileName = String.valueOf(newFileID);
+                newFileDiskName = String.valueOf(newFileID);
+            }
+
+        } catch (CurseException cex) {
+            appLogger.error(cex);
+            newFileName = String.valueOf(newFileID);
+            newFileDiskName = String.valueOf(newFileID);
+        }
+
+        this.fileDiskName = newFileDiskName;
+        this.fileName = newFileName;
+    }
+
+    /**
+     * Getter for the CurseForge file disk name.
+     * @return String. Returns the file disk name of the CurseForge file.
+     */
+    String getFileDiskName() {
+        return fileDiskName;
+    }
+
+    /**
      * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically allows the user to
      * input Forge or Fabric in any combination of upper- and lowercase and ServerPackCreator will still be able to
      * work with the users input.
@@ -125,31 +203,25 @@ public class CurseCreateModpack {
      *              the modpack.
      * @return Boolean. Returns true if the modpack was successfully created.
      */
-    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     public boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
 
         try {
             if (CurseAPI.project(projectID).isPresent()) {
-                Optional<CurseProject> curseProject = CurseAPI.project(projectID);
-
-                this.projectName = curseProject.get().name();
-                try { this.fileName = curseProject.get().files().fileWithID(fileID).displayName(); }
-                catch (NullPointerException npe) { this.fileName = curseProject.get().files().fileWithID(fileID).nameOnDisk(); }
-                this.fileDiskName = curseProject.get().files().fileWithID(fileID).nameOnDisk();
-
-            } else {
-                this.projectName = projectID.toString();
-                this.fileName = fileID.toString();
-                this.fileDiskName = fileID.toString();
+                setProjectName(projectID);
+                setFileNameAndDiskName(projectID, fileID);
             }
-
         } catch (CurseException cex) { appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.curseforgemodpack"), projectID, fileID), cex); }
 
-        if (!checkCurseForgeDir(modpackDir)) {
+        if (!checkCurseForgeDir(modpackDir) &&
+                !getProjectName().equals(String.valueOf(projectID)) &&
+                !getFileDiskName().equals(String.valueOf(fileID))) {
+
+
             initializeModpack(modpackDir, projectID, fileID);
             modpackCreated = true;
         }
+
         return modpackCreated;
     }
 
@@ -167,17 +239,17 @@ public class CurseCreateModpack {
      * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void initializeModpack(String modpackDir, Integer projectID, Integer fileID) {
+    void initializeModpack(String modpackDir, Integer projectID, Integer fileID) {
         try {
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.download"), projectName, fileName));
+            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.download"), getProjectName(), getFileName()));
 
             CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
         } catch (CurseException cex) {
-            appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.initializemodpack.download"), fileName, projectName, modpackDir));
+            appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.initializemodpack.download"), getFileName(), getProjectName(), modpackDir));
         }
 
-        unzipArchive(String.format("%s/%s", modpackDir, fileDiskName), modpackDir);
-        boolean isFileDeleted = new File(String.format("%s/%s", modpackDir, fileDiskName)).delete();
+        unzipArchive(String.format("%s/%s", modpackDir, getFileDiskName()), modpackDir);
+        boolean isFileDeleted = new File(String.format("%s/%s", modpackDir, getFileDiskName())).delete();
         if (isFileDeleted) { appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.deletezip")); }
 
         try {
@@ -224,7 +296,7 @@ public class CurseCreateModpack {
      * @param modpackDir String. All mods are downloaded to the child-directory "mods" inside the modpack directory.
      */
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
-    private void downloadMods(String modpackDir) {
+    void downloadMods(String modpackDir) {
         appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.downloadmods.info"));
         List<String> failedDownloads = new ArrayList<>();
 
@@ -309,10 +381,10 @@ public class CurseCreateModpack {
      * @param modpackDir String. The overrides directory resides in this directory. All folders and files within overrides
      *                  are copied to the parent directory, the modpack directory.
      */
-    private void copyOverride(String modpackDir) {
+    void copyOverride(String modpackDir) {
         appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.copyoverrides.info"));
         try {
-            Stream<Path> files = java.nio.file.Files.walk(Paths.get(String.format("%s/overrides", modpackDir)));
+            Stream<Path> files = Files.walk(Paths.get(String.format("%s/overrides", modpackDir)));
             files.forEach(file -> {
                 try {
                     Files.copy(file, Paths.get(modpackDir).resolve(Paths.get(String.format("%s/overrides", modpackDir)).relativize(file)), REPLACE_EXISTING);
@@ -338,7 +410,7 @@ public class CurseCreateModpack {
      * procedure finished successfully and we have a clean environment, false is returned. Returns false if the modpack
      * directory could not be found, indicating a clean environment.
      */
-    private boolean checkCurseForgeDir(String modpackDir) {
+    boolean checkCurseForgeDir(String modpackDir) {
         boolean isModpackPresent = false;
         if (!(new File(modpackDir).isDirectory()) && !(new File(String.format("%s/manifest.json", modpackDir)).exists())) {
             appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.checkcurseforgedir.create"));
@@ -356,7 +428,7 @@ public class CurseCreateModpack {
      * @param zipFile String. The path to the ZIP-archive which we want to unzip.
      * @param modpackDir The directory into which the ZIP-archive will be unzipped into.
      */
-    private void unzipArchive(String zipFile, String modpackDir) {
+    void unzipArchive(String zipFile, String modpackDir) {
         appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.unziparchive"));
         File destDir = new File(modpackDir);
         byte[] buffer = new byte[1024];
@@ -428,7 +500,7 @@ public class CurseCreateModpack {
      * @param modpackDir String. The directory we want to delete.
      * @return Boolean. Returns false if every file and folder was, recursively and successfully, deleted.
      */
-    private boolean cleanupEnvironment(String modpackDir) {
+    boolean cleanupEnvironment(String modpackDir) {
         boolean cleanedUp = false;
         if (new File(modpackDir).exists()) {
             appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.cleanupenvironment.enter"));
