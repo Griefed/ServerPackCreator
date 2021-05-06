@@ -354,19 +354,27 @@ public class CreateServerPack {
      */
     void copyFiles(String modpackDir, List<String> copyDirs, List<String> clientMods) {
         String serverPath = String.format("%s/server_pack", modpackDir);
+
         try {
             Files.createDirectories(Paths.get(serverPath));
         } catch (IOException ex) {
             appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), serverPath));
         }
+
         for (int i = 0; i < copyDirs.size(); i++) {
+
             String clientDir = String.format("%s/%s", modpackDir,copyDirs.get(i));
             String serverDir = String.format("%s/%s", serverPath,copyDirs.get(i));
+
             appLogger.info(String.format(localizationManager.getLocalizedString("copyfiles.log.info.copyfiles.setup"), serverDir));
+
             if (copyDirs.get(i).startsWith("saves/")) {
+
                 String savesDir = String.format("%s/%s", serverPath, copyDirs.get(i).substring(6));
                 try {
+
                     Stream<Path> files = Files.walk(Paths.get(clientDir));
+
                     files.forEach(file -> {
                         try {
 
@@ -384,16 +392,22 @@ public class CreateServerPack {
                             }
                         }
                     });
+
                 } catch (IOException ex) {
                     appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.copyfiles.saves.world"), ex);
                 }
+
+
             } else if (copyDirs.get(i).startsWith("mods") && clientMods.size() > 0) {
+
                 List<String> listOfFiles = excludeClientMods(clientDir, clientMods);
+
                 try {
                     Files.createDirectories(Paths.get(serverDir));
                 } catch (IOException ex) {
                     appLogger.info(String.format(localizationManager.getLocalizedString("copyfiles.log.info.copyfiles.setup"), serverDir));
                 }
+
                 for (int in = 0; in < listOfFiles.size(); in++) {
                     try {
 
@@ -411,9 +425,13 @@ public class CreateServerPack {
                         }
                     }
                 }
+
+
             } else {
                 try {
+
                     Stream<Path> files = Files.walk(Paths.get(clientDir));
+
                     files.forEach(file -> {
                         try {
 
@@ -430,11 +448,15 @@ public class CreateServerPack {
                             }
                         }
                     });
+
                     files.close();
+
                 } catch (IOException ex) {
                     appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.copyfiles"), ex);
                 }
             }
+
+
         }
     }
 
