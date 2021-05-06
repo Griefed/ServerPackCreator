@@ -199,35 +199,32 @@ class CreateServerPackTest {
     @Test
     void cleanupEnvironmentTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        Files.createDirectories(Paths.get("./src/test/resources/cleanup_tests/server_pack"));
+        //if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/cleanup_tests";
             Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/cleanup_tests/server_pack.zip"), REPLACE_EXISTING);
-            Files.createDirectories(Paths.get(String.format("%s/server_pack", modpackDir)));
             createServerPack.cleanupEnvironment(modpackDir);
-        }
+        //}
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void copyStartScriptsFabricTest() throws IOException {
         filesSetup.filesSetup();
-        //TODO: Figure out how to run this test on GitHub Runners
-        //if (!new File("/home/runner").isDirectory()) {
-            String modpackDir = "./src/test/resources/fabric_tests";
-            String modLoader = "Fabric";
-            filesSetup.filesSetup();
-            createServerPack.copyStartScripts(modpackDir, modLoader, true);
-            Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).exists());
-            Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.sh", modpackDir)).exists());
-            new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).delete();
-            new File(String.format("%s/server_pack/start-fabric.sh", modpackDir)).delete();
-            String delete = "./server_files";
-            if (new File(delete).isDirectory()) {
-                Path pathToBeDeleted = Paths.get(delete);
-                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-            }
-            new File("./serverpackcreator.conf").delete();
-        //}
+        String modpackDir = "./src/test/resources/fabric_tests";
+        String modLoader = "Fabric";
+        filesSetup.filesSetup();
+        createServerPack.copyStartScripts(modpackDir, modLoader, true);
+        Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).exists());
+        Assertions.assertTrue(new File(String.format("%s/server_pack/start-fabric.sh", modpackDir)).exists());
+        new File(String.format("%s/server_pack/start-fabric.bat", modpackDir)).delete();
+        new File(String.format("%s/server_pack/start-fabric.sh", modpackDir)).delete();
+        String delete = "./server_files";
+        if (new File(delete).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(delete);
+            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+        }
+        new File("./serverpackcreator.conf").delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -406,9 +403,10 @@ class CreateServerPackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void installServerFabricTest() {
+    void installServerFabricTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        Files.createDirectories(Paths.get("./src/test/resources/fabric_tests/server_pack"));
+        //if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Fabric";
             String modpackDir = "./src/test/resources/fabric_tests";
             String minecraftVersion = "1.16.5";
@@ -429,14 +427,15 @@ class CreateServerPackTest {
             Assertions.assertTrue(new File(String.format("%s/server_pack/server.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/fabric-server-launch.jar", modpackDir)).delete();
             new File(String.format("%s/server_pack/server.jar", modpackDir)).delete();
-        }
+        //}
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void installServerForgeTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
+        //if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
             String minecraftVersion = "1.16.5";
@@ -470,38 +469,41 @@ class CreateServerPackTest {
                 Path pathToBeDeleted = Paths.get(delete);
                 Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             }
-        }
+        //}
     }
 
     @Test
     void zipBuilderFabricTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        Files.createDirectories(Paths.get("./src/test/resources/fabric_tests/server_pack"));
+        //if (!new File("/home/runner").isDirectory()) {
             Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
             String minecraftVersion = "1.16.5";
             String modLoader = "Fabric";
             String modpackDir = "src/test/resources/fabric_tests";
             createServerPack.zipBuilder(modpackDir, modLoader, Boolean.TRUE, minecraftVersion);
-        }
+        //}
     }
 
     @Test
     void zipBuilderForgeTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
+        //if (!new File("/home/runner").isDirectory()) {
             Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
             String minecraftVersion = "1.16.5";
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
             createServerPack.zipBuilder(modpackDir, modLoader, Boolean.TRUE, minecraftVersion);
-        }
+        //}
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void generateDownloadScriptsFabricTest() {
+    void generateDownloadScriptsFabricTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        Files.createDirectories(Paths.get("./src/test/resources/fabric_tests/server_pack"));
+        //if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Fabric";
             String modpackDir = "./src/test/resources/fabric_tests";
             String minecraftVersion = "1.16.5";
@@ -510,14 +512,15 @@ class CreateServerPackTest {
             Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).exists());
             new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.bat", modpackDir)).delete();
             new File(String.format("%s/server_pack/download_minecraft-server.jar_fabric.sh", modpackDir)).delete();
-        }
+        //}
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void generateDownloadScriptsForgeTest() {
+    void generateDownloadScriptsForgeTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
+        //if (!new File("/home/runner").isDirectory()) {
             String modLoader = "Forge";
             String modpackDir = "./src/test/resources/forge_tests";
             String minecraftVersion = "1.16.5";
@@ -526,7 +529,7 @@ class CreateServerPackTest {
             Assertions.assertTrue(new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).exists());
             new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.bat", modpackDir)).delete();
             new File(String.format("%s/server_pack/download_minecraft-server.jar_forge.sh", modpackDir)).delete();
-        }
+        //}
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -580,8 +583,6 @@ class CreateServerPackTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void downloadFabricJarTest() throws IOException {
-        //TODO: Figure out how to run this test on GitHub Runners
-        //if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/fabric_tests";
             Files.createDirectories(Paths.get("./src/test/resources/fabric_tests/server_pack"));
             boolean result = createServerPack.downloadFabricJar(modpackDir);
@@ -589,7 +590,6 @@ class CreateServerPackTest {
             Assertions.assertTrue(new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).delete();
             new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir)).delete();
-        //}
     }
 
     @Test
@@ -602,8 +602,6 @@ class CreateServerPackTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void downloadForgeJarTest() throws IOException {
-        //TODO: Figure out how to run this test on GitHub Runners
-        //if (!new File("/home/runner").isDirectory()) {
             String modLoaderVersion = "36.1.2";
             String modpackDir = "./src/test/resources/forge_tests";
             Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
@@ -612,7 +610,6 @@ class CreateServerPackTest {
             Assertions.assertTrue(result);
             Assertions.assertTrue(new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
-        //}
     }
 
     @Test
