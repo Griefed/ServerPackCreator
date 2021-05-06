@@ -92,8 +92,8 @@ class CreateServerPackTest {
 
     @BeforeEach
     void setUp() {
-        filesSetup.filesSetup();
         localizationManager.checkLocaleFile();
+        filesSetup.filesSetup();
         MockitoAnnotations.openMocks(this);
     }
 
