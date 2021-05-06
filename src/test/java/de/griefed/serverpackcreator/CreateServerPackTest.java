@@ -210,8 +210,9 @@ class CreateServerPackTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void copyStartScriptsFabricTest() throws IOException {
+        filesSetup.filesSetup();
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        //if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/fabric_tests";
             String modLoader = "Fabric";
             filesSetup.filesSetup();
@@ -226,12 +227,13 @@ class CreateServerPackTest {
                 Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             }
             new File("./serverpackcreator.conf").delete();
-        }
+        //}
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void copyStartScriptsForgeTest() throws IOException {
+        filesSetup.filesSetup();
         String modpackDir = "./src/test/resources/forge_tests";
         String modLoader = "Forge";
         filesSetup.filesSetup();
@@ -529,8 +531,10 @@ class CreateServerPackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void fabricShellTest() {
+    void fabricShellTest() throws IOException {
+        filesSetup.filesSetup();
         String modpackDir = "./src/test/resources/forge_tests";
+        Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
         String minecraftVersion = "1.16.5";
         createServerPack.fabricShell(modpackDir, minecraftVersion);
         Assertions.assertTrue(new File("./src/test/resources/forge_tests/server_pack/download_minecraft-server.jar_fabric.sh").exists());
@@ -539,8 +543,10 @@ class CreateServerPackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void fabricBatchTest() {
+    void fabricBatchTest() throws IOException {
+        filesSetup.filesSetup();
         String modpackDir = "./src/test/resources/forge_tests";
+        Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
         String minecraftVersion = "1.16.5";
         createServerPack.fabricBatch(modpackDir, minecraftVersion);
         Assertions.assertTrue(new File("./src/test/resources/forge_tests/server_pack/download_minecraft-server.jar_fabric.bat").exists());
@@ -549,8 +555,10 @@ class CreateServerPackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void forgeShellTest() {
+    void forgeShellTest() throws IOException {
+        filesSetup.filesSetup();
         String modpackDir = "./src/test/resources/forge_tests";
+        Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
         String minecraftVersion = "1.16.5";
         createServerPack.forgeShell(modpackDir, minecraftVersion);
         Assertions.assertTrue(new File("./src/test/resources/forge_tests/server_pack/download_minecraft-server.jar_forge.sh").exists());
@@ -559,8 +567,10 @@ class CreateServerPackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void forgeBatchTest() {
+    void forgeBatchTest() throws IOException {
+        filesSetup.filesSetup();
         String modpackDir = "./src/test/resources/forge_tests";
+        Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
         String minecraftVersion = "1.16.5";
         createServerPack.forgeBatch(modpackDir, minecraftVersion);
         Assertions.assertTrue(new File("./src/test/resources/forge_tests/server_pack/download_minecraft-server.jar_forge.bat").exists());
@@ -569,16 +579,17 @@ class CreateServerPackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void downloadFabricJarTest() {
+    void downloadFabricJarTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        //if (!new File("/home/runner").isDirectory()) {
             String modpackDir = "./src/test/resources/fabric_tests";
+            Files.createDirectories(Paths.get("./src/test/resources/fabric_tests/server_pack"));
             boolean result = createServerPack.downloadFabricJar(modpackDir);
             Assertions.assertTrue(result);
             Assertions.assertTrue(new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).delete();
             new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir)).delete();
-        }
+        //}
     }
 
     @Test
@@ -590,17 +601,18 @@ class CreateServerPackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void downloadForgeJarTest() {
+    void downloadForgeJarTest() throws IOException {
         //TODO: Figure out how to run this test on GitHub Runners
-        if (!new File("/home/runner").isDirectory()) {
+        //if (!new File("/home/runner").isDirectory()) {
             String modLoaderVersion = "36.1.2";
             String modpackDir = "./src/test/resources/forge_tests";
+            Files.createDirectories(Paths.get("./src/test/resources/forge_tests/server_pack"));
             String minecraftVersion = "1.16.5";
             boolean result = createServerPack.downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir);
             Assertions.assertTrue(result);
             Assertions.assertTrue(new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists());
             new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
-        }
+        //}
     }
 
     @Test

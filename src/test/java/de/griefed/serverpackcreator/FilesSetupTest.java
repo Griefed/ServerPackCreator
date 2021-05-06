@@ -17,10 +17,8 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,7 +148,8 @@ class FilesSetupTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void checkForConfigTestNew() {
-        File configFile = new File("serverpackcreator.conf");
+        File configFile = new File("./serverpackcreator.conf");
+        configFile.delete();
         Assertions.assertTrue(filesSetup.checkForConfig());
         configFile.delete();
     }
@@ -166,8 +165,10 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForFabricLinuxTestNew() {
-        File fabricLinux = new File("start-fabric.sh");
+    void checkForFabricLinuxTestNew() throws IOException {
+        Files.createDirectories(Paths.get("./server_files"));
+        File fabricLinux = new File("./server_files/start-fabric.sh");
+        fabricLinux.delete();
         Assertions.assertTrue(filesSetup.checkForFabricLinux());
         fabricLinux.delete();
     }
@@ -183,8 +184,10 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForFabricWindowsTestNew() {
-        File fabricWindows = new File("start-fabric.bat");
+    void checkForFabricWindowsTestNew() throws IOException {
+        Files.createDirectories(Paths.get("./server_files"));
+        File fabricWindows = new File("./server_files/start-fabric.bat");
+        fabricWindows.delete();
         Assertions.assertTrue(filesSetup.checkForFabricWindows());
         fabricWindows.delete();
     }
@@ -200,8 +203,10 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForForgeLinuxTestNew() {
-        File forgeLinux = new File("start-forge.sh");
+    void checkForForgeLinuxTestNew() throws IOException {
+        Files.createDirectories(Paths.get("./server_files"));
+        File forgeLinux = new File("./server_files/start-forge.sh");
+        forgeLinux.delete();
         Assertions.assertTrue(filesSetup.checkForForgeLinux());
         forgeLinux.delete();
     }
@@ -217,8 +222,10 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForForgeWindowsTestNew() {
-        File forgeWindows = new File("start-forge.bat");
+    void checkForForgeWindowsTestNew() throws IOException {
+        Files.createDirectories(Paths.get("./server_files"));
+        File forgeWindows = new File("./server_files/start-forge.bat");
+        forgeWindows.delete();
         Assertions.assertTrue(filesSetup.checkForForgeWindows());
         forgeWindows.delete();
     }
@@ -234,8 +241,10 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForPropertiesTestNew() {
-        File properties = new File("server.properties");
+    void checkForPropertiesTestNew() throws IOException {
+        Files.createDirectories(Paths.get("./server_files"));
+        File properties = new File("./server_files/server.properties");
+        properties.delete();
         Assertions.assertTrue(filesSetup.checkForProperties());
         properties.delete();
     }
@@ -251,8 +260,10 @@ class FilesSetupTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForIconTestNew() {
-        File icon = new File("server-icon.png");
+    void checkForIconTestNew() throws IOException {
+        Files.createDirectories(Paths.get("./server_files"));
+        File icon = new File("./server_files/server-icon.png");
+        icon.delete();
         Assertions.assertTrue(filesSetup.checkForIcon());
         icon.delete();
     }
