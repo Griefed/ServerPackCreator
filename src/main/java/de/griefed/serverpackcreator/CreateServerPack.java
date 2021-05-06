@@ -954,8 +954,10 @@ public class CreateServerPack {
         appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.enter"));
         if (modLoader.equalsIgnoreCase("Fabric")) {
             File fabricXML = new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
+
             boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
+
             if (isXmlDeleted)
             { appLogger.info(String.format(localizationManager.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricXML.getName())); }
             else
@@ -972,8 +974,13 @@ public class CreateServerPack {
                         Paths.get(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)),
                         Paths.get(String.format("%s/server_pack/forge.jar", modpackDir)),
                         REPLACE_EXISTING);
+
                 boolean isOldJarDeleted = (new File(
-                        String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion))).delete();
+                        String.format("%s/server_pack/forge-%s-%s.jar",
+                                modpackDir,
+                                minecraftVersion,
+                                modLoaderVersion))).delete();
+
                 boolean isInstallerDeleted = forgeInstaller.delete();
 
                 if ((isOldJarDeleted) && (new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists()))
