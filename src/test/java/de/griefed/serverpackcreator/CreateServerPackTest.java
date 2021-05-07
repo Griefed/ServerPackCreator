@@ -346,10 +346,10 @@ class CreateServerPackTest {
 
     @Test
     void excludeClientModsTest() {
-        List<String> clientMods = new ArrayList<>(Arrays.asList(
+        List<String> clientMods = Arrays.asList(
                 "aaaaa","bbbbb","ccccc","fffff","ggggg","hhhhh","iiiii","jjjjj","kkkkk","lllll",
                 "nnnnn","ppppp","qqqqq","rrrrr","uuuuu","vvvvv","wwwww","xxxxx","yyyyy"
-        ));
+        );
         List<String> result = createServerPack.excludeClientMods("src/test/resources/forge_tests/mods", clientMods);
         System.out.println(result);
         Assertions.assertFalse(result.toString().contains("aaaaa"));
