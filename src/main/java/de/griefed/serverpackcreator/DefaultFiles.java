@@ -29,7 +29,7 @@ import java.nio.file.Paths;
 /**
  * <strong>Table of methods</strong>
  * <p>
- * 1. {@link #FilesSetup(LocalizationManager)}<br>
+ * 1. {@link #DefaultFiles(LocalizationManager)}<br>
  * 2. {@link #getConfigFile()}<br>
  * 3. {@link #getOldConfigFile()}<br>
  * 4. {@link #getPropertiesFile()}<br>
@@ -62,11 +62,11 @@ import java.nio.file.Paths;
  * Should an old configuration file, <em>creator.conf</em>, be detected, it is renamed to <em>serverpackcreator.conf</em>
  * to ensure a configuration file is present at all times.
  */
-public class FilesSetup {
+public class DefaultFiles {
 
-    private static final Logger appLogger = LogManager.getLogger(FilesSetup.class);
+    private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
 
-    private LocalizationManager localizationManager;
+    private final LocalizationManager LOCALIZATIONMANAGER;
 
     /**
      * <strong>Constructor</strong><p>
@@ -74,29 +74,29 @@ public class FilesSetup {
      * one is null. Required for use of localization.
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      */
-    public FilesSetup(LocalizationManager injectedLocalizationManager) {
+    public DefaultFiles(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
-            this.localizationManager = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
-            this.localizationManager = injectedLocalizationManager;
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
 
-    private final File configFile        = new File("serverpackcreator.conf");
-    private final File oldConfigFile     = new File("creator.conf");
-    private final File propertiesFile    = new File("server.properties");
-    private final File iconFile          = new File("server-icon.png");
-    private final File forgeWindowsFile  = new File("start-forge.bat");
-    private final File forgeLinuxFile    = new File("start-forge.sh");
-    private final File fabricWindowsFile = new File("start-fabric.bat");
-    private final File fabricLinuxFile   = new File("start-fabric.sh");
+    private final File FILE_CONFIG = new File("serverpackcreator.conf");
+    private final File FILE_CONFIG_OLD = new File("creator.conf");
+    private final File FILE_PROPERTIES = new File("server.properties");
+    private final File FILE_ICON = new File("server-icon.png");
+    private final File FILE_FORGE_WINDOWS = new File("start-forge.bat");
+    private final File FILE_FORGE_LINUX = new File("start-forge.sh");
+    private final File FILE_FABRIC_WINDOWS = new File("start-fabric.bat");
+    private final File FILE_FABRIC_LINUX = new File("start-fabric.sh");
 
     /**
      * Getter for serverpackcreator.conf.
      * @return Returns the serverpackcreator.conf-file for use in {@link #checkForConfig()}
      */
     public File getConfigFile() {
-        return configFile;
+        return FILE_CONFIG;
     }
 
     /**
@@ -104,7 +104,7 @@ public class FilesSetup {
      * @return Returns the creator.conf-file for use in {@link #checkForConfig()}.
      */
     public File getOldConfigFile() {
-        return oldConfigFile;
+        return FILE_CONFIG_OLD;
     }
 
     /**
@@ -112,7 +112,7 @@ public class FilesSetup {
      * @return Returns the server.properties-file for use in {@link #checkForProperties()}
      */
     public File getPropertiesFile() {
-        return propertiesFile;
+        return FILE_PROPERTIES;
     }
 
     /**
@@ -120,7 +120,7 @@ public class FilesSetup {
      * @return Returns the server-icon.png-file for use in {@link #checkForIcon()}
      */
     public File getIconFile() {
-        return iconFile;
+        return FILE_ICON;
     }
 
     /**
@@ -128,7 +128,7 @@ public class FilesSetup {
      * @return Returns the start-forge.bat-file for use in {@link #checkForForgeWindows()}
      */
     public File getForgeWindowsFile() {
-        return forgeWindowsFile;
+        return FILE_FORGE_WINDOWS;
     }
 
     /**
@@ -136,7 +136,7 @@ public class FilesSetup {
      * @return Returns the start-forge.sh-file for use in {@link #checkForForgeLinux()}
      */
     public File getForgeLinuxFile() {
-        return forgeLinuxFile;
+        return FILE_FORGE_LINUX;
     }
 
     /**
@@ -144,7 +144,7 @@ public class FilesSetup {
      * @return Returns the start-fabric.bat-file for use in {@link #checkForFabricWindows()}
      */
     public File getFabricWindowsFile() {
-        return fabricWindowsFile;
+        return FILE_FABRIC_WINDOWS;
     }
 
     /**
@@ -152,7 +152,7 @@ public class FilesSetup {
      * @return Returns the start-fabric.sh-file for use in {@link #checkForFabricLinux()}
      */
     public File getFabricLinuxFile() {
-        return fabricLinuxFile;
+        return FILE_FABRIC_LINUX;
     }
 
     /** Calls individual methods which check for existence of default files. Only this method should be called to check
@@ -162,10 +162,10 @@ public class FilesSetup {
      * and log.
      */
     void filesSetup() {
-        appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.filessetup.enter"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.filessetup.enter"));
 
         try { Files.createDirectories(Paths.get("./server_files")); }
-        catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
 
         boolean doesConfigExist         = checkForConfig();
         boolean doesFabricLinuxExist    = checkForFabricLinux();
@@ -184,14 +184,14 @@ public class FilesSetup {
                 doesPropertiesExist    ||
                 doesIconExist) {
 
-            appLogger.warn(localizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
-            appLogger.warn(localizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning1"));
-            appLogger.warn(localizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning2"));
-            appLogger.warn(localizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning3"));
-            appLogger.warn(localizationManager.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning1"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning2"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning3"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
 
         } else {
-            appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.filessetup.finish"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.filessetup.finish"));
         }
     }
     /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new
@@ -207,27 +207,27 @@ public class FilesSetup {
 
                 boolean isOldConfigDeleted = getOldConfigFile().delete();
                 if (isOldConfigDeleted) {
-                    appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.chechforconfig.old"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.chechforconfig.old"));
                 }
 
             } catch (IOException ex) {
-                appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforconfig.old"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforconfig.old"), ex);
             }
         } else if (!getConfigFile().exists()) {
             try {
-                InputStream link = (FilesSetup.class.getResourceAsStream(String.format("/de/griefed/resources/%s", getConfigFile().getName())));
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", getConfigFile().getName())));
 
                 if (link != null) {
                     Files.copy(link, getConfigFile().getAbsoluteFile().toPath());
                     link.close();
                 }
 
-                appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.checkforconfig.config"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforconfig.config"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforconfig.config"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforconfig.config"), ex);
                     firstRun = true;
                 }
             }
@@ -243,18 +243,18 @@ public class FilesSetup {
         boolean firstRun = false;
         if (!getFabricLinuxFile().exists()) {
             try {
-                InputStream link = (FilesSetup.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getFabricLinuxFile().getName())));
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getFabricLinuxFile().getName())));
                 if (link != null) {
                     Files.copy(link, Paths.get(String.format("./server_files/%s", getFabricLinuxFile())));
                     link.close();
                 }
 
-                appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.checkforfabriclinux"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforfabriclinux"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforfabriclinux"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforfabriclinux"), ex);
                     firstRun = true;
                 }
             }
@@ -270,18 +270,18 @@ public class FilesSetup {
         boolean firstRun = false;
         if (!getFabricWindowsFile().exists()) {
             try {
-                InputStream link = (FilesSetup.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getFabricWindowsFile().getName())));
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getFabricWindowsFile().getName())));
                 if (link != null) {
                     Files.copy(link, Paths.get(String.format("./server_files/%s", getFabricWindowsFile())));
                     link.close();
                 }
 
-                appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.checkforfabricwindows"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforfabricwindows"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforfabricwindows"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforfabricwindows"), ex);
                     firstRun = true;
                 }
             }
@@ -297,18 +297,18 @@ public class FilesSetup {
         boolean firstRun = false;
         if (!getForgeLinuxFile().exists()) {
             try {
-                InputStream link = (FilesSetup.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getForgeLinuxFile().getName())));
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getForgeLinuxFile().getName())));
                 if (link != null) {
                     Files.copy(link, Paths.get(String.format("./server_files/%s", getForgeLinuxFile())));
                     link.close();
                 }
 
-                appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.checkforforgelinux"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforforgelinux"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforforgelinux"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforforgelinux"), ex);
                     firstRun = true;
                 }
             }
@@ -324,18 +324,18 @@ public class FilesSetup {
         boolean firstRun = false;
         if (!getForgeWindowsFile().exists()) {
             try {
-                InputStream link = (FilesSetup.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getForgeWindowsFile().getName())));
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getForgeWindowsFile().getName())));
                 if (link != null) {
                     Files.copy(link, Paths.get(String.format("./server_files/%s", getForgeWindowsFile())));
                     link.close();
                 }
 
-                appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.checkforforgewindows"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforforgewindows"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforforgewindows"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforforgewindows"), ex);
                     firstRun = true;
                 }
             }
@@ -351,18 +351,18 @@ public class FilesSetup {
         boolean firstRun = false;
         if (!getPropertiesFile().exists()) {
             try {
-                InputStream link = (FilesSetup.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getPropertiesFile().getName())));
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getPropertiesFile().getName())));
                 if (link != null) {
                     Files.copy(link, Paths.get(String.format("./server_files/%s", getPropertiesFile())));
                     link.close();
                 }
 
-                appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.checkforproperties"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforproperties"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforproperties"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforproperties"), ex);
                     firstRun = true;
                 }
             }
@@ -378,18 +378,18 @@ public class FilesSetup {
         boolean firstRun = false;
         if (!getIconFile().exists()) {
             try {
-                InputStream link = (FilesSetup.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getIconFile().getName())));
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getIconFile().getName())));
                 if (link != null) {
                     Files.copy(link, Paths.get(String.format("./server_files/%s", getIconFile())));
                     link.close();
                 }
 
-                appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.checkforicon"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforicon"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.checkforicon"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforicon"), ex);
                     firstRun = true;
                 }
             }

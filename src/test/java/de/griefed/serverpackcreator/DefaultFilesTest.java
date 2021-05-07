@@ -35,40 +35,40 @@ import java.util.Comparator;
 /**
  * <strong>Table of tests</strong>
  * <p>
- * 1. {@link #FilesSetupTest()} tests {@link FilesSetup#FilesSetup(LocalizationManager)}<br>
- * 2. {@link #getConfigFileTest()} tests {@link FilesSetup#getConfigFile()}<br>
- * 3. {@link #getOldConfigFileTest()} tests {@link FilesSetup#getOldConfigFile()}<br>
- * 4. {@link #getPropertiesFileTest()} tests {@link FilesSetup#getPropertiesFile()}<br>
- * 5. {@link #getIconFileTest()} tests {@link FilesSetup#getIconFile()}<br>
- * 6. {@link #getForgeWindowsFileTest()} tests {@link FilesSetup#getForgeWindowsFile()}<br>
- * 7. {@link #getForgeLinuxFileTest()} tests {@link FilesSetup#getForgeLinuxFile()}<br>
- * 8. {@link #getFabricWindowsFileTest()} tests {@link FilesSetup#getFabricWindowsFile()}<br>
- * 9. {@link #getFabricLinuxFileTest()} tests {@link FilesSetup#getFabricLinuxFile()}<br>
- * 10.{@link #checkForConfigTestOld} tests {@link FilesSetup#checkForConfig()}<br>
- * 11.{@link #checkForConfigTest} tests {@link FilesSetup#checkForConfig()}<br>
- * 12.{@link #checkForConfigTestNew} tests {@link FilesSetup#checkForConfig()}<br>
- * 13.{@link #checkForFabricLinuxTest} tests {@link FilesSetup#checkForFabricLinux()}<br>
- * 14.{@link #checkForFabricLinuxTestNew} tests {@link FilesSetup#checkForForgeLinux()}<br>
- * 15.{@link #checkForFabricWindowsTest} tests {@link FilesSetup#checkForFabricWindows()}<br>
- * 16.{@link #checkForFabricWindowsTestNew} tests {@link FilesSetup#checkForFabricWindows()}<br>
- * 17.{@link #checkForForgeLinuxTest} tests {@link FilesSetup#checkForForgeLinux()}<br>
- * 18.{@link #checkForForgeLinuxTestNew} tests {@link FilesSetup#checkForForgeLinux()}<br>
- * 19.{@link #checkForForgeWindowsTest} tests {@link FilesSetup#checkForForgeWindows()}<br>
- * 20.{@link #checkForForgeWindowsTestNew} tests {@link FilesSetup#checkForForgeWindows()}<br>
- * 21.{@link #checkForPropertiesTest} tests {@link FilesSetup#checkForProperties()}<br>
- * 22.{@link #checkForPropertiesTestNew} tests {@link FilesSetup#checkForProperties()}<br>
- * 23.{@link #checkForIconTest} tests {@link FilesSetup#checkForIcon()}<br>
- * 24.{@link #checkForIconTestNew} tests {@link FilesSetup#checkForIcon()}<br>
- * 25.{@link #filesSetupTest} tests {@link FilesSetup#filesSetup()}
+ * 1. {@link #DefaultFilesTest()} tests {@link DefaultFiles#DefaultFiles(LocalizationManager)}<br>
+ * 2. {@link #getConfigFileTest()} tests {@link DefaultFiles#getConfigFile()}<br>
+ * 3. {@link #getOldConfigFileTest()} tests {@link DefaultFiles#getOldConfigFile()}<br>
+ * 4. {@link #getPropertiesFileTest()} tests {@link DefaultFiles#getPropertiesFile()}<br>
+ * 5. {@link #getIconFileTest()} tests {@link DefaultFiles#getIconFile()}<br>
+ * 6. {@link #getForgeWindowsFileTest()} tests {@link DefaultFiles#getForgeWindowsFile()}<br>
+ * 7. {@link #getForgeLinuxFileTest()} tests {@link DefaultFiles#getForgeLinuxFile()}<br>
+ * 8. {@link #getFabricWindowsFileTest()} tests {@link DefaultFiles#getFabricWindowsFile()}<br>
+ * 9. {@link #getFabricLinuxFileTest()} tests {@link DefaultFiles#getFabricLinuxFile()}<br>
+ * 10.{@link #checkForConfigTestOld} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 11.{@link #checkForConfigTest} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 12.{@link #checkForConfigTestNew} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 13.{@link #checkForFabricLinuxTest} tests {@link DefaultFiles#checkForFabricLinux()}<br>
+ * 14.{@link #checkForFabricLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 15.{@link #checkForFabricWindowsTest} tests {@link DefaultFiles#checkForFabricWindows()}<br>
+ * 16.{@link #checkForFabricWindowsTestNew} tests {@link DefaultFiles#checkForFabricWindows()}<br>
+ * 17.{@link #checkForForgeLinuxTest} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 18.{@link #checkForForgeLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 19.{@link #checkForForgeWindowsTest} tests {@link DefaultFiles#checkForForgeWindows()}<br>
+ * 20.{@link #checkForForgeWindowsTestNew} tests {@link DefaultFiles#checkForForgeWindows()}<br>
+ * 21.{@link #checkForPropertiesTest} tests {@link DefaultFiles#checkForProperties()}<br>
+ * 22.{@link #checkForPropertiesTestNew} tests {@link DefaultFiles#checkForProperties()}<br>
+ * 23.{@link #checkForIconTest} tests {@link DefaultFiles#checkForIcon()}<br>
+ * 24.{@link #checkForIconTestNew} tests {@link DefaultFiles#checkForIcon()}<br>
+ * 25.{@link #filesSetupTest} tests {@link DefaultFiles#filesSetup()}
  */
-class FilesSetupTest {
+class DefaultFilesTest {
 
-    private FilesSetup filesSetup;
+    private DefaultFiles defaultFiles;
     private LocalizationManager localizationManager;
 
-    FilesSetupTest() {
+    DefaultFilesTest() {
         localizationManager = new LocalizationManager();
-        filesSetup = new FilesSetup(localizationManager);
+        defaultFiles = new DefaultFiles(localizationManager);
     }
 
     @BeforeEach
@@ -79,49 +79,49 @@ class FilesSetupTest {
 
     @Test
     void getConfigFileTest() {
-        File file = filesSetup.getConfigFile();
+        File file = defaultFiles.getConfigFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getOldConfigFileTest() {
-        File file = filesSetup.getOldConfigFile();
+        File file = defaultFiles.getOldConfigFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getPropertiesFileTest() {
-        File file = filesSetup.getPropertiesFile();
+        File file = defaultFiles.getPropertiesFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getIconFileTest() {
-        File file = filesSetup.getIconFile();
+        File file = defaultFiles.getIconFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getForgeWindowsFileTest() {
-        File file = filesSetup.getForgeWindowsFile();
+        File file = defaultFiles.getForgeWindowsFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getForgeLinuxFileTest() {
-        File file = filesSetup.getForgeLinuxFile();
+        File file = defaultFiles.getForgeLinuxFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getFabricWindowsFileTest() {
-        File file = filesSetup.getFabricWindowsFile();
+        File file = defaultFiles.getFabricWindowsFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getFabricLinuxFileTest() {
-        File file = filesSetup.getFabricLinuxFile();
+        File file = defaultFiles.getFabricLinuxFile();
         Assertions.assertNotNull(file);
     }
 
@@ -130,7 +130,7 @@ class FilesSetupTest {
     void checkForConfigTestOld() throws IOException {
         File oldConfigFile = new File("creator.conf");
         oldConfigFile.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForConfig());
+        Assertions.assertFalse(defaultFiles.checkForConfig());
         Assertions.assertTrue(new File("serverpackcreator.conf").exists());
         new File("serverpackcreator.conf").delete();
         new File("creator.conf").delete();
@@ -141,7 +141,7 @@ class FilesSetupTest {
     void checkForConfigTest() throws IOException {
         File configFile = new File("serverpackcreator.conf");
         configFile.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForConfig());
+        Assertions.assertFalse(defaultFiles.checkForConfig());
         configFile.delete();
     }
 
@@ -150,7 +150,7 @@ class FilesSetupTest {
     void checkForConfigTestNew() {
         File configFile = new File("./serverpackcreator.conf");
         configFile.delete();
-        Assertions.assertTrue(filesSetup.checkForConfig());
+        Assertions.assertTrue(defaultFiles.checkForConfig());
         configFile.delete();
     }
 
@@ -159,7 +159,7 @@ class FilesSetupTest {
     void checkForFabricLinuxTest() throws IOException {
         File fabricLinux = new File("start-fabric.sh");
         fabricLinux.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForFabricLinux());
+        Assertions.assertFalse(defaultFiles.checkForFabricLinux());
         fabricLinux.delete();
     }
 
@@ -169,7 +169,7 @@ class FilesSetupTest {
         Files.createDirectories(Paths.get("./server_files"));
         File fabricLinux = new File("./server_files/start-fabric.sh");
         fabricLinux.delete();
-        Assertions.assertTrue(filesSetup.checkForFabricLinux());
+        Assertions.assertTrue(defaultFiles.checkForFabricLinux());
         fabricLinux.delete();
     }
 
@@ -178,7 +178,7 @@ class FilesSetupTest {
     void checkForFabricWindowsTest() throws IOException {
         File fabricWindows = new File("start-fabric.bat");
         fabricWindows.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForFabricWindows());
+        Assertions.assertFalse(defaultFiles.checkForFabricWindows());
         fabricWindows.delete();
     }
 
@@ -188,7 +188,7 @@ class FilesSetupTest {
         Files.createDirectories(Paths.get("./server_files"));
         File fabricWindows = new File("./server_files/start-fabric.bat");
         fabricWindows.delete();
-        Assertions.assertTrue(filesSetup.checkForFabricWindows());
+        Assertions.assertTrue(defaultFiles.checkForFabricWindows());
         fabricWindows.delete();
     }
 
@@ -197,7 +197,7 @@ class FilesSetupTest {
     void checkForForgeLinuxTest() throws IOException {
         File forgeLinux = new File("start-forge.sh");
         forgeLinux.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForForgeLinux());
+        Assertions.assertFalse(defaultFiles.checkForForgeLinux());
         forgeLinux.delete();
     }
 
@@ -207,7 +207,7 @@ class FilesSetupTest {
         Files.createDirectories(Paths.get("./server_files"));
         File forgeLinux = new File("./server_files/start-forge.sh");
         forgeLinux.delete();
-        Assertions.assertTrue(filesSetup.checkForForgeLinux());
+        Assertions.assertTrue(defaultFiles.checkForForgeLinux());
         forgeLinux.delete();
     }
 
@@ -216,7 +216,7 @@ class FilesSetupTest {
     void checkForForgeWindowsTest() throws IOException {
         File forgeWindows = new File("start-forge.bat");
         forgeWindows.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForForgeWindows());
+        Assertions.assertFalse(defaultFiles.checkForForgeWindows());
         forgeWindows.delete();
     }
 
@@ -226,7 +226,7 @@ class FilesSetupTest {
         Files.createDirectories(Paths.get("./server_files"));
         File forgeWindows = new File("./server_files/start-forge.bat");
         forgeWindows.delete();
-        Assertions.assertTrue(filesSetup.checkForForgeWindows());
+        Assertions.assertTrue(defaultFiles.checkForForgeWindows());
         forgeWindows.delete();
     }
 
@@ -235,7 +235,7 @@ class FilesSetupTest {
     void checkForPropertiesTest() throws IOException {
         File properties = new File("server.properties");
         properties.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForProperties());
+        Assertions.assertFalse(defaultFiles.checkForProperties());
         properties.delete();
     }
 
@@ -245,7 +245,7 @@ class FilesSetupTest {
         Files.createDirectories(Paths.get("./server_files"));
         File properties = new File("./server_files/server.properties");
         properties.delete();
-        Assertions.assertTrue(filesSetup.checkForProperties());
+        Assertions.assertTrue(defaultFiles.checkForProperties());
         properties.delete();
     }
 
@@ -254,7 +254,7 @@ class FilesSetupTest {
     void checkForIconTest() throws IOException {
         File icon = new File("server-icon.png");
         icon.createNewFile();
-        Assertions.assertFalse(filesSetup.checkForIcon());
+        Assertions.assertFalse(defaultFiles.checkForIcon());
         icon.delete();
     }
 
@@ -264,14 +264,14 @@ class FilesSetupTest {
         Files.createDirectories(Paths.get("./server_files"));
         File icon = new File("./server_files/server-icon.png");
         icon.delete();
-        Assertions.assertTrue(filesSetup.checkForIcon());
+        Assertions.assertTrue(defaultFiles.checkForIcon());
         icon.delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void filesSetupTest() throws IOException {
-        filesSetup.filesSetup();
+        defaultFiles.filesSetup();
         Assertions.assertTrue(new File("./server_files").isDirectory());
         Assertions.assertTrue(new File("./server_files/server.properties").exists());
         Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
