@@ -253,7 +253,7 @@ class CreateServerPackTest {
     @Test
     void copyFilesTest() throws IOException {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> clientMods = Arrays.asList(
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
                 "BetterAdvancement",
@@ -277,14 +277,14 @@ class CreateServerPackTest {
                 "SpawnerFix",
                 "TipTheScales",
                 "WorldNameRandomizer"
-        );
-        List<String> copyDirs = Arrays.asList(
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
                 "scripts",
                 "seeds",
                 "defaultconfigs"
-        );
+        ));
         createServerPack.copyFiles(modpackDir, copyDirs, clientMods);
         Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
@@ -313,13 +313,13 @@ class CreateServerPackTest {
     void copyFilesEmptyClientsTest() throws IOException {
         String modpackDir = "./src/test/resources/forge_tests";
         List<String> clientMods = new ArrayList<>();
-        List<String> copyDirs = Arrays.asList(
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
                 "scripts",
                 "seeds",
                 "defaultconfigs"
-        );
+        ));
         createServerPack.copyFiles(modpackDir, copyDirs, clientMods);
         Assertions.assertTrue(new File(String.format("%s/server_pack/config",modpackDir)).isDirectory());
         Assertions.assertTrue(new File(String.format("%s/server_pack/mods",modpackDir)).isDirectory());
@@ -345,10 +345,10 @@ class CreateServerPackTest {
 
     @Test
     void excludeClientModsTest() {
-        List<String> clientMods = Arrays.asList(
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "aaaaa","bbbbb","ccccc","fffff","ggggg","hhhhh","iiiii","jjjjj","kkkkk","lllll",
                 "nnnnn","ppppp","qqqqq","rrrrr","uuuuu","vvvvv","wwwww","xxxxx","yyyyy","zzzzz"
-        );
+        ));
         List<String> result = createServerPack.excludeClientMods("./src/test/resources/forge_tests/mods", clientMods);
         Assertions.assertFalse(result.contains("aaaaa")); Assertions.assertFalse(result.contains("bbbbb"));
         Assertions.assertFalse(result.contains("ccccc")); Assertions.assertFalse(result.contains("fffff"));

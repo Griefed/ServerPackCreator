@@ -76,13 +76,13 @@ class ConfigurationTest {
 
     @Test
     void testBuildString() {
-        List<String> args = Arrays.asList(
+        List<String> args = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
                 "scripts",
                 "seeds",
                 "defaultconfigs"
-        );
+        ));
         String result = configuration.buildString(args.toString());
         Assertions.assertEquals(args.toString(), String.format("[%s]",result));
     }
@@ -115,7 +115,7 @@ class ConfigurationTest {
     @Test
     void testPrintConfig() {
         String modpackDir = "src/test/resources/forge_tests";
-        List<String> clientMods = Arrays.asList(
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
                 "BetterAdvancement",
@@ -139,14 +139,14 @@ class ConfigurationTest {
                 "SpawnerFix",
                 "TipTheScales",
                 "WorldNameRandomizer"
-        );
-        List<String> copyDirs = Arrays.asList(
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
                 "scripts",
                 "seeds",
                 "defaultconfigs"
-        );
+        ));
         boolean includeServerInstallation = true;
         String javaPath = "/usr/bin/java";
         String minecraftVersion = "1.16.5";
@@ -187,13 +187,13 @@ class ConfigurationTest {
     @Test
     void testCheckCopyDirsCorrect() {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> copyDirs = Arrays.asList(
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
                 "scripts",
                 "seeds",
                 "defaultconfigs"
-        );
+        ));
         boolean result = configuration.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertTrue(result);
     }
@@ -201,13 +201,13 @@ class ConfigurationTest {
     @Test
     void testCheckCopyDirsFalse() {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> copyDirs = Arrays.asList(
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "configs",
                 "modss",
                 "scriptss",
                 "seedss",
                 "defaultconfigss"
-        );
+        ));
         boolean result = configuration.checkCopyDirs(copyDirs, modpackDir);
         Assertions.assertFalse(result);
     }
@@ -370,7 +370,7 @@ class ConfigurationTest {
     @Test
     void writeConfigToFileTestFabric() {
         String modpackDir = "./src/test/resources/fabric_tests";
-        List<String> clientMods = Arrays.asList(
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
                 "BetterAdvancement",
@@ -394,14 +394,14 @@ class ConfigurationTest {
                 "SpawnerFix",
                 "TipTheScales",
                 "WorldNameRandomizer"
-        );
-        List<String> copyDirs = Arrays.asList(
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
                 "scripts",
                 "seeds",
                 "defaultconfigs"
-        );
+        ));
         String javaPath;
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
         if (autoJavaPath.startsWith("C:")) {
@@ -440,7 +440,7 @@ class ConfigurationTest {
     @Test
     void testWriteConfigToFileForge() {
         String modpackDir = "./src/test/resources/forge_tests";
-        List<String> clientMods = Arrays.asList(
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
                 "BetterAdvancement",
@@ -464,14 +464,14 @@ class ConfigurationTest {
                 "SpawnerFix",
                 "TipTheScales",
                 "WorldNameRandomizer"
-        );
-        List<String> copyDirs = Arrays.asList(
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
                 "scripts",
                 "seeds",
                 "defaultconfigs"
-        );
+        ));
         String javaPath = "/use/bin/java";
         String minecraftVersion = "1.16.5";
         String modLoader = "Forge";
