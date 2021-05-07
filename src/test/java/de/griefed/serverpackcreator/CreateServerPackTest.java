@@ -194,6 +194,7 @@ class CreateServerPackTest {
         new File("./src/test/resources/forge_tests/server_pack/start-forge.bat").delete();
         new File("./src/test/resources/forge_tests/server_pack/start-forge.sh").delete();
         new File("./serverpackcreator.conf").delete();
+        Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
     }
 
     @Test
