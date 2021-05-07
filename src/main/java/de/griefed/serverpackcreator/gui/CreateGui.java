@@ -50,25 +50,23 @@ import java.util.Objects;
  * are created in the constructor of this class to make sure they are ready when the GUI is created and shown to the user.
  */
 public class CreateGui extends JPanel {
-    private static final Logger appLogger = LogManager.getLogger(CreateGui.class);
+    private static final Logger LOG = LogManager.getLogger(CreateGui.class);
 
-    private final ImageIcon bannerIcon      = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/banner.png")));
-    private final Image icon                = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/app.png")));
-    private final Dimension windowDimension = new Dimension(800,860);
+    private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/banner.png")));
+    private final Image ICON_SERVERPACKCREATOR = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/app.png")));
+    private final Dimension DIMENSION_WINDOW = new Dimension(800,860);
+
+    private final LocalizationManager LOCALIZATIONMANAGER;
+    private final Configuration CONFIGURATION;
+    private final CurseCreateModpack CURSECREATEMODPACK;
+    private final CreateServerPack CREATESERVERPACK;
+
+    private final BackgroundPanel BACKGROUNDPANEL;
+    private final JFrame FRAME_SERVERPACKCREATOR;
+
+    private File secretFile;
+    private Config secret;
     private BufferedImage bufferedImage;
-
-    private LocalizationManager localizationManager;
-    private Configuration configuration;
-    private CurseCreateModpack curseCreateModpack;
-    private CreateServerPack createServerPack;
-
-    private CreateServerPackTab createServerPackTab;
-    private ServerPackCreatorLogTab serverPackCreatorLogTab;
-    private ModloaderInstallerLogTab modloaderInstallerLogTab;
-    private AboutTab aboutTab;
-    private BackgroundPanel backgroundPanel;
-    private JTabbedPane tabbedPane;
-
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -88,48 +86,48 @@ public class CreateGui extends JPanel {
         super(new GridLayout(1, 1));
 
         if (injectedLocalizationManager == null) {
-            this.localizationManager = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
-            this.localizationManager = injectedLocalizationManager;
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
         if (injectedConfiguration == null) {
-            this.curseCreateModpack = new CurseCreateModpack(localizationManager);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
         } else {
-            this.curseCreateModpack = injectedCurseCreateModpack;
+            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfiguration == null) {
-            this.configuration = new Configuration(localizationManager, curseCreateModpack);
+            this.CONFIGURATION = new Configuration(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
         } else {
-            this.configuration = injectedConfiguration;
+            this.CONFIGURATION = injectedConfiguration;
         }
 
         if (injectedCreateServerPack == null) {
-            this.createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
+            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK);
         } else {
-            this.createServerPack = injectedCreateServerPack;
+            this.CREATESERVERPACK = injectedCreateServerPack;
         }
 
         try { bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));}
-        catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex); }
 
-        createServerPackTab = new CreateServerPackTab(localizationManager, configuration, curseCreateModpack, createServerPack);
-        serverPackCreatorLogTab = new ServerPackCreatorLogTab(localizationManager);
-        modloaderInstallerLogTab = new ModloaderInstallerLogTab(localizationManager);
-        aboutTab = new AboutTab(localizationManager);
+        CreateServerPackTab TAB_CREATESERVERPACK = new CreateServerPackTab(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK, CREATESERVERPACK);
+        ServerPackCreatorLogTab TAB_LOG_SERVERPACKCREATOR = new ServerPackCreatorLogTab(LOCALIZATIONMANAGER);
+        ModloaderInstallerLogTab TAB_LOG_MODLOADERINSTALLER = new ModloaderInstallerLogTab(LOCALIZATIONMANAGER);
+        AboutTab TAB_ABOUT = new AboutTab(LOCALIZATIONMANAGER);
 
-        serverPackCreatorFrame = new JFrame(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
+        FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui"));
 
-        backgroundPanel = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
+        BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
-        tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
 
         /*
          * Remove the border insets so the panes fully fill out the area available to them. Prevents the image
          * painted by BackgroundPanel from being displayed along the border of the pane.
          */
-        tabbedPane.setUI(new BasicTabbedPaneUI() {
+        TABBEDPANE.setUI(new BasicTabbedPaneUI() {
             private final Insets borderInsets = new Insets(0, 0, 0, 0);
 
             @Override
@@ -138,56 +136,51 @@ public class CreateGui extends JPanel {
             }
         });
 
-        tabbedPane.addTab(
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
+        TABBEDPANE.addTab(
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
                 null,
-                createServerPackTab.createServerPackTab(),
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
+                TAB_CREATESERVERPACK.createServerPackTab(),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.tip"));
 
-        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+        TABBEDPANE.setMnemonicAt(0, KeyEvent.VK_1);
 
-        tabbedPane.addTab(
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
+        TABBEDPANE.addTab(
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
                 null,
-                serverPackCreatorLogTab.serverPackCreatorLogTab(),
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
+                TAB_LOG_SERVERPACKCREATOR.serverPackCreatorLogTab(),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
 
-        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+        TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
 
-        tabbedPane.addTab(
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.title"),
+        TABBEDPANE.addTab(
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.title"),
                 null,
-                modloaderInstallerLogTab.modloaderInstallerLogTab(),
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.tip"));
+                TAB_LOG_MODLOADERINSTALLER.modloaderInstallerLogTab(),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.tip"));
 
-        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+        TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
 
-        tabbedPane.addTab(
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.title"),
+        TABBEDPANE.addTab(
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.about.title"),
                 null,
-                aboutTab.aboutTab(),
-                localizationManager.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
+                TAB_ABOUT.aboutTab(),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
 
-        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
+        TABBEDPANE.setMnemonicAt(3, KeyEvent.VK_4);
 
-        tabbedPane.setOpaque(true);
+        TABBEDPANE.setOpaque(true);
 
-        add(tabbedPane);
+        add(TABBEDPANE);
 
         /*
          * We need both in order to have a transparent TabbedPane
          * behind which we can see the image painted by BackgroundPanel
          */
         setOpaque(false);
-        tabbedPane.setOpaque(false);
+        TABBEDPANE.setOpaque(false);
 
-        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
-
-    private JFrame serverPackCreatorFrame;
-    private JLabel serverPackCreatorBanner;
-    private File secretFile;
-    private Config secret;
 
     /**
      * Shows the GUI from the EDT by using SwingUtilities and it's invokeLater method by calling {@link #createAndShowGUI()}.
@@ -213,10 +206,10 @@ public class CreateGui extends JPanel {
 
                     if (secret.getString("topsicrets") != null && !secret.getString("topsicrets").equals("") && secret.getString("topsicrets").length() > 0) {
 
-                        appLogger.info(localizationManager.getLocalizedString("topsicrets"));
-                        appLogger.info(localizationManager.getLocalizedString("topsicrets.moar"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("topsicrets"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("topsicrets.moar"));
                         for (UIManager.LookAndFeelInfo look : UIManager.getInstalledLookAndFeels()) {
-                            appLogger.info(look.getClassName());
+                            LOG.info(look.getClassName());
                         }
 
                         UIManager.setLookAndFeel(secret.getString("topsicrets"));
@@ -233,7 +226,7 @@ public class CreateGui extends JPanel {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-                    appLogger.error(localizationManager.getLocalizedString("tabbedpane.log.error"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
                 }
             }
 
@@ -246,26 +239,26 @@ public class CreateGui extends JPanel {
      */
     private void createAndShowGUI() {
 
-        serverPackCreatorFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        serverPackCreatorFrame.setContentPane(backgroundPanel);
+        FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
 
-        serverPackCreatorFrame.setIconImage(icon);
+        FRAME_SERVERPACKCREATOR.setIconImage(ICON_SERVERPACKCREATOR);
 
-        serverPackCreatorBanner = new JLabel(bannerIcon);
+        JLabel serverPackCreatorBanner = new JLabel(ICON_SERVERPACKCREATOR_BANNER);
         serverPackCreatorBanner.setOpaque(false);
 
-        serverPackCreatorFrame.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
+        FRAME_SERVERPACKCREATOR.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
 
-        serverPackCreatorFrame.add(new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack), BorderLayout.CENTER);
+        FRAME_SERVERPACKCREATOR.add(new CreateGui(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK, CREATESERVERPACK), BorderLayout.CENTER);
 
-        serverPackCreatorFrame.setSize(windowDimension);
-        serverPackCreatorFrame.setPreferredSize(windowDimension);
-        serverPackCreatorFrame.setMaximumSize(windowDimension);
-        serverPackCreatorFrame.setResizable(true);
+        FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
+        FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
+        FRAME_SERVERPACKCREATOR.setMaximumSize(DIMENSION_WINDOW);
+        FRAME_SERVERPACKCREATOR.setResizable(true);
 
-        serverPackCreatorFrame.pack();
+        FRAME_SERVERPACKCREATOR.pack();
 
-        serverPackCreatorFrame.setVisible(true);
+        FRAME_SERVERPACKCREATOR.setVisible(true);
     }
 }

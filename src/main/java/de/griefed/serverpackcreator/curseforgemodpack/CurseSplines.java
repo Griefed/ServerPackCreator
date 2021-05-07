@@ -23,7 +23,7 @@ import java.util.Random;
 
 /**
  * <strong>Table of methods</strong><br>
- * {@link #reticulating}<br>
+ * {@link #RETICULATING}<br>
  * {@link #getRandomInt()}<br>
  * {@link #getSpline()}<br>
  * {@link #reticulate()}<p>
@@ -36,7 +36,7 @@ public class CurseSplines {
     /**
      * The list of messages as they were available in SimCity, plus Reticulating Splines added by myself, for good measure.
      */
-    private final String[] reticulating = {
+    private final String[] RETICULATING = {
             "Adding Hidden Agendas",
             "Adjusting Bell Curves",
             "Aesthesizing Industrial Areas",
@@ -147,24 +147,24 @@ public class CurseSplines {
     };
 
     /**
-     * Retrieves the index of a random message in {@link #reticulating}.
+     * Retrieves the index of a random message in {@link #RETICULATING}.
      * @return Integer. Returns a randomly generated index.
      */
     private int getRandomInt() {
         Random randInt = new Random();
-        return randInt.nextInt(reticulating.length);
+        return randInt.nextInt(RETICULATING.length);
     }
 
     /**
-     * Retrieves a message from {@link #reticulating} using a randomly generated index from {@link #getRandomInt()}.
+     * Retrieves a message from {@link #RETICULATING} using a randomly generated index from {@link #getRandomInt()}.
      * @return String. Returns the message at the index provided by the randomizer.
      */
     private String getSpline() {
-        return reticulating[getRandomInt()];
+        return RETICULATING[getRandomInt()];
     }
 
     /**
-     * Retrieve a random message from {@link #reticulating}.
+     * Retrieve a random message from {@link #RETICULATING}.
      * @return String. Returns a random message.
      */
     public String reticulate() {

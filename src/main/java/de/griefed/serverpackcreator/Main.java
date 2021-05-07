@@ -63,14 +63,13 @@ import java.util.List;
  * enter <code>-cli</code>-mode.
  */
 public class Main {
-    private static final Logger appLogger = LogManager.getLogger(Main.class);
+    private static final Logger LOG = LogManager.getLogger(Main.class);
 
     /**
      * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.
-     * Calls {@link FilesSetup} so all default files are available.
+     * Calls {@link DefaultFiles} so all default files are available.
      * Checks arguments to determine which mode to enter.
      * Lists a couple of environment variables important for reporting issues.
-     *
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
      * will enter and which locale is used.
      */
@@ -83,8 +82,9 @@ public class Main {
                 // Init the LocalizationManager with the locale passed by the cli arguments.
                 localizationManager.init(programArgs.get(programArgs.indexOf("-lang") + 1));
             } catch (IncorrectLanguageException e) {
-                appLogger.info(programArgs.get(programArgs.indexOf("-lang") + 1));
-                appLogger.error("Incorrect language specified, falling back to English (United States)...");
+                LOG.info(programArgs.get(programArgs.indexOf("-lang") + 1));
+                // We can not use localized string here, because the localization manager has not yet been initialized.
+                LOG.error("Incorrect language specified, falling back to English (United States)...");
 
                 // Init the LocalizationManager with the default locale en_US.
                 localizationManager.init();
@@ -97,10 +97,11 @@ public class Main {
         // Prepare instances for dependency injection
         CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
         Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
-        FilesSetup filesSetup = new FilesSetup(localizationManager);
+        DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
         CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
         CreateGui tabbedPane = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack);
 
+        //noinspection UnusedAssignment
         String jarPath = null,
                 jarName = null,
                 javaVersion = null,
@@ -108,12 +109,12 @@ public class Main {
                 osName = null,
                 osVersion = null;
 
-        appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
-        appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip1"));
-        appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip2"));
-        appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip3"));
-        appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip4"));
-        appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
+        LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
+        LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip1"));
+        LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip2"));
+        LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip3"));
+        LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip4"));
+        LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
 
         try {
             // Print system information to console and logs.
@@ -123,21 +124,21 @@ public class Main {
             osArch = System.getProperty("os.arch");
             osName = System.getProperty("os.name");
             osVersion = System.getProperty("os.version");
-            appLogger.info(localizationManager.getLocalizedString("handler.log.info.system.enter"));
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.jarpath"), jarPath));
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.jarname"), jarName));
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.java"), javaVersion));
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.osarchitecture"), osArch));
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.osname"), osName));
-            appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.osversion"), osVersion));
-            appLogger.info(localizationManager.getLocalizedString("handler.log.info.system.include"));
+            LOG.info(localizationManager.getLocalizedString("handler.log.info.system.enter"));
+            LOG.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.jarpath"), jarPath));
+            LOG.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.jarname"), jarName));
+            LOG.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.java"), javaVersion));
+            LOG.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.osarchitecture"), osArch));
+            LOG.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.osname"), osName));
+            LOG.info(String.format(localizationManager.getLocalizedString("handler.log.info.system.osversion"), osVersion));
+            LOG.info(localizationManager.getLocalizedString("handler.log.info.system.include"));
 
         } catch (URISyntaxException ex) {
-            appLogger.error(localizationManager.getLocalizedString("handler.log.error.system.properties"), ex);
+            LOG.error(localizationManager.getLocalizedString("handler.log.error.system.properties"), ex);
         }
 
         // Ensure default files are present.
-        filesSetup.filesSetup();
+        defaultFiles.filesSetup();
 
         // Start generation of a new configuration file with user input.
         if (Arrays.asList(args).contains("-cgen")) {

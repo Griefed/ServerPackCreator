@@ -49,13 +49,13 @@ import java.util.*;
  */
 public class LocalizationManager {
 
-    private static final Logger localeLogger = LogManager.getLogger(LocalizationManager.class);
-    private final File langPropertiesFile = new File("lang.properties");
+    private static final Logger LOG = LogManager.getLogger(LocalizationManager.class);
+    private final File FILE_LANGPROPERTIES = new File("lang.properties");
 
     /**
      * Current language of ServerPackCreator, mapped for easier further reference.
      */
-    private Map<String, String> currentLanguage = new HashMap<>();
+    private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>();
 
     /**
      * Localized strings which ServerPackCreator uses.
@@ -65,8 +65,8 @@ public class LocalizationManager {
     /**
      * Keys that used for current language mapping.
      */
-    private final String LANGUAGE_MAP_PATH = "language";
-    private final String COUNTRY_MAP_PATH = "country";
+    private final String MAP_PATH_LANGUAGE = "language";
+    private final String MAP_PATH_COUNTRY = "country";
 
     /**
      * Languages supported by ServerPackCreator.
@@ -90,7 +90,7 @@ public class LocalizationManager {
      * @return File. Returns the file which will set the locale for ServerPackCreator.
      */
     File getLangPropertiesFile() {
-        return langPropertiesFile;
+        return FILE_LANGPROPERTIES;
     }
 
     /**
@@ -98,7 +98,7 @@ public class LocalizationManager {
      * @return String. Returns a String containing the currently used language.
      */
     public String getLocale() {
-        return String.format("%s_%s", currentLanguage.get(LANGUAGE_MAP_PATH), currentLanguage.get(COUNTRY_MAP_PATH));
+        return String.format("%s_%s", CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY));
     }
 
     /**
@@ -118,7 +118,8 @@ public class LocalizationManager {
 
             if (lang.equalsIgnoreCase(locale)) {
 
-                localeLogger.debug("Lang is correct");
+                // Can not yet use localization, as the localization manager is still being initialized.
+                LOG.debug("Lang is correct");
                 doesLanguageExist = true;
 
                 break;
@@ -133,19 +134,20 @@ public class LocalizationManager {
 
             langCode = locale.split("_");
 
-            currentLanguage.put(LANGUAGE_MAP_PATH, langCode[0]);
-            currentLanguage.put(COUNTRY_MAP_PATH, langCode[1]);
+            CURRENT_LANGUAGE.put(MAP_PATH_LANGUAGE, langCode[0]);
+            CURRENT_LANGUAGE.put(MAP_PATH_COUNTRY, langCode[1]);
 
         } else {
             throw new IncorrectLanguageException();
         }
 
         localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", locale));
-        localeLogger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
 
-        if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
+        LOG.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
 
-            localeLogger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
+        if (!CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).equalsIgnoreCase("en")) {
+
+            LOG.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
         }
 
         writeLocaleToFile(locale);
@@ -166,14 +168,14 @@ public class LocalizationManager {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
             langProperties.load(bufferedReader);
 
-            localeLogger.debug(String.format("langProperties = %s", langProperties));
+            LOG.debug(String.format("langProperties = %s", langProperties));
 
         } catch (Exception ex) {
-            localeLogger.error(ex);
+            LOG.error(ex);
         }
 
         String langProp = langProperties.getProperty("lang");
-        localeLogger.debug(langProp);
+        LOG.debug(langProp);
 
         boolean doesLanguageExist = false;
 
@@ -181,7 +183,7 @@ public class LocalizationManager {
 
             if (lang.equalsIgnoreCase(langProp)) {
 
-                localeLogger.debug("Lang is correct");
+                LOG.debug("Lang is correct");
                 doesLanguageExist = true;
 
                 break;
@@ -198,19 +200,19 @@ public class LocalizationManager {
 
             langCode = langProperty.split("_");
 
-            currentLanguage.put(LANGUAGE_MAP_PATH, langCode[0]);
-            currentLanguage.put(COUNTRY_MAP_PATH, langCode[1]);
+            CURRENT_LANGUAGE.put(MAP_PATH_LANGUAGE, langCode[0]);
+            CURRENT_LANGUAGE.put(MAP_PATH_COUNTRY, langCode[1]);
 
         } else {
             throw new IncorrectLanguageException();
         }
 
-        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("lang")), new Locale(currentLanguage.get(LANGUAGE_MAP_PATH), currentLanguage.get(COUNTRY_MAP_PATH)));
-        localeLogger.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
+        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("lang")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+        LOG.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
 
-        if (!currentLanguage.get(LANGUAGE_MAP_PATH).equalsIgnoreCase("en")) {
+        if (!CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).equalsIgnoreCase("en")) {
 
-            localeLogger.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
+            LOG.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
         }
     }
 
@@ -221,7 +223,7 @@ public class LocalizationManager {
         try {
             init("en_us");
         } catch (IncorrectLanguageException e) {
-            localeLogger.error("Error during default localization initialization.");
+            LOG.error("Error during default localization initialization.");
         }
     }
 
@@ -235,7 +237,7 @@ public class LocalizationManager {
             String value =  localeResources.getString(languageKey);
             return new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
         } catch (MissingResourceException ex) {
-            localeLogger.error(String.format("ERROR: Language key %s not found in the language file.", ex.getKey()));
+            LOG.error(String.format("ERROR: Language key %s not found in the language file.", ex.getKey()));
             System.exit(8);
         }
         return null;
@@ -253,15 +255,15 @@ public class LocalizationManager {
                 init(getLangPropertiesFile());
             } catch (IncorrectLanguageException e) {
 
-                localeLogger.error("Incorrect language specified, falling back to English (United States)...");
+                LOG.error("Incorrect language specified, falling back to English (United States)...");
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(getLangPropertiesFile()))) {
 
                     if (!getLangPropertiesFile().exists()) {
                         boolean langCreated = getLangPropertiesFile().createNewFile();
                         if (langCreated) {
-                            localeLogger.debug("Lang properties file created successfully.");
+                            LOG.debug("Lang properties file created successfully.");
                         } else {
-                            localeLogger.debug("Lang properties file not created.");
+                            LOG.debug("Lang properties file not created.");
                         }
                     }
 
@@ -269,7 +271,7 @@ public class LocalizationManager {
                     writer.write(String.format("lang=en_us%n"));
 
                 } catch (IOException ex) {
-                    localeLogger.error("Error: There was an error writing the localization properties file.", ex);
+                    LOG.error("Error: There was an error writing the localization properties file.", ex);
                 }
                 init();
             }
@@ -279,9 +281,9 @@ public class LocalizationManager {
                 if (!getLangPropertiesFile().exists()) {
                     boolean langCreated = getLangPropertiesFile().createNewFile();
                     if (langCreated) {
-                        localeLogger.debug("Lang properties file created successfully.");
+                        LOG.debug("Lang properties file created successfully.");
                     } else {
-                        localeLogger.debug("Lang properties file not created.");
+                        LOG.debug("Lang properties file not created.");
                     }
                 }
 
@@ -289,7 +291,7 @@ public class LocalizationManager {
                 writer.write(String.format("lang=en_us%n"));
 
             } catch (IOException ex) {
-                localeLogger.error("Error: There was an error writing the localization properties file.", ex);
+                LOG.error("Error: There was an error writing the localization properties file.", ex);
             }
             init();
         }
@@ -308,9 +310,9 @@ public class LocalizationManager {
             if (!getLangPropertiesFile().exists()) {
                 boolean langCreated = getLangPropertiesFile().createNewFile();
                 if (langCreated) {
-                    localeLogger.debug("Lang properties file created successfully.");
+                    LOG.debug("Lang properties file created successfully.");
                 } else {
-                    localeLogger.debug("Lang properties file not created.");
+                    LOG.debug("Lang properties file not created.");
                 }
             }
 
@@ -318,7 +320,7 @@ public class LocalizationManager {
             writer.write(String.format("lang=%s%n", locale));
 
         } catch (IOException ex) {
-            localeLogger.error("Error: There was an error writing the localization properties file.", ex);
+            LOG.error("Error: There was an error writing the localization properties file.", ex);
         }
     }
 }

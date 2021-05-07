@@ -32,7 +32,7 @@ import java.io.File;
  */
 public class ModloaderInstallerLogTab extends JComponent {
 
-    private LocalizationManager localizationManager;
+    private final LocalizationManager LOCALIZATIONMANAGER;
 
     /**
      * <strong>Constructor</strong><p>
@@ -43,17 +43,13 @@ public class ModloaderInstallerLogTab extends JComponent {
      */
     public ModloaderInstallerLogTab(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
-            this.localizationManager = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
-            this.localizationManager = injectedLocalizationManager;
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
 
-    private JComponent modloaderInstallerLogPanel;
-    private GridBagConstraints constraints;
     private JTextArea textArea;
-    private JScrollPane scrollPane;
-    private SmartScroller smartScroller;
 
     /**
      * Create the tab for the modloader_installer.log tailer in a JScrollPane with an always available vertical scrollbar
@@ -64,9 +60,9 @@ public class ModloaderInstallerLogTab extends JComponent {
      * modloader_installer.log entries.
      */
     JComponent modloaderInstallerLogTab() {
-        modloaderInstallerLogPanel = new JPanel(false);
+        JComponent modloaderInstallerLogPanel = new JPanel(false);
         modloaderInstallerLogPanel.setLayout(new GridBagLayout());
-        constraints = new GridBagConstraints();
+        GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.BOTH;
@@ -82,8 +78,8 @@ public class ModloaderInstallerLogTab extends JComponent {
         Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-                    if (line.contains(localizationManager.getLocalizedString("serversetup.log.info.installserver.fabric.enter")) ||
-                            line.contains(localizationManager.getLocalizedString("serversetup.log.info.installserver.forge.enter"))) {
+                    if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.enter")) ||
+                            line.contains(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.enter"))) {
                         textArea.setText("");
                     }
                     textArea.append(line + "\n");
@@ -91,12 +87,12 @@ public class ModloaderInstallerLogTab extends JComponent {
             }
         }, 2000, false);
 
-        scrollPane = new JScrollPane(
+        JScrollPane scrollPane = new JScrollPane(
                 textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        smartScroller = new SmartScroller(scrollPane);
+        new SmartScroller(scrollPane);
 
         modloaderInstallerLogPanel.add(scrollPane, constraints);
 

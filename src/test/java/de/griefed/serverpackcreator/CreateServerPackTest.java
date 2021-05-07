@@ -77,7 +77,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 class CreateServerPackTest {
 
     private CreateServerPack createServerPack;
-    private FilesSetup filesSetup;
+    private DefaultFiles filesSetup;
     private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
     private Configuration configuration;
@@ -87,7 +87,7 @@ class CreateServerPackTest {
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);
         createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
-        filesSetup = new FilesSetup(localizationManager);
+        filesSetup = new DefaultFiles(localizationManager);
     }
 
     @BeforeEach

@@ -61,7 +61,7 @@ public class CurseMinecraft {
 
     /**
      * Getter for modloader related information using {@link CurseModLoaders}.
-     * @return List CurseModLoaders. Returns an isntance of CurseModLoaders.class with information about the modlaoder
+     * @return List CurseModLoaders. Returns an instance of CurseModLoaders.class with information about the modloader
      * and modloader version used by the CurseForge modpack.
      */
     public List<CurseModLoaders> getModLoaders() {

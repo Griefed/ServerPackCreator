@@ -32,7 +32,7 @@ import java.io.File;
  */
 public class ServerPackCreatorLogTab extends JComponent {
 
-    private LocalizationManager localizationManager;
+    private final LocalizationManager LOCALIZATIONMANAGER;
 
     /**
      * <strong>Constructor</strong><p>
@@ -43,17 +43,13 @@ public class ServerPackCreatorLogTab extends JComponent {
      */
     public ServerPackCreatorLogTab(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
-            this.localizationManager = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
-            this.localizationManager = injectedLocalizationManager;
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
 
-    private JComponent serverPackCreatorLogPanel;
-    private GridBagConstraints constraints;
     private JTextArea textArea;
-    private JScrollPane scrollPane;
-    private SmartScroller smartScroller;
 
     /**
      * Create the tab for the serverpackcreator.log tailer in a JScrollPane with an always available vertical scrollbar
@@ -64,9 +60,9 @@ public class ServerPackCreatorLogTab extends JComponent {
      * serverpackcreator.log entries.
      */
     JComponent serverPackCreatorLogTab() {
-        serverPackCreatorLogPanel = new JPanel(false);
+        JComponent serverPackCreatorLogPanel = new JPanel(false);
         serverPackCreatorLogPanel.setLayout(new GridBagLayout());
-        constraints = new GridBagConstraints();
+        GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.BOTH;
@@ -82,7 +78,7 @@ public class ServerPackCreatorLogTab extends JComponent {
         Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-                    if (line.contains(localizationManager.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
+                    if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
                         textArea.setText("");
                     }
                     textArea.append(line + "\n");
@@ -90,12 +86,12 @@ public class ServerPackCreatorLogTab extends JComponent {
             }
         }, 2000, false);
 
-        scrollPane = new JScrollPane(
+        JScrollPane scrollPane = new JScrollPane(
                 textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        smartScroller = new SmartScroller(scrollPane);
+        new SmartScroller(scrollPane);
 
         serverPackCreatorLogPanel.add(scrollPane, constraints);
 

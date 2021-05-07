@@ -70,12 +70,13 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * a projectID,fileID.
  */
 public class CurseCreateModpack {
-    private static final Logger appLogger = LogManager.getLogger(CurseCreateModpack.class);
+    private static final Logger LOG = LogManager.getLogger(CurseCreateModpack.class);
+
+    private final LocalizationManager LOCALIZATIONMANAGER;
+
     private String projectName;
     private String fileName;
     private String fileDiskName;
-
-    private LocalizationManager localizationManager;
 
     /**
      * <strong>Constructor</strong><p>
@@ -86,9 +87,9 @@ public class CurseCreateModpack {
      */
     public CurseCreateModpack(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
-            this.localizationManager = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
-            this.localizationManager = injectedLocalizationManager;
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
 
@@ -105,7 +106,7 @@ public class CurseCreateModpack {
      * @param newProjectID The ID of the new CurseForge project.
      */
     void setProjectName(int newProjectID) {
-        String newProjectName = null;
+        String newProjectName;
         try {
             if (CurseAPI.project(newProjectID).isPresent()) {
                 newProjectName = CurseAPI.project(newProjectID).get().name();
@@ -113,10 +114,45 @@ public class CurseCreateModpack {
                 newProjectName = String.valueOf(newProjectID);
             }
         } catch (CurseException cex) {
-            appLogger.error(cex);
+            LOG.error(cex);
             newProjectName = String.valueOf(newProjectID);
         }
         this.projectName = newProjectName;
+    }
+
+    /**
+     * Setter for the CurseForge file name and file disk name.
+     * @param newProjectID The ID of the CurseForge project.
+     * @param newFileID The ID of the CurseForge file.
+     */
+    void setFileNameAndDiskName(int newProjectID, int newFileID) {
+        String newFileName;
+        String newFileDiskName;
+
+        try {
+            if (CurseAPI.project(newProjectID).isPresent()) {
+                try {
+                    newFileName = Objects.requireNonNull(CurseAPI.project(newProjectID).get().files().fileWithID(newFileID)).displayName();
+                }
+                catch (NullPointerException npe) {
+                    newFileName = Objects.requireNonNull(CurseAPI.project(newProjectID).get().files().fileWithID(newFileID)).nameOnDisk();
+                }
+
+                newFileDiskName = Objects.requireNonNull(CurseAPI.project(newProjectID).get().files().fileWithID(newFileID)).nameOnDisk();
+
+            } else {
+                newFileName = String.valueOf(newFileID);
+                newFileDiskName = String.valueOf(newFileID);
+            }
+
+        } catch (CurseException cex) {
+            LOG.error(cex);
+            newFileName = String.valueOf(newFileID);
+            newFileDiskName = String.valueOf(newFileID);
+        }
+
+        this.fileDiskName = newFileDiskName;
+        this.fileName = newFileName;
     }
 
     /**
@@ -125,42 +161,6 @@ public class CurseCreateModpack {
      */
     String getFileName() {
         return fileName;
-    }
-
-    /**
-     * Setter for the CurseForge file name and file disk name.
-     * @param newProjectID The ID of the CurseForge project.
-     * @param newFileID The ID of the CurseForge file.
-     */
-    @SuppressWarnings("ConstantConditions")
-    void setFileNameAndDiskName(int newProjectID, int newFileID) {
-        String newFileName = null;
-        String newFileDiskName = null;
-
-        try {
-            if (CurseAPI.project(newProjectID).isPresent()) {
-                try {
-                    newFileName = CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).displayName();
-                }
-                catch (NullPointerException npe) {
-                    newFileName = CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
-                }
-
-                newFileDiskName = CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
-
-            } else {
-                newFileName = String.valueOf(newFileID);
-                newFileDiskName = String.valueOf(newFileID);
-            }
-
-        } catch (CurseException cex) {
-            appLogger.error(cex);
-            newFileName = String.valueOf(newFileID);
-            newFileDiskName = String.valueOf(newFileID);
-        }
-
-        this.fileDiskName = newFileDiskName;
-        this.fileName = newFileName;
     }
 
     /**
@@ -211,7 +211,7 @@ public class CurseCreateModpack {
                 setProjectName(projectID);
                 setFileNameAndDiskName(projectID, fileID);
             }
-        } catch (CurseException cex) { appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.curseforgemodpack"), projectID, fileID), cex); }
+        } catch (CurseException cex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.curseforgemodpack"), projectID, fileID), cex); }
 
         if (!checkCurseForgeDir(modpackDir) &&
                 !getProjectName().equals(String.valueOf(projectID)) &&
@@ -238,19 +238,18 @@ public class CurseCreateModpack {
      * @param projectID Integer. The ID of the project. Used to gather information and to download the modpack.
      * @param fileID Integer. The ID of the file. Used to gather information and to download the modpack.
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     void initializeModpack(String modpackDir, Integer projectID, Integer fileID) {
         try {
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.download"), getProjectName(), getFileName()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.download"), getProjectName(), getFileName()));
 
             CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
         } catch (CurseException cex) {
-            appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.initializemodpack.download"), getFileName(), getProjectName(), modpackDir));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.initializemodpack.download"), getFileName(), getProjectName(), modpackDir));
         }
 
         unzipArchive(String.format("%s/%s", modpackDir, getFileDiskName()), modpackDir);
         boolean isFileDeleted = new File(String.format("%s/%s", modpackDir, getFileDiskName())).delete();
-        if (isFileDeleted) { appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.deletezip")); }
+        if (isFileDeleted) { LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.deletezip")); }
 
         try {
             byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
@@ -262,23 +261,24 @@ public class CurseCreateModpack {
             String[] minecraftLoaderVersions = modpack.getMinecraft().toString().split(",");
             String[] modLoaderVersion = minecraftLoaderVersions[1].replace("[", "").replace("]", "").split("-");
 
-            appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.infoheader"));
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modpackname"), modpack.getName()));
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modpackversion"), modpack.getVersion()));
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modpackauthor"), modpack.getAuthor()));
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modpackminecraftversion"), minecraftLoaderVersions[0].replace("[", "")));
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modloader"), setModloaderCase(modLoaderVersion[0])));
-            appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.modloaderversion"), modLoaderVersion[1]));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.infoheader"));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.modpackname"), modpack.getName()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.modpackversion"), modpack.getVersion()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.modpackauthor"), modpack.getAuthor()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.modpackminecraftversion"), minecraftLoaderVersions[0].replace("[", "")));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.modloader"), setModloaderCase(modLoaderVersion[0])));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.modloaderversion"), modLoaderVersion[1]));
 
-        } catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.initializemodpack.readmodpack"), ex); }
+        } catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.initializemodpack.readmodpack"), ex); }
 
         copyOverride(modpackDir);
         if (new File(String.format("%s/overrides", modpackDir)).isDirectory()) {
             try {
                 Path pathToBeDeleted = Paths.get(String.format("%s/overrides", modpackDir));
+                //noinspection ResultOfMethodCallIgnored
                 Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             } catch (IOException ex) {
-                appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.initializemodpack.overrides"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.initializemodpack.overrides"));
             }
         }
 
@@ -295,9 +295,8 @@ public class CurseCreateModpack {
      * was taken down, no longer exists, CurseForge is unavailable etc. etc. There's nothing we can do about that.
      * @param modpackDir String. All mods are downloaded to the child-directory "mods" inside the modpack directory.
      */
-    @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
     void downloadMods(String modpackDir) {
-        appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.downloadmods.info"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.downloadmods.info"));
         List<String> failedDownloads = new ArrayList<>();
 
         try {
@@ -312,7 +311,7 @@ public class CurseCreateModpack {
             CurseSplines curseSplines = new CurseSplines();
             for (int i = 0; i < curseModpack.getFiles().size(); i++) {
                 if (randInt.nextInt(curseModpack.getFiles().size())==i) {
-                    appLogger.info(curseSplines.reticulate());
+                    LOG.info(curseSplines.reticulate());
                 }
                 String[] mods = curseModpack.getFiles().get(i).toString().split(",");
 
@@ -325,34 +324,36 @@ public class CurseCreateModpack {
 
                 try {
 
+                    //noinspection OptionalGetWithoutIsPresent
                     modName = CurseAPI.project(modID).get().name();
+                    //noinspection OptionalGetWithoutIsPresent
                     modFileName = Objects.requireNonNull(CurseAPI.project(modID).get().files().fileWithID(fileID)).nameOnDisk();
 
                 } catch (CurseException cex) {
-                    appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.curseforgeinfo"), cex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.downloadmods.curseforgeinfo"), cex);
                 }
 
                 try {
 
-                    appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.downloadmods.specificmod"), i+1, curseModpack.getFiles().size(), modName, modFileName));
+                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.downloadmods.specificmod"), i+1, curseModpack.getFiles().size(), modName, modFileName));
                     //Download mod
                     CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
 
                     try { Thread.sleep(1000); }
-                    catch (InterruptedException iex) { appLogger.debug(localizationManager.getLocalizedString("createmodpack.log.debug.downloadmods.sleep"), iex); }
+                    catch (InterruptedException iex) { LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.debug.downloadmods.sleep"), iex); }
 
                 } catch (CurseException cex) {
-                    appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.errordownload"), modName, modID, modFileName, fileID));
+                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.downloadmods.errordownload"), modName, modID, modFileName, fileID));
 
                     try {
 
-                        appLogger.info(String.format(localizationManager.getLocalizedString("createmodpack.log.info.downloadmods.tryagain"), modName, modID, modFileName, fileID));
+                        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.downloadmods.tryagain"), modName, modID, modFileName, fileID));
                         //Retry download if previous attempt failed
                         CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
 
                     } catch (CurseException cex2) {
 
-                        appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.retryfail"), modName, modID, modFileName, fileID));
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.downloadmods.retryfail"), modName, modID, modFileName, fileID));
 
                         try {
                             //Add URL of failed download to list
@@ -360,18 +361,18 @@ public class CurseCreateModpack {
 
                         } catch (CurseException cex3) {
 
-                            appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.urlfail"));
+                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.downloadmods.urlfail"));
                         }
                     }
                 }
             }
         } catch (IOException ex) {
-            appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.fail"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.downloadmods.fail"));
         }
         if (failedDownloads.size() != 0) {
             //Print the URLs of failed downloads, if there are any
             for (int i = 0; i <= failedDownloads.size(); i++) {
-                appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.downloadmods.urllist"), failedDownloads.get(i)));
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.downloadmods.urllist"), failedDownloads.get(i)));
             }
         }
     }
@@ -382,22 +383,22 @@ public class CurseCreateModpack {
      *                  are copied to the parent directory, the modpack directory.
      */
     void copyOverride(String modpackDir) {
-        appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.copyoverrides.info"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.copyoverrides.info"));
         try {
             Stream<Path> files = Files.walk(Paths.get(String.format("%s/overrides", modpackDir)));
             files.forEach(file -> {
                 try {
                     Files.copy(file, Paths.get(modpackDir).resolve(Paths.get(String.format("%s/overrides", modpackDir)).relativize(file)), REPLACE_EXISTING);
-                    appLogger.debug(String.format(localizationManager.getLocalizedString("createmodpack.log.debug.copyoverrides.status"), file.toAbsolutePath().toString()));
+                    LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.debug.copyoverrides.status"), file.toAbsolutePath()));
                 } catch (IOException ex) {
                     if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                        appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.copyoverrides.copy"), ex);
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.copyoverrides.copy"), ex);
                     }
                 }
             });
             files.close();
         } catch (IOException ex) {
-            appLogger.error(localizationManager.getLocalizedString("createmodpack.log.error.copyoverrides.copy"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.copyoverrides.copy"), ex);
         }
     }
 
@@ -413,9 +414,9 @@ public class CurseCreateModpack {
     boolean checkCurseForgeDir(String modpackDir) {
         boolean isModpackPresent = false;
         if (!(new File(modpackDir).isDirectory()) && !(new File(String.format("%s/manifest.json", modpackDir)).exists())) {
-            appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.checkcurseforgedir.create"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.checkcurseforgedir.create"));
         } else {
-            appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.checkcurseforgedir"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.checkcurseforgedir"));
             isModpackPresent = cleanupEnvironment(modpackDir);
         }
         return isModpackPresent;
@@ -429,7 +430,7 @@ public class CurseCreateModpack {
      * @param modpackDir The directory into which the ZIP-archive will be unzipped into.
      */
     void unzipArchive(String zipFile, String modpackDir) {
-        appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.unziparchive"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.unziparchive"));
         File destDir = new File(modpackDir);
         byte[] buffer = new byte[1024];
         try {
@@ -439,12 +440,12 @@ public class CurseCreateModpack {
                 final File newFile = newFile(destDir, zipEntry);
                 if (zipEntry.isDirectory()) {
                     if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), newFile));
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), newFile));
                     }
                 } else {
                     File parent = newFile.getParentFile();
                     if (!parent.isDirectory() && !parent.mkdirs()) {
-                        appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), parent));
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), parent));
                     }
                     final FileOutputStream output = new FileOutputStream(newFile);
                     int length;
@@ -458,7 +459,7 @@ public class CurseCreateModpack {
             input.closeEntry();
             input.close();
         } catch (IOException ex) {
-            appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.unziparchive.extract"), zipFile), ex);
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.unziparchive.extract"), zipFile), ex);
         }
     }
 
@@ -481,15 +482,15 @@ public class CurseCreateModpack {
             destDirPath = destinationDir.getCanonicalPath();
 
         } catch (IOException ex) {
-            appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.newfile.path"), destinationDir), ex);
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.newfile.path"), destinationDir), ex);
         }
         try {
             destFilePath = destFile.getCanonicalPath();
         } catch (IOException ex) {
-            appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.newfile.path"), destFile.toString()), ex);
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.newfile.path"), destFile), ex);
         }
         if (destFilePath != null && !destFilePath.startsWith(destDirPath + File.separator)) {
-            appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.newfile.outside"), zipEntry.getName()));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.newfile.outside"), zipEntry.getName()));
         }
         return destFile;
     }
@@ -503,7 +504,7 @@ public class CurseCreateModpack {
     boolean cleanupEnvironment(String modpackDir) {
         boolean cleanedUp = false;
         if (new File(modpackDir).exists()) {
-            appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.cleanupenvironment.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.cleanupenvironment.enter"));
             Path modpackPath = Paths.get(modpackDir);
             try {
                 Files.walkFileTree(modpackPath,
@@ -524,9 +525,9 @@ public class CurseCreateModpack {
                         });
             } catch (IOException ex) {
                 cleanedUp = true;
-                appLogger.error(String.format(localizationManager.getLocalizedString("createmodpack.log.error.cleanupenvironment"), modpackDir));
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.cleanupenvironment"), modpackDir));
             } finally {
-                appLogger.info(localizationManager.getLocalizedString("createmodpack.log.info.cleanupenvironment.complete"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.cleanupenvironment.complete"));
             }
         }
         return cleanedUp;

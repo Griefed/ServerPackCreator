@@ -41,9 +41,9 @@ import java.util.Objects;
  * to Griefed#s discord server in your browser.
  */
 public class AboutTab extends Component {
-    private static final Logger appLogger = LogManager.getLogger(AboutTab.class);
+    private static final Logger LOG = LogManager.getLogger(AboutTab.class);
 
-    private LocalizationManager localizationManager;
+    private final LocalizationManager LOCALIZATIONMANAGER;
 
     /**
      * <strong>Constructor</strong><p>
@@ -54,31 +54,24 @@ public class AboutTab extends Component {
      */
     public AboutTab(LocalizationManager injectedLocalizationManager) {
         if (injectedLocalizationManager == null) {
-            this.localizationManager = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
-            this.localizationManager = injectedLocalizationManager;
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
 
-    private final Dimension miscButtonDimension = new Dimension(50,50);
+    private final Dimension DIMENSION_MISC_BUTTON = new Dimension(50,50);
 
-    private final ImageIcon issueIcon           = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/issue.png")));
-    private final ImageIcon hastebinIcon        = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
-    private final ImageIcon prosperIcon         = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/prosper.png")));
+    private final ImageIcon ICON_ISSUE = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/issue.png")));
+    private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
+    private final ImageIcon ICON_PROSPER = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/prosper.png")));
+
+    private final Clipboard CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+    private final File FILE_CONFIG = new File("serverpackcreator.conf");
+    private final File LOG_SERVERPACKCREATOR = new File("logs/serverpackcreator.log");
 
     private JComponent aboutPanel;
-
-    private GridBagConstraints constraints;
-
-    private JTextPane textPane;
-
-    private SimpleAttributeSet attributeSet;
-
-    private StyledDocument document;
-
-    private JButton buttonCreatePasteBin;
-    private JButton buttonOpenIssue;
-    private JButton buttonDiscord;
 
     private JTextArea textArea;
 
@@ -88,12 +81,8 @@ public class AboutTab extends Component {
 
     private StringSelection stringSelection;
 
-    private Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
-    private final File serverPackCreatorConf = new File("serverpackcreator.conf");
-    private final File serverPackCreatorLog = new File("logs/serverpackcreator.log");
-
     private String[] options;
+
     private int userResponse;
 
     /**
@@ -108,7 +97,7 @@ public class AboutTab extends Component {
     JComponent aboutTab() {
         aboutPanel = new JPanel(false);
         aboutPanel.setLayout(new GridBagLayout());
-        constraints = new GridBagConstraints();
+        GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.BOTH;
@@ -117,29 +106,29 @@ public class AboutTab extends Component {
         constraints.gridwidth = 3;
 
         //About Panel
-        textPane = new JTextPane();
+        JTextPane textPane = new JTextPane();
         textPane.setEditable(false);
         textPane.setOpaque(false);
         textPane.setMinimumSize(new Dimension(getMaximumSize().width,520));
         textPane.setPreferredSize(new Dimension(getMaximumSize().width,520));
         textPane.setMaximumSize(new Dimension(getMaximumSize().width,520));
 
-        attributeSet = new SimpleAttributeSet();
+        SimpleAttributeSet attributeSet = new SimpleAttributeSet();
         StyleConstants.setBold(attributeSet, true);
         StyleConstants.setFontSize(attributeSet, 14);
         textPane.setCharacterAttributes(attributeSet, true);
 
-        document = textPane.getStyledDocument();
+        StyledDocument document = textPane.getStyledDocument();
         StyleConstants.setAlignment(attributeSet, StyleConstants.ALIGN_CENTER);
         document.setParagraphAttributes(0, document.getLength(), attributeSet, false);
 
         try {
             document.insertString(
                     document.getLength(),
-                    localizationManager.getLocalizedString("createserverpack.gui.about.text"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.text"),
                     attributeSet
             ); } catch (BadLocationException ex) {
-            appLogger.error(localizationManager.getLocalizedString("about.log.error.document"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.document"), ex);
         }
         aboutPanel.add(textPane, constraints);
 
@@ -157,40 +146,40 @@ public class AboutTab extends Component {
         constraints.gridwidth = 1;
 
         //Button to upload log file to hastebin
-        buttonCreatePasteBin = new JButton();
-        buttonCreatePasteBin.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.hastebin"));
-        buttonCreatePasteBin.setIcon(hastebinIcon);
-        buttonCreatePasteBin.setPreferredSize(miscButtonDimension);
+        JButton buttonCreatePasteBin = new JButton();
+        buttonCreatePasteBin.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin"));
+        buttonCreatePasteBin.setIcon(ICON_HASTEBIN);
+        buttonCreatePasteBin.setPreferredSize(DIMENSION_MISC_BUTTON);
         buttonCreatePasteBin.addActionListener(e -> {
 
             textArea = new JTextArea();
             textArea.setOpaque(false);
-            configURL = createHasteBinFromFile(serverPackCreatorConf);
-            spclogURL = createHasteBinFromFile(serverPackCreatorLog);
+            configURL = createHasteBinFromFile(FILE_CONFIG);
+            spclogURL = createHasteBinFromFile(LOG_SERVERPACKCREATOR);
             textAreaContent = String.format(
                     "%s\n%s\n" +
                     "%s\n%s\n",
-                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.conf"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.conf"),
                     configURL,
-                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.spclog"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.spclog"),
                     spclogURL
             );
 
             textArea.setText(textAreaContent);
 
             options = new String[] {
-                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog.yes"),
-                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no"),
-                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog.clipboard"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.yes"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.clipboard"),
             };
 
             userResponse = JOptionPane.showOptionDialog(
                     aboutPanel,
                     textArea,
-                    localizationManager.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.INFORMATION_MESSAGE,
-                    hastebinIcon,
+                    ICON_HASTEBIN,
                     options,
                     options[0]
             );
@@ -205,14 +194,14 @@ public class AboutTab extends Component {
                             Desktop.getDesktop().browse(URI.create(spclogURL));
                         }
                     } catch (IOException ex) {
-                        appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
                     }
                     break;
 
                 case 2:
 
                     stringSelection = new StringSelection(textAreaContent);
-                    clipboard.setContents(stringSelection, null);
+                    CLIPBOARD.setContents(stringSelection, null);
                     break;
 
                 default:
@@ -224,10 +213,10 @@ public class AboutTab extends Component {
         aboutPanel.add(buttonCreatePasteBin, constraints);
 
         //Button to open a new issue on GitHub
-        buttonOpenIssue = new JButton();
-        buttonOpenIssue.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.issue"));
-        buttonOpenIssue.setIcon(issueIcon);
-        buttonOpenIssue.setPreferredSize(miscButtonDimension);
+        JButton buttonOpenIssue = new JButton();
+        buttonOpenIssue.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.issue"));
+        buttonOpenIssue.setIcon(ICON_ISSUE);
+        buttonOpenIssue.setPreferredSize(DIMENSION_MISC_BUTTON);
         buttonOpenIssue.addActionListener(e -> {
 
             try {
@@ -235,7 +224,7 @@ public class AboutTab extends Component {
                     Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
                 }
             } catch (IOException ex) {
-                appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
             }
 
         });
@@ -244,10 +233,10 @@ public class AboutTab extends Component {
         aboutPanel.add(buttonOpenIssue, constraints);
 
         //Button to open the invite link to the discord server
-        buttonDiscord = new JButton();
-        buttonDiscord.setToolTipText(localizationManager.getLocalizedString("createserverpack.gui.about.discord"));
-        buttonDiscord.setIcon(prosperIcon);
-        buttonDiscord.setPreferredSize(miscButtonDimension);
+        JButton buttonDiscord = new JButton();
+        buttonDiscord.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.discord"));
+        buttonDiscord.setIcon(ICON_PROSPER);
+        buttonDiscord.setPreferredSize(DIMENSION_MISC_BUTTON);
         buttonDiscord.addActionListener(e -> {
 
             try {
@@ -255,7 +244,7 @@ public class AboutTab extends Component {
                     Desktop.getDesktop().browse(URI.create("https://discord.griefed.de"));
                 }
             } catch (IOException ex) {
-                appLogger.error(localizationManager.getLocalizedString("about.log.error.browser"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
             }
 
         });
@@ -294,22 +283,25 @@ public class AboutTab extends Component {
         BufferedReader bufferedReader;
 
         try { url = new URL(requestURL); }
-        catch (IOException ex) {appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.request"), ex);}
+        catch (IOException ex) {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.abouttab.hastebin.request"), ex);}
 
         try { text = FileUtils.readFileToString(textFile, "UTF-8"); }
-        catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.readfile"),ex); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.abouttab.hastebin.readfile"),ex); }
 
         postData = Objects.requireNonNull(text).getBytes(StandardCharsets.UTF_8);
         postDataLength = postData.length;
 
         try { conn = (HttpsURLConnection) Objects.requireNonNull(url).openConnection(); }
-        catch (IOException ex) {appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.connection"), ex);}
+        catch (IOException ex) {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.abouttab.hastebin.connection"), ex);}
 
         Objects.requireNonNull(conn).setDoOutput(true);
         conn.setInstanceFollowRedirects(false);
 
         try { conn.setRequestMethod("POST"); }
-        catch (ProtocolException ex) {appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.method"), ex);}
+        catch (ProtocolException ex) {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.abouttab.hastebin.method"), ex);}
 
         conn.setRequestProperty("User-Agent", "HasteBin-Creator for ServerPackCreator");
         conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
@@ -321,7 +313,7 @@ public class AboutTab extends Component {
             bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             response = bufferedReader.readLine();
         } catch (IOException ex) {
-            appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.response"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.abouttab.hastebin.response"), ex);
         }
 
         if (Objects.requireNonNull(response).contains("\"key\"")) {
@@ -331,7 +323,7 @@ public class AboutTab extends Component {
         if (response.contains("https://haste.zneix.eu")) {
             return response;
         } else {
-            return localizationManager.getLocalizedString("createserverpack.log.error.abouttab.hastebin.response");
+            return LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.abouttab.hastebin.response");
         }
 
     }

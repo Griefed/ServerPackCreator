@@ -51,7 +51,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Hey, Griefed here. I tried to add a tiled background image to the frame which holds the JTabbedPane, but after serveral
+ * Hey, Griefed here. I tried to add a tiled background image to the frame which holds the JTabbedPane, but after several
  * failed attempts, I gave up and almost threw the idea out of the window. I wanted to set the background to a tiled image,
  * because simply setting a colour seemed too boring, and I needed <em>something</em> in the background so the banner
  * icon would be more clear to the eye. So, I activated my Google-Fu and encountered this holy grail of tiling images
@@ -159,7 +159,7 @@ public class BackgroundPanel extends JPanel {
      * @param alignmentX Sets the alignment along the x-axis.
      */
     public void setImageAlignmentX(float alignmentX) {
-        this.alignmentX = alignmentX > 1.0f ? 1.0f : alignmentX < 0.0f ? 0.0f : alignmentX;
+        this.alignmentX = alignmentX > 1.0f ? 1.0f : Math.max(alignmentX, 0.0f);
         repaint();
     }
 
@@ -168,7 +168,7 @@ public class BackgroundPanel extends JPanel {
      * @param alignmentY Sets the alignment along the y-axis.
      */
     public void setImageAlignmentY(float alignmentY) {
-        this.alignmentY = alignmentY > 1.0f ? 1.0f : alignmentY < 0.0f ? 0.0f : alignmentY;
+        this.alignmentY = alignmentY > 1.0f ? 1.0f : Math.max(alignmentY, 0.0f);
         repaint();
     }
 
@@ -195,7 +195,7 @@ public class BackgroundPanel extends JPanel {
     /**
      * Override method so we can make the component transparent.
      * @param component JComponent to add to the panel.
-     * @param constraints Contraints wich which the panel should be added.
+     * @param constraints Constraints with which the panel should be added.
      */
     public void add(JComponent component, Object constraints) {
         if (isTransparentAdd)
@@ -260,10 +260,6 @@ public class BackgroundPanel extends JPanel {
         if (image == null ) return;
 
         switch (style) {
-            case SCALED :
-                drawScaled(g);
-                break;
-
             case TILED  :
                 drawTiled(g);
                 break;
