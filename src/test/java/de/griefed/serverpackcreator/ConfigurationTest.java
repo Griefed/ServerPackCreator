@@ -186,7 +186,7 @@ class ConfigurationTest {
 
     @Test
     void testCheckCopyDirsCorrect() {
-        String modpackDir = "./src/test/resources/forge_tests";
+        String modpackDir = "src/test/resources/forge_tests";
         List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",

@@ -347,19 +347,32 @@ class CreateServerPackTest {
     void excludeClientModsTest() {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "aaaaa","bbbbb","ccccc","fffff","ggggg","hhhhh","iiiii","jjjjj","kkkkk","lllll",
-                "nnnnn","ppppp","qqqqq","rrrrr","uuuuu","vvvvv","wwwww","xxxxx","yyyyy","zzzzz"
+                "nnnnn","ppppp","qqqqq","rrrrr","uuuuu","vvvvv","wwwww","xxxxx","yyyyy"
         ));
-        List<String> result = createServerPack.excludeClientMods("./src/test/resources/forge_tests/mods", clientMods);
-        Assertions.assertFalse(result.contains("aaaaa")); Assertions.assertFalse(result.contains("bbbbb"));
-        Assertions.assertFalse(result.contains("ccccc")); Assertions.assertFalse(result.contains("fffff"));
-        Assertions.assertFalse(result.contains("ggggg")); Assertions.assertFalse(result.contains("hhhhh"));
-        Assertions.assertFalse(result.contains("iiiii")); Assertions.assertFalse(result.contains("jjjjj"));
-        Assertions.assertFalse(result.contains("kkkkk")); Assertions.assertFalse(result.contains("lllll"));
-        Assertions.assertFalse(result.contains("nnnnn")); Assertions.assertFalse(result.contains("ppppp"));
-        Assertions.assertFalse(result.contains("qqqqq")); Assertions.assertFalse(result.contains("rrrrr"));
-        Assertions.assertFalse(result.contains("uuuuu")); Assertions.assertFalse(result.contains("vvvvv"));
-        Assertions.assertFalse(result.contains("wwwww")); Assertions.assertFalse(result.contains("xxxxx"));
-        Assertions.assertFalse(result.contains("yyyyy")); Assertions.assertFalse(result.contains("zzzzz"));
+        List<String> result = createServerPack.excludeClientMods("src/test/resources/forge_tests/mods", clientMods);
+        System.out.println(result);
+        Assertions.assertFalse(result.toString().contains("aaaaa"));
+        Assertions.assertFalse(result.toString().contains("bbbbb"));
+        Assertions.assertFalse(result.toString().contains("ccccc"));
+        Assertions.assertFalse(result.toString().contains("fffff"));
+        Assertions.assertFalse(result.toString().contains("ggggg"));
+        Assertions.assertFalse(result.toString().contains("hhhhh"));
+        Assertions.assertFalse(result.toString().contains("iiiii"));
+        Assertions.assertFalse(result.toString().contains("jjjjj"));
+        Assertions.assertFalse(result.toString().contains("kkkkk"));
+        Assertions.assertFalse(result.toString().contains("lllll"));
+        Assertions.assertFalse(result.toString().contains("nnnnn"));
+        Assertions.assertFalse(result.toString().contains("ppppp"));
+        Assertions.assertFalse(result.toString().contains("qqqqq"));
+        Assertions.assertFalse(result.toString().contains("rrrrr"));
+        Assertions.assertFalse(result.toString().contains("uuuuu"));
+        Assertions.assertFalse(result.toString().contains("vvvvv"));
+        Assertions.assertFalse(result.toString().contains("wwwww"));
+        Assertions.assertFalse(result.toString().contains("xxxxx"));
+        Assertions.assertFalse(result.toString().contains("yyyyy"));
+        Assertions.assertTrue(result.toString().contains("zzzzz"));
+
+        Assertions.assertTrue(result.toString().contains("testmod"));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -614,11 +627,12 @@ class CreateServerPackTest {
     }
 
     @Test
-    void cleanUpServerPackForgeTest() {
+    void cleanUpServerPackForgeTest() throws IOException {
         String modLoader = "Forge";
         String modpackDir = "./src/test/resources/forge_tests";
         String minecraftVersion = "1.16.5";
         String modLoaderVersion = "36.1.2";
+        new File("./src/test/resources/forge_tests/server_pack/forge-1.16.5-36.1.2.jar").createNewFile();
         createServerPack.cleanUpServerPack(
                 new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)),
                 new File(String.format("%s/server_pack/forge-%s-%s.jar", modpackDir, minecraftVersion, modLoaderVersion)),

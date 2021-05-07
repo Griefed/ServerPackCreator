@@ -140,6 +140,8 @@ class CurseCreateModpackTest {
                 .files()
                 .fileWithID(fileID))
                 .displayName();
+        curseCreateModpack.setProjectName(238298);
+        curseCreateModpack.setFileNameAndDiskName(238298,3174854);
         String modpackDir = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
         curseCreateModpack.initializeModpack(modpackDir, projectID, fileID);
         Assertions.assertTrue(new File(String.format("./src/test/resources/forge_tests/%s", projectName)).isDirectory());
