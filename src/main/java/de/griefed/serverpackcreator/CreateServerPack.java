@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import kotlin.internal.AccessibleLateinitPropertyLiteral;
 import net.fabricmc.installer.util.LauncherMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -475,6 +476,7 @@ public class CreateServerPack {
         List<String> modsInModpack = new ArrayList<>();
 
         try {
+            assert listModsInModpack != null;
             for (File mod : listModsInModpack) {
                 if (mod.isFile()) {
                     modsInModpack.add(mod.getAbsolutePath());
@@ -484,12 +486,12 @@ public class CreateServerPack {
             appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.excludeclientmods"), np);
         }
 
-        for (int inc = 0; inc < modsInModpack.size(); inc++) {
-            for (int inc2 = 0; inc2 < clientMods.size(); inc2++) {
-                if (modsInModpack.get(inc).contains(clientMods.get(inc2))) {
-                    modsInModpack.remove(inc);
-                }
-            }
+        for (int iclient = 0; iclient < clientMods.size(); iclient++) {
+
+            int i = iclient;
+
+            modsInModpack.removeIf(n -> (n.contains(clientMods.get(i))));
+
         }
 
         return modsInModpack;
