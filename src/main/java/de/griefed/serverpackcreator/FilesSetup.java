@@ -163,11 +163,10 @@ public class FilesSetup {
      */
     void filesSetup() {
         appLogger.info(localizationManager.getLocalizedString("filessetup.log.info.filessetup.enter"));
-        try {
-            Files.createDirectories(Paths.get("./server_files"));
-        } catch (IOException ex) {
-            appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.filessetup"), ex);
-        }
+
+        try { Files.createDirectories(Paths.get("./server_files")); }
+        catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+
         boolean doesConfigExist         = checkForConfig();
         boolean doesFabricLinuxExist    = checkForFabricLinux();
         boolean doesFabricWindowsExist  = checkForFabricWindows();
@@ -176,6 +175,7 @@ public class FilesSetup {
         boolean doesPropertiesExist     = checkForProperties();
         boolean doesIconExist           = checkForIcon();
 
+        // Inform user about customization of files if any of them were generated from the template.
         if (doesConfigExist            ||
                 doesFabricLinuxExist   ||
                 doesFabricWindowsExist ||

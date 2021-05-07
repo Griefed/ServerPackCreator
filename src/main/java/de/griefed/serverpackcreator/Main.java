@@ -80,16 +80,21 @@ public class Main {
         LocalizationManager localizationManager = new LocalizationManager();
         if (Arrays.asList(args).contains("-lang")) {
             try {
+                // Init the LocalizationManager with the locale passed by the cli arguments.
                 localizationManager.init(programArgs.get(programArgs.indexOf("-lang") + 1));
             } catch (IncorrectLanguageException e) {
                 appLogger.info(programArgs.get(programArgs.indexOf("-lang") + 1));
                 appLogger.error("Incorrect language specified, falling back to English (United States)...");
+
+                // Init the LocalizationManager with the default locale en_US.
                 localizationManager.init();
             }
         } else {
+            // Check local lang.properties file for locale setting.
             localizationManager.checkLocaleFile();
         }
 
+        // Prepare instances for dependency injection
         CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
         Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
         FilesSetup filesSetup = new FilesSetup(localizationManager);
@@ -111,6 +116,7 @@ public class Main {
         appLogger.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
 
         try {
+            // Print system information to console and logs.
             jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
             javaVersion = System.getProperty("java.version");
@@ -130,8 +136,10 @@ public class Main {
             appLogger.error(localizationManager.getLocalizedString("handler.log.error.system.properties"), ex);
         }
 
+        // Ensure default files are present.
         filesSetup.filesSetup();
 
+        // Start generation of a new configuration file with user input.
         if (Arrays.asList(args).contains("-cgen")) {
 
             configuration.createConfigurationFile();
@@ -142,8 +150,10 @@ public class Main {
                 System.exit(1);
             }
 
+        // Start ServerPackCreator in commandline mode.
         } else if (Arrays.asList(args).contains("-cli")) {
 
+            // Start generation of a new configuration with user input if no configuration file is present.
             if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
                 configuration.createConfigurationFile();
@@ -154,8 +164,11 @@ public class Main {
             } else {
                 System.exit(1);
             }
+
+        // If the environment is headless, so no possibility for GUI, start in commandline-mode.
         } else if (GraphicsEnvironment.isHeadless()) {
 
+            // Start generation of a new configuration with user input if no configuration file is present.
             if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
                 configuration.createConfigurationFile();
@@ -167,6 +180,7 @@ public class Main {
                 System.exit(1);
             }
 
+        // If no mode is specified and we have a graphical environment, start in GUI mode.
         } else {
 
             tabbedPane.mainGUI();

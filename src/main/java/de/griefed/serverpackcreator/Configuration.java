@@ -151,11 +151,7 @@ public class Configuration {
     private final File oldConfigFile = new File("creator.conf");
     private final File configFile = new File("serverpackcreator.conf");
 
-    private final String minecraftManifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-    private final String forgeManifest = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
-    private final String fabricManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
-
-//-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
+    //-- If you wish to expand this list, fork this repository, make your changes, and submit a PR -------------------------
     private final List<String> fallbackModsList = Arrays.asList(
             "AmbientSounds",
             "BackTools",
@@ -240,7 +236,9 @@ public class Configuration {
      */
     URL getMinecraftManifestUrl() {
         URL minecraftURL = null;
-        try { minecraftURL = new URL(minecraftManifest); }
+        String minecraftManifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+        try {
+            minecraftURL = new URL(minecraftManifest); }
         catch (IOException ex) { appLogger.error(ex); }
         return minecraftURL;
     }
@@ -251,7 +249,9 @@ public class Configuration {
      */
     URL getForgeManifestUrl() {
         URL forgeURL = null;
-        try { forgeURL = new URL(forgeManifest); }
+        String forgeManifest = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+        try {
+            forgeURL = new URL(forgeManifest); }
         catch (IOException ex) { appLogger.error(ex); }
         return forgeURL;
     }
@@ -262,7 +262,9 @@ public class Configuration {
      */
     URL getFabricManifestUrl() {
         URL fabricURL = null;
-        try { fabricURL = new URL(fabricManifest); }
+        String fabricManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
+        try {
+            fabricURL = new URL(fabricManifest); }
         catch (IOException ex) { appLogger.error(ex); }
         return fabricURL;
     }
@@ -274,7 +276,7 @@ public class Configuration {
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}
      */
-    public Config getConfig() {
+     Config getConfig() {
         return config;
     }
 
@@ -283,7 +285,7 @@ public class Configuration {
      * For use in {@link #checkConfigFile(File, boolean)}
      * @param newConfig The new file of which to store a Typesafe Config.
      */
-    public void setConfig(File newConfig) {
+    void setConfig(File newConfig) {
         try {
             this.config = ConfigFactory.parseFile(newConfig);
         } catch (ConfigException ex) {
@@ -667,28 +669,45 @@ public class Configuration {
         setModpackDir(modpackDir);
 
         if (checkCopyDirs(getConfig().getStringList("copyDirs"), getModpackDir())) {
+
             setCopyDirs(getConfig().getStringList("copyDirs"));
+
         } else { configHasError = true; }
 
         if (getIncludeServerInstallation()) {
+
             if (checkJavaPath(getConfig().getString("javaPath"))) {
+
                 setJavaPath(getConfig().getString("javaPath"));
+
             } else {
+
                 String tmpJavaPath = getJavaPathFromSystem(getConfig().getString("javaPath"));
+
                 if (checkJavaPath(tmpJavaPath)) {
+
                     setJavaPath(tmpJavaPath);
+
                 } else { configHasError = true; } }
 
+
+
             if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
+
                 setMinecraftVersion(getConfig().getString("minecraftVersion"));
+
             } else { configHasError = true; }
 
             if (checkModloader(getConfig().getString("modLoader"))) {
+
                 setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
+
             } else { configHasError = true; }
 
             if (checkModloaderVersion(getModLoader(), getConfig().getString("modLoaderVersion"))) {
+
                 setModLoaderVersion(getConfig().getString("modLoaderVersion"));
+
             } else { configHasError = true; }
 
         } else {
@@ -729,8 +748,10 @@ public class Configuration {
         boolean configHasError = false;
         try {
             if (CurseAPI.project(getProjectID()).isPresent()) {
+
                 String projectName, displayName;
                 projectName = displayName = "";
+
                 try { projectName = CurseAPI.project(getProjectID()).get().name();
 
                     try { displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).displayName(); }
@@ -743,6 +764,7 @@ public class Configuration {
                         }
                     }
                 } catch (CurseException cex) { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
+
 
                 if (displayName != null && projectName != null) {
 
@@ -816,15 +838,10 @@ public class Configuration {
                                 false
                         );
 
-                    } else {
-                        configHasError = true;
-                    }
-                } else {
-                    configHasError = true;
-                }
-            } else {
-                configHasError = true;
-            }
+                    } else { configHasError = true; }
+                } else { configHasError = true; }
+            } else { configHasError = true; }
+
         } catch (CurseException cex) {
             appLogger.error(String.format(localizationManager.getLocalizedString("configcheck.log.error.iscurse.project"), getProjectID()), cex);
             configHasError = true;

@@ -216,36 +216,44 @@ public class CreateServerPack {
     public boolean run() {
         if (!configuration.checkConfigFile(configuration.getConfigFile(), true)) {
 
+            // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(configuration.getModpackDir());
 
+            // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
             copyFiles(configuration.getModpackDir(), configuration.getCopyDirs(), configuration.getClientMods());
 
+            // Copy start scripts for specified modloader from server_files to server pack.
             copyStartScripts(configuration.getModpackDir(), configuration.getModLoader(), configuration.getIncludeStartScripts());
 
+            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
             if (configuration.getIncludeServerInstallation()) {
                 installServer(configuration.getModLoader(), configuration.getModpackDir(), configuration.getMinecraftVersion(), configuration.getModLoaderVersion(), configuration.getJavaPath());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.server"));
             }
 
+            // If true, copy the server-icon.png from server_files to the server pack.
             if (configuration.getIncludeServerIcon()) {
                 copyIcon(configuration.getModpackDir());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.icon"));
             }
 
+            // If true, copy the server.properties from server_files to the server pack.
             if (configuration.getIncludeServerProperties()) {
                 copyProperties(configuration.getModpackDir());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.properties"));
             }
 
+            // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (configuration.getIncludeZipCreation()) {
                 zipBuilder(configuration.getModpackDir(), configuration.getModLoader(), configuration.getIncludeServerInstallation(), configuration.getMinecraftVersion());
             } else {
                 appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.zip"));
             }
 
+            // Inform user about location of newly generated server pack.
             appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.runincli.serverpack"), configuration.getModpackDir()));
             appLogger.info(String.format(localizationManager.getLocalizedString("handler.log.info.runincli.archive"), configuration.getModpackDir()));
             appLogger.info(localizationManager.getLocalizedString("handler.log.info.runincli.finish"));
