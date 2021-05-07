@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import kotlin.internal.AccessibleLateinitPropertyLiteral;
 import net.fabricmc.installer.util.LauncherMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -865,7 +864,6 @@ public class CreateServerPack {
     String latestFabricInstaller(String modpackDir) {
         String result;
         try {
-            //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
             URL downloadFabricXml = getFabricInstallerManifest();
 
             ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
