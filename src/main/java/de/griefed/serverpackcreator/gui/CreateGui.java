@@ -55,16 +55,7 @@ public class CreateGui extends JPanel {
     private final ImageIcon bannerIcon      = new ImageIcon(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/banner.png")));
     private final Image icon                = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/app.png")));
     private final Dimension windowDimension = new Dimension(800,860);
-    private final Image tile                = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(CreateGui.class.getResource("/de/griefed/resources/gui/tile.png")));
     private BufferedImage bufferedImage;
-    {
-        try {
-            bufferedImage = ImageIO.read(getClass().getResource("/de/griefed/resources/gui/tile.png"));
-        } catch (IOException ex) {
-            //Can't use localization here.
-            appLogger.error("Could not read image for tiling.", ex);
-        }
-    }
 
     private LocalizationManager localizationManager;
     private Configuration configuration;
@@ -120,12 +111,18 @@ public class CreateGui extends JPanel {
             this.createServerPack = injectedCreateServerPack;
         }
 
+        try { bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));}
+        catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex); }
+
         createServerPackTab = new CreateServerPackTab(localizationManager, configuration, curseCreateModpack, createServerPack);
         serverPackCreatorLogTab = new ServerPackCreatorLogTab(localizationManager);
         modloaderInstallerLogTab = new ModloaderInstallerLogTab(localizationManager);
         aboutTab = new AboutTab(localizationManager);
+
         serverPackCreatorFrame = new JFrame(localizationManager.getLocalizedString("createserverpack.gui.createandshowgui"));
+
         backgroundPanel = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
+
         tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
         /*
