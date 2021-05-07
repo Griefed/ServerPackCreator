@@ -56,7 +56,7 @@ import java.util.*;
  * 5. {@link #getForgeManifestUrl()}<br>
  * 6. {@link #getFabricManifestUrl()}<br>
  * 7. {@link #getConfig()}<br>
- * 8. {@link #setConfig(Config)}<br>
+ * 8. {@link #setConfig(File)}<br>
  * 9. {@link #getFallbackModsList()}<br>
  * 10.{@link #getClientMods()}<br>
  * 11.{@link #setClientMods(List)}<br>
@@ -281,10 +281,14 @@ public class Configuration {
     /**
      * Setter for a {@link Config} containing a parsed configuration-file.
      * For use in {@link #checkConfigFile(File, boolean)}
-     * @param newConfig The new Typesafe Config to store.
+     * @param newConfig The new file of which to store a Typesafe Config.
      */
-    public void setConfig(Config newConfig) {
-        this.config = newConfig;
+    public void setConfig(File newConfig) {
+        try {
+            this.config = ConfigFactory.parseFile(newConfig);
+        } catch (ConfigException ex) {
+            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.checkconfig.start"));
+        }
     }
 
     /**
@@ -414,7 +418,7 @@ public class Configuration {
      * @param newModLoader The new modloader to store.
      */
     void setModLoader(String newModLoader) {
-        this.modLoader = newModLoader;
+        this.modLoader = setModLoaderCase(newModLoader);
     }
 
     /**
@@ -559,10 +563,10 @@ public class Configuration {
     }
 
     /**
-     * Sets {@link #setConfig(Config)} and calls checks for the provided configuration-file. If any check returns <code>true</code>
+     * Sets {@link #setConfig(File)} and calls checks for the provided configuration-file. If any check returns <code>true</code>
      * then the server pack will not be created. In order to find out which check failed, the user has to check their
      * serverpackcreator.log in the logs directory. Calls<br>
-     * {@link #setConfig(Config)}<br>
+     * {@link #setConfig(File)}<br>
      * {@link #getConfig()}<br>
      * {@link #setClientMods(List)}<br>
      * {@link #getFallbackModsList()}<br>
@@ -584,7 +588,7 @@ public class Configuration {
         boolean configHasError = false;
         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.checkconfig.start"));
         try {
-            setConfig(ConfigFactory.parseFile(configFile));
+            setConfig(configFile);
         } catch (ConfigException ex) {
             appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.checkconfig.start"));
         }
@@ -658,7 +662,7 @@ public class Configuration {
      *                   configuration file and checks are made in this directory.
      * @return Boolean. Returns true if an error is found during configuration check.
      */
-    private boolean isDir(String modpackDir) {
+    boolean isDir(String modpackDir) {
         boolean configHasError = false;
         setModpackDir(modpackDir);
 
@@ -721,7 +725,7 @@ public class Configuration {
      * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
      * project name and displayname, or when the creation of the modpack fails.
      */
-    private boolean isCurse() {
+    boolean isCurse() {
         boolean configHasError = false;
         try {
             if (CurseAPI.project(getProjectID()).isPresent()) {
@@ -733,83 +737,93 @@ public class Configuration {
                     catch (NullPointerException npe) { appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.display"));
 
                         try { displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).nameOnDisk(); }
-                        catch (NullPointerException npe2) { displayName = String.format("%d", getProjectFileID()); }
+                        catch (NullPointerException npe2) {
+                            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.file"), npe2);
+                            displayName = null;
+                        }
                     }
-                }
+                } catch (CurseException cex) { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
 
-                catch (CurseException cex) { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
+                if (displayName != null && projectName != null) {
 
-                setModpackDir(String.format("./%s/%s", projectName, displayName));
+                    setModpackDir(String.format("./%s/%s", projectName, displayName));
 
-                if (curseCreateModpack.curseForgeModpack(getModpackDir(), getProjectID(), getProjectFileID())) {
-                    try {
-                        byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", getModpackDir())));
+                    if (curseCreateModpack.curseForgeModpack(getModpackDir(), getProjectID(), getProjectFileID())) {
+                        try {
+                            byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", getModpackDir())));
 
-                        CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
+                            CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
 
-                        String[] minecraftLoaderVersions = modpack
-                                .getMinecraft()
-                                .toString()
-                                .split(",");
+                            String[] minecraftLoaderVersions = modpack
+                                    .getMinecraft()
+                                    .toString()
+                                    .split(",");
 
-                        String[] modLoaderVersion = minecraftLoaderVersions[1]
-                                .replace("[", "")
-                                .replace("]", "")
-                                .split("-");
+                            String[] modLoaderVersion = minecraftLoaderVersions[1]
+                                    .replace("[", "")
+                                    .replace("]", "")
+                                    .split("-");
 
-                        setMinecraftVersion(minecraftLoaderVersions[0]
-                                .replace("[", ""));
+                            setMinecraftVersion(minecraftLoaderVersions[0]
+                                    .replace("[", ""));
 
-                        if (containsFabric(modpack)) {
-                            appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.fabric"));
+                            if (containsFabric(modpack)) {
+                                appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.fabric"));
 
-                            setModLoader("Fabric");
-                            setModLoaderVersion(latestFabricLoader(getModpackDir()));
+                                setModLoader("Fabric");
+                                setModLoaderVersion(latestFabricLoader(getModpackDir()));
+
+                            } else {
+
+                                setModLoader("Forge");
+                                setModLoaderVersion(modLoaderVersion[1]);
+
+                            }
+                        } catch (IOException ex) {
+                            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.json"), ex);
+                        }
+
+                        if (checkJavaPath(getConfig().getString("javaPath").replace("\\", "/"))) {
+
+                            setJavaPath(getConfig().getString("javaPath").replace("\\", "/"));
 
                         } else {
+                            String tmpJavaPath = getJavaPathFromSystem(getConfig().getString("javaPath").replace("\\", "/"));
 
-                            setModLoader("Forge");
-                            setModLoaderVersion(modLoaderVersion[1]);
+                            if (checkJavaPath(tmpJavaPath)) {
+                                setJavaPath(tmpJavaPath);
+                            }
 
                         }
-                    } catch (IOException ex) { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.iscurse.json"), ex); }
+                        setCopyDirs(suggestCopyDirs(getModpackDir()));
 
-                    if (checkJavaPath(getConfig().getString("javaPath").replace("\\","/"))) {
+                        appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.replace"));
 
-                        setJavaPath(getConfig().getString("javaPath").replace("\\","/"));
+                        writeConfigToFile(
+                                getModpackDir(),
+                                buildString(getClientMods().toString()),
+                                buildString(getCopyDirs().toString()),
+                                getIncludeServerInstallation(),
+                                getJavaPath(),
+                                getMinecraftVersion(),
+                                getModLoader(),
+                                getModLoaderVersion(),
+                                getIncludeServerIcon(),
+                                getIncludeServerProperties(),
+                                getIncludeStartScripts(),
+                                getIncludeZipCreation(),
+                                getConfigFile(),
+                                false
+                        );
 
                     } else {
-                        String tmpJavaPath = getJavaPathFromSystem(getConfig().getString("javaPath").replace("\\","/"));
-
-                        if (checkJavaPath(tmpJavaPath)) {
-                            setJavaPath(tmpJavaPath);
-                        }
-
+                        configHasError = true;
                     }
-                    setCopyDirs(suggestCopyDirs(getModpackDir()));
-
-                    appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.iscurse.replace"));
-
-                    writeConfigToFile(
-                            getModpackDir(),
-                            buildString(getClientMods().toString()),
-                            buildString(getCopyDirs().toString()),
-                            getIncludeServerInstallation(),
-                            getJavaPath(),
-                            getMinecraftVersion(),
-                            getModLoader(),
-                            getModLoaderVersion(),
-                            getIncludeServerIcon(),
-                            getIncludeServerProperties(),
-                            getIncludeStartScripts(),
-                            getIncludeZipCreation(),
-                            getConfigFile(),
-                            false
-                    );
-
                 } else {
                     configHasError = true;
                 }
+            } else {
+                configHasError = true;
             }
         } catch (CurseException cex) {
             appLogger.error(String.format(localizationManager.getLocalizedString("configcheck.log.error.iscurse.project"), getProjectID()), cex);
@@ -825,7 +839,7 @@ public class Configuration {
      *               required by the modpack.
      * @return Boolean. Returns true if Jumploader is found.
      */
-    private boolean containsFabric(CurseModpack modpack) {
+    boolean containsFabric(CurseModpack modpack) {
         boolean hasJumploader = false;
 
         for (int i = 0; i < modpack.getFiles().size(); i++) {
@@ -849,40 +863,39 @@ public class Configuration {
      * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only
      * directories.
      */
-    private List<String> suggestCopyDirs(String modpackDir) {
+    List<String> suggestCopyDirs(String modpackDir) {
         appLogger.info(localizationManager.getLocalizedString("configcheck.log.info.suggestcopydirs.start"));
 
-        String[] dirsNotToCopy = {
+        List<String> dirsNotToCopy = new ArrayList<String>(Arrays.asList(
                 "overrides",
                 "packmenu",
                 "resourcepacks",
                 "server_pack"
-        };
+        ));
 
-        String[] copyDirs = new String[0];
-        List<String> dirList;
-        File directories = new File(modpackDir);
+        File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
 
-        String[] dirArray = directories.list((current, name) -> new File(current, name).isDirectory());
+        List<String> dirsInModpack = new ArrayList<>();
 
-        if (dirArray != null) {
-
-            dirList = new ArrayList<>(Arrays.asList(dirArray));
-            List<String> doNotCopyList = new ArrayList<>(Arrays.asList(dirsNotToCopy));
-
-            for (int i = 0; i < dirsNotToCopy.length; i++) {
-                dirList.remove(doNotCopyList.get(i));
+        try {
+            assert listDirectoriesInModpack != null;
+            for (File dir : listDirectoriesInModpack) {
+                if (dir.isDirectory()) {
+                    dirsInModpack.add(dir.getName());
+                }
             }
+        } catch (NullPointerException np) {
+            appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.suggestcopydirs"));
+        }
 
-            copyDirs = dirList.toArray(new String[0]);
+        for (int idirs = 0; idirs < dirsNotToCopy.size(); idirs++) {
 
-            appLogger.info(String.format(localizationManager.getLocalizedString("configcheck.log.info.suggestcopydirs.list"), dirList));
+            int i = idirs;
 
-            return Arrays.asList(copyDirs.clone());
+            dirsInModpack.removeIf(n -> (n.contains(dirsNotToCopy.get(i))));
+        }
 
-        } else { appLogger.error(localizationManager.getLocalizedString("configcheck.log.error.suggestcopydirs")); }
-
-        return Arrays.asList(copyDirs.clone());
+        return dirsInModpack;
     }
 
     /**
@@ -1243,7 +1256,6 @@ public class Configuration {
      * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.
      */
     boolean isMinecraftVersionCorrect(String minecraftVersion) {
-        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
         if (!minecraftVersion.equals("")) {
             try {
                 URL manifestJsonURL = getMinecraftManifestUrl();
@@ -1313,7 +1325,6 @@ public class Configuration {
      * @return Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.
      */
     boolean isFabricVersionCorrect(String fabricVersion) {
-        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
         if (!fabricVersion.equals("")) {
             try {
                 URL manifestJsonURL = getFabricManifestUrl();
@@ -1400,7 +1411,6 @@ public class Configuration {
      * @return Boolean. Returns true if the specified Forge version could be found in Forge's manifest.
      */
     boolean isForgeVersionCorrect(String forgeVersion) {
-        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
         if (!forgeVersion.equals("")) {
             try {
                 URL manifestJsonURL = getForgeManifestUrl();
@@ -1487,8 +1497,7 @@ public class Configuration {
      * @return Boolean. Returns true if the download was successful. False if not.
      */
     @SuppressWarnings({"ReturnInsideFinallyBlock", "finally"})
-    private String latestFabricLoader(String modpackDir) {
-        //TODO: Download file during startup of ServerPackCreator. Replace existing file during every restart. Store in same dir as ServerPacKCreator.
+    String latestFabricLoader(String modpackDir) {
         String result = "0.11.3";
         try {
             URL downloadFabricXml = getFabricManifestUrl();
