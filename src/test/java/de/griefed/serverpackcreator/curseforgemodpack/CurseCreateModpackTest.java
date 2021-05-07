@@ -101,35 +101,32 @@ class CurseCreateModpackTest {
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ResultOfMethodCallIgnored"})
     @Test
     void curseForgeModpackTest() throws CurseException, IOException {
-        //TODO: Figure out how to run this test on GitHub Runners
-        //if (!new File("/home/runner").isDirectory()) {
-            int projectID = 238298;
-            int fileID = 3174854;
-            String projectName = CurseAPI.project(projectID).get().name();
-            String displayName = Objects.requireNonNull(CurseAPI.project(projectID)
-                    .get()
-                    .files()
-                    .fileWithID(fileID))
-                    .displayName();
-            String modpackDir = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
-            Assertions.assertTrue(curseCreateModpack.curseForgeModpack(modpackDir, projectID, fileID));
-            String deleteFile = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
-            if (new File(deleteFile).isDirectory()) {
-                Path pathToBeDeleted = Paths.get(deleteFile);
-                Files.walk(pathToBeDeleted)
-                        .sorted(Comparator.reverseOrder())
-                        .map(Path::toFile)
-                        .forEach(File::delete);
-            }
-            String deleteProject = String.format("./src/test/resources/forge_tests/%s", projectName);
-            if (new File(deleteProject).isDirectory()) {
-                Path pathToBeDeleted = Paths.get(deleteProject);
-                Files.walk(pathToBeDeleted)
-                        .sorted(Comparator.reverseOrder())
-                        .map(Path::toFile)
-                        .forEach(File::delete);
-            }
-        //}
+        int projectID = 238298;
+        int fileID = 3174854;
+        String projectName = CurseAPI.project(projectID).get().name();
+        String displayName = Objects.requireNonNull(CurseAPI.project(projectID)
+                .get()
+                .files()
+                .fileWithID(fileID))
+                .displayName();
+        String modpackDir = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
+        Assertions.assertTrue(curseCreateModpack.curseForgeModpack(modpackDir, projectID, fileID));
+        String deleteFile = String.format("./src/test/resources/forge_tests/%s/%s", projectName, displayName);
+        if (new File(deleteFile).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(deleteFile);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        String deleteProject = String.format("./src/test/resources/forge_tests/%s", projectName);
+        if (new File(deleteProject).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(deleteProject);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -204,7 +201,7 @@ class CurseCreateModpackTest {
         Assertions.assertTrue(new File("./src/test/resources/overridestest/mods/zzzzz.jar").exists());
 
         Assertions.assertTrue(new File("./src/test/resources/overridestest/scripts/testscript.zs").exists());
-        Assertions.assertTrue(new File("./src/test/resources/overridestest/seeds/seed.json").exists());
+        Assertions.assertTrue(new File("./src/test/resources/overridestest/seeds/seed1.json").exists());
         Assertions.assertTrue(new File("./src/test/resources/overridestest/seeds/testjson.json").exists());
 
         if (new File("./src/test/resources/overridestest/config").isDirectory()) {
