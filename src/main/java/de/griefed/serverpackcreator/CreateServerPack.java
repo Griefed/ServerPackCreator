@@ -43,7 +43,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -259,7 +258,8 @@ public class CreateServerPack {
         }
     }
 
-    /** Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
+    /**
+     * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
      * server pack is as clean as possible.
      * @param modpackDir String. The server_pack directory and ZIP-archive will be deleted inside the modpack directory.
      */
@@ -301,7 +301,8 @@ public class CreateServerPack {
         }
     }
 
-    /** Copies start scripts for the specified modloader into the server pack.
+    /**
+     * Copies start scripts for the specified modloader into the server pack.
      * @param modpackDir String. Start scripts are copied into the server_pack directory in the modpack directory.
      * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
      * @param includeStartScripts Boolean. Whether to copy the start scripts into the server pack.
@@ -344,8 +345,9 @@ public class CreateServerPack {
         }
     }
 
-    /** Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
-     *  server pack directory.
+    /**
+     * Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
+     * server pack directory.
      * Calls {@link #excludeClientMods(String, List)} to generate a list of all mods to copy to server pack, excluding
      * clientside-only mods.
      * @param modpackDir String. Files and directories are copied into the server_pack directory inside the modpack directory.
@@ -460,43 +462,41 @@ public class CreateServerPack {
         }
     }
 
-    /** Generates a list of all mods to include in the server pack excluding clientside-only mods.
+    /**
+     * Generates a list of all mods to include in the server pack excluding clientside-only mods.
      * @param modsDir String. The mods directory of the modpack of which to generate a list of all it's contents.
      * @param clientMods List String. A list of all clientside-only mods.
      * @return List String. A list of all mods to include in the server pack.
      */
-    @SuppressWarnings("UnusedAssignment")
     List<String> excludeClientMods(String modsDir, List<String> clientMods) {
         appLogger.info(localizationManager.getLocalizedString("copyfiles.log.info.excludeclientmods"));
-        String[] copyMods = new String[0];
-        List<String> modpackModList = new ArrayList<>();
 
-        try (Stream<Path> walk = Files.walk(Paths.get(modsDir))) {
+        File[] listModsInModpack = new File(modsDir).listFiles();
+        List<String> modsInModpack = new ArrayList<>();
 
-            modpackModList = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
-
-            for (int in = 0; in < modpackModList.size(); in++) {
-
-                for (int i = 0; i < clientMods.size(); i++) {
-
-                    String modpackMod = modpackModList.get(in);
-                    String clientMod = clientMods.get(i);
-
-                    if (modpackMod.contains(clientMod)) {
-                        modpackModList.remove(in);
-                    }
+        try {
+            for (File mod : listModsInModpack) {
+                if (mod.isFile()) {
+                    modsInModpack.add(mod.getAbsolutePath());
                 }
             }
-            copyMods = modpackModList.toArray(new String[0]);
-            return Arrays.asList(copyMods.clone());
-
-        } catch (IOException ex) {
-            appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.excludeclientmods"), ex);
+        } catch (NullPointerException np) {
+            appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.excludeclientmods"), np);
         }
-        return Arrays.asList(copyMods.clone());
+
+        for (int inc = 0; inc < modsInModpack.size(); inc++) {
+            for (int inc2 = 0; inc2 < clientMods.size(); inc2++) {
+                if (modsInModpack.get(inc).contains(clientMods.get(inc2))) {
+                    modsInModpack.remove(inc);
+                }
+            }
+        }
+
+        return modsInModpack;
     }
 
-    /** Copies the server-icon.png into server_pack.
+    /**
+     * Copies the server-icon.png into server_pack.
      * @param modpackDir String. The server-icon.png is copied into the server_pack directory inside the modpack directory.
      */
     void copyIcon(String modpackDir) {
@@ -514,7 +514,8 @@ public class CreateServerPack {
         }
     }
 
-    /** Copies the server.properties into server_pack.
+    /**
+     * Copies the server.properties into server_pack.
      * @param modpackDir String. The server.properties file is copied into the server_pack directory inside the modpack directory.
      */
     void copyProperties(String modpackDir) {
@@ -532,7 +533,8 @@ public class CreateServerPack {
         }
     }
 
-    /** Installs the modloader server for the specified modloader, modloader version and Minecraft version.
+    /**
+     * Installs the modloader server for the specified modloader, modloader version and Minecraft version.
      * Calls<p>
      * {@link #downloadFabricJar(String)} to download the Fabric installer into the server_pack directory.<p>
      * {@link #downloadForgeJar(String, String, String)} to download the Forge installer for the specified Forge version
@@ -630,7 +632,8 @@ public class CreateServerPack {
                 modLoaderVersion);
     }
 
-    /** Creates a ZIP-archive of the server_pack directory and deletes the Minecraft server JAR afterwards.<p>
+    /**
+     * Creates a ZIP-archive of the server_pack directory and deletes the Minecraft server JAR afterwards.<p>
      * With help from <a href="https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java">Stackoverflow</a><p>
      * Calls<p>
      * {@link #deleteMinecraftJar(String, String, String)} to delete the Minecraft server JAR from the ZIP-archive,
@@ -674,7 +677,8 @@ public class CreateServerPack {
         appLogger.info(localizationManager.getLocalizedString("serversetup.log.info.zipbuilder.finish"));
     }
 
-    /** Depending on the specified modloader and Minecraft version, this method makes calls to generate the corresponding
+    /**
+     * Depending on the specified modloader and Minecraft version, this method makes calls to generate the corresponding
      * download scripts for the Minecraft server JAR.<p>
      * Calls<p>
      * {@link #fabricShell(String, String)} if the modloader is Fabric.
@@ -697,7 +701,8 @@ public class CreateServerPack {
         }
     }
 
-    /** Generates Fabric Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+    /**
+     * Generates Fabric Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -724,7 +729,8 @@ public class CreateServerPack {
         appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.fabricshell"));
     }
 
-    /** Generates Fabric Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+    /**
+     * Generates Fabric Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -751,7 +757,8 @@ public class CreateServerPack {
         appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.fabricbatch"));
     }
 
-    /** Generates Forge Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+    /**
+     * Generates Forge Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -778,7 +785,8 @@ public class CreateServerPack {
         appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.forgeshell"));
     }
 
-    /** Generates Forge Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+    /**
+     * Generates Forge Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -805,7 +813,8 @@ public class CreateServerPack {
         appLogger.info(localizationManager.getLocalizedString("serverutilities.log.info.forgebatch"));
     }
 
-    /** Downloads the latest Fabric installer into the server pack.<p>
+    /**
+     * Downloads the latest Fabric installer into the server pack.<p>
      * Calls<p>
      * {@link #latestFabricInstaller(String)} to acquire the latest version of the Fabric installer.
      * @param modpackDir String. The Fabric installer is downloaded into the server_pack directory inside the modpack directory.
@@ -844,7 +853,8 @@ public class CreateServerPack {
         return downloaded;
     }
 
-    /** Acquires the latest version of the Fabric modloader installer and returns it as a string. If acquisition of the
+    /**
+     * Acquires the latest version of the Fabric modloader installer and returns it as a string. If acquisition of the
      * latest version fails, version 0.7.2 is returned by default.
      * @param modpackDir String. The fabric-installer.xml-file is saved inside the server_pack directory inside the modpack
      * directory.
@@ -881,7 +891,8 @@ public class CreateServerPack {
         return result;
     }
 
-    /** Downloads the modloader server installer for Forge, for the specified modloader version.
+    /**
+     * Downloads the modloader server installer for Forge, for the specified modloader version.
      * @param minecraftVersion String. The Minecraft version for which to download the modloader server installer.
      * @param modLoaderVersion String. The Forge version for which to download the modloader server installer.
      * @param modpackDir String. The modloader installer is downloaded to the server_pack directory inside the modloader directory.
@@ -917,7 +928,8 @@ public class CreateServerPack {
         return downloaded;
     }
 
-    /** Deletes the Minecraft server JAR from the ZIP-archive as per Mojang's TOS and EULA.
+    /**
+     * Deletes the Minecraft server JAR from the ZIP-archive as per Mojang's TOS and EULA.
      * With help from <a href=https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python>Stackoverflow</a>
      * and <a href=https://bugs.openjdk.java.net/browse/JDK-8186227>OpenJDK Bugtracker</a>.
      * @param modLoader String. The name of the Minecraft server JAR depends on the modloader used.
@@ -964,7 +976,8 @@ public class CreateServerPack {
         }
     }
 
-    /** Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.
+    /**
+     * Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.
      * @param fabricInstaller File. The Fabric installer file which is to be deleted.
      * @param forgeInstaller File. The Forge installer file which is to be deleted.
      * @param modLoader String. Whether Forge or Fabric files are to be deleted.
