@@ -47,8 +47,8 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/Handler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/Reference.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/FilesSetup.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/Main.html" target="_top">Frames</a></li>
@@ -109,6 +109,34 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">Main</span>
 extends java.lang.Object</pre>
+<div class="block"><strong>Table of methods</strong>
+ <p>
+ <a href="../../../de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-"><code>main(String[])</code></a>
+ <p>
+ Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
+ one of the following modes will be entered:<p>
+ <strong>-cgen</strong><p>
+ When ServerPackCreator is run with the <code>-cgen</code>-argument, you will be guided through a step-by-step
+ generation of a new configuration file.<p>
+ This mode is also entered if:<p>
+ ServerPackCreator is run with the <code>-cli</code>-argument <strong>AND</strong> if no configuration-file exists.<p>
+ ServerPackCreator can not find any configuration-file when run in cli-mode, for whatever reason.
+ <p>
+ <strong>-cli</strong><p>
+ When ServerPackCreator is run with the <code>-cli</code>-argument, it will be executed in commandline-mode only.
+ Use this argument if you explicitly want to execute ServerPackCreator without GUI. *
+ <p>
+ <strong>-lang</strong><p>
+ Specifies the locale with which ServerPackCreator is run. If no locale is specified or if this argument is not
+ used, ServerPackCreator will use the default locale <code>en_us</code><p>
+ Correct usage is:<p>
+ <code>-lang your_locale</code><p>
+ Examples:<p>
+ <code>-lang de_de</code><p>
+ <code>-lang en_us</code><p>
+ <strong>Headless environments</strong><p>
+ If ServerPackCreator is run in a headless environment, without any graphical environment, it should automatically
+ enter <code>-cli</code>-mode.</div>
 </li>
 </ul>
 </div>
@@ -166,7 +194,7 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;args)</code>
-<div class="block">Init and "main" has been moved to Handler-class.</div>
+<div class="block">Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.</div>
 </td>
 </tr>
 </table>
@@ -232,10 +260,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>main</h4>
 <pre>public static&nbsp;void&nbsp;main(java.lang.String[]&nbsp;args)</pre>
-<div class="block">Init and "main" has been moved to Handler-class. Main now only inits the Localizationmanager and passes the cli args, if any,  to Handler, which then runs the usual operations as they used to be in pre-2.x.x</div>
+<div class="block">Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.
+ Calls <a href="../../../de/griefed/serverpackcreator/FilesSetup.html" title="class in de.griefed.serverpackcreator"><code>FilesSetup</code></a> so all default files are available.
+ Checks arguments to determine which mode to enter.
+ Lists a couple of environment variables important for reporting issues.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>args</code> - Commandline arguments with which serverpackcreator is run. Passed to Handler-class which then decides what to do corresponding to input.</dd>
+<dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
+ will enter and which locale is used.</dd>
 </dl>
 </li>
 </ul>
@@ -266,8 +298,8 @@ extends java.lang.Object</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/Handler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/Reference.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/FilesSetup.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/Main.html" target="_top">Frames</a></li>

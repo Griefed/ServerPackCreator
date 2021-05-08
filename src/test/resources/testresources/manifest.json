@@ -1,0 +1,44 @@
+{
+  "minecraft": {
+    "version": "1.16.5",
+    "modLoaders": [
+      {
+        "id": "forge-36.0.1",
+        "primary": true
+      }
+    ]
+  },
+  "manifestType": "minecraftModpack",
+  "manifestVersion": 1,
+  "name": "Vanilla Forge 1.16.5",
+  "version": "1.0",
+  "author": "",
+  "files": [
+    {
+      "projectID": 224223,
+      "fileID": 3111817,
+      "required": true
+    },
+    {
+      "projectID": 403499,
+      "fileID": 3163628,
+      "required": true
+    },
+    {
+      "projectID": 314904,
+      "fileID": 3038811,
+      "required": true
+    },
+    {
+      "projectID": 404465,
+      "fileID": 3173207,
+      "required": true
+    },
+    {
+      "projectID": 392748,
+      "fileID": 3151372,
+      "required": true
+    }
+  ],
+  "overrides": "overrides"
+}

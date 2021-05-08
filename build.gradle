@@ -4,7 +4,6 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'idea'
-    id 'pmd'
     id 'edu.sc.seis.launch4j' version '2.5.0'
 }
 
@@ -39,14 +38,6 @@ launch4j {
     outputDir = 'libs'
     mainClassName = 'de.griefed.serverpackcreator.Main'
     icon = "${projectDir}/src/main/resources/de/griefed/resources/gui/icon.ico"
-}
-
-pmd {
-    consoleOutput = true
-    toolVersion = "6.21.0"
-    //noinspection GroovyAccessibility, GroovyAssignabilityCheck
-    rulesMinimumPriority = 1
-    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
 }
 
 configurations {
@@ -85,6 +76,7 @@ javadoc {
     options.memberLevel = JavadocMemberLevel.PRIVATE
     classpath = sourceSets.main.runtimeClasspath
 }
+
 java {
     withSourcesJar()
     withJavadocJar()
@@ -118,6 +110,10 @@ jar {
             'META-INF/DEPENDENCIES',
             'META-INF/LICENSE',
             'META-INF/NOTICE',
+            'META-INF/CHANGES',
+            'META-INF/LICENSE.txt',
+            'META-INF/NOTICE.txt',
+            'META-INF/README.md',
             'Log4j-**',
             'icon.png',
             'profile_icon.png'

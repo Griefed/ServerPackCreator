@@ -144,6 +144,8 @@ eclipse
 /src/test/resources/tests/server_pack/fabric-installer.jar
 /src/test/resources/tests/server_pack/forge-installer.jar
 /src/test/resources/forge_tests/Vanilla Forge
+/src/test/resources/fabric_tests/server_pack.zip
+/src/test/resources/forge_tests/server_pack.zip
 /serverpackcreator.conf
 /serverpackcreator.tmp
 /server_files
