@@ -904,6 +904,8 @@ public class Configuration {
             dirsInModpack.removeIf(n -> (n.contains(dirsNotToCopy.get(i))));
         }
 
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.suggestcopydirs.list"),dirsInModpack));
+
         return dirsInModpack;
     }
 
