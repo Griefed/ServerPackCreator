@@ -19,12 +19,14 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/Griefed/serverpackcreator?label=GitHub%20Stars&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 
-**ServerPackCreator is a Command Line Interface (CLI) program which creates a serverpack from any given Forge or Fabric modpack. Customize the configuration to your liking and off you go.**
+**ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric modpack. Customize the configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.**
 
 I am making this in my spare time, therefore progress is slow. I also just started getting into Java programming, so expect the code to be of...questionable...quality.
 
 Use at your own risk! Be aware that data loss is possible.
+
+![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
 
 ## Features
 
@@ -42,7 +44,7 @@ Use at your own risk! Be aware that data loss is possible.
     1. Load existing config
     1. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
     1. Logs from last run in separate tabs
-    1. About ServerPackCreator-tab with links to GitHub issues, PasteBin, Discord
+    1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
 
 ## Versions
 
@@ -50,7 +52,7 @@ Consider major version incompatible to each other. Meaning, configs from 1.x.x a
 
 Version mask | Description
 -------------|------------
-**1.x.x** | CLI exclusive
+**1.x.x** | CLI only
 **2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
 
 ## Configuration
@@ -109,7 +111,7 @@ If you wish to run ServerPackCreator with your locale (if it is already supporte
 2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will set the locale to en_us by default and create the lang.properties-file.
 3. Create a `lang.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and input your locale like this `lang=your_locale` for example `lang=en_us`
 
-See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/java/de/griefed/serverpackcreator/Reference.java) in `Reference.java` for a list of supported locales.
+See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/java/de/griefed/serverpackcreator/i18n/LocalizationManager.java) in `LocalizationManager.java` for a list of supported locales.
 
 ## Commandline
 
