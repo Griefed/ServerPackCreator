@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/FilesSetup.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/CreateServerPack.html" target="_top">Frames</a></li>
@@ -117,25 +117,26 @@ extends java.lang.Object</pre>
  5. <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getForgeLinuxFile--"><code>getForgeLinuxFile()</code></a><br>
  6. <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricWindowsFile--"><code>getFabricWindowsFile()</code></a><br>
  7. <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricLinuxFile--"><code>getFabricLinuxFile()</code></a><br>
- 8. <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#run--"><code>run()</code></a><br>
- 9. <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#cleanupEnvironment-java.lang.String-"><code>cleanupEnvironment(String)</code></a><br>
- 10.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyStartScripts-java.lang.String-java.lang.String-boolean-"><code>copyStartScripts(String, String, boolean)</code></a><br>
- 11.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyFiles-java.lang.String-java.util.List-java.util.List-"><code>copyFiles(String, List, List)</code></a><br>
- 12.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#excludeClientMods-java.lang.String-java.util.List-"><code>excludeClientMods(String, List)</code></a><br>
- 13.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyIcon-java.lang.String-"><code>copyIcon(String)</code></a><br>
- 14.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyProperties-java.lang.String-"><code>copyProperties(String)</code></a><br>
- 15.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>installServer(String, String, String, String, String)</code></a><br>
- 16.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-java.lang.Boolean-java.lang.String-"><code>zipBuilder(String, String, Boolean, String)</code></a><br>
- 17.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#generateDownloadScripts-java.lang.String-java.lang.String-java.lang.String-"><code>generateDownloadScripts(String, String, String)</code></a><br>
- 18.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricShell-java.lang.String-java.lang.String-"><code>fabricShell(String, String)</code></a><br>
- 19.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricBatch-java.lang.String-java.lang.String-"><code>fabricBatch(String, String)</code></a><br>
- 20.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeShell-java.lang.String-java.lang.String-"><code>forgeShell(String, String)</code></a><br>
- 21.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeBatch-java.lang.String-java.lang.String-"><code>forgeBatch(String, String)</code></a><br>
- 22.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadFabricJar-java.lang.String-"><code>downloadFabricJar(String)</code></a><br>
- 23.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#latestFabricInstaller-java.lang.String-"><code>latestFabricInstaller(String)</code></a><br>
- 24.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadForgeJar-java.lang.String-java.lang.String-java.lang.String-"><code>downloadForgeJar(String, String, String)</code></a><br>
- 25.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#deleteMinecraftJar-java.lang.String-java.lang.String-java.lang.String-"><code>deleteMinecraftJar(String, String, String)</code></a><br>
- 26.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#cleanUpServerPack-java.io.File-java.io.File-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>cleanUpServerPack(File, File, String, String, String, String)</code></a>
+ 8. <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricInstallerManifest--"><code>getFabricInstallerManifest()</code></a><br>
+ 9. <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#run--"><code>run()</code></a><br>
+ 10.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#cleanupEnvironment-java.lang.String-"><code>cleanupEnvironment(String)</code></a><br>
+ 11.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyStartScripts-java.lang.String-java.lang.String-boolean-"><code>copyStartScripts(String, String, boolean)</code></a><br>
+ 12.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyFiles-java.lang.String-java.util.List-java.util.List-"><code>copyFiles(String, List, List)</code></a><br>
+ 13.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#excludeClientMods-java.lang.String-java.util.List-"><code>excludeClientMods(String, List)</code></a><br>
+ 14.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyIcon-java.lang.String-"><code>copyIcon(String)</code></a><br>
+ 15.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyProperties-java.lang.String-"><code>copyProperties(String)</code></a><br>
+ 16.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>installServer(String, String, String, String, String)</code></a><br>
+ 17.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-java.lang.Boolean-java.lang.String-"><code>zipBuilder(String, String, Boolean, String)</code></a><br>
+ 18.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#generateDownloadScripts-java.lang.String-java.lang.String-java.lang.String-"><code>generateDownloadScripts(String, String, String)</code></a><br>
+ 19.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricShell-java.lang.String-java.lang.String-"><code>fabricShell(String, String)</code></a><br>
+ 20.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricBatch-java.lang.String-java.lang.String-"><code>fabricBatch(String, String)</code></a><br>
+ 21.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeShell-java.lang.String-java.lang.String-"><code>forgeShell(String, String)</code></a><br>
+ 22.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeBatch-java.lang.String-java.lang.String-"><code>forgeBatch(String, String)</code></a><br>
+ 23.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadFabricJar-java.lang.String-"><code>downloadFabricJar(String)</code></a><br>
+ 24.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#latestFabricInstaller-java.lang.String-"><code>latestFabricInstaller(String)</code></a><br>
+ 25.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadForgeJar-java.lang.String-java.lang.String-java.lang.String-"><code>downloadForgeJar(String, String, String)</code></a><br>
+ 26.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#deleteMinecraftJar-java.lang.String-java.lang.String-java.lang.String-"><code>deleteMinecraftJar(String, String, String)</code></a><br>
+ 27.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#cleanUpServerPack-java.io.File-java.io.File-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>cleanUpServerPack(File, File, String, String, String, String)</code></a>
  <p>
  Requires an instance of <a href="../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator"><code>Configuration</code></a> from which to get all required information about the modpack and the
  then to be generated server pack.
@@ -165,48 +166,44 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#appLogger">appLogger</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#configuration">configuration</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#curseCreateModpack">curseCreateModpack</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#CONFIGURATION">CONFIGURATION</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricLinuxFile">fabricLinuxFile</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#FILE_FABRIC_LINUX">FILE_FABRIC_LINUX</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricWindowsFile">fabricWindowsFile</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#FILE_FABRIC_WINDOWS">FILE_FABRIC_WINDOWS</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeLinuxFile">forgeLinuxFile</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#FILE_FORGE_LINUX">FILE_FORGE_LINUX</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeWindowsFile">forgeWindowsFile</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#FILE_FORGE_WINDOWS">FILE_FORGE_WINDOWS</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#iconFile">iconFile</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#FILE_ICON">FILE_ICON</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#installerLogger">installerLogger</a></span></code>&nbsp;</td>
+<td class="colFirst"><code>private java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#FILE_PROPERTIES">FILE_PROPERTIES</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#localizationManager">localizationManager</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#LOCALIZATIONMANAGER">LOCALIZATIONMANAGER</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#propertiesFile">propertiesFile</a></span></code>&nbsp;</td>
+<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#LOG">LOG</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#LOG_INSTALLER">LOG_INSTALLER</a></span></code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -266,10 +263,10 @@ extends java.lang.Object</pre>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyFiles-java.lang.String-java.util.List-java.util.List-">copyFiles</a></span>(java.lang.String&nbsp;modpackDir,
-         java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
+         java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
          java.util.List&lt;java.lang.String&gt;&nbsp;clientMods)</code>
 <div class="block">Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
-  server pack directory.</div>
+ server pack directory.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
@@ -359,42 +356,48 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
+<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricInstallerManifest--">getFabricInstallerManifest</a></span>()</code>
+<div class="block">Getter for the URL to the Fabric Installer Manifest.</div>
+</td>
+</tr>
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricLinuxFile--">getFabricLinuxFile</a></span>()</code>
 <div class="block">Getter for start-fabric.sh.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricWindowsFile--">getFabricWindowsFile</a></span>()</code>
 <div class="block">Getter for start-fabric.bat.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getForgeLinuxFile--">getForgeLinuxFile</a></span>()</code>
 <div class="block">Getter for start-forge.sh</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getForgeWindowsFile--">getForgeWindowsFile</a></span>()</code>
 <div class="block">Getter for start-forge.bat.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getIconFile--">getIconFile</a></span>()</code>
 <div class="block">Getter for server-icon.png</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getPropertiesFile--">getPropertiesFile</a></span>()</code>
 <div class="block">Getter for server.properties.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">installServer</a></span>(java.lang.String&nbsp;modLoader,
              java.lang.String&nbsp;modpackDir,
@@ -404,19 +407,19 @@ extends java.lang.Object</pre>
 <div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft version.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#latestFabricInstaller-java.lang.String-">latestFabricInstaller</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Acquires the latest version of the Fabric modloader installer and returns it as a string.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#run--">run</a></span>()</code>
 <div class="block">Create a server pack if the check of the configuration file was successfull.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-java.lang.Boolean-java.lang.String-">zipBuilder</a></span>(java.lang.String&nbsp;modpackDir,
           java.lang.String&nbsp;modLoader,
@@ -447,103 +450,94 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="appLogger">
+<a name="LOG">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>appLogger</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger appLogger</pre>
+<h4>LOG</h4>
+<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
 </li>
 </ul>
-<a name="installerLogger">
+<a name="LOG_INSTALLER">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>installerLogger</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger installerLogger</pre>
+<h4>LOG_INSTALLER</h4>
+<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG_INSTALLER</pre>
 </li>
 </ul>
-<a name="configuration">
+<a name="CONFIGURATION">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>configuration</h4>
-<pre>private&nbsp;<a href="../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a> configuration</pre>
+<h4>CONFIGURATION</h4>
+<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a> CONFIGURATION</pre>
 </li>
 </ul>
-<a name="curseCreateModpack">
+<a name="LOCALIZATIONMANAGER">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>curseCreateModpack</h4>
-<pre>private&nbsp;<a href="../../../de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a> curseCreateModpack</pre>
+<h4>LOCALIZATIONMANAGER</h4>
+<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
 </li>
 </ul>
-<a name="localizationManager">
+<a name="FILE_PROPERTIES">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>localizationManager</h4>
-<pre>private&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> localizationManager</pre>
+<h4>FILE_PROPERTIES</h4>
+<pre>private final&nbsp;java.io.File FILE_PROPERTIES</pre>
 </li>
 </ul>
-<a name="propertiesFile">
+<a name="FILE_ICON">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>propertiesFile</h4>
-<pre>private final&nbsp;java.io.File propertiesFile</pre>
+<h4>FILE_ICON</h4>
+<pre>private final&nbsp;java.io.File FILE_ICON</pre>
 </li>
 </ul>
-<a name="iconFile">
+<a name="FILE_FORGE_WINDOWS">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>iconFile</h4>
-<pre>private final&nbsp;java.io.File iconFile</pre>
+<h4>FILE_FORGE_WINDOWS</h4>
+<pre>private final&nbsp;java.io.File FILE_FORGE_WINDOWS</pre>
 </li>
 </ul>
-<a name="forgeWindowsFile">
+<a name="FILE_FORGE_LINUX">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>forgeWindowsFile</h4>
-<pre>private final&nbsp;java.io.File forgeWindowsFile</pre>
+<h4>FILE_FORGE_LINUX</h4>
+<pre>private final&nbsp;java.io.File FILE_FORGE_LINUX</pre>
 </li>
 </ul>
-<a name="forgeLinuxFile">
+<a name="FILE_FABRIC_WINDOWS">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>forgeLinuxFile</h4>
-<pre>private final&nbsp;java.io.File forgeLinuxFile</pre>
+<h4>FILE_FABRIC_WINDOWS</h4>
+<pre>private final&nbsp;java.io.File FILE_FABRIC_WINDOWS</pre>
 </li>
 </ul>
-<a name="fabricWindowsFile">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>fabricWindowsFile</h4>
-<pre>private final&nbsp;java.io.File fabricWindowsFile</pre>
-</li>
-</ul>
-<a name="fabricLinuxFile">
+<a name="FILE_FABRIC_LINUX">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>fabricLinuxFile</h4>
-<pre>private final&nbsp;java.io.File fabricLinuxFile</pre>
+<h4>FILE_FABRIC_LINUX</h4>
+<pre>private final&nbsp;java.io.File FILE_FABRIC_LINUX</pre>
 </li>
 </ul>
 </li>
@@ -671,6 +665,20 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
+<a name="getFabricInstallerManifest--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFabricInstallerManifest</h4>
+<pre>public&nbsp;java.net.URL&nbsp;getFabricInstallerManifest()</pre>
+<div class="block">Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Returns the URL to the Fabric Installer Manifest.</dd>
+</dl>
+</li>
+</ul>
 <a name="run--">
 <!--   -->
 </a>
@@ -737,16 +745,16 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>copyFiles</h4>
 <pre>void&nbsp;copyFiles(java.lang.String&nbsp;modpackDir,
-               java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
+               java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
                java.util.List&lt;java.lang.String&gt;&nbsp;clientMods)</pre>
 <div class="block">Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
-  server pack directory.
+ server pack directory.
  Calls <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#excludeClientMods-java.lang.String-java.util.List-"><code>excludeClientMods(String, List)</code></a> to generate a list of all mods to copy to server pack, excluding
  clientside-only mods.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. Files and directories are copied into the server_pack directory inside the modpack directory.</dd>
-<dd><code>copyDirs</code> - String List. All directories and files therein to copy to the server pack.</dd>
+<dd><code>directoriesToCopy</code> - String List. All directories and files therein to copy to the server pack.</dd>
 <dd><code>clientMods</code> - String List. List of clientside-only mods to exclude from the server pack.</dd>
 </dl>
 </li>
@@ -1067,7 +1075,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/FilesSetup.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/CreateServerPack.html" target="_top">Frames</a></li>

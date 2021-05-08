@@ -147,33 +147,33 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>private java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#COUNTRY_MAP_PATH">COUNTRY_MAP_PATH</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>private java.util.Map&lt;java.lang.String,java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#currentLanguage">currentLanguage</a></span></code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#CURRENT_LANGUAGE">CURRENT_LANGUAGE</a></span></code>
 <div class="block">Current language of ServerPackCreator, mapped for easier further reference.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#langPropertiesFile">langPropertiesFile</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LANGUAGE_MAP_PATH">LANGUAGE_MAP_PATH</a></span></code>
-<div class="block">Keys that used for current language mapping.</div>
-</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#FILE_LANGPROPERTIES">FILE_LANGPROPERTIES</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#localeLogger">localeLogger</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>private java.util.ResourceBundle</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#localeResources">localeResources</a></span></code>
 <div class="block">Localized strings which ServerPackCreator uses.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LOG">LOG</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#MAP_PATH_COUNTRY">MAP_PATH_COUNTRY</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#MAP_PATH_LANGUAGE">MAP_PATH_LANGUAGE</a></span></code>
+<div class="block">Keys that used for current language mapping.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -291,31 +291,31 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="localeLogger">
+<a name="LOG">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>localeLogger</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger localeLogger</pre>
+<h4>LOG</h4>
+<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
 </li>
 </ul>
-<a name="langPropertiesFile">
+<a name="FILE_LANGPROPERTIES">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>langPropertiesFile</h4>
-<pre>private final&nbsp;java.io.File langPropertiesFile</pre>
+<h4>FILE_LANGPROPERTIES</h4>
+<pre>private final&nbsp;java.io.File FILE_LANGPROPERTIES</pre>
 </li>
 </ul>
-<a name="currentLanguage">
+<a name="CURRENT_LANGUAGE">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>currentLanguage</h4>
-<pre>private&nbsp;java.util.Map&lt;java.lang.String,java.lang.String&gt; currentLanguage</pre>
+<h4>CURRENT_LANGUAGE</h4>
+<pre>private final&nbsp;java.util.Map&lt;java.lang.String,java.lang.String&gt; CURRENT_LANGUAGE</pre>
 <div class="block">Current language of ServerPackCreator, mapped for easier further reference.</div>
 </li>
 </ul>
@@ -329,30 +329,30 @@ extends java.lang.Object</pre>
 <div class="block">Localized strings which ServerPackCreator uses.</div>
 </li>
 </ul>
-<a name="LANGUAGE_MAP_PATH">
+<a name="MAP_PATH_LANGUAGE">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>LANGUAGE_MAP_PATH</h4>
-<pre>private final&nbsp;java.lang.String LANGUAGE_MAP_PATH</pre>
+<h4>MAP_PATH_LANGUAGE</h4>
+<pre>private final&nbsp;java.lang.String MAP_PATH_LANGUAGE</pre>
 <div class="block">Keys that used for current language mapping.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#de.griefed.serverpackcreator.i18n.LocalizationManager.LANGUAGE_MAP_PATH">Constant Field Values</a></dd>
+<dd><a href="../../../../constant-values.html#de.griefed.serverpackcreator.i18n.LocalizationManager.MAP_PATH_LANGUAGE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
-<a name="COUNTRY_MAP_PATH">
+<a name="MAP_PATH_COUNTRY">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>COUNTRY_MAP_PATH</h4>
-<pre>private final&nbsp;java.lang.String COUNTRY_MAP_PATH</pre>
+<h4>MAP_PATH_COUNTRY</h4>
+<pre>private final&nbsp;java.lang.String MAP_PATH_COUNTRY</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#de.griefed.serverpackcreator.i18n.LocalizationManager.COUNTRY_MAP_PATH">Constant Field Values</a></dd>
+<dd><a href="../../../../constant-values.html#de.griefed.serverpackcreator.i18n.LocalizationManager.MAP_PATH_COUNTRY">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
