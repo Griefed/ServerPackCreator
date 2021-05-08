@@ -1602,13 +1602,14 @@ public class Configuration {
             do {
 
                 do {
-                    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modpack.cli"));
+                    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modpack.cli") + " ");
                     tmpModpackDir = reader.nextLine();
                 } while (!checkModpackDir(tmpModpackDir));
 
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), tmpModpackDir));
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modpack.checkreturninfo"));
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer"));
+
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
 
             } while (!readBoolean());
 
@@ -1619,11 +1620,15 @@ public class Configuration {
 //-----------------------------------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.clientmods.enter"));
             do {
+                clientMods.clear();
+
                 clientMods.addAll(readStringArray());
+
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
 
                 if (clientMods.isEmpty()) {
                     clientMods = getFallbackModsList();
+
                     LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkconfig.clientmods"));
 
                     for (String mod : clientMods) {
@@ -1632,18 +1637,23 @@ public class Configuration {
                 }
 
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.clientmods.checkreturninfo"));
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer"));
+
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
 
             } while (!readBoolean());
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
+
             tmpClientMods = new String[clientMods.size()];
             clientMods.toArray(tmpClientMods);
+
             System.out.println();
 
 //---------------------------------------------------------------------------DIRECTORIES TO COPY TO SERVER PACK---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.enter"));
-            File directories = new File(modpackDir);
-            List<String> dirList = Arrays.asList(Objects.requireNonNull(directories.list((current, name) -> new File(current, name).isDirectory())));
+
+            List<String> dirList = Arrays.asList(Objects.requireNonNull(new File(modpackDir).list((current, name) -> new File(current, name).isDirectory())));
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.dirsinmodpack"), dirList.toString().replace("[","").replace("]","")));
             do {
                 do {
@@ -1655,44 +1665,61 @@ public class Configuration {
 
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), copyDirs));
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.checkreturninfo"));
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer"));
+
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
+
             } while (!readBoolean());
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), copyDirs));
+
             tmpCopyDirs = new String[copyDirs.size()];
             copyDirs.toArray(tmpCopyDirs);
+
             System.out.println();
 
 //-------------------------------------------------------------WHETHER TO INCLUDE MODLOADER SERVER INSTALLATION---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.server.enter"));
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.server.include"));
+
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.server.include") + " ");
             includeServerInstallation = readBoolean();
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeServerInstallation));
 
 //-------------------------------------------------------------------------------MINECRAFT VERSION MODPACK USES---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.minecraft.enter"));
+
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.minecraft.specify"));
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.minecraft.specify") + " ");
                 minecraftVersion = reader.nextLine();
+
             } while (!isMinecraftVersionCorrect(minecraftVersion));
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), minecraftVersion));
             System.out.println();
 
 //---------------------------------------------------------------------------------------MODLOADER MODPACK USES---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloader.enter"));
+
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloader.cli"));
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloader.cli") + " ");
                 modLoader = reader.nextLine();
+
             } while (!checkModloader(modLoader));
+
             modLoader = setModLoaderCase(modLoader);
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), modLoader));
             System.out.println();
 
 //----------------------------------------------------------------------------VERSION OF MODLOADER MODPACK USES---------
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloaderversion.enter"), modLoader));
+
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloaderversion.cli"));
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloaderversion.cli") + " ");
                 modLoaderVersion = reader.nextLine();
+
             } while (!checkModloaderVersion(modLoader, modLoaderVersion));
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), modLoaderVersion));
             System.out.println();
 
@@ -1700,38 +1727,50 @@ public class Configuration {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.enter"));
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.enter2"));
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.example"));
+
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.cli"));
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.cli") + " ");
+
                 String tmpJavaPath = reader.nextLine();
                 javaPath = getJavaPathFromSystem(tmpJavaPath);
+
             } while (!checkJavaPath(javaPath));
+
             System.out.println();
 
 //------------------------------------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.icon.enter"));
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.icon.cli"));
+
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.icon.cli") + " ");
             includeServerIcon = readBoolean();
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeServerIcon));
             System.out.println();
 
 //----------------------------------------------------------WHETHER TO INCLUDE SERVER.PROPERTIES IN SERVER PACK---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.properties.enter"));
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.properties.cli"));
+
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.properties.cli") + " ");
             includeServerProperties = readBoolean();
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeServerProperties));
             System.out.println();
 
 //--------------------------------------------------------------WHETHER TO INCLUDE START SCRIPTS IN SERVER PACK---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.scripts.enter"));
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.scripts.cli"));
+
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.scripts.cli") + " ");
             includeStartScripts = readBoolean();
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeStartScripts));
             System.out.println();
 
 //----------------------------------------------------WHETHER TO INCLUDE CREATION OF ZIP-ARCHIVE OF SERVER PACK---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.zip.enter"));
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.zip.cli"));
+
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.zip.cli") + " ");
             includeZipCreation = readBoolean();
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeZipCreation));
 
 //------------------------------------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
@@ -1748,7 +1787,9 @@ public class Configuration {
                     includeStartScripts,
                     includeZipCreation);
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.config.enter"));
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer"));
+
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
+
         } while (!readBoolean());
         reader.close();
 
