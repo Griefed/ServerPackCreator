@@ -32,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.compute_tag.outputs.next_tag }}
-          release_name: "serverpackcreator"
+          release_name: "ServerPackCreator"
           body: |
             Automatic release of version: **${{ steps.compute_tag.outputs.next_tag }}**
             **Changes in this release:**
