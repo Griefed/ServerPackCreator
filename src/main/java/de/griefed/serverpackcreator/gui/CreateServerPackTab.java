@@ -328,7 +328,7 @@ public class CreateServerPackTab extends JComponent {
             modpackDirChooser.setMultiSelectionEnabled(false);
             modpackDirChooser.setPreferredSize(chooserDimension);
 
-            if (modpackDirChooser.showOpenDialog(modpackDirChooser) == JFileChooser.APPROVE_OPTION) {
+            if (modpackDirChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
                 try {
                     textModpackDir.setText(modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
 
@@ -386,7 +386,7 @@ public class CreateServerPackTab extends JComponent {
             clientModsChooser.setMultiSelectionEnabled(true);
             clientModsChooser.setPreferredSize(chooserDimension);
 
-            if (clientModsChooser.showOpenDialog(clientModsChooser) == JFileChooser.APPROVE_OPTION) {
+            if (clientModsChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
                 File[] clientMods = clientModsChooser.getSelectedFiles();
                 ArrayList<String> clientModsFilenames = new ArrayList<>();
 
@@ -440,7 +440,7 @@ public class CreateServerPackTab extends JComponent {
             copyDirsChooser.setMultiSelectionEnabled(true);
             copyDirsChooser.setPreferredSize(chooserDimension);
 
-            if (copyDirsChooser.showOpenDialog(copyDirsChooser) == JFileChooser.APPROVE_OPTION) {
+            if (copyDirsChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
                 File[] directoriesToCopy = copyDirsChooser.getSelectedFiles();
                 ArrayList<String> copyDirsNames = new ArrayList<>();
 
@@ -493,7 +493,7 @@ public class CreateServerPackTab extends JComponent {
             javaChooser.setMultiSelectionEnabled(false);
             javaChooser.setPreferredSize(chooserDimension);
 
-            if (javaChooser.showOpenDialog(javaChooser) == JFileChooser.APPROVE_OPTION) {
+            if (javaChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
                 try {
                     textJavaPath.setText(javaChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
 
@@ -543,7 +543,7 @@ public class CreateServerPackTab extends JComponent {
             configChooser.setMultiSelectionEnabled(false);
             configChooser.setPreferredSize(chooserDimension);
 
-            if (configChooser.showOpenDialog(configChooser) == JFileChooser.APPROVE_OPTION) {
+            if (configChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
 
                 Config newConfigFile = null;
 
