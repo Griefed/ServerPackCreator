@@ -199,6 +199,10 @@ docker create \
   griefed/serverpackcreator:latest
 ```
 
+# Known issues
+
+A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
+
 # Contributing
 
 If you're a Java Pro and your eyes bulge when looking at my code, by all means, you're welcome to help me improve it in any way, shape, or form.
