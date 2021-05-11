@@ -32,7 +32,19 @@ Use at your own risk! Be aware that data loss is possible.
 
 [JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/)
 --------- | --------- 
-[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)]() | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)]()
+[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/)
+
+## JetBrains
+
+**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
+
+[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+--------- | --------- 
+[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)]() | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)]() 
+
+![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
+
+---
 
 ![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
 
