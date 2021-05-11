@@ -26,7 +26,17 @@ I am making this in my spare time, therefore progress is slow. I also just start
 
 Use at your own risk! Be aware that data loss is possible.
 
+## JetBrains
+
+**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
+
+[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+--------- | --------- 
+[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)]() | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)]()
+
 ![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
+
+---
 
 ## Features
 
@@ -98,6 +108,8 @@ includeStartScripts | Whether to include start scripts in your serverpack. Must 
 includeZipCreation | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
+
+---
 
 # Running
 
@@ -198,6 +210,8 @@ docker create \
   --restart "no" \
   griefed/serverpackcreator:latest
 ```
+
+---
 
 # Known issues
 
