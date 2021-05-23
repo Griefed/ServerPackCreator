@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import net.fabricmc.installer.util.LauncherMeta;
+import net.lingala.zip4j.model.ExcludeFileFilter;
+import net.lingala.zip4j.model.ZipParameters;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
@@ -44,8 +46,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -67,7 +67,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 14.{@link #copyIcon(String)}<br>
  * 15.{@link #copyProperties(String)}<br>
  * 16.{@link #installServer(String, String, String, String, String)}<br>
- * 17.{@link #zipBuilder(String, String, Boolean, String)}<br>
+ * 17.{@link #zipBuilder(String, String)}<br>
  * 18.{@link #generateDownloadScripts(String, String, String)}<br>
  * 19.{@link #fabricShell(String, String)}<br>
  * 20.{@link #fabricBatch(String, String)}<br>
@@ -76,7 +76,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 23.{@link #downloadFabricJar(String)}<br>
  * 24.{@link #latestFabricInstaller(String)}<br>
  * 25.{@link #downloadForgeJar(String, String, String)}<br>
- * 26.{@link #deleteMinecraftJar(String, String, String)}<br>
  * 27.{@link #cleanUpServerPack(File, File, String, String, String, String)}
  * <p>
  * Requires an instance of {@link Configuration} from which to get all required information about the modpack and the
@@ -213,8 +212,7 @@ public class CreateServerPack {
      * modloader, modloader version and Minecraft version in the server pack.<p>
      * {@link #copyIcon(String)} to copy the server-icon.png to the server pack.<p>
      * {@link #copyProperties(String)} to copy the server.properties to the server pack.<p>
-     * {@link #zipBuilder(String, String, Boolean, String)} to create a ZIP-archive of the server pack and delete the
-     * Minecraft server JAR from it.
+     * {@link #zipBuilder(String, String)} to create a ZIP-archive of the server pack.
      * @return Boolean. Returns true if the server pack was successfully generated.
      */
     public boolean run() {
@@ -252,7 +250,7 @@ public class CreateServerPack {
 
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (CONFIGURATION.getIncludeZipCreation()) {
-                zipBuilder(CONFIGURATION.getModpackDir(), CONFIGURATION.getModLoader(), CONFIGURATION.getIncludeServerInstallation(), CONFIGURATION.getMinecraftVersion());
+                zipBuilder(CONFIGURATION.getModpackDir(), CONFIGURATION.getMinecraftVersion());
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.zip"));
             }
@@ -646,43 +644,29 @@ public class CreateServerPack {
     }
 
     /**
-     * Creates a ZIP-archive of the server_pack directory and deletes the Minecraft server JAR afterwards.<p>
-     * With help from <a href="https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java">Stackoverflow</a><p>
-     * Calls<p>
-     * {@link #deleteMinecraftJar(String, String, String)} to delete the Minecraft server JAR from the ZIP-archive,
-     * depending on which modloader and Minecraft version is specified.
+     * Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p>
      * @param modpackDir String. The directory server_pack will be zipped and placed inside the modpack directory.
-     * @param modLoader String. Determines the name of the Minecraft server JAR to delete from the ZIP-archive.
-     * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR needs to be deleted from the ZIP-archive.
-     * @param minecraftVersion String. Determines the name of the Minecraft server JAR to delete from the ZIP-archive if the modloader is Forge.
+     * @param minecraftVersion String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.
      */
-    void zipBuilder(String modpackDir, String modLoader, Boolean includeServerInstallation, String minecraftVersion) {
-        final Path sourceDir = Paths.get(String.format("%s/server_pack", modpackDir));
-        String zipFileName = sourceDir.toString().concat(".zip");
+    void zipBuilder(String modpackDir, String minecraftVersion) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.zipbuilder.enter"));
+
+        List<File> filesToExclude = new ArrayList<>(Arrays.asList(
+                new File(String.format("%s/server_pack/minecraft_server.%s.jar", modpackDir, minecraftVersion)),
+                new File(String.format("%s/server_pack/server.jar", modpackDir))
+        ));
+
+        ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
+        ZipParameters zipParameters = new ZipParameters();
+        zipParameters.setExcludeFileFilter(excludeFileFilter);
+        zipParameters.setIncludeRootFolder(false);
+
         try {
-            final ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFileName));
-            Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
-                    try {
-                        Path targetFile = sourceDir.relativize(file);
-                        outputStream.putNextEntry(new ZipEntry(targetFile.toString()));
-                        byte[] bytes = Files.readAllBytes(file);
-                        outputStream.write(bytes, 0, bytes.length);
-                        outputStream.closeEntry();
-                    } catch (IOException ex) {
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-            outputStream.close();
+            new net.lingala.zip4j.ZipFile(String.format("%s/server_pack.zip", modpackDir)).addFolder(new File(String.format("%s/server_pack", modpackDir)), zipParameters);
         } catch (IOException ex) {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
         }
-        if (includeServerInstallation) {
-            deleteMinecraftJar(modLoader, modpackDir, minecraftVersion);
+        if (CONFIGURATION.getIncludeServerInstallation()) {
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar1"));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar2"));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar3"));
@@ -938,54 +922,6 @@ public class CreateServerPack {
             downloaded = true;
         }
         return downloaded;
-    }
-
-    /**
-     * Deletes the Minecraft server JAR from the ZIP-archive as per Mojang's TOS and EULA.
-     * With help from <a href=https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python>Stackoverflow</a>
-     * and <a href=https://bugs.openjdk.java.net/browse/JDK-8186227>OpenJDK Bugtracker</a>.
-     * @param modLoader String. The name of the Minecraft server JAR depends on the modloader used.
-     * @param modpackDir String. The directory in which the ZIP-archive is stored.
-     * @param minecraftVersion String. The name of the Minecraft server JAR depends on the Minecraft version if the modloader is Forge.
-     */
-    void deleteMinecraftJar(String modLoader, String modpackDir, String minecraftVersion) {
-        if (modLoader.equalsIgnoreCase("Forge")) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.deleteminecraftjar.enter"));
-
-            Map<String, String> zip_properties = new HashMap<>();
-            zip_properties.put("create", "false");
-            zip_properties.put("encoding", "UTF-8");
-
-            Path serverpackZip = Paths.get(String.format("%s/server_pack.zip", modpackDir));
-            URI zipUri = URI.create("jar:" + serverpackZip.toUri());
-
-            try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
-                Path pathInZipfile = zipfs.getPath(String.format("minecraft_server.%s.jar", minecraftVersion));
-                Files.delete(pathInZipfile);
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.deleteminecraftjar.success"));
-            } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.deleteminecraftjar.delete"), ex);
-            }
-        } else if (modLoader.equalsIgnoreCase("Fabric")) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.deleteminecraftjar.enter"));
-
-            Map<String, String> zip_properties = new HashMap<>();
-            zip_properties.put("create", "false");
-            zip_properties.put("encoding", "UTF-8");
-
-            Path serverpackZip = Paths.get(String.format("%s/server_pack.zip", modpackDir));
-            URI zipUri = URI.create(String.format("jar:%s", serverpackZip.toUri()));
-
-            try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, zip_properties)) {
-                Path pathInZipfile = zipfs.getPath("server.jar");
-                Files.delete(pathInZipfile);
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.deleteminecraftjar.success"));
-            } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.deleteminecraftjar.delete"), ex);
-            }
-        } else {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
-        }
     }
 
     /**
