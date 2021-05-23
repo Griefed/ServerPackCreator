@@ -126,7 +126,7 @@ extends java.lang.Object</pre>
  14.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyIcon-java.lang.String-"><code>copyIcon(String)</code></a><br>
  15.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyProperties-java.lang.String-"><code>copyProperties(String)</code></a><br>
  16.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>installServer(String, String, String, String, String)</code></a><br>
- 17.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-"><code>zipBuilder(String, String)</code></a><br>
+ 17.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-boolean-"><code>zipBuilder(String, String, boolean)</code></a><br>
  18.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#generateDownloadScripts-java.lang.String-java.lang.String-java.lang.String-"><code>generateDownloadScripts(String, String, String)</code></a><br>
  19.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricShell-java.lang.String-java.lang.String-"><code>fabricShell(String, String)</code></a><br>
  20.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricBatch-java.lang.String-java.lang.String-"><code>fabricBatch(String, String)</code></a><br>
@@ -412,8 +412,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i24" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-">zipBuilder</a></span>(java.lang.String&nbsp;modpackDir,
-          java.lang.String&nbsp;minecraftVersion)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-boolean-">zipBuilder</a></span>(java.lang.String&nbsp;modpackDir,
+          java.lang.String&nbsp;minecraftVersion,
+          boolean&nbsp;includeServerInstallation)</code>
 <div class="block">Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.</div>
 </td>
 </tr>
@@ -686,7 +687,7 @@ extends java.lang.Object</pre>
  modloader, modloader version and Minecraft version in the server pack.<p>
  <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyIcon-java.lang.String-"><code>copyIcon(String)</code></a> to copy the server-icon.png to the server pack.<p>
  <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyProperties-java.lang.String-"><code>copyProperties(String)</code></a> to copy the server.properties to the server pack.<p>
- <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-"><code>zipBuilder(String, String)</code></a> to create a ZIP-archive of the server pack.</div>
+ <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-boolean-"><code>zipBuilder(String, String, boolean)</code></a> to create a ZIP-archive of the server pack.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the server pack was successfully generated.</dd>
@@ -823,19 +824,21 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="zipBuilder-java.lang.String-java.lang.String-">
+<a name="zipBuilder-java.lang.String-java.lang.String-boolean-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>zipBuilder</h4>
 <pre>void&nbsp;zipBuilder(java.lang.String&nbsp;modpackDir,
-                java.lang.String&nbsp;minecraftVersion)</pre>
+                java.lang.String&nbsp;minecraftVersion,
+                boolean&nbsp;includeServerInstallation)</pre>
 <div class="block">Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The directory server_pack will be zipped and placed inside the modpack directory.</dd>
 <dd><code>minecraftVersion</code> - String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.</dd>
+<dd><code>includeServerInstallation</code> - Boolean. Determines whether the Minecraft server JAR info should be printed.</dd>
 </dl>
 </li>
 </ul>
