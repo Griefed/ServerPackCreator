@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -126,7 +126,7 @@ extends java.lang.Object</pre>
  14.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyIcon-java.lang.String-"><code>copyIcon(String)</code></a><br>
  15.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyProperties-java.lang.String-"><code>copyProperties(String)</code></a><br>
  16.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>installServer(String, String, String, String, String)</code></a><br>
- 17.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-java.lang.Boolean-java.lang.String-"><code>zipBuilder(String, String, Boolean, String)</code></a><br>
+ 17.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-"><code>zipBuilder(String, String)</code></a><br>
  18.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#generateDownloadScripts-java.lang.String-java.lang.String-java.lang.String-"><code>generateDownloadScripts(String, String, String)</code></a><br>
  19.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricShell-java.lang.String-java.lang.String-"><code>fabricShell(String, String)</code></a><br>
  20.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricBatch-java.lang.String-java.lang.String-"><code>fabricBatch(String, String)</code></a><br>
@@ -135,7 +135,6 @@ extends java.lang.Object</pre>
  23.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadFabricJar-java.lang.String-"><code>downloadFabricJar(String)</code></a><br>
  24.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#latestFabricInstaller-java.lang.String-"><code>latestFabricInstaller(String)</code></a><br>
  25.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadForgeJar-java.lang.String-java.lang.String-java.lang.String-"><code>downloadForgeJar(String, String, String)</code></a><br>
- 26.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#deleteMinecraftJar-java.lang.String-java.lang.String-java.lang.String-"><code>deleteMinecraftJar(String, String, String)</code></a><br>
  27.<a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#cleanUpServerPack-java.io.File-java.io.File-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>cleanUpServerPack(File, File, String, String, String, String)</code></a>
  <p>
  Requires an instance of <a href="../../../de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator"><code>Configuration</code></a> from which to get all required information about the modpack and the
@@ -290,20 +289,12 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#deleteMinecraftJar-java.lang.String-java.lang.String-java.lang.String-">deleteMinecraftJar</a></span>(java.lang.String&nbsp;modLoader,
-                  java.lang.String&nbsp;modpackDir,
-                  java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Deletes the Minecraft server JAR from the ZIP-archive as per Mojang's TOS and EULA.</div>
-</td>
-</tr>
-<tr id="i7" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadFabricJar-java.lang.String-">downloadFabricJar</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Downloads the latest Fabric installer into the server pack.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#downloadForgeJar-java.lang.String-java.lang.String-java.lang.String-">downloadForgeJar</a></span>(java.lang.String&nbsp;minecraftVersion,
                 java.lang.String&nbsp;modLoaderVersion,
@@ -311,42 +302,42 @@ extends java.lang.Object</pre>
 <div class="block">Downloads the modloader server installer for Forge, for the specified modloader version.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>(package private) java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#excludeClientMods-java.lang.String-java.util.List-">excludeClientMods</a></span>(java.lang.String&nbsp;modsDir,
                  java.util.List&lt;java.lang.String&gt;&nbsp;clientMods)</code>
 <div class="block">Generates a list of all mods to include in the server pack excluding clientside-only mods.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricBatch-java.lang.String-java.lang.String-">fabricBatch</a></span>(java.lang.String&nbsp;modpackDir,
            java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Generates Fabric Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#fabricShell-java.lang.String-java.lang.String-">fabricShell</a></span>(java.lang.String&nbsp;modpackDir,
            java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Generates Fabric Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeBatch-java.lang.String-java.lang.String-">forgeBatch</a></span>(java.lang.String&nbsp;modpackDir,
           java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Generates Forge Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#forgeShell-java.lang.String-java.lang.String-">forgeShell</a></span>(java.lang.String&nbsp;modpackDir,
           java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Generates Forge Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#generateDownloadScripts-java.lang.String-java.lang.String-java.lang.String-">generateDownloadScripts</a></span>(java.lang.String&nbsp;modLoader,
                        java.lang.String&nbsp;modpackDir,
@@ -355,49 +346,49 @@ extends java.lang.Object</pre>
  download scripts for the Minecraft server JAR.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricInstallerManifest--">getFabricInstallerManifest</a></span>()</code>
 <div class="block">Getter for the URL to the Fabric Installer Manifest.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricLinuxFile--">getFabricLinuxFile</a></span>()</code>
 <div class="block">Getter for start-fabric.sh.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getFabricWindowsFile--">getFabricWindowsFile</a></span>()</code>
 <div class="block">Getter for start-fabric.bat.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getForgeLinuxFile--">getForgeLinuxFile</a></span>()</code>
 <div class="block">Getter for start-forge.sh</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getForgeWindowsFile--">getForgeWindowsFile</a></span>()</code>
 <div class="block">Getter for start-forge.bat.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getIconFile--">getIconFile</a></span>()</code>
 <div class="block">Getter for server-icon.png</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#getPropertiesFile--">getPropertiesFile</a></span>()</code>
 <div class="block">Getter for server.properties.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">installServer</a></span>(java.lang.String&nbsp;modLoader,
              java.lang.String&nbsp;modpackDir,
@@ -407,25 +398,23 @@ extends java.lang.Object</pre>
 <div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft version.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#latestFabricInstaller-java.lang.String-">latestFabricInstaller</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Acquires the latest version of the Fabric modloader installer and returns it as a string.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#run--">run</a></span>()</code>
 <div class="block">Create a server pack if the check of the configuration file was successfull.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-java.lang.Boolean-java.lang.String-">zipBuilder</a></span>(java.lang.String&nbsp;modpackDir,
-          java.lang.String&nbsp;modLoader,
-          java.lang.Boolean&nbsp;includeServerInstallation,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-">zipBuilder</a></span>(java.lang.String&nbsp;modpackDir,
           java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Creates a ZIP-archive of the server_pack directory and deletes the Minecraft server JAR afterwards.</div>
+<div class="block">Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.</div>
 </td>
 </tr>
 </table>
@@ -697,8 +686,7 @@ extends java.lang.Object</pre>
  modloader, modloader version and Minecraft version in the server pack.<p>
  <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyIcon-java.lang.String-"><code>copyIcon(String)</code></a> to copy the server-icon.png to the server pack.<p>
  <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#copyProperties-java.lang.String-"><code>copyProperties(String)</code></a> to copy the server.properties to the server pack.<p>
- <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-java.lang.Boolean-java.lang.String-"><code>zipBuilder(String, String, Boolean, String)</code></a> to create a ZIP-archive of the server pack and delete the
- Minecraft server JAR from it.</div>
+ <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#zipBuilder-java.lang.String-java.lang.String-"><code>zipBuilder(String, String)</code></a> to create a ZIP-archive of the server pack.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the server pack was successfully generated.</dd>
@@ -835,27 +823,19 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="zipBuilder-java.lang.String-java.lang.String-java.lang.Boolean-java.lang.String-">
+<a name="zipBuilder-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>zipBuilder</h4>
 <pre>void&nbsp;zipBuilder(java.lang.String&nbsp;modpackDir,
-                java.lang.String&nbsp;modLoader,
-                java.lang.Boolean&nbsp;includeServerInstallation,
                 java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Creates a ZIP-archive of the server_pack directory and deletes the Minecraft server JAR afterwards.<p>
- With help from <a href="https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java">Stackoverflow</a><p>
- Calls<p>
- <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#deleteMinecraftJar-java.lang.String-java.lang.String-java.lang.String-"><code>deleteMinecraftJar(String, String, String)</code></a> to delete the Minecraft server JAR from the ZIP-archive,
- depending on which modloader and Minecraft version is specified.</div>
+<div class="block">Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The directory server_pack will be zipped and placed inside the modpack directory.</dd>
-<dd><code>modLoader</code> - String. Determines the name of the Minecraft server JAR to delete from the ZIP-archive.</dd>
-<dd><code>includeServerInstallation</code> - Boolean. Determines whether the Minecraft server JAR needs to be deleted from the ZIP-archive.</dd>
-<dd><code>minecraftVersion</code> - String. Determines the name of the Minecraft server JAR to delete from the ZIP-archive if the modloader is Forge.</dd>
+<dd><code>minecraftVersion</code> - String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.</dd>
 </dl>
 </li>
 </ul>
@@ -1000,26 +980,6 @@ extends java.lang.Object</pre>
 <dd><code>modpackDir</code> - String. The modloader installer is downloaded to the server_pack directory inside the modloader directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the download was successful.</dd>
-</dl>
-</li>
-</ul>
-<a name="deleteMinecraftJar-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>deleteMinecraftJar</h4>
-<pre>void&nbsp;deleteMinecraftJar(java.lang.String&nbsp;modLoader,
-                        java.lang.String&nbsp;modpackDir,
-                        java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Deletes the Minecraft server JAR from the ZIP-archive as per Mojang's TOS and EULA.
- With help from <a href=https://stackoverflow.com/questions/5244963/delete-files-from-a-zip-archive-without-decompressing-in-java-or-maybe-python>Stackoverflow</a>
- and <a href=https://bugs.openjdk.java.net/browse/JDK-8186227>OpenJDK Bugtracker</a>.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modLoader</code> - String. The name of the Minecraft server JAR depends on the modloader used.</dd>
-<dd><code>modpackDir</code> - String. The directory in which the ZIP-archive is stored.</dd>
-<dd><code>minecraftVersion</code> - String. The name of the Minecraft server JAR depends on the Minecraft version if the modloader is Forge.</dd>
 </dl>
 </li>
 </ul>
