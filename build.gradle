@@ -51,6 +51,7 @@ dependencies {
     embed group: 'com.typesafe',                name: 'config',             version: '1.4.1'
     embed group: 'com.fasterxml.jackson.core',  name: 'jackson-databind',   version: '2.12.3'
     embed group: 'commons-io',                  name: 'commons-io',         version: '2.8.0'
+    embed group: 'net.lingala.zip4j',           name: 'zip4j',              version: '2.7.0'
     embed group: 'com.github.FabricMC',         name: 'fabric-installer',   version: 'master-SNAPSHOT'
     embed group: 'com.github.TheRandomLabs',    name: 'CurseAPI',           version: 'master-SNAPSHOT'
 
