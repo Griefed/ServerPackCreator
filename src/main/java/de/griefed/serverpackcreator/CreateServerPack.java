@@ -67,7 +67,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 14.{@link #copyIcon(String)}<br>
  * 15.{@link #copyProperties(String)}<br>
  * 16.{@link #installServer(String, String, String, String, String)}<br>
- * 17.{@link #zipBuilder(String, String)}<br>
+ * 17.{@link #zipBuilder(String, String, boolean)}<br>
  * 18.{@link #generateDownloadScripts(String, String, String)}<br>
  * 19.{@link #fabricShell(String, String)}<br>
  * 20.{@link #fabricBatch(String, String)}<br>
@@ -212,7 +212,7 @@ public class CreateServerPack {
      * modloader, modloader version and Minecraft version in the server pack.<p>
      * {@link #copyIcon(String)} to copy the server-icon.png to the server pack.<p>
      * {@link #copyProperties(String)} to copy the server.properties to the server pack.<p>
-     * {@link #zipBuilder(String, String)} to create a ZIP-archive of the server pack.
+     * {@link #zipBuilder(String, String, boolean)} to create a ZIP-archive of the server pack.
      * @return Boolean. Returns true if the server pack was successfully generated.
      */
     public boolean run() {
@@ -250,7 +250,7 @@ public class CreateServerPack {
 
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (CONFIGURATION.getIncludeZipCreation()) {
-                zipBuilder(CONFIGURATION.getModpackDir(), CONFIGURATION.getMinecraftVersion());
+                zipBuilder(CONFIGURATION.getModpackDir(), CONFIGURATION.getMinecraftVersion(), CONFIGURATION.getIncludeServerInstallation());
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.zip"));
             }
@@ -647,8 +647,9 @@ public class CreateServerPack {
      * Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p>
      * @param modpackDir String. The directory server_pack will be zipped and placed inside the modpack directory.
      * @param minecraftVersion String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.
+     * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR info should be printed.
      */
-    void zipBuilder(String modpackDir, String minecraftVersion) {
+    void zipBuilder(String modpackDir, String minecraftVersion, boolean includeServerInstallation) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.zipbuilder.enter"));
 
         List<File> filesToExclude = new ArrayList<>(Arrays.asList(
@@ -666,7 +667,7 @@ public class CreateServerPack {
         } catch (IOException ex) {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
         }
-        if (CONFIGURATION.getIncludeServerInstallation()) {
+        if (includeServerInstallation) {
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar1"));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar2"));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar3"));

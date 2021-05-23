@@ -483,7 +483,7 @@ class CreateServerPackTest {
         String minecraftVersion = "1.16.5";
         String modLoader = "Fabric";
         String modpackDir = "src/test/resources/fabric_tests";
-        createServerPack.zipBuilder(modpackDir, minecraftVersion);
+        createServerPack.zipBuilder(modpackDir, minecraftVersion, Boolean.TRUE);
         Assertions.assertTrue(new File("src/test/resources/fabric_tests/server_pack.zip").exists());
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
     }
@@ -494,7 +494,7 @@ class CreateServerPackTest {
         String minecraftVersion = "1.16.5";
         String modLoader = "Forge";
         String modpackDir = "./src/test/resources/forge_tests";
-        createServerPack.zipBuilder(modpackDir, minecraftVersion);
+        createServerPack.zipBuilder(modpackDir, minecraftVersion, Boolean.TRUE);
         Assertions.assertTrue(new File("./src/test/resources/forge_tests/server_pack.zip").exists());
         Files.copy(Paths.get("./src/test/resources/testresources/server_pack.zip"), Paths.get("./src/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
     }
