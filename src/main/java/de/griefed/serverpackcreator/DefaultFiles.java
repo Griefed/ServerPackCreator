@@ -207,7 +207,7 @@ public class DefaultFiles {
 
                 boolean isOldConfigDeleted = getOldConfigFile().delete();
                 if (isOldConfigDeleted) {
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.chechforconfig.old"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforconfig.old"));
                 }
 
             } catch (IOException ex) {
