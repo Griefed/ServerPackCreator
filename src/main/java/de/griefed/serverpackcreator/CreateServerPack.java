@@ -37,7 +37,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.*;
-import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -661,6 +660,8 @@ public class CreateServerPack {
         ZipParameters zipParameters = new ZipParameters();
         zipParameters.setExcludeFileFilter(excludeFileFilter);
         zipParameters.setIncludeRootFolder(false);
+
+        zipParameters.setFileComment("Server pack made with ServerPackCreator by Griefed.");
 
         try {
             new net.lingala.zip4j.ZipFile(String.format("%s/server_pack.zip", modpackDir)).addFolder(new File(String.format("%s/server_pack", modpackDir)), zipParameters);
