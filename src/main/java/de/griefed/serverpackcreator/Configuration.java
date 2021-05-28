@@ -183,7 +183,7 @@ public class Configuration {
             "Neat",
             "OldJavaWarning",
             "PackMenu",
-            "prciseblockplacing",
+            "preciseblockplacing",
             "ResourceLoader",
             "SimpleDiscordRichPresence",
             "SpawnerFix",
