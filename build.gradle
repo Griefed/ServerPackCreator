@@ -55,7 +55,7 @@ dependencies {
     embed group: 'com.github.FabricMC',         name: 'fabric-installer',   version: 'master-SNAPSHOT'
     embed group: 'com.github.TheRandomLabs',    name: 'CurseAPI',           version: 'master-SNAPSHOT'
 
-    testImplementation 'org.mockito:mockito-core:3.10.0'
+    testImplementation 'org.mockito:mockito-core:3.11.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly    'org.junit.jupiter:junit-jupiter-engine'
 }
