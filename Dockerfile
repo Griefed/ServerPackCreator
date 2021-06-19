@@ -14,7 +14,7 @@ RUN \
   ./gradlew build && \
   ls -ahl ./build/libs/
 
-FROM lsiobase/alpine:3.12
+FROM lsiobase/alpine:3.14
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
