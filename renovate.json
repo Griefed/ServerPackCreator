@@ -1,6 +1,10 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
   ],
+  "gradle-lite": {
+    "enabled": true
+  },
   "prConcurrentLimit": 5
 }
