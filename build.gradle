@@ -46,18 +46,17 @@ configurations {
 }
 
 dependencies {
-    embed group: 'org.slf4j',                   name: 'slf4j-log4j12',      version: '2.0.0-alpha1'
-    embed group: 'org.apache.logging.log4j',    name: 'log4j-slf4j-impl',   version: '2.14.1'
-    embed group: 'com.typesafe',                name: 'config',             version: '1.4.1'
-    embed group: 'com.fasterxml.jackson.core',  name: 'jackson-databind',   version: '2.12.3'
-    embed group: 'commons-io',                  name: 'commons-io',         version: '2.10.0'
-    embed group: 'net.lingala.zip4j',           name: 'zip4j',              version: '2.8.0'
-    embed group: 'com.github.FabricMC',         name: 'fabric-installer',   version: 'master-SNAPSHOT'
-    embed group: 'com.github.TheRandomLabs',    name: 'CurseAPI',           version: 'master-SNAPSHOT'
-
+    embed 'org.slf4j:slf4j-log4j12:2.0.0-alpha1'
+    embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
+    embed 'com.typesafe:config:1.4.1'
+    embed 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+    embed 'commons-io:commons-io:2.10.0'
+    embed 'net.lingala.zip4j:zip4j:2.8.0'
+    embed 'com.github.FabricMC:fabric-installer:master-SNAPSHOT'
+    embed 'com.github.TheRandomLabs:CurseAPI:master-SNAPSHOT'
     testImplementation 'org.mockito:mockito-core:3.11.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
-    testRuntimeOnly    'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
 test {
