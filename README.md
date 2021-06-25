@@ -27,6 +27,8 @@ I am making this in my spare time, therefore progress is slow. I also just start
 
 Use at your own risk! Be aware that data loss is possible.
 
+[[_TOC_]]
+
 ## JetBrains
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
