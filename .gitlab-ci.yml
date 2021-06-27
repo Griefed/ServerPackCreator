@@ -18,7 +18,7 @@ test gradle:
     - echo "**** Java location ****"
     - which java
     - echo "**** Java version ****"
-    - java --version
+    - java -version
     - echo "**** Allowing execution of gradlew ****"
     - chmod +x gradlew
     - echo "**** Ensure clean environment ****"
