@@ -5,7 +5,7 @@ stages:
   - build
 
 test gradle:
-  image: openjdk:8u292
+  image: openjdk:8
   stage: test
   services:
     - name: docker:dind
@@ -133,7 +133,7 @@ build docker:
     - tags
 
 docs:
-  image: openjdk:8u292
+  image: openjdk:8
   stage: docs
   services:
     - name: docker:dind
