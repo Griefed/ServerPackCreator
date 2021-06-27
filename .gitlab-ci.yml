@@ -14,15 +14,38 @@ test gradle:
     project_name: $CI_PROJECT_NAME
     SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
   before_script:
+    - echo "**** Running in $CI_JOB_ID ****"
+    - echo "**** Java location ****"
     - which java
+    - echo "**** Java version ****"
+    - java --version
+    - echo "**** Allowing execution of gradlew ****"
     - chmod +x gradlew
+    - echo "**** Ensure clean environment ****"
     - ./gradlew clean
   script:
+    - echo "**** Building ServerPackCreator ****"
     - ./gradlew build createExe --info
-    - mv build/libs/serverpackcreator.exe build/libs/ServerPackCreator.exe
-    - mv build/libs/serverpackcreator.jar build/libs/ServerPackCreator.jar
-    - mv build/libs/serverpackcreator-javadoc.jar build/libs/ServerPackCreator-javadoc.jar
-    - mv build/libs/serverpackcreator-sources.jar build/libs/ServerPackCreator-sources.jar
+    - echo "**** Listing build directory ****"
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build/libs
+    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+      build/libs/libraries
+    - echo "**** Renaming files to please the eye ****"
+    - mv
+      build/libs/serverpackcreator.exe
+      build/libs/ServerPackCreator.exe
+    - mv
+      build/libs/serverpackcreator.jar
+      build/libs/ServerPackCreator.jar
+    - mv
+      build/libs/serverpackcreator-javadoc.jar
+      build/libs/ServerPackCreator-javadoc.jar
+    - mv
+      build/libs/serverpackcreator-sources.jar
+      build/libs/ServerPackCreator-sources.jar
   artifacts:
     paths:
       - build/libs/ServerPackCreator.exe
