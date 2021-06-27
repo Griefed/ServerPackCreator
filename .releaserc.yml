@@ -1,0 +1,123 @@
+branches: ['master','main']
+ci: true
+debug: true
+dryRun: false
+tagFormat: '${version}'
+
+# Global plugin options (will be passed to all plugins)
+preset: 'conventionalcommits'
+gitlabUrl: 'https://git.griefed.de/' # your gitlab url
+
+# Responsible for verifying conditions necessary to proceed with the release:
+# configuration is correct, authentication token are valid, etc...
+verifyConditions:
+  - '@semantic-release/changelog'
+  - '@semantic-release/git'
+  - '@semantic-release/gitlab'
+
+# Responsible for determining the type of the next release (major, minor or patch).
+# If multiple plugins with a analyzeCommits step are defined, the release type will be
+# the highest one among plugins output.
+# Look details at: https://github.com/semantic-release/commit-analyzer#configuration
+analyzeCommits:
+  - path: '@semantic-release/commit-analyzer'
+    releaseRules:
+      - breaking: true
+        release: major
+      - type: build     # Changes that affect the build system or external dependencies
+        release: patch
+      - type: chore     # Other changes that don't modify src or test files
+        release: false
+      - type: ci        # Changes to our CI configuration files and scripts
+        release: false
+      - type: docs      # Documentation only changes
+        release: false
+      - type: feat      # A new feature
+        release: minor
+      - type: fix       # A bug fix
+        release: patch
+      - type: perf      # A code change that improves performance
+        release: patch
+      - type: refactor  # A code change that neither fixes a bug nor adds a feature
+        release: false
+      - type: revert    # Reverts a previous commit
+        release: patch
+      - type: style     # Changes that do not affect the meaning of the code
+        release: false
+      - type: test      # Adding missing tests or correcting existing tests
+        release: false
+
+# Responsible for generating the content of the release note.
+# If multiple plugins with a generateNotes step are defined,
+# the release notes will be the result of the concatenation of each plugin output.
+generateNotes:
+  - path: '@semantic-release/release-notes-generator'
+    writerOpts:
+      groupBy: 'type'
+      commitGroupsSort: 'title'
+      commitsSort: 'header'
+    linkCompare: true
+    linkReferences: true
+    presetConfig:
+      types:  # looks like it only works with 'conventionalcommits' preset
+        - type: 'build'
+          section: '🦊 CI/CD'
+          hidden: false
+        - type: 'chore'
+          section: 'Other'
+          hidden: false
+        - type: 'ci'
+          section: '🦊 CI/CD'
+          hidden: false
+        - type: 'docs'
+          section: '📔 Docs'
+          hidden: false
+        - type: 'example'
+          section: '📝 Examples'
+          hidden: false
+        - type: 'feat'
+          section: '🚀 Features'
+          hidden: false
+        - type: 'fix'
+          section: '🛠 Fixes'
+          hidden: false
+        - type: 'perf'
+          section: '⏩ Performance'
+        - type: 'refactor'
+          section: ':scissors: Refactor'
+          hidden: false
+        - type: 'revert'
+          section: '👀 Reverts'
+        - type: 'style'
+          section: '💈 Style'
+        - type: 'test'
+          section: '🧪 Tests'
+          hidden: false
+
+# Responsible for preparing the release, for example creating or updating files
+# such as package.json, CHANGELOG.md, documentation or compiled assets
+# and pushing a commit.
+prepare:
+  # - path: '@semantic-release/exec'
+  #   # Execute shell command to set package version
+  #   cmd: './deployment/version-plaintext-set.sh ${nextRelease.version}'
+  # - path: '@semantic-release/exec'
+  #   cmd: './deployment/version-oas-set.sh ${nextRelease.version} openapi.yaml'
+  # - path: '@semantic-release/exec'
+  #   verifyReleaseCmd: "echo ${nextRelease.version} > VERSION.txt"
+  - path: '@semantic-release/changelog'
+    # Create or update the changelog file in the local project repository
+  - path: '@semantic-release/git'
+    # Push a release commit and tag, including configurable files
+    message: 'RELEASE: ${nextRelease.version}'
+    assets: ['CHANGELOG.md']
+
+# Responsible for publishing the release.
+publish:
+  - path: '@semantic-release/gitlab'
+    # Publish a GitLab release
+    #  (https://docs.gitlab.com/ce/user/project/releases/index.html#add-release-notes-to-git-tags)
+
+success: false
+
+fail: false
