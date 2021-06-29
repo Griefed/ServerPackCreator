@@ -5,7 +5,7 @@ stages:
   - build
 
 test gradle:
-  image: openjdk:8
+  image: griefed/baseimage-ubuntu-jdk-8:latest
   stage: test
   services:
     - name: docker:dind
