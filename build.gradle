@@ -51,7 +51,7 @@ dependencies {
     embed 'com.typesafe:config:1.4.1'
     embed 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     embed 'commons-io:commons-io:2.10.0'
-    embed 'net.lingala.zip4j:zip4j:2.8.0'
+    embed 'net.lingala.zip4j:zip4j:2.9.0'
     embed 'com.github.FabricMC:fabric-installer:master-SNAPSHOT'
     embed 'com.github.TheRandomLabs:CurseAPI:master-SNAPSHOT'
     testImplementation 'org.mockito:mockito-core:3.11.2'
