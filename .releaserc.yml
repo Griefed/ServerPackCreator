@@ -83,13 +83,16 @@ generateNotes:
           hidden: false
         - type: 'perf'
           section: '⏩ Performance'
+          hidden: false
         - type: 'refactor'
           section: ':scissors: Refactor'
           hidden: false
         - type: 'revert'
           section: '👀 Reverts'
+          hidden: false
         - type: 'style'
           section: '💈 Style'
+          hidden: false
         - type: 'test'
           section: '🧪 Tests'
           hidden: false
