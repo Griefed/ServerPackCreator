@@ -1,0 +1,65 @@
+name: Create GitHub Release after GitLab tag mirror
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # GET LATEST CODE
+      - name: Checkout latest code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+
+      # EXTRACT TAG FROM PUSH
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+      - name: Use tag
+        run: echo ${{steps.tag.outputs.tag}}
+
+      # GENERATE CHANGELOG, RELEASE
+      - id: conventional_changelog
+        uses: ardalanamini/auto-changelog@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{steps.tag.outputs.tag}}
+          body: |
+            Automatic release of version: **${{steps.tag.outputs.tag}}**
+            **Changes in this release:**
+            ${{ steps.conventional_changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+
+      # DOCKER RELATED
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest
+            ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:${{steps.tag.outputs.tag}}
