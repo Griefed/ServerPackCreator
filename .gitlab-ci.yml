@@ -83,13 +83,6 @@ test docker:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
 release:
-  needs:
-    - job: 'test gradle'
-      artifacts: true
-    - job: 'test docker'
-      artifacts: false
-  dependencies:
-    - test gradle
   stage: release
   image: griefed/gitlab-semantic-release:latest
   services:
@@ -134,6 +127,93 @@ build docker:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest" .
+  only:
+    - tags
+
+build release:
+  image: griefed/baseimage-ubuntu-jdk-8:latest
+  stage: build
+  services:
+    - name: docker:dind
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - echo "**** Running in $CI_JOB_ID ****"
+    - echo "**** Java location ****"
+    - which java
+    - echo "**** Java version ****"
+    - java -version
+    - echo "**** Allowing execution of gradlew ****"
+    - chmod +x gradlew
+    - echo "**** Ensure clean environment ****"
+    - ./gradlew clean
+  script:
+    - echo "**** Building ServerPackCreator ****"
+    - ./gradlew -Pversion=${CI_COMMIT_TAG} publish createExe --info
+    - echo "**** Listing build directory ****"
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build/libs
+    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+      build/libs/libraries
+    - echo "**** Renaming files to please the eye ****"
+    - mv
+      build/libs/serverpackcreator-${CI_COMMIT_TAG}.exe
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+    - mv
+      build/libs/serverpackcreator-${CI_COMMIT_TAG}.jar
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+    - mv
+      build/libs/serverpackcreator-javadoc-${CI_COMMIT_TAG}.jar
+      build/libs/${CI_PROJECT_NAME}-javadoc-${CI_COMMIT_TAG}.jar
+    - mv
+      build/libs/serverpackcreator-sources-${CI_COMMIT_TAG}.jar
+      build/libs/${CI_PROJECT_NAME}-sources-${CI_COMMIT_TAG}.jar
+    - echo "**** Uploading packages ****"
+    - 'curl 
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}" 
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"'
+    - 'curl 
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}" 
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
+    - 'curl 
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}" 
+      --upload-file build/libs/${CI_PROJECT_NAME}-javadoc-${CI_COMMIT_TAG}.jar
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-javadoc-${CI_COMMIT_TAG}.jar"'
+    - 'curl 
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}" 
+      --upload-file build/libs/${CI_PROJECT_NAME}-sources-${CI_COMMIT_TAG}.jar
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-sources-${CI_COMMIT_TAG}.jar"'
+    - echo "**** Create asset links ****"
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data name="${CI_PROJECT_NAME}-javadoc-${CI_COMMIT_TAG}.jar"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-javadoc-${CI_COMMIT_TAG}.jar"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data name="${CI_PROJECT_NAME}-sources-${CI_COMMIT_TAG}.jar"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-sources-${CI_COMMIT_TAG}.jar"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
   only:
     - tags
 
