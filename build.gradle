@@ -46,7 +46,7 @@ configurations {
 }
 
 dependencies {
-    embed 'org.slf4j:slf4j-log4j12:2.0.0-alpha1'
+    embed 'org.slf4j:slf4j-log4j12:2.0.0-alpha2'
     embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
     embed 'com.typesafe:config:1.4.1'
     embed 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
