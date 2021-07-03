@@ -15,7 +15,7 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
-group 'de.griefed.serverpackcreator'
+group 'de.griefed'
 
 sourceSets {
     //noinspection GroovyAssignabilityCheck
