@@ -53,6 +53,11 @@ test gradle:
       - build/libs/ServerPackCreator-javadoc.jar
       - build/libs/ServerPackCreator-sources.jar
     expire_in: 1 week
+  except:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
 test docker:
   stage: test
