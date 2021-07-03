@@ -171,6 +171,17 @@ build release:
     - mv
       build/libs/serverpackcreator.exe
       build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+    - mv
+      build/libs/serverpackcreator-${CI_COMMIT_TAG}.jar
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+    - mv
+      build/libs/serverpackcreator-${CI_COMMIT_TAG}-javadoc.jar
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+    - mv
+      build/libs/serverpackcreator-${CI_COMMIT_TAG}-sources.jar
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build/libs
     - echo "**** Uploading packages ****"
     - 'curl
       --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
@@ -182,11 +193,11 @@ build release:
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
     - 'curl
       --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-javadoc-${CI_COMMIT_TAG}.jar
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"'
     - 'curl
       --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
-      --upload-file build/libs/${CI_PROJECT_NAME}-sources-${CI_COMMIT_TAG}.jar
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"'
     - echo "**** Create asset links ****"
     - 'curl
