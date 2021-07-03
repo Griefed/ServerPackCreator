@@ -102,6 +102,7 @@ release:
     - npx semantic-release
   only:
     - master
+    - main
   except:
     refs:
       - tags
