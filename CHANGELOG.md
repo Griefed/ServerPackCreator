@@ -1,3 +1,16 @@
+### [2.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.4...2.0.5) (2021-07-03)
+
+
+### 🦊 CI/CD
+
+* Artifacts aren't attached to the lreease this way anyway. ([640e0ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/640e0ed154a28d5853255be9102ade9154963b27))
+
+
+### 🛠 Fixes
+
+* Fix releases on GitHub and GitLab. Release packages on GitLab to Package Registry and attach package to release. ([66b0bb8](https://git.griefed.de/Griefed/ServerPackCreator/commit/66b0bb8bab7938fc62400764912f2933bb703f16))
+* Move back to de.griefed. Last time, promise. ([80919a4](https://git.griefed.de/Griefed/ServerPackCreator/commit/80919a44fea77a685ae355c6aa2dbb3a7042430c))
+
 ### [2.0.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.3...2.0.4) (2021-07-03)
 
 
