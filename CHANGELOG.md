@@ -1,3 +1,15 @@
+### [2.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.5...2.0.6) (2021-07-03)
+
+
+### 🦊 CI/CD
+
+* Deactivate test jobs on tag creation ([e354501](https://git.griefed.de/Griefed/ServerPackCreator/commit/e354501b7d918ee52e726c995884a7f00ba75934))
+
+
+### 🛠 Fixes
+
+* Do not push to GitHub packages from GitLab CI. We've got a separate GitHub workflow for mirroring and creating releases on GitHub. ([5e0a819](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e0a819ef9359ddfa284401469366a3e263b54bb))
+
 ### [2.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.4...2.0.5) (2021-07-03)
 
 
