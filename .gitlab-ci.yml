@@ -85,11 +85,9 @@ test docker:
 release:
   needs:
     - job: 'test gradle'
-      artifacts: true
+      artifacts: false
     - job: 'test docker'
       artifacts: false
-  dependencies:
-    - test gradle
   stage: release
   image: griefed/gitlab-semantic-release:latest
   services:
