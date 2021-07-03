@@ -162,7 +162,7 @@ build release:
     - ./gradlew clean
   script:
     - echo "**** Building ServerPackCreator ****"
-    - ./gradlew -Pversion=${CI_COMMIT_TAG} publish createExe --info
+    - ./gradlew build createExe --info
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build
@@ -175,13 +175,13 @@ build release:
       build/libs/serverpackcreator.exe
       build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
     - mv
-      build/libs/serverpackcreator-${CI_COMMIT_TAG}.jar
+      build/libs/serverpackcreator.jar
       build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
     - mv
-      build/libs/serverpackcreator-${CI_COMMIT_TAG}-javadoc.jar
+      build/libs/serverpackcreator-javadoc.jar
       build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
     - mv
-      build/libs/serverpackcreator-${CI_COMMIT_TAG}-sources.jar
+      build/libs/serverpackcreator-sources.jar
       build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build/libs
