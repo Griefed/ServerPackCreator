@@ -254,9 +254,9 @@ pages:
   script:
     - ./gradlew javaDoc
     - cp -Rf build/docs/javadoc public
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      public
   artifacts:
     paths:
       - public
     expire_in: 1 week
-  only:
-    - tags
