@@ -238,7 +238,7 @@ build release:
   only:
     - tags
 
-docs:
+pages:
   image: openjdk:8
   stage: docs
   services:
