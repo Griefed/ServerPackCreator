@@ -22,7 +22,7 @@ verifyConditions:
 analyzeCommits:
   - path: '@semantic-release/commit-analyzer'
     releaseRules:
-      - breaking: true
+      - type: breaking  # Changes that break something makes something incompatible to ealier version
         release: major
       - type: build     # Changes that affect the build system or external dependencies
         release: patch
