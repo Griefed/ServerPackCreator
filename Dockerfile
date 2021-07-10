@@ -1,10 +1,6 @@
 FROM griefed/baseimage-ubuntu-jdk-8:1.0.5 AS builder
 
 RUN \
-  apt-get update && \
-  apt-get install -y \
-    git \
-    openjdk-8-jdk && \
   git clone \
     https://github.com/Griefed/ServerPackCreator.git \
       /tmp/serverpackcreator && \
