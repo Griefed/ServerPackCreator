@@ -1,3 +1,24 @@
+### [2.0.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.6...2.0.7) (2021-07-10)
+
+
+### 🦊 CI/CD
+
+* Explicitly set baseimage version ([674f702](https://git.griefed.de/Griefed/ServerPackCreator/commit/674f702afebfc961caff408a0af75b2de46c8c95))
+* Deploy pages after every commit ([f279abb](https://git.griefed.de/Griefed/ServerPackCreator/commit/f279abb123cdb1089639782ff8905cf928ecc69a))
+* Fix "breaking" type ([f80c7ba](https://git.griefed.de/Griefed/ServerPackCreator/commit/f80c7ba6aae7801b27f45bd30785a888827d4761))
+* Remove branches from gh-pages workflow ([b84edb2](https://git.griefed.de/Griefed/ServerPackCreator/commit/b84edb2d765c301ba10e7114c787a4a36069eb3d))
+* Try and fix pages deploy on GitLab ([8f445d9](https://git.griefed.de/Griefed/ServerPackCreator/commit/8f445d99308d811fefd7a88986924e0c2dc71b55))
+
+
+### 🛠 Fixes
+
+* Remove unnecessary installation of JDK8 ([b4896ec](https://git.griefed.de/Griefed/ServerPackCreator/commit/b4896ec7ae6dec103156701fadef1a18e3df952d))
+
+
+### Other
+
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.12.4 ([53272cc](https://git.griefed.de/Griefed/ServerPackCreator/commit/53272cca5d88894b6682397c89c263c249d55d64))
+
 ### [2.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.5...2.0.6) (2021-07-03)
 
 
