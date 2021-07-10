@@ -1,4 +1,4 @@
-FROM lsiobase/ubuntu:bionic AS builder
+FROM griefed/baseimage-ubuntu-jdk-8:1.0.5 AS builder
 
 RUN \
   apt-get update && \
@@ -14,7 +14,7 @@ RUN \
   ./gradlew build && \
   ls -ahl ./build/libs/
 
-FROM lsiobase/alpine:3.14
+FROM griefed/baseimage-ubuntu-jdk-8:1.0.5
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
@@ -22,9 +22,6 @@ LABEL maintainer="Griefed <griefed@griefed.de>"
 
 RUN \
   echo "**** install dependencies and build tools and stuff ****" && \
-  apk add --no-cache \
-    openjdk8-jre \
-    curl && \
   mkdir -p \
     /app/serverpackcreator && \
   echo "**** Cleanup ****" && \
