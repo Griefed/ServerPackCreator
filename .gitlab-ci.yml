@@ -5,10 +5,10 @@ stages:
   - build
 
 test gradle:
-  image: griefed/baseimage-ubuntu-jdk-8:latest
+  image: griefed/gitlab-cic-cd:1.0.1
   stage: test
   services:
-    - name: docker:dind
+    - name: griefed/gitlab-cic-cd:1.0.1
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -61,9 +61,9 @@ test gradle:
 
 test docker:
   stage: test
-  image: griefed/docker-with-buildx:latest
+  image: griefed/gitlab-cic-cd:1.0.1
   services:
-    - name: docker:dind
+    - name: griefed/gitlab-cic-cd:1.0.1
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -94,9 +94,9 @@ release:
     - job: 'test docker'
       artifacts: false
   stage: release
-  image: griefed/gitlab-semantic-release:latest
+  image: griefed/gitlab-cic-cd:1.0.1
   services:
-    - name: docker:dind
+    - name: griefed/gitlab-cic-cd:1.0.1
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -114,9 +114,9 @@ release:
 
 build docker:
   stage: build
-  image: griefed/docker-with-buildx:latest
+  image: griefed/gitlab-cic-cd:1.0.1
   services:
-    - name: docker:dind
+    - name: griefed/gitlab-cic-cd:1.0.1
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -142,10 +142,10 @@ build docker:
     - tags
 
 build release:
-  image: griefed/baseimage-ubuntu-jdk-8:latest
+  image: griefed/gitlab-cic-cd:1.0.1
   stage: build
   services:
-    - name: docker:dind
+    - name: griefed/gitlab-cic-cd:1.0.1
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -239,10 +239,10 @@ build release:
     - tags
 
 pages:
-  image: openjdk:8
+  image: griefed/gitlab-cic-cd:1.0.1
   stage: docs
   services:
-    - name: docker:dind
+    - name: griefed/gitlab-cic-cd:1.0.1
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
