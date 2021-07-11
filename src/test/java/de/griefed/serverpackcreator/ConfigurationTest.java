@@ -534,11 +534,12 @@ class ConfigurationTest {
                 "seeds",
                 "defaultconfigs",
                 "README.md;README.md",
-                "G:\\GitLab\\ServerPackCreator\\LICENSE;LICENSE",
-                "G:\\GitLab\\ServerPackCreator\\LICENSE;test/LICENSE",
-                "G:\\GitLab\\ServerPackCreator\\LICENSE;test/license.md"
+                "LICENSE;LICENSE",
+                "LICENSE;test/LICENSE",
+                "LICENSE;test/license.md"
         ));
         Assertions.assertTrue(configuration.checkCopyDirs(copyDirsAndFiles, modpackDir));
+
 
         //Assert false
         List<String> copyDirsInvalid = new ArrayList<>(Arrays.asList(
@@ -549,6 +550,7 @@ class ConfigurationTest {
                 "defaultconfigss"
         ));
         Assertions.assertFalse(configuration.checkCopyDirs(copyDirsInvalid, modpackDir));
+
         List<String> copyDirsAndFilesFalse = new ArrayList<>(Arrays.asList(
                 "configs",
                 "modss",
@@ -556,9 +558,9 @@ class ConfigurationTest {
                 "seedss",
                 "defaultconfigss",
                 "READMEee.md;README.md",
-                "G:\\GitLab\\ServerPackCreator\\LICENSEee;LICENSE",
-                "G:\\GitLab\\ServerPackCreator\\LICENSEee;test/LICENSE",
-                "G:\\GitLab\\ServerPackCreator\\LICENSEee;test/license.md"
+                "LICENSEee;LICENSE",
+                "LICENSEee;test/LICENSE",
+                "LICENSEee;test/license.md"
         ));
         Assertions.assertFalse(configuration.checkCopyDirs(copyDirsAndFilesFalse, modpackDir));
 
