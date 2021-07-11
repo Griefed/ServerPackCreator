@@ -381,13 +381,13 @@ public class CreateServerPack {
             String clientDir = String.format("%s/%s", modpackDir, directory);
             String serverDir = String.format("%s/%s", serverPath, directory);
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyfiles.setup"), serverDir));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyfiles.setup"), directory));
 
             if (directory.contains(";")) {
 
                 String[] sourceFileDestinationFileCombination = directory.split(";");
-                File sourceFile = new File(sourceFileDestinationFileCombination[0]);
-                File destinationFile = new File(String.format("%s/%s", serverDir, sourceFileDestinationFileCombination[1]));
+                File sourceFile = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+                File destinationFile = new File(String.format("%s/%s", serverPath, sourceFileDestinationFileCombination[1]));
 
                 try {
                     FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);

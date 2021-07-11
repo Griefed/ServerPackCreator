@@ -350,6 +350,7 @@ public class Configuration {
     void setCopyDirs(List<String> newCopyDirs) {
         for (int i = 0; i < newCopyDirs.size(); i++) {
             newCopyDirs.removeIf(n -> (n.equalsIgnoreCase("server_pack")));
+            newCopyDirs.replaceAll(n -> n.replace("\\","/"));
         }
         this.copyDirs = newCopyDirs;
     }
@@ -1153,7 +1154,7 @@ public class Configuration {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    File sourceFileToCheck = new File (sourceFileDestinationFileCombination[0]);
+                    File sourceFileToCheck = new File (String.format("%s/%s", modpackDir,sourceFileDestinationFileCombination[0]));
 
                     if (!sourceFileToCheck.exists()) {
 
@@ -1969,7 +1970,7 @@ public class Configuration {
                         "%s\nincludeZipCreation = %b\n",
                 LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
                 LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.clientmods"), clientMods,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.copydirs"), copyDirs,
+                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.copydirs"), copyDirs.replace("\\","/"),
                 LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.includeserverinstallation"), includeServer,
                 LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.javapath"), javaPath.replace("\\","/"),
                 LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.minecraftversion"), minecraftVersion,
