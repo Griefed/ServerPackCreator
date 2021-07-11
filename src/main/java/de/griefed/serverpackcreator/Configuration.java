@@ -1126,7 +1126,11 @@ public class Configuration {
      * prints a message to the console and serverpackcreator.log if it is.<br>
      * Checks whether all directories in the list exist in the modpack directory and prints a message to the console
      * and serverpackcreator.log if any one of the directories could not be found.
-     * @param directoriesToCopy List String. The list of directories to check for existence.
+     * If the user specified a <code>source/file;destination/file</code>-combination, it is checked whether the specified
+     * source-file exists on the host.
+     * @param directoriesToCopy List String. The list of directories, or <code>source/file;destination/file</code>-combinations,
+     *                         to check for existence. <code>source/file;destination/file</code>-combinations must be
+     *                          absolute paths to the source-file.
      * @param modpackDir String. The path to the modpack directory in which to check for existence of the passed list of
      *                  directories.
      * @return Boolean. Returns true if every directory was found in the modpack directory. If any single one was not found,
@@ -1144,12 +1148,30 @@ public class Configuration {
 
             for (String directory : directoriesToCopy) {
 
-                File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
+                // Check whether the user explicitly specified a file to include in the server pack.
+                if (directory.contains(";")) {
 
-                if (!dirToCheck.exists() || !dirToCheck.isDirectory()) {
+                    String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
-                    configCorrect = false;
+                    File sourceFileToCheck = new File (sourceFileDestinationFileCombination[0]);
+
+                    if (!sourceFileToCheck.exists()) {
+
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
+                        configCorrect = false;
+                    }
+
+                // If user did not explicitly specify a file, check for directory.
+                } else {
+
+                    File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
+
+                    if (!dirToCheck.exists() || !dirToCheck.isDirectory()) {
+
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
+                        configCorrect = false;
+                    }
+
                 }
             }
         }
@@ -1664,7 +1686,7 @@ public class Configuration {
 
             System.out.println();
 
-//---------------------------------------------------------------------------DIRECTORIES TO COPY TO SERVER PACK---------
+//------------------------------------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.enter"));
 
             List<String> dirList = Arrays.asList(Objects.requireNonNull(new File(modpackDir).list((current, name) -> new File(current, name).isDirectory())));
