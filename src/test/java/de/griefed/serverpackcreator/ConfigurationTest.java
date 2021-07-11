@@ -533,10 +533,8 @@ class ConfigurationTest {
                 "scripts",
                 "seeds",
                 "defaultconfigs",
-                "README.md;README.md",
-                "LICENSE;LICENSE",
-                "LICENSE;test/LICENSE",
-                "LICENSE;test/license.md"
+                "test.txt;test.txt",
+                "test2.txt;test2.txt"
         ));
         Assertions.assertTrue(configuration.checkCopyDirs(copyDirsAndFiles, modpackDir));
 
