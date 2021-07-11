@@ -5,7 +5,7 @@ stages:
   - build
 
 test gradle:
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: test
   services:
     - name: griefed/gitlab-ci-cd:1.0.1
@@ -142,7 +142,7 @@ build docker:
     - tags
 
 build release:
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: build
   services:
     - name: griefed/gitlab-ci-cd:1.0.1
@@ -239,7 +239,7 @@ build release:
     - tags
 
 pages:
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: docs
   services:
     - name: griefed/gitlab-ci-cd:1.0.1
