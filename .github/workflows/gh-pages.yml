@@ -25,7 +25,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build documentation
-        run: ./gradlew clean javaDoc
+        run: ./gradlew clean build
       - name: List files
         run: ls -ahl build/libs
 
