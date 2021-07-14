@@ -24,8 +24,8 @@ jobs:
           java-version: '8'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build project
-        run: ./gradlew clean build
+      - name: Build documentation
+        run: ./gradlew clean javaDoc
       - name: List files
         run: ls -ahl build/libs
 
