@@ -21,13 +21,16 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 [![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/griefed/serverpackcreator?label=Image%20size&sort=date&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
 [![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/griefed/serverpackcreator?label=Docker%20build&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
 
-[![GitHub Tests Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Test?color=c0ffee&label=Build%20Tests&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/actions/workflows/test.yml)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases/latest)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
+
+[![GitLab Pipeline Status](https://img.shields.io/gitlab/pipeline/Griefed/ServerPackCreator/main?gitlab_url=https%3A%2F%2Fgit.griefed.de&label=GitLab%20CI/CD%20Status&color=c0ffee&logo=GitHub&logoColor=white&labelColor=325358&&style=for-the-badge)](https://git.griefed.de/Griefed/ServerPackCreator)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Deploy%20javadocs%20to%20GitHub%20pages?color=c0ffee&labelColor=325358&label=GitHub%20Pages%20Deploy&logo=GitHub&logoColor=white&style=for-the-badge)](https://griefed.github.io/ServerPackCreator)
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/Griefed/serverpackcreator?label=GitHub%20Stars&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub contributors](https://img.shields.io/github/contributors/Griefed/ServerPackCreator?color=c0ffee&label=Contributors&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/graphs/contributors)
+[![GitHub all releases](https://img.shields.io/github/downloads/Griefed/ServerPackCreator/total?color=c0ffee&logo=GitHub&logoColor=white&labelColor=325358&style=for-the-badge)](https://github.com/Griefed/ServerPackCreator/releases)
 
 **ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric modpack. Customize the configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.**
@@ -42,9 +45,9 @@ Use at your own risk! Be aware that data loss is possible.
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
 
-[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/)
---------- | --------- 
-[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/)
+[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/)
+--------- | ---------  | ------
+[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/)
 
 ![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
 
@@ -67,6 +70,12 @@ Use at your own risk! Be aware that data loss is possible.
     1. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
     1. Logs from last run in separate tabs
     1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
+11. **Webservice providing a web-frontend to configure, generate and download server packs.**
+    1. Upload config files
+    1. Upload CurseForge modpack-archives to generate server packs from
+    1. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
+    1. Logs from last run in separate tab
+    1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
 
 ## Versions
 
@@ -76,6 +85,7 @@ Version mask | Description
 -------------|------------
 **1.x.x** | CLI only
 **2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
+**3.x.x** | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`
 
 ## Configuration
 
@@ -126,7 +136,7 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 # Running
 
 In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
-The `.exe` can be executed as usual by simply double-clicking it. It only works in Windows, though. Please keep that in mind.
+The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
 
 ## Localization
 
@@ -222,6 +232,12 @@ docker create \
   --restart "no" \
   griefed/serverpackcreator:latest
 ```
+
+## Securing ServerPackCreator running as a webservice
+
+Login and authentication will not be added to SPC running as a webservice, because that's a can of worms I do not want
+to open, but I will provide an example on how you can secure it by using [Authelia](https://github.com/authelia/authelia).
+TODO: Write small guide on running ServerPackCreator as webservice in Docker and secure it with Authelia. 
 
 ---
 
