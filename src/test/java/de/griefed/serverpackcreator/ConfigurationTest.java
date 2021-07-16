@@ -516,6 +516,7 @@ class ConfigurationTest {
 
     @Test
     void checkCopyDirsTest() {
+        //Assert true
         String modpackDir = "src/test/resources/forge_tests";
         List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
@@ -526,6 +527,19 @@ class ConfigurationTest {
         ));
         Assertions.assertTrue(configuration.checkCopyDirs(copyDirs, modpackDir));
 
+        List<String> copyDirsAndFiles = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs",
+                "test.txt;test.txt",
+                "test2.txt;test2.txt"
+        ));
+        Assertions.assertTrue(configuration.checkCopyDirs(copyDirsAndFiles, modpackDir));
+
+
+        //Assert false
         List<String> copyDirsInvalid = new ArrayList<>(Arrays.asList(
                 "configs",
                 "modss",
@@ -534,6 +548,20 @@ class ConfigurationTest {
                 "defaultconfigss"
         ));
         Assertions.assertFalse(configuration.checkCopyDirs(copyDirsInvalid, modpackDir));
+
+        List<String> copyDirsAndFilesFalse = new ArrayList<>(Arrays.asList(
+                "configs",
+                "modss",
+                "scriptss",
+                "seedss",
+                "defaultconfigss",
+                "READMEee.md;README.md",
+                "LICENSEee;LICENSE",
+                "LICENSEee;test/LICENSE",
+                "LICENSEee;test/license.md"
+        ));
+        Assertions.assertFalse(configuration.checkCopyDirs(copyDirsAndFilesFalse, modpackDir));
+
     }
 
     @Test
