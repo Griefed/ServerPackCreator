@@ -1,0 +1,7 @@
+{
+  "@quasar/testing": {
+    "harnesses": [
+      "unit-jest"
+    ]
+  }
+}
