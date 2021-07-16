@@ -1,10 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ServerPackCreator [clean copyDist build createExe --info]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="ServerPackCreator [clean copyDist build createExe --info -x test]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="--info" />
+      <option name="scriptParameters" value="--info -x test" />
       <option name="taskDescriptions">
         <list />
       </option>

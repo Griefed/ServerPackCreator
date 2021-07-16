@@ -38,6 +38,7 @@ bower_components
 build/Release
 
 # Dependency directories
+frontend/node
 node_modules/
 jspm_packages/
 
@@ -105,6 +106,13 @@ dist
 
 # Repo specific
 Survive*
+backend/main/resources/static/css
+backend/main/resources/static/fonts
+backend/main/resources/static/icons
+backend/main/resources/static/images
+backend/main/resources/static/img
+backend/main/resources/static/js
+backend/main/resources/static/index.html
 
 # eclipse
 bin
@@ -114,12 +122,44 @@ bin
 .classpath
 .project
 
-# idea
+.DS_Store
+.thumbs.db
+node_modules
+
+# Quasar core related directories
+.quasar
+/dist
+
+# Cordova related directories and files
+/backend-cordova/node_modules
+/backend-cordova/platforms
+/backend-cordova/plugins
+/backend-cordova/www
+
+# Capacitor related directories and files
+/backend-capacitor/www
+/backend-capacitor/node_modules
+
+# BEX related directories and files
+/backend-bex/www
+/backend-bex/js/core
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 out
 *.ipr
 *.iws
 *.iml
-.idea
+
+# Yarn
+yarn.lock
+
+# VueJS
+package-lock.json
 
 # gradle
 /tests
@@ -132,23 +172,23 @@ gradlew.bat
 eclipse
 
 # Tests
-src/test/resources/fabric_tests/server_pack/.fabric-installer/libraries
-src/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.sh
-src/test/resources/forge_tests/server_pack/forge.jar
-src/test/resources/tests/server_pack/download*
-src/test/resources/tests/server_pack/forge.jar
-src/test/resources/tests/server_pack/fabric-installer.xml
-src/test/resources/tests/server_pack/libraries
-src/test/resources/tests/server_pack/1.16.5.json
-src/test/resources/tests/server_pack/fabric-server-launch.jar
-src/test/resources/tests/server_pack/minecraft_server.1.16.5.jar
-src/test/resources/tests/server_pack/server.jar
-src/test/resources/tests/server_pack/server.jar.tmp
-src/test/resources/tests/server_pack/fabric-installer.jar
-src/test/resources/tests/server_pack/forge-installer.jar
-src/test/resources/forge_tests/Vanilla Forge
-src/test/resources/fabric_tests/server_pack.zip
-src/test/resources/forge_tests/server_pack.zip
+backend/test/resources/fabric_tests/server_pack/.fabric-installer/libraries
+backend/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.sh
+backend/test/resources/forge_tests/server_pack/forge.jar
+backend/test/resources/tests/server_pack/download*
+backend/test/resources/tests/server_pack/forge.jar
+backend/test/resources/tests/server_pack/fabric-installer.xml
+backend/test/resources/tests/server_pack/libraries
+backend/test/resources/tests/server_pack/1.16.5.json
+backend/test/resources/tests/server_pack/fabric-server-launch.jar
+backend/test/resources/tests/server_pack/minecraft_server.1.16.5.jar
+backend/test/resources/tests/server_pack/server.jar
+backend/test/resources/tests/server_pack/server.jar.tmp
+backend/test/resources/tests/server_pack/fabric-installer.jar
+backend/test/resources/tests/server_pack/forge-installer.jar
+backend/test/resources/forge_tests/Vanilla Forge
+backend/test/resources/fabric_tests/server_pack.zip
+backend/test/resources/forge_tests/server_pack.zip
 serverpackcreator.conf
 serverpackcreator.tmp
 server_files

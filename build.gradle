@@ -2,9 +2,15 @@ import java.text.SimpleDateFormat
 
 plugins {
     id 'java'
-    id 'maven-publish'
     id 'idea'
+
+    id 'maven-publish'
+
     id 'edu.sc.seis.launch4j' version '2.5.0'
+    id "org.siouan.frontend-jdk8" version "5.2.0"
+
+    id 'org.springframework.boot' version '2.5.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 //noinspection GroovyUnusedAssignment
@@ -13,39 +19,60 @@ sourceCompatibility = targetCompatibility = '1.8'
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
+    maven { url 'https://repo.spring.io/release' }
 }
 
-group 'de.griefed'
+group = 'de.griefed'
 
 sourceSets {
     //noinspection GroovyAssignabilityCheck
     main {
         java {
-            java.srcDirs = ['src/main/java']
+            srcDirs = ['backend/main/java']
+        }
+        //noinspection GroovyAssignabilityCheck
+        resources {
+            srcDirs = ['backend/main/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['backend/test/java']
+        }
+        //noinspection GroovyAssignabilityCheck
+        resources {
+            srcDirs = ['backend/test/resources']
         }
     }
 }
 
+// Launch4j builds our ServerPackCreator.exe.
 launch4j {
     fileDescription = "An application to create a server pack from any given Forge or Fabric Minecraft modpack."
     version = System.getenv("NEW_VERSION").toString()
     textVersion = System.getenv("NEW_VERSION").toString()
-    windowTitle = "serverpackcreator"
+    windowTitle = "ServerPackCreator"
     copyright = "GNU Lesser General Public License v2.1"
     downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
     supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
     libraryDir = 'libraries'
     outputDir = 'libs'
     mainClassName = 'de.griefed.serverpackcreator.Main'
-    icon = "${projectDir}/src/main/resources/de/griefed/resources/gui/icon.ico"
+    icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
 configurations {
+    all {
+        // We only want slf4j and log4j.
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+
     embed
     implementation.extendsFrom(embed)
 }
 
 dependencies {
+    // Backend
     embed 'org.slf4j:slf4j-log4j12:2.0.0-alpha2'
     embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
     embed 'com.typesafe:config:1.4.1'
@@ -54,41 +81,94 @@ dependencies {
     embed 'net.lingala.zip4j:zip4j:2.9.0'
     embed 'com.github.FabricMC:fabric-installer:master-SNAPSHOT'
     embed 'com.github.TheRandomLabs:CurseAPI:master-SNAPSHOT'
+
+    // API and Tomcat
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Testing
     testImplementation 'org.mockito:mockito-core:3.11.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 test {
     useJUnitPlatform()
+    // Mention test result in logs
     testLogging {
         events "passed",
-                "skipped",
-                "failed"
+               "skipped",
+               "failed"
     }
 }
 
+// Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
+frontend {
+    packageJsonDirectory = file("${projectDir}/frontend")
+
+    nodeVersion = '16.1.0'
+    nodeInstallDirectory = file("${projectDir}/frontend/node")
+
+    yarnEnabled = false
+    yarnVersion = "1.22.10"
+    yarnInstallDirectory = file("${projectDir}/frontend/yarn")
+
+    cleanScript = 'run clean'
+    assembleScript = 'run build'
+}
+
+// Custom task to build and copy an up-to-date version of our frontend to SpringBoot.
+tasks.register('copyDist', Copy) {
+    // Build a fresh version of our frontend
+    dependsOn tasks.named('cleanFrontend')
+    dependsOn tasks.named('assembleFrontend')
+
+    // Delete old frontend files from SpringBoot.
+    def dirName = "backend/main/resources/static"
+    file( dirName ).list().each{
+        f ->
+            delete "${dirName}/${f}"
+    }
+
+    // Copy new frontend files to SpringBoot.
+    from layout.projectDirectory.dir("frontend/dist/spa")
+    into layout.projectDirectory.dir("backend/main/resources/static")
+}
+
+// Make sure everything is included in our JavaDoc.
+// Since this project is open source, we can include private etc. classes and methods docs.
 tasks.withType(Javadoc) {
     options.addStringOption('encoding', 'UTF-8')
 }
-
 javadoc {
     options.memberLevel = JavadocMemberLevel.PRIVATE
     classpath = sourceSets.main.runtimeClasspath
 }
 
+// Build JavaDoc and JavaSources JARs.
 java {
     withSourcesJar()
     withJavadocJar()
 }
 
+// Required so SpringBoot correctly builds our JAR.
+springBoot {
+    mainClassName = 'de.griefed.serverpackcreator.Main'
+}
+
+// Customize our JAR-file.
 jar {
+    // No duplicates
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
+    // Include all libraries in our JAR-file.
     from {
         configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
 
+    // Customize MANIFEST to include relevant information.
     //noinspection GroovyAssignabilityCheck
     manifest {
         attributes(
@@ -102,6 +182,7 @@ jar {
                 "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
         )
     }
+    // Exclude files and folders which would otherwise bloat our JAR-file up.
     exclude (
             'META-INF/org',
             'META-INF/org/**',
@@ -120,6 +201,7 @@ jar {
     )
 }
 
+// Publish the package with passed version to GHPR. Use ./gradlew -Pversion=${NEW_VERSION} publish, for example.
 publishing {
     repositories {
         maven {
