@@ -1,6 +1,6 @@
 ---
 name: Documentation Request
-about: Request for documentation about a certain aspect of the application
+about: Request for documentation about a certain aspect of this piece of software
 ---
 
 # Documentation Request

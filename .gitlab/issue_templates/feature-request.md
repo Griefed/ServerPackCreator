@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Request a feature for ServerPackCreator
+about: Request a feature for this piece of software
 ---
 
 * **What is the current behavior?**

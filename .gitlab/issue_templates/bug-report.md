@@ -20,7 +20,7 @@ about: Report a bug in the application
 
 - Your Operating System:
 - Your Java version: 
-- Your ServerPackCreator version:
+- Your version of this piece of software:
 - Your config file: <!-- Upload your config-file to https://gist.github.com/ --> 
 - Your latest log file: <!-- Upload your log-file to https://gist.github.com/ -->
 
