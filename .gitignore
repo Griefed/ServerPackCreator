@@ -189,10 +189,11 @@ backend/test/resources/tests/server_pack/forge-installer.jar
 backend/test/resources/forge_tests/Vanilla Forge
 backend/test/resources/fabric_tests/server_pack.zip
 backend/test/resources/forge_tests/server_pack.zip
-serverpackcreator.conf
-serverpackcreator.tmp
-server_files
-fabric-manifest.xml
-forge-manifest.json
-mcmanifest.json
-lang.properties
+/Vanilla Forge
+/serverpackcreator.conf
+/serverpackcreator.tmp
+/server_files
+/fabric-manifest.xml
+/forge-manifest.json
+/mcmanifest.json
+/lang.properties
