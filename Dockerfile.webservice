@@ -2,8 +2,9 @@ FROM griefed/baseimage-ubuntu-jdk-8:1.0.5 AS builder
 
 RUN \
   git clone \
-    https://github.com/Griefed/ServerPackCreator.git \
-      /tmp/serverpackcreator && \
+    -b webservice \
+      https://github.com/Griefed/ServerPackCreator.git \
+        /tmp/serverpackcreator && \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
   rm -Rf /tmp/serverpackcreator/src/test && \
