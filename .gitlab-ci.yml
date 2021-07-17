@@ -82,7 +82,7 @@ test gradle webservice:
     - ./gradlew clean
   script:
     - echo "**** Building ServerPackCreator ****"
-    - ./gradlew copyDist build createExe --info
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build

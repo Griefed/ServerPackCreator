@@ -119,11 +119,18 @@ frontend {
     assembleScript = 'run build'
 }
 
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
+tasks.register('installQuasar', RunNpmYarn) {
+    dependsOn tasks.named('installNode')
+    script = 'install -g @quasar/cli'
+}
+
 // Custom task to build and copy an up-to-date version of our frontend to SpringBoot.
 tasks.register('copyDist', Copy) {
     // Build a fresh version of our frontend
-    dependsOn tasks.named('cleanFrontend')
-    dependsOn tasks.named('assembleFrontend')
+    // dependsOn tasks.named('installQuasar')
+    // dependsOn tasks.named('cleanFrontend')
+    // dependsOn tasks.named('assembleFrontend')
 
     // Delete old frontend files from SpringBoot.
     def dirName = "backend/main/resources/static"
