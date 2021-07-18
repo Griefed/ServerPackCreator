@@ -565,7 +565,7 @@ public class CreateServerPackTab extends JComponent {
 
                     textClientMods.setText(CONFIGURATION.buildString(newConfigFile.getStringList("clientMods").toString()));
 
-                    textCopyDirs.setText(CONFIGURATION.buildString(newConfigFile.getStringList("copyDirs").toString()));
+                    textCopyDirs.setText(CONFIGURATION.buildString(newConfigFile.getStringList("copyDirs").toString().replace("\\","/")));
 
                     textJavaPath.setText(newConfigFile.getString("javaPath"));
 
@@ -850,7 +850,7 @@ public class CreateServerPackTab extends JComponent {
 
                 textClientMods.setText(CONFIGURATION.buildString(config.getStringList("clientMods").toString()));
 
-                textCopyDirs.setText(CONFIGURATION.buildString(config.getStringList("copyDirs").toString()));
+                textCopyDirs.setText(CONFIGURATION.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
 
                 textJavaPath.setText(config.getString("javaPath"));
 

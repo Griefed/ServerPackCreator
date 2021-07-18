@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import net.fabricmc.installer.util.LauncherMeta;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -362,12 +363,15 @@ public class CreateServerPack {
     /**
      * Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
      * server pack directory.
+     * If a <code>source/file;destination/file</code>-combination is provided, the specified source-file is copied to
+     * the specified destination-file.
      * Calls {@link #excludeClientMods(String, List)} to generate a list of all mods to copy to server pack, excluding
      * clientside-only mods.
      * @param modpackDir String. Files and directories are copied into the server_pack directory inside the modpack directory.
      * @param directoriesToCopy String List. All directories and files therein to copy to the server pack.
      * @param clientMods String List. List of clientside-only mods to exclude from the server pack.
      */
+    // TODO: Split into methods for dir copy and file copy to make reading easier
     void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods) {
         String serverPath = String.format("%s/server_pack", modpackDir);
 
@@ -382,9 +386,21 @@ public class CreateServerPack {
             String clientDir = String.format("%s/%s", modpackDir, directory);
             String serverDir = String.format("%s/%s", serverPath, directory);
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyfiles.setup"), serverDir));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyfiles.setup"), directory));
 
-            if (directory.startsWith("saves/")) {
+            if (directory.contains(";")) {
+
+                String[] sourceFileDestinationFileCombination = directory.split(";");
+                File sourceFile = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+                File destinationFile = new File(String.format("%s/%s", serverPath, sourceFileDestinationFileCombination[1]));
+
+                try {
+                    FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
+                } catch (IOException ex) {
+                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles"), ex));
+                }
+
+            } else if (directory.startsWith("saves/")) {
 
                 String savesDir = String.format("%s/%s", serverPath, directory.substring(6));
                 try {
@@ -864,6 +880,7 @@ public class CreateServerPack {
      * directory.
      * @return String. Returns the version of the latest Fabric modloader installer.
      */
+    // TODO: Update to 0.7.4
     String latestFabricInstaller(String modpackDir) {
         String result;
         try {
