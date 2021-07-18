@@ -41,7 +41,7 @@ Use at your own risk! Be aware that data loss is possible.
 
 [[_TOC_]]
 
-## JetBrains
+# JetBrains
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
 
@@ -53,7 +53,7 @@ Use at your own risk! Be aware that data loss is possible.
 
 ---
 
-## Features
+# Features
 
 1. **Generate a config step-by-step by running with argument**`-cgen`
 2. **Download a modpack and create a server pack from it.**
@@ -77,7 +77,7 @@ Use at your own risk! Be aware that data loss is possible.
     1. Logs from last run in separate tab
     1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
 
-## Versions
+# Versions
 
 Consider major version incompatible to each other. Meaning, configs from 1.x.x are incompatible with version 2.x.x etc.
 
@@ -87,7 +87,7 @@ Version mask | Description
 **2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
 **3.x.x** | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`
 
-## Configuration
+# Configuration
 
 After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator resides in.
 Inside it are files you can customize, so they suit your modpack and server pack:
@@ -238,6 +238,20 @@ docker create \
 Login and authentication will not be added to SPC running as a webservice, because that's a can of worms I do not want
 to open, but I will provide an example on how you can secure it by using [Authelia](https://github.com/authelia/authelia).
 TODO: Write small guide on running ServerPackCreator as webservice in Docker and secure it with Authelia. 
+
+---
+
+# Building ServerPackCreator locally
+
+Clone the webservice branch of the repository:
+
+`git clone -b webservice https://git.griefed.de/Griefed/ServerPackCreator.git`
+
+If you are on linux, run `chmod +x gradlew` first.
+
+Build with:
+
+`gradlew clean installQuasar cleanFrontend assembleFrontend copyDist build createExe`
 
 ---
 
