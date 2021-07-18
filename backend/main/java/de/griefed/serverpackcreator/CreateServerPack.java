@@ -689,6 +689,7 @@ public class CreateServerPack {
         } catch (IOException ex) {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
         }
+
         if (includeServerInstallation) {
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar1"));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar2"));
@@ -880,7 +881,6 @@ public class CreateServerPack {
      * directory.
      * @return String. Returns the version of the latest Fabric modloader installer.
      */
-    // TODO: Update to 0.7.4
     String latestFabricInstaller(String modpackDir) {
         String result;
         try {
@@ -906,7 +906,7 @@ public class CreateServerPack {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.latestfabricinstaller"));
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.latestfabricinstaller"), ex);
-            result = "0.7.3";
+            result = "0.7.4";
         }
         return result;
     }
