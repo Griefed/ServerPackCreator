@@ -117,6 +117,14 @@ frontend {
 
     cleanScript = 'run clean'
     assembleScript = 'run build'
+
+    // Print the architecture we are running on.
+    System.out.println(String.format("I am runnong on: %s", System.getProperty("os.arch")))
+
+    // If we are running on arm, specify Node path pattern so arm-builds succeed.
+    if (System.getProperty("os.arch").equals("arm")) {
+        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-armv7l.TYPE'
+    }
 }
 
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
@@ -157,7 +165,7 @@ java {
 
 // Required so SpringBoot correctly builds our JAR.
 springBoot {
-    mainClassName = 'de.griefed.serverpackcreator.Main'
+    mainClass = 'de.griefed.serverpackcreator.Main'
 }
 
 // Customize our JAR-file.
