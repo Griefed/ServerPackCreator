@@ -24,22 +24,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -53,7 +49,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * {@link #copyOverride(String)}<br>
  * {@link #checkCurseForgeDir(String)}<br>
  * {@link #unzipArchive(String, String)}<br>
- * {@link #newFile(File, ZipEntry)}<br>
  * {@link #cleanupEnvironment(String)}<p>
  * Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
  * override directory to the parent directory, download all mods in said modpack, and delete no longer needed files.
@@ -428,76 +423,17 @@ public class CurseCreateModpack {
     }
 
     /**
-     * With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.<br>
-     * Unzips the downloaded modpack ZIP-archive to the specified directory. Calls {@link #newFile(File, ZipEntry)} as
-     * a helper method.
+     * Unzips the downloaded modpack ZIP-archive to the specified directory.
      * @param zipFile String. The path to the ZIP-archive which we want to unzip.
      * @param modpackDir The directory into which the ZIP-archive will be unzipped into.
      */
     void unzipArchive(String zipFile, String modpackDir) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.info.unziparchive"));
-        File destDir = new File(modpackDir);
-        byte[] buffer = new byte[1024];
         try {
-            ZipInputStream input = new ZipInputStream(new FileInputStream(zipFile));
-            ZipEntry zipEntry = input.getNextEntry();
-            while (zipEntry != null) {
-                final File newFile = newFile(destDir, zipEntry);
-                if (zipEntry.isDirectory()) {
-                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), newFile));
-                    }
-                } else {
-                    File parent = newFile.getParentFile();
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), parent));
-                    }
-                    final FileOutputStream output = new FileOutputStream(newFile);
-                    int length;
-                    while ((length = input.read(buffer)) > 0) {
-                        output.write(buffer, 0, length);
-                    }
-                    output.close();
-                }
-                zipEntry = input.getNextEntry();
-            }
-            input.closeEntry();
-            input.close();
-        } catch (IOException ex) {
+            new ZipFile(zipFile).extractAll(modpackDir);
+        } catch (ZipException ex) {
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.unziparchive.extract"), zipFile), ex);
         }
-    }
-
-    /**
-     * With help from <a href=https://www.baeldung.com/java-compress-and-uncompress>Baeldung Java Tutorials</a>.<br>
-     * Helper-Method for unzipArchive. This method guards us against writing any file to the file system <em>outside</em>
-     * of the target folder, thus ensuring all files are successfully unzipped into the desired target directory.
-     * @param destinationDir The directory into which a file from the ZIP-archive is to be unzipped.
-     * @param zipEntry File in the ZIP-archive which is to be unzipped from the ZIP-archive into the desired target
-     *                 directory.
-     * @return File. Returns a file from the ZIP-archive with the path pointing to the desired directory, ensuring proper
-     * unzipping of the ZIP-archive.
-     */
-    private File newFile(File destinationDir, ZipEntry zipEntry) {
-        File destFile = new File(destinationDir, zipEntry.getName());
-        String destDirPath = null;
-        String destFilePath = null;
-
-        try {
-            destDirPath = destinationDir.getCanonicalPath();
-
-        } catch (IOException ex) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.newfile.path"), destinationDir), ex);
-        }
-        try {
-            destFilePath = destFile.getCanonicalPath();
-        } catch (IOException ex) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.newfile.path"), destFile), ex);
-        }
-        if (destFilePath != null && !destFilePath.startsWith(destDirPath + File.separator)) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.newfile.outside"), zipEntry.getName()));
-        }
-        return destFile;
     }
 
     /**
