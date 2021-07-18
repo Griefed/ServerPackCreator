@@ -42,7 +42,7 @@
     "last 5 Opera versions"
   ],
   "engines": {
-    "node": ">= v16.1.0",
+    "node": ">= 16.1.0",
     "npm": ">= 7.19.1",
     "yarn": ">= 1.22.10"
   }
