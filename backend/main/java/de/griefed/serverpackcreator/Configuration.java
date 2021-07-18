@@ -1552,7 +1552,7 @@ public class Configuration {
      * @return Boolean. Returns true if the download was successful. False if not.
      */
     String latestFabricLoader(String modpackDir) {
-        String result = "0.11.3";
+        String result;
 
         try {
             URL downloadFabricXml = getFabricManifestUrl();
@@ -1578,7 +1578,7 @@ public class Configuration {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.latestfabricloader.created"));
 
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-
+            result = "0.11.6";
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.latestfabricloader.parse"), ex);
         }
 
