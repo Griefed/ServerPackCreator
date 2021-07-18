@@ -2,7 +2,8 @@ FROM griefed/baseimage-ubuntu-jdk-8:1.0.5 AS builder
 
 RUN \
   apt-get install -y \
-    libatomic1 && \
+    nodejs \
+    npm && \
   git clone \
     -b webservice \
       https://github.com/Griefed/ServerPackCreator.git \
