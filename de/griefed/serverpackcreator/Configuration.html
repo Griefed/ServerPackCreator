@@ -1800,10 +1800,14 @@ extends java.lang.Object</pre>
 <div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory is empty and
  prints a message to the console and serverpackcreator.log if it is.<br>
  Checks whether all directories in the list exist in the modpack directory and prints a message to the console
- and serverpackcreator.log if any one of the directories could not be found.</div>
+ and serverpackcreator.log if any one of the directories could not be found.
+ If the user specified a <code>source/file;destination/file</code>-combination, it is checked whether the specified
+ source-file exists on the host.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>directoriesToCopy</code> - List String. The list of directories to check for existence.</dd>
+<dd><code>directoriesToCopy</code> - List String. The list of directories, or <code>source/file;destination/file</code>-combinations,
+                         to check for existence. <code>source/file;destination/file</code>-combinations must be
+                          absolute paths to the source-file.</dd>
 <dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for existence of the passed list of
                   directories.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>

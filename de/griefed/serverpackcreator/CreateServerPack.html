@@ -737,6 +737,8 @@ extends java.lang.Object</pre>
                java.util.List&lt;java.lang.String&gt;&nbsp;clientMods)</pre>
 <div class="block">Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
  server pack directory.
+ If a <code>source/file;destination/file</code>-combination is provided, the specified source-file is copied to
+ the specified destination-file.
  Calls <a href="../../../de/griefed/serverpackcreator/CreateServerPack.html#excludeClientMods-java.lang.String-java.util.List-"><code>excludeClientMods(String, List)</code></a> to generate a list of all mods to copy to server pack, excluding
  clientside-only mods.</div>
 <dl>
