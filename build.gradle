@@ -77,7 +77,7 @@ dependencies {
     embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
     embed 'com.typesafe:config:1.4.1'
     embed 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
-    embed 'commons-io:commons-io:2.10.0'
+    embed 'commons-io:commons-io:2.11.0'
     embed 'net.lingala.zip4j:zip4j:2.9.0'
     embed 'com.github.FabricMC:fabric-installer:master-SNAPSHOT'
     embed 'com.github.TheRandomLabs:CurseAPI:master-SNAPSHOT'
