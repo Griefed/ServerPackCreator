@@ -119,7 +119,7 @@ frontend {
     assembleScript = 'run build'
 
     // Print the architecture we are running on.
-    System.out.println(String.format("I am runnong on: %s", System.getProperty("os.arch")))
+    System.out.println(String.format("I am running on: %s", System.getProperty("os.arch")))
 
     // If we are running on arm, specify Node path pattern so arm-builds succeed.
     if (System.getProperty("os.arch").equals("arm")) {
@@ -135,6 +135,7 @@ tasks.register('installQuasar', RunNpmYarn) {
 
 // Custom task to build and copy an up-to-date version of our frontend to SpringBoot.
 tasks.register('copyDist', Copy) {
+    dependsOn tasks.named('assembleFrontend')
     // Delete old frontend files from SpringBoot.
     def dirName = "backend/main/resources/static"
     file( dirName ).list().each{
