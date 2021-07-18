@@ -123,7 +123,7 @@ frontend {
 
     // If we are running on arm, specify Node path pattern so arm-builds succeed.
     if (System.getProperty("os.arch").equals("arm")) {
-        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-armv7l.TYPE'
+        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
     }
 }
 
