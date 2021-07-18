@@ -132,6 +132,7 @@ test docker:
   script:
     - docker buildx build
       --push
+      --no-cache
       --platform linux/amd64,linux/arm/v7,linux/arm64
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
       --tag "$CI_REGISTRY_IMAGE:develop"
@@ -161,6 +162,7 @@ test docker webservice:
   script:
     - docker buildx build
       --push
+      --no-cache
       --platform linux/amd64,linux/arm/v7,linux/arm64
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
       --tag "$CI_REGISTRY_IMAGE:develop-web"
