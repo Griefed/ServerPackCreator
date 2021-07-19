@@ -113,6 +113,11 @@ backend/main/resources/static/images
 backend/main/resources/static/img
 backend/main/resources/static/js
 backend/main/resources/static/index.html
+backend/main/resources/CHANGELOG.md
+backend/main/resources/CODE_OF_CONDUCT.md
+backend/main/resources/CONTRIBUTING.md
+backend/main/resources/LICENSE
+backend/main/resources/README.md
 
 # eclipse
 bin

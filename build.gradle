@@ -129,6 +129,17 @@ frontend {
     }
 }
 
+// Include specific files in resources folder, like the license and readme.
+tasks.register('about', Copy) {
+    dependsOn tasks.named('clean')
+
+    from layout.projectDirectory.file("LICENSE") into layout.projectDirectory.dir("backend/main/resources")
+    from layout.projectDirectory.file("README.md") into layout.projectDirectory.dir("backend/main/resources")
+    from layout.projectDirectory.file("CHANGELOG.md") into layout.projectDirectory.dir("backend/main/resources")
+    from layout.projectDirectory.file("CONTRIBUTING.md") into layout.projectDirectory.dir("backend/main/resources")
+    from layout.projectDirectory.file("CODE_OF_CONDUCT.md") into layout.projectDirectory.dir("backend/main/resources")
+}
+
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 tasks.register('installQuasar', RunNpmYarn) {
     dependsOn tasks.named('installNode')
@@ -166,12 +177,21 @@ java {
     withJavadocJar()
 }
 
-// Required so SpringBoot correctly builds our JAR.
-springBoot {
-    mainClass = 'de.griefed.serverpackcreator.Main'
+bootJar {
+    // Customize MANIFEST to include relevant information.
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        attributes  "Start-Class"    : "de.griefed.serverpackcreator.Main",
+                    "Description"    : "Create server packs from Minecraft modpacks.",
+                    "Built-By"       : System.getProperty("user.name"),
+                    "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+                    "Created-By"     : "Gradle ${gradle.gradleVersion}",
+                    "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
+                    "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}"
+    }
 }
 
-// Customize our JAR-file.
+// JAR configuration still needed for Launch4j.
 jar {
     // No duplicates
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
