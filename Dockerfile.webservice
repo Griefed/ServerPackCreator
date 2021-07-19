@@ -12,7 +12,7 @@ RUN \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
   rm -Rf /tmp/serverpackcreator/src/test && \
-  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info && \
+  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info -x test && \
   ls -ahl ./build/libs/
 
 FROM griefed/baseimage-ubuntu-jdk-8:1.0.5
