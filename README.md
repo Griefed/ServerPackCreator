@@ -179,6 +179,7 @@ TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
 MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.   
+STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice. 
 
 ### Using docker-compose:
 
@@ -188,8 +189,9 @@ services:
   serverpackcreator:
     image: griefed/serverpackcreator:latest
     container_name: serverpackcreator
-    restart: "no"
+    restart: "no" # Set to unless-stopped if you set STARTUP_PARAMETER=web
     environment:
+      - STARTUP_PARAMETER=cli # Must be either cli or web
       - TZ=Europe/Berlin # Your Timezone
       - PUID=1000 # Your user ID
       - PGID=1000 # Your group ID
@@ -206,7 +208,8 @@ services:
       - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
     volumes:
       - /host/path/todata:data # Created modpacks and server packs will be here
-
+    ports:
+      - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
 ```
 
 ### Using CLI:
@@ -214,6 +217,7 @@ services:
 ```bash
 docker create \
   --name=serverpackcreator \
+  -e STARTUP_PARAMETER=cli `# Must be either cli or web` \
   -e TZ=Europe/Berlin `# Your Timezone` \
   -e PUID=1000 `# Your user ID` \
   -e PGID=1000 `# Your group ID` \
@@ -228,8 +232,9 @@ docker create \
   -e INCLUDESERVERICON=true `# Or false` \
   -e COPYDIRS= `# Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.` \
   -e CLIENTMODS= `# Comma-separated. Client-side mods to delete from server pack.` \
+  -p 8080:8080 `# Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web.` \
   -v /host/path/todata:data `# Created modpacks and server packs will be here` \
-  --restart "no" \
+  --restart "no" \ `# Set to unless-stopped if you set STARTUP_PARAMETER=web`
   griefed/serverpackcreator:latest
 ```
 
