@@ -1,0 +1,16 @@
+name: Label sponsors
+
+on:
+  pull_request:
+    types: [opened]
+  issues:
+    types: [opened]
+
+jobs:
+  build:
+    name: Label issues and pull requests made by sponsors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: JasonEtco/is-sponsor-label-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
