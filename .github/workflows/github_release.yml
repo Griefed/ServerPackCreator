@@ -59,7 +59,7 @@ jobs:
           echo "New version: ${NEW_VERSION}"
           echo "Github username: ${GITHUB_ACTOR}"
           ./gradlew clean
-          ./gradlew -Pversion=${NEW_VERSION} publish createExe
+          ./gradlew -Pversion=${NEW_VERSION} installQuasar cleanFrontend assembleFrontend copyDist publish createExe --info -x test
       - name: List files
         run: ls -ahl build/libs
 
