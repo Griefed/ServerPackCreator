@@ -1548,7 +1548,7 @@ public class Configuration {
      * @return Boolean. Returns true if the download was successful. False if not.
      */
     String latestFabricLoader(String modpackDir) {
-        String result = "0.11.3";
+        String result = "0.11.6";
 
         try {
             URL downloadFabricXml = getFabricManifestUrl();

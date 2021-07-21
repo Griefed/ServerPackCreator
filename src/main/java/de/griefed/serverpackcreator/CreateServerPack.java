@@ -578,20 +578,28 @@ public class CreateServerPack {
     void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
         File fabricInstaller = new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir));
         File forgeInstaller = new File(String.format("%s/server_pack/forge-installer.jar", modpackDir));
+        List<String> commandArguments = new ArrayList<String>();
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.enter"));
                 LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.enter"));
                 if (downloadFabricJar(modpackDir)) {
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.download"));
-                    ProcessBuilder processBuilder = new ProcessBuilder(
-                            javaPath,
-                            "-jar",
-                            "fabric-installer.jar",
-                            "server",
-                            String.format("-mcversion %s", minecraftVersion),
-                            String.format("-loader %s", modLoaderVersion),
-                            "-downloadMinecraft").directory(new File(String.format("%s/server_pack", modpackDir)));
+
+                    commandArguments.add(javaPath);
+                    commandArguments.add("-jar");
+                    commandArguments.add("fabric-installer.jar");
+                    commandArguments.add("server");
+                    commandArguments.add("-mcversion");
+                    commandArguments.add(minecraftVersion);
+                    commandArguments.add("-loader");
+                    commandArguments.add(modLoaderVersion);
+                    commandArguments.add("-downloadMinecraft");
+
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/server_pack", modpackDir)));
+
+                    LOG.debug(processBuilder.command());
+
                     processBuilder.redirectErrorStream(true);
                     Process process = processBuilder.start();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -603,6 +611,7 @@ public class CreateServerPack {
                     }
                     LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver"));
                     reader.close();
+
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.details"));
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver"));
                 } else {
@@ -617,12 +626,16 @@ public class CreateServerPack {
                 LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.enter"));
                 if (downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.download"));
-                    ProcessBuilder processBuilder = new ProcessBuilder(
-                            javaPath,
-                            "-jar",
-                            "forge-installer.jar",
-                            "--installServer")
-                            .directory(new File(String.format("%s/server_pack", modpackDir)));
+
+                    commandArguments.add(javaPath);
+                    commandArguments.add("-jar");
+                    commandArguments.add("forge-installer.jar");
+                    commandArguments.add("--installServer");
+
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/server_pack", modpackDir)));
+
+                    LOG.debug(processBuilder.command());
+
                     processBuilder.redirectErrorStream(true);
                     Process process = processBuilder.start();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -646,6 +659,8 @@ public class CreateServerPack {
         } else {
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
         }
+
+        commandArguments.clear();
 
         generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
 
@@ -870,12 +885,11 @@ public class CreateServerPack {
 
     /**
      * Acquires the latest version of the Fabric modloader installer and returns it as a string. If acquisition of the
-     * latest version fails, version 0.7.2 is returned by default.
+     * latest version fails, version 0.7.4 is returned by default.
      * @param modpackDir String. The fabric-installer.xml-file is saved inside the server_pack directory inside the modpack
      * directory.
      * @return String. Returns the version of the latest Fabric modloader installer.
      */
-    // TODO: Update to 0.7.4
     String latestFabricInstaller(String modpackDir) {
         String result;
         try {
@@ -901,7 +915,7 @@ public class CreateServerPack {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.latestfabricinstaller"));
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.latestfabricinstaller"), ex);
-            result = "0.7.3";
+            result = "0.7.4";
         }
         return result;
     }
