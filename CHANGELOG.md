@@ -1,3 +1,26 @@
+### [2.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.1.0...2.1.1) (2021-07-21)
+
+
+### :scissors: Refactor
+
+* **Modloader installer:** Cleanup, beautification, etc. ([5944e8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/5944e8e4564eda5837732c0a2dd480444d4f19df))
+
+
+### 🧪 Tests
+
+* **Modloader installer:** Set Fabric loader version in test to correct version ([9920d77](https://git.griefed.de/Griefed/ServerPackCreator/commit/9920d776a749cae1044f0ee598d3c9ac2f00c0ca))
+
+
+### 🛠 Fixes
+
+* **Modloader installer:** Collect Fabric installation command into list and pass to ProcessBuilder so our command is build correctly and all parameters are passed on correctly. ([bb9d7fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb9d7fc70bdee36cc33e54665fe7092645d2ff99))
+
+
+### Other
+
+* Remove PayPal link. I'd rather use the GitHub way. ([06635fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/06635fa5f3be38c9c9ab1789f8ae72f45f50fad0))
+* **Modloader installer:** Add debug logging of the command about to be executed. ([9deb8b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/9deb8b08ec1938506f60a473e678f7206db85c6f))
+
 ## [2.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.7...2.1.0) (2021-07-18)
 
 
