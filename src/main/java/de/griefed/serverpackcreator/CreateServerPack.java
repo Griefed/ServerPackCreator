@@ -598,6 +598,8 @@ public class CreateServerPack {
 
                     ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/server_pack", modpackDir)));
 
+                    LOG.debug(processBuilder.command());
+
                     processBuilder.redirectErrorStream(true);
                     Process process = processBuilder.start();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -631,6 +633,8 @@ public class CreateServerPack {
                     commandArguments.add("--installServer");
 
                     ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/server_pack", modpackDir)));
+
+                    LOG.debug(processBuilder.command());
 
                     processBuilder.redirectErrorStream(true);
                     Process process = processBuilder.start();
