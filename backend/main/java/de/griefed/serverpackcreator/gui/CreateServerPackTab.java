@@ -848,11 +848,23 @@ public class CreateServerPackTab extends JComponent {
 
                 textModpackDir.setText(config.getString("modpackDir"));
 
-                textClientMods.setText(CONFIGURATION.buildString(config.getStringList("clientMods").toString()));
+                if (config.getStringList("clientMods").isEmpty()) {
+                    textClientMods.setText(CONFIGURATION.buildString(CONFIGURATION.getFallbackModsList().toString()));
+                    // TODO: Replace with lang key
+                    LOG.debug("Set clientMods from fallback list.");
+                } else {
+                    textClientMods.setText(config.getStringList("clientMods").toString());
+                }
 
                 textCopyDirs.setText(CONFIGURATION.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
 
-                textJavaPath.setText(config.getString("javaPath"));
+                if (!CONFIGURATION.checkJavaPath(config.getString("javaPath"))) {
+                    textJavaPath.setText(CONFIGURATION.getJavaPathFromSystem(""));
+                    // TODO: Replace with lang key
+                    LOG.debug("Set javaPath from system environment.");
+                } else {
+                    textJavaPath.setText(config.getString("javaPath"));
+                }
 
                 textMinecraftVersion.setText(config.getString("minecraftVersion"));
 
