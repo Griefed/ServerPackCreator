@@ -99,7 +99,6 @@ public class Main {
         Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
         DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
         CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
-        CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack);
 
         //noinspection UnusedAssignment
         String jarPath = null,
@@ -185,6 +184,8 @@ public class Main {
         // If no mode is specified and we have a graphical environment, start in GUI mode.
         } else {
 
+            CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack);
+            
             createGui.mainGUI();
 
         }
