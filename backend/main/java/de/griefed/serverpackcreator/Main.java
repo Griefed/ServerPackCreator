@@ -94,6 +94,48 @@ public class Main {
             localizationManager.checkLocaleFile();
         }
 
+        // Print help and information about ServerPackCreator which could help the user figure out what to do.
+        if (Arrays.asList(args).contains("-help")) {
+            // TODO: Replace with lang keys
+            LOG.debug("Issued printing of help.");
+            System.out.println("How to use ServerPackCreator:");
+            System.out.println("  java -jar ServerPackCreator.jar");
+            System.out.println("    Simply running the JAR without extra arguments runs ServerPackCreator in GUI mode unless");
+            System.out.println("    you are running in a headless environment. In the case of a headless environment, the CLI");
+            System.out.println("    mode will automatically be used.");
+            System.out.println("  Extra arguments to use ServerPackCreator with:");
+            System.out.println("    -cgen : Only available for the commandline interface. This will start the generation of");
+            System.out.println("            a new configuration file. You will be asked to enter information about your modpack");
+            System.out.println("            step-by-step. Each setting you enter will be checked for errors before it is saved.");
+            System.out.println("            If everything you enter is valid and without errors, it will be written to a new");
+            System.out.println("            serverpackcreator.conf and ServerPackCreator will immediately start a run with said");
+            System.out.println("            configuration file, generating a server pack for you.");
+            System.out.println("    -cli  : Run ServerPackCreator in Command-line interface mode. Checks the serverpackcreator.conf");
+            System.out.println("            for errors and if none are found, starts the generation of a server pack with the configuration");
+            System.out.println("            provided by your serverpackcreator.conf.");
+            System.out.println("    -web  : Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice");
+            System.out.println("            provides the same functionality as running ServerPackCreator in GUI mode (so no Command-line");
+            System.out.println("            arguments and a non-headless environment) as well as a REST API which can be used in different ways.");
+            System.out.println("            For more information about the REST API, please see the Java documentation:");
+            System.out.println("             - GitHub Pages: https://griefed.github.io/ServerPackCreator/");
+            System.out.println("             - GitLab Pages: https://griefed.pages.griefed.de/ServerPackCreator/");
+            System.out.println();
+            System.out.println("Support:");
+            System.out.println("  Issues:  Encountered a bug, or want some part of the documentation to be improved on? Got a suggestion?");
+            System.out.println("           Open an issue on GitHub at: https://github.com/Griefed/ServerPackCreator/issues");
+            System.out.println("  Discord: If you would like to chat with me, ask me questions, or see when there's something new");
+            System.out.println("           regarding ServerPackCreator coming up, you can join my Discord server to stay up-to-date.");
+            System.out.println("            - Discord link: https://discord.griefed.de");
+            System.out.println();
+            System.out.println("Buy Me A Coffee:");
+            System.out.println("  You like ServerPackCreator and would like to support me? By all means, every bit is very much");
+            System.out.println("  appreciated and helps me pay for servers and food. Food is most important. And coffee. Food and Coffee.");
+            System.out.println("  Those two get converted into code. Thank you very much!");
+            System.out.println("    - Github Sponsors: https://github.com/sponsors/Griefed");
+            LOG.debug("Help printed. Exiting with code 0.");
+            System.exit(0);
+        }
+
         // Prepare instances for dependency injection
         CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
         Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
@@ -108,6 +150,7 @@ public class Main {
                osName = null,
                osVersion = null;
 
+        LOG.debug("Warning user about possible data loss.");
         LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
         LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip1"));
         LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip2"));
@@ -116,6 +159,7 @@ public class Main {
         LOG.warn(localizationManager.getLocalizedString("handler.log.warn.wip0"));
 
         // Print system information to console and logs.
+        LOG.debug("Gathering system information to include in log to make debugging easier.");
         ApplicationHome home = new ApplicationHome(Main.class);
         jarPath = home.getSource().toString().replace("\\","/");
         jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
