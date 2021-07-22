@@ -33,6 +33,7 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Objects;
 
 /**
@@ -70,13 +71,15 @@ public class AboutTab extends Component {
 
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
     private final File LOG_SERVERPACKCREATOR = new File("logs/serverpackcreator.log");
+    private final File LOG_MODLOADER_INSTALLER = new File("logs/modloader_installer.log");
 
     private JComponent aboutPanel;
 
     private JTextArea textArea;
 
     private String configURL;
-    private String spclogURL;
+    private String serverpackcreatorlogURL;
+    private String modloaderinstallerlogURL;
     private String textAreaContent;
 
     private StringSelection stringSelection;
@@ -155,14 +158,17 @@ public class AboutTab extends Component {
             textArea = new JTextArea();
             textArea.setOpaque(false);
             configURL = createHasteBinFromFile(FILE_CONFIG);
-            spclogURL = createHasteBinFromFile(LOG_SERVERPACKCREATOR);
+            serverpackcreatorlogURL = createHasteBinFromFile(LOG_SERVERPACKCREATOR);
+
+            // TODO: Replace with lang key
             textAreaContent = String.format(
                     "%s\n%s\n" +
-                    "%s\n%s\n",
+                    "%s\n%s\n" +
+                    "Open in your browser or copy links to clipboard?",
                     LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.conf"),
                     configURL,
                     LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.spclog"),
-                    spclogURL
+                    serverpackcreatorlogURL
             );
 
             textArea.setText(textAreaContent);
@@ -191,7 +197,7 @@ public class AboutTab extends Component {
                         if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
 
                             Desktop.getDesktop().browse(URI.create(configURL));
-                            Desktop.getDesktop().browse(URI.create(spclogURL));
+                            Desktop.getDesktop().browse(URI.create(serverpackcreatorlogURL));
                         }
                     } catch (IOException ex) {
                         LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
