@@ -4,6 +4,7 @@ stages:
   - Documentation
   - Release
   - Build Release
+  - Sponsors
 
 Gradle Test:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
@@ -354,3 +355,33 @@ pages:
     paths:
       - public
     expire_in: 1 week
+
+Update Sponsors:
+  image: griefed/gitlab-ci-cd:1.0.1
+  stage: Sponsors
+  script:
+    - git clone https://github.com/Griefed/sponsors.git
+    - export NEW=$(<sponsors/README.md)
+    - export OLD=$(<README.md)
+    - |
+      if [[ "$NEW" != "$OLD" ]]; then
+        echo "**** Updating sponsors in README.md ****"
+        rm -f README.md
+        cp .gitlab/readme-template.md README.md
+        sed -i "s~SPONSORS~$NEW~g" README.md
+        echo "**** Sponsors updated:  ****"
+        cat README.md
+        echo "**** Pushing changes to repository ****"
+        CI_PUSH_REPO=`echo "$CI_REPOSITORY_URL $GITLAB_TOKEN" | sed 's/^.*\(@.*\)\s\(.*\)/https:\/\/oauth2:\2\1/g'`
+        git config http.sslverify false
+        git remote set-url --push origin "${CI_PUSH_REPO}"
+        git config user.name "$GITLAB_USER_NAME"
+        git config user.email "$GITLAB_USER_EMAIL"
+        git branch -d update-sponsors || true
+        git checkout -b update-sponsors
+        git add README.md
+        git commit -m "chore(sponsors): Update sponsors"
+        git push origin update-sponsors:${CI_BUILD_REF_NAME} || true
+      fi
+  only:
+    - schedules
