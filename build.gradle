@@ -1,4 +1,5 @@
 import java.text.SimpleDateFormat
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
 plugins {
     id 'java'
@@ -140,7 +141,7 @@ tasks.register('about', Copy) {
     from layout.projectDirectory.file("CODE_OF_CONDUCT.md") into layout.projectDirectory.dir("backend/main/resources")
 }
 
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
+
 tasks.register('installQuasar', RunNpmYarn) {
     dependsOn tasks.named('installNode')
     script = 'install -g @quasar/cli'

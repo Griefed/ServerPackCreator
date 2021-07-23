@@ -1191,7 +1191,7 @@ public class Configuration {
      * @return String. Returns the passed String as is if it is not empty. Returns the automatically acquired path to the
      * Java executable/binary if the passed String was empty.
      */
-    String getJavaPathFromSystem(String enteredPath) {
+    public String getJavaPathFromSystem(String enteredPath) {
         String autoJavaPath;
 
         if (enteredPath.equals("")) {
@@ -1219,7 +1219,7 @@ public class Configuration {
      * @param pathToJava String. The path to check for java.exe and java.
      * @return Boolean. Returns true if the String ends with java.exe or java, and if either of these files exist.
      */
-    boolean checkJavaPath(String pathToJava) {
+    public boolean checkJavaPath(String pathToJava) {
         boolean configCorrect = false;
 
         if (new File(pathToJava).exists() && pathToJava.endsWith("java.exe")) {
