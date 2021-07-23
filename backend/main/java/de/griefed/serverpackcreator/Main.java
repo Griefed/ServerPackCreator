@@ -104,6 +104,13 @@ public class Main {
             System.out.println("    you are running in a headless environment. In the case of a headless environment, the CLI");
             System.out.println("    mode will automatically be used.");
             System.out.println("  Extra arguments to use ServerPackCreator with:");
+            System.out.println("    -lang : Allows you to use one of the available languages for ServerPackCreator. I can not");
+            System.out.println("            guarantee that each of the following available languages is 100% translated.");
+            System.out.println("            You best choice is en_us, or not specifying any as that is the default, because");
+            System.out.println("            I write ServerPackCreator with english in mind. Available usages:");
+            System.out.println("            -lang en_us");
+            System.out.println("            -lang uk_ua");
+            System.out.println("            -lang de_de");
             System.out.println("    -cgen : Only available for the commandline interface. This will start the generation of");
             System.out.println("            a new configuration file. You will be asked to enter information about your modpack");
             System.out.println("            step-by-step. Each setting you enter will be checked for errors before it is saved.");
