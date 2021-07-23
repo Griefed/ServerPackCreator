@@ -98,14 +98,14 @@ Inside it are files you can customize, so they suit your modpack and server pack
 If you wish to re-generate the default-files, simply delete any one of the previously mentioned files, run ServerPackCreator again, and the new template-file(s) will be generated in `server_files`
 
 Running ServerPackCreator.jar with the `-cli`-argument will guide you through the generation of a config-file, should none exist. Alternatively, run ServerPackCreator with the `-cgen` argument to create a new config file.
-Should you be using ServerPackCreator.exe, the default/template-files will be generated automatically, if they do not exist yet. 
+Should you be using ServerPackCreator.exe, the default/template-files will be generated automatically, if they do not exist yet.
 An example for a fully configured `serverpackcreator.conf` can be viewed [here](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/examples/serverpackcreator.example).
 Detailed list of all template files:
 
 File | Description
 ---- | ----
 serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/serverpackcreator.conf).
-server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties). 
+server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties).
 server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server-icon.png).
 start-fabric.bat | Fabric server start script for windows systems. See [start-fabric.bat](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-fabric.bat).
 start-fabric.sh | Fabric server start script for linux systems. See [start-fabric.sh](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-fabric.sh).
@@ -118,7 +118,7 @@ Variable | Description
 -------- | -----------
 modpackDir | The path to the directory where your modpack resides in. Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4, version 4.6.7: `430517,3250155`. Specifying said combination would download and install version 4.6.7 of my modpack Survive Create Prosper, gather information, write a new config file and therefore allow you to generate server packs for any modpack on CurseForge. Special thanks to [TheRandomLabs](https://github.com/TheRandomLabs) and their [CurseAPI](https://github.com/TheRandomLabs/CurseAPI).
 clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look.
-copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. A suggestion-list is created when setting `modpackDir`to a projectID,fileID-combination. 
+copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. A suggestion-list is created when setting `modpackDir`to a projectID,fileID-combination.
 includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
 javaPath | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.
 minecraftVersion | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.
@@ -178,8 +178,8 @@ Variable | Description
 TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
-MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.   
-STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice. 
+MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
+STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.
 
 ### Using docker-compose:
 
@@ -242,7 +242,7 @@ docker create \
 
 Login and authentication will not be added to SPC running as a webservice, because that's a can of worms I do not want
 to open, but I will provide an example on how you can secure it by using [Authelia](https://github.com/authelia/authelia).
-TODO: Write small guide on running ServerPackCreator as webservice in Docker and secure it with Authelia. 
+TODO: Write small guide on running ServerPackCreator as webservice in Docker and secure it with Authelia.
 
 ---
 
@@ -256,7 +256,7 @@ If you are on linux, run `chmod +x gradlew` first.
 
 Build with:
 
-`gradlew clean installQuasar cleanFrontend assembleFrontend copyDist build createExe`
+`gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe`
 
 ---
 

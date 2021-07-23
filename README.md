@@ -256,7 +256,7 @@ If you are on linux, run `chmod +x gradlew` first.
 
 Build with:
 
-`gradlew clean installQuasar cleanFrontend assembleFrontend copyDist build createExe`
+`gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe`
 
 ---
 
