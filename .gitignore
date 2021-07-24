@@ -151,9 +151,6 @@ out
 # Yarn
 yarn.lock
 
-# VueJS
-package-lock.json
-
 # gradle
 /tests
 /build
