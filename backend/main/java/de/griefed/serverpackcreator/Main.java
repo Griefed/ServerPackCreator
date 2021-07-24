@@ -126,14 +126,14 @@ public class Main {
             System.out.println(localizationManager.getLocalizedString("main.console.help26"));
             System.out.println(localizationManager.getLocalizedString("main.console.help27"));
             System.out.println(localizationManager.getLocalizedString("main.console.help28"));
-            System.out.println();
+            System.out.println("#");
             System.out.println(localizationManager.getLocalizedString("main.console.help29"));
             System.out.println(localizationManager.getLocalizedString("main.console.help30"));
             System.out.println(localizationManager.getLocalizedString("main.console.help31"));
             System.out.println(localizationManager.getLocalizedString("main.console.help32"));
             System.out.println(localizationManager.getLocalizedString("main.console.help33"));
             System.out.println(localizationManager.getLocalizedString("main.console.help34"));
-            System.out.println();
+            System.out.println("#");
             System.out.println(localizationManager.getLocalizedString("main.console.help35"));
             System.out.println(localizationManager.getLocalizedString("main.console.help36"));
             System.out.println(localizationManager.getLocalizedString("main.console.help37"));

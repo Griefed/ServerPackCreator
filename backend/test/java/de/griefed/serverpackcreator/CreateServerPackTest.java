@@ -588,7 +588,7 @@ class CreateServerPackTest {
     @Test
     void latestFabricInstallerTest() {
         String modpackDir = "./backend/test/resources/forge_tests";
-        String result = createServerPack.latestFabricInstaller(modpackDir);
+        String result = createServerPack.latestFabricInstaller();
         Assertions.assertNotNull(result);
     }
 

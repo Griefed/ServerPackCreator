@@ -99,7 +99,7 @@ import java.util.*;
  * 50.{@link #isMinecraftVersionCorrect(String)}<br>
  * 51.{@link #isFabricVersionCorrect(String)}<br>
  * 52.{@link #isForgeVersionCorrect(String)}<br>
- * 53.{@link #latestFabricLoader(String)}<br>
+ * 53.{@link #latestFabricLoader()}<br>
  * 54.{@link #createConfigurationFile()}<br>
  * 55.{@link #readStringArray()}<br>
  * 56.{@link #buildString(String...)}<br>
@@ -759,7 +759,7 @@ public class Configuration {
                                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.iscurse.fabric"));
 
                                 setModLoader("Fabric");
-                                setModLoaderVersion(latestFabricLoader(getModpackDir()));
+                                setModLoaderVersion(latestFabricLoader());
 
                             } else {
 
@@ -1278,11 +1278,7 @@ public class Configuration {
 
                 jsonData = jsonData.replaceAll("\\s", "");
 
-                boolean contains = jsonData.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
-
-                manifestJsonFile.deleteOnExit();
-
-                return contains;
+                return jsonData.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
 
             } catch (Exception ex) {
 
@@ -1327,11 +1323,7 @@ public class Configuration {
 
                 manifestXML = manifestXML.replaceAll("\\s", "");
 
-                boolean contains = manifestXML.trim().contains(fabricVersion);
-
-                manifestXMLFile.deleteOnExit();
-
-                return contains;
+                return manifestXML.trim().contains(fabricVersion);
 
             } catch (Exception ex) {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.validate"), ex);
@@ -1355,8 +1347,6 @@ public class Configuration {
             try {
 
                 File manifestJsonFile = new File("./work/forge-manifest.json");
-
-                manifestJsonFile.deleteOnExit();
 
                 Scanner jsonReader = new Scanner(manifestJsonFile);
 
@@ -1395,11 +1385,9 @@ public class Configuration {
     /**
      * Returns the latest version for the Fabric-loader. If Fabric's version manifest should be unreachable for whatever
      * reason, version 0.11.3 is returned by default.
-     * @param modpackDir String. The Fabric-loader manifest will be stored inside the server_pack directory inside the modpack
-     *                   directory.
      * @return Boolean. Returns true if the download was successful. False if not.
      */
-    String latestFabricLoader(String modpackDir) {
+    String latestFabricLoader() {
         String result;
         try {
 

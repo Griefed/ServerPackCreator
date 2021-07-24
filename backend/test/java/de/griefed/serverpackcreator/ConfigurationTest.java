@@ -641,7 +641,7 @@ class ConfigurationTest {
 
     @Test
     void latestFabricLoaderTest() {
-        Assertions.assertNotNull(configuration.latestFabricLoader("backend/test/resources/forge_tests"));
+        Assertions.assertNotNull(configuration.latestFabricLoader());
     }
 
 

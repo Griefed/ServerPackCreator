@@ -60,7 +60,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 5. {@link #getForgeLinuxFile()}<br>
  * 6. {@link #getFabricWindowsFile()}<br>
  * 7. {@link #getFabricLinuxFile()}<br>
- * 8. {@link #getFabricInstallerManifest()}<br>
  * 9. {@link #run()}<br>
  * 10.{@link #cleanupEnvironment(String)}<br>
  * 11.{@link #copyStartScripts(String, String, boolean)}<br>
@@ -76,7 +75,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 21.{@link #forgeShell(String, String)}<br>
  * 22.{@link #forgeBatch(String, String)}<br>
  * 23.{@link #downloadFabricJar(String)}<br>
- * 24.{@link #latestFabricInstaller(String)}<br>
+ * 24.{@link #latestFabricInstaller()}<br>
  * 25.{@link #downloadForgeJar(String, String, String)}<br>
  * 27.{@link #cleanUpServerPack(File, File, String, String, String, String)}
  * <p>
@@ -187,21 +186,6 @@ public class CreateServerPack {
      */
     public File getFabricLinuxFile() {
         return FILE_FABRIC_LINUX;
-    }
-
-    /**
-     * Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.
-     * @return Returns the URL to the Fabric Installer Manifest.
-     */
-    public URL getFabricInstallerManifest() {
-        URL downloadURL = null;
-
-        String fabricInstallerManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml";
-
-        try { downloadURL = new URL(fabricInstallerManifest); }
-        catch (IOException ex) { LOG.error(ex); }
-
-        return downloadURL;
     }
 
     /**
@@ -834,7 +818,7 @@ public class CreateServerPack {
     /**
      * Downloads the latest Fabric installer into the server pack.<p>
      * Calls<p>
-     * {@link #latestFabricInstaller(String)} to acquire the latest version of the Fabric installer.
+     * {@link #latestFabricInstaller()} to acquire the latest version of the Fabric installer.
      * @param modpackDir String. The Fabric installer is downloaded into the server_pack directory inside the modpack directory.
      * @return Boolean. Returns true if the download was successfull.
      */
@@ -842,7 +826,7 @@ public class CreateServerPack {
         boolean downloaded = false;
         try {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.downloadfabricjar.enter"));
-            String latestFabricInstaller = latestFabricInstaller(modpackDir);
+            String latestFabricInstaller = latestFabricInstaller();
             URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller, latestFabricInstaller));
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
@@ -873,35 +857,28 @@ public class CreateServerPack {
 
     /**
      * Acquires the latest version of the Fabric modloader installer and returns it as a string. If acquisition of the
-     * latest version fails, version 0.7.2 is returned by default.
-     * @param modpackDir String. The fabric-installer.xml-file is saved inside the server_pack directory inside the modpack
-     * directory.
+     * latest version fails, version 0.7.4 is returned by default.
      * @return String. Returns the version of the latest Fabric modloader installer.
      */
-    String latestFabricInstaller(String modpackDir) {
+    String latestFabricInstaller() {
         String result;
         try {
-            URL downloadFabricXml = getFabricInstallerManifest();
-
-            ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
-            FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
-            FileChannel downloadFabricXmlFileChannel = downloadFabricXmlFileOutputStream.getChannel();
-            downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
-
-            downloadFabricXmlFileOutputStream.flush();
-            downloadFabricXmlFileOutputStream.close();
-            downloadFabricXmlReadableByteChannel.close();
-            downloadFabricXmlFileChannel.close();
-
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+
             DocumentBuilder builder = domFactory.newDocumentBuilder();
-            Document fabricXml = builder.parse(new File(String.format("%s/server_pack/fabric-installer.xml",modpackDir)));
+
+            Document fabricXml = builder.parse(new File("./work/fabric-installer-manifest.xml"));
+
             XPathFactory xPathFactory = XPathFactory.newInstance();
+
             XPath xpath = xPathFactory.newXPath();
 
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
+
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.latestfabricinstaller"));
+
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
+
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.latestfabricinstaller"), ex);
             result = "0.7.4";
         }
@@ -957,15 +934,8 @@ public class CreateServerPack {
     void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.cleanupserverpack.enter"));
         if (modLoader.equalsIgnoreCase("Fabric")) {
-            File fabricXML = new File(String.format("%s/server_pack/fabric-installer.xml", modpackDir));
 
-            boolean isXmlDeleted = fabricXML.delete();
             boolean isInstallerDeleted = fabricInstaller.delete();
-
-            if (isXmlDeleted)
-            { LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricXML.getName())); }
-            else
-            { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricXML.getName())); }
 
             if (isInstallerDeleted)
             { LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricInstaller.getName())); }

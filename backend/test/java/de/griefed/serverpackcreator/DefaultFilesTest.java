@@ -45,29 +45,31 @@ import java.util.List;
  * 7. {@link #getForgeLinuxFileTest()} tests {@link DefaultFiles#getForgeLinuxFile()}<br>
  * 8. {@link #getFabricWindowsFileTest()} tests {@link DefaultFiles#getFabricWindowsFile()}<br>
  * 9. {@link #getFabricLinuxFileTest()} tests {@link DefaultFiles#getFabricLinuxFile()}<br>
- * 10.{@link #getMinecraftManifestUrlTest()}<br>
- * 11.{@link #getForgeManifestUrlTest()}<br>
- * 12.{@link #getFabricManifestUrlTest()}<br>
- * 13.{@link #checkForConfigTestOld} tests {@link DefaultFiles#checkForConfig()}<br>
- * 14.{@link #checkForConfigTest} tests {@link DefaultFiles#checkForConfig()}<br>
- * 15.{@link #checkForConfigTestNew} tests {@link DefaultFiles#checkForConfig()}<br>
- * 16.{@link #checkForFabricLinuxTest} tests {@link DefaultFiles#checkForFabricLinux()}<br>
- * 17.{@link #checkForFabricLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 18.{@link #checkForFabricWindowsTest} tests {@link DefaultFiles#checkForFabricWindows()}<br>
- * 19.{@link #checkForFabricWindowsTestNew} tests {@link DefaultFiles#checkForFabricWindows()}<br>
- * 20.{@link #checkForForgeLinuxTest} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 21.{@link #checkForForgeLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 22.{@link #checkForForgeWindowsTest} tests {@link DefaultFiles#checkForForgeWindows()}<br>
- * 23.{@link #checkForForgeWindowsTestNew} tests {@link DefaultFiles#checkForForgeWindows()}<br>
- * 24.{@link #checkForPropertiesTest} tests {@link DefaultFiles#checkForProperties()}<br>
- * 25.{@link #checkForPropertiesTestNew} tests {@link DefaultFiles#checkForProperties()}<br>
- * 26.{@link #checkForIconTest} tests {@link DefaultFiles#checkForIcon()}<br>
- * 27.{@link #checkForIconTestNew} tests {@link DefaultFiles#checkForIcon()}<br>
- * 28.{@link #filesSetupTest} tests {@link DefaultFiles#filesSetup()}<br>
- * 29.{@link #downloadMinecraftManifestTest} tests {@link DefaultFiles#downloadMinecraftManifest()}<br>
- * 30.{@link #downloadFabricManifestTest} tests {@link DefaultFiles#downloadFabricManifest()}<br>
- * 31.{@link #downloadForgeManifestTest} tests {@link DefaultFiles#downloadForgeManifest()}<br>
- * 32.{@link #refreshValidationFilesTest} tests {@link DefaultFiles#refreshValidationFiles()}
+ * 10.{@link #getMinecraftManifestUrlTest()} tests {@link DefaultFiles#getMinecraftManifestUrl()}<br>
+ * 11.{@link #getForgeManifestUrlTest()} tests {@link DefaultFiles#getForgeManifestUrl()}<br>
+ * 12.{@link #getFabricManifestUrlTest()} tests {@link DefaultFiles#getFabricManifestUrl()}<br>
+ * 13.{@link #getFabricInstallerManifestUrlTest()} tests {@link DefaultFiles#getFabricInstallerManifestUrl()}<br>
+ * 14.{@link #checkForConfigTestOld} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 15.{@link #checkForConfigTest} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 16.{@link #checkForConfigTestNew} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 17.{@link #checkForFabricLinuxTest} tests {@link DefaultFiles#checkForFabricLinux()}<br>
+ * 18.{@link #checkForFabricLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 19.{@link #checkForFabricWindowsTest} tests {@link DefaultFiles#checkForFabricWindows()}<br>
+ * 20.{@link #checkForFabricWindowsTestNew} tests {@link DefaultFiles#checkForFabricWindows()}<br>
+ * 21.{@link #checkForForgeLinuxTest} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 22.{@link #checkForForgeLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 23.{@link #checkForForgeWindowsTest} tests {@link DefaultFiles#checkForForgeWindows()}<br>
+ * 24.{@link #checkForForgeWindowsTestNew} tests {@link DefaultFiles#checkForForgeWindows()}<br>
+ * 25.{@link #checkForPropertiesTest} tests {@link DefaultFiles#checkForProperties()}<br>
+ * 26.{@link #checkForPropertiesTestNew} tests {@link DefaultFiles#checkForProperties()}<br>
+ * 27.{@link #checkForIconTest} tests {@link DefaultFiles#checkForIcon()}<br>
+ * 28.{@link #checkForIconTestNew} tests {@link DefaultFiles#checkForIcon()}<br>
+ * 29.{@link #filesSetupTest} tests {@link DefaultFiles#filesSetup()}<br>
+ * 30.{@link #downloadMinecraftManifestTest} tests {@link DefaultFiles#downloadMinecraftManifest()}<br>
+ * 31.{@link #downloadFabricManifestTest} tests {@link DefaultFiles#downloadFabricManifest()}<br>
+ * 32.{@link #downloadForgeManifestTest} tests {@link DefaultFiles#downloadForgeManifest()}<br>
+ * 33.{@link #downloadFabricInstallerManifestTest} tests {@link DefaultFiles#downloadFabricInstallerManifest()}
+ * 34.{@link #refreshValidationFilesTest} tests {@link DefaultFiles#refreshValidationFiles()}
  */
 class DefaultFilesTest {
 
@@ -148,6 +150,12 @@ class DefaultFilesTest {
     @Test
     void getFabricManifestUrlTest() {
         URL url = defaultFiles.getFabricManifestUrl();
+        Assertions.assertNotNull(url);
+    }
+
+    @Test
+    void getFabricInstallerManifestUrlTest() {
+        URL url = defaultFiles.getFabricInstallerManifestUrl();
         Assertions.assertNotNull(url);
     }
 
@@ -389,22 +397,41 @@ class DefaultFilesTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
+    void downloadFabricInstallerManifestTest() throws IOException {
+        Files.createDirectories(Paths.get("./work"));
+        defaultFiles.downloadFabricInstallerManifest();
+        Assertions.assertTrue(new File("./work/fabric-installer-manifest.xml").exists());
+        String work = "./work";
+        if (new File(work).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(work);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
     void refreshValidationFilesTest() throws IOException {
         File minecraft = new File("./work/minecraft-manifest.json");
         File fabric = new File("./work/fabric-manifest.json");
         File forge = new File("./work/forge-manifest.json");
+        File fabricInstaller = new File("./work/fabric-installer-manifest.xml");
 
         Files.createDirectories(Paths.get("./work"));
 
         minecraft.createNewFile();
         fabric.createNewFile();
         forge.createNewFile();
+        fabricInstaller.createNewFile();
 
         defaultFiles.refreshValidationFiles();
 
         Assertions.assertTrue(minecraft.exists());
         Assertions.assertTrue(fabric.exists());
         Assertions.assertTrue(forge.exists());
+        Assertions.assertTrue(fabricInstaller.exists());
 
         File work = new File("./work");
         if (work.isDirectory()) {

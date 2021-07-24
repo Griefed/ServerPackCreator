@@ -47,18 +47,20 @@ import java.nio.file.Paths;
  * 10.{@link #getMinecraftManifestUrl()}<br>
  * 11.{@link #getForgeManifestUrl()}<br>
  * 12.{@link #getFabricManifestUrl()}<br>
- * 13.{@link #filesSetup()}<br>
- * 14.{@link #checkForConfig()}<br>
- * 15.{@link #checkForFabricLinux()}<br>
- * 16.{@link #checkForFabricWindows()}<br>
- * 17.{@link #checkForForgeLinux()}<br>
- * 18.{@link #checkForForgeWindows()}<br>
- * 19.{@link #checkForProperties()}<br>
- * 20.{@link #checkForIcon()}<br>
- * 21.{@link #refreshValidationFiles()}<br>
- * 22.{@link #downloadMinecraftManifest()}<br>
- * 23.{@link #downloadFabricManifest()}<br>
- * 24.{@link #downloadForgeManifest()}
+ * 13.{@link #getFabricInstallerManifestUrl()}<br>
+ * 14.{@link #filesSetup()}<br>
+ * 15.{@link #checkForConfig()}<br>
+ * 16.{@link #checkForFabricLinux()}<br>
+ * 17.{@link #checkForFabricWindows()}<br>
+ * 18.{@link #checkForForgeLinux()}<br>
+ * 19.{@link #checkForForgeWindows()}<br>
+ * 20.{@link #checkForProperties()}<br>
+ * 21.{@link #checkForIcon()}<br>
+ * 22.{@link #refreshValidationFiles()}<br>
+ * 23.{@link #downloadMinecraftManifest()}<br>
+ * 24.{@link #downloadFabricManifest()}<br>
+ * 25.{@link #downloadForgeManifest()}<br>
+ * 26.{@link #downloadFabricInstallerManifest()}
  * <p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
@@ -207,6 +209,21 @@ public class DefaultFiles {
             fabricURL = new URL(fabricManifest); }
         catch (IOException ex) { LOG.error(ex); }
         return fabricURL;
+    }
+
+    /**
+     * Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.
+     * @return Returns the URL to the Fabric Installer Manifest.
+     */
+    public URL getFabricInstallerManifestUrl() {
+        URL downloadURL = null;
+
+        String fabricInstallerManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml";
+
+        try { downloadURL = new URL(fabricInstallerManifest); }
+        catch (IOException ex) { LOG.error(ex); }
+
+        return downloadURL;
     }
 
     /**
@@ -472,7 +489,7 @@ public class DefaultFiles {
 
     /**
      * Checks for existence of minecraft-manifest.json, fabric-manifest.xml and forge-manifest.json and deletes them if
-     * they exist. Makes calls to {@link #downloadMinecraftManifest()}, {@link #downloadFabricManifest()} and {@link #downloadForgeManifest()}
+     * they exist. Makes calls to {@link #downloadMinecraftManifest()}, {@link #downloadFabricManifest()}, {@link #getFabricInstallerManifestUrl()} and {@link #downloadForgeManifest()}
      * in order to update them.
      */
     void refreshValidationFiles() {
@@ -491,8 +508,14 @@ public class DefaultFiles {
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest.delete"));
         }
 
+        if (new File("./work/fabric-installer-manifest.xml").delete()) {
+
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest.delete"));
+        }
+
         downloadMinecraftManifest();
         downloadFabricManifest();
+        downloadFabricInstallerManifest();
         downloadForgeManifest();
     }
 
@@ -515,12 +538,12 @@ public class DefaultFiles {
 
                 if (!file.exists()) {
 
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isminecraftversioncorrect.create"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.minecraftmanifest.create"));
                     boolean jsonCreated = file.createNewFile();
 
                     if (jsonCreated) {
 
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isminecraftversioncorrect.created"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.minecraftmanifest.created"));
 
                     } else {
 
@@ -559,16 +582,16 @@ public class DefaultFiles {
             } catch (FileNotFoundException ex) {
 
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricmanifest"), ex);
-                File file = new File("fabric-manifest.xml");
+                File file = new File("./work/fabric-manifest.xml");
 
                 if (!file.exists()) {
 
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isfabricversioncorrect.create"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricmanifest.create"));
                     boolean jsonCreated = file.createNewFile();
 
                     if (jsonCreated) {
 
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isfabricversioncorrect.created"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricmanifest.created"));
 
                     } else {
                         LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricmanifest.parse"));
@@ -606,17 +629,17 @@ public class DefaultFiles {
             } catch (FileNotFoundException ex) {
 
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest"), ex);
-                File file = new File("forge-manifest.json");
+                File file = new File("./work/forge-manifest.json");
 
                 if (!file.exists()) {
 
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isforgeversioncorrect.create"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.forgemanifest.create"));
 
                     boolean jsonCreated = file.createNewFile();
 
                     if (jsonCreated) {
 
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isforgeversioncorrect.created"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.forgemanifest.created"));
                     } else {
 
                         LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.forgemanifest.parse"));
@@ -638,5 +661,50 @@ public class DefaultFiles {
         }
     }
 
+    /**
+     * Downloads the Fabric installer manifest in order to acquire the latest installer version.
+     */
+    void downloadFabricInstallerManifest() {
+        try {
+            URL manifestJsonURL = getFabricInstallerManifestUrl();
 
+            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+
+            FileOutputStream downloadManifestOutputStream;
+
+            try {
+                downloadManifestOutputStream = new FileOutputStream("./work/fabric-installer-manifest.xml");
+            } catch (FileNotFoundException ex) {
+
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricinstallermanifest"), ex);
+                File file = new File("./work/fabric-installer-manifest.xml");
+
+                if (!file.exists()) {
+
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricinstallermanifest.create"));
+                    boolean jsonCreated = file.createNewFile();
+
+                    if (jsonCreated) {
+
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricinstallermanifest.created"));
+
+                    } else {
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricinstallermanifest.parse"));
+                    }
+                }
+                downloadManifestOutputStream = new FileOutputStream("./work/fabric-installer-manifest.xml");
+            }
+            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
+            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            downloadManifestOutputStream.flush();
+            downloadManifestOutputStream.close();
+
+            readableByteChannel.close();
+            downloadManifestOutputStreamChannel.close();
+
+        } catch (Exception ex) {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricinstallermanifest"), ex);
+        }
+    }
 }
