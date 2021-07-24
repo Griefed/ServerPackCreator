@@ -19,36 +19,34 @@
  */
 package de.griefed.serverpackcreator.api.controllers;
 
-import de.griefed.serverpackcreator.api.services.ReadConfigurationFile;
+import de.griefed.serverpackcreator.api.services.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.File;
 
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
 
-    private final ReadConfigurationFile readConfigurationFile;
-
-    private String customConfigFileLocation;
+    private final ConfigurationService configurationService;
 
     @Autowired
-    ConfigController(ReadConfigurationFile newReadConfigurationFile) {
-        this.readConfigurationFile = newReadConfigurationFile;
+    ConfigController(ConfigurationService injectedConfigurationService) {
+        this.configurationService = injectedConfigurationService;
     }
 
-    @GetMapping("/read/default")
-    public ReadConfigurationFile readDefaultConfig() {
-        readConfigurationFile.setConfigDefault();
-        return readConfigurationFile;
+    // /read?config=serverpackcreator.tmp
+    @GetMapping()
+    public ConfigurationService readDefaultConfig(@RequestParam(value = "configurationFile", defaultValue = "serverpackcreator.conf") File configurationFile) {
+        this.configurationService.setConfig(configurationFile);
+        return this.configurationService;
     }
 
-    @GetMapping("/read/custom")
-    public ReadConfigurationFile readCustomConfig() {
-        readConfigurationFile.setConfigFromSpecificFile(new File("C:/Minecraft/ServerPackCreator/serverpackcreator.conf"));
-        return readConfigurationFile;
+    @PostMapping
+    public void createConfigurationFile(@Valid ConfigurationService configurationServicePost) {
+
     }
+
 }
