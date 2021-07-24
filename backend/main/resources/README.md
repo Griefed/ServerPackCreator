@@ -180,13 +180,13 @@ The .exe can be started with a regular double click. The .jar needs to be starte
 
 The first run of ServerPackCreator will create a couple of default files in the directory you started it in. If you plan on including any of these in your server pack, make sure you've customized them to your needs. They're in a directory called `server_files` in the same directory in which you executed `ServerPackCreator-X.X.X.jar` or `ServerPackCreator-X.X.X.exe` and will contain the following files which you can customize to your hearts content:
 
- - `server.properties`
+- `server.properties`
 
- - `server-icon.png`
+- `server-icon.png`
 
- - `start-fabric.bat` and `start-fabric.sh`
+- `start-fabric.bat` and `start-fabric.sh`
 
- - `start-forge.bat` and `start-forge.sh`
+- `start-forge.bat` and `start-forge.sh`
 
 Once the ServerPackCreator window opened, you need to fill in all the information you gathered in the previously mentioned steps 1 to 3 into the designated textfields.
 From top to bottom:
@@ -230,10 +230,10 @@ Have fun!
 **1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
 
 **2.** Copy the .jar file to the partent directory of your modpack. Example:
-   ![location](https://i.griefed.de/images/2021/03/03/run_windows1.png)
+![location](https://i.griefed.de/images/2021/03/03/run_windows1.png)
 
 **3.** Open a command prompt by Shift-Right-Clicking into a free space of the explorer window, followed by a click on "Open command prompt here":
-   ![command](https://i.griefed.de/images/2021/03/03/run_windows2.png)
+![command](https://i.griefed.de/images/2021/03/03/run_windows2.png)
 
 **4.** Start the initial setup of ServerPackCreator by running it with the command: `java -jar ServerPackCreator-X.X.X.jar` (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
 
@@ -410,12 +410,12 @@ Example after successfully running SPC:
 **1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
 
 **2.** Copy the .jar file to the partent directory of your modpack. Example:
-   ![location](https://i.griefed.de/images/2021/03/05/3biap1.png)
+![location](https://i.griefed.de/images/2021/03/05/3biap1.png)
 
 **3.** Open Terminal using Spotlight, Launchpad or by running `Terminal.app` from `/Applications/Utilities` folder
 
 **4.** Change the active directory to the one with ServerPackCreator jar and your modpacks.
-   ![command](https://i.griefed.de/images/2021/03/05/3bi9y1.png)
+![command](https://i.griefed.de/images/2021/03/05/3bi9y1.png)
 
 **5.** Start the initial setup of ServerPackCreator by running it with the command: `java -jar ServerPackCreator-X.X.X.jar` (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
 
