@@ -419,7 +419,7 @@ class CreateServerPackTest {
         String modLoader = "Fabric";
         String modpackDir = "./backend/test/resources/fabric_tests";
         String minecraftVersion = "1.16.5";
-        String modLoaderVersion = "0.7.3";
+        String modLoaderVersion = "0.11.6";
         String javaPath;
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
         if (autoJavaPath.startsWith("C:")) {
