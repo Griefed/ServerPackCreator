@@ -47,46 +47,43 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 1. {@link #ConfigurationTest()}<br>
  * 2. {@link #getOldConfigFileTest()}<br>
  * 3. {@link #getConfigFileTest()}<br>
- * 4. {@link #getMinecraftManifestUrlTest()}<br>
- * 5. {@link #getForgeManifestUrlTest()}<br>
- * 6. {@link #getFabricManifestUrlTest()}<br>
- * 7. {@link #getsetConfigTest()}<br>
- * 9. {@link #getFallbackModsListTest()}<br>
- * 10.{@link #getsetClientModsTest()}<br>
- * 12.{@link #getsetCopyDirsTest()}<br>
- * 14.{@link #getsetModpackDirTest()}<br>
- * 16.{@link #getsetJavaPathTest()}<br>
- * 18.{@link #getsetMinecraftVersionTest()}<br>
- * 20.{@link #getsetModLoaderTest()}<br>
- * 22.{@link #getsetModLoaderVersionTest()}<br>
- * 24.{@link #getsetIncludeServerInstallationTest()}<br>
- * 26.{@link #getsetIncludeServerIconTest()}<br>
- * 28.{@link #getsetIncludeServerPropertiesTest()}<br>
- * 30.{@link #getsetIncludeStartScriptsTest()}<br>
- * 32.{@link #getsetIncludeZipCreationTest()}<br>
- * 34.{@link #getsetProjectIDTest()}<br>
- * 36.{@link #getsetProjectFileIDTest()}<br>
- * 38.{@link #checkConfigFileTest()}<br>
- * 39.{@link #isDirTest()}<br>
- * 40.{@link #isCurseTest()}<br>
- * 41.{@link #containsFabricTest()}<br>
- * 42.{@link #suggestCopyDirsTest()}<br>
- * 43.{@link #checkCurseForgeTest()}<br>
- * 44.{@link #convertToBooleanTest()}<br>
- * 45.{@link #printConfigTest()}<br>
- * 46.{@link #checkModpackDirTest()}<br>
- * 47.{@link #checkCopyDirsTest()}<br>
- * 48.{@link #getJavaPathFromSystemTest()}<br>
- * 49.{@link #checkJavaPathTest()}<br>
- * 50.{@link #checkModloaderTest()}<br>
- * 51.{@link #setModLoaderCaseTest()}<br>
- * 52.{@link #checkModloaderVersionTest()}<br>
- * 53.{@link #isMinecraftVersionCorrectTest()}<br>
- * 54.{@link #isFabricVersionCorrectTest()}<br>
- * 55.{@link #isForgeVersionCorrectTest()}<br>
- * 56.{@link #latestFabricLoaderTest()}<br>
- * 59.{@link #buildStringTest()}<br>
- * 61.{@link #writeConfigToFileTest()}
+ * 4. {@link #getsetConfigTest()}<br>
+ * 5. {@link #getFallbackModsListTest()}<br>
+ * 6. {@link #getsetClientModsTest()}<br>
+ * 7. {@link #getsetCopyDirsTest()}<br>
+ * 8. {@link #getsetModpackDirTest()}<br>
+ * 9. {@link #getsetJavaPathTest()}<br>
+ * 10.{@link #getsetMinecraftVersionTest()}<br>
+ * 11.{@link #getsetModLoaderTest()}<br>
+ * 12.{@link #getsetModLoaderVersionTest()}<br>
+ * 13.{@link #getsetIncludeServerInstallationTest()}<br>
+ * 14.{@link #getsetIncludeServerIconTest()}<br>
+ * 15.{@link #getsetIncludeServerPropertiesTest()}<br>
+ * 16.{@link #getsetIncludeStartScriptsTest()}<br>
+ * 17.{@link #getsetIncludeZipCreationTest()}<br>
+ * 18.{@link #getsetProjectIDTest()}<br>
+ * 19.{@link #getsetProjectFileIDTest()}<br>
+ * 20.{@link #checkConfigFileTest()}<br>
+ * 21.{@link #isDirTest()}<br>
+ * 22.{@link #isCurseTest()}<br>
+ * 23.{@link #containsFabricTest()}<br>
+ * 24.{@link #suggestCopyDirsTest()}<br>
+ * 25.{@link #checkCurseForgeTest()}<br>
+ * 26.{@link #convertToBooleanTest()}<br>
+ * 27.{@link #printConfigTest()}<br>
+ * 28.{@link #checkModpackDirTest()}<br>
+ * 29.{@link #checkCopyDirsTest()}<br>
+ * 30.{@link #getJavaPathFromSystemTest()}<br>
+ * 31.{@link #checkJavaPathTest()}<br>
+ * 32.{@link #checkModloaderTest()}<br>
+ * 33.{@link #setModLoaderCaseTest()}<br>
+ * 34.{@link #checkModloaderVersionTest()}<br>
+ * 35.{@link #isMinecraftVersionCorrectTest()}<br>
+ * 36.{@link #isFabricVersionCorrectTest()}<br>
+ * 37.{@link #isForgeVersionCorrectTest()}<br>
+ * 38.{@link #latestFabricLoaderTest()}<br>
+ * 39.{@link #buildStringTest()}<br>
+ * 40.{@link #writeConfigToFileTest()}
  */
 class ConfigurationTest {
     @Mock
@@ -95,9 +92,11 @@ class ConfigurationTest {
     private Configuration configuration;
     private CurseCreateModpack curseCreateModpack;
     private LocalizationManager localizationManager;
+    private DefaultFiles defaultFiles;
 
     ConfigurationTest() {
         localizationManager = new LocalizationManager();
+        defaultFiles = new DefaultFiles(localizationManager);
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);
     }
@@ -105,6 +104,7 @@ class ConfigurationTest {
     @BeforeEach
     void setUp() {
         localizationManager.checkLocaleFile();
+        defaultFiles.filesSetup();
         MockitoAnnotations.openMocks(this);
     }
 
@@ -118,24 +118,6 @@ class ConfigurationTest {
     void getConfigFileTest() {
         File file = configuration.getConfigFile();
         Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getMinecraftManifestUrlTest() {
-        URL url = configuration.getMinecraftManifestUrl();
-        Assertions.assertNotNull(url);
-    }
-
-    @Test
-    void getForgeManifestUrlTest() {
-        URL url = configuration.getForgeManifestUrl();
-        Assertions.assertNotNull(url);
-    }
-
-    @Test
-    void getFabricManifestUrlTest() {
-        URL url = configuration.getFabricManifestUrl();
-        Assertions.assertNotNull(url);
     }
 
     @Test

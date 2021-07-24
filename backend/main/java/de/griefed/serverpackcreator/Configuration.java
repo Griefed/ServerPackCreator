@@ -54,64 +54,61 @@ import java.util.*;
  * 1. {@link #Configuration(LocalizationManager, CurseCreateModpack)}<br>
  * 2. {@link #getOldConfigFile()}<br>
  * 3. {@link #getConfigFile()}<br>
- * 4. {@link #getMinecraftManifestUrl()}<br>
- * 5. {@link #getForgeManifestUrl()}<br>
- * 6. {@link #getFabricManifestUrl()}<br>
- * 7. {@link #getConfig()}<br>
- * 8. {@link #setConfig(File)}<br>
- * 9. {@link #getFallbackModsList()}<br>
- * 10.{@link #getClientMods()}<br>
- * 11.{@link #setClientMods(List)}<br>
- * 12.{@link #getCopyDirs()}<br>
- * 13.{@link #setCopyDirs(List)}<br>
- * 14.{@link #getModpackDir()}<br>
- * 15.{@link #setModpackDir(String)}<br>
- * 16.{@link #getJavaPath()}<br>
- * 17.{@link #setJavaPath(String)}<br>
- * 18.{@link #getMinecraftVersion()}<br>
- * 19.{@link #setMinecraftVersion(String)}<br>
- * 20.{@link #getModLoader()}<br>
- * 21.{@link #setModLoader(String)}<br>
- * 22.{@link #getModLoaderVersion()}<br>
- * 23.{@link #setModLoaderVersion(String)}<br>
- * 24.{@link #getIncludeServerInstallation()}<br>
- * 25.{@link #setIncludeServerInstallation(boolean)}<br>
- * 26.{@link #getIncludeServerIcon()}<br>
- * 27.{@link #setIncludeServerIcon(boolean)}<br>
- * 28.{@link #getIncludeServerProperties()}<br>
- * 29.{@link #setIncludeServerProperties(boolean)}<br>
- * 30.{@link #getIncludeStartScripts()}<br>
- * 31.{@link #setIncludeStartScripts(boolean)}<br>
- * 32.{@link #getIncludeZipCreation()}<br>
- * 33.{@link #setIncludeZipCreation(boolean)}<br>
- * 34.{@link #getProjectID()}<br>
- * 35.{@link #setProjectID(int)}<br>
- * 36.{@link #getProjectFileID()}<br>
- * 37.{@link #setProjectFileID(int)}<br>
- * 38.{@link #checkConfigFile(File, boolean)}<br>
- * 39.{@link #isDir(String)}<br>
- * 40.{@link #isCurse()}<br>
- * 41.{@link #containsFabric(CurseModpack)}<br>
- * 42.{@link #suggestCopyDirs(String)}<br>
- * 43.{@link #checkCurseForge(String)}<br>
- * 44.{@link #convertToBoolean(String)}<br>
- * 45.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
- * 46.{@link #checkModpackDir(String)}<br>
- * 47.{@link #checkCopyDirs(List, String)}<br>
- * 48.{@link #getJavaPathFromSystem(String)}<br>
- * 49.{@link #checkJavaPath(String)}<br>
- * 50.{@link #checkModloader(String)}<br>
- * 51.{@link #setModLoaderCase(String)}<br>
- * 52.{@link #checkModloaderVersion(String, String)}<br>
- * 53.{@link #isMinecraftVersionCorrect(String)}<br>
- * 54.{@link #isFabricVersionCorrect(String)}<br>
- * 55.{@link #isForgeVersionCorrect(String)}<br>
- * 56.{@link #latestFabricLoader(String)}<br>
- * 57.{@link #createConfigurationFile()}<br>
- * 58.{@link #readStringArray()}<br>
- * 59.{@link #buildString(String...)}<br>
- * 60.{@link #readBoolean()}<br>
- * 61.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+ * 4. {@link #getConfig()}<br>
+ * 5. {@link #setConfig(File)}<br>
+ * 6. {@link #getFallbackModsList()}<br>
+ * 7. {@link #getClientMods()}<br>
+ * 8. {@link #setClientMods(List)}<br>
+ * 9. {@link #getCopyDirs()}<br>
+ * 10.{@link #setCopyDirs(List)}<br>
+ * 11.{@link #getModpackDir()}<br>
+ * 12.{@link #setModpackDir(String)}<br>
+ * 13.{@link #getJavaPath()}<br>
+ * 14.{@link #setJavaPath(String)}<br>
+ * 15.{@link #getMinecraftVersion()}<br>
+ * 16.{@link #setMinecraftVersion(String)}<br>
+ * 17.{@link #getModLoader()}<br>
+ * 18.{@link #setModLoader(String)}<br>
+ * 19.{@link #getModLoaderVersion()}<br>
+ * 20.{@link #setModLoaderVersion(String)}<br>
+ * 21.{@link #getIncludeServerInstallation()}<br>
+ * 22.{@link #setIncludeServerInstallation(boolean)}<br>
+ * 23.{@link #getIncludeServerIcon()}<br>
+ * 24.{@link #setIncludeServerIcon(boolean)}<br>
+ * 25.{@link #getIncludeServerProperties()}<br>
+ * 26.{@link #setIncludeServerProperties(boolean)}<br>
+ * 27.{@link #getIncludeStartScripts()}<br>
+ * 28.{@link #setIncludeStartScripts(boolean)}<br>
+ * 29.{@link #getIncludeZipCreation()}<br>
+ * 30.{@link #setIncludeZipCreation(boolean)}<br>
+ * 31.{@link #getProjectID()}<br>
+ * 32.{@link #setProjectID(int)}<br>
+ * 33.{@link #getProjectFileID()}<br>
+ * 34.{@link #setProjectFileID(int)}<br>
+ * 35.{@link #checkConfigFile(File, boolean)}<br>
+ * 36.{@link #isDir(String)}<br>
+ * 37.{@link #isCurse()}<br>
+ * 38.{@link #containsFabric(CurseModpack)}<br>
+ * 39.{@link #suggestCopyDirs(String)}<br>
+ * 40.{@link #checkCurseForge(String)}<br>
+ * 41.{@link #convertToBoolean(String)}<br>
+ * 42.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
+ * 43.{@link #checkModpackDir(String)}<br>
+ * 44.{@link #checkCopyDirs(List, String)}<br>
+ * 45.{@link #getJavaPathFromSystem(String)}<br>
+ * 46.{@link #checkJavaPath(String)}<br>
+ * 47.{@link #checkModloader(String)}<br>
+ * 48.{@link #setModLoaderCase(String)}<br>
+ * 49.{@link #checkModloaderVersion(String, String)}<br>
+ * 50.{@link #isMinecraftVersionCorrect(String)}<br>
+ * 51.{@link #isFabricVersionCorrect(String)}<br>
+ * 52.{@link #isForgeVersionCorrect(String)}<br>
+ * 53.{@link #latestFabricLoader(String)}<br>
+ * 54.{@link #createConfigurationFile()}<br>
+ * 55.{@link #readStringArray()}<br>
+ * 56.{@link #buildString(String...)}<br>
+ * 57.{@link #readBoolean()}<br>
+ * 58.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
  * <p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should {@link #modpackDir}
  * be a combination of a CurseForge projectID and fileID.<p>
@@ -244,45 +241,6 @@ public class Configuration {
      */
     public File getConfigFile() {
         return FILE_CONFIG;
-    }
-
-    /**
-     * Getter for Mojang's Minecraft version-manifest.
-     * @return String. Returns the URL to the JSON-file for use in {@link #isMinecraftVersionCorrect(String)}
-     */
-    URL getMinecraftManifestUrl() {
-        URL minecraftURL = null;
-        String minecraftManifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-        try {
-            minecraftURL = new URL(minecraftManifest); }
-        catch (IOException ex) { LOG.error(ex); }
-        return minecraftURL;
-    }
-
-    /**
-     * Getter for Forge's version-manifest.
-     * @return String. Returns the URL to the JSON-file for use in {@link #isForgeVersionCorrect(String)}
-     */
-    URL getForgeManifestUrl() {
-        URL forgeURL = null;
-        String forgeManifest = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
-        try {
-            forgeURL = new URL(forgeManifest); }
-        catch (IOException ex) { LOG.error(ex); }
-        return forgeURL;
-    }
-
-    /**
-     * Getter for Fabric's version-manifest.
-     * @return String. Returns the URL to the JSON-file for use in {@link #isFabricVersionCorrect(String)}
-     */
-    URL getFabricManifestUrl() {
-        URL fabricURL = null;
-        String fabricManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
-        try {
-            fabricURL = new URL(fabricManifest); }
-        catch (IOException ex) { LOG.error(ex); }
-        return fabricURL;
     }
 
     /**
@@ -1313,55 +1271,23 @@ public class Configuration {
     boolean isMinecraftVersionCorrect(String minecraftVersion) {
         if (!minecraftVersion.equals("")) {
             try {
-                URL manifestJsonURL = getMinecraftManifestUrl();
-                ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-                FileOutputStream downloadManifestOutputStream;
 
-                try {
-                    downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
-                } catch (FileNotFoundException ex) {
+                File manifestJsonFile = new File("./work/minecraft-manifest.json");
 
-                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isminecraftversioncorrect"), ex);
-
-                    File file = new File("mcmanifest.json");
-
-                    if (!file.exists()) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.create"));
-                        boolean jsonCreated = file.createNewFile();
-
-                        if (jsonCreated) {
-
-                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.created"));
-
-                        } else {
-
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.parse"));
-                        }
-                    }
-                    downloadManifestOutputStream = new FileOutputStream("mcmanifest.json");
-                }
-                FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-
-                downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-                downloadManifestOutputStream.flush();
-                downloadManifestOutputStream.close();
-
-                readableByteChannel.close();
-                downloadManifestOutputStreamChannel.close();
-
-                File manifestJsonFile = new File("mcmanifest.json");
                 Scanner jsonReader = new Scanner(manifestJsonFile);
 
                 String jsonData = jsonReader.nextLine();
+
                 jsonReader.close();
 
                 jsonData = jsonData.replaceAll("\\s", "");
 
                 boolean contains = jsonData.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
+
                 manifestJsonFile.deleteOnExit();
 
                 return contains;
+
             } catch (Exception ex) {
 
                 LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.validate"), minecraftVersion), ex);
@@ -1382,44 +1308,9 @@ public class Configuration {
     boolean isFabricVersionCorrect(String fabricVersion) {
         if (!fabricVersion.equals("")) {
             try {
-                URL manifestJsonURL = getFabricManifestUrl();
 
-                ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+                File manifestXMLFile = new File("./work/fabric-manifest.xml");
 
-                FileOutputStream downloadManifestOutputStream;
-
-                try {
-                    downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
-                } catch (FileNotFoundException ex) {
-
-                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isfabricversioncorrect"), ex);
-                    File file = new File("fabric-manifest.xml");
-
-                    if (!file.exists()) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isfabricversioncorrect.create"));
-                        boolean jsonCreated = file.createNewFile();
-
-                        if (jsonCreated) {
-
-                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isfabricversioncorrect.created"));
-
-                        } else {
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.parse"));
-                        }
-                    }
-                    downloadManifestOutputStream = new FileOutputStream("fabric-manifest.xml");
-                }
-                FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-
-                downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-                downloadManifestOutputStream.flush();
-                downloadManifestOutputStream.close();
-
-                readableByteChannel.close();
-                downloadManifestOutputStreamChannel.close();
-
-                File manifestXMLFile = new File("fabric-manifest.xml");
                 Scanner xmlReader = new Scanner(manifestXMLFile);
 
                 ArrayList<String> dataList = new ArrayList<>();
@@ -1440,20 +1331,18 @@ public class Configuration {
 
                 manifestXML = manifestXML.replaceAll("\\s", "");
 
-                boolean contains = manifestXML.trim().contains(String.format("%s", fabricVersion));
+                boolean contains = manifestXML.trim().contains(fabricVersion);
 
                 manifestXMLFile.deleteOnExit();
 
                 return contains;
 
             } catch (Exception ex) {
-
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.validate"), ex);
                 return false;
             }
 
         } else {
-
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.empty"));
             return false;
         }
@@ -1468,45 +1357,8 @@ public class Configuration {
     boolean isForgeVersionCorrect(String forgeVersion) {
         if (!forgeVersion.equals("")) {
             try {
-                URL manifestJsonURL = getForgeManifestUrl();
-                ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-                FileOutputStream downloadManifestOutputStream;
 
-                try {
-
-                    downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
-
-                } catch (FileNotFoundException ex) {
-
-                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isforgeversioncorrect"), ex);
-                    File file = new File("forge-manifest.json");
-
-                    if (!file.exists()) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isforgeversioncorrect.create"));
-
-                        boolean jsonCreated = file.createNewFile();
-
-                        if (jsonCreated) {
-
-                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isforgeversioncorrect.created"));
-                        } else {
-
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isforgeversioncorrect.parse"));
-                        }
-                    }
-                    downloadManifestOutputStream = new FileOutputStream("forge-manifest.json");
-                }
-                FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-
-                downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-                downloadManifestOutputStream.flush();
-                downloadManifestOutputStream.close();
-
-                readableByteChannel.close();
-                downloadManifestOutputStreamChannel.close();
-
-                File manifestJsonFile = new File("forge-manifest.json");
+                File manifestJsonFile = new File("./work/forge-manifest.json");
 
                 manifestJsonFile.deleteOnExit();
 
@@ -1530,7 +1382,7 @@ public class Configuration {
 
                 manifestJSON = manifestJSON.replaceAll("\\s", "");
 
-                return manifestJSON.trim().contains(String.format("%s", forgeVersion));
+                return manifestJSON.trim().contains(forgeVersion);
 
             } catch (Exception ex) {
 
@@ -1553,24 +1405,16 @@ public class Configuration {
      */
     String latestFabricLoader(String modpackDir) {
         String result;
-
         try {
-            URL downloadFabricXml = getFabricManifestUrl();
-            ReadableByteChannel downloadFabricXmlReadableByteChannel = Channels.newChannel(downloadFabricXml.openStream());
-
-            FileOutputStream downloadFabricXmlFileOutputStream = new FileOutputStream(String.format("%s/server_pack/fabric-loader.xml", modpackDir));
-            FileChannel downloadFabricXmlFileChannel = downloadFabricXmlFileOutputStream.getChannel();
-            downloadFabricXmlFileOutputStream.getChannel().transferFrom(downloadFabricXmlReadableByteChannel, 0, Long.MAX_VALUE);
-
-            downloadFabricXmlFileOutputStream.flush();
-            downloadFabricXmlFileOutputStream.close();
-            downloadFabricXmlReadableByteChannel.close();
-            downloadFabricXmlFileChannel.close();
 
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+
             DocumentBuilder builder = domFactory.newDocumentBuilder();
-            Document fabricXml = builder.parse(new File(String.format("%s/server_pack/fabric-loader.xml",modpackDir)));
+
+            Document fabricXml = builder.parse(new File("./work/fabric-manifest.xml"));
+
             XPathFactory xPathFactory = XPathFactory.newInstance();
+
             XPath xpath = xPathFactory.newXPath();
 
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);

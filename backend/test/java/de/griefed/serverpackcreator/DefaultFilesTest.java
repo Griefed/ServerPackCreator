@@ -27,6 +27,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,22 +45,29 @@ import java.util.Comparator;
  * 7. {@link #getForgeLinuxFileTest()} tests {@link DefaultFiles#getForgeLinuxFile()}<br>
  * 8. {@link #getFabricWindowsFileTest()} tests {@link DefaultFiles#getFabricWindowsFile()}<br>
  * 9. {@link #getFabricLinuxFileTest()} tests {@link DefaultFiles#getFabricLinuxFile()}<br>
- * 10.{@link #checkForConfigTestOld} tests {@link DefaultFiles#checkForConfig()}<br>
- * 11.{@link #checkForConfigTest} tests {@link DefaultFiles#checkForConfig()}<br>
- * 12.{@link #checkForConfigTestNew} tests {@link DefaultFiles#checkForConfig()}<br>
- * 13.{@link #checkForFabricLinuxTest} tests {@link DefaultFiles#checkForFabricLinux()}<br>
- * 14.{@link #checkForFabricLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 15.{@link #checkForFabricWindowsTest} tests {@link DefaultFiles#checkForFabricWindows()}<br>
- * 16.{@link #checkForFabricWindowsTestNew} tests {@link DefaultFiles#checkForFabricWindows()}<br>
- * 17.{@link #checkForForgeLinuxTest} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 18.{@link #checkForForgeLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 19.{@link #checkForForgeWindowsTest} tests {@link DefaultFiles#checkForForgeWindows()}<br>
- * 20.{@link #checkForForgeWindowsTestNew} tests {@link DefaultFiles#checkForForgeWindows()}<br>
- * 21.{@link #checkForPropertiesTest} tests {@link DefaultFiles#checkForProperties()}<br>
- * 22.{@link #checkForPropertiesTestNew} tests {@link DefaultFiles#checkForProperties()}<br>
- * 23.{@link #checkForIconTest} tests {@link DefaultFiles#checkForIcon()}<br>
- * 24.{@link #checkForIconTestNew} tests {@link DefaultFiles#checkForIcon()}<br>
- * 25.{@link #filesSetupTest} tests {@link DefaultFiles#filesSetup()}
+ * 10.{@link #getMinecraftManifestUrlTest()}<br>
+ * 11.{@link #getForgeManifestUrlTest()}<br>
+ * 12.{@link #getFabricManifestUrlTest()}<br>
+ * 13.{@link #checkForConfigTestOld} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 14.{@link #checkForConfigTest} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 15.{@link #checkForConfigTestNew} tests {@link DefaultFiles#checkForConfig()}<br>
+ * 16.{@link #checkForFabricLinuxTest} tests {@link DefaultFiles#checkForFabricLinux()}<br>
+ * 17.{@link #checkForFabricLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 18.{@link #checkForFabricWindowsTest} tests {@link DefaultFiles#checkForFabricWindows()}<br>
+ * 19.{@link #checkForFabricWindowsTestNew} tests {@link DefaultFiles#checkForFabricWindows()}<br>
+ * 20.{@link #checkForForgeLinuxTest} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 21.{@link #checkForForgeLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
+ * 22.{@link #checkForForgeWindowsTest} tests {@link DefaultFiles#checkForForgeWindows()}<br>
+ * 23.{@link #checkForForgeWindowsTestNew} tests {@link DefaultFiles#checkForForgeWindows()}<br>
+ * 24.{@link #checkForPropertiesTest} tests {@link DefaultFiles#checkForProperties()}<br>
+ * 25.{@link #checkForPropertiesTestNew} tests {@link DefaultFiles#checkForProperties()}<br>
+ * 26.{@link #checkForIconTest} tests {@link DefaultFiles#checkForIcon()}<br>
+ * 27.{@link #checkForIconTestNew} tests {@link DefaultFiles#checkForIcon()}<br>
+ * 28.{@link #filesSetupTest} tests {@link DefaultFiles#filesSetup()}<br>
+ * 29.{@link #downloadMinecraftManifestTest} tests {@link DefaultFiles#downloadMinecraftManifest()}<br>
+ * 30.{@link #downloadFabricManifestTest} tests {@link DefaultFiles#downloadFabricManifest()}<br>
+ * 31.{@link #downloadForgeManifestTest} tests {@link DefaultFiles#downloadForgeManifest()}<br>
+ * 32.{@link #refreshValidationFilesTest} tests {@link DefaultFiles#refreshValidationFiles()}
  */
 class DefaultFilesTest {
 
@@ -123,6 +131,24 @@ class DefaultFilesTest {
     void getFabricLinuxFileTest() {
         File file = defaultFiles.getFabricLinuxFile();
         Assertions.assertNotNull(file);
+    }
+
+    @Test
+    void getMinecraftManifestUrlTest() {
+        URL url = defaultFiles.getMinecraftManifestUrl();
+        Assertions.assertNotNull(url);
+    }
+
+    @Test
+    void getForgeManifestUrlTest() {
+        URL url = defaultFiles.getForgeManifestUrl();
+        Assertions.assertNotNull(url);
+    }
+
+    @Test
+    void getFabricManifestUrlTest() {
+        URL url = defaultFiles.getFabricManifestUrl();
+        Assertions.assertNotNull(url);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -273,6 +299,9 @@ class DefaultFilesTest {
     void filesSetupTest() throws IOException {
         defaultFiles.filesSetup();
         Assertions.assertTrue(new File("./server_files").isDirectory());
+        Assertions.assertTrue(new File("./work").isDirectory());
+        Assertions.assertTrue(new File("./work/temp").isDirectory());
+        Assertions.assertTrue(new File("./server-packs").isDirectory());
         Assertions.assertTrue(new File("./server_files/server.properties").exists());
         Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
         Assertions.assertTrue(new File("./server_files/start-fabric.bat").exists());
@@ -280,6 +309,9 @@ class DefaultFilesTest {
         Assertions.assertTrue(new File("./server_files/start-forge.bat").exists());
         Assertions.assertTrue(new File("./server_files/start-forge.sh").exists());
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
+        Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
+        Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
+        Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
         String delete = "./server_files";
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
@@ -288,6 +320,99 @@ class DefaultFilesTest {
                     .map(Path::toFile)
                     .forEach(File::delete);
         }
+        String deleteWork = "./work";
+        if (new File(deleteWork).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(deleteWork);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        String deleteServerPacks = "./server-packs";
+        if (new File(deleteServerPacks).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(deleteServerPacks);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
         new File("./serverpackcreator.conf").delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void downloadMinecraftManifestTest() throws IOException {
+        Files.createDirectories(Paths.get("./work"));
+        defaultFiles.downloadFabricManifest();
+        Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
+        String work = "./work";
+        if (new File(work).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(work);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void downloadFabricManifestTest() throws IOException {
+        Files.createDirectories(Paths.get("./work"));
+        defaultFiles.downloadFabricManifest();
+        Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
+        String work = "./work";
+        if (new File(work).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(work);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void downloadForgeManifestTest() throws IOException {
+        Files.createDirectories(Paths.get("./work"));
+        defaultFiles.downloadForgeManifest();
+        Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
+        String work = "./work";
+        if (new File(work).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(work);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void refreshValidationFilesTest() throws IOException {
+        File minecraft = new File("./work/minecraft-manifest.json");
+        File fabric = new File("./work/fabric-manifest.json");
+        File forge = new File("./work/forge-manifest.json");
+
+        Files.createDirectories(Paths.get("./work"));
+
+        minecraft.createNewFile();
+        fabric.createNewFile();
+        forge.createNewFile();
+
+        defaultFiles.refreshValidationFiles();
+
+        Assertions.assertTrue(minecraft.exists());
+        Assertions.assertTrue(fabric.exists());
+        Assertions.assertTrue(forge.exists());
+
+        File work = new File("./work");
+        if (work.isDirectory()) {
+            Path pathToBeDeleted = Paths.get("./work");
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 }

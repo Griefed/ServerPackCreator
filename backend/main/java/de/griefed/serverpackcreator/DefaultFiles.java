@@ -28,12 +28,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * <strong>Table of methods</strong>
- * <p>
+ * <strong>Table of methods</strong><p>
  * 1. {@link #DefaultFiles(LocalizationManager)}<br>
  * 2. {@link #getConfigFile()}<br>
  * 3. {@link #getOldConfigFile()}<br>
@@ -43,14 +46,21 @@ import java.nio.file.Paths;
  * 7. {@link #getForgeLinuxFile()}<br>
  * 8. {@link #getFabricWindowsFile()}<br>
  * 9. {@link #getFabricLinuxFile()}<br>
- * 10.{@link #filesSetup()}<br>
- * 11.{@link #checkForConfig()}<br>
- * 12.{@link #checkForFabricLinux()}<br>
- * 13.{@link #checkForFabricWindows()}<br>
- * 14.{@link #checkForForgeLinux()}<br>
- * 15.{@link #checkForForgeWindows()}<br>
- * 16.{@link #checkForProperties()}<br>
- * 17.{@link #checkForIcon()}
+ * 10.{@link #getMinecraftManifestUrl()}<br>
+ * 11.{@link #getForgeManifestUrl()}<br>
+ * 12.{@link #getFabricManifestUrl()}<br>
+ * 13.{@link #filesSetup()}<br>
+ * 14.{@link #checkForConfig()}<br>
+ * 15.{@link #checkForFabricLinux()}<br>
+ * 16.{@link #checkForFabricWindows()}<br>
+ * 17.{@link #checkForForgeLinux()}<br>
+ * 18.{@link #checkForForgeWindows()}<br>
+ * 19.{@link #checkForProperties()}<br>
+ * 20.{@link #checkForIcon()}<br>
+ * 21.{@link #refreshValidationFiles()}<br>
+ * 22.{@link #downloadMinecraftManifest()}<br>
+ * 23.{@link #downloadFabricManifest()}<br>
+ * 24.{@link #downloadForgeManifest()}
  * <p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
@@ -162,7 +172,47 @@ public class DefaultFiles {
         return FILE_FABRIC_LINUX;
     }
 
-    /** Calls individual methods which check for existence of default files. Only this method should be called to check
+    /**
+     * Getter for Mojang's Minecraft version-manifest.
+     * @return String. Returns the URL to the JSON-file for use in {@link #downloadMinecraftManifest()}
+     */
+    URL getMinecraftManifestUrl() {
+        URL minecraftURL = null;
+        String minecraftManifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+        try {
+            minecraftURL = new URL(minecraftManifest); }
+        catch (IOException ex) { LOG.error(ex); }
+        return minecraftURL;
+    }
+
+    /**
+     * Getter for Forge's version-manifest.
+     * @return String. Returns the URL to the JSON-file for use in {@link #downloadForgeManifest()}
+     */
+    URL getForgeManifestUrl() {
+        URL forgeURL = null;
+        String forgeManifest = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+        try {
+            forgeURL = new URL(forgeManifest); }
+        catch (IOException ex) { LOG.error(ex); }
+        return forgeURL;
+    }
+
+    /**
+     * Getter for Fabric's version-manifest.
+     * @return String. Returns the URL to the JSON-file for use in {@link #downloadFabricManifest()}
+     */
+    URL getFabricManifestUrl() {
+        URL fabricURL = null;
+        String fabricManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
+        try {
+            fabricURL = new URL(fabricManifest); }
+        catch (IOException ex) { LOG.error(ex); }
+        return fabricURL;
+    }
+
+    /**
+     * Calls individual methods which check for existence of default files. Only this method should be called to check
      * for existence of all default files.<p>
      * If any file was newly generated from it's template, a warning is printed informing the user about said newly
      * generated file. If every file was present and none was generated, "Setup completed." is printed to the console
@@ -173,6 +223,17 @@ public class DefaultFiles {
 
         try { Files.createDirectories(Paths.get("./server_files")); }
         catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+
+        try { Files.createDirectories(Paths.get("./work")); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+
+        try { Files.createDirectories(Paths.get("./work/temp")); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+
+        try { Files.createDirectories(Paths.get("./server-packs")); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+
+        refreshValidationFiles();
 
         boolean doesConfigExist         = checkForConfig();
         boolean doesFabricLinuxExist    = checkForFabricLinux();
@@ -201,7 +262,8 @@ public class DefaultFiles {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.filessetup.finish"));
         }
     }
-    /** Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new
+    /**
+     * Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new
      * config file is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
@@ -242,7 +304,8 @@ public class DefaultFiles {
         return firstRun;
     }
 
-    /** Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
+    /**
+     * Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -269,7 +332,8 @@ public class DefaultFiles {
         return firstRun;
     }
 
-    /** Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
+    /**
+     * Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -296,7 +360,8 @@ public class DefaultFiles {
         return firstRun;
     }
 
-    /** Checks for existence of Forge start script for Linux. If it is not found, it is generated.
+    /**
+     * Checks for existence of Forge start script for Linux. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -323,7 +388,8 @@ public class DefaultFiles {
         return firstRun;
     }
 
-    /** Checks for existence of Forge start script for Windows. If it is not found, it is generated.
+    /**
+     * Checks for existence of Forge start script for Windows. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -350,7 +416,8 @@ public class DefaultFiles {
         return firstRun;
     }
 
-    /** Checks for existence of server.properties file. If it is not found, it is generated.
+    /**
+     * Checks for existence of server.properties file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -377,7 +444,8 @@ public class DefaultFiles {
         return firstRun;
     }
 
-    /** Checks for existence of server-icon.png file. If it is not found, it is generated.
+    /**
+     * Checks for existence of server-icon.png file. If it is not found, it is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -403,4 +471,178 @@ public class DefaultFiles {
         }
         return firstRun;
     }
+
+    /**
+     * Checks for existence of minecraft-manifest.json, fabric-manifest.xml and forge-manifest.json and deletes them if
+     * they exist. Makes calls to {@link #downloadMinecraftManifest()}, {@link #downloadFabricManifest()} and {@link #downloadForgeManifest()}
+     * in order to update them.
+     */
+    void refreshValidationFiles() {
+        // TODO: Replace with lang key
+        if (new File("./work/minecraft-manifest.json").delete()) {
+
+            LOG.info("Old Minecraft manifest deleted.");
+        }
+
+        if (new File("./work/fabric-manifest.xml").delete()) {
+
+            LOG.info("Old Fabric manifest deleted.");
+        }
+
+        if (new File("./work/forge-manifest.json").delete()) {
+
+            LOG.info("Old Forge manifest deleted.");
+        }
+
+        downloadMinecraftManifest();
+        downloadFabricManifest();
+        downloadForgeManifest();
+    }
+
+    /**
+     * Downloads the Minecraft version manifest for version validation.
+     */
+    void downloadMinecraftManifest() {
+        try {
+            URL manifestJsonURL = getMinecraftManifestUrl();
+            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+            FileOutputStream downloadManifestOutputStream;
+
+            try {
+                downloadManifestOutputStream = new FileOutputStream("./work/minecraft-manifest.json");
+            } catch (FileNotFoundException ex) {
+
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isminecraftversioncorrect"), ex);
+
+                File file = new File("./work/minecraft-manifest.json");
+
+                if (!file.exists()) {
+
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.create"));
+                    boolean jsonCreated = file.createNewFile();
+
+                    if (jsonCreated) {
+
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.created"));
+
+                    } else {
+
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.parse"));
+                    }
+                }
+                downloadManifestOutputStream = new FileOutputStream("./work/minecraft-manifest.json");
+            }
+            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
+            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            downloadManifestOutputStream.flush();
+            downloadManifestOutputStream.close();
+
+            readableByteChannel.close();
+            downloadManifestOutputStreamChannel.close();
+
+        } catch (Exception ex) {
+            // TODO: Replace with lang key
+            LOG.error("Error during download of Minecraft manifest.", ex);
+        }
+    }
+
+    /**
+     * Downloads the Fabric version manifest for version validation.
+     */
+    void downloadFabricManifest() {
+        try {
+            URL manifestJsonURL = getFabricManifestUrl();
+
+            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+
+            FileOutputStream downloadManifestOutputStream;
+
+            try {
+                downloadManifestOutputStream = new FileOutputStream("./work/fabric-manifest.xml");
+            } catch (FileNotFoundException ex) {
+
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isfabricversioncorrect"), ex);
+                File file = new File("fabric-manifest.xml");
+
+                if (!file.exists()) {
+
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isfabricversioncorrect.create"));
+                    boolean jsonCreated = file.createNewFile();
+
+                    if (jsonCreated) {
+
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isfabricversioncorrect.created"));
+
+                    } else {
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.parse"));
+                    }
+                }
+                downloadManifestOutputStream = new FileOutputStream("./work/fabric-manifest.xml");
+            }
+            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
+            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            downloadManifestOutputStream.flush();
+            downloadManifestOutputStream.close();
+
+            readableByteChannel.close();
+            downloadManifestOutputStreamChannel.close();
+
+        } catch (Exception ex) {
+            // TODO: Replace with lang key
+            LOG.error("Error during download of Fabric manifest.", ex);
+        }
+    }
+
+    /**
+     * Downloads the Forge version manifest for version validation.
+     */
+    void downloadForgeManifest() {
+        try {
+            URL manifestJsonURL = getForgeManifestUrl();
+            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+            FileOutputStream downloadManifestOutputStream;
+
+            try {
+
+                downloadManifestOutputStream = new FileOutputStream("./work/forge-manifest.json");
+
+            } catch (FileNotFoundException ex) {
+
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isforgeversioncorrect"), ex);
+                File file = new File("forge-manifest.json");
+
+                if (!file.exists()) {
+
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isforgeversioncorrect.create"));
+
+                    boolean jsonCreated = file.createNewFile();
+
+                    if (jsonCreated) {
+
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isforgeversioncorrect.created"));
+                    } else {
+
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isforgeversioncorrect.parse"));
+                    }
+                }
+                downloadManifestOutputStream = new FileOutputStream("./work/forge-manifest.json");
+            }
+            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
+
+            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            downloadManifestOutputStream.flush();
+            downloadManifestOutputStream.close();
+
+            readableByteChannel.close();
+            downloadManifestOutputStreamChannel.close();
+
+        } catch (Exception ex) {
+            // TODO: Replace with lang key
+            LOG.error("Error during download of Forge manifest.", ex);
+        }
+    }
+
+
 }
