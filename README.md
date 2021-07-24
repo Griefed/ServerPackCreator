@@ -49,11 +49,24 @@ Use at your own risk! Be aware that data loss is possible.
 --------- | ---------  | ------
 [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/)
 
+# Screenshots
+
+GUI, CLI and webservice
+
 ![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
 
 ---
 
-# Features
+# 1. Known issues
+
+A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
+
+# 2. Contributing
+
+Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.
+
+
+# 3. Features
 
 1. **Generate a config step-by-step by running with argument**`-cgen`
 2. **Download a modpack and create a server pack from it.**
@@ -77,7 +90,7 @@ Use at your own risk! Be aware that data loss is possible.
     1. Logs from last run in separate tab
     1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
 
-# Versions
+# 4. Versions
 
 Consider major version incompatible to each other. Meaning, configs from 1.x.x are incompatible with version 2.x.x etc.
 
@@ -87,7 +100,7 @@ Version mask | Description
 **2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
 **3.x.x** | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`
 
-# Configuration
+# 5. Configuration
 
 After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator resides in.
 Inside it are files you can customize, so they suit your modpack and server pack:
@@ -98,14 +111,14 @@ Inside it are files you can customize, so they suit your modpack and server pack
 If you wish to re-generate the default-files, simply delete any one of the previously mentioned files, run ServerPackCreator again, and the new template-file(s) will be generated in `server_files`
 
 Running ServerPackCreator.jar with the `-cli`-argument will guide you through the generation of a config-file, should none exist. Alternatively, run ServerPackCreator with the `-cgen` argument to create a new config file.
-Should you be using ServerPackCreator.exe, the default/template-files will be generated automatically, if they do not exist yet. 
+Should you be using ServerPackCreator.exe, the default/template-files will be generated automatically, if they do not exist yet.
 An example for a fully configured `serverpackcreator.conf` can be viewed [here](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/examples/serverpackcreator.example).
 Detailed list of all template files:
 
 File | Description
 ---- | ----
 serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/serverpackcreator.conf).
-server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties). 
+server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties).
 server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server-icon.png).
 start-fabric.bat | Fabric server start script for windows systems. See [start-fabric.bat](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-fabric.bat).
 start-fabric.sh | Fabric server start script for linux systems. See [start-fabric.sh](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-fabric.sh).
@@ -118,7 +131,7 @@ Variable | Description
 -------- | -----------
 modpackDir | The path to the directory where your modpack resides in. Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4, version 4.6.7: `430517,3250155`. Specifying said combination would download and install version 4.6.7 of my modpack Survive Create Prosper, gather information, write a new config file and therefore allow you to generate server packs for any modpack on CurseForge. Special thanks to [TheRandomLabs](https://github.com/TheRandomLabs) and their [CurseAPI](https://github.com/TheRandomLabs/CurseAPI).
 clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look.
-copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. A suggestion-list is created when setting `modpackDir`to a projectID,fileID-combination. 
+copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. A suggestion-list is created when setting `modpackDir`to a projectID,fileID-combination.
 includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
 javaPath | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.
 minecraftVersion | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.
@@ -133,12 +146,12 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 
 ---
 
-# Running
+# 6. Running
 
 In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
 The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
 
-## Localization
+## 6.1 Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the lang.properties-file with your specified locale.
@@ -147,16 +160,333 @@ If you wish to run ServerPackCreator with your locale (if it is already supporte
 
 See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/java/de/griefed/serverpackcreator/i18n/LocalizationManager.java) in `LocalizationManager.java` for a list of supported locales.
 
-## Commandline
+## 6.2 Using the GUI
 
-Guides on how to run ServerPackCreator via commandline are available at:
-1. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-Windows (for Windows) or
-2. https://github.com/Griefed/ServerPackCreator/wiki/Running-ServerPackCreator-on-macOS (for macOS)
-3. https://wiki.griefed.de/en/Documentation/ServerPackCreator/HowTo
+You want to create a server pack for your modpack, right?
 
-(macOS guide by [whitebear60](https://github.com/whitebear60))
+There are a couple of things you need to do in order to create a server pack for your modpack:
 
-## Docker
+**1:** Find out whether any mod in your modpack is a clientside-only mod. Those are often mods which only add things to Minecraft which are of a graphical nature, like UI stuff. You need to know whether any mod in your modpack is a clientside-only mod, because having clientside-only mods in your server pack could crash your server unexpectedly.
+
+**2:** Find the modloader, the modloader version and which Minecraft version your modpack is for.
+
+**3:** Consider the folders in your modpack directory which you must inlcude in server pack in order for your server to work. Usually folders like `config` ,`mods` ,`scripts` and so on.
+
+Those are the most important parts in making a server pack, I find.
+
+If you're on Windows, go to <https://github.com/Griefed/ServerPackCreator/releases/latest> and download `serverpackcreator-X.X.X.exe` and place it somewhere you will remember. If you're on Linux or Mac, download the `serverpackcreator-X.X.X.jar`
+
+The .exe can be started with a regular double click. The .jar needs to be started from the CLI with `java -jar serverpackcreator-X.X.X.jar`.
+
+The first run of ServerPackCreator will create a couple of default files in the directory you started it in. If you plan on including any of these in your server pack, make sure you've customized them to your needs. They're in a directory called `server_files` in the same directory in which you executed `ServerPackCreator-X.X.X.jar` or `ServerPackCreator-X.X.X.exe` and will contain the following files which you can customize to your hearts content:
+
+- `server.properties`
+
+- `server-icon.png`
+
+- `start-fabric.bat` and `start-fabric.sh`
+
+- `start-forge.bat` and `start-forge.sh`
+
+Once the ServerPackCreator window opened, you need to fill in all the information you gathered in the previously mentioned steps 1 to 3 into the designated textfields.
+From top to bottom:
+
+**Enter the path to your modpack directory:** You will also need to configure ServerPackCreator to point at the directory your modpack files are in. Click the folder icon on the right hand side to the first textfield, which will open your file explorer so you can browse to and select your modpack directory.
+
+**Enter the list of clientside-only mods in your modpack:** Enter the list of clientside-only mods for your modpack into the second textfield.Every entry must be separated by a "," and NOT contain special characters such as [ \] ( ) \ / ;
+
+**Enter the list of directories or files in your modpack to include in the server pack:** Enter the list of folders of your modpack which need to be included in your server pack. Every entry must be separated by a "," and NOT contain special characters such as [ \] ( ) \ / ;
+
+**Enter the path to your Java executable/binary (optional):** If you are not sure where your java installation is located at, you can leave it blank and ServerPackCreator will try to determine said path by itself.
+
+**Enter the Minecraft version your modpack uses:** Enter the Minecraft version your modpack runs in
+
+**Enter the modloader your modpack uses:** Enter the modloader your modpack runs with. Must be either Forge or Fabric. Other modloaders are not supported.
+
+**Enter the version of the modloader your modpack uses:** Enter the version of the modloader your modpack uses.
+
+Last but not least, checkboxes:
+
+**"Install modloader server in server pack?"** Does what it says on the tin. Whehter to install the Forge/Fabric server for the version you specified.
+
+**"Include server-icon.png in server pack?"** Whether to include a custom server-icon.png in your server pack.
+
+**"Include server.properties in server pack"** Whether to include a custom server.properties in your server pack.
+
+**"Include start scripts in server pack?"** Whether to include custom start scripts for your server pack.
+
+**"Create ZIP-archive of server pack?"** Whether ServerPackCreator should create a zipped archive of your server pack.
+
+After you've customized and configured everything to your liking, click the button on the bottom. ServerPackCreator will check your configuration for errors and start generating your server pack should no errors be detected. When the server pack is finished, a prompt will open which will ask you whether you want to browse your newly created server pack in your file explorer.
+
+That's pretty much it! Sounds like a lot, but honestly, all the stuff you need to do in order to configure ServerPackCreator you pretty much need to do anyway if you want to create a server pack.
+
+Have fun!
+
+## 6.3 Using the Command-line Interface
+
+### 6.3.1 Windows
+
+**1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
+
+**2.** Copy the .jar file to the partent directory of your modpack. Example:
+![location](https://i.griefed.de/images/2021/03/03/run_windows1.png)
+
+**3.** Open a command prompt by Shift-Right-Clicking into a free space of the explorer window, followed by a click on "Open command prompt here":
+![command](https://i.griefed.de/images/2021/03/03/run_windows2.png)
+
+**4.** Start the initial setup of ServerPackCreator by running it with the command: `java -jar ServerPackCreator-X.X.X.jar` (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
+
+This will generate the default files of ServerpackCreator and tell you to customize these files before running again. Example for the directory above:
+```console
+.
+├── serverpackcreator.conf
+├── logs
+│   ├── serverpackcreator.log
+│   └── modloader_installer.log
+├── server_files
+│   ├── server-icon.png
+│   ├── server.properties
+│   ├── start-fabric.bat
+│   ├── start-fabric.sh
+│   ├── start-forge.bat
+│   └── start-forge.sh
+└── ServerPackCreator.jar
+```
+
+With the example above, the settings would look exactly like they are already set in the serverpackcreator.conf (or creator.conf if using older version). Note that modpackDir points at a directory *relative* to the ServerPackCreator.jar. Absolute paths *should* be usable, but are currently untested.
+
+Configure the config file to your liking. Double check the path to your Java installation if you intend on having SPC install the modloader-server.
+
+For a detailed explanation of the configuration, check chapter 5. Configuration
+
+**5.** After you double checked that you've set up your serverpackcreator.conf it is time to run ServerPackCreator again. Simply run `java -jar ServerPackCreator-X.X.X.jar` again (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
+
+**6.** ServerPackCreator should now start telling you what it is currently doing. Logging of these actions may be very verbose, depending on which part SPC is currently working on. Should you have configured your config file correctly and should I have released a bug-free version of SPC, it will run until the console says "Done!".  (Depending on the hardware you are running on, this may take some time.)
+
+Included in one of the last messages by SPC is the location of your newly generated serverpack.
+
+If you've set `includeZipCreation` to true, there will also be a zip-file called `server_pack.zip` in your modpack folder.
+
+Please note: The zip file **does not** contain Mojang's minecraft-server.jar. Distributing Mojang's software is against their Terms of Service and End User License Agreement. The zip file *does* however, contain scripts for both Windows and Linux, to download the minecraft-server.jar for your serverpack. That means that Users who download your serverpack simply need to run either of those two scripts and it will download the needed file for their modded Minecraft server.
+
+Enjoy!
+
+Example after successfully running SPC:
+
+```console
+.
+├── serverpackcreator.conf
+├── logs
+│   ├── serverpackcreator.log
+│   └── modloader_installer.log
+├── server_files
+│   ├── server-icon.png
+│   ├── server.properties
+│   ├── start-fabric.bat
+│   ├── start-fabric.sh
+│   ├── start-forge.bat
+│   └── start-forge.sh
+├── ServerPackCreator-1.1.0.jar
+└── Survive Create Prosper 4
+    ├── background.gif
+    ├── config
+    ├── config.json
+    ├── defaultconfigs
+    ├── manifest.json
+    ├── mods
+    ├── natives
+    ├── packmenu
+    ├── scripts
+    ├── seeds
+    ├── server_pack
+    └── server_pack.zip
+```
+
+### 6.3.2 Linux
+
+**1.** Switch to a directory where you want ServerPackCreator to be stored in and where it can save and deploy all of its files.
+
+**2.** Create and save the following script to download the latest version of ServerPackCreator:
+```bash
+#!/bin/bash
+# Retrieve the latest version of ServerPackCreator
+
+VERSION=$(curl --silent "https://api.github.com/repos/Griefed/ServerPackCreator/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+
+echo "Latest ServerPackCreator  version is: $VERSION"
+
+echo ""
+
+echo "Retrieving..."
+
+curl -o ServerPackCreator-$VERSION.jar -L https://github.com/Griefed/ServerPackCreator/releases/download/$VERSION/serverpackcreator-$VERSION.jar
+
+if [ -f ServerPackCreator-$VERSION.jar ]; then
+  echo "Successfully retrieved ServerPackCreator version $VERSION"
+else
+  echo "Something seems to have gone wrong..."
+  echo "ServerPackCreator-$VERSION could not be found..."
+fi
+```
+
+Save it, `chmod +x` it, and run it.
+
+This script will download the latest version of ServerPackCreator from GitHub and safe it to a file called ServerPackCreator-(version).jar.
+
+**3.** Start the initial setup of ServerPackCreator by running it with the command: java -jar ServerPackCreator-X.X.X.jar (X.X.X corresponds to the version you downloaded.)
+
+This will generate the default files of ServerpackCreator and tell you to customize these files before running again. Example:
+
+```console
+.
+├── serverpackcreator.conf
+├── logs
+│   ├── serverpackcreator.log
+│   └── modloader_installer.log
+├── server_files
+│   ├── server-icon.png
+│   ├── server.properties
+│   ├── start-fabric.bat
+│   ├── start-fabric.sh
+│   ├── start-forge.bat
+│   └── start-forge.sh
+└── ServerPackCreator-X.X.X.jar
+```
+
+With the example above, the settings would look exactly like they are already set in the serverpackcreator.conf.
+
+Configure the config file to your liking. Double check the path to your Java installation if you intend on having SPC install the modloader-server.
+
+For a detailed explanation of the configuration, check chapter 5. Configuration.
+
+**6.** After you double checked that you've set up your serverpackcreator.conf (or creator.conf if using older version) it is time to run ServerPackCreator again. Simply run `java -jar ServerPackCreator-X.X.X.jar` again (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
+
+**7.** ServerPackCreator should now start telling you what it is currently doing. Logging of these actions may be very verbose, depending on which part SPC is currently working on. Should you have configured your config file correctly and should I have released a bug-free version of SPC, it will run until the console says "Done!".  (Depending on the hardware you are running on, this may take some time.)
+
+Included in one of the last messages by SPC is the location of your newly generated serverpack.
+
+If you've set `includeZipCreation` to true, there will also be a zip-file called `server_pack.zip` in your modpack folder.
+
+Please note: The zip file **does not** contain Mojang's minecraft-server.jar. Distributing Mojang's software is against their Terms of Service and End User License Agreement. The zip file *does* however, contain scripts for both Windows and Linux, to download the minecraft-server.jar for your serverpack. That means that Users who download your serverpack simply need to run either of those two scripts and it will download the needed file for their modded Minecraft server.
+
+Enjoy!
+
+Example after successfully running SPC:
+
+```console
+.
+├── serverpackcreator.conf
+├── logs
+│   ├── serverpackcreator.log
+│   └── modloader_installer.log
+├── server_files
+│   ├── server-icon.png
+│   ├── server.properties
+│   ├── start-fabric.bat
+│   ├── start-fabric.sh
+│   ├── start-forge.bat
+│   └── start-forge.sh
+├── ServerPackCreator-1.1.0.jar
+└── Survive Create Prosper 4
+    ├── background.gif
+    ├── config
+    ├── config.json
+    ├── defaultconfigs
+    ├── manifest.json
+    ├── mods
+    ├── natives
+    ├── packmenu
+    ├── scripts
+    ├── seeds
+    ├── server_pack
+    └── server_pack.zip
+```
+
+### 6.3.3 Mac
+
+(By user [whitebear60](https://github.com/whitebear60))
+
+**1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
+
+**2.** Copy the .jar file to the partent directory of your modpack. Example:
+![location](https://i.griefed.de/images/2021/03/05/3biap1.png)
+
+**3.** Open Terminal using Spotlight, Launchpad or by running `Terminal.app` from `/Applications/Utilities` folder
+
+**4.** Change the active directory to the one with ServerPackCreator jar and your modpacks.
+![command](https://i.griefed.de/images/2021/03/05/3bi9y1.png)
+
+**5.** Start the initial setup of ServerPackCreator by running it with the command: `java -jar ServerPackCreator-X.X.X.jar` (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
+
+This will generate the default files of ServerpackCreator and tell you to customize these files before running again. Example for the directory above:
+
+```console
+.
+├── serverpackcreator.conf
+├── logs
+│   ├── serverpackcreator.log
+│   └── modloader_installer.log
+├── server_files
+│   ├── server-icon.png
+│   ├── server.properties
+│   ├── start-fabric.bat
+│   ├── start-fabric.sh
+│   ├── start-forge.bat
+│   └── start-forge.sh
+└── ServerPackCreator.jar
+```
+
+With the example above, the settings would look exactly like they are already set in the serverpackcreator.conf. Note that modpackDir points at a directory *relative* to the ServerPackCreator.jar. Absolute paths *should* be usable, but are currently untested.
+
+Configure the config file to your liking. Double check the path to your Java installation if you intend on having SPC install the modloader-server.
+
+For a detailed explanation of the configuration, check chapter 5. Configuration
+
+**6.** After you double checked that you've set up your serverpackcreator.conf (or creator.conf if using older version) it is time to run ServerPackCreator again. Simply run `java -jar ServerPackCreator-X.X.X.jar` again (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
+
+**7.** ServerPackCreator should now start telling you what it is currently doing. Logging of these actions may be very verbose, depending on which part SPC is currently working on. Should you have configured your config file correctly and should I have released a bug-free version of SPC, it will run until the console says "Done!".  (Depending on the hardware you are running on, this may take some time.)
+
+Included in one of the last messages by SPC is the location of your newly generated serverpack.
+
+If you've set `includeZipCreation` to true, there will also be a zip-file called `server_pack.zip` in your modpack folder.
+
+Please note: The zip file **does not** contain Mojang's minecraft-server.jar. Distributing Mojang's software is against their Terms of Service and End User License Agreement. The zip file *does* however, contain scripts for both Windows and Linux, to download the minecraft-server.jar for your serverpack. That means that Users who download your serverpack simply need to run either of those two scripts and it will download the needed file for their modded Minecraft server.
+
+Enjoy!
+
+Example after successfully running SPC:
+
+```console
+.
+├── serverpackcreator.conf
+├── logs
+│   ├── serverpackcreator.log
+│   └── modloader_installer.log
+├── server_files
+│   ├── server-icon.png
+│   ├── server.properties
+│   ├── start-fabric.bat
+│   ├── start-fabric.sh
+│   ├── start-forge.bat
+│   └── start-forge.sh
+├── ServerPackCreator-1.1.0.jar
+└── Survive Create Prosper 4
+    ├── background.gif
+    ├── config
+    ├── config.json
+    ├── defaultconfigs
+    ├── manifest.json
+    ├── mods
+    ├── natives
+    ├── packmenu
+    ├── scripts
+    ├── seeds
+    ├── server_pack
+    └── server_pack.zip
+```
+
+## 6.4 Docker
 
 Creates a Container which runs [Griefed's](https://github.com/Griefed) [ServerPackCreator](https://github.com/Griefed/ServerPackCreator), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image.
 
@@ -178,10 +508,10 @@ Variable | Description
 TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
-MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.   
-STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice. 
+MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
+STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.
 
-### Using docker-compose:
+### 6.4.1 Using docker-compose:
 
 ```docker-compose.yml
 version: "2"
@@ -212,7 +542,7 @@ services:
       - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
 ```
 
-### Using CLI:
+### 6.4.2 Using CLI:
 
 ```bash
 docker create \
@@ -238,15 +568,15 @@ docker create \
   griefed/serverpackcreator:latest
 ```
 
-## Securing ServerPackCreator running as a webservice
+## 6.5 Securing ServerPackCreator running as a webservice
 
 Login and authentication will not be added to SPC running as a webservice, because that's a can of worms I do not want
 to open, but I will provide an example on how you can secure it by using [Authelia](https://github.com/authelia/authelia).
-TODO: Write small guide on running ServerPackCreator as webservice in Docker and secure it with Authelia. 
+TODO: Write small guide on running ServerPackCreator as webservice in Docker and secure it with Authelia.
 
 ---
 
-# Building ServerPackCreator locally
+# 7. Building ServerPackCreator locally
 
 Clone the webservice branch of the repository:
 
@@ -259,12 +589,3 @@ Build with:
 `gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe`
 
 ---
-
-# Known issues
-
-A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
-
-# Contributing
-
-If you're a Java Pro and your eyes bulge when looking at my code, by all means, you're welcome to help me improve it in any way, shape, or form.
-You're welcome to make [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md), or fork it and make your own version of it. It's LGPL-2.1 License for a reason. Do what you want with it.
