@@ -160,11 +160,10 @@ public class AboutTab extends Component {
             configURL = createHasteBinFromFile(FILE_CONFIG);
             serverpackcreatorlogURL = createHasteBinFromFile(LOG_SERVERPACKCREATOR);
 
-            // TODO: Replace with lang key
             textAreaContent = String.format(
                     "%s\n%s\n" +
                     "%s\n%s\n" +
-                    "Open in your browser or copy links to clipboard?",
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.action"),
                     LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.conf"),
                     configURL,
                     LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.spclog"),

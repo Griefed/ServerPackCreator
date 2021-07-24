@@ -74,11 +74,11 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  */
 class CreateServerPackTest {
 
-    private CreateServerPack createServerPack;
-    private DefaultFiles filesSetup;
-    private CurseCreateModpack curseCreateModpack;
-    private LocalizationManager localizationManager;
-    private Configuration configuration;
+    private final CreateServerPack createServerPack;
+    private final DefaultFiles filesSetup;
+    private final CurseCreateModpack curseCreateModpack;
+    private final LocalizationManager localizationManager;
+    private final Configuration configuration;
 
     CreateServerPackTest() {
         localizationManager = new LocalizationManager();
@@ -481,7 +481,6 @@ class CreateServerPackTest {
     void zipBuilderFabricTest() throws IOException {
         Files.createDirectories(Paths.get("./backend/test/resources/fabric_tests/server_pack"));
         String minecraftVersion = "1.16.5";
-        String modLoader = "Fabric";
         String modpackDir = "backend/test/resources/fabric_tests";
         createServerPack.zipBuilder(modpackDir, minecraftVersion, Boolean.TRUE);
         Assertions.assertTrue(new File("backend/test/resources/fabric_tests/server_pack.zip").exists());
@@ -492,7 +491,6 @@ class CreateServerPackTest {
     void zipBuilderForgeTest() throws IOException {
         Files.createDirectories(Paths.get("./backend/test/resources/forge_tests/server_pack"));
         String minecraftVersion = "1.16.5";
-        String modLoader = "Forge";
         String modpackDir = "./backend/test/resources/forge_tests";
         createServerPack.zipBuilder(modpackDir, minecraftVersion, Boolean.TRUE);
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/server_pack.zip").exists());
@@ -607,6 +605,7 @@ class CreateServerPackTest {
         new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void cleanUpServerPackForgeTest() throws IOException {
         String modLoader = "Forge";

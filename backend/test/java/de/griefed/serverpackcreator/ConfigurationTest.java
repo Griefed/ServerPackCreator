@@ -89,10 +89,10 @@ class ConfigurationTest {
     @Mock
     Logger appLogger;
 
-    private Configuration configuration;
-    private CurseCreateModpack curseCreateModpack;
-    private LocalizationManager localizationManager;
-    private DefaultFiles defaultFiles;
+    private final Configuration configuration;
+    private final CurseCreateModpack curseCreateModpack;
+    private final LocalizationManager localizationManager;
+    private final DefaultFiles defaultFiles;
 
     ConfigurationTest() {
         localizationManager = new LocalizationManager();
@@ -296,6 +296,7 @@ class ConfigurationTest {
         Assertions.assertEquals(fileID, configuration.getProjectFileID());
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void checkConfigFileTest() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
@@ -305,6 +306,7 @@ class ConfigurationTest {
         new File("./serverpackcreator.conf").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void isDirTest() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
@@ -344,6 +346,7 @@ class ConfigurationTest {
         new File("./serverpackcreator.conf").delete();
     }
 
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "OptionalGetWithoutIsPresent"})
     @Test
     void isCurseTest() throws CurseException, IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
@@ -377,6 +380,14 @@ class ConfigurationTest {
         Assertions.assertTrue(configuration.isCurse());
 
         new File("./serverpackcreator.conf").delete();
+        String deleteFolder = "Vanilla Forge";
+        if (new File(deleteFolder).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(deleteFolder);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     @Test

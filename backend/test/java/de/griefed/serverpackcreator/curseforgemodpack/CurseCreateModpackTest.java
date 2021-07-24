@@ -58,8 +58,8 @@ class CurseCreateModpackTest {
     @Mock
     Logger appLogger;
 
-    private CurseCreateModpack curseCreateModpack;
-    private LocalizationManager localizationManager;
+    private final CurseCreateModpack curseCreateModpack;
+    private final LocalizationManager localizationManager;
 
     CurseCreateModpackTest() {
         localizationManager = new LocalizationManager();
@@ -122,6 +122,14 @@ class CurseCreateModpackTest {
         String deleteProject = String.format("./backend/test/resources/forge_tests/%s", projectName);
         if (new File(deleteProject).isDirectory()) {
             Path pathToBeDeleted = Paths.get(deleteProject);
+            Files.walk(pathToBeDeleted)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        String deleteFolder = "Vanilla Forge";
+        if (new File(deleteFolder).isDirectory()) {
+            Path pathToBeDeleted = Paths.get(deleteFolder);
             Files.walk(pathToBeDeleted)
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
@@ -261,6 +269,7 @@ class CurseCreateModpackTest {
         Assertions.assertFalse(curseCreateModpack.checkCurseForgeDir(modpackdir));
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void unzipArchiveTest() throws IOException {
         String modpackDir = "backend/test/resources/curseforge_tests";
@@ -294,7 +303,7 @@ class CurseCreateModpackTest {
                             REPLACE_EXISTING
                     );
 
-                    appLogger.debug(String.format(localizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath().toString()));
+                    appLogger.debug(String.format(localizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath()));
                 } catch (IOException ex) {
                     if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
                         appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);

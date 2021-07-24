@@ -20,9 +20,7 @@
 package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.MockitoAnnotations;
 
 import java.io.File;
@@ -31,7 +29,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * <strong>Table of tests</strong>
@@ -71,8 +71,8 @@ import java.util.Comparator;
  */
 class DefaultFilesTest {
 
-    private DefaultFiles defaultFiles;
-    private LocalizationManager localizationManager;
+    private final DefaultFiles defaultFiles;
+    private final LocalizationManager localizationManager;
 
     DefaultFilesTest() {
         localizationManager = new LocalizationManager();

@@ -41,10 +41,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -1419,7 +1415,7 @@ public class Configuration {
 
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
 
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.latestfabricloader.created"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.latestfabricloader.created"));
 
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             result = "0.11.6";
@@ -1816,35 +1812,35 @@ public class Configuration {
                         "%s\nincludeServerProperties = %b\n\n" +
                         "%s\nincludeStartScripts = %b\n\n" +
                         "%s\nincludeZipCreation = %b\n",
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.clientmods"), clientMods,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.copydirs"), copyDirs.replace("\\","/"),
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.includeserverinstallation"), includeServer,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.javapath"), javaPath.replace("\\","/"),
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.minecraftversion"), minecraftVersion,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.modloader"), modLoader,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.modloaderversion"), modLoaderVersion,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.includeservericon"), includeIcon,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.includeserverproperties"), includeProperties,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.includestartscripts"), includeScripts,
-                LOCALIZATIONMANAGER.getLocalizedString("filessetup.writeconfigtofile.includezipcreation"), includeZip
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), clientMods,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), copyDirs.replace("\\","/"),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverinstallation"), includeServer,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javapath"), javaPath.replace("\\","/"),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.minecraftversion"), minecraftVersion,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modloader"), modLoader,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modloaderversion"), modLoaderVersion,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeservericon"), includeIcon,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverproperties"), includeProperties,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includestartscripts"), includeScripts,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includezipcreation"), includeZip
         );
 
         if (!isTemporary) {
             if (getConfigFile().exists()) {
                 boolean delConf = getConfigFile().delete();
                 if (delConf) {
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.writeconfigtofile.config"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.config"));
                 } else {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.writeconfigtofile.config"));
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile.config"));
                 }
             }
             if (getOldConfigFile().exists()) {
                 boolean delOldConf = getOldConfigFile().delete();
                 if (delOldConf) {
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.writeconfigtofile.old"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.old"));
                 } else {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.writeconfigtofile.old"));
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile.old"));
                 }
             }
         }
@@ -1854,9 +1850,9 @@ public class Configuration {
             writer.write(configString);
             writer.close();
             configWritten = true;
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.writeconfigtofile.confignew"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.confignew"));
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.writeconfigtofile"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile"), ex);
         }
 
         return configWritten;

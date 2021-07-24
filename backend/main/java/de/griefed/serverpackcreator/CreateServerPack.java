@@ -29,7 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -236,39 +235,39 @@ public class CreateServerPack {
             if (CONFIGURATION.getIncludeServerInstallation()) {
                 installServer(CONFIGURATION.getModLoader(), CONFIGURATION.getModpackDir(), CONFIGURATION.getMinecraftVersion(), CONFIGURATION.getModLoaderVersion(), CONFIGURATION.getJavaPath());
             } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.server"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
             }
 
             // If true, copy the server-icon.png from server_files to the server pack.
             if (CONFIGURATION.getIncludeServerIcon()) {
                 copyIcon(CONFIGURATION.getModpackDir());
             } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.icon"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
             }
 
             // If true, copy the server.properties from server_files to the server pack.
             if (CONFIGURATION.getIncludeServerProperties()) {
                 copyProperties(CONFIGURATION.getModpackDir());
             } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.properties"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
             }
 
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (CONFIGURATION.getIncludeZipCreation()) {
                 zipBuilder(CONFIGURATION.getModpackDir(), CONFIGURATION.getMinecraftVersion(), CONFIGURATION.getIncludeServerInstallation());
             } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.zip"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
             }
 
             // Inform user about location of newly generated server pack.
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.serverpack"), CONFIGURATION.getModpackDir()));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.archive"), CONFIGURATION.getModpackDir()));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("handler.log.info.runincli.finish"));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), CONFIGURATION.getModpackDir()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), CONFIGURATION.getModpackDir()));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             return true;
 
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("handler.log.error.runincli"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("main.log.error.runincli"));
             return false;
         }
     }
@@ -371,7 +370,6 @@ public class CreateServerPack {
      * @param directoriesToCopy String List. All directories and files therein to copy to the server pack.
      * @param clientMods String List. List of clientside-only mods to exclude from the server pack.
      */
-    // TODO: Split into methods for dir copy and file copy to make reading easier
     void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods) {
         String serverPath = String.format("%s/server_pack", modpackDir);
 
@@ -399,6 +397,7 @@ public class CreateServerPack {
                 } catch (IOException ex) {
                     LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles"), ex));
                 }
+
 
             } else if (directory.startsWith("saves/")) {
 
@@ -487,8 +486,6 @@ public class CreateServerPack {
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles"), ex);
                 }
             }
-
-
         }
     }
 

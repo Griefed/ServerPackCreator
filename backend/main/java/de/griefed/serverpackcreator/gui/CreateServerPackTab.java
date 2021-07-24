@@ -849,9 +849,10 @@ public class CreateServerPackTab extends JComponent {
                 textModpackDir.setText(config.getString("modpackDir"));
 
                 if (config.getStringList("clientMods").isEmpty()) {
+
                     textClientMods.setText(CONFIGURATION.buildString(CONFIGURATION.getFallbackModsList().toString()));
-                    // TODO: Replace with lang key
-                    LOG.debug("Set clientMods from fallback list.");
+                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textclientmods.fallback"));
+
                 } else {
                     textClientMods.setText(config.getStringList("clientMods").toString());
                 }
@@ -859,9 +860,10 @@ public class CreateServerPackTab extends JComponent {
                 textCopyDirs.setText(CONFIGURATION.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
 
                 if (!CONFIGURATION.checkJavaPath(config.getString("javaPath"))) {
+
                     textJavaPath.setText(CONFIGURATION.getJavaPathFromSystem(""));
-                    // TODO: Replace with lang key
-                    LOG.debug("Set javaPath from system environment.");
+                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textjavapath.fallback"));
+
                 } else {
                     textJavaPath.setText(config.getString("javaPath"));
                 }

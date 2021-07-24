@@ -22,10 +22,8 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.URL;
@@ -219,19 +217,19 @@ public class DefaultFiles {
      * and log.
      */
     void filesSetup() {
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.filessetup.enter"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.enter"));
 
         try { Files.createDirectories(Paths.get("./server_files")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
 
         try { Files.createDirectories(Paths.get("./work")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
 
         try { Files.createDirectories(Paths.get("./work/temp")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
 
         try { Files.createDirectories(Paths.get("./server-packs")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
 
         refreshValidationFiles();
 
@@ -252,14 +250,14 @@ public class DefaultFiles {
                 doesPropertiesExist    ||
                 doesIconExist) {
 
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning1"));
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning2"));
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning3"));
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.warn.filessetup.warning0"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning1"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning2"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning3"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
 
         } else {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.filessetup.finish"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.finish"));
         }
     }
     /**
@@ -276,11 +274,11 @@ public class DefaultFiles {
 
                 boolean isOldConfigDeleted = getOldConfigFile().delete();
                 if (isOldConfigDeleted) {
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforconfig.old"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
                 }
 
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforconfig.old"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforconfig.old"), ex);
             }
         } else if (!getConfigFile().exists()) {
             try {
@@ -291,12 +289,12 @@ public class DefaultFiles {
                     link.close();
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforconfig.config"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforconfig.config"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforconfig.config"), ex);
                     firstRun = true;
                 }
             }
@@ -319,12 +317,12 @@ public class DefaultFiles {
                     link.close();
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforfabriclinux"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfabriclinux"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforfabriclinux"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforfabriclinux"), ex);
                     firstRun = true;
                 }
             }
@@ -347,12 +345,12 @@ public class DefaultFiles {
                     link.close();
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforfabricwindows"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfabricwindows"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforfabricwindows"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforfabricwindows"), ex);
                     firstRun = true;
                 }
             }
@@ -375,12 +373,12 @@ public class DefaultFiles {
                     link.close();
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforforgelinux"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforforgelinux"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforforgelinux"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforforgelinux"), ex);
                     firstRun = true;
                 }
             }
@@ -403,12 +401,12 @@ public class DefaultFiles {
                     link.close();
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforforgewindows"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforforgewindows"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforforgewindows"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforforgewindows"), ex);
                     firstRun = true;
                 }
             }
@@ -431,12 +429,12 @@ public class DefaultFiles {
                     link.close();
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforproperties"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforproperties"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforproperties"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforproperties"), ex);
                     firstRun = true;
                 }
             }
@@ -459,12 +457,12 @@ public class DefaultFiles {
                     link.close();
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.info.checkforicon"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforicon"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("filessetup.log.error.checkforicon"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforicon"), ex);
                     firstRun = true;
                 }
             }
@@ -478,20 +476,19 @@ public class DefaultFiles {
      * in order to update them.
      */
     void refreshValidationFiles() {
-        // TODO: Replace with lang key
         if (new File("./work/minecraft-manifest.json").delete()) {
 
-            LOG.info("Old Minecraft manifest deleted.");
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.minecraftmanifest.delete"));
         }
 
         if (new File("./work/fabric-manifest.xml").delete()) {
 
-            LOG.info("Old Fabric manifest deleted.");
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricmanifest.delete"));
         }
 
         if (new File("./work/forge-manifest.json").delete()) {
 
-            LOG.info("Old Forge manifest deleted.");
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest.delete"));
         }
 
         downloadMinecraftManifest();
@@ -512,22 +509,22 @@ public class DefaultFiles {
                 downloadManifestOutputStream = new FileOutputStream("./work/minecraft-manifest.json");
             } catch (FileNotFoundException ex) {
 
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isminecraftversioncorrect"), ex);
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.minecraftmanifest"), ex);
 
                 File file = new File("./work/minecraft-manifest.json");
 
                 if (!file.exists()) {
 
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.create"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isminecraftversioncorrect.create"));
                     boolean jsonCreated = file.createNewFile();
 
                     if (jsonCreated) {
 
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isminecraftversioncorrect.created"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isminecraftversioncorrect.created"));
 
                     } else {
 
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.parse"));
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.minecraftmanifest.parse"));
                     }
                 }
                 downloadManifestOutputStream = new FileOutputStream("./work/minecraft-manifest.json");
@@ -542,8 +539,7 @@ public class DefaultFiles {
             downloadManifestOutputStreamChannel.close();
 
         } catch (Exception ex) {
-            // TODO: Replace with lang key
-            LOG.error("Error during download of Minecraft manifest.", ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.minecraftmanifest"), ex);
         }
     }
 
@@ -562,20 +558,20 @@ public class DefaultFiles {
                 downloadManifestOutputStream = new FileOutputStream("./work/fabric-manifest.xml");
             } catch (FileNotFoundException ex) {
 
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isfabricversioncorrect"), ex);
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricmanifest"), ex);
                 File file = new File("fabric-manifest.xml");
 
                 if (!file.exists()) {
 
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isfabricversioncorrect.create"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isfabricversioncorrect.create"));
                     boolean jsonCreated = file.createNewFile();
 
                     if (jsonCreated) {
 
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isfabricversioncorrect.created"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isfabricversioncorrect.created"));
 
                     } else {
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.parse"));
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricmanifest.parse"));
                     }
                 }
                 downloadManifestOutputStream = new FileOutputStream("./work/fabric-manifest.xml");
@@ -590,8 +586,7 @@ public class DefaultFiles {
             downloadManifestOutputStreamChannel.close();
 
         } catch (Exception ex) {
-            // TODO: Replace with lang key
-            LOG.error("Error during download of Fabric manifest.", ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricmanifest"), ex);
         }
     }
 
@@ -610,21 +605,21 @@ public class DefaultFiles {
 
             } catch (FileNotFoundException ex) {
 
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.debug.isforgeversioncorrect"), ex);
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest"), ex);
                 File file = new File("forge-manifest.json");
 
                 if (!file.exists()) {
 
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isforgeversioncorrect.create"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isforgeversioncorrect.create"));
 
                     boolean jsonCreated = file.createNewFile();
 
                     if (jsonCreated) {
 
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.isforgeversioncorrect.created"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.isforgeversioncorrect.created"));
                     } else {
 
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isforgeversioncorrect.parse"));
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.forgemanifest.parse"));
                     }
                 }
                 downloadManifestOutputStream = new FileOutputStream("./work/forge-manifest.json");
@@ -639,8 +634,7 @@ public class DefaultFiles {
             downloadManifestOutputStreamChannel.close();
 
         } catch (Exception ex) {
-            // TODO: Replace with lang key
-            LOG.error("Error during download of Forge manifest.", ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.forgemanifest"), ex);
         }
     }
 
