@@ -559,7 +559,7 @@ class ConfigurationTest {
 
     @Test
     void getJavaPathFromSystemTest() {
-        String result = configuration.getJavaPathFromSystem("");
+        String result = configuration.getJavaPathFromSystem();
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
         if (autoJavaPath.startsWith("C:")) {
             autoJavaPath = String.format("%s.exe", autoJavaPath);

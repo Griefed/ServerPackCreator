@@ -124,7 +124,7 @@ public class ConfigurationService {
 
     private void setJavaPath(Config config) {
         if (!CONFIGURATION.checkJavaPath(config.getString("javaPath"))) {
-            this.javaPath = CONFIGURATION.getJavaPathFromSystem("");
+            this.javaPath = CONFIGURATION.getJavaPathFromSystem();
         } else {
             this.javaPath = config.getString("javaPath");
         }

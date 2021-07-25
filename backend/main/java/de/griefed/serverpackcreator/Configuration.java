@@ -91,7 +91,7 @@ import java.util.*;
  * 42.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
  * 43.{@link #checkModpackDir(String)}<br>
  * 44.{@link #checkCopyDirs(List, String)}<br>
- * 45.{@link #getJavaPathFromSystem(String)}<br>
+ * 45.{@link #getJavaPathFromSystem()}<br>
  * 46.{@link #checkJavaPath(String)}<br>
  * 47.{@link #checkModloader(String)}<br>
  * 48.{@link #setModLoaderCase(String)}<br>
@@ -618,7 +618,7 @@ public class Configuration {
      * {@link #getIncludeServerInstallation()}<br>
      * {@link #checkJavaPath(String)}<br>
      * {@link #setJavaPath(String)}<br>
-     * {@link #getJavaPathFromSystem(String)}<br>
+     * {@link #getJavaPathFromSystem()}<br>
      * {@link #isMinecraftVersionCorrect(String)}<br>
      * {@link #setMinecraftVersion(String)}<br>
      * {@link #checkModloader(String)}<br>
@@ -648,15 +648,16 @@ public class Configuration {
 
             } else {
 
-                String tmpJavaPath = getJavaPathFromSystem(getConfig().getString("javaPath"));
+                String tmpJavaPath = getJavaPathFromSystem();
 
                 if (checkJavaPath(tmpJavaPath)) {
 
                     setJavaPath(tmpJavaPath);
 
-                } else { configHasError = true; } }
-
-
+                } else {
+                    configHasError = true;
+                }
+            }
 
             if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
 
@@ -703,7 +704,7 @@ public class Configuration {
      * {@link #setModLoaderCase(String)}<br>
      * {@link #checkJavaPath(String)}<br>
      * {@link #setJavaPath(String)}<br>
-     * {@link #getJavaPathFromSystem(String)}<br>
+     * {@link #getJavaPathFromSystem()}<br>
      * {@link #setCopyDirs(List)}<br>
      * {@link #suggestCopyDirs(String)}<br>
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}<br>
@@ -776,7 +777,7 @@ public class Configuration {
                             setJavaPath(getConfig().getString("javaPath").replace("\\", "/"));
 
                         } else {
-                            String tmpJavaPath = getJavaPathFromSystem(getConfig().getString("javaPath").replace("\\", "/"));
+                            String tmpJavaPath = getJavaPathFromSystem();
 
                             if (checkJavaPath(tmpJavaPath)) {
                                 setJavaPath(tmpJavaPath);
@@ -1141,31 +1142,24 @@ public class Configuration {
      * Checks the passed String whether it is empty, and if it is, automatically acquires the path to the users Java
      * installation and appends bin/java.exe or bin/java depending on whether the path to said installation starts with
      * Windows-typical C: prefix.
-     * @param enteredPath String. The path to check whether it is empty.
      * @return String. Returns the passed String as is if it is not empty. Returns the automatically acquired path to the
      * Java executable/binary if the passed String was empty.
      */
-    public String getJavaPathFromSystem(String enteredPath) {
+    public String getJavaPathFromSystem() {
         String autoJavaPath;
 
-        if (enteredPath.equals("")) {
+        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.info"));
+        autoJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
 
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.empty"));
-            autoJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
-
-            if (autoJavaPath.startsWith("C:")) {
-
-                autoJavaPath = String.format("%s.exe", autoJavaPath);
-            }
-
-            LOG.warn(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set"), autoJavaPath));
-            return autoJavaPath;
-
-        } else {
-
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set"), enteredPath));
-            return enteredPath;
+        if (autoJavaPath.startsWith("C:")) {
+            // TODO: Replace with lang key
+            LOG.debug("We're running on Windows. Ensuring javaPath ends with .exe");
+            autoJavaPath = String.format("%s.exe", autoJavaPath);
         }
+
+        LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set"), autoJavaPath));
+
+        return autoJavaPath;
     }
 
     /**
@@ -1435,7 +1429,7 @@ public class Configuration {
      * {@link #checkModloader(String)}<br>
      * {@link #setModLoaderCase(String)}<br>
      * {@link #checkModloaderVersion(String, String)}<br>
-     * {@link #getJavaPathFromSystem(String)}<br>
+     * {@link #getJavaPathFromSystem()}<br>
      * {@link #checkJavaPath(String)}<br>
      * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
@@ -1601,8 +1595,16 @@ public class Configuration {
             do {
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.cli") + " ");
 
-                String tmpJavaPath = reader.nextLine();
-                javaPath = getJavaPathFromSystem(tmpJavaPath);
+                if (!checkJavaPath(getJavaPathFromSystem())) {
+
+                    javaPath = reader.nextLine();
+
+                } else {
+
+                    javaPath = getJavaPathFromSystem();
+
+                    System.out.println(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set"), javaPath));
+                }
 
             } while (!checkJavaPath(javaPath));
 

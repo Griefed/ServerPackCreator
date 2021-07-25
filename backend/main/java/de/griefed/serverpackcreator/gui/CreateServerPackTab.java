@@ -861,7 +861,7 @@ public class CreateServerPackTab extends JComponent {
 
                 if (!CONFIGURATION.checkJavaPath(config.getString("javaPath"))) {
 
-                    textJavaPath.setText(CONFIGURATION.getJavaPathFromSystem(""));
+                    textJavaPath.setText(CONFIGURATION.getJavaPathFromSystem());
                     LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textjavapath.fallback"));
 
                 } else {
