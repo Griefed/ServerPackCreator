@@ -49,8 +49,6 @@ sourceSets {
 
 // Launch4j builds our ServerPackCreator.exe.
 launch4j {
-    mainClassName = 'de.griefed.serverpackcreator.Main'
-    jarTask = project.tasks.jar
     fileDescription = "An application to create a server pack from any given Forge or Fabric Minecraft modpack."
     version = System.getenv("NEW_VERSION").toString()
     textVersion = System.getenv("NEW_VERSION").toString()
@@ -60,6 +58,7 @@ launch4j {
     supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
     libraryDir = 'libraries'
     outputDir = 'libs'
+    mainClassName = 'de.griefed.serverpackcreator.Main'
     icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
@@ -75,6 +74,8 @@ configurations {
 
 dependencies {
     // Backend
+    embed 'org.slf4j:slf4j-log4j12:2.0.0-alpha2'
+    embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
     embed 'com.typesafe:config:1.4.1'
     embed 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
     embed 'commons-io:commons-io:2.11.0'
@@ -83,10 +84,8 @@ dependencies {
     embed 'com.github.TheRandomLabs:CurseAPI:master-SNAPSHOT'
 
     // API and Tomcat
-    embed 'org.springframework.boot:spring-boot-starter-validation'
-    embed 'org.springframework.boot:spring-boot-starter-web'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2'
-    /*embed 'org.apache.logging.log4j:log4j-web:2.14.1'*/
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // Testing
@@ -94,7 +93,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
 }
 
 test {
