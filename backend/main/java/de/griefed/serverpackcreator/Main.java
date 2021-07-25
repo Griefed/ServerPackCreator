@@ -25,10 +25,15 @@ import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.springframework.boot.system.ApplicationHome;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,7 +68,10 @@ import java.util.List;
  * enter <code>-cli</code>-mode.
  */
 public class Main {
+
     private static final Logger LOG = LogManager.getLogger(Main.class);
+
+    private static final File log4j2xml = new File("log4j2.xml");
 
     /**
      * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.
@@ -74,6 +82,21 @@ public class Main {
      * will enter and which locale is used.
      */
     public static void main(String[] args) {
+
+        // Copy our default log4j2.xml outside the JAR so users are able to set levels to DEBUG or other.
+        if (!log4j2xml.exists()) {
+            try {
+                InputStream link = (Main.class.getResourceAsStream(String.format("/%s", log4j2xml.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("%s", log4j2xml)));
+                    link.close();
+                }} catch (IOException ignored) {}
+        }
+
+        // Tell log4j2 to use the log4j2.xml outside the JAR file for configuration
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        context.setConfigLocation(log4j2xml.toURI());
+
         List<String> programArgs = Arrays.asList(args);
 
         LocalizationManager localizationManager = new LocalizationManager();
@@ -158,6 +181,7 @@ public class Main {
                osName = null,
                osVersion = null;
 
+        // TODO: Replace with lang key
         LOG.debug("Warning user about possible data loss.");
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip0"));
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip1"));
@@ -166,9 +190,10 @@ public class Main {
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip4"));
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip0"));
 
-        // Print system information to console and logs.
+        /*Print system information to console and logs.
+        TODO: Replace with lang key*/
         LOG.debug("Gathering system information to include in log to make debugging easier.");
-        ApplicationHome home = new ApplicationHome(Main.class);
+        ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
         jarPath = home.getSource().toString().replace("\\","/");
         jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
         javaVersion = System.getProperty("java.version");
