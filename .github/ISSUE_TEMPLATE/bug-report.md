@@ -16,13 +16,15 @@ about: Report a bug in the application
 
 
 * **Please tell us about your environment:**
-<!-- Failing to provide this information slows down reacting on your issue. Withholding this information may lead to us not being able to reproduce your problem to find the source of the problem. -->
+<!-- Failing to provide this information slows down reacting on your issue. Withholding this information may lead to us not being able to reproduce your problem to find the source of the problem.-->
 
 - Your Operating System:
 - Your Java version: 
 - Your ServerPackCreator version:
-- Your config file: <!-- Upload your config-file to https://gist.github.com/ --> 
-- Your latest log file: <!-- Upload your log-file to https://gist.github.com/ -->
+- Your config file: <!-- Upload your config-file to https://gist.github.com/ or use the leftmost button in the About-tab in the GUI!  
+You can also set <Property name="log-level-spc">DEBUG</Property> in the log4j2.xml file to include debug logging, reproduce the error and send THAT log to me.--> 
+- Your latest log file: <!-- Upload your log-file to https://gist.github.com/ or use the leftmost button in the About-tab in the GUI!
+You can also set <Property name="log-level-spc">DEBUG</Property> in the log4j2.xml file to include debug logging, reproduce the error and send THAT log to me.-->
 
 * **Other information** (e.g. detailed explanation, stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, gitter, etc)
 
