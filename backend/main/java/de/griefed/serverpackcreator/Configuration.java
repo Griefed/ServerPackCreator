@@ -148,7 +148,7 @@ public class Configuration {
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
 
     // If you wish to expand this list, fork this repository, make your changes, and submit a PR.
-    private final List<String> FALLBACKMODSLIST = Arrays.asList(
+    private final List<String> FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(
             "AmbientSounds",
             "BackTools",
             "BetterAdvancement",
@@ -187,7 +187,7 @@ public class Configuration {
             "timestamps",
             "TipTheScales",
             "WorldNameRandomizer"
-    );
+    ));
 
     private List<String>
             clientMods,
