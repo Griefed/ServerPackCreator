@@ -125,11 +125,11 @@ frontend {
     System.out.println(String.format("I am running on: %s", System.getProperty("os.arch")))
 
     // If we are running on arm, specify Node path pattern so arm-builds succeed.
-    /*if (System.getProperty("os.arch").equals("arm")) {
+    if (System.getProperty("os.arch").equals("arm")) {
         nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
     } else if (System.getProperty("os.arch").equals("aarch64")) {
         nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-arm64.TYPE'
-    }*/
+    }
 }
 
 // Include specific files in resources folder, like the license and readme.
