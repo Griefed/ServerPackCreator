@@ -3,7 +3,7 @@
     <Properties>
         <Property name="log-path">logs</Property>
         <Property name="archive">${log-path}/archive</Property>
-        <Property name="pattern">%style{%d{ISO8601}}{black} %highlight{%5p} [%style{%t}{bright,blue}] %style{(%F:%L)}{bright,yellow}: %m%n</Property>
+        <Property name="pattern">%style{%d{ISO8601}}{dim,white} %highlight{%5p} [%style{%t}{bright,blue}] %style{(%F:%L)}{bright,yellow} - %m%n</Property>
         <Property name="log-level">INFO</Property>
         <Property name="log-level-spc">DEBUG</Property>
     </Properties>
