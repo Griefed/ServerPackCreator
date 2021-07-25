@@ -510,7 +510,7 @@ public class DefaultFiles {
 
         if (new File("./work/fabric-installer-manifest.xml").delete()) {
 
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest.delete"));
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricinstallermanifest.delete"));
         }
 
         downloadMinecraftManifest();

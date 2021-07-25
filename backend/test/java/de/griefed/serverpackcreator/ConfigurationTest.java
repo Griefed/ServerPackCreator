@@ -65,25 +65,37 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 19.{@link #getsetProjectFileIDTest()}<br>
  * 20.{@link #checkConfigFileTest()}<br>
  * 21.{@link #isDirTest()}<br>
- * 22.{@link #isCurseTest()}<br>
- * 23.{@link #containsFabricTest()}<br>
- * 24.{@link #suggestCopyDirsTest()}<br>
- * 25.{@link #checkCurseForgeTest()}<br>
- * 26.{@link #convertToBooleanTest()}<br>
- * 27.{@link #printConfigTest()}<br>
- * 28.{@link #checkModpackDirTest()}<br>
- * 29.{@link #checkCopyDirsTest()}<br>
- * 30.{@link #getJavaPathFromSystemTest()}<br>
- * 31.{@link #checkJavaPathTest()}<br>
- * 32.{@link #checkModloaderTest()}<br>
- * 33.{@link #setModLoaderCaseTest()}<br>
- * 34.{@link #checkModloaderVersionTest()}<br>
- * 35.{@link #isMinecraftVersionCorrectTest()}<br>
- * 36.{@link #isFabricVersionCorrectTest()}<br>
- * 37.{@link #isForgeVersionCorrectTest()}<br>
- * 38.{@link #latestFabricLoaderTest()}<br>
- * 39.{@link #buildStringTest()}<br>
- * 40.{@link #writeConfigToFileTest()}
+ * 22.{@link #isDirTestCopyDirs()}<br>
+ * 23.{@link #isDirTestJavaPath()}<br>
+ * 24.{@link #isDirTestMinecraftVersion()}<br>
+ * 25.{@link #isDirTestModLoader()}<br>
+ * 26.{@link #isDirTestModLoaderFalse()}<br>
+ * 27.{@link #isDirTestModLoaderVersion()}<br>
+ * 28.{@link #isCurseTest()}<br>
+ * 29.{@link #isCurseTestProjectIDFalse()}<br>
+ * 30.{@link #isCurseTestProjectFileIDFalse()}<br>
+ * 31.{@link #containsFabricTest()}<br>
+ * 32.{@link #containsFabricTestFalse()}<br>
+ * 33.{@link #suggestCopyDirsTest()}<br>
+ * 34.{@link #suggestCopyDirsTestFalse()}<br>
+ * 35.{@link #checkCurseForgeTest()}<br>
+ * 36.{@link #checkCurseForgeTestFalse()}<br>
+ * 37.{@link #convertToBooleanTestTrue()}<br>
+ * 38.{@link #convertToBooleanTestFalse()}<br>
+ * 39.{@link #printConfigTest()}<br>
+ * 40.{@link #checkModpackDirTest()}<br>
+ * 41.{@link #checkCopyDirsTest()}<br>
+ * 42.{@link #getJavaPathFromSystemTest()}<br>
+ * 43.{@link #checkJavaPathTest()}<br>
+ * 44.{@link #checkModloaderTest()}<br>
+ * 45.{@link #setModLoaderCaseTest()}<br>
+ * 46.{@link #checkModloaderVersionTest()}<br>
+ * 47.{@link #isMinecraftVersionCorrectTest()}<br>
+ * 48.{@link #isFabricVersionCorrectTest()}<br>
+ * 49.{@link #isForgeVersionCorrectTest()}<br>
+ * 50.{@link #latestFabricLoaderTest()}<br>
+ * 51.{@link #buildStringTest()}<br>
+ * 52.{@link #writeConfigToFileTest()}
  */
 class ConfigurationTest {
     @Mock
@@ -314,31 +326,62 @@ class ConfigurationTest {
         configuration.setIncludeServerInstallation(true);
         Assertions.assertFalse(configuration.isDir("./backend/test/resources/forge_tests"));
         new File("./serverpackcreator.conf").delete();
+    }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isDirTestCopyDirs() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_copydirs.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         configuration.setConfig(new File("./serverpackcreator.conf"));
         configuration.setIncludeServerInstallation(true);
         Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
         new File("./serverpackcreator.conf").delete();
+    }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isDirTestJavaPath() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_javapath.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         configuration.setConfig(new File("./serverpackcreator.conf"));
         configuration.setIncludeServerInstallation(true);
-        Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
+        Assertions.assertFalse(configuration.isDir("./backend/test/resources/forge_tests"));
         new File("./serverpackcreator.conf").delete();
+    }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isDirTestMinecraftVersion() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_minecraftversion.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         configuration.setConfig(new File("./serverpackcreator.conf"));
         configuration.setIncludeServerInstallation(true);
         Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
         new File("./serverpackcreator.conf").delete();
 
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isDirTestModLoader() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_modloader.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
+        configuration.setConfig(new File("./serverpackcreator.conf"));
+        configuration.setIncludeServerInstallation(true);
+        Assertions.assertFalse(configuration.isDir("./backend/test/resources/forge_tests"));
+        new File("./serverpackcreator.conf").delete();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isDirTestModLoaderFalse() throws IOException {
+        Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_modloaderfalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         configuration.setConfig(new File("./serverpackcreator.conf"));
         configuration.setIncludeServerInstallation(true);
         Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
         new File("./serverpackcreator.conf").delete();
+    }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isDirTestModLoaderVersion() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_modloaderversion.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         configuration.setConfig(new File("./serverpackcreator.conf"));
         configuration.setIncludeServerInstallation(true);
@@ -346,39 +389,19 @@ class ConfigurationTest {
         new File("./serverpackcreator.conf").delete();
     }
 
-    @SuppressWarnings({"ResultOfMethodCallIgnored", "OptionalGetWithoutIsPresent"})
+    @SuppressWarnings({"ResultOfMethodCallIgnored"})
     @Test
-    void isCurseTest() throws CurseException, IOException {
-        Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
+    void isCurseTest() throws IOException {
+        Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforge.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setProjectID(238298);
-        configuration.setProjectFileID(3174854);
-        String projectName, displayName;
-        projectName = CurseAPI.project(238298).get().name();
-        displayName = CurseAPI.project(238298).get().files().fileWithID(3174854).displayName();
-        configuration.setClientMods(configuration.getFallbackModsList());
         configuration.setIncludeServerInstallation(true);
         configuration.setIncludeServerIcon(true);
         configuration.setIncludeServerProperties(true);
         configuration.setIncludeStartScripts(true);
         configuration.setIncludeZipCreation(true);
+        configuration.checkCurseForge("238298,3174854");
+        configuration.setClientMods(configuration.getFallbackModsList());
         Assertions.assertFalse(configuration.isCurse());
-        if (new File(String.format("./%s/%s",projectName,displayName)).isDirectory()) {
-            Path pathToBeDeleted = Paths.get(String.format("./%s/%s",projectName,displayName));
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
-        new File("./serverpackcreator.conf").delete();
-
-        configuration.setProjectID(999999);
-        Assertions.assertTrue(configuration.isCurse());
-        new File("./serverpackcreator.conf").delete();
-
-        Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setProjectID(238298);
-        configuration.setProjectFileID(999999);
-        Assertions.assertTrue(configuration.isCurse());
-
         new File("./serverpackcreator.conf").delete();
         String deleteFolder = "Vanilla Forge";
         if (new File(deleteFolder).isDirectory()) {
@@ -390,12 +413,42 @@ class ConfigurationTest {
         }
     }
 
+    @SuppressWarnings({"ResultOfMethodCallIgnored"})
+    @Test
+    void isCurseTestProjectIDFalse() throws IOException {
+        Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
+        configuration.setConfig(new File("./serverpackcreator.conf"));
+        configuration.setIncludeServerInstallation(true);
+        configuration.setIncludeServerIcon(true);
+        configuration.setIncludeServerProperties(true);
+        configuration.setIncludeStartScripts(true);
+        configuration.setIncludeZipCreation(true);
+        configuration.checkCurseForge("999999,3174854");
+        configuration.setClientMods(configuration.getFallbackModsList());
+        Assertions.assertTrue(configuration.isCurse());
+        new File("./serverpackcreator.conf").delete();
+    }
+
+    @SuppressWarnings({"ResultOfMethodCallIgnored"})
+    @Test
+    void isCurseTestProjectFileIDFalse() throws IOException {
+        Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefilefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
+        configuration.setConfig(new File("./serverpackcreator.conf"));
+        configuration.setProjectID(238298);
+        configuration.setProjectFileID(999999);
+        Assertions.assertTrue(configuration.isCurse());
+        new File("./serverpackcreator.conf").delete();
+    }
+
     @Test
     void containsFabricTest() throws IOException {
         byte[] fabricJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/fabric_manifest.json"));
         CurseModpack fabricModpack = configuration.getObjectMapper().readValue(fabricJsonData, CurseModpack.class);
         Assertions.assertTrue(configuration.containsFabric(fabricModpack));
+    }
 
+    @Test
+    void containsFabricTestFalse() throws IOException {
         byte[] forgeJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/manifest.json"));
         CurseModpack forgeModpack = configuration.getObjectMapper().readValue(forgeJsonData, CurseModpack.class);
         Assertions.assertFalse(configuration.containsFabric(forgeModpack));
@@ -413,15 +466,30 @@ class ConfigurationTest {
     }
 
     @Test
+    void suggestCopyDirsTestFalse() {
+        String modpackDir = "backend/test/resources/forge_tests";
+        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("server_pack"));
+        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("saves"));
+        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("logs"));
+        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("resourcepacks"));
+        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("scripts"));
+        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("seeds"));
+    }
+
+    @Test
     void checkCurseForgeTest() {
         String valid = "430517,3266321";
         Assertions.assertTrue(configuration.checkCurseForge(valid));
+    }
+
+    @Test
+    void checkCurseForgeTestFalse() {
         String invalid = "1,1234";
         Assertions.assertFalse(configuration.checkCurseForge(invalid));
     }
 
     @Test
-    void convertToBooleanTest() {
+    void convertToBooleanTestTrue() {
         Assertions.assertTrue(configuration.convertToBoolean("True"));
         Assertions.assertTrue(configuration.convertToBoolean("true"));
         Assertions.assertTrue(configuration.convertToBoolean("1"));
@@ -429,7 +497,10 @@ class ConfigurationTest {
         Assertions.assertTrue(configuration.convertToBoolean("yes"));
         Assertions.assertTrue(configuration.convertToBoolean("Y"));
         Assertions.assertTrue(configuration.convertToBoolean("y"));
+    }
 
+    @Test
+    void convertToBooleanTestFalse() {
         Assertions.assertFalse(configuration.convertToBoolean("False"));
         Assertions.assertFalse(configuration.convertToBoolean("false"));
         Assertions.assertFalse(configuration.convertToBoolean("0"));

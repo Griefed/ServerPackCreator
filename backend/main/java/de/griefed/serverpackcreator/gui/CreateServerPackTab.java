@@ -846,7 +846,7 @@ public class CreateServerPackTab extends JComponent {
                 File configFile = new File("serverpackcreator.conf");
                 Config config = ConfigFactory.parseFile(configFile);
 
-                textModpackDir.setText(config.getString("modpackDir"));
+                textModpackDir.setText(config.getString("modpackDir").replace("\\", "/"));
 
                 if (config.getStringList("clientMods").isEmpty()) {
 
@@ -859,13 +859,13 @@ public class CreateServerPackTab extends JComponent {
 
                 textCopyDirs.setText(CONFIGURATION.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
 
-                if (!CONFIGURATION.checkJavaPath(config.getString("javaPath"))) {
+                if (!CONFIGURATION.checkJavaPath(config.getString("javaPath").replace("\\", "/"))) {
 
                     textJavaPath.setText(CONFIGURATION.getJavaPathFromSystem());
                     LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textjavapath.fallback"));
 
                 } else {
-                    textJavaPath.setText(config.getString("javaPath"));
+                    textJavaPath.setText(config.getString("javaPath").replace("\\", "/"));
                 }
 
                 textMinecraftVersion.setText(config.getString("minecraftVersion"));

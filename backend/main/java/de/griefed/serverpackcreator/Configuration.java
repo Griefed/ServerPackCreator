@@ -554,7 +554,9 @@ public class Configuration {
      */
     public boolean checkConfigFile(File configFile, boolean shouldModpackBeCreated) {
         boolean configHasError = false;
+
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.start"));
+
         try {
             setConfig(configFile);
         } catch (ConfigException ex) {
@@ -567,20 +569,31 @@ public class Configuration {
         } else {
             setClientMods(getConfig().getStringList("clientMods"));
         }
+
         setIncludeServerInstallation(convertToBoolean(getConfig().getString("includeServerInstallation")));
+
         setIncludeServerIcon(convertToBoolean(getConfig().getString("includeServerIcon")));
+
         setIncludeServerProperties(convertToBoolean(getConfig().getString("includeServerProperties")));
+
         setIncludeStartScripts(convertToBoolean(getConfig().getString("includeStartScripts")));
+
         setIncludeZipCreation(convertToBoolean(getConfig().getString("includeZipCreation")));
 
         if (checkModpackDir(getConfig().getString("modpackDir").replace("\\","/"))) {
+
             configHasError = isDir(getConfig().getString("modpackDir").replace("\\","/"));
+
         } else if (checkCurseForge(getConfig().getString("modpackDir").replace("\\","/"))) {
+
             if (shouldModpackBeCreated) {
+
                 configHasError = isCurse();
+
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipmodpackcreation"));
             }
+
         } else {
             configHasError = true;
         }
@@ -603,6 +616,7 @@ public class Configuration {
         } else {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkconfig.failure"));
         }
+
         return configHasError;
     }
 
@@ -629,7 +643,7 @@ public class Configuration {
      * @param modpackDir String. Should an existing modpack be specified, all configurations are read from the provided
      *                   configuration file and checks are made in this directory.
      * @return Boolean. Returns true if an error is found during configuration check.
-     */
+     */ // TODO: Replace with lang keys
     boolean isDir(String modpackDir) {
         boolean configHasError = false;
         setModpackDir(modpackDir);
@@ -637,45 +651,69 @@ public class Configuration {
         if (checkCopyDirs(getConfig().getStringList("copyDirs"), getModpackDir())) {
 
             setCopyDirs(getConfig().getStringList("copyDirs"));
+            LOG.debug("copyDirs setting check passed.");
 
-        } else { configHasError = true; }
+        } else {
+            configHasError = true;
+            LOG.error("There's something wrong with your setting of directories to include in your server pack.");
+        }
 
         if (getIncludeServerInstallation()) {
 
-            if (checkJavaPath(getConfig().getString("javaPath"))) {
+            String systemJavaPath = getJavaPathFromSystem();
+            String configJavaPath = getConfig().getString("javaPath").replace("\\", "/");
 
-                setJavaPath(getConfig().getString("javaPath"));
+            if (checkJavaPath(configJavaPath)) {
+
+                setJavaPath(configJavaPath);
+                LOG.debug("javaPath setting check passed.");
+
+            } else if (checkJavaPath(configJavaPath + ".exe")) {
+
+                setJavaPath(configJavaPath + ".exe");
+                LOG.debug(".exe had to be added to javaPath.");
+
+            } else if (checkJavaPath(systemJavaPath)) {
+
+                setJavaPath(systemJavaPath);
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set.info"), systemJavaPath));
 
             } else {
-
-                String tmpJavaPath = getJavaPathFromSystem();
-
-                if (checkJavaPath(tmpJavaPath)) {
-
-                    setJavaPath(tmpJavaPath);
-
-                } else {
-                    configHasError = true;
-                }
+                configHasError = true;
+                LOG.error("Error: There's something wrong with your Java path setting.");
             }
 
             if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
 
                 setMinecraftVersion(getConfig().getString("minecraftVersion"));
+                LOG.debug("minecraftVersion setting check passed.");
 
-            } else { configHasError = true; }
+            } else {
+                configHasError = true;
+                LOG.error("There's something wrong with your Minecraft version setting.");
+            }
 
             if (checkModloader(getConfig().getString("modLoader"))) {
 
                 setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
+                LOG.debug("modLoader setting check passed.");
 
-            } else { configHasError = true; }
+                if (checkModloaderVersion(getModLoader(), getConfig().getString("modLoaderVersion"))) {
 
-            if (checkModloaderVersion(getModLoader(), getConfig().getString("modLoaderVersion"))) {
+                    setModLoaderVersion(getConfig().getString("modLoaderVersion"));
+                    LOG.debug("modLoaderVersion setting check passed.");
 
-                setModLoaderVersion(getConfig().getString("modLoaderVersion"));
+                } else {
+                    configHasError = true;
+                    LOG.error("There's something wrong with your Modloader version setting.");
+                }
 
-            } else { configHasError = true; }
+            } else {
+                configHasError = true;
+                LOG.error("There's something wrong with your Modloader or Modloader version setting.");
+            }
+
+
 
         } else {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipstart"));
@@ -719,19 +757,28 @@ public class Configuration {
                 String projectName, displayName;
                 projectName = displayName = "";
 
-                try { projectName = CurseAPI.project(getProjectID()).get().name();
+                try {
+                    projectName = CurseAPI.project(getProjectID()).get().name();
 
-                    try { displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).displayName(); }
-                    catch (NullPointerException npe) { LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.iscurse.display"));
+                    try {
+                        displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).displayName();
 
-                        try { displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).nameOnDisk(); }
-                        catch (NullPointerException npe2) {
+                    } catch (NullPointerException npe) {
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.iscurse.display"));
+
+                        try {
+                            displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).nameOnDisk();
+
+                        } catch (NullPointerException npe2) {
+
                             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.file"), npe2);
                             displayName = null;
                         }
                     }
-                } catch (CurseException cex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.curseforge")); }
 
+                } catch (CurseException ex) {
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.curseforge"), ex);
+                }
 
                 if (displayName != null && projectName != null) {
 
@@ -772,18 +819,29 @@ public class Configuration {
                             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.json"), ex);
                         }
 
-                        if (checkJavaPath(getConfig().getString("javaPath").replace("\\", "/"))) {
+                        String systemJavaPath = getJavaPathFromSystem();
+                        String configJavaPath = getConfig().getString("javaPath").replace("\\", "/");
 
-                            setJavaPath(getConfig().getString("javaPath").replace("\\", "/"));
+                        if (checkJavaPath(configJavaPath)) {
+
+                            setJavaPath(configJavaPath);
+                            LOG.debug("javaPath setting check passed.");
+
+                        } else if (checkJavaPath(configJavaPath + ".exe")) {
+
+                            setJavaPath(configJavaPath + ".exe");
+                            LOG.debug(".exe had to be added to javaPath.");
+
+                        } else if (checkJavaPath(systemJavaPath)) {
+
+                            setJavaPath(systemJavaPath);
+                            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set.info"), systemJavaPath));
 
                         } else {
-                            String tmpJavaPath = getJavaPathFromSystem();
-
-                            if (checkJavaPath(tmpJavaPath)) {
-                                setJavaPath(tmpJavaPath);
-                            }
-
+                            configHasError = true;
+                            LOG.error("Error: There's something wrong with your Java path setting.");
                         }
+
                         setCopyDirs(suggestCopyDirs(getModpackDir()));
 
                         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.iscurse.replace"));
@@ -805,12 +863,18 @@ public class Configuration {
                                 false
                         );
 
-                    } else { configHasError = true; }
-                } else { configHasError = true; }
-            } else { configHasError = true; }
+                    } else {
+                        configHasError = true;
+                    }
+                } else {
+                    configHasError = true;
+                }
+            } else {
+                configHasError = true;
+            }
 
-        } catch (CurseException cex) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.project"), getProjectID()), cex);
+        } catch (CurseException | IllegalArgumentException ex) {
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.project"), getProjectID()), ex);
             configHasError = true;
         }
         return configHasError;
@@ -904,31 +968,39 @@ public class Configuration {
             int curseFileID= Integer.parseInt(curseForgeIDCombination[1]);
 
             try {
+
                 if (CurseAPI.project(curseProjectID).isPresent()) {
                     setProjectID(curseProjectID);
                     configCorrect = true;
                 }
-            } catch (CurseException cex) {
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.project"), curseProjectID),cex);
+
+            } catch (CurseException | NoSuchElementException ex) {
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.project"), curseProjectID), ex);
                 configCorrect = false;
             }
 
             try {
+
                 if (CurseAPI.project(curseProjectID).get().files().fileWithID(curseFileID) != null) {
                     setProjectFileID(curseFileID);
                     configCorrect = true;
                 }
-            } catch (CurseException cex) {
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.file"), curseFileID), cex);
+
+            } catch (CurseException | NoSuchElementException ex) {
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.file"), curseFileID), ex);
                 configCorrect = false;
             }
 
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkcurseforge.info"));
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkcurseforge.return"), getProjectID(), getProjectFileID()));
+
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkcurseforge.warn"));
 
 
-        } else { LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkcurseforge.warn2")); }
+        } else {
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkcurseforge.warn2"));
+        }
 
         return configCorrect;
     }
@@ -1178,8 +1250,14 @@ public class Configuration {
 
             configCorrect = true;
 
+        } else if (!new File(pathToJava).exists() && new File(pathToJava + ".exe").exists()) {
+
+            configCorrect = true;
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkjavapath.windows"));
+
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkjavapath"));
+
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkjavapath"), pathToJava));
         }
         return configCorrect;
     }
@@ -1192,7 +1270,7 @@ public class Configuration {
     boolean checkModloader(String modloader) {
         boolean configCorrect = false;
 
-        if (modloader.equalsIgnoreCase("Forge") || modloader.equalsIgnoreCase("Fabric")) {
+        if (modloader.toLowerCase().contains("forge") || modloader.toLowerCase().contains("fabric")) {
 
             configCorrect = true;
 
@@ -1218,6 +1296,14 @@ public class Configuration {
             returnLoader = "Forge";
 
         } else if (modloader.equalsIgnoreCase("Fabric")) {
+
+            returnLoader = "Fabric";
+
+        } else if (modloader.toLowerCase().contains("forge")) {
+
+            returnLoader = "Forge";
+
+        } else if (modloader.toLowerCase().contains("fabric")) {
 
             returnLoader = "Fabric";
         }
