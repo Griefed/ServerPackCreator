@@ -748,7 +748,7 @@ public class Configuration {
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}<br>
      * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
      * project name and displayname, or when the creation of the modpack fails.
-     */
+     */ // TODO: Replace with lang keys
     boolean isCurse() {
         boolean configHasError = false;
         try {
@@ -810,6 +810,7 @@ public class Configuration {
                                 setModLoaderVersion(latestFabricLoader());
 
                             } else {
+                                LOG.debug("Setting modloader to Forge.");
 
                                 setModLoader("Forge");
                                 setModLoaderVersion(modLoaderVersion[1]);
@@ -864,12 +865,17 @@ public class Configuration {
                         );
 
                     } else {
+                        LOG.error("Error: Something went wrong during the creation of CurseForge modpack.");
                         configHasError = true;
                     }
+
                 } else {
+                    LOG.error("Error: Either display name or project name are empty. Did you set the IDs correctly?");
                     configHasError = true;
                 }
+
             } else {
+                LOG.error("Error: Project not found on CurseForge");
                 configHasError = true;
             }
 
@@ -894,11 +900,16 @@ public class Configuration {
 
             String[] mods = modpack.getFiles().get(i).toString().split(",");
 
+            LOG.debug(String.format("Mod ID: %s", mods[0]));
+            LOG.debug(String.format("File ID: %s", mods[1]));
+
             if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
+
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.containsfabric"));
                 hasJumploader = true;
             }
         }
+        
         return hasJumploader;
     }
 
