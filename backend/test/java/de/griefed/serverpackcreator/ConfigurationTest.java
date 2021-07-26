@@ -684,15 +684,14 @@ class ConfigurationTest {
 
     @Test
     void suggestCopyDirsTest() {
-        List<String> suggestedDirs = new ArrayList<>(Arrays.asList(
-                "config",
-                "defaultconfigs",
-                "mods",
-                "scripts",
-                "seeds"
-        ));
         String modpackDir = "backend/test/resources/forge_tests";
-        Assertions.assertEquals(suggestedDirs, configuration.suggestCopyDirs(modpackDir));
+        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("server_pack"));
+        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("config"));
+        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("defaultconfigs"));
+        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("mods"));
+        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("scripts"));
+        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("seeds"));
+
     }
 
     @Test
