@@ -587,5 +587,3 @@ If you are on linux, run `chmod +x gradlew` first.
 Build with:
 
 `gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe`
-
----
