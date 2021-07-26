@@ -36,40 +36,40 @@ import java.util.List;
 /**
  * <strong>Table of tests</strong>
  * <p>
- * 1. {@link #DefaultFilesTest()} tests {@link DefaultFiles#DefaultFiles(LocalizationManager)}<br>
- * 2. {@link #getConfigFileTest()} tests {@link DefaultFiles#getConfigFile()}<br>
- * 3. {@link #getOldConfigFileTest()} tests {@link DefaultFiles#getOldConfigFile()}<br>
- * 4. {@link #getPropertiesFileTest()} tests {@link DefaultFiles#getPropertiesFile()}<br>
- * 5. {@link #getIconFileTest()} tests {@link DefaultFiles#getIconFile()}<br>
- * 6. {@link #getForgeWindowsFileTest()} tests {@link DefaultFiles#getForgeWindowsFile()}<br>
- * 7. {@link #getForgeLinuxFileTest()} tests {@link DefaultFiles#getForgeLinuxFile()}<br>
- * 8. {@link #getFabricWindowsFileTest()} tests {@link DefaultFiles#getFabricWindowsFile()}<br>
- * 9. {@link #getFabricLinuxFileTest()} tests {@link DefaultFiles#getFabricLinuxFile()}<br>
- * 10.{@link #getMinecraftManifestUrlTest()} tests {@link DefaultFiles#getMinecraftManifestUrl()}<br>
- * 11.{@link #getForgeManifestUrlTest()} tests {@link DefaultFiles#getForgeManifestUrl()}<br>
- * 12.{@link #getFabricManifestUrlTest()} tests {@link DefaultFiles#getFabricManifestUrl()}<br>
- * 13.{@link #getFabricInstallerManifestUrlTest()} tests {@link DefaultFiles#getFabricInstallerManifestUrl()}<br>
- * 14.{@link #checkForConfigTestOld} tests {@link DefaultFiles#checkForConfig()}<br>
- * 15.{@link #checkForConfigTest} tests {@link DefaultFiles#checkForConfig()}<br>
- * 16.{@link #checkForConfigTestNew} tests {@link DefaultFiles#checkForConfig()}<br>
- * 17.{@link #checkForFabricLinuxTest} tests {@link DefaultFiles#checkForFabricLinux()}<br>
- * 18.{@link #checkForFabricLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 19.{@link #checkForFabricWindowsTest} tests {@link DefaultFiles#checkForFabricWindows()}<br>
- * 20.{@link #checkForFabricWindowsTestNew} tests {@link DefaultFiles#checkForFabricWindows()}<br>
- * 21.{@link #checkForForgeLinuxTest} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 22.{@link #checkForForgeLinuxTestNew} tests {@link DefaultFiles#checkForForgeLinux()}<br>
- * 23.{@link #checkForForgeWindowsTest} tests {@link DefaultFiles#checkForForgeWindows()}<br>
- * 24.{@link #checkForForgeWindowsTestNew} tests {@link DefaultFiles#checkForForgeWindows()}<br>
- * 25.{@link #checkForPropertiesTest} tests {@link DefaultFiles#checkForProperties()}<br>
- * 26.{@link #checkForPropertiesTestNew} tests {@link DefaultFiles#checkForProperties()}<br>
- * 27.{@link #checkForIconTest} tests {@link DefaultFiles#checkForIcon()}<br>
- * 28.{@link #checkForIconTestNew} tests {@link DefaultFiles#checkForIcon()}<br>
- * 29.{@link #filesSetupTest} tests {@link DefaultFiles#filesSetup()}<br>
- * 30.{@link #downloadMinecraftManifestTest} tests {@link DefaultFiles#downloadMinecraftManifest()}<br>
- * 31.{@link #downloadFabricManifestTest} tests {@link DefaultFiles#downloadFabricManifest()}<br>
- * 32.{@link #downloadForgeManifestTest} tests {@link DefaultFiles#downloadForgeManifest()}<br>
- * 33.{@link #downloadFabricInstallerManifestTest} tests {@link DefaultFiles#downloadFabricInstallerManifest()}
- * 34.{@link #refreshValidationFilesTest} tests {@link DefaultFiles#refreshValidationFiles()}
+ * 1. {@link #DefaultFilesTest()}<br>
+ * 2. {@link #getConfigFileTest()}<br>
+ * 3. {@link #getOldConfigFileTest()}<br>
+ * 4. {@link #getPropertiesFileTest()}<br>
+ * 5. {@link #getIconFileTest()}<br>
+ * 6. {@link #getForgeWindowsFileTest()}<br>
+ * 7. {@link #getForgeLinuxFileTest()}<br>
+ * 8. {@link #getFabricWindowsFileTest()}<br>
+ * 9. {@link #getFabricLinuxFileTest()}<br>
+ * 10.{@link #getMinecraftManifestUrlTest()}<br>
+ * 11.{@link #getForgeManifestUrlTest()}<br>
+ * 12.{@link #getFabricManifestUrlTest()}<br>
+ * 13.{@link #getFabricInstallerManifestUrlTest()}<br>
+ * 14.{@link #checkForConfigTestOld}<br>
+ * 15.{@link #checkForConfigTest}<br>
+ * 16.{@link #checkForConfigTestNew}<br>
+ * 17.{@link #checkForFabricLinuxTest}<br>
+ * 18.{@link #checkForFabricLinuxTestNew}<br>
+ * 19.{@link #checkForFabricWindowsTest}<br>
+ * 20.{@link #checkForFabricWindowsTestNew}<br>
+ * 21.{@link #checkForForgeLinuxTest}<br>
+ * 22.{@link #checkForForgeLinuxTestNew}<br>
+ * 23.{@link #checkForForgeWindowsTest}<br>
+ * 24.{@link #checkForForgeWindowsTestNew}<br>
+ * 25.{@link #checkForPropertiesTest}<br>
+ * 26.{@link #checkForPropertiesTestNew}<br>
+ * 27.{@link #checkForIconTest}<br>
+ * 28.{@link #checkForIconTestNew}<br>
+ * 29.{@link #filesSetupTest}<br>
+ * 30.{@link #downloadMinecraftManifestTest}<br>
+ * 31.{@link #downloadFabricManifestTest}<br>
+ * 32.{@link #downloadForgeManifestTest}<br>
+ * 33.{@link #downloadFabricInstallerManifestTest}<br>
+ * 34.{@link #refreshValidationFilesTest}
  */
 class DefaultFilesTest {
 
