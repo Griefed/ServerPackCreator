@@ -20,8 +20,6 @@
 
 package de.griefed.serverpackcreator;
 
-import com.therandomlabs.curseapi.CurseAPI;
-import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -31,10 +29,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,53 +45,93 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 3. {@link #getConfigFileTest()}<br>
  * 4. {@link #getsetConfigTest()}<br>
  * 5. {@link #getFallbackModsListTest()}<br>
- * 6. {@link #getsetClientModsTest()}<br>
- * 7. {@link #getsetCopyDirsTest()}<br>
- * 8. {@link #getsetModpackDirTest()}<br>
- * 9. {@link #getsetJavaPathTest()}<br>
- * 10.{@link #getsetMinecraftVersionTest()}<br>
- * 11.{@link #getsetModLoaderTest()}<br>
- * 12.{@link #getsetModLoaderVersionTest()}<br>
- * 13.{@link #getsetIncludeServerInstallationTest()}<br>
- * 14.{@link #getsetIncludeServerIconTest()}<br>
- * 15.{@link #getsetIncludeServerPropertiesTest()}<br>
- * 16.{@link #getsetIncludeStartScriptsTest()}<br>
- * 17.{@link #getsetIncludeZipCreationTest()}<br>
- * 18.{@link #getsetProjectIDTest()}<br>
- * 19.{@link #getsetProjectFileIDTest()}<br>
- * 20.{@link #checkConfigFileTest()}<br>
- * 21.{@link #isDirTest()}<br>
- * 22.{@link #isDirTestCopyDirs()}<br>
- * 23.{@link #isDirTestJavaPath()}<br>
- * 24.{@link #isDirTestMinecraftVersion()}<br>
- * 25.{@link #isDirTestModLoader()}<br>
- * 26.{@link #isDirTestModLoaderFalse()}<br>
- * 27.{@link #isDirTestModLoaderVersion()}<br>
- * 28.{@link #isCurseTest()}<br>
- * 29.{@link #isCurseTestProjectIDFalse()}<br>
- * 30.{@link #isCurseTestProjectFileIDFalse()}<br>
- * 31.{@link #containsFabricTest()}<br>
- * 32.{@link #containsFabricTestFalse()}<br>
- * 33.{@link #suggestCopyDirsTest()}<br>
- * 34.{@link #suggestCopyDirsTestFalse()}<br>
- * 35.{@link #checkCurseForgeTest()}<br>
- * 36.{@link #checkCurseForgeTestFalse()}<br>
- * 37.{@link #convertToBooleanTestTrue()}<br>
- * 38.{@link #convertToBooleanTestFalse()}<br>
- * 39.{@link #printConfigTest()}<br>
- * 40.{@link #checkModpackDirTest()}<br>
- * 41.{@link #checkCopyDirsTest()}<br>
- * 42.{@link #getJavaPathFromSystemTest()}<br>
- * 43.{@link #checkJavaPathTest()}<br>
- * 44.{@link #checkModloaderTest()}<br>
- * 45.{@link #setModLoaderCaseTest()}<br>
- * 46.{@link #checkModloaderVersionTest()}<br>
- * 47.{@link #isMinecraftVersionCorrectTest()}<br>
- * 48.{@link #isFabricVersionCorrectTest()}<br>
- * 49.{@link #isForgeVersionCorrectTest()}<br>
- * 50.{@link #latestFabricLoaderTest()}<br>
- * 51.{@link #buildStringTest()}<br>
- * 52.{@link #writeConfigToFileTest()}
+ * 6. {@link #getFallbackModsListTestEquals()}<br>
+ * 7. {@link #getsetClientModsTest()}<br>
+ * 8. {@link #getsetClientModsTextNotNull()}<br>
+ * 9. {@link #getsetCopyDirsTest()}<br>
+ * 10.{@link #getsetCopyDirsTestNotNull()}<br>
+ * 11.{@link #getsetCopyDirsTestFalse()}<br>
+ * 12.{@link #getsetModpackDirTest()}<br>
+ * 13.{@link #getsetModpackDirTestNotNull()}<br>
+ * 14.{@link #getsetModpackDirTestBackslash()}<br>
+ * 15.{@link #getsetModpackDirTestBackslashFalse()}<br>
+ * 16.{@link #getsetModpackDirTestBackslashNotNull()}<br>
+ * 17.{@link #getsetJavaPathTest()}<br>
+ * 18.{@link #getsetJavaPathTestNotNull()}<br>
+ * 19.{@link #getsetJavaPathTestBackslash()}<br>
+ * 20.{@link #getsetJavaPathTestBackslashNotNull()}<br>
+ * 21.{@link #getsetJavaPathTestBackslashNotEquals()}<br>
+ * 22.{@link #getsetJavaPathTestBackslashFalse()}<br>
+ * 23.{@link #getsetMinecraftVersionTest()}<br>
+ * 24.{@link #getsetModLoaderTest()}<br>
+ * 25.{@link #getsetModLoaderTestNotNull()}<br>
+ * 26.{@link #getsetModLoaderTestNotEquals()}<br>
+ * 27.{@link #getsetModLoaderVersionTest()}<br>
+ * 28.{@link #getsetModLoaderVersionTestNotNull()}<br>
+ * 29.{@link #getsetIncludeServerInstallationTest()}<br>
+ * 30.{@link #getsetIncludeServerInstallationTestFalse()}<br>
+ * 31.{@link #getsetIncludeServerIconTest()}<br>
+ * 32.{@link #getsetIncludeServerIconTestFalse()}<br>
+ * 33.{@link #getsetIncludeServerPropertiesTest()}<br>
+ * 34.{@link #getsetIncludeServerPropertiesTestFalse()}<br>
+ * 35.{@link #getsetIncludeStartScriptsTest()}<br>
+ * 36.{@link #getsetIncludeStartScriptsTestFalse()}<br>
+ * 37.{@link #getsetIncludeZipCreationTest()}<br>
+ * 38.{@link #getsetIncludeZipCreationTestFalse()}<br>
+ * 39.{@link #getsetProjectIDTest()}<br>
+ * 40.{@link #getsetProjectFileIDTest()}<br>
+ * 41.{@link #checkConfigFileTest()}<br>
+ * 42.{@link #isDirTest()}<br>
+ * 43.{@link #isDirTestCopyDirs()}<br>
+ * 44.{@link #isDirTestJavaPath()}<br>
+ * 45.{@link #isDirTestMinecraftVersion()}<br>
+ * 46.{@link #isDirTestModLoader()}<br>
+ * 47.{@link #isDirTestModLoaderFalse()}<br>
+ * 48.{@link #isDirTestModLoaderVersion()}<br>
+ * 49.{@link #isCurseTest()}<br>
+ * 50.{@link #isCurseTestProjectIDFalse()}<br>
+ * 51.{@link #isCurseTestProjectFileIDFalse()}<br>
+ * 52.{@link #containsFabricTest()}<br>
+ * 53.{@link #containsFabricTestFalse()}<br>
+ * 54.{@link #suggestCopyDirsTest()}<br>
+ * 55.{@link #suggestCopyDirsTestFalse()}<br>
+ * 56.{@link #checkCurseForgeTest()}<br>
+ * 57.{@link #checkCurseForgeTestFalse()}<br>
+ * 58.{@link #convertToBooleanTestTrue()}<br>
+ * 59.{@link #convertToBooleanTestFalse()}<br>
+ * 60.{@link #printConfigTest()}<br>
+ * 61.{@link #checkModpackDirTest()}<br>
+ * 62.{@link #checkModpackDirTestFalse()}<br>
+ * 63.{@link #checkCopyDirsTest()}<br>
+ * 64.{@link #checkCopyDirsTestFalse()}<br>
+ * 65.{@link #checkCopyDirsTestFiles()}<br>
+ * 66.{@link #checkCopyDirsTestFilesFalse()}<br>
+ * 67.{@link #getJavaPathFromSystemTest()}<br>
+ * 68.{@link #checkJavaPathTest()}<br>
+ * 69.{@link #checkModloaderTestForge()}<br>
+ * 70.{@link #checkModloaderTestForgeCase()}<br>
+ * 71.{@link #checkModloaderTestFabric()}<br>
+ * 72.{@link #checkModloaderTestFabricCase()}<br>
+ * 73.{@link #checkModLoaderTestFalse()}<br>
+ * 74.{@link #setModLoaderCaseTestForge()}<br>
+ * 75.{@link #setModLoaderCaseTestFabric()}<br>
+ * 76.{@link #setModLoaderCaseTestForgeCorrected()}<br>
+ * 77.{@link #setModLoaderCaseTestFabricCorrected()}<br>
+ * 78.{@link #checkModloaderVersionTestForge()}<br>
+ * 79.{@link #checkModloaderVersionTestForgeFalse()}<br>
+ * 80.{@link #checkModloaderVersionTestFabric()}<br>
+ * 81.{@link #checkModloaderVersionTestFabricFalse()}<br>
+ * 82.{@link #isMinecraftVersionCorrectTest()}<br>
+ * 83.{@link #isMinecraftVersionCorrectTestFalse()}<br>
+ * 84.{@link #isFabricVersionCorrectTest()}<br>
+ * 85.{@link #isFabricVersionCorrectTestFalse()}<br>
+ * 86.{@link #isForgeVersionCorrectTest()}<br>
+ * 87.{@link #isForgeVersionCorrectTestFalse()}<br>
+ * 88.{@link #latestFabricLoaderTest()}<br>
+ * 89.{@link #latestFabricLoaderTestNotNull()}<br>
+ * 90.{@link #buildStringTest()}<br>
+ * 91.{@link #writeConfigToFileTestForge()}<br>
+ * 92.{@link #writeConfigToFileTestFabric()}
  */
 class ConfigurationTest {
     @Mock
@@ -145,6 +181,51 @@ class ConfigurationTest {
     }
 
     @Test
+    void getFallbackModsListTestEquals() {
+        List<String> fallbackMods = new ArrayList<>(Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterFoliage",
+                "BetterPing",
+                "BetterPlacement",
+                "Blur",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "CTM",
+                "customdiscordrpc",
+                "CustomMainMenu",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "EiraMoticons",
+                "FullscreenWindowed",
+                "itemzoom",
+                "itlt",
+                "jeiintegration",
+                "jei-professions",
+                "just-enough-harvestcraft",
+                "JustEnoughResources",
+                "keywizard",
+                "modnametooltip",
+                "MouseTweaks",
+                "multihotbar-",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "ResourceLoader",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "timestamps",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        ));
+        Assertions.assertEquals(fallbackMods, configuration.getFallbackModsList());
+    }
+
+    @Test
     void getsetClientModsTest() {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
@@ -172,8 +253,38 @@ class ConfigurationTest {
                 "WorldNameRandomizer"
         ));
         configuration.setClientMods(clientMods);
-        Assertions.assertNotNull(configuration.getClientMods());
         Assertions.assertEquals(clientMods, configuration.getClientMods());
+    }
+
+    @Test
+    void getsetClientModsTextNotNull() {
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        ));
+        configuration.setClientMods(clientMods);
+        Assertions.assertNotNull(configuration.getClientMods());
     }
 
     @Test
@@ -194,8 +305,34 @@ class ConfigurationTest {
                 "defaultconfigs"
         ));
         configuration.setCopyDirs(testList);
-        Assertions.assertNotNull(configuration.getCopyDirs());
         Assertions.assertEquals(getList, configuration.getCopyDirs());
+    }
+
+    @Test
+    void getsetCopyDirsTestNotNull() {
+        List<String> testList = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs",
+                "server_pack"
+        ));
+        configuration.setCopyDirs(testList);
+        Assertions.assertNotNull(configuration.getCopyDirs());
+    }
+
+    @Test
+    void getsetCopyDirsTestFalse() {
+        List<String> testList = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs",
+                "server_pack"
+        ));
+        configuration.setCopyDirs(testList);
         Assertions.assertFalse(configuration.getCopyDirs().contains("server_pack"));
     }
 
@@ -203,29 +340,76 @@ class ConfigurationTest {
     void getsetModpackDirTest() {
         String modpackDir = "backend/test/resources/forge_tests";
         configuration.setModpackDir(modpackDir);
-        Assertions.assertNotNull(configuration.getModpackDir());
         Assertions.assertEquals(modpackDir, configuration.getModpackDir());
+    }
 
-        String modpackDir2 = "backend\\test\\resources\\forge_tests";
-        configuration.setModpackDir(modpackDir2);
+    @Test
+    void getsetModpackDirTestNotNull() {
+        String modpackDir = "backend/test/resources/forge_tests";
+        configuration.setModpackDir(modpackDir);
         Assertions.assertNotNull(configuration.getModpackDir());
-        Assertions.assertNotEquals(modpackDir2, configuration.getModpackDir());
-        Assertions.assertEquals(modpackDir2.replace("\\","/"),configuration.getModpackDir());
+    }
+
+    @Test
+    void getsetModpackDirTestBackslash() {
+        String modpackDir = "backend\\test\\resources\\forge_tests";
+        configuration.setModpackDir(modpackDir);
+        Assertions.assertEquals(modpackDir.replace("\\","/"),configuration.getModpackDir());
+    }
+
+    @Test
+    void getsetModpackDirTestBackslashFalse() {
+        String modpackDir = "backend\\test\\resources\\forge_tests";
+        configuration.setModpackDir(modpackDir);
         Assertions.assertFalse(configuration.getModpackDir().contains("\\"));
+    }
+
+    @Test
+    void getsetModpackDirTestBackslashNotNull() {
+        String modpackDir = "backend\\test\\resources\\forge_tests";
+        configuration.setModpackDir(modpackDir);
+        Assertions.assertNotNull(configuration.getModpackDir());
     }
 
     @Test
     void getsetJavaPathTest() {
         String javaPath = "backend/test/resources/forge_tests";
         configuration.setJavaPath(javaPath);
-        Assertions.assertNotNull(configuration.getJavaPath());
         Assertions.assertEquals(javaPath, configuration.getJavaPath());
+    }
 
-        String javaPath2 = "backend\\test\\resources\\forge_tests";
-        configuration.setModpackDir(javaPath2);
+    @Test
+    void getsetJavaPathTestNotNull() {
+        String javaPath = "backend/test/resources/forge_tests";
+        configuration.setJavaPath(javaPath);
         Assertions.assertNotNull(configuration.getJavaPath());
-        Assertions.assertNotEquals(javaPath2, configuration.getJavaPath());
-        Assertions.assertEquals(javaPath2.replace("\\","/"),configuration.getJavaPath());
+    }
+
+    @Test
+    void getsetJavaPathTestBackslash() {
+        String javaPath = "backend\\test\\resources\\forge_tests";
+        configuration.setJavaPath(javaPath);
+        Assertions.assertEquals(javaPath.replace("\\","/"),configuration.getJavaPath());
+    }
+
+    @Test
+    void getsetJavaPathTestBackslashNotNull() {
+        String javaPath = "backend\\test\\resources\\forge_tests";
+        configuration.setJavaPath(javaPath);
+        Assertions.assertNotNull(configuration.getJavaPath());
+    }
+
+    @Test
+    void getsetJavaPathTestBackslashNotEquals() {
+        String javaPath = "backend\\test\\resources\\forge_tests";
+        configuration.setJavaPath(javaPath);
+        Assertions.assertNotEquals(javaPath, configuration.getJavaPath());
+    }
+
+    @Test
+    void getsetJavaPathTestBackslashFalse() {
+        String javaPath = "backend\\test\\resources\\forge_tests";
+        configuration.setJavaPath(javaPath);
         Assertions.assertFalse(configuration.getJavaPath().contains("\\"));
     }
 
@@ -233,31 +417,59 @@ class ConfigurationTest {
     void getsetMinecraftVersionTest() {
         String minecraftVersion = "1.16.5";
         configuration.setMinecraftVersion(minecraftVersion);
-        Assertions.assertNotNull(configuration.getMinecraftVersion());
         Assertions.assertEquals(minecraftVersion, configuration.getMinecraftVersion());
+    }
+
+    @Test
+    void getsetMinecraftVersionTestNotNull() {
+        String minecraftVersion = "1.16.5";
+        configuration.setMinecraftVersion(minecraftVersion);
+        Assertions.assertNotNull(configuration.getMinecraftVersion());
     }
 
     @Test
     void getsetModLoaderTest() {
         String modloader = "FoRgE";
         configuration.setModLoader(modloader);
-        Assertions.assertNotNull(configuration.getModLoader());
-        Assertions.assertNotEquals(modloader, configuration.getModLoader());
         Assertions.assertEquals("Forge", configuration.getModLoader());
+    }
+
+    @Test
+    void getsetModLoaderTestNotNull() {
+        String modloader = "FoRgE";
+        configuration.setModLoader(modloader);
+        Assertions.assertNotNull(configuration.getModLoader());
+    }
+
+    @Test
+    void getsetModLoaderTestNotEquals() {
+        String modloader = "FoRgE";
+        configuration.setModLoader(modloader);
+        Assertions.assertNotEquals(modloader, configuration.getModLoader());
     }
 
     @Test
     void getsetModLoaderVersionTest() {
         String modloaderVersion = "36.1.2";
         configuration.setModLoaderVersion(modloaderVersion);
-        Assertions.assertNotNull(configuration.getModLoaderVersion());
         Assertions.assertEquals(modloaderVersion, configuration.getModLoaderVersion());
+    }
+
+    @Test
+    void getsetModLoaderVersionTestNotNull() {
+        String modloaderVersion = "36.1.2";
+        configuration.setModLoaderVersion(modloaderVersion);
+        Assertions.assertNotNull(configuration.getModLoaderVersion());
     }
 
     @Test
     void getsetIncludeServerInstallationTest() {
         configuration.setIncludeServerInstallation(true);
         Assertions.assertTrue(configuration.getIncludeServerInstallation());
+    }
+
+    @Test
+    void getsetIncludeServerInstallationTestFalse() {
         configuration.setIncludeServerInstallation(false);
         Assertions.assertFalse(configuration.getIncludeServerInstallation());
     }
@@ -266,6 +478,10 @@ class ConfigurationTest {
     void getsetIncludeServerIconTest() {
         configuration.setIncludeServerIcon(true);
         Assertions.assertTrue(configuration.getIncludeServerIcon());
+    }
+
+    @Test
+    void getsetIncludeServerIconTestFalse() {
         configuration.setIncludeServerIcon(false);
         Assertions.assertFalse(configuration.getIncludeServerIcon());
     }
@@ -274,6 +490,10 @@ class ConfigurationTest {
     void getsetIncludeServerPropertiesTest() {
         configuration.setIncludeServerProperties(true);
         Assertions.assertTrue(configuration.getIncludeServerProperties());
+    }
+
+    @Test
+    void getsetIncludeServerPropertiesTestFalse() {
         configuration.setIncludeServerProperties(false);
         Assertions.assertFalse(configuration.getIncludeServerProperties());
     }
@@ -282,6 +502,10 @@ class ConfigurationTest {
     void getsetIncludeStartScriptsTest() {
         configuration.setIncludeStartScripts(true);
         Assertions.assertTrue(configuration.getIncludeStartScripts());
+    }
+
+    @Test
+    void getsetIncludeStartScriptsTestFalse() {
         configuration.setIncludeStartScripts(false);
         Assertions.assertFalse(configuration.getIncludeStartScripts());
     }
@@ -290,6 +514,10 @@ class ConfigurationTest {
     void getsetIncludeZipCreationTest() {
         configuration.setIncludeZipCreation(true);
         Assertions.assertTrue(configuration.getIncludeZipCreation());
+    }
+
+    @Test
+    void getsetIncludeZipCreationTestFalse() {
         configuration.setIncludeZipCreation(false);
         Assertions.assertFalse(configuration.getIncludeZipCreation());
     }
@@ -456,13 +684,15 @@ class ConfigurationTest {
 
     @Test
     void suggestCopyDirsTest() {
+        List<String> suggestedDirs = new ArrayList<>(Arrays.asList(
+                "config",
+                "defaultconfigs",
+                "mods",
+                "scripts",
+                "seeds"
+        ));
         String modpackDir = "backend/test/resources/forge_tests";
-        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("server_pack"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("config"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("defaultconfigs"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("mods"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("scripts"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("seeds"));
+        Assertions.assertEquals(suggestedDirs, configuration.suggestCopyDirs(modpackDir));
     }
 
     @Test
@@ -574,13 +804,15 @@ class ConfigurationTest {
     void checkModpackDirTest() {
         String modpackDirCorrect = "./backend/test/resources/forge_tests";
         Assertions.assertTrue(configuration.checkModpackDir(modpackDirCorrect));
+    }
+
+    @Test
+    void checkModpackDirTestFalse() {
         Assertions.assertFalse(configuration.checkModpackDir("modpackDir"));
     }
 
-
     @Test
     void checkCopyDirsTest() {
-        //Assert true
         String modpackDir = "backend/test/resources/forge_tests";
         List<String> copyDirs = new ArrayList<>(Arrays.asList(
                 "config",
@@ -590,7 +822,24 @@ class ConfigurationTest {
                 "defaultconfigs"
         ));
         Assertions.assertTrue(configuration.checkCopyDirs(copyDirs, modpackDir));
+    }
 
+    @Test
+    void checkCopyDirsTestFalse() {
+        String modpackDir = "backend/test/resources/forge_tests";
+        List<String> copyDirsInvalid = new ArrayList<>(Arrays.asList(
+                "configs",
+                "modss",
+                "scriptss",
+                "seedss",
+                "defaultconfigss"
+        ));
+        Assertions.assertFalse(configuration.checkCopyDirs(copyDirsInvalid, modpackDir));
+    }
+
+    @Test
+    void checkCopyDirsTestFiles() {
+        String modpackDir = "backend/test/resources/forge_tests";
         List<String> copyDirsAndFiles = new ArrayList<>(Arrays.asList(
                 "config",
                 "mods",
@@ -601,18 +850,11 @@ class ConfigurationTest {
                 "test2.txt;test2.txt"
         ));
         Assertions.assertTrue(configuration.checkCopyDirs(copyDirsAndFiles, modpackDir));
+    }
 
-
-        //Assert false
-        List<String> copyDirsInvalid = new ArrayList<>(Arrays.asList(
-                "configs",
-                "modss",
-                "scriptss",
-                "seedss",
-                "defaultconfigss"
-        ));
-        Assertions.assertFalse(configuration.checkCopyDirs(copyDirsInvalid, modpackDir));
-
+    @Test
+    void checkCopyDirsTestFilesFalse() {
+        String modpackDir = "backend/test/resources/forge_tests";
         List<String> copyDirsAndFilesFalse = new ArrayList<>(Arrays.asList(
                 "configs",
                 "modss",
@@ -625,7 +867,6 @@ class ConfigurationTest {
                 "LICENSEee;test/license.md"
         ));
         Assertions.assertFalse(configuration.checkCopyDirs(copyDirsAndFilesFalse, modpackDir));
-
     }
 
     @Test
@@ -656,66 +897,109 @@ class ConfigurationTest {
     }
 
     @Test
-    void checkModloaderTest() {
-        String Fabric = "Fabric";
-        Assertions.assertTrue(configuration.checkModloader(Fabric));
-        String Forge = "Forge";
-        Assertions.assertTrue(configuration.checkModloader(Forge));
+    void checkModloaderTestForge() {
+        Assertions.assertTrue(configuration.checkModloader("Forge"));
+    }
+
+    @Test
+    void checkModloaderTestForgeCase() {
+        Assertions.assertTrue(configuration.checkModloader("fOrGe"));
+    }
+
+    @Test
+    void checkModloaderTestFabric() {
+        Assertions.assertTrue(configuration.checkModloader("Fabric"));
+    }
+
+    @Test
+    void checkModloaderTestFabricCase() {
+        Assertions.assertTrue(configuration.checkModloader("fAbRiC"));
+    }
+
+    @Test
+    void checkModLoaderTestFalse() {
         Assertions.assertFalse(configuration.checkModloader("modloader"));
-        Assertions.assertEquals("Fabric", configuration.setModLoaderCase("fAbRiC"));
+    }
+
+    @Test
+    void setModLoaderCaseTestForge() {
         Assertions.assertEquals("Forge", configuration.setModLoaderCase("fOrGe"));
     }
 
     @Test
-    void setModLoaderCaseTest() {
-        String forge = "fOrGe";
-        String fabric = "fAbRiC";
-        Assertions.assertEquals("Forge", configuration.setModLoaderCase(forge));
-        Assertions.assertEquals("Fabric", configuration.setModLoaderCase(fabric));
+    void setModLoaderCaseTestFabric() {
+        Assertions.assertEquals("Fabric", configuration.setModLoaderCase("fAbRiC"));
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkModloaderVersionTest() {
-        Assertions.assertTrue(configuration.checkModloaderVersion("Fabric", "0.11.3"));
-        Assertions.assertFalse(configuration.checkModloaderVersion("Fabric", "0.90.3"));
-        new File("fabric-manifest.xml").delete();
-
-        Assertions.assertTrue(configuration.checkModloaderVersion("Forge", "36.1.2"));
-        Assertions.assertFalse(configuration.checkModloaderVersion("Forge", "90.0.0"));
-        new File("forge-manifest.json").delete();
+    void setModLoaderCaseTestForgeCorrected() {
+        Assertions.assertEquals("Forge", configuration.setModLoaderCase("eeeeefOrGeeeeee"));
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void setModLoaderCaseTestFabricCorrected() {
+        Assertions.assertEquals("Fabric", configuration.setModLoaderCase("hufwhafasfabricfagrsg"));
+    }
+
+    @Test
+    void checkModloaderVersionTestForge() {
+        Assertions.assertTrue(configuration.checkModloaderVersion("Forge", "36.1.2"));
+    }
+
+    @Test
+    void checkModloaderVersionTestForgeFalse() {
+        Assertions.assertFalse(configuration.checkModloaderVersion("Forge", "90.0.0"));
+    }
+
+    @Test
+    void checkModloaderVersionTestFabric() {
+        Assertions.assertTrue(configuration.checkModloaderVersion("Fabric", "0.11.3"));
+    }
+
+    @Test
+    void checkModloaderVersionTestFabricFalse() {
+        Assertions.assertFalse(configuration.checkModloaderVersion("Fabric", "0.90.3"));
+    }
+
     @Test
     void isMinecraftVersionCorrectTest() {
         Assertions.assertTrue(configuration.isMinecraftVersionCorrect("1.16.5"));
-        Assertions.assertFalse(configuration.isMinecraftVersionCorrect("1.99.5"));
-        new File("mcmanifest.json").delete();
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isMinecraftVersionCorrectTestFalse() {
+        Assertions.assertFalse(configuration.isMinecraftVersionCorrect("1.99.5"));
+    }
+
     @Test
     void isFabricVersionCorrectTest() {
         Assertions.assertTrue(configuration.isFabricVersionCorrect("0.11.3"));
-        Assertions.assertFalse(configuration.isFabricVersionCorrect("0.90.3"));
-        new File("fabric-manifest.xml").delete();
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void isFabricVersionCorrectTestFalse() {
+        Assertions.assertFalse(configuration.isFabricVersionCorrect("0.90.3"));
+    }
+
     @Test
     void isForgeVersionCorrectTest() {
         Assertions.assertTrue(configuration.isForgeVersionCorrect("36.1.2"));
+    }
+
+    @Test
+    void isForgeVersionCorrectTestFalse() {
         Assertions.assertFalse(configuration.isForgeVersionCorrect("99.0.0"));
-        new File("forge-manifest.json").delete();
     }
 
     @Test
     void latestFabricLoaderTest() {
-        Assertions.assertNotNull(configuration.latestFabricLoader());
+        Assertions.assertTrue(configuration.latestFabricLoader().matches("\\d+\\.\\d+\\.\\d+"));
     }
 
-
+    @Test
+    void latestFabricLoaderTestNotNull() {
+        Assertions.assertNotNull(configuration.latestFabricLoader());
+    }
 
     @Test
     void buildStringTest() {
@@ -732,7 +1016,7 @@ class ConfigurationTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void writeConfigToFileTest() {
+    void writeConfigToFileTestForge() {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
@@ -769,34 +1053,8 @@ class ConfigurationTest {
         String javaPath;
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
 
-        if (autoJavaPath.startsWith("C:")) {
-            autoJavaPath = String.format("%s.exe", autoJavaPath);
-        }
-        if (new File("/usr/bin/java").exists()) {
-            javaPath = "/usr/bin/java";
-        } else {
-            javaPath = autoJavaPath;
-        }
-
-        Assertions.assertTrue(configuration.writeConfigToFile(
-                "./backend/test/resources/fabric_tests",
-                configuration.buildString(clientMods.toString()),
-                configuration.buildString(copyDirs.toString()),
-                true,
-                javaPath,
-                "1.16.5",
-                "Fabric",
-                "0.11.3",
-                true,
-                true,
-                true,
-                true,
-                new File("./serverpackcreatorfabric.conf"),
-                false
-        ));
-
-        Assertions.assertTrue(new File("./serverpackcreatorfabric.conf").exists());
-        new File("./serverpackcreatorfabric.conf").delete();
+        if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
+        if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
 
         Assertions.assertTrue(configuration.writeConfigToFile(
                 "./backend/test/resources/forge_tests",
@@ -814,9 +1072,69 @@ class ConfigurationTest {
                 new File("./serverpackcreatorforge.conf"),
                 false
         ));
-
         Assertions.assertTrue(new File("./serverpackcreatorforge.conf").exists());
         new File("./serverpackcreatorforge.conf").delete();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void writeConfigToFileTestFabric() {
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        ));
+
+        String javaPath;
+        String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
+
+        if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
+        if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
+
+        Assertions.assertTrue(configuration.writeConfigToFile(
+                "./backend/test/resources/fabric_tests",
+                configuration.buildString(clientMods.toString()),
+                configuration.buildString(copyDirs.toString()),
+                true,
+                javaPath,
+                "1.16.5",
+                "Fabric",
+                "0.11.3",
+                true,
+                true,
+                true,
+                true,
+                new File("./serverpackcreatorfabric.conf"),
+                false
+        ));
+        Assertions.assertTrue(new File("./serverpackcreatorfabric.conf").exists());
+        new File("./serverpackcreatorfabric.conf").delete();
+    }
 }
