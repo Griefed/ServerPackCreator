@@ -618,8 +618,10 @@ public class CreateServerPackTab extends JComponent {
                     String tmpModloader = CONFIGURATION.setModLoaderCase(newConfigFile.getString("modLoader"));
                     if (tmpModloader.equals("Fabric")) {
                         sliderModloader.setValue(1);
+                        setChosenModloader("Fabric");
                     } else {
                         sliderModloader.setValue(0);
+                        setChosenModloader("Forge");
                     }
 
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
@@ -922,8 +924,10 @@ public class CreateServerPackTab extends JComponent {
                 String tmpModloader = CONFIGURATION.setModLoaderCase(config.getString("modLoader"));
                 if (tmpModloader.equals("Fabric")) {
                     sliderModloader.setValue(1);
+                    setChosenModloader("Fabric");
                 } else {
                     sliderModloader.setValue(0);
+                    setChosenModloader("Forge");
                 }
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
