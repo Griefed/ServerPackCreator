@@ -35,9 +35,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,7 +43,7 @@ import java.util.concurrent.Executors;
  * This class creates the tab which displays the labels, textfields, buttons and functions in order to create a new
  * server pack. Available are:<br>
  * JLabels and JTextFields for modpackDir, clientMods, copyDirs, javaPath, minecraftVersion, modLoader, modLoaderVersion<br>
- * Checkboxes for Include- serverInstallation, serverIcon, serverProperties, startScripts, ZIParchive<br>
+ * Checkboxes for Include- serverInstallation, serverIcon, serverProperties, startScripts, ZIP-archive<br>
  * Buttons opening the file explorer and choosing: modpackDir, clientMods, copyDirs, javaPath, loadConfigFromFile<br>
  * A button for displaying an information windows which provides detailed explanation of the important parts of the GUI.<br>
  * The button start the generation of a new server pack.<br>
@@ -124,7 +122,6 @@ public class CreateServerPackTab extends JComponent {
     private JTextField textCopyDirs;
     private JTextField textJavaPath;
     private JTextField textMinecraftVersion;
-    private JTextField textModloader;
     private JTextField textModloaderVersion;
 
     private JTextArea helpTextArea;
@@ -149,11 +146,22 @@ public class CreateServerPackTab extends JComponent {
     private JFileChooser javaChooser;
     private JFileChooser configChooser;
 
+    private String chosenModloader;
+
+    public String getChosenModloader() {
+        return chosenModloader;
+    }
+
+    public void setChosenModloader(String chosenModloader) {
+        this.chosenModloader = chosenModloader;
+    }
+
     /**
      * Create the tab which displays every component related to configuring ServerPackCreator and creating a server pack.
      * @return JComponent. Returns a JPanel everything needed for displaying the CreateServerPackTab.
      * */
     JComponent createServerPackTab() {
+
         createServerPackPanel = new JPanel(false);
         createServerPackPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -240,12 +248,48 @@ public class CreateServerPackTab extends JComponent {
         constraints.gridy = 10;
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModloader, constraints);
-        textModloader = new JTextField("");
-        textModloader.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader.tip"));
+
+        //Slider for modloader decision
+        JLabel labelModloaderSelected = new JLabel();
+        labelModloaderSelected.setFont(new Font("Serif", Font.BOLD, 14));
+        constraints.gridx = 1;
+        constraints.gridy = 11;
+        constraints.insets = new Insets(0,10,0,0);
+        createServerPackPanel.add(labelModloaderSelected, constraints);
+        JSlider sliderModloader = new JSlider(JSlider.HORIZONTAL, 1,0);
+        sliderModloader.setMajorTickSpacing(2);
+        sliderModloader.setMinorTickSpacing(1);
+        sliderModloader.setPaintLabels(true);
+        sliderModloader.setPaintTicks(true);
+        sliderModloader.setFont(new Font("Serif", Font.PLAIN,labelModloader.getFont().getSize()));
+        LOG.debug("Label font size: " + labelModloader.getFont().getSize());
+        Dictionary<Integer, JComponent> dictionary = new Hashtable<>();
+        dictionary.put(0, new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge")));
+        dictionary.put(1, new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric")));
+        sliderModloader.setLabelTable(dictionary);
+        sliderModloader.setPaintLabels(true);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridwidth = 1;
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.insets = new Insets(0,10,0,0);
-        createServerPackPanel.add(textModloader, constraints);
+        sliderModloader.addChangeListener(e -> {
+            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.slider.is"), sliderModloader.getValue()));
+            int sliderValue = sliderModloader.getValue();
+
+            if (sliderValue == 0) {
+                setChosenModloader("Forge");
+                labelModloaderSelected.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge.selected"));
+                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.slider.set"), getChosenModloader()));
+            } else {
+                setChosenModloader("Fabric");
+                labelModloaderSelected.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric.selected"));
+                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.slider.set"), getChosenModloader()));
+            }
+        });
+        createServerPackPanel.add(sliderModloader, constraints);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridwidth = 2;
 
         //Label and textfield modloaderVersion
         JLabel labelModloaderVersion = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion"));
@@ -571,7 +615,12 @@ public class CreateServerPackTab extends JComponent {
 
                     textMinecraftVersion.setText(newConfigFile.getString("minecraftVersion"));
 
-                    textModloader.setText(newConfigFile.getString("modLoader"));
+                    String tmpModloader = CONFIGURATION.setModLoaderCase(newConfigFile.getString("modLoader"));
+                    if (tmpModloader.equals("Fabric")) {
+                        sliderModloader.setValue(1);
+                    } else {
+                        sliderModloader.setValue(0);
+                    }
 
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
 
@@ -709,7 +758,7 @@ public class CreateServerPackTab extends JComponent {
                     checkBoxServer.isSelected(),
                     textJavaPath.getText(),
                     textMinecraftVersion.getText(),
-                    textModloader.getText(),
+                    getChosenModloader(),
                     textModloaderVersion.getText(),
                     checkBoxIcon.isSelected(),
                     checkBoxProperties.isSelected(),
@@ -742,7 +791,7 @@ public class CreateServerPackTab extends JComponent {
                         checkBoxServer.isSelected(),
                         textJavaPath.getText(),
                         textMinecraftVersion.getText(),
-                        textModloader.getText(),
+                        getChosenModloader(),
                         textModloaderVersion.getText(),
                         checkBoxIcon.isSelected(),
                         checkBoxProperties.isSelected(),
@@ -775,7 +824,7 @@ public class CreateServerPackTab extends JComponent {
                         buttonGenerateServerPack.setEnabled(true);
                         labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         textModpackDir.setText(CONFIGURATION.getModpackDir());
-                        textCopyDirs.setText(CONFIGURATION.getCopyDirs().toString().replace("[","").replace("]",""));
+                        textCopyDirs.setText(CONFIGURATION.getCopyDirs().toString());
 
                         JTextArea textArea = new JTextArea();
                         textArea.setOpaque(false);
@@ -870,7 +919,12 @@ public class CreateServerPackTab extends JComponent {
 
                 textMinecraftVersion.setText(config.getString("minecraftVersion"));
 
-                textModloader.setText(config.getString("modLoader"));
+                String tmpModloader = CONFIGURATION.setModLoaderCase(config.getString("modLoader"));
+                if (tmpModloader.equals("Fabric")) {
+                    sliderModloader.setValue(1);
+                } else {
+                    sliderModloader.setValue(0);
+                }
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
 

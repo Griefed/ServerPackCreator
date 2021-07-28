@@ -189,9 +189,9 @@ public class CreateGui extends JPanel {
      */
     public void mainGUI() {
         SwingUtilities.invokeLater(() -> {
-            //Bold fonts = true
+            // Bold fonts = true
             UIManager.put("swing.boldMetal", true);
-
+            UIManager.put("Slider.focus", UIManager.get("Slider.background"));
             /*
              * A little secret setting which allows the user to temporarily overwrite the Look and Feel of ServerPackCreator.
              * Note: This setting is not carried over to new configuration files written by ServerPackCreator when,

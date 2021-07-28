@@ -1298,7 +1298,7 @@ public class Configuration {
      * @param modloader String. The String to check for case-insensitive cases of either Forge or Fabric.
      * @return String. Returns a normalized String of the specified modloader.
      */
-    String setModLoaderCase(String modloader) {
+    public String setModLoaderCase(String modloader) {
         String returnLoader = null;
 
         if (modloader.equalsIgnoreCase("Forge")) {
