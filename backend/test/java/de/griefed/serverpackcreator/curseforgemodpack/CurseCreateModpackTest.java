@@ -303,10 +303,10 @@ class CurseCreateModpackTest {
                             REPLACE_EXISTING
                     );
 
-                    appLogger.debug(String.format(localizationManager.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath()));
+                    appLogger.debug(String.format(localizationManager.getLocalizedString("createserverpack.log.debug.copyfiles"), file.toAbsolutePath()));
                 } catch (IOException ex) {
                     if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                        appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);
+                        appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.copyfiles.mods"), ex);
                     }
                 }
             });
@@ -314,7 +314,7 @@ class CurseCreateModpackTest {
             files.close();
 
         } catch (IOException ex) {
-            appLogger.error(localizationManager.getLocalizedString("copyfiles.log.error.copyfiles"), ex);
+            appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.copyfiles"), ex);
         }
 
         curseCreateModpack.cleanupEnvironment(serverDir);

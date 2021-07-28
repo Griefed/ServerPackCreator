@@ -78,8 +78,8 @@ public class ModloaderInstallerLogTab extends JComponent {
         Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-                    if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.enter")) ||
-                            line.contains(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.enter"))) {
+                    if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter")) ||
+                            line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"))) {
                         textArea.setText("");
                     }
                     textArea.append(line + "\n");
