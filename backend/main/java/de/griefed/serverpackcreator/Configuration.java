@@ -259,7 +259,7 @@ public class Configuration {
         try {
             this.config = ConfigFactory.parseFile(newConfig);
         } catch (ConfigException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkconfig.start"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
         }
     }
 
@@ -555,16 +555,16 @@ public class Configuration {
     public boolean checkConfigFile(File configFile, boolean shouldModpackBeCreated) {
         boolean configHasError = false;
 
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.start"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
 
         try {
             setConfig(configFile);
         } catch (ConfigException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkconfig.start"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
         }
 
         if (getConfig().getStringList("clientMods").isEmpty()) {
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkconfig.clientmods"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
             setClientMods(getFallbackModsList());
         } else {
             setClientMods(getConfig().getStringList("clientMods"));
@@ -591,7 +591,7 @@ public class Configuration {
                 configHasError = isCurse();
 
             } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipmodpackcreation"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
             }
 
         } else {
@@ -612,9 +612,9 @@ public class Configuration {
                 getIncludeZipCreation());
 
         if (!configHasError) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.success"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkconfig.failure"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.failure"));
         }
 
         return configHasError;
@@ -643,7 +643,7 @@ public class Configuration {
      * @param modpackDir String. Should an existing modpack be specified, all configurations are read from the provided
      *                   configuration file and checks are made in this directory.
      * @return Boolean. Returns true if an error is found during configuration check.
-     */ // TODO: Replace with lang keys
+     */
     boolean isDir(String modpackDir) {
         boolean configHasError = false;
         setModpackDir(modpackDir);
@@ -651,11 +651,11 @@ public class Configuration {
         if (checkCopyDirs(getConfig().getStringList("copyDirs"), getModpackDir())) {
 
             setCopyDirs(getConfig().getStringList("copyDirs"));
-            LOG.debug("copyDirs setting check passed.");
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
 
         } else {
             configHasError = true;
-            LOG.error("There's something wrong with your setting of directories to include in your server pack.");
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
         }
 
         if (getIncludeServerInstallation()) {
@@ -666,61 +666,59 @@ public class Configuration {
             if (checkJavaPath(configJavaPath)) {
 
                 setJavaPath(configJavaPath);
-                LOG.debug("javaPath setting check passed.");
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.javapath"));
 
             } else if (checkJavaPath(configJavaPath + ".exe")) {
 
                 setJavaPath(configJavaPath + ".exe");
-                LOG.debug(".exe had to be added to javaPath.");
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.exe"));
 
             } else if (checkJavaPath(systemJavaPath)) {
 
                 setJavaPath(systemJavaPath);
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set.info"), systemJavaPath));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set.info"), systemJavaPath));
 
             } else {
                 configHasError = true;
-                LOG.error("Error: There's something wrong with your Java path setting.");
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.javapath"));
             }
 
             if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
 
                 setMinecraftVersion(getConfig().getString("minecraftVersion"));
-                LOG.debug("minecraftVersion setting check passed.");
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
 
             } else {
                 configHasError = true;
-                LOG.error("There's something wrong with your Minecraft version setting.");
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
             }
 
             if (checkModloader(getConfig().getString("modLoader"))) {
 
                 setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
-                LOG.debug("modLoader setting check passed.");
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
                 if (checkModloaderVersion(getModLoader(), getConfig().getString("modLoaderVersion"))) {
 
                     setModLoaderVersion(getConfig().getString("modLoaderVersion"));
-                    LOG.debug("modLoaderVersion setting check passed.");
+                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
 
                 } else {
                     configHasError = true;
-                    LOG.error("There's something wrong with your Modloader version setting.");
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
                 }
 
             } else {
                 configHasError = true;
-                LOG.error("There's something wrong with your Modloader or Modloader version setting.");
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
             }
 
-
-
         } else {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipstart"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipjava"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipminecraft"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipmodlaoder"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkconfig.skipmodloaderversion"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipstart"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipjava"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipminecraft"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodlaoder"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodloaderversion"));
         }
         return configHasError;
     }
@@ -748,7 +746,7 @@ public class Configuration {
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}<br>
      * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
      * project name and displayname, or when the creation of the modpack fails.
-     */ // TODO: Replace with lang keys
+     */
     boolean isCurse() {
         boolean configHasError = false;
         try {
@@ -764,20 +762,20 @@ public class Configuration {
                         displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).displayName();
 
                     } catch (NullPointerException npe) {
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.iscurse.display"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.display"));
 
                         try {
                             displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).nameOnDisk();
 
                         } catch (NullPointerException npe2) {
 
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.file"), npe2);
+                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), npe2);
                             displayName = null;
                         }
                     }
 
                 } catch (CurseException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.curseforge"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.curseforge"), ex);
                 }
 
                 if (displayName != null && projectName != null) {
@@ -804,20 +802,21 @@ public class Configuration {
                                     .replace("[", ""));
 
                             if (containsFabric(modpack)) {
-                                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.iscurse.fabric"));
+                                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.iscurse.fabric"));
 
                                 setModLoader("Fabric");
                                 setModLoaderVersion(latestFabricLoader());
 
                             } else {
-                                LOG.debug("Setting modloader to Forge.");
+                                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.iscurse.forge"));
 
                                 setModLoader("Forge");
                                 setModLoaderVersion(modLoaderVersion[1]);
 
                             }
                         } catch (IOException ex) {
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.json"), ex);
+                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.json"), ex);
                         }
 
                         String systemJavaPath = getJavaPathFromSystem();
@@ -826,26 +825,26 @@ public class Configuration {
                         if (checkJavaPath(configJavaPath)) {
 
                             setJavaPath(configJavaPath);
-                            LOG.debug("javaPath setting check passed.");
+                            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.javapath"));
 
                         } else if (checkJavaPath(configJavaPath + ".exe")) {
 
                             setJavaPath(configJavaPath + ".exe");
-                            LOG.debug(".exe had to be added to javaPath.");
+                            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.exe"));
 
                         } else if (checkJavaPath(systemJavaPath)) {
 
                             setJavaPath(systemJavaPath);
-                            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set.info"), systemJavaPath));
+                            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set.info"), systemJavaPath));
 
                         } else {
                             configHasError = true;
-                            LOG.error("Error: There's something wrong with your Java path setting.");
+                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.javapath"));
                         }
 
                         setCopyDirs(suggestCopyDirs(getModpackDir()));
 
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.iscurse.replace"));
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
 
                         writeConfigToFile(
                                 getModpackDir(),
@@ -865,22 +864,22 @@ public class Configuration {
                         );
 
                     } else {
-                        LOG.error("Error: Something went wrong during the creation of CurseForge modpack.");
+                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.create"));
                         configHasError = true;
                     }
 
                 } else {
-                    LOG.error("Error: Either display name or project name are empty. Did you set the IDs correctly?");
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.ids"));
                     configHasError = true;
                 }
 
             } else {
-                LOG.error("Error: Project not found on CurseForge");
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.notfound"));
                 configHasError = true;
             }
 
         } catch (CurseException | IllegalArgumentException ex) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.project"), getProjectID()), ex);
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), getProjectID()), ex);
             configHasError = true;
         }
         return configHasError;
@@ -905,7 +904,7 @@ public class Configuration {
 
             if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.containsfabric"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
                 hasJumploader = true;
             }
         }
@@ -923,7 +922,7 @@ public class Configuration {
      * directories.
      */
     List<String> suggestCopyDirs(String modpackDir) {
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.suggestcopydirs.start"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
 
         List<String> dirsNotToCopy = new ArrayList<>(Arrays.asList(
                 "overrides",
@@ -944,7 +943,7 @@ public class Configuration {
                 }
             }
         } catch (NullPointerException np) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.suggestcopydirs"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.suggestcopydirs"));
         }
 
         for (int idirs = 0; idirs < dirsNotToCopy.size(); idirs++) {
@@ -954,7 +953,7 @@ public class Configuration {
             dirsInModpack.removeIf(n -> (n.contains(dirsNotToCopy.get(i))));
         }
 
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.suggestcopydirs.list"),dirsInModpack));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
 
         return dirsInModpack;
     }
@@ -986,7 +985,7 @@ public class Configuration {
                 }
 
             } catch (CurseException | NoSuchElementException ex) {
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.project"), curseProjectID), ex);
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID), ex);
                 configCorrect = false;
             }
 
@@ -998,19 +997,19 @@ public class Configuration {
                 }
 
             } catch (CurseException | NoSuchElementException ex) {
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.iscurse.file"), curseFileID), ex);
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID), ex);
                 configCorrect = false;
             }
 
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkcurseforge.info"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.info"));
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.checkcurseforge.return"), getProjectID(), getProjectFileID()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.return"), getProjectID(), getProjectFileID()));
 
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkcurseforge.warn"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkcurseforge.warn"));
 
 
         } else {
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkcurseforge.warn2"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkcurseforge.warn2"));
         }
 
         return configCorrect;
@@ -1061,7 +1060,7 @@ public class Configuration {
             returnBoolean = false;
 
         } else {
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.converttoboolean.warn"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.converttoboolean.warn"));
             returnBoolean = false;
         }
 
@@ -1100,21 +1099,21 @@ public class Configuration {
                      boolean includeScripts,
                      boolean includeZip) {
 
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.start"));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.modpackdir"), modpackDirectory));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.start"));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modpackdir"), modpackDirectory));
 
         if (clientsideMods.isEmpty()) {
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.printconfig.noclientmods"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.printconfig.noclientmods"));
         } else {
 
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.clientmods"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.clientmods"));
             for (String mod : clientsideMods) {
                 LOG.info(String.format("    %s", mod));
             }
 
         }
 
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.copydirs"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.copydirs"));
 
         if (copyDirectories != null) {
 
@@ -1123,18 +1122,18 @@ public class Configuration {
             }
 
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.printconfig.copydirs"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.printconfig.copydirs"));
         }
 
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.server"), installServer));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.javapath"), javaInstallPath));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.minecraftversion"), minecraftVer));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.modloader"), modloader));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.modloaderversion"), modloaderVersion));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.icon"), includeIcon));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.properties"), includeProperties));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.scripts"), includeScripts));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.info.printconfig.zip"), includeZip));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.server"), installServer));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javapath"), javaInstallPath));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.minecraftversion"), minecraftVer));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modloader"), modloader));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modloaderversion"), modloaderVersion));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.icon"), includeIcon));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.properties"), includeProperties));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.scripts"), includeScripts));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"), includeZip));
     }
 
     /**
@@ -1150,11 +1149,11 @@ public class Configuration {
 
         if (modpackDir.equals("")) {
 
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodpackdir"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
 
         } else if (!(new File(modpackDir).isDirectory())) {
 
-            LOG.warn(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkmodpackdir"), modpackDir));
+            LOG.warn(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkmodpackdir"), modpackDir));
 
         } else {
 
@@ -1184,7 +1183,7 @@ public class Configuration {
 
         if (directoriesToCopy.isEmpty()) {
 
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkcopydirs.empty"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
             configCorrect = false;
 
         } else {
@@ -1200,7 +1199,7 @@ public class Configuration {
 
                     if (!sourceFileToCheck.exists()) {
 
-                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
                         configCorrect = false;
                     }
 
@@ -1211,7 +1210,7 @@ public class Configuration {
 
                     if (!dirToCheck.exists() || !dirToCheck.isDirectory()) {
 
-                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
                         configCorrect = false;
                     }
 
@@ -1231,16 +1230,16 @@ public class Configuration {
     public String getJavaPathFromSystem() {
         String autoJavaPath;
 
-        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.info"));
+        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.info"));
         autoJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
 
         if (autoJavaPath.startsWith("C:")) {
-            // TODO: Replace with lang key
-            LOG.debug("We're running on Windows. Ensuring javaPath ends with .exe");
+
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.javawindows"));
             autoJavaPath = String.format("%s.exe", autoJavaPath);
         }
 
-        LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set"), autoJavaPath));
+        LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), autoJavaPath));
 
         return autoJavaPath;
     }
@@ -1264,11 +1263,11 @@ public class Configuration {
         } else if (!new File(pathToJava).exists() && new File(pathToJava + ".exe").exists()) {
 
             configCorrect = true;
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkjavapath.windows"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkjavapath.windows"));
 
         } else {
 
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkjavapath"), pathToJava));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkjavapath"), pathToJava));
         }
         return configCorrect;
     }
@@ -1287,7 +1286,7 @@ public class Configuration {
 
         } else {
 
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloader"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
         }
         return configCorrect;
     }
@@ -1344,7 +1343,7 @@ public class Configuration {
             isVersionCorrect = true;
 
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloaderversion"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloaderversion"));
         }
         return isVersionCorrect;
     }
@@ -1373,11 +1372,11 @@ public class Configuration {
 
             } catch (Exception ex) {
 
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.validate"), minecraftVersion), ex);
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isminecraftversioncorrect.validate"), minecraftVersion), ex);
                 return false;
             }
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isminecraftversioncorrect.empty"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isminecraftversioncorrect.empty"));
             return false;
         }
     }
@@ -1417,12 +1416,12 @@ public class Configuration {
                 return manifestXML.trim().contains(fabricVersion);
 
             } catch (Exception ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.validate"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isfabricversioncorrect.validate"), ex);
                 return false;
             }
 
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isfabricversioncorrect.empty"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isfabricversioncorrect.empty"));
             return false;
         }
     }
@@ -1463,12 +1462,12 @@ public class Configuration {
 
             } catch (Exception ex) {
 
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isforgeversioncorrect.validate"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isforgeversioncorrect.validate"), ex);
                 return false;
             }
         } else {
 
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.isforgeversioncorrect.empty"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isforgeversioncorrect.empty"));
             return false;
         }
     }
@@ -1498,7 +1497,7 @@ public class Configuration {
 
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
             result = "0.11.6";
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.latestfabricloader.parse"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.latestfabricloader.parse"), ex);
         }
 
         return result;
@@ -1554,56 +1553,56 @@ public class Configuration {
 
         Scanner reader = new Scanner(System.in);
 
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.start"), "-cgen"));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.start"), "-cgen"));
         do {
 //--------------------------------------------------------------------------------------------MODPACK DIRECTORY---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modpack.enter"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modpack.example"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.example"));
 
             do {
 
                 do {
-                    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modpack.cli") + " ");
+                    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.cli") + " ");
                     tmpModpackDir = reader.nextLine();
                 } while (!checkModpackDir(tmpModpackDir));
 
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), tmpModpackDir));
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modpack.checkreturninfo"));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), tmpModpackDir));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.checkreturninfo"));
 
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
             } while (!readBoolean());
 
             modpackDir = tmpModpackDir.replace("\\", "/");
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), modpackDir));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), modpackDir));
             System.out.println();
 
 //-----------------------------------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.clientmods.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.clientmods.enter"));
             do {
                 clientMods.clear();
 
                 clientMods.addAll(readStringArray());
 
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), clientMods));
 
                 if (clientMods.isEmpty()) {
                     clientMods = getFallbackModsList();
 
-                    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.checkconfig.clientmods"));
+                    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
 
                     for (String mod : clientMods) {
                         LOG.warn(String.format("    %s", mod));
                     }
                 }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.clientmods.checkreturninfo"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.clientmods.checkreturninfo"));
 
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
             } while (!readBoolean());
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), clientMods));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), clientMods));
 
             tmpClientMods = new String[clientMods.size()];
             clientMods.toArray(tmpClientMods);
@@ -1611,27 +1610,27 @@ public class Configuration {
             System.out.println();
 
 //------------------------------------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.enter"));
 
             List<String> dirList = Arrays.asList(Objects.requireNonNull(new File(modpackDir).list((current, name) -> new File(current, name).isDirectory())));
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.dirsinmodpack"), dirList.toString().replace("[","").replace("]","")));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.dirsinmodpack"), dirList.toString().replace("[","").replace("]","")));
             do {
                 do {
                     copyDirs.clear();
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.specify"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.specify"));
                     copyDirs.addAll(readStringArray());
 
                 } while (!checkCopyDirs(copyDirs, modpackDir));
 
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), copyDirs));
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.copydirs.checkreturninfo"));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), copyDirs));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.checkreturninfo"));
 
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
             } while (!readBoolean());
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), copyDirs));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), copyDirs));
 
             tmpCopyDirs = new String[copyDirs.size()];
             copyDirs.toArray(tmpCopyDirs);
@@ -1639,58 +1638,58 @@ public class Configuration {
             System.out.println();
 
 //-------------------------------------------------------------WHETHER TO INCLUDE MODLOADER SERVER INSTALLATION---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.server.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.server.enter"));
 
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.server.include") + " ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.server.include") + " ");
             includeServerInstallation = readBoolean();
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeServerInstallation));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeServerInstallation));
 
 //-------------------------------------------------------------------------------MINECRAFT VERSION MODPACK USES---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.minecraft.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.minecraft.enter"));
 
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.minecraft.specify") + " ");
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.minecraft.specify") + " ");
                 minecraftVersion = reader.nextLine();
 
             } while (!isMinecraftVersionCorrect(minecraftVersion));
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), minecraftVersion));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), minecraftVersion));
             System.out.println();
 
 //---------------------------------------------------------------------------------------MODLOADER MODPACK USES---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloader.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloader.enter"));
 
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloader.cli") + " ");
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloader.cli") + " ");
                 modLoader = reader.nextLine();
 
             } while (!checkModloader(modLoader));
 
             modLoader = setModLoaderCase(modLoader);
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), modLoader));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), modLoader));
             System.out.println();
 
 //----------------------------------------------------------------------------VERSION OF MODLOADER MODPACK USES---------
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloaderversion.enter"), modLoader));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloaderversion.enter"), modLoader));
 
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.modloaderversion.cli") + " ");
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloaderversion.cli") + " ");
                 modLoaderVersion = reader.nextLine();
 
             } while (!checkModloaderVersion(modLoader, modLoaderVersion));
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), modLoaderVersion));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), modLoaderVersion));
             System.out.println();
 
 //------------------------------------------------------------------------------------PATH TO JAVA INSTALLATION---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.enter"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.enter2"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.example"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.enter2"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.example"));
 
             do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.java.cli") + " ");
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.cli") + " ");
 
                 if (!checkJavaPath(getJavaPathFromSystem())) {
 
@@ -1700,7 +1699,7 @@ public class Configuration {
 
                     javaPath = getJavaPathFromSystem();
 
-                    System.out.println(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.warn.getjavapath.set"), javaPath));
+                    System.out.println(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), javaPath));
                 }
 
             } while (!checkJavaPath(javaPath));
@@ -1708,39 +1707,39 @@ public class Configuration {
             System.out.println();
 
 //------------------------------------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.icon.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.icon.enter"));
 
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.icon.cli") + " ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.icon.cli") + " ");
             includeServerIcon = readBoolean();
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeServerIcon));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeServerIcon));
             System.out.println();
 
 //----------------------------------------------------------WHETHER TO INCLUDE SERVER.PROPERTIES IN SERVER PACK---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.properties.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.properties.enter"));
 
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.properties.cli") + " ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.properties.cli") + " ");
             includeServerProperties = readBoolean();
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeServerProperties));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeServerProperties));
             System.out.println();
 
 //--------------------------------------------------------------WHETHER TO INCLUDE START SCRIPTS IN SERVER PACK---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.scripts.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.scripts.enter"));
 
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.scripts.cli") + " ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.scripts.cli") + " ");
             includeStartScripts = readBoolean();
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeStartScripts));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeStartScripts));
             System.out.println();
 
 //----------------------------------------------------WHETHER TO INCLUDE CREATION OF ZIP-ARCHIVE OF SERVER PACK---------
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.zip.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.zip.enter"));
 
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.zip.cli") + " ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.zip.cli") + " ");
             includeZipCreation = readBoolean();
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.checkreturn"), includeZipCreation));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeZipCreation));
 
 //------------------------------------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
             printConfig(modpackDir,
@@ -1755,9 +1754,9 @@ public class Configuration {
                     includeServerProperties,
                     includeStartScripts,
                     includeZipCreation);
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.config.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.enter"));
 
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.answer") + " ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
         } while (!readBoolean());
         reader.close();
@@ -1779,7 +1778,7 @@ public class Configuration {
                 getConfigFile(),
                 false
         )) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.info.config.written"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.written"));
         }
     }
 
@@ -1845,7 +1844,7 @@ public class Configuration {
                 return false;
 
             } else {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("clisetup.log.error.answer"));
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.answer"));
             }
         }
     }

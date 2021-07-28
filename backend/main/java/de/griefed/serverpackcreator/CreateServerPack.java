@@ -263,7 +263,7 @@ public class CreateServerPack {
      */
     void cleanupEnvironment(String modpackDir) {
         if (new File(String.format("%s/server_pack", modpackDir)).exists()) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.cleanupenvironment.folder.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.folder.enter"));
             Path serverPack = Paths.get(String.format("%s/server_pack", modpackDir));
             try {
                 Files.walkFileTree(serverPack,
@@ -283,18 +283,18 @@ public class CreateServerPack {
                             }
                         });
             } catch (IOException ex) {
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.cleanupenvironment.folder.delete"), modpackDir));
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupenvironment.folder.delete"), modpackDir));
             } finally {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.cleanupenvironment.folder.complete"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.folder.complete"));
             }
         }
         if (new File(String.format("%s/server_pack.zip", modpackDir)).exists()) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.cleanupenvironment.zip.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.zip.enter"));
             boolean isZipDeleted = new File(String.format("%s/server_pack.zip", modpackDir)).delete();
             if (isZipDeleted) {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.cleanupenvironment.zip.complete"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.zip.complete"));
             } else {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.cleanupenvironment.zip.delete"));
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupenvironment.zip.delete"));
             }
         }
     }
@@ -307,7 +307,7 @@ public class CreateServerPack {
      */
     void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
         if (modLoader.equalsIgnoreCase("Forge") && includeStartScripts) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copystartscripts.forge"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.forge"));
             try {
                 Files.copy(
                         Paths.get(String.format("./server_files/%s", getForgeWindowsFile())),
@@ -320,10 +320,10 @@ public class CreateServerPack {
                         REPLACE_EXISTING
                 );
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copystartscripts"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copystartscripts"), ex);
             }
         } else if (modLoader.equalsIgnoreCase("Fabric") && includeStartScripts) {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copystartscripts.fabric"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.fabric"));
             try {
                 Files.copy(
                         Paths.get(String.format("./server_files/%s", getFabricWindowsFile())),
@@ -336,10 +336,10 @@ public class CreateServerPack {
                         REPLACE_EXISTING
                 );
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copystartscripts"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copystartscripts"), ex);
             }
         } else {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloader"));
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
         }
     }
 
@@ -360,7 +360,7 @@ public class CreateServerPack {
         try {
             Files.createDirectories(Paths.get(serverPath));
         } catch (IOException ex) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createmodpack.log.error.unziparchive.createdir"), serverPath));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.unziparchive.createdir"), serverPath));
         }
 
         for (String directory : directoriesToCopy) {
@@ -368,7 +368,7 @@ public class CreateServerPack {
             String clientDir = String.format("%s/%s", modpackDir, directory);
             String serverDir = String.format("%s/%s", serverPath, directory);
 
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyfiles.setup"), directory));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), directory));
 
             if (directory.contains(";")) {
 
@@ -379,7 +379,7 @@ public class CreateServerPack {
                 try {
                     FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
                 } catch (IOException ex) {
-                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles"), ex));
+                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyfiles"), ex));
                 }
 
 
@@ -399,17 +399,17 @@ public class CreateServerPack {
                                     REPLACE_EXISTING
                             );
 
-                            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath()));
+                            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.copyfiles"), file.toAbsolutePath()));
 
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles.saves"), ex);
+                                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyfiles.saves"), ex);
                             }
                         }
                     });
 
                 } catch (IOException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles.saves.world"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyfiles.saves.world"), ex);
                 }
 
 
@@ -420,7 +420,7 @@ public class CreateServerPack {
                 try {
                     Files.createDirectories(Paths.get(serverDir));
                 } catch (IOException ex) {
-                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyfiles.setup"), serverDir));
+                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), serverDir));
                 }
 
                 for (String file : listOfFiles) {
@@ -432,11 +432,11 @@ public class CreateServerPack {
                                 REPLACE_EXISTING
                         );
 
-                        LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.debug.copyfiles"), file));
+                        LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.copyfiles"), file));
 
                     } catch (IOException ex) {
                         if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);
+                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyfiles.mods"), ex);
                         }
                     }
                 }
@@ -456,10 +456,10 @@ public class CreateServerPack {
                                     REPLACE_EXISTING
                             );
 
-                            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.debug.copyfiles"), file.toAbsolutePath()));
+                            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.copyfiles"), file.toAbsolutePath()));
                         } catch (IOException ex) {
                             if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles.mods"), ex);
+                                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyfiles.mods"), ex);
                             }
                         }
                     });
@@ -467,7 +467,7 @@ public class CreateServerPack {
                     files.close();
 
                 } catch (IOException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyfiles"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyfiles"), ex);
                 }
             }
         }
@@ -480,7 +480,7 @@ public class CreateServerPack {
      * @return List String. A list of all mods to include in the server pack.
      */
     List<String> excludeClientMods(String modsDir, List<String> clientMods) {
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.excludeclientmods"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.excludeclientmods"));
 
         File[] listModsInModpack = new File(modsDir).listFiles();
         List<String> modsInModpack = new ArrayList<>();
@@ -493,7 +493,7 @@ public class CreateServerPack {
                 }
             }
         } catch (NullPointerException np) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.excludeclientmods"), np);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.excludeclientmods"), np);
         }
 
         for (int iclient = 0; iclient < clientMods.size(); iclient++) {
@@ -512,7 +512,7 @@ public class CreateServerPack {
      * @param modpackDir String. The server-icon.png is copied into the server_pack directory inside the modpack directory.
      */
     void copyIcon(String modpackDir) {
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyicon"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyicon"));
         try {
 
             Files.copy(
@@ -522,7 +522,7 @@ public class CreateServerPack {
             );
 
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyicon"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyicon"), ex);
         }
     }
 
@@ -531,7 +531,7 @@ public class CreateServerPack {
      * @param modpackDir String. The server.properties file is copied into the server_pack directory inside the modpack directory.
      */
     void copyProperties(String modpackDir) {
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.info.copyproperties"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyproperties"));
         try {
 
             Files.copy(
@@ -541,7 +541,7 @@ public class CreateServerPack {
             );
 
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("copyfiles.log.error.copyproperties"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copyproperties"), ex);
         }
     }
 
@@ -566,10 +566,10 @@ public class CreateServerPack {
         File forgeInstaller = new File(String.format("%s/server_pack/forge-installer.jar", modpackDir));
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.enter"));
-                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.enter"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
+                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
                 if (downloadFabricJar(modpackDir)) {
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.download"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
                     ProcessBuilder processBuilder = new ProcessBuilder(
                             javaPath,
                             "-jar",
@@ -587,22 +587,22 @@ public class CreateServerPack {
                         if (line == null) { break; }
                         LOG_INSTALLER.info(line);
                     }
-                    LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver"));
+                    LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
                     reader.close();
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.fabric.details"));
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.details"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
                 } else {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.installserver.fabric"));
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.installserver.fabric"));
                 }
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.installserver.fabricfail"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.installserver.fabricfail"), ex);
             }
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.enter"));
-                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.enter"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
+                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
                 if (downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.download"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
                     ProcessBuilder processBuilder = new ProcessBuilder(
                             javaPath,
                             "-jar",
@@ -618,19 +618,19 @@ public class CreateServerPack {
                         if (line == null) { break; }
                         LOG_INSTALLER.info(line);
                     }
-                    LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver"));
+                    LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
                     reader.close();
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver.forge.details"));
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.installserver"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.details"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
                     process.destroy();
                 } else {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.installserver.forge"));
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.installserver.forge"));
                 }
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.installserver.forgefail"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.installserver.forgefail"), ex);
             }
         } else {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
         }
 
         generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
@@ -651,7 +651,7 @@ public class CreateServerPack {
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR info should be printed.
      */
     void zipBuilder(String modpackDir, String minecraftVersion, boolean includeServerInstallation) {
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.zipbuilder.enter"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.enter"));
 
         List<File> filesToExclude = new ArrayList<>(Arrays.asList(
                 new File(String.format("%s/server_pack/minecraft_server.%s.jar", modpackDir, minecraftVersion)),
@@ -668,15 +668,15 @@ public class CreateServerPack {
         try {
             new net.lingala.zip4j.ZipFile(String.format("%s/server_pack.zip", modpackDir)).addFolder(new File(String.format("%s/server_pack", modpackDir)), zipParameters);
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.error.zipbuilder.create"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.zipbuilder.create"), ex);
         }
 
         if (includeServerInstallation) {
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar1"));
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar2"));
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.warn.zipbuilder.minecraftjar3"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.warn.zipbuilder.minecraftjar1"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.warn.zipbuilder.minecraftjar2"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.warn.zipbuilder.minecraftjar3"));
         }
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serversetup.log.info.zipbuilder.finish"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.finish"));
     }
 
     /**
@@ -699,7 +699,7 @@ public class CreateServerPack {
             forgeShell(modpackDir, minecraftVersion);
             forgeBatch(modpackDir, minecraftVersion);
         } else {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
         }
     }
 
@@ -724,11 +724,11 @@ public class CreateServerPack {
             byte[] strToBytesSh = shFabric.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.debug.fabricshell"), readSh));
+            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.fabricshell"), readSh));
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.fabricshell"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.fabricshell"), ex);
         }
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.fabricshell"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabricshell"));
     }
 
     /**
@@ -752,11 +752,11 @@ public class CreateServerPack {
             byte[] strToBytesBat = batFabric.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.debug.fabricbatch"), readBat));
+            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.fabricbatch"), readBat));
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.fabricbatch"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.fabricbatch"), ex);
         }
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.fabricbatch"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabricbatch"));
     }
 
     /**
@@ -780,11 +780,11 @@ public class CreateServerPack {
             byte[] strToBytesSh = shForge.getBytes();
             Files.write(pathSh, strToBytesSh);
             String readSh = Files.readAllLines(pathSh).get(0);
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.debug.forgeshell"), readSh));
+            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.forgeshell"), readSh));
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.forgeshell"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.forgeshell"), ex);
         }
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.forgeshell"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.forgeshell"));
     }
 
     /**
@@ -808,11 +808,11 @@ public class CreateServerPack {
             byte[] strToBytesBat = batForge.getBytes();
             Files.write(pathBat, strToBytesBat);
             String readBat = Files.readAllLines(pathBat).get(0);
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.debug.forgebatch"), readBat));
+            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.forgebatch"), readBat));
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.forgebatch"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.forgebatch"), ex);
         }
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.forgebatch"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.forgebatch"));
     }
 
     /**
@@ -825,7 +825,7 @@ public class CreateServerPack {
     boolean downloadFabricJar(String modpackDir) {
         boolean downloaded = false;
         try {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.downloadfabricjar.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.downloadfabricjar.enter"));
             String latestFabricInstaller = latestFabricInstaller();
             URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller, latestFabricInstaller));
 
@@ -840,12 +840,12 @@ public class CreateServerPack {
             downloadFabricFileChannel.close();
 
         } catch (IOException e) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.downloadfabricjar.download"), e);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.downloadfabricjar.download"), e);
             if (new File(String.format("%s/server_pack/fabric-installer.jar", modpackDir)).exists()) {
                 try {
                     Files.delete(Paths.get(String.format("%s/server_pack/fabric-installer.jar", modpackDir)));
                 } catch (IOException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.downloadfabricjar.delete"), ex);
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.downloadfabricjar.delete"), ex);
                 }
             }
         }
@@ -875,11 +875,11 @@ public class CreateServerPack {
 
             result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
 
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.latestfabricinstaller"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.latestfabricinstaller"));
 
         } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
 
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.latestfabricinstaller"), ex);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.latestfabricinstaller"), ex);
             result = "0.7.4";
         }
         return result;
@@ -895,7 +895,7 @@ public class CreateServerPack {
     boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
         boolean downloaded = false;
         try {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.downloadforgejar.enter"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.downloadforgejar.enter"));
             URL downloadForge = new URL(String.format("https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar", minecraftVersion, modLoaderVersion, minecraftVersion, modLoaderVersion));
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
@@ -909,10 +909,10 @@ public class CreateServerPack {
             downloadForgeFileChannel.close();
 
         } catch (IOException e) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.downloadforgejar.download"), e);
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.downloadforgejar.download"), e);
             if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).exists()) {
                 if (new File(String.format("%s/server_pack/forge-installer.jar", modpackDir)).delete()) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.debug.downloadforgejar"));
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.downloadforgejar"));
                 }
             }
         }
@@ -932,15 +932,15 @@ public class CreateServerPack {
      * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
      */
     void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.cleanupserverpack.enter"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.enter"));
         if (modLoader.equalsIgnoreCase("Fabric")) {
 
             boolean isInstallerDeleted = fabricInstaller.delete();
 
             if (isInstallerDeleted)
-            { LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), fabricInstaller.getName())); }
+            { LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), fabricInstaller.getName())); }
             else
-            { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), fabricInstaller.getName())); }
+            { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupserverpack.delete"), fabricInstaller.getName())); }
 
         } else if (modLoader.equalsIgnoreCase("Forge")) {
             try {
@@ -958,20 +958,20 @@ public class CreateServerPack {
                 boolean isInstallerDeleted = forgeInstaller.delete();
 
                 if ((isOldJarDeleted) && (new File(String.format("%s/server_pack/forge.jar", modpackDir)).exists()))
-                { LOG.info(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.cleanupserverpack.rename")); }
+                { LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename")); }
                 else
-                { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.cleanupserverpack.rename")); }
+                { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupserverpack.rename")); }
 
                 if (isInstallerDeleted)
-                { LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.info.cleanupserverpack.deleted"), forgeInstaller.getName())); }
+                { LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), forgeInstaller.getName())); }
                 else
-                { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.cleanupserverpack.delete"), forgeInstaller.getName())); }
+                { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupserverpack.delete"), forgeInstaller.getName())); }
 
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("serverutilities.log.error.cleanupserverpack"), ex);
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupserverpack"), ex);
             }
         } else {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configcheck.log.error.checkmodloader"), modLoader));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
         }
     }
 }

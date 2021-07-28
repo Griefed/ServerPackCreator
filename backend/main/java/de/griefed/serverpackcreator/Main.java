@@ -181,8 +181,7 @@ public class Main {
                osName = null,
                osVersion = null;
 
-        // TODO: Replace with lang key
-        LOG.debug("Warning user about possible data loss.");
+        LOG.debug(localizationManager.getLocalizedString("main.log.debug.warning"));
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip0"));
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip1"));
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip2"));
@@ -190,9 +189,8 @@ public class Main {
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip4"));
         LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip0"));
 
-        /*Print system information to console and logs.
-        TODO: Replace with lang key*/
-        LOG.debug("Gathering system information to include in log to make debugging easier.");
+        //Print system information to console and logs.
+        LOG.debug(localizationManager.getLocalizedString("main.log.debug.gathering"));
         ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
         jarPath = home.getSource().toString().replace("\\","/");
         jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
@@ -264,7 +262,6 @@ public class Main {
             CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack);
             
             createGui.mainGUI();
-
         }
     }
 }
