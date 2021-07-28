@@ -187,3 +187,6 @@ backend/test/resources/forge_tests/server_pack.zip
 /forge-manifest.json
 /mcmanifest.json
 /lang.properties
+/work
+/server-packs
+/log4j2.xml
