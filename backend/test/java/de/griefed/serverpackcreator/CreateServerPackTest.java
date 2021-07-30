@@ -84,7 +84,7 @@ class CreateServerPackTest {
         localizationManager = new LocalizationManager();
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);
-        createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
+        createServerPack = new CreateServerPack(localizationManager, curseCreateModpack);
         filesSetup = new DefaultFiles(localizationManager);
     }
 
@@ -136,7 +136,7 @@ class CreateServerPackTest {
     void runTest() throws IOException {
         filesSetup.filesSetup();
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        createServerPack.run();
+        createServerPack.run(configuration.getConfigFile());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/server_pack/libraries").isDirectory());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/server_pack/config").isDirectory());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/server_pack/defaultconfigs").isDirectory());

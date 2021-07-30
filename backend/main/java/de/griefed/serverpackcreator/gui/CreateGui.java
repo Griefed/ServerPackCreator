@@ -104,7 +104,7 @@ public class CreateGui extends JPanel {
         }
 
         if (injectedCreateServerPack == null) {
-            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK);
+            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
         } else {
             this.CREATESERVERPACK = injectedCreateServerPack;
         }

@@ -171,7 +171,7 @@ public class Main {
         CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
         Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
         DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
-        CreateServerPack createServerPack = new CreateServerPack(localizationManager, configuration, curseCreateModpack);
+        CreateServerPack createServerPack = new CreateServerPack(localizationManager, curseCreateModpack);
 
         //noinspection UnusedAssignment
         String jarPath = null,
@@ -215,7 +215,7 @@ public class Main {
 
             configuration.createConfigurationFile();
 
-            if (createServerPack.run()) {
+            if (createServerPack.run(configuration.getConfigFile())) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -230,7 +230,7 @@ public class Main {
                 configuration.createConfigurationFile();
             }
 
-            if (createServerPack.run()) {
+            if (createServerPack.run(configuration.getConfigFile())) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -250,7 +250,7 @@ public class Main {
                 configuration.createConfigurationFile();
             }
 
-            if (createServerPack.run()) {
+            if (createServerPack.run(configuration.getConfigFile())) {
                 System.exit(0);
             } else {
                 System.exit(1);

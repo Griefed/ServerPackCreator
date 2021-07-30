@@ -58,6 +58,7 @@ public class CreateServerPackTab extends JComponent {
     private final Configuration CONFIGURATION;
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CreateServerPack CREATESERVERPACK;
+    private final CurseCreateModpack CURSECREATEMODPACK;
 
     /**
      * <strong>Constructor</strong><p>
@@ -75,7 +76,6 @@ public class CreateServerPackTab extends JComponent {
      * @param injectedCreateServerPack Instance of {@link CreateServerPack} required for the generation of server packs.
      */
     public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack, CreateServerPack injectedCreateServerPack) {
-        CurseCreateModpack curseCreateModpack;
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -84,19 +84,19 @@ public class CreateServerPackTab extends JComponent {
         }
 
         if (injectedConfiguration == null) {
-            curseCreateModpack = new CurseCreateModpack(LOCALIZATIONMANAGER);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
         } else {
-            curseCreateModpack = injectedCurseCreateModpack;
+            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfiguration == null) {
-            this.CONFIGURATION = new Configuration(LOCALIZATIONMANAGER, curseCreateModpack);
+            this.CONFIGURATION = new Configuration(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
         } else {
             this.CONFIGURATION = injectedConfiguration;
         }
 
         if (injectedCreateServerPack == null) {
-            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CONFIGURATION, curseCreateModpack);
+            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
         } else {
             this.CREATESERVERPACK = injectedCreateServerPack;
         }
@@ -817,7 +817,7 @@ public class CreateServerPackTab extends JComponent {
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
-                    if (CREATESERVERPACK.run()) {
+                    if (CREATESERVERPACK.run(CONFIGURATION.getConfigFile())) {
                         tailer.stop();
 
                         System.gc();
@@ -826,10 +826,11 @@ public class CreateServerPackTab extends JComponent {
                         buttonGenerateServerPack.setEnabled(true);
                         labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
                         textModpackDir.setText(CONFIGURATION.getModpackDir());
-                        textCopyDirs.setText(CONFIGURATION.getCopyDirs().toString());
+                        textCopyDirs.setText(CONFIGURATION.buildString(CONFIGURATION.getCopyDirs().toString()));
 
                         JTextArea textArea = new JTextArea();
                         textArea.setOpaque(false);
+                        // TODO: Refactor to generate in server-packs/modpackDir
                         textArea.setText(String.format(
                                 "%s\n%s",
                                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
@@ -844,6 +845,7 @@ public class CreateServerPackTab extends JComponent {
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE) == 0) {
                             try {
+                                // TODO: Refactor to generate in server-packs/modpackDir
                                 Desktop.getDesktop().open(new File(String.format("%s/server_pack", CONFIGURATION.getModpackDir())));
                             } catch (IOException ex) {
                                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.browserserverpack"));
