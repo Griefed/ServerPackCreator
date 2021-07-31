@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -273,7 +274,7 @@ public class CreateServerPackTab extends JComponent {
         constraints.insets = new Insets(0,10,0,0);
         modloaderGroup.add(forgeRadioButton);
         forgeRadioButton.addItemListener(e -> {
-            if (e.getStateChange()==1) {
+            if (ItemEvent.SELECTED==1) {
                 setChosenModloader("Forge");
                 LOG.debug("Forge selected.");
                 LOG.debug(String.format("Selected modloader is: %s", getChosenModloader()));
@@ -288,7 +289,7 @@ public class CreateServerPackTab extends JComponent {
         constraints.insets = new Insets(0,100,0,0);
         modloaderGroup.add(fabricRadioButton);
         fabricRadioButton.addItemListener(e -> {
-            if (e.getStateChange()==1) {
+            if (ItemEvent.SELECTED==1) {
                 setChosenModloader("Fabric");
                 LOG.debug("Fabric selected.");
                 LOG.debug(String.format("Selected modloader is: %s", getChosenModloader()));
