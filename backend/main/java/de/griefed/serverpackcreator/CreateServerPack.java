@@ -633,6 +633,8 @@ public class CreateServerPack {
 
         File forgeInstaller = new File(String.format("server-packs/%s/forge-installer.jar", destination));
 
+        List<String> commandArguments = new ArrayList<String>();
+
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
 
@@ -640,17 +642,21 @@ public class CreateServerPack {
                 LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
 
                 if (downloadFabricJar(modpackDir)) {
-
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(
-                            javaPath,
-                            "-jar",
-                            "fabric-installer.jar",
-                            "server",
-                            String.format("-mcversion %s", minecraftVersion),
-                            String.format("-loader %s", modLoaderVersion),
-                            "-downloadMinecraft").directory(new File(String.format("server-packs/%s", destination)));
+                    commandArguments.add(javaPath);
+                    commandArguments.add("-jar");
+                    commandArguments.add("fabric-installer.jar");
+                    commandArguments.add("server");
+                    commandArguments.add("-mcversion");
+                    commandArguments.add(minecraftVersion);
+                    commandArguments.add("-loader");
+                    commandArguments.add(modLoaderVersion);
+                    commandArguments.add("-downloadMinecraft");
+
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("server-packs/%s", destination)));
+
+                    LOG.debug(processBuilder.command());
 
                     processBuilder.redirectErrorStream(true);
                     Process process = processBuilder.start();
@@ -689,16 +695,15 @@ public class CreateServerPack {
                 LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
 
                 if (downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
-
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
+                    commandArguments.add(javaPath);
+                    commandArguments.add("-jar");
+                    commandArguments.add("forge-installer.jar");
+                    commandArguments.add("--installServer");
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(
-                            javaPath,
-                            "-jar",
-                            "forge-installer.jar",
-                            "--installServer")
-                            .directory(new File(String.format("server-packs/%s", destination)));
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("server-packs/%s", destination)));
 
+                    LOG.debug(processBuilder.command());
                     processBuilder.redirectErrorStream(true);
                     Process process = processBuilder.start();
 
@@ -732,6 +737,8 @@ public class CreateServerPack {
 
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
         }
+
+        commandArguments.clear();
 
         generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
 
