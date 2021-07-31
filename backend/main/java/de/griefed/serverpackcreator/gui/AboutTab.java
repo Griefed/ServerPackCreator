@@ -33,7 +33,6 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Objects;
 
 /**
@@ -91,9 +90,9 @@ public class AboutTab extends Component {
     /**
      * Create the tab for the About-page of ServerpackCreator. This tab displays the about text, the list of contributors
      * to ServerPackCreator and offers three buttons to the user. Left to right: Open PasteBin in the user's browser to
-     * create pastes of the the log files or configuration files or whatever they wish. Open ServerPackCreator's issues
+     * create pastes of the log files or configuration files or whatever they wish. Open ServerPackCreator's issues
      * page on GitHub in case the user wants to report an issue. Open the invite link to Griefed's discord server in the
-     * users browser.
+     * user's browser.
      * @return JComponent. Returns a JPanel containing a JTextPane with the about text in a styled document, as well as
      * the three aforementioned buttons.
      * @author Griefed
@@ -268,7 +267,8 @@ public class AboutTab extends Component {
      * Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's hastebin.java (MIT License)</a>
      * and edited to use HasteBin fork <a href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork
      * of kaimu-kun's hastebin.java is available at <a href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.
-     * @author kaimu-kun & Griefed
+     * @author kaimu-kun
+     * @author Griefed
      * @param textFile The file which will be read into a String of which then to create a HasteBin post of.
      * @return String. Returns a String containing the URL to the newly created HasteBin post.
      */

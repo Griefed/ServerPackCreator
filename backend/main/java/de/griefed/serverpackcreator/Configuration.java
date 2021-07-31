@@ -571,7 +571,7 @@ public class Configuration {
     /**
      * Sets {@link #setConfig(File)} and calls checks for the provided configuration-file. If any check returns <code>true</code>
      * then the server pack will not be created. In order to find out which check failed, the user has to check their
-     * serverpackcreator.log in the logs directory. Calls<br>
+     * serverpackcreator.log in the logs-directory. Calls<br>
      * {@link #setConfig(File)}<br>
      * {@link #getConfig()}<br>
      * {@link #setClientMods(List)}<br>
@@ -1115,12 +1115,12 @@ public class Configuration {
     /**
      * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the configuration before
      * ServerPackCreator starts the generation of the server pack or, if checks failed, to show the user their last
-     * configuration so they can more easily identify problems with said configuration.<br>
+     * configuration, so they can more easily identify problems with said configuration.<br>
      * Should a user report an issue on GitHub and include their logs (which I hope they do....), this would also
      * help me help them. Logging is good. People should use more logging.
      * @author Griefed
      * @param modpackDirectory String. The used modpackDir field either from a configuration file or from configuration setup.
-     * @param clientsideMods String List. List of clientside-only mods to exclude from the server pack..
+     * @param clientsideMods String List. List of clientside-only mods to exclude from the server pack...
      * @param copyDirectories String List. List of directories in the modpack which are to be included in the server pack.
      * @param installServer Boolean. Whether to install the modloader server in the server pack.
      * @param javaInstallPath String. Path to the Java executable/binary needed for installing the modloader server in the server pack.
@@ -1325,7 +1325,7 @@ public class Configuration {
     /**
      * Checks whether either Forge or Fabric were specified as the modloader.
      * @author Griefed
-     * @param modloader String. Check case insensitive for Forge or Fabric.
+     * @param modloader String. Check as case-insensitive for Forge or Fabric.
      * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if neither.
      */
     boolean checkModloader(String modloader) {
@@ -1565,7 +1565,7 @@ public class Configuration {
      * Walk the user through the generation of a new ServerPackCreator configuration file by asking them for input,
      * step-by-step, regarding their modpack. At the end of this method a fully configured serverpackcreator.conf file
      * is saved and any previously existing configuration file replaced by the new one.<br>
-     * After every input, said input is displayed to the user and they're asked whether they are satisfied with said
+     * After every input, said input is displayed to the user, and they're asked whether they are satisfied with said
      * input. The user can then decide whether they would like to restart the entry of the field they just configured,
      * or agree and move to the next one.<br>
      * At the end of this method, the user will have a newly configured and created configuration file for ServerPackCreator.<br>
@@ -1586,7 +1586,8 @@ public class Configuration {
      * {@link #checkJavaPath(String)}<br>
      * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
-     * @author whitebear60 & Griefed
+     * @author whitebear60
+     * @author Griefed
      */
     void createConfigurationFile() {
         List<String> clientMods, copyDirs;
@@ -1912,7 +1913,8 @@ public class Configuration {
 
     /** Writes a new configuration file with the parameters passed to it.<br>
      * Calls {@link #getConfigFile()}<br>
-     * @author whitebear60 & Griefed
+     * @author whitebear60
+     * @author Griefed
      * @param modpackDir String. The path to the modpack.
      * @param clientMods List, String. List of clientside-only mods.
      * @param copyDirs List, String. List of directories to include in server pack.

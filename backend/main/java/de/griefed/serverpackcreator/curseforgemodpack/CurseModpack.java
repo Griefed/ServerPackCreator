@@ -43,9 +43,8 @@ import java.util.List;
 public class CurseModpack {
     /**
      * Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
-     * property allows us setup the class to only gather the information we want, so we don't have to worry about any
+     * property allows us to set up the class to only gather the information we want, so we don't have to worry about any
      * additions to the source-data being made, which would otherwise cause an "Unknown property" exception.
-     * @author Griefed
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private List<CurseMinecraft> minecraft;
@@ -57,7 +56,7 @@ public class CurseModpack {
     /**
      * Getter for Minecraft related information using {@link CurseMinecraft}.
      * @author Griefed
-     * @return List CurseMinecraft. Returns an instance of CurseMinecraft.class with information related to Minecraft.
+     * @return List CurseMinecraft. Returns an instance of {@link CurseMinecraft} with information related to Minecraft.
      */
     public List<CurseMinecraft> getMinecraft() {
         return minecraft;
@@ -129,7 +128,7 @@ public class CurseModpack {
     /**
      * Getter for the files on which the CurseForge modpack depends by using {@link CurseFiles}.
      * @author Griefed
-     * @return List CurseFiles. Returns an instance of CurseFiles.class with information related to the files included
+     * @return List CurseFiles. Returns an instance of {@link CurseFiles} with information related to the files included
      * in the CurseForge modpack.
      */
     public List<CurseFiles> getFiles() {
@@ -139,7 +138,7 @@ public class CurseModpack {
     /**
      * Setter for the CurseForge modpack files on which it depends.
      * @author Griefed
-     * @param newFiles Receives an instance of CurseFiles.class with information about the files on which the modpack depends.
+     * @param newFiles Receives an instance of {@link CurseFiles} with information about the files on which the modpack depends.
      */
     public void setFiles(List<CurseFiles> newFiles) {
         this.files = newFiles;

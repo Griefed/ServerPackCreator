@@ -185,7 +185,7 @@ public class CreateGui extends JPanel {
     }
 
     /**
-     * Shows the GUI from the EDT by using SwingUtilities and it's invokeLater method by calling {@link #createAndShowGUI()}.
+     * Shows the GUI from the EDT by using SwingUtilities, and it's invokeLater method by calling {@link #createAndShowGUI()}.
      * Sets the font to bold, which may be overridden by the LookAndFeel which gets automatically determined and depends
      * on the OS ServerPackCreator is run on.
      * @author Griefed

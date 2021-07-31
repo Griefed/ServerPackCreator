@@ -258,7 +258,7 @@ public class Main {
                 System.exit(1);
             }
 
-        // If no mode is specified and we have a graphical environment, start in GUI mode.
+        // If no mode is specified, and we have a graphical environment, start in GUI mode.
         } else {
 
             CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack);

@@ -494,7 +494,7 @@ public class CreateServerPack {
     /**
      * Generates a list of all mods to include in the server pack excluding clientside-only mods.
      * @author Griefed
-     * @param modsDir String. The mods directory of the modpack of which to generate a list of all it's contents.
+     * @param modsDir String. The mods-directory of the modpack of which to generate a list of all it's contents.
      * @param clientMods List String. A list of all clientside-only mods.
      * @return List String. A list of all mods to include in the server pack.
      */

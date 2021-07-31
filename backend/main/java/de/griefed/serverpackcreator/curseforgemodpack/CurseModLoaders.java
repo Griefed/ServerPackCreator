@@ -33,9 +33,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class CurseModLoaders {
     /**
      * Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
-     * property allows us setup the class to only gather the information we want, so we don't have to worry about any
+     * property allows us to set up the class to only gather the information we want, so we don't have to worry about any
      * additions to the source-data being made, which would otherwise cause an "Unknown property" exception.
-     * @author Griefed
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String id;

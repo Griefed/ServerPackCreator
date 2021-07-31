@@ -22,13 +22,13 @@
  * Addendum from the Java Tips Weblog's About page:
  *
  * It should be noted that none of the code presented here is used in any real application,  (I only do this for a hobby)
- * and therefore you use it at your own risk. Although I must admit I took about 5-10 minutes to do extensive testing so
+ * and therefore you use it at your own risk. Although I must admit I took about 5-10 minutes to do extensive testing, so
  * I doubt you will find many bugs :-).
  *
  * We assume no responsibility for the code. You are free to use and/or modify and/or distribute any or all code posted
  * on the Java Tips Weblog without restriction. A credit in the code comments would be nice, but not in any way mandatory.
  *
- * "Give somebody a fish and they eat for a day.
+ * "Give somebody a fish, and they eat for a day.
  * Teach somebody to fish they eat for life!"
  *
  * In following the philosophy of the above quote, whenever possible, I will also attempt to provide links for related
@@ -38,7 +38,7 @@
  * technical articles
  * tutorials
  * the Java API
- * The Java API is huge and we don’t have time to read it from start to finish. If the examples don’t solve your problem,
+ * The Java API is huge, and we don’t have time to read it from start to finish. If the examples don’t solve your problem,
  * hopefully they can at least give you some ideas and introduce you to new API’s and concepts.
  *
  * Rob
@@ -58,8 +58,8 @@ import java.awt.event.AdjustmentListener;
 /**
  * Hey, Griefed here. I was playing around with scrolling in Swing and was getting fed up with the ways I came up with
  * which would allow me to set the scrollbar to the bottom at all times....I mean, it worked, sorta? The problem was
- * that you couldn't scroll up...making any previous log messages unreadable..I couldn't figure out how to make it so
- * it would stop scrolling to the end if the user scrolled up, and when I was about to give an just not deal with any
+ * that you couldn't scroll up...making any previous log messages unreadable...I couldn't figure out how to make it, so
+ * it would stop scrolling to the end if the user scrolled up, and when I was about to give up and just not deal with any
  * of that scrolling business, I came across this beauty here. Add your scrollpane to this SmartScroller and BAM!
  * You've got yourself a smartscrolling scroll pane which stops going to the end of the pane after you've scrolled up,
  * and resumes autoscrolling when you've scrolled to the bottom again. It's beautiful!<br>
@@ -209,7 +209,7 @@ public class SmartScroller implements AdjustmentListener {
         /*
          * Reset the "value" so we can reposition the viewport and
          * distinguish between a user scroll and a program scroll.
-         * (ie. valueChanged will be false on a program scroll)
+         * (i.e. valueChanged will be false on a program scroll)
          */
 
         if (adjustScrollBar && viewportPosition == END) {

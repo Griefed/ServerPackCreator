@@ -243,7 +243,7 @@ public class DefaultFiles {
     /**
      * Calls individual methods which check for existence of default files. Only this method should be called to check
      * for existence of all default files.<p>
-     * If any file was newly generated from it's template, a warning is printed informing the user about said newly
+     * If any file was newly generated from its template, a warning is printed informing the user about said newly
      * generated file. If every file was present and none was generated, "Setup completed." is printed to the console
      * and log.
      * @author Griefed

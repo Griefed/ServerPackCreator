@@ -237,7 +237,7 @@ public class CurseCreateModpack {
     /**
      * Downloads the specified file of the specified project to a directory which is the combination of the project
      * name and file display name. Unzips the downloaded modpack ZIP-archive, gathers and displays information about the
-     * specified project/file and makes calls to methods which further setup the modpack. Calls<br>
+     * specified project/file and makes calls to methods which further set up the modpack. Calls<br>
      * {@link CurseAPI} and various methods of it to create the modpack.<br>
      * {@link #unzipArchive(String, String)}<br>
      * {@link #copyOverride(String)}<br>
@@ -299,7 +299,7 @@ public class CurseCreateModpack {
      * Downloads all mods specified in the modpack's manifest.json file. If a download of a mod fails, it will be
      * retried once before treating it as "currently unavailable" and adding the URL to the failed download
      * to a list which will be printed to the console and logs after the method has finished. The user will need to
-     * download these failed mods themself as ServerPackCreator couldn't, for whatever reason, successfully download them.
+     * download these failed mods themselves as ServerPackCreator couldn't, for whatever reason, successfully download them.
      * If the acquisition of the download URL fails as well....well we're out of luck, then. The user will have to figure
      * this out on their own. Possible reasons for a failed download and failed URL acquisition might be that the file
      * was taken down, no longer exists, CurseForge is unavailable etc. etc. There's nothing we can do about that.
@@ -391,7 +391,7 @@ public class CurseCreateModpack {
     /**
      * Recursively copy all folders and files from the override directory to the parent directory, our modpack directory.
      * @author Griefed
-     * @param modpackDir String. The overrides directory resides in this directory. All folders and files within overrides
+     * @param modpackDir String. The 'overrides' directory resides in this directory. All folders and files within overrides
      *                  are copied to the parent directory, the modpack directory.
      */
     void copyOverride(String modpackDir) {
@@ -421,7 +421,7 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param modpackDir String. The path to the modpack directory, a combination of project name and file display name.
      * @return Boolean. Returns true if something went wrong during the cleanup of the modpack directory. If the cleanup
-     * procedure finished successfully and we have a clean environment, false is returned. Returns false if the modpack
+     * procedure finished successfully, and we have a clean environment, false is returned. Returns false if the modpack
      * directory could not be found, indicating a clean environment.
      */
     boolean checkCurseForgeDir(String modpackDir) {
