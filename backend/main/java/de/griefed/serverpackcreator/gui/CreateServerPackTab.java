@@ -268,33 +268,33 @@ public class CreateServerPackTab extends JComponent {
         constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        JRadioButton forgeRadioButton = new JRadioButton("Forge",true);
+        JRadioButton forgeRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge"),true);
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.insets = new Insets(0,10,0,0);
         modloaderGroup.add(forgeRadioButton);
         forgeRadioButton.addItemListener(e -> {
-            if (ItemEvent.SELECTED==1) {
+            if (e.getStateChange()==ItemEvent.SELECTED) {
                 setChosenModloader("Forge");
-                LOG.debug("Forge selected.");
-                LOG.debug(String.format("Selected modloader is: %s", getChosenModloader()));
-            } else {
-                LOG.debug("Forge deselected.");
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.selected"));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+            } else if(e.getStateChange()==ItemEvent.DESELECTED) {
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.deselected"));
             }
         });
         createServerPackPanel.add(forgeRadioButton, constraints);
-        JRadioButton fabricRadioButton = new JRadioButton("Fabric",false);
+        JRadioButton fabricRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric"),false);
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.insets = new Insets(0,100,0,0);
         modloaderGroup.add(fabricRadioButton);
         fabricRadioButton.addItemListener(e -> {
-            if (ItemEvent.SELECTED==1) {
+            if (e.getStateChange()==ItemEvent.SELECTED) {
                 setChosenModloader("Fabric");
-                LOG.debug("Fabric selected.");
-                LOG.debug(String.format("Selected modloader is: %s", getChosenModloader()));
-            } else {
-                LOG.debug("Fabric deselected.");
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.selected"));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+            } else if (e.getStateChange()==ItemEvent.DESELECTED) {
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.deselected"));
             }
         });
         createServerPackPanel.add(fabricRadioButton, constraints);
@@ -847,11 +847,11 @@ public class CreateServerPackTab extends JComponent {
 
                         JTextArea textArea = new JTextArea();
                         textArea.setOpaque(false);
-                        // TODO: Refactor to generate in server-packs/modpackDir
+
                         textArea.setText(String.format(
                                 "%s\n%s",
                                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                                String.format("%s/server_pack", CONFIGURATION.getModpackDir())
+                                String.format("server-packs/%s", CONFIGURATION.getModpackDir().substring(CONFIGURATION.getModpackDir().lastIndexOf("/") + 1))
                                 )
                         );
 
@@ -862,8 +862,8 @@ public class CreateServerPackTab extends JComponent {
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE) == 0) {
                             try {
-                                // TODO: Refactor to generate in server-packs/modpackDir
-                                Desktop.getDesktop().open(new File(String.format("%s/server_pack", CONFIGURATION.getModpackDir())));
+
+                                Desktop.getDesktop().open(new File(String.format("server-packs/%s", CONFIGURATION.getModpackDir().substring(CONFIGURATION.getModpackDir().lastIndexOf("/") + 1))));
                             } catch (IOException ex) {
                                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.browserserverpack"));
                             }
