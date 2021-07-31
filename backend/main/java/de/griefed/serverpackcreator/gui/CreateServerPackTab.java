@@ -33,6 +33,8 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -249,45 +251,41 @@ public class CreateServerPackTab extends JComponent {
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModloader, constraints);
 
-        //Slider for modloader decision
-        JLabel labelModloaderSelected = new JLabel();
-        labelModloaderSelected.setFont(new Font("Serif", Font.BOLD, 14));
-        constraints.gridx = 1;
-        constraints.gridy = 11;
-        constraints.insets = new Insets(0,10,0,0);
-        createServerPackPanel.add(labelModloaderSelected, constraints);
-        JSlider sliderModloader = new JSlider(JSlider.HORIZONTAL, 1,0);
-        sliderModloader.setMajorTickSpacing(2);
-        sliderModloader.setMinorTickSpacing(1);
-        sliderModloader.setPaintLabels(true);
-        sliderModloader.setPaintTicks(true);
-        sliderModloader.setFont(new Font("Serif", Font.PLAIN,labelModloader.getFont().getSize()));
-        LOG.debug("Label font size: " + labelModloader.getFont().getSize());
-        Dictionary<Integer, JComponent> dictionary = new Hashtable<>();
-        dictionary.put(0, new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge")));
-        dictionary.put(1, new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric")));
-        sliderModloader.setLabelTable(dictionary);
-        sliderModloader.setPaintLabels(true);
-        constraints.fill = GridBagConstraints.HORIZONTAL;
+        //RadioButtons for Modloader selection.
+        ButtonGroup modloaderGroup = new ButtonGroup();
         constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        JRadioButton forgeRadioButton = new JRadioButton("Forge",true);
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.insets = new Insets(0,10,0,0);
-        sliderModloader.addChangeListener(e -> {
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.slider.is"), sliderModloader.getValue()));
-            int sliderValue = sliderModloader.getValue();
-
-            if (sliderValue == 0) {
+        modloaderGroup.add(forgeRadioButton);
+        forgeRadioButton.addItemListener(e -> {
+            if (e.getStateChange()==1) {
                 setChosenModloader("Forge");
-                labelModloaderSelected.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge.selected"));
-                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.slider.set"), getChosenModloader()));
+                LOG.debug("Forge selected.");
+                LOG.debug(String.format("Selected modloader is: %s", getChosenModloader()));
             } else {
-                setChosenModloader("Fabric");
-                labelModloaderSelected.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric.selected"));
-                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.slider.set"), getChosenModloader()));
+                LOG.debug("Forge deselected.");
             }
         });
-        createServerPackPanel.add(sliderModloader, constraints);
+        createServerPackPanel.add(forgeRadioButton, constraints);
+        JRadioButton fabricRadioButton = new JRadioButton("Fabric",false);
+        constraints.gridx = 0;
+        constraints.gridy = 11;
+        constraints.insets = new Insets(0,100,0,0);
+        modloaderGroup.add(fabricRadioButton);
+        fabricRadioButton.addItemListener(e -> {
+            if (e.getStateChange()==1) {
+                setChosenModloader("Fabric");
+                LOG.debug("Fabric selected.");
+                LOG.debug(String.format("Selected modloader is: %s", getChosenModloader()));
+            } else {
+                LOG.debug("Fabric deselected.");
+            }
+        });
+        createServerPackPanel.add(fabricRadioButton, constraints);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridwidth = 2;
 
@@ -617,12 +615,28 @@ public class CreateServerPackTab extends JComponent {
 
                     String tmpModloader = CONFIGURATION.setModLoaderCase(newConfigFile.getString("modLoader"));
                     if (tmpModloader.equals("Fabric")) {
+
+                        fabricRadioButton.setSelected(true);
+                        forgeRadioButton.setSelected(false);
+
+                        setChosenModloader("Fabric");
+
+                    } else {
+
+                        fabricRadioButton.setSelected(false);
+                        forgeRadioButton.setSelected(true);
+
+                        setChosenModloader("Forge");
+                    }
+
+                    /*String tmpModloader = CONFIGURATION.setModLoaderCase(newConfigFile.getString("modLoader"));
+                    if (tmpModloader.equals("Fabric")) {
                         sliderModloader.setValue(1);
                         setChosenModloader("Fabric");
                     } else {
                         sliderModloader.setValue(0);
                         setChosenModloader("Forge");
-                    }
+                    }*/
 
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
 
@@ -925,12 +939,28 @@ public class CreateServerPackTab extends JComponent {
 
                 String tmpModloader = CONFIGURATION.setModLoaderCase(config.getString("modLoader"));
                 if (tmpModloader.equals("Fabric")) {
+
+                    fabricRadioButton.setSelected(true);
+                    forgeRadioButton.setSelected(false);
+
+                    setChosenModloader("Fabric");
+
+                } else {
+
+                    fabricRadioButton.setSelected(false);
+                    forgeRadioButton.setSelected(true);
+
+                    setChosenModloader("Forge");
+                }
+
+                /*String tmpModloader = CONFIGURATION.setModLoaderCase(config.getString("modLoader"));
+                if (tmpModloader.equals("Fabric")) {
                     sliderModloader.setValue(1);
                     setChosenModloader("Fabric");
                 } else {
                     sliderModloader.setValue(0);
                     setChosenModloader("Forge");
-                }
+                }*/
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
 
