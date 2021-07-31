@@ -2,7 +2,16 @@
 
 cd /data
 
-exec \
-  s6-setuidgid abc \
-    /usr/bin/java -jar \
-      /app/serverpackcreator/serverpackcreator.jar "-${STARTUP_PARAMETER}"
+if [[ -z ${STARTUP_PARAMETER} ]];then
+  echo "No startup parameter specified. Using -cli"
+  exec \
+    s6-setuidgid abc \
+      /usr/bin/java -jar \
+        /app/serverpackcreator/serverpackcreator.jar -cli
+else
+  echo "Specified startup parameter -$STARTUP_PARAMETER"
+  exec \
+    s6-setuidgid abc \
+      /usr/bin/java -jar \
+        /app/serverpackcreator/serverpackcreator.jar "-${STARTUP_PARAMETER}"
+fi
