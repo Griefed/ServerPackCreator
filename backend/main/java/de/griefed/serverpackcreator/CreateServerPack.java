@@ -1157,7 +1157,7 @@ public class CreateServerPack {
 
                 boolean isInstallerDeleted = forgeInstaller.delete();
 
-                boolean isInstallerLogDeleted = new File("server-packs/%s/installer.log").delete();
+                boolean isInstallerLogDeleted = new File(String.format("server-packs/%s/installer.log", destination)).delete();
 
                 if ((isOldJarDeleted) && (new File(String.format("server-packs/%s/forge.jar", destination)).exists())) {
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename"));
