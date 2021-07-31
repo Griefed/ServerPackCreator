@@ -110,6 +110,7 @@ import java.util.*;
  * be a combination of a CurseForge projectID and fileID.<p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
  * Loads a configuration from a serverpackcreator.conf-file in the same directory in which ServerPackCreator resides in.
+ * @author Griefed
  */
 @Component
 public class Configuration {
@@ -125,6 +126,7 @@ public class Configuration {
      * one is null. Required for use of localization.<p>
      * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
@@ -147,7 +149,10 @@ public class Configuration {
     private final File FILE_CONFIG_OLD = new File("creator.conf");
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
 
-    // If you wish to expand this list, fork this repository, make your changes, and submit a PR.
+    /**
+     * If you wish to expand this list, open a feature request issue on <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a>
+     * with the mod(s) you want to see added.
+     */
     private final List<String> FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(
             "AmbientSounds",
             "BackTools",
@@ -222,6 +227,7 @@ public class Configuration {
 
     /**
      * Getter for creator.conf.
+     * @author Griefed
      * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
      */
     public File getOldConfigFile() {
@@ -230,6 +236,7 @@ public class Configuration {
 
     /**
      * Getter for serverpackcreator.conf.
+     * @author Griefed
      * @return File. Returns the serverpackcreator.conf-file for use in <br>
      * {@link #isCurse()},<br>
      * {@link #createConfigurationFile()},<br>
@@ -241,6 +248,7 @@ public class Configuration {
 
     /**
      * Getter for a {@link Config} containing a parsed configuration-file.
+     * @author Griefed
      * @return Config. Returns parsed serverpackcreator.conf for use in<br>
      * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
@@ -253,6 +261,7 @@ public class Configuration {
     /**
      * Setter for a {@link Config} containing a parsed configuration-file.
      * For use in {@link #checkConfigFile(File, boolean)}
+     * @author Griefed
      * @param newConfig The new file of which to store a Typesafe Config.
      */
     void setConfig(File newConfig) {
@@ -265,6 +274,7 @@ public class Configuration {
 
     /**
      * Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.
+     * @author Griefed
      * @return List String. Returns the fallback clientside-only mods-list for use in {@link #checkConfigFile(File, boolean)}
      */
     public List<String> getFallbackModsList() {
@@ -273,6 +283,7 @@ public class Configuration {
 
     /**
      * Getter for a list of clientside-only mods to exclude from server pack.
+     * @author Griefed
      * @return List String. Returns the list of clientside-only mods for use in<br>
      * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isCurse()}
@@ -284,6 +295,7 @@ public class Configuration {
     /**
      * Setter for the list of clientside-only mods to exclude from server pack.
      * For use in {@link #checkConfigFile(File, boolean)}
+     * @author Griefed
      * @param newClientMods The new list of clientside-only mods to store.
      */
     void setClientMods(List<String> newClientMods) {
@@ -292,6 +304,7 @@ public class Configuration {
 
     /**
      * Getter for the list of directories in the modpack to copy to the server pack.
+     * @author Griefed
      * @return List String. Returns the list of directories to copy to the server pack for use in<br>
      * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isCurse()}
@@ -303,6 +316,7 @@ public class Configuration {
     /**
      * Setter for the list of directories in the modpack to copy to the server pack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @author Griefed
      * @param newCopyDirs The new list of directories to include in server pack to store.
      */
     void setCopyDirs(List<String> newCopyDirs) {
@@ -315,6 +329,7 @@ public class Configuration {
 
     /**
      * Getter for the path to the modpack directory.
+     * @author Griefed
      * @return String. Returns the path to the modpack directory for use in<br>
      * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
@@ -327,6 +342,7 @@ public class Configuration {
     /**
      * Setter for the path to the modpack directory. Replaces any occurrences of \ with /.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @author Griefed
      * @param newModpackDir The new modpack directory path to store.
      */
     void setModpackDir(String newModpackDir) {
@@ -336,6 +352,7 @@ public class Configuration {
 
     /**
      * Getter for the path to the Java executable/binary.
+     * @author Griefed
      * @return String. Returns the path to the Java executable/binary for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     String getJavaPath() {
@@ -345,6 +362,7 @@ public class Configuration {
     /**
      * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @author Griefed
      * @param newJavaPath The new Java path to store.
      */
     void setJavaPath(String newJavaPath) {
@@ -354,6 +372,7 @@ public class Configuration {
 
     /**
      * Getter for the version of Minecraft used by the modpack.
+     * @author Griefed
      * @return String. Returns the  for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     String getMinecraftVersion() {
@@ -363,6 +382,7 @@ public class Configuration {
     /**
      * Setter for the Minecraft version used by the modpack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @author Griefed
      * @param newMinecraftVersion The new Minecraft version to store.
      */
     void setMinecraftVersion(String newMinecraftVersion) {
@@ -371,6 +391,7 @@ public class Configuration {
 
     /**
      * Getter for the modloader used by the modpack.
+     * @author Griefed
      * @return String. Returns the modloader used by the modpack for use in<br>
      * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
@@ -383,6 +404,7 @@ public class Configuration {
     /**
      * Setter for the modloader used by the modpack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @author Griefed
      * @param newModLoader The new modloader to store.
      */
     void setModLoader(String newModLoader) {
@@ -391,6 +413,7 @@ public class Configuration {
 
     /**
      * Getter for the version of the modloader used by the modpack.
+     * @author Griefed
      * @return String. Returns the version of the modloader used by the modpack for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     String getModLoaderVersion() {
@@ -400,6 +423,7 @@ public class Configuration {
     /**
      * Setter for the version of the modloader used by the modpack.
      * For use in {@link #isDir(String)} and {@link #isCurse()}
+     * @author Griefed
      * @param newModLoaderVersion The new modloader version to store.
      */
     void setModLoaderVersion(String newModLoaderVersion) {
@@ -408,6 +432,7 @@ public class Configuration {
 
     /**
      * Getter for whether the modloader server installation should be included.
+     * @author Griefed
      * @return Boolean. Returns whether the server installation should be included, for use in<br>
      * {@link #checkConfigFile(File, boolean)}<br>
      * {@link #isDir(String)}<br>
@@ -420,6 +445,7 @@ public class Configuration {
     /**
      * Setter for whether the modloader server installation should be included.
      * For use in {@link #checkConfigFile(File, boolean)}
+     * @author Griefed
      * @param newIncludeServerInstallation The new boolean to store.
      */
     void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
@@ -428,6 +454,7 @@ public class Configuration {
 
     /**
      * Getter for whether the server-icon.png should be included in the server pack.
+     * @author Griefed
      * @return Boolean. Returns whether the server-icon.png should be included in the server pack, for use in {@link #checkConfigFile(File, boolean)}
      * and {@link #isCurse()}
      */
@@ -438,6 +465,7 @@ public class Configuration {
     /**
      * Setter for whether the server-icon.png should be included in the server pack.
      * For use in {@link #checkConfigFile(File, boolean)}
+     * @author Griefed
      * @param newIncludeServerIcon The new boolean to store.
      */
     void setIncludeServerIcon(boolean newIncludeServerIcon) {
@@ -446,6 +474,7 @@ public class Configuration {
 
     /**
      * Getter for whether the server.properties should be included in the server pack.
+     * @author Griefed
      * @return Boolean. Returns whether the server.properties should be included in the server pack, for use in
      * {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
@@ -456,6 +485,7 @@ public class Configuration {
     /**
      * Setter for whether the server.properties should be included in the server pack.
      * For use in {@link #checkConfigFile(File, boolean)}
+     * @author Griefed
      * @param newIncludeServerProperties The new boolean to store.
      */
     void setIncludeServerProperties(boolean newIncludeServerProperties) {
@@ -464,6 +494,7 @@ public class Configuration {
 
     /**
      * Getter for whether the start scripts should be included in the server pack.
+     * @author Griefed
      * @return Boolean. Returns the whether the start scripts should be included in the server pack, for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     boolean getIncludeStartScripts() {
@@ -473,6 +504,7 @@ public class Configuration {
     /**
      * Setter for whether the start scripts should be included in the server pack.
      * For use in {@link #checkConfigFile(File, boolean)}
+     * @author Griefed
      * @param newIncludeStartScripts The new boolean to store.
      */
     void setIncludeStartScripts(boolean newIncludeStartScripts) {
@@ -481,6 +513,7 @@ public class Configuration {
 
     /**
      * Getter for whether a ZIP-archive of the server pack should be created.
+     * @author Griefed
      * @return Boolean. Returns whether a ZIP-archive of the server pack should be created, for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
      */
     boolean getIncludeZipCreation() {
@@ -490,6 +523,7 @@ public class Configuration {
     /**
      * Setter for whether a ZIP-archive of the server pack should be created.
      * For use in {@link #checkConfigFile(File, boolean)}
+     * @author Griefed
      * @param newIncludeZipCreation The new boolean to store.
      */
     void setIncludeZipCreation(boolean newIncludeZipCreation) {
@@ -498,6 +532,7 @@ public class Configuration {
 
     /**
      * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * @author Griefed
      * @return Integer. Returns the CurseForge projectID of a modpack, for use in {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)} and {@link #checkCurseForge(String)}
      */
     int getProjectID() {
@@ -507,6 +542,7 @@ public class Configuration {
     /**
      * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
+     * @author Griefed
      * @param newProjectID The new projectID to store.
      */
     void setProjectID(int newProjectID) {
@@ -515,6 +551,7 @@ public class Configuration {
 
     /**
      * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * @author Griefed
      * @return Integer. Returns the CurseForge fileID of a modpack, for use in {@link #isCurse()} and {@link #checkCurseForge(String)}
      */
     int getProjectFileID() {
@@ -524,6 +561,7 @@ public class Configuration {
     /**
      * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
+     * @author Griefed
      * @param newProjectFileID The new projectFileID to store.
      */
     void setProjectFileID(int newProjectFileID) {
@@ -548,6 +586,7 @@ public class Configuration {
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}<br>
      * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}
+     * @author Griefed
      * @param configFile File. The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
      * @param shouldModpackBeCreated Boolean. Whether the CurseForge modpack should be downloaded and created.
      * @return Boolean. Returns <code>false</code> if all checks are passed.
@@ -640,6 +679,7 @@ public class Configuration {
      * {@link #setModLoaderCase(String)}<br>
      * {@link #checkModloaderVersion(String, String)}<br>
      * {@link #setModLoaderVersion(String)}<br>
+     * @author Griefed
      * @param modpackDir String. Should an existing modpack be specified, all configurations are read from the provided
      *                   configuration file and checks are made in this directory.
      * @return Boolean. Returns true if an error is found during configuration check.
@@ -744,6 +784,7 @@ public class Configuration {
      * {@link #setCopyDirs(List)}<br>
      * {@link #suggestCopyDirs(String)}<br>
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}<br>
+     * @author Griefed
      * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
      * project name and displayname, or when the creation of the modpack fails.
      */
@@ -888,6 +929,7 @@ public class Configuration {
     /**
      * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
      * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
+     * @author Griefed
      * @param modpack CurseModpack. Contains information about the CurseForge modpack. Used to get a list of all projects
      *               required by the modpack.
      * @return Boolean. Returns true if Jumploader is found.
@@ -915,8 +957,9 @@ public class Configuration {
     /**
      * Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
      * The list of directories to include in the server pack which is generated by this method excludes well know directories
-     * which would not be needed by a server pack. If you have suggestions to this list, open an issue on
-     * <a href=https://github.com/Griefed/ServerPackCreator/issues>GitHub</a>
+     * which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on
+     * <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a>
+     * @author Griefed
      * @param modpackDir String. The directory for which to gather a list of directories to copy to the server pack.
      * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only
      * directories.
@@ -964,6 +1007,7 @@ public class Configuration {
      * Must be numbers separated by a ",". If modpackDir successfully matched a projectID,fileID combination, CurseForge
      * is then checked for existence of said projectID and fileID. If the project can not be found or the file returns null
      * then false is returned and the check is considered failed.
+     * @author Griefed
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
@@ -1033,6 +1077,7 @@ public class Configuration {
      * Language Key <code>cli.input.false</code><br>
      * Language Key <code>cli.input.no</code><br>
      * Language Key <code>cli.input.no.short</code><br>
+     * @author Griefed
      * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
      * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
      */
@@ -1073,6 +1118,7 @@ public class Configuration {
      * configuration so they can more easily identify problems with said configuration.<br>
      * Should a user report an issue on GitHub and include their logs (which I hope they do....), this would also
      * help me help them. Logging is good. People should use more logging.
+     * @author Griefed
      * @param modpackDirectory String. The used modpackDir field either from a configuration file or from configuration setup.
      * @param clientsideMods String List. List of clientside-only mods to exclude from the server pack..
      * @param copyDirectories String List. List of directories in the modpack which are to be included in the server pack.
@@ -1141,6 +1187,7 @@ public class Configuration {
      * serverpackcreator.log so the user knows what went wrong.<br>
      * Checks whether the passed String is a directory and if it is not, prints the corresponding message to the console
      * and serverpackcreator.log so the user knows what went wrong.
+     * @author Griefed
      * @param modpackDir String. The path to the modpack directory to check whether it is empty and whether it is a directory.
      * @return Boolean. Returns true if the directory exists.
      */
@@ -1170,6 +1217,7 @@ public class Configuration {
      * and serverpackcreator.log if any one of the directories could not be found.
      * If the user specified a <code>source/file;destination/file</code>-combination, it is checked whether the specified
      * source-file exists on the host.
+     * @author Griefed
      * @param directoriesToCopy List String. The list of directories, or <code>source/file;destination/file</code>-combinations,
      *                         to check for existence. <code>source/file;destination/file</code>-combinations must be
      *                          absolute paths to the source-file.
@@ -1224,6 +1272,7 @@ public class Configuration {
      * Checks the passed String whether it is empty, and if it is, automatically acquires the path to the users Java
      * installation and appends bin/java.exe or bin/java depending on whether the path to said installation starts with
      * Windows-typical C: prefix.
+     * @author Griefed
      * @return String. Returns the passed String as is if it is not empty. Returns the automatically acquired path to the
      * Java executable/binary if the passed String was empty.
      */
@@ -1246,6 +1295,7 @@ public class Configuration {
 
     /**
      * Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.
+     * @author Griefed
      * @param pathToJava String. The path to check for java.exe and java.
      * @return Boolean. Returns true if the String ends with java.exe or java, and if either of these files exist.
      */
@@ -1274,6 +1324,7 @@ public class Configuration {
 
     /**
      * Checks whether either Forge or Fabric were specified as the modloader.
+     * @author Griefed
      * @param modloader String. Check case insensitive for Forge or Fabric.
      * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if neither.
      */
@@ -1295,6 +1346,7 @@ public class Configuration {
      * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically allows the user to
      * input Forge or Fabric in any combination of upper- and lowercase and ServerPackCreator will still be able to
      * work with the users input.
+     * @author Griefed
      * @param modloader String. The String to check for case-insensitive cases of either Forge or Fabric.
      * @return String. Returns a normalized String of the specified modloader.
      */
@@ -1327,6 +1379,7 @@ public class Configuration {
      * the user specified is checked against Forge's version manifest..<br>
      * If the user specified Fabric as their modloader, {@link #isFabricVersionCorrect(String)} is called and the version
      * the user specified is checked against Fabric's version manifest.
+     * @author Griefed
      * @param modloader String. The passed modloader which determines whether the check for Forge or Fabric is called.
      * @param modloaderVersion String. The version of the modloader which is checked against the corresponding modloaders manifest.
      * @return Boolean. Returns true if the specified modloader version was found in the corresponding manifest.
@@ -1351,6 +1404,7 @@ public class Configuration {
     /**
      * Checks whether the passed String is empty and if it is not. check the String against Mojang's version manifest
      * to validate the version.
+     * @author whitebear60
      * @param minecraftVersion String. The version to check for in Mojang's version manifest.
      * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.
      */
@@ -1384,6 +1438,7 @@ public class Configuration {
     /**
      * Checks whether the passed String is empty and if it is not. check the String against Fabric's version manifest
      * to validate the version.
+     * @author whitebear60
      * @param fabricVersion String. The version to check for in Fabric's version manifest.
      * @return Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.
      */
@@ -1429,6 +1484,7 @@ public class Configuration {
     /**
      * Checks whether the passed String is empty and if it is not. check the String against Forge's version manifest
      * to validate the version.
+     * @author whitebear60
      * @param forgeVersion String. The version to check for in Forge's version manifest.
      * @return Boolean. Returns true if the specified Forge version could be found in Forge's manifest.
      */
@@ -1475,6 +1531,7 @@ public class Configuration {
     /**
      * Returns the latest version for the Fabric-loader. If Fabric's version manifest should be unreachable for whatever
      * reason, version 0.11.3 is returned by default.
+     * @author whitebear60
      * @return Boolean. Returns true if the download was successful. False if not.
      */
     String latestFabricLoader() {
@@ -1529,6 +1586,7 @@ public class Configuration {
      * {@link #checkJavaPath(String)}<br>
      * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+     * @author whitebear60 & Griefed
      */
     void createConfigurationFile() {
         List<String> clientMods, copyDirs;
@@ -1786,6 +1844,7 @@ public class Configuration {
      * A helper method for {@link #createConfigurationFile()}. Prompts the user to enter the values which will make up
      * a String List in the new configuration file. If the user enters an empty line, the method is exited and the
      * String List returned.
+     * @author whitebear60
      * @return String List. Returns the list of values entered by the user.
      */
     private List<String> readStringArray() {
@@ -1804,6 +1863,7 @@ public class Configuration {
 
     /**
      * Converts a sequence of Strings, for example from a list, into a concatenated String.
+     * @author whitebear60
      * @param args Strings that will be concatenated into one string
      * @return String. Returns concatenated string that contains all provided values.
      */
@@ -1818,6 +1878,7 @@ public class Configuration {
      * A helper method for {@link #createConfigurationFile()}. Prompts the user to enter values which will then be
      * converted to booleans, either <code>TRUE</code> or <code>FALSE</code>. This prevents any non-boolean values
      * from being written to the new configuration file.
+     * @author whitebear60
      * @return Boolean. True or False, depending on user input.
      */
     private boolean readBoolean() {
@@ -1851,6 +1912,7 @@ public class Configuration {
 
     /** Writes a new configuration file with the parameters passed to it.<br>
      * Calls {@link #getConfigFile()}<br>
+     * @author whitebear60 & Griefed
      * @param modpackDir String. The path to the modpack.
      * @param clientMods List, String. List of clientside-only mods.
      * @param copyDirs List, String. List of directories to include in server pack.

@@ -88,6 +88,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * as well as installing the modloader server for the specified modloader, modloader version and Minecraft version.
  * Create a ZIP-archive of the server pack, excluding the Minecraft server JAR, for immediate upload to CurseForge or
  * other platforms.
+ * @author Griefed
  */
 @Component
 public class CreateServerPack {
@@ -102,6 +103,7 @@ public class CreateServerPack {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.<p>
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} required for creating a modpack from CurseForge.
      */
@@ -131,6 +133,7 @@ public class CreateServerPack {
 
     /**
      * Getter for server.properties.
+     * @author Griefed
      * @return Returns the server.properties-file for use in {@link #copyProperties(String)}
      */
     public File getPropertiesFile() {
@@ -139,6 +142,7 @@ public class CreateServerPack {
 
     /**
      * Getter for server-icon.png
+     * @author Griefed
      * @return Returns the server-icon.png-file for use in {@link #copyIcon(String)}
      */
     public File getIconFile() {
@@ -147,6 +151,7 @@ public class CreateServerPack {
 
     /**
      * Getter for start-forge.bat.
+     * @author Griefed
      * @return Returns the start-forge.bat-file for use in {@link #copyStartScripts(String, String, boolean)}
      */
     public File getForgeWindowsFile() {
@@ -155,6 +160,7 @@ public class CreateServerPack {
 
     /**
      * Getter for start-forge.sh
+     * @author Griefed
      * @return Returns the start-forge.sh-file for use in {@link #copyStartScripts(String, String, boolean)}
      */
     public File getForgeLinuxFile() {
@@ -163,6 +169,7 @@ public class CreateServerPack {
 
     /**
      * Getter for start-fabric.bat.
+     * @author Griefed
      * @return Returns the start-fabric.bat-file for use in {@link #copyStartScripts(String, String, boolean)}
      */
     public File getFabricWindowsFile() {
@@ -171,6 +178,7 @@ public class CreateServerPack {
 
     /**
      * Getter for start-fabric.sh.
+     * @author Griefed
      * @return Returns the start-fabric.sh-file for use in {@link #copyStartScripts(String, String, boolean)}
      */
     public File getFabricLinuxFile() {
@@ -190,6 +198,7 @@ public class CreateServerPack {
      * {@link #copyIcon(String)} to copy the server-icon.png to the server pack.<p>
      * {@link #copyProperties(String)} to copy the server.properties to the server pack.<p>
      * {@link #zipBuilder(String, String, boolean)} to create a ZIP-archive of the server pack.
+     * @author Griefed
      * @param configFileToUse A ServerPackCreator-configuration-file for {@link Configuration} to check and  generate a
      * server pack from.
      * @return Boolean. Returns true if the server pack was successfully generated.
@@ -256,6 +265,7 @@ public class CreateServerPack {
     /**
      * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
      * server pack is as clean as possible.
+     * @author Griefed
      * @param modpackDir String. The server_pack directory and ZIP-archive will be deleted inside the modpack directory.
      */
     void cleanupEnvironment(String modpackDir) {
@@ -302,6 +312,7 @@ public class CreateServerPack {
 
     /**
      * Copies start scripts for the specified modloader into the server pack.
+     * @author Griefed
      * @param modpackDir String. Start scripts are copied into the server_pack directory in the modpack directory.
      * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
      * @param includeStartScripts Boolean. Whether to copy the start scripts into the server pack.
@@ -355,6 +366,7 @@ public class CreateServerPack {
      * the specified destination-file.
      * Calls {@link #excludeClientMods(String, List)} to generate a list of all mods to copy to server pack, excluding
      * clientside-only mods.
+     * @author Griefed
      * @param modpackDir String. Files and directories are copied into the server_pack directory inside the modpack directory.
      * @param directoriesToCopy String List. All directories and files therein to copy to the server pack.
      * @param clientMods String List. List of clientside-only mods to exclude from the server pack.
@@ -481,6 +493,7 @@ public class CreateServerPack {
 
     /**
      * Generates a list of all mods to include in the server pack excluding clientside-only mods.
+     * @author Griefed
      * @param modsDir String. The mods directory of the modpack of which to generate a list of all it's contents.
      * @param clientMods List String. A list of all clientside-only mods.
      * @return List String. A list of all mods to include in the server pack.
@@ -515,6 +528,7 @@ public class CreateServerPack {
 
     /**
      * Copies the server-icon.png into server_pack.
+     * @author Griefed
      * @param modpackDir String. The server-icon.png is copied into the server_pack directory inside the modpack directory.
      */
     void copyIcon(String modpackDir) {
@@ -534,6 +548,7 @@ public class CreateServerPack {
 
     /**
      * Copies the server.properties into server_pack.
+     * @author Griefed
      * @param modpackDir String. The server.properties file is copied into the server_pack directory inside the modpack directory.
      */
     void copyProperties(String modpackDir) {
@@ -561,6 +576,7 @@ public class CreateServerPack {
      * for the specified Minecraft version and file-name depending on whether the modloader is Forge or Fabric.<p>
      * {@link #cleanUpServerPack(File, File, String, String, String, String)} to delete no longer needed files generated
      * by the installation process of the modloader server software.
+     * @author Griefed
      * @param modLoader String. The modloader for which to install the server software. Either Forge or Fabric.
      * @param modpackDir String. The server software is installed into the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to install the modloader and Minecraft server.
@@ -656,6 +672,7 @@ public class CreateServerPack {
 
     /**
      * Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p>
+     * @author Griefed
      * @param modpackDir String. The directory server_pack will be zipped and placed inside the modpack directory.
      * @param minecraftVersion String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR info should be printed.
@@ -698,6 +715,7 @@ public class CreateServerPack {
      * {@link #fabricBatch(String, String)} if the modloader is Fabric.
      * {@link #forgeShell(String, String)} if the modloader is Forge.
      * {@link #forgeBatch(String, String)} if the modloader is Forge.
+     * @author Griefed
      * @param modLoader String. Determines whether the scripts are generated for Forge or Fabric.
      * @param modpackDir String. The scripts are generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. Determines the Minecraft version for which the scripts are generated.
@@ -716,6 +734,7 @@ public class CreateServerPack {
 
     /**
      * Generates Fabric Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+     * @author Griefed
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -745,6 +764,7 @@ public class CreateServerPack {
 
     /**
      * Generates Fabric Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+     * @author Griefed
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -774,6 +794,7 @@ public class CreateServerPack {
 
     /**
      * Generates Forge Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+     * @author Griefed
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -803,6 +824,7 @@ public class CreateServerPack {
 
     /**
      * Generates Forge Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
+     * @author Griefed
      * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
      */
@@ -834,6 +856,7 @@ public class CreateServerPack {
      * Downloads the latest Fabric installer into the server pack.<p>
      * Calls<p>
      * {@link #latestFabricInstaller()} to acquire the latest version of the Fabric installer.
+     * @author Griefed
      * @param modpackDir String. The Fabric installer is downloaded into the server_pack directory inside the modpack directory.
      * @return Boolean. Returns true if the download was successfull.
      */
@@ -876,6 +899,7 @@ public class CreateServerPack {
     /**
      * Acquires the latest version of the Fabric modloader installer and returns it as a string. If acquisition of the
      * latest version fails, version 0.7.4 is returned by default.
+     * @author whitebear60
      * @return String. Returns the version of the latest Fabric modloader installer.
      */
     String latestFabricInstaller() {
@@ -905,6 +929,7 @@ public class CreateServerPack {
 
     /**
      * Downloads the modloader server installer for Forge, for the specified modloader version.
+     * @author Griefed
      * @param minecraftVersion String. The Minecraft version for which to download the modloader server installer.
      * @param modLoaderVersion String. The Forge version for which to download the modloader server installer.
      * @param modpackDir String. The modloader installer is downloaded to the server_pack directory inside the modloader directory.
@@ -945,6 +970,7 @@ public class CreateServerPack {
 
     /**
      * Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.
+     * @author Griefed
      * @param fabricInstaller File. The Fabric installer file which is to be deleted.
      * @param forgeInstaller File. The Forge installer file which is to be deleted.
      * @param modLoader String. Whether Forge or Fabric files are to be deleted.

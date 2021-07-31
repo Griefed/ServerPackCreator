@@ -46,6 +46,7 @@ import java.util.*;
  * and be named using following pattern: lang_{language code in lowercase}_{country code in lowercase}.
  * For example: <code>lang_en_us.properties</code>.<br>
  * Currently only supports Strings to be used in localized fields.
+ * @author whitebear60
  */
 @Component
 public class LocalizationManager {
@@ -80,6 +81,7 @@ public class LocalizationManager {
 
     /**
      * Getter for the array of languages supported by ServerPackCreator.
+     * @author whitebear60
      * @return String Array. Returns the array of languages supported by ServerPackCreator.
      */
     String[] getSupportedLanguages() {
@@ -88,6 +90,7 @@ public class LocalizationManager {
 
     /**
      * Getter for the lang.properties file which will set the locale for ServerPackCreator.
+     * @author whitebear60
      * @return File. Returns the file which will set the locale for ServerPackCreator.
      */
     File getLangPropertiesFile() {
@@ -96,6 +99,7 @@ public class LocalizationManager {
 
     /**
      * Getter for a String containing the currently used language.
+     * @author whitebear60
      * @return String. Returns a String containing the currently used language.
      */
     public String getLocale() {
@@ -108,6 +112,7 @@ public class LocalizationManager {
      * {@link #getSupportedLanguages()}<br>
      * {@link #getLocalizedString(String)}<br>
      * {@link #writeLocaleToFile(String)}
+     * @author whitebear60
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
      * ServerPackCreator or specified in the invalid format.
      * @param locale Locale to be used by application in this run.
@@ -156,6 +161,7 @@ public class LocalizationManager {
 
     /**
      * Initializes the LocalizationManager with a provided localePropertiesFile.
+     * @author whitebear60
      * @param localePropertiesFile Path to the locale properties file which specifies the language to use.
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
      * ServerPackCreator or specified in the invalid format.
@@ -219,6 +225,7 @@ public class LocalizationManager {
 
     /**
      * Initialize the LocalizationManager with en_us as the locale.
+     * @author whitebear60
      */
     public void init() {
         try {
@@ -230,6 +237,7 @@ public class LocalizationManager {
 
     /**
      * Acquires a localized String for the provided language key from the initialized locale resource.
+     * @author whitebear60
      * @param languageKey The language key to search for.
      * @return Localized string that is referred to by the language key.
      */
@@ -249,6 +257,7 @@ public class LocalizationManager {
      * If assigning the specified language fails because it is not supported, default to en_us.
      * This method should <strong>not</strong> call {@link #getLocalizedString(String)}, as the initialization of
      * said manager is called from here. Therefore, localized strings are not yet available.
+     * @author Griefed
      */
     public void checkLocaleFile() {
         if (getLangPropertiesFile().exists()) {
@@ -303,6 +312,7 @@ public class LocalizationManager {
      * of serverpackcreator is executed using said locale. This method should <strong>not</strong> call
      * {@link #getLocalizedString(String)}, as the initialization of said manager is called from here. Therefore,
      * localized strings are not yet available.
+     * @author Griefed
      * @param locale The locale the user specified when they ran serverpackcreator with -lang -your_locale.
      */
     void writeLocaleToFile(String locale) {

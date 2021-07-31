@@ -29,6 +29,7 @@ import java.io.File;
 
 /**
  * This class creates the tab which display the latest serverpackcreator.log tailer.
+ * @author Griefed
  */
 public class ServerPackCreatorLogTab extends JComponent {
 
@@ -39,6 +40,7 @@ public class ServerPackCreatorLogTab extends JComponent {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      */
     public ServerPackCreatorLogTab(LocalizationManager injectedLocalizationManager) {
@@ -56,6 +58,7 @@ public class ServerPackCreatorLogTab extends JComponent {
      * and a horizontal scrollbar available as needed. Uses Apache commons-io's {@link Tailer} to keep the JTextArea up
      * to date with the latest log entries. Should any line contain "Checking entered configuration." the textarea is
      * cleared.
+     * @author Griefed
      * @return JComponent. Returns a JPanel containing a JScrollPane containing the JTextArea with the latest
      * serverpackcreator.log entries.
      */

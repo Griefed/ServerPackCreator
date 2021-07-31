@@ -66,6 +66,7 @@ import java.util.List;
  * <strong>Headless environments</strong><p>
  * If ServerPackCreator is run in a headless environment, without any graphical environment, it should automatically
  * enter <code>-cli</code>-mode.
+ * @author Griefed
  */
 public class Main {
 
@@ -78,6 +79,7 @@ public class Main {
      * Calls {@link DefaultFiles} so all default files are available.
      * Checks arguments to determine which mode to enter.
      * Lists a couple of environment variables important for reporting issues.
+     * @author Griefed
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
      * will enter and which locale is used.
      */

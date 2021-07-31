@@ -30,12 +30,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Retrieves information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the projectIDs and fileIDs a modpack acquired from CurseForge depends on. These can be mods,
  * resource packs, worlds etc. etc.
+ * @author Griefed
  */
 public class CurseFiles {
     /**
      * Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
      * property allows us setup the class to only gather the information we want, so we don't have to worry about any
      * additions to the source-data being made, which would otherwise cause an "Unknown property" exception.
+     * @author Griefed
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String projectID;
@@ -43,6 +45,7 @@ public class CurseFiles {
 
     /**
      * Getter for a projectID of a dependency in the CurseForge modpack.
+     * @author Griefed
      * @return String. Returns a projectID of a dependency in the modpack acquired from CurseForge.
      */
     public String getProjectID() {
@@ -51,6 +54,7 @@ public class CurseFiles {
 
     /**
      * Setter for a projectID of a dependency in the CurseForge modpack.
+     * @author Griefed
      * @param projectID Receives the projectID of a dependency in the modpack acquired from CurseForge.
      */
     public void setProjectID(String projectID) {
@@ -59,6 +63,7 @@ public class CurseFiles {
 
     /**
      * Getter for a fileID of a dependency in the CurseForge modpack.
+     * @author Griefed
      * @return String. Returns a fileID of a dependency in the modpack acquired from CurseForge.
      */
     public String getFileID() {
@@ -67,6 +72,7 @@ public class CurseFiles {
 
     /**
      * Setter for a fileID of a dependency in the CurseForge modpack.
+     * @author Griefed
      * @param fileID Receives the fileID of a dependency in the modpack acquired from CurseForge.
      */
     public void setFileID(String fileID) {
@@ -75,6 +81,7 @@ public class CurseFiles {
 
     /**
      * A comma separated combination of a dependency projectID and fileID of a CurseForge modpack.
+     * @author Griefed
      * @return String. Returns a comma separated projectID,fileID combination of a dependency of a modpack acquired from
      * CurseForge.
      */

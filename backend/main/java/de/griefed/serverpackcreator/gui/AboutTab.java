@@ -39,7 +39,8 @@ import java.util.Objects;
 /**
  * This class creates the tab which displays the About-tab, with the about text, the list of contributors, buttons for
  * opening PasteBin in your browser, opening ServerPackCreator's issue page on GitHub and for opening the invite link
- * to Griefed#s discord server in your browser.
+ * to Griefed's discord server in your browser.
+ * @author Griefed
  */
 public class AboutTab extends Component {
     private static final Logger LOG = LogManager.getLogger(AboutTab.class);
@@ -51,6 +52,7 @@ public class AboutTab extends Component {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      */
     public AboutTab(LocalizationManager injectedLocalizationManager) {
@@ -71,7 +73,6 @@ public class AboutTab extends Component {
 
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
     private final File LOG_SERVERPACKCREATOR = new File("logs/serverpackcreator.log");
-    private final File LOG_MODLOADER_INSTALLER = new File("logs/modloader_installer.log");
 
     private JComponent aboutPanel;
 
@@ -79,7 +80,6 @@ public class AboutTab extends Component {
 
     private String configURL;
     private String serverpackcreatorlogURL;
-    private String modloaderinstallerlogURL;
     private String textAreaContent;
 
     private StringSelection stringSelection;
@@ -96,6 +96,7 @@ public class AboutTab extends Component {
      * users browser.
      * @return JComponent. Returns a JPanel containing a JTextPane with the about text in a styled document, as well as
      * the three aforementioned buttons.
+     * @author Griefed
      */
     JComponent aboutTab() {
         aboutPanel = new JPanel(false);
@@ -267,6 +268,7 @@ public class AboutTab extends Component {
      * Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's hastebin.java (MIT License)</a>
      * and edited to use HasteBin fork <a href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork
      * of kaimu-kun's hastebin.java is available at <a href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.
+     * @author kaimu-kun & Griefed
      * @param textFile The file which will be read into a String of which then to create a HasteBin post of.
      * @return String. Returns a String containing the URL to the newly created HasteBin post.
      */

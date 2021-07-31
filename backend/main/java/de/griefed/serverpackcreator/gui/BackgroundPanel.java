@@ -63,6 +63,7 @@ import java.awt.*;
  * Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank you, thank you, thank you
  * so very much! You seriously made my day here.<br>
  * Rob, you rule.
+ * @author Rob Camick
  */
 public class BackgroundPanel extends JPanel {
     public static final int SCALED = 0;
@@ -83,6 +84,7 @@ public class BackgroundPanel extends JPanel {
     /**
      * <strong>Constructor</strong><br>
      * Set image as the background with the SCALED style.
+     * @author Rob Camick
      * @param image Pass an image to the constructor to be used in the new JPanel.
      */
     public BackgroundPanel(Image image) {
@@ -92,6 +94,7 @@ public class BackgroundPanel extends JPanel {
     /**
      * <strong>Constructor</strong><br>
      * Set image as the background with the specified style.
+     * @author Rob Camick
      * @param image Pass an image to the constructor to be used in the new JPanel.
      * @param style The style with which the image should be painted. See {@link #SCALED}, {@link #TILED}, {@link #ACTUAL}
      */
@@ -104,6 +107,7 @@ public class BackgroundPanel extends JPanel {
     /**
      * <strong>Constructor</strong><br>
      * Set image as the background with the specified style and alignment.
+     * @author Rob Camick
      * @param image Pass an image to the constructor to be used in the new JPanel.
      * @param style The style with which the image should be painted. See {@link #SCALED}, {@link #TILED}, {@link #ACTUAL}
      * @param alignmentX Alignment along the x-axis.
@@ -120,6 +124,7 @@ public class BackgroundPanel extends JPanel {
     /**
      * <strong>Constructor</strong><br>
      * Use the Paint interface to paint a background.
+     * @author Rob Camick
      * @param painter Pass a painter to be used as the background in the new JPanel.
      */
     public BackgroundPanel(Paint painter) {
@@ -129,6 +134,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Setter for the image used as the background.
+     * @author Rob Camick
      * @param image Image to be set as the background.
      */
     public void setImage(Image image) {
@@ -138,6 +144,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Setter the style used to paint the background image.
+     * @author Rob Camick
      * @param style Sets the style with which the image should be painted.
      */
     public void setStyle(int style) {
@@ -147,6 +154,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Setter for the Paint object used to paint the background.
+     * @author Rob Camick
      * @param painter Sets the painter with which the background should be painted.
      */
     public void setPaint(Paint painter) {
@@ -156,6 +164,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Setter for the horizontal alignment of the image when using ACTUAL style.
+     * @author Rob Camick
      * @param alignmentX Sets the alignment along the x-axis.
      */
     public void setImageAlignmentX(float alignmentX) {
@@ -165,6 +174,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Setter for the horizontal alignment of the image when using ACTUAL style.
+     * @author Rob Camick
      * @param alignmentY Sets the alignment along the y-axis.
      */
     public void setImageAlignmentY(float alignmentY) {
@@ -174,6 +184,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Override method so we can make the component transparent.
+     * @author Rob Camick
      * @param component JComponent to add to the panel.
      */
     public void add(JComponent component) {
@@ -182,6 +193,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Override to provide a preferred size equal to the image size.
+     * @author Rob Camick
      * @return Dimension. Returns the dimension of the passed image.
      */
     @Override
@@ -194,6 +206,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Override method so we can make the component transparent.
+     * @author Rob Camick
      * @param component JComponent to add to the panel.
      * @param constraints Constraints with which the panel should be added.
      */
@@ -210,6 +223,7 @@ public class BackgroundPanel extends JPanel {
      * Controls whether components added to this panel should automatically
      * be made transparent. That is, setOpaque(false) will be invoked.
      * The default is set to true.
+     * @author Rob Camick
      * @param isTransparentAdd Whether to automatically make components transparent.
      */
     public void setTransparentAdd(boolean isTransparentAdd) {
@@ -221,6 +235,7 @@ public class BackgroundPanel extends JPanel {
      * For components that use renderers, like JTable, you will also need to
      * change the renderer to be transparent. An easy way to do this it to
      * set the background of the table to a Color using an alpha value of 0.
+     * @author Rob Camick
      * @param component The component to make transparent.
      */
     private void makeComponentTransparent(JComponent component) {
@@ -240,6 +255,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Add custom painting.
+     * @author Rob Camick
      * @param g Received from parent.
      */
     @Override
@@ -275,6 +291,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Custom painting code for drawing a SCALED image as the background.
+     * @author Rob Camick
      * @param g Received from parent.
      */
     private void drawScaled(Graphics g) {
@@ -284,6 +301,7 @@ public class BackgroundPanel extends JPanel {
 
     /**
      * Custom painting code for drawing TILED images as the background.
+     * @author Rob Camick
      * @param g Received from parent.
      */
     private void drawTiled(Graphics g) {
@@ -302,6 +320,7 @@ public class BackgroundPanel extends JPanel {
      * Custom painting code for drawing the ACTUAL image as the background.
      * The image is positioned in the panel based on the horizontal and
      * vertical alignments specified.
+     * @author Rob Camick
      * @param g Received from parent.
      */
     private void drawActual(Graphics g) {

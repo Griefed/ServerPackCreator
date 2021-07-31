@@ -22,9 +22,15 @@ package de.griefed.serverpackcreator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author Griefed
+ */
 @SpringBootApplication
 public class ServerPackCreatorApplication {
 
+    /**
+     * @author Griefed
+     */
     public static void main(String[] args) {
         SpringApplication.run(ServerPackCreatorApplication.class, args);
     }

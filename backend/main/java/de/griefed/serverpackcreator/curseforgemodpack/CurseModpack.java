@@ -38,12 +38,14 @@ import java.util.List;
  * {@link #toString()}<p>
  * Retrieve information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the name, version and author of a modpack.
+ * @author Griefed
  */
 public class CurseModpack {
     /**
      * Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
      * property allows us setup the class to only gather the information we want, so we don't have to worry about any
      * additions to the source-data being made, which would otherwise cause an "Unknown property" exception.
+     * @author Griefed
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private List<CurseMinecraft> minecraft;
@@ -54,6 +56,7 @@ public class CurseModpack {
 
     /**
      * Getter for Minecraft related information using {@link CurseMinecraft}.
+     * @author Griefed
      * @return List CurseMinecraft. Returns an instance of CurseMinecraft.class with information related to Minecraft.
      */
     public List<CurseMinecraft> getMinecraft() {
@@ -62,6 +65,7 @@ public class CurseModpack {
 
     /**
      * Setter for Minecraft related information using {@link CurseMinecraft}
+     * @author Griefed
      * @param newMinecraft Receives an instance of the CurseMinecraft.class.
      */
     public void setMinecraft(List<CurseMinecraft> newMinecraft) {
@@ -70,6 +74,7 @@ public class CurseModpack {
 
     /**
      * Getter for the name of the CurseForge modpack.
+     * @author Griefed
      * @return String. Returns the name of modpack acquired from CurseForge.
      */
     public String getName() {
@@ -78,6 +83,7 @@ public class CurseModpack {
 
     /**
      * Setter for the name of the CurseForge modpack.
+     * @author Griefed
      * @param newName Receives the name of the CurseForge modpack.
      */
     public void setName(String newName) {
@@ -86,6 +92,7 @@ public class CurseModpack {
 
     /**
      * Getter for the version of the CurseForge modpack.
+     * @author Griefed
      * @return String. Returns the version of the modpack acquired from CurseForge.
      */
     public String getVersion() {
@@ -94,6 +101,7 @@ public class CurseModpack {
 
     /**
      * Setter for the version of the CurseForge modpack.
+     * @author Griefed
      * @param newVersion Receives the version of the modpack acquired from CurseForge.
      */
     public void setVersion(String newVersion) {
@@ -102,6 +110,7 @@ public class CurseModpack {
 
     /**
      * Getter for the author of the CurseForge modpack.
+     * @author Griefed
      * @return String. Returns the author of the modpack acquired from CurseForge.
      */
     public String getAuthor() {
@@ -110,6 +119,7 @@ public class CurseModpack {
 
     /**
      * Setter for the author of the CurseForge modpack.
+     * @author Griefed
      * @param newAuthor Receives the author of the modpack acquired from CurseForge.
      */
     public void setAuthor(String newAuthor) {
@@ -118,6 +128,7 @@ public class CurseModpack {
 
     /**
      * Getter for the files on which the CurseForge modpack depends by using {@link CurseFiles}.
+     * @author Griefed
      * @return List CurseFiles. Returns an instance of CurseFiles.class with information related to the files included
      * in the CurseForge modpack.
      */
@@ -127,6 +138,7 @@ public class CurseModpack {
 
     /**
      * Setter for the CurseForge modpack files on which it depends.
+     * @author Griefed
      * @param newFiles Receives an instance of CurseFiles.class with information about the files on which the modpack depends.
      */
     public void setFiles(List<CurseFiles> newFiles) {
@@ -136,6 +148,7 @@ public class CurseModpack {
     /**
      * String containing information about the CurseForge modpack. Included are {@link #getMinecraft()},
      * {@link #getName()}, {@link #getVersion()}, {@link #getAuthor()}, {@link #getFiles()}.
+     * @author Griefed
      * @return String. Returns String with information about the CurseForge modpack.
      */
     @Override

@@ -66,6 +66,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * If modpackDir does not hold a projectID,fileID we have to assume it is a path pointing at a directory which already
  * contains a modpack we can work with and create a server pack from. Thus, we clean up the environment if modpackDir holds
  * a projectID,fileID.
+ * @author Griefed
  */
 @Component
 public class CurseCreateModpack {
@@ -82,6 +83,7 @@ public class CurseCreateModpack {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      */
     @Autowired
@@ -95,6 +97,7 @@ public class CurseCreateModpack {
 
     /**
      * Getter for the CurseForge project name.
+     * @author Griefed
      * @return String. Returns the name of the CurseForge project name.
      */
     String getProjectName() {
@@ -103,6 +106,7 @@ public class CurseCreateModpack {
 
     /**
      * Setter for the name of the CurseForge project name.
+     * @author Griefed
      * @param newProjectID The ID of the new CurseForge project.
      */
     void setProjectName(int newProjectID) {
@@ -122,6 +126,7 @@ public class CurseCreateModpack {
 
     /**
      * Setter for the CurseForge file name and file disk name.
+     * @author Griefed
      * @param newProjectID The ID of the CurseForge project.
      * @param newFileID The ID of the CurseForge file.
      */
@@ -157,6 +162,7 @@ public class CurseCreateModpack {
 
     /**
      * Getter for the CurseForge file name.
+     * @author Griefed
      * @return String. Returns the file name of the CurseForge project.
      */
     String getFileName() {
@@ -165,6 +171,7 @@ public class CurseCreateModpack {
 
     /**
      * Getter for the CurseForge file disk name.
+     * @author Griefed
      * @return String. Returns the file disk name of the CurseForge file.
      */
     String getFileDiskName() {
@@ -175,6 +182,7 @@ public class CurseCreateModpack {
      * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically allows the user to
      * input Forge or Fabric in any combination of upper- and lowercase and ServerPackCreator will still be able to
      * work with the users input.
+     * @author Griefed
      * @param modloader String. The String to check for case-insensitive cases of either Forge or Fabric.
      * @return String. Returns a normalized String of the specified modloader.
      */
@@ -195,6 +203,7 @@ public class CurseCreateModpack {
      * {@link CurseAPI} and various methods of it in order to acquire information about the modpack.<br>
      * {@link #checkCurseForgeDir(String)}<br>
      * {@link #initializeModpack(String, Integer, Integer)}
+     * @author Griefed
      * @param modpackDir String. Combination of project name and file name. Created during download procedure
      *                  and later replaces the modpackDir variable in the configuration file.
      * @param projectID Integer. The ID of the project. Used to gather information about the CurseForge project and to
@@ -233,6 +242,7 @@ public class CurseCreateModpack {
      * {@link #unzipArchive(String, String)}<br>
      * {@link #copyOverride(String)}<br>
      * {@link #downloadMods(String)}<br>
+     * @author Griefed
      * @param modpackDir String. Combination of project name and file name. Created during download procedure and later
      *                  replaces the modpackDir variable in the configuration file.
      * @param projectID Integer. The ID of the project. Used to gather information and to download the modpack.
@@ -293,6 +303,7 @@ public class CurseCreateModpack {
      * If the acquisition of the download URL fails as well....well we're out of luck, then. The user will have to figure
      * this out on their own. Possible reasons for a failed download and failed URL acquisition might be that the file
      * was taken down, no longer exists, CurseForge is unavailable etc. etc. There's nothing we can do about that.
+     * @author Griefed
      * @param modpackDir String. All mods are downloaded to the child-directory "mods" inside the modpack directory.
      */
     void downloadMods(String modpackDir) {
@@ -379,6 +390,7 @@ public class CurseCreateModpack {
 
     /**
      * Recursively copy all folders and files from the override directory to the parent directory, our modpack directory.
+     * @author Griefed
      * @param modpackDir String. The overrides directory resides in this directory. All folders and files within overrides
      *                  are copied to the parent directory, the modpack directory.
      */
@@ -406,6 +418,7 @@ public class CurseCreateModpack {
      * Check whether the folder for the specified CurseForge projectID/fileID exists and if it does exist, delete it
      * recursively to ensure we are working with a clean environment when creating a modpack from CurseForge.<br>
      * Calls {@link #cleanupEnvironment(String)} to ensure a clean environment when we create a new modpack from CurseForge.
+     * @author Griefed
      * @param modpackDir String. The path to the modpack directory, a combination of project name and file display name.
      * @return Boolean. Returns true if something went wrong during the cleanup of the modpack directory. If the cleanup
      * procedure finished successfully and we have a clean environment, false is returned. Returns false if the modpack
@@ -424,6 +437,7 @@ public class CurseCreateModpack {
 
     /**
      * Unzips the downloaded modpack ZIP-archive to the specified directory.
+     * @author Griefed
      * @param zipFile String. The path to the ZIP-archive which we want to unzip.
      * @param modpackDir The directory into which the ZIP-archive will be unzipped into.
      */
@@ -439,6 +453,7 @@ public class CurseCreateModpack {
     /**
      * Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
      * clean environment when creating a new modpack from CurseForge.
+     * @author Griefed
      * @param modpackDir String. The directory we want to delete.
      * @return Boolean. Returns false if every file and folder was, recursively and successfully, deleted.
      */

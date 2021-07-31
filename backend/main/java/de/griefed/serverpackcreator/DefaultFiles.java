@@ -76,6 +76,7 @@ import java.nio.file.Paths;
  * <p>
  * Should an old configuration file, <em>creator.conf</em>, be detected, it is renamed to <em>serverpackcreator.conf</em>
  * to ensure a configuration file is present at all times.
+ * @author Griefed
  */
 @Component
 public class DefaultFiles {
@@ -88,6 +89,7 @@ public class DefaultFiles {
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection. Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      */
     @Autowired
@@ -110,6 +112,7 @@ public class DefaultFiles {
 
     /**
      * Getter for serverpackcreator.conf.
+     * @author Griefed
      * @return Returns the serverpackcreator.conf-file for use in {@link #checkForConfig()}
      */
     public File getConfigFile() {
@@ -118,6 +121,7 @@ public class DefaultFiles {
 
     /**
      * Getter for creator.conf.
+     * @author Griefed
      * @return Returns the creator.conf-file for use in {@link #checkForConfig()}.
      */
     public File getOldConfigFile() {
@@ -126,6 +130,7 @@ public class DefaultFiles {
 
     /**
      * Getter for server.properties.
+     * @author Griefed
      * @return Returns the server.properties-file for use in {@link #checkForProperties()}
      */
     public File getPropertiesFile() {
@@ -134,6 +139,7 @@ public class DefaultFiles {
 
     /**
      * Getter for server-icon.png
+     * @author Griefed
      * @return Returns the server-icon.png-file for use in {@link #checkForIcon()}
      */
     public File getIconFile() {
@@ -142,6 +148,7 @@ public class DefaultFiles {
 
     /**
      * Getter for start-forge.bat.
+     * @author Griefed
      * @return Returns the start-forge.bat-file for use in {@link #checkForForgeWindows()}
      */
     public File getForgeWindowsFile() {
@@ -150,6 +157,7 @@ public class DefaultFiles {
 
     /**
      * Getter for start-forge.sh.
+     * @author Griefed
      * @return Returns the start-forge.sh-file for use in {@link #checkForForgeLinux()}
      */
     public File getForgeLinuxFile() {
@@ -158,6 +166,7 @@ public class DefaultFiles {
 
     /**
      * Getter for start-fabric.bat.
+     * @author Griefed
      * @return Returns the start-fabric.bat-file for use in {@link #checkForFabricWindows()}
      */
     public File getFabricWindowsFile() {
@@ -166,6 +175,7 @@ public class DefaultFiles {
 
     /**
      * Getter for start-fabric.sh.
+     * @author Griefed
      * @return Returns the start-fabric.sh-file for use in {@link #checkForFabricLinux()}
      */
     public File getFabricLinuxFile() {
@@ -174,6 +184,7 @@ public class DefaultFiles {
 
     /**
      * Getter for Mojang's Minecraft version-manifest.
+     * @author Griefed
      * @return String. Returns the URL to the JSON-file for use in {@link #downloadMinecraftManifest()}
      */
     URL getMinecraftManifestUrl() {
@@ -187,6 +198,7 @@ public class DefaultFiles {
 
     /**
      * Getter for Forge's version-manifest.
+     * @author Griefed
      * @return String. Returns the URL to the JSON-file for use in {@link #downloadForgeManifest()}
      */
     URL getForgeManifestUrl() {
@@ -200,6 +212,7 @@ public class DefaultFiles {
 
     /**
      * Getter for Fabric's version-manifest.
+     * @author Griefed
      * @return String. Returns the URL to the JSON-file for use in {@link #downloadFabricManifest()}
      */
     URL getFabricManifestUrl() {
@@ -213,6 +226,7 @@ public class DefaultFiles {
 
     /**
      * Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.
+     * @author Griefed
      * @return Returns the URL to the Fabric Installer Manifest.
      */
     public URL getFabricInstallerManifestUrl() {
@@ -232,6 +246,7 @@ public class DefaultFiles {
      * If any file was newly generated from it's template, a warning is printed informing the user about said newly
      * generated file. If every file was present and none was generated, "Setup completed." is printed to the console
      * and log.
+     * @author Griefed
      */
     void filesSetup() {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.enter"));
@@ -282,6 +297,7 @@ public class DefaultFiles {
      * config file is generated.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
+     * @author Griefed
      */
     boolean checkForConfig() {
         boolean firstRun = false;
@@ -321,6 +337,7 @@ public class DefaultFiles {
 
     /**
      * Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
+     * @author Griefed
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -349,6 +366,7 @@ public class DefaultFiles {
 
     /**
      * Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
+     * @author Griefed
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -377,6 +395,7 @@ public class DefaultFiles {
 
     /**
      * Checks for existence of Forge start script for Linux. If it is not found, it is generated.
+     * @author Griefed
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -405,6 +424,7 @@ public class DefaultFiles {
 
     /**
      * Checks for existence of Forge start script for Windows. If it is not found, it is generated.
+     * @author Griefed
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -433,6 +453,7 @@ public class DefaultFiles {
 
     /**
      * Checks for existence of server.properties file. If it is not found, it is generated.
+     * @author Griefed
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -461,6 +482,7 @@ public class DefaultFiles {
 
     /**
      * Checks for existence of server-icon.png file. If it is not found, it is generated.
+     * @author Griefed
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
@@ -491,6 +513,7 @@ public class DefaultFiles {
      * Checks for existence of minecraft-manifest.json, fabric-manifest.xml and forge-manifest.json and deletes them if
      * they exist. Makes calls to {@link #downloadMinecraftManifest()}, {@link #downloadFabricManifest()}, {@link #getFabricInstallerManifestUrl()} and {@link #downloadForgeManifest()}
      * in order to update them.
+     * @author Griefed
      */
     void refreshValidationFiles() {
         if (new File("./work/minecraft-manifest.json").delete()) {
@@ -521,6 +544,7 @@ public class DefaultFiles {
 
     /**
      * Downloads the Minecraft version manifest for version validation.
+     * @author whitebear60
      */
     void downloadMinecraftManifest() {
         try {
@@ -568,6 +592,7 @@ public class DefaultFiles {
 
     /**
      * Downloads the Fabric version manifest for version validation.
+     * @author whitebear60
      */
     void downloadFabricManifest() {
         try {
@@ -615,6 +640,7 @@ public class DefaultFiles {
 
     /**
      * Downloads the Forge version manifest for version validation.
+     * @author whitebear60
      */
     void downloadForgeManifest() {
         try {
@@ -663,6 +689,7 @@ public class DefaultFiles {
 
     /**
      * Downloads the Fabric installer manifest in order to acquire the latest installer version.
+     * @author whitebear60
      */
     void downloadFabricInstallerManifest() {
         try {

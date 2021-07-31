@@ -30,6 +30,7 @@ import java.util.Random;
  * Just something fun to brighten the mood. This class provides a list of messages which some of you may know from the
  * SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained.
  * Additional thanks to Larsz for providing a list of all these messages <a href=https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135>on GameFAQs </a>
+ * @author Griefed
  */
 public class CurseSplines {
 
@@ -148,6 +149,7 @@ public class CurseSplines {
 
     /**
      * Retrieves the index of a random message in {@link #RETICULATING}.
+     * @author Griefed
      * @return Integer. Returns a randomly generated index.
      */
     private int getRandomInt() {
@@ -157,6 +159,7 @@ public class CurseSplines {
 
     /**
      * Retrieves a message from {@link #RETICULATING} using a randomly generated index from {@link #getRandomInt()}.
+     * @author Griefed
      * @return String. Returns the message at the index provided by the randomizer.
      */
     private String getSpline() {
@@ -165,6 +168,7 @@ public class CurseSplines {
 
     /**
      * Retrieve a random message from {@link #RETICULATING}.
+     * @author Griefed
      * @return String. Returns a random message.
      */
     public String reticulate() {

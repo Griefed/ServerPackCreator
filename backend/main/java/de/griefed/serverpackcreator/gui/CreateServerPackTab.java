@@ -33,8 +33,6 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -53,6 +51,7 @@ import java.util.concurrent.Executors;
  * serverpackcreator.log <em>during</em> the creation of a new server pack.<p>
  *     If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
  * </p>
+ * @author Griefed
  */
 public class CreateServerPackTab extends JComponent {
     private static final Logger LOG = LogManager.getLogger(CreateServerPackTab.class);
@@ -71,6 +70,7 @@ public class CreateServerPackTab extends JComponent {
      * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * Receives an instance of {@link CreateServerPack} which is required to generate a server pack.
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedConfiguration Instance of {@link Configuration} required to successfully and correctly create the server pack.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
@@ -150,16 +150,27 @@ public class CreateServerPackTab extends JComponent {
 
     private String chosenModloader;
 
+    /**
+     * Getter for the chosen modloader from the JRadioButtons.
+     * @author Griefed
+     * @return String. Returns either Fabric or Forge.
+     */
     public String getChosenModloader() {
         return chosenModloader;
     }
 
+    /**
+     * Setter for the chosen modloader from the JRadioButtons.
+     * @author Griefed
+     * @param chosenModloader String. Sets the chosen modloader for later use in server pack generation and config creation.
+     */
     public void setChosenModloader(String chosenModloader) {
         this.chosenModloader = chosenModloader;
     }
 
     /**
      * Create the tab which displays every component related to configuring ServerPackCreator and creating a server pack.
+     * @author Griefed
      * @return JComponent. Returns a JPanel everything needed for displaying the CreateServerPackTab.
      * */
     JComponent createServerPackTab() {
@@ -629,15 +640,6 @@ public class CreateServerPackTab extends JComponent {
                         setChosenModloader("Forge");
                     }
 
-                    /*String tmpModloader = CONFIGURATION.setModLoaderCase(newConfigFile.getString("modLoader"));
-                    if (tmpModloader.equals("Fabric")) {
-                        sliderModloader.setValue(1);
-                        setChosenModloader("Fabric");
-                    } else {
-                        sliderModloader.setValue(0);
-                        setChosenModloader("Forge");
-                    }*/
-
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
 
                     checkBoxServer.setSelected(CONFIGURATION.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
@@ -952,15 +954,6 @@ public class CreateServerPackTab extends JComponent {
 
                     setChosenModloader("Forge");
                 }
-
-                /*String tmpModloader = CONFIGURATION.setModLoaderCase(config.getString("modLoader"));
-                if (tmpModloader.equals("Fabric")) {
-                    sliderModloader.setValue(1);
-                    setChosenModloader("Fabric");
-                } else {
-                    sliderModloader.setValue(0);
-                    setChosenModloader("Forge");
-                }*/
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
 

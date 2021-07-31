@@ -91,6 +91,7 @@ import java.awt.event.AdjustmentListener;
  *    the viewport to the relative position it was at before the data was added<br>
  *<br>
  *  Similar logic would apply for horizontal scrolling.
+ * @author Rob Camick
  */
 public class SmartScroller implements AdjustmentListener {
     public final static int HORIZONTAL = 0;
@@ -110,7 +111,7 @@ public class SmartScroller implements AdjustmentListener {
     /**
      *  Convenience constructor.<br>
      *  Scroll direction is VERTICAL and viewport position is at the END.
-     *
+     *  @author Rob Camick
      *  @param scrollPane the scroll pane to monitor
      */
     public SmartScroller(JScrollPane scrollPane) {
@@ -120,7 +121,7 @@ public class SmartScroller implements AdjustmentListener {
     /**
      *  Convenience constructor.<br>
      *  Scroll direction is VERTICAL.
-     *
+     *  @author Rob Camick
      *  @param scrollPane the scroll pane to monitor
      *  @param viewportPosition valid values are START and END
      */
@@ -130,7 +131,7 @@ public class SmartScroller implements AdjustmentListener {
 
     /**
      *  Specify how the SmartScroller will function.
-     *
+     *  @author Rob Camick
      *  @param scrollPane the scroll pane to monitor
      *  @param scrollDirection indicates which JScrollBar to monitor.
      *                         Valid values are HORIZONTAL and VERTICAL.
@@ -178,7 +179,8 @@ public class SmartScroller implements AdjustmentListener {
 
     /**
      *  Analyze every adjustment event to determine when the viewport needs to be repositioned.
-     * @param e Adjustment event to analyse
+     *  @author Rob Camick
+     *  @param e Adjustment event to analyse
      */
     private void checkScrollBar(AdjustmentEvent e) {
         /*

@@ -28,12 +28,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * {@link #toString()}<p>
  * Retrieves information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the modloader and modloader version of a modpack.
+ * @author Griefed
  */
 public class CurseModLoaders {
     /**
      * Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
      * property allows us setup the class to only gather the information we want, so we don't have to worry about any
      * additions to the source-data being made, which would otherwise cause an "Unknown property" exception.
+     * @author Griefed
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String id;
@@ -43,6 +45,7 @@ public class CurseModLoaders {
      * manifest.json which contains the modloader and the version of said modloader, for example <code>"id": "forge-36.1.4"</code>
      * @return String. Returns the id of the modpack acquired from CurseForge containing information about the modloader
      * and the version of said modloader.
+     * @author Griefed
      */
     public String getId() {
         return id;
@@ -53,6 +56,7 @@ public class CurseModLoaders {
      * manifest.json which contains the modloader and the version of said modloader, for example <code>"id": "forge-36.1.4"</code>
      * @param id Receives the id of the CurseForge modpack containing information about the modloader
      * and the version of said modloader.
+     *           @author Griefed
      */
     public void setId(String id) {
         this.id = id;
@@ -62,6 +66,7 @@ public class CurseModLoaders {
      * String containing information about the CurseForge modpack's used modloader and the modloader version.
      * @return String. Returns the String with information about the modloader and modloader version used by the
      * CurseForge modpack.
+     * @author Griefed
      */
     @Override
     public String toString() {

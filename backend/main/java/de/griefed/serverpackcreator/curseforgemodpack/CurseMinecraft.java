@@ -32,12 +32,14 @@ import java.util.List;
  * {@link #toString()}<p>
  * Retrieves information about a CurseForge Minecraft modpack by using {@linkplain com.fasterxml.jackson.databind} JSON parsing.
  * This class retrieves the Minecraft version of a modpack.
+ * @author Griefed
  */
 public class CurseMinecraft {
     /**
      * Ignore unknown values/object. We only want to gather specific information and disregard the rest. Setting this
      * property allows us setup the class to only gather the information we want, so we don't have to worry about any
      * additions to the source-data being made, which would otherwise cause an "Unknown property" exception.
+     * @author Griefed
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private String version;
@@ -45,6 +47,7 @@ public class CurseMinecraft {
 
     /**
      * Getter for the Minecraft version used by the CurseForge modpack.
+     * @author Griefed
      * @return String. Returns the Minecraft version used by the modpack acquired from CurseForge.
      */
     public String getVersion() {
@@ -53,6 +56,7 @@ public class CurseMinecraft {
 
     /**
      * Setter for the Minecraft version used by the CurseForge modpack.
+     * @author Griefed
      * @param version Receives the Minecraft version of the CurseForge modpack.
      */
     public void setVersion(String version) {
@@ -61,6 +65,7 @@ public class CurseMinecraft {
 
     /**
      * Getter for modloader related information using {@link CurseModLoaders}.
+     * @author Griefed
      * @return List CurseModLoaders. Returns an instance of CurseModLoaders.class with information about the modloader
      * and modloader version used by the CurseForge modpack.
      */
@@ -70,6 +75,7 @@ public class CurseMinecraft {
 
     /**
      * Setter for modloader related information using {@link CurseModLoaders}.
+     * @author Griefed
      * @param modLoaders Receives an instance of CurseModLoaders.class.
      */
     public void setModLoaders(List<CurseModLoaders> modLoaders) {
@@ -79,6 +85,7 @@ public class CurseMinecraft {
     /**
      * String containing information about the Minecraft version, modloader and modloader version used by the CurseForge
      * modpack.
+     * @author Griefed
      * @return String. Returns a String with the Minecraft version, used modloader and modloader version of a modpack
      * acquired from CurseForge.
      */

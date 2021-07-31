@@ -48,6 +48,7 @@ import java.util.Objects;
  * which then calls {@link #createAndShowGUI()} in order to create and show the GUI of ServerPackCreator. Instances of
  * the {@link CreateServerPackTab}, {@link ServerPackCreatorLogTab}, {@link ModloaderInstallerLogTab}, {@link AboutTab}
  * are created in the constructor of this class to make sure they are ready when the GUI is created and shown to the user.
+ * @author Griefed
  */
 public class CreateGui extends JPanel {
     private static final Logger LOG = LogManager.getLogger(CreateGui.class);
@@ -76,6 +77,7 @@ public class CreateGui extends JPanel {
      * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * Receives an instance of {@link CreateServerPack} which is required to generate a server pack.
+     * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedConfiguration Instance of {@link Configuration} required to successfully and correctly create the server pack.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
@@ -186,6 +188,7 @@ public class CreateGui extends JPanel {
      * Shows the GUI from the EDT by using SwingUtilities and it's invokeLater method by calling {@link #createAndShowGUI()}.
      * Sets the font to bold, which may be overridden by the LookAndFeel which gets automatically determined and depends
      * on the OS ServerPackCreator is run on.
+     * @author Griefed
      */
     public void mainGUI() {
         SwingUtilities.invokeLater(() -> {
@@ -236,6 +239,7 @@ public class CreateGui extends JPanel {
 
     /**
      * Creates the frame in which the banner, tabbed pane with all the tabs, icon and title are displayed and shows it.
+     * @author Griefed
      */
     private void createAndShowGUI() {
 
