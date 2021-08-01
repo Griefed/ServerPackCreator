@@ -42,6 +42,19 @@
             </Policies>
             <DefaultRolloverStrategy max="5" />
         </RollingFile>
+
+        <RollingFile name="AddonsLogger" fileName="${log-path}/addons.log" filePattern="${archive}/addons.log.%i">
+            <PatternLayout>
+                <Pattern>
+                    ${pattern}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5" />
+        </RollingFile>
     </Appenders>
 
     <Loggers>
@@ -57,6 +70,10 @@
 
         <Logger name="InstallerLogger" level="ALL" additivity="false">
             <AppenderRef ref="InstallerLogger" level="${log-level-spc}" />
+        </Logger>
+
+        <Logger name="AddonsLogger" level="ALL" additivity="false">
+            <AppenderRef ref="AddonsLogger" level="${log-level-spc}" />
         </Logger>
     </Loggers>
 </Configuration>

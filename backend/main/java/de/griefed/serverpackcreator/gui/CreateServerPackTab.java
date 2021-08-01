@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import de.griefed.serverpackcreator.AddonsHandler;
 import de.griefed.serverpackcreator.Configuration;
 import de.griefed.serverpackcreator.CreateServerPack;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
@@ -61,6 +62,7 @@ public class CreateServerPackTab extends JComponent {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CreateServerPack CREATESERVERPACK;
     private final CurseCreateModpack CURSECREATEMODPACK;
+    private final AddonsHandler ADDONSHANDLER;
 
     /**
      * <strong>Constructor</strong><p>
@@ -77,13 +79,20 @@ public class CreateServerPackTab extends JComponent {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedCreateServerPack Instance of {@link CreateServerPack} required for the generation of server packs.
+     * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      */
-    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack, CreateServerPack injectedCreateServerPack) {
+    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack, CreateServerPack injectedCreateServerPack, AddonsHandler injectedAddonsHandler) {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+        }
+
+        if (injectedAddonsHandler == null) {
+            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
+        } else {
+            this.ADDONSHANDLER = injectedAddonsHandler;
         }
 
         if (injectedConfiguration == null) {
@@ -99,7 +108,7 @@ public class CreateServerPackTab extends JComponent {
         }
 
         if (injectedCreateServerPack == null) {
-            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER);
         } else {
             this.CREATESERVERPACK = injectedCreateServerPack;
         }

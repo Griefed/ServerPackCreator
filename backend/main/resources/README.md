@@ -85,10 +85,13 @@ Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONT
     1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
 11. **Webservice providing a web-frontend to configure, generate and download server packs.**
     1. Upload config files
-    1. Upload CurseForge modpack-archives to generate server packs from
-    1. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
-    1. Logs from last run in separate tab
-    1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
+    2. Upload CurseForge modpack-archives to generate server packs from
+    3. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
+    4. Logs from last run in separate tab
+    5. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
+12. **Addons!**
+    1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
+    2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
 # 4. Versions
 

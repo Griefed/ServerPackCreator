@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.gui;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
+import de.griefed.serverpackcreator.AddonsHandler;
 import de.griefed.serverpackcreator.Configuration;
 import de.griefed.serverpackcreator.CreateServerPack;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
@@ -41,7 +42,7 @@ import java.util.Objects;
 
 /**
  * <strong>Table of methods</strong><br>
- * {@link #CreateGui(LocalizationManager, Configuration, CurseCreateModpack, CreateServerPack)}<br>
+ * {@link #CreateGui(LocalizationManager, Configuration, CurseCreateModpack, CreateServerPack, AddonsHandler)}<br>
  * {@link #mainGUI()}<br>
  * {@link #createAndShowGUI()}<p>
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
@@ -61,6 +62,7 @@ public class CreateGui extends JPanel {
     private final Configuration CONFIGURATION;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final CreateServerPack CREATESERVERPACK;
+    private final AddonsHandler ADDONSHANDLER;
 
     private final BackgroundPanel BACKGROUNDPANEL;
     private final JFrame FRAME_SERVERPACKCREATOR;
@@ -83,8 +85,9 @@ public class CreateGui extends JPanel {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedCreateServerPack Instance of {@link CreateServerPack} required for the generation of server packs.
+     * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      */
-    public CreateGui(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack, CreateServerPack injectedCreateServerPack) {
+    public CreateGui(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack, CreateServerPack injectedCreateServerPack, AddonsHandler injectedAddonsHandler) {
         super(new GridLayout(1, 1));
 
         if (injectedLocalizationManager == null) {
@@ -99,6 +102,12 @@ public class CreateGui extends JPanel {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
+        if (injectedAddonsHandler == null) {
+            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
+        } else {
+            this.ADDONSHANDLER = injectedAddonsHandler;
+        }
+
         if (injectedConfiguration == null) {
             this.CONFIGURATION = new Configuration(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
         } else {
@@ -106,15 +115,17 @@ public class CreateGui extends JPanel {
         }
 
         if (injectedCreateServerPack == null) {
-            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER);
         } else {
             this.CREATESERVERPACK = injectedCreateServerPack;
         }
 
+
+
         try { bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));}
         catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex); }
 
-        CreateServerPackTab TAB_CREATESERVERPACK = new CreateServerPackTab(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK, CREATESERVERPACK);
+        CreateServerPackTab TAB_CREATESERVERPACK = new CreateServerPackTab(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER);
         ServerPackCreatorLogTab TAB_LOG_SERVERPACKCREATOR = new ServerPackCreatorLogTab(LOCALIZATIONMANAGER);
         ModloaderInstallerLogTab TAB_LOG_MODLOADERINSTALLER = new ModloaderInstallerLogTab(LOCALIZATIONMANAGER);
         AboutTab TAB_ABOUT = new AboutTab(LOCALIZATIONMANAGER);
@@ -254,7 +265,7 @@ public class CreateGui extends JPanel {
 
         FRAME_SERVERPACKCREATOR.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
 
-        FRAME_SERVERPACKCREATOR.add(new CreateGui(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK, CREATESERVERPACK), BorderLayout.CENTER);
+        FRAME_SERVERPACKCREATOR.add(new CreateGui(LOCALIZATIONMANAGER, CONFIGURATION, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER), BorderLayout.CENTER);
 
         FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);

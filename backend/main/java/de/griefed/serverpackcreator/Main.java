@@ -170,10 +170,11 @@ public class Main {
         }
 
         // Prepare instances for dependency injection
+        DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
+        AddonsHandler addonsHandler = new AddonsHandler(localizationManager);
         CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
         Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
-        DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
-        CreateServerPack createServerPack = new CreateServerPack(localizationManager, curseCreateModpack);
+        CreateServerPack createServerPack = new CreateServerPack(localizationManager, curseCreateModpack, addonsHandler);
 
         //noinspection UnusedAssignment
         String jarPath = null,
@@ -211,6 +212,9 @@ public class Main {
 
         // Ensure default files are present.
         defaultFiles.filesSetup();
+
+        // Check addons and generate addon-lists.
+        addonsHandler.initializeAddons();
 
         // Start generation of a new configuration file with user input.
         if (Arrays.asList(args).contains("-cgen")) {
@@ -261,7 +265,7 @@ public class Main {
         // If no mode is specified, and we have a graphical environment, start in GUI mode.
         } else {
 
-            CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack);
+            CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack, addonsHandler);
             
             createGui.mainGUI();
         }

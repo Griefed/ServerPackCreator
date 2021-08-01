@@ -252,16 +252,19 @@ public class DefaultFiles {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.enter"));
 
         try { Files.createDirectories(Paths.get("./server_files")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "server_files"), ex); }
 
         try { Files.createDirectories(Paths.get("./work")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "work"), ex); }
 
         try { Files.createDirectories(Paths.get("./work/temp")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "work/temp"), ex); }
 
         try { Files.createDirectories(Paths.get("./server-packs")); }
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), ex); }
+        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "server-packs"), ex); }
+
+        try { Files.createDirectories(Paths.get("./addons")); }
+        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "addons"), ex); }
 
         refreshValidationFiles();
 

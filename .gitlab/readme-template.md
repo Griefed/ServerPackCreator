@@ -57,6 +57,11 @@ GUI, CLI and webservice
 
 ---
 
+# ✨ Thanks to all of my Supporters and Sponsors ✨
+
+SPONSORS
+
+---
 # 1. Known issues
 
 A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
@@ -85,10 +90,13 @@ Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONT
     1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
 11. **Webservice providing a web-frontend to configure, generate and download server packs.**
     1. Upload config files
-    1. Upload CurseForge modpack-archives to generate server packs from
-    1. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
-    1. Logs from last run in separate tab
-    1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
+    2. Upload CurseForge modpack-archives to generate server packs from
+    3. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
+    4. Logs from last run in separate tab
+    5. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
+12. **Addons!**
+    1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
+    2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
 # 4. Versions
 
@@ -100,7 +108,27 @@ Version mask | Description
 **2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
 **3.x.x** | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`
 
-# 5. Configuration
+# 5. Addons
+
+There are things which people want to do with their server packs which could most certainly be automated. Some of those
+things so special, or maybe out of place, that they would not warrant a separate feature for ServerPackCreator itself.
+
+It may also be that it is such a niche feature, that I either don't have the time to code it in, or simply don't want to.
+Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any of those reasons or another.
+
+**Hence, the addon functionality!**
+
+This allows people to write their own addons to expand the functionality of ServerPackCreator with their own features as
+they see fit or want.
+
+One example would be: Automatic setup of a server pack for BlueMap. An addon could check all mods in the specified modpacks
+mods-directory for textures, and if any are found, add them to BlueMap's resourcepack folder config/bluemap/resourcepacks,
+install BlueMap for the specified Minecraft and Forge/Fabric version and voilà! ServerPackCreator has BlueMap Support Automation
+functionality, thanks to an addon, without having to wait for me to write it and add it to ServerPackCreators core-functionality for you!
+
+For a detailed example of how such an addon is supposed to look, check the [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)!
+
+# 6. Configuration
 
 After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator resides in.
 Inside it are files you can customize, so they suit your modpack and server pack:
@@ -146,12 +174,12 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 
 ---
 
-# 6. Running
+# 7. Running
 
 In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
 The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
 
-## 6.1 Localization
+## 7.1 Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the lang.properties-file with your specified locale.
@@ -160,7 +188,7 @@ If you wish to run ServerPackCreator with your locale (if it is already supporte
 
 See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/java/de/griefed/serverpackcreator/i18n/LocalizationManager.java) in `LocalizationManager.java` for a list of supported locales.
 
-## 6.2 Using the GUI
+## 7.2 Using the GUI
 
 You want to create a server pack for your modpack, right?
 
@@ -223,9 +251,9 @@ That's pretty much it! Sounds like a lot, but honestly, all the stuff you need t
 
 Have fun!
 
-## 6.3 Using the Command-line Interface
+## 7.3 Using the Command-line Interface
 
-### 6.3.1 Windows
+### 7.3.1 Windows
 
 **1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
 
@@ -303,7 +331,7 @@ Example after successfully running SPC:
     └── server_pack.zip
 ```
 
-### 6.3.2 Linux
+### 7.3.2 Linux
 
 **1.** Switch to a directory where you want ServerPackCreator to be stored in and where it can save and deploy all of its files.
 
@@ -403,7 +431,7 @@ Example after successfully running SPC:
     └── server_pack.zip
 ```
 
-### 6.3.3 Mac
+### 7.3.3 Mac
 
 (By user [whitebear60](https://github.com/whitebear60))
 
@@ -486,7 +514,7 @@ Example after successfully running SPC:
     └── server_pack.zip
 ```
 
-## 6.4 Docker
+## 7.4 Docker
 
 Creates a Container which runs [Griefed's](https://github.com/Griefed) [ServerPackCreator](https://github.com/Griefed/ServerPackCreator), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image.
 
@@ -511,7 +539,7 @@ PGID | The groupID under which this container is run as. Important for file acce
 MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
 STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.
 
-### 6.4.1 Using docker-compose:
+### 7.4.1 Using docker-compose:
 
 ```docker-compose.yml
 version: "2"
@@ -542,7 +570,7 @@ services:
       - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
 ```
 
-### 6.4.2 Using CLI:
+### 7.4.2 Using CLI:
 
 ```bash
 docker create \
@@ -568,7 +596,7 @@ docker create \
   griefed/serverpackcreator:latest
 ```
 
-## 6.5 Securing ServerPackCreator running as a webservice
+## 7.5 Securing ServerPackCreator running as a webservice
 
 Login and authentication will not be added to SPC running as a webservice, because that's a can of worms I do not want
 to open, but I will provide an example on how you can secure it by using [Authelia](https://github.com/authelia/authelia).
@@ -576,7 +604,7 @@ TODO: Write small guide on running ServerPackCreator as webservice in Docker and
 
 ---
 
-# 7. Building ServerPackCreator locally
+# 8. Building ServerPackCreator locally
 
 Clone the webservice branch of the repository:
 
@@ -589,7 +617,3 @@ Build with:
 `gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe`
 
 ---
-
-# 8. ✨ Thanks to all of my Supporters and Sponsors ✨
-
-SPONSORS

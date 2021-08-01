@@ -41,10 +41,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -954,7 +950,7 @@ public class Configuration {
                 hasJumploader = true;
             }
         }
-
+        
         return hasJumploader;
     }
 
@@ -2010,5 +2006,68 @@ public class Configuration {
         }
 
         return configWritten;
+    }
+
+    /**
+     * Concatenates all configuration parameters into a String. Overrides the default toString() method.
+     * @author Griefed
+     * @return String. A concatenated string of the whole configuration.
+     */
+    @Override
+    public String toString() {
+        return "Configuration{" +
+                "clientMods=" + clientMods +
+                ", copyDirs=" + copyDirs +
+                ", modpackDir='" + modpackDir + '\'' +
+                ", javaPath='" + javaPath + '\'' +
+                ", minecraftVersion='" + minecraftVersion + '\'' +
+                ", modLoader='" + modLoader + '\'' +
+                ", modLoaderVersion='" + modLoaderVersion + '\'' +
+                ", includeServerInstallation=" + includeServerInstallation +
+                ", includeServerIcon=" + includeServerIcon +
+                ", includeServerProperties=" + includeServerProperties +
+                ", includeStartScripts=" + includeStartScripts +
+                ", includeZipCreation=" + includeZipCreation +
+                '}';
+    }
+
+    /**
+     * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to any addon run by
+     * ServerPackCreator in {@link AddonsHandler}.<br>
+     * Values included in this list are:<br>
+     * 1. modpackDir<br>
+     * 2. clientMods<br>
+     * 3. copyDirs<br>
+     * 4. javaPath<br>
+     * 5. minecraftVersion<br>
+     * 6. modLoader<br>
+     * 7. modLoaderVersion<br>
+     * 8. includeServerInstallation<br>
+     * 9. includeServerIcon<br>
+     * 10.includeServerProperties<br>
+     * 11.includeStartScripts<br>
+     * 12.includeZipCreation
+     * @author Griefed
+     * @return String List. A list of all configurations as strings.
+     */
+    public List<String> getConfigurationAsList() {
+        List<String> configurationAsList = new ArrayList<>();
+
+        configurationAsList.add(getModpackDir());
+        configurationAsList.add(buildString(getClientMods().toString()));
+        configurationAsList.add(buildString(getCopyDirs().toString()));
+        configurationAsList.add(getJavaPath());
+        configurationAsList.add(getMinecraftVersion());
+        configurationAsList.add(getModLoader());
+        configurationAsList.add(getModLoaderVersion());
+        configurationAsList.add(String.valueOf(getIncludeServerInstallation()));
+        configurationAsList.add(String.valueOf(getIncludeServerIcon()));
+        configurationAsList.add(String.valueOf(getIncludeServerProperties()));
+        configurationAsList.add(String.valueOf(getIncludeStartScripts()));
+        configurationAsList.add(String.valueOf(getIncludeZipCreation()));
+
+        LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.getconfigurationaslist"), configurationAsList));
+
+        return configurationAsList;
     }
 }

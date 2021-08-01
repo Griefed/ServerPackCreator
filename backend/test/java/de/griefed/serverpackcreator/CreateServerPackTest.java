@@ -79,12 +79,15 @@ class CreateServerPackTest {
     private final CurseCreateModpack curseCreateModpack;
     private final LocalizationManager localizationManager;
     private final Configuration configuration;
+    private final AddonsHandler addonsHandler;
 
     CreateServerPackTest() {
+
         localizationManager = new LocalizationManager();
+        addonsHandler = new AddonsHandler(localizationManager);
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);
-        createServerPack = new CreateServerPack(localizationManager, curseCreateModpack);
+        createServerPack = new CreateServerPack(localizationManager, curseCreateModpack, addonsHandler);
         filesSetup = new DefaultFiles(localizationManager);
     }
 
@@ -92,6 +95,7 @@ class CreateServerPackTest {
     void setUp() {
         localizationManager.checkLocaleFile();
         filesSetup.filesSetup();
+        addonsHandler.initializeAddons();
         MockitoAnnotations.openMocks(this);
     }
 

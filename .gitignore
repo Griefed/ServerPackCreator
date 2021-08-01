@@ -155,8 +155,7 @@ yarn.lock
 /tests
 /build
 /.gradle
-gradlew
-gradlew.bat
+
 
 # other
 eclipse
@@ -190,3 +189,4 @@ backend/test/resources/forge_tests/server_pack.zip
 /work
 /server-packs
 /log4j2.xml
+/addons
