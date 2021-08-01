@@ -1,3 +1,63 @@
+### [2.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.1.0...2.1.1) (2021-07-21)
+
+
+### :scissors: Refactor
+
+* **Modloader installer:** Cleanup, beautification, etc. ([5944e8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/5944e8e4564eda5837732c0a2dd480444d4f19df))
+
+
+### 🧪 Tests
+
+* **Modloader installer:** Set Fabric loader version in test to correct version ([9920d77](https://git.griefed.de/Griefed/ServerPackCreator/commit/9920d776a749cae1044f0ee598d3c9ac2f00c0ca))
+
+
+### 🛠 Fixes
+
+* **Modloader installer:** Collect Fabric installation command into list and pass to ProcessBuilder so our command is build correctly and all parameters are passed on correctly. ([bb9d7fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb9d7fc70bdee36cc33e54665fe7092645d2ff99))
+
+
+### Other
+
+* Remove PayPal link. I'd rather use the GitHub way. ([06635fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/06635fa5f3be38c9c9ab1789f8ae72f45f50fad0))
+* **Modloader installer:** Add debug logging of the command about to be executed. ([9deb8b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/9deb8b08ec1938506f60a473e678f7206db85c6f))
+
+## [2.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.7...2.1.0) (2021-07-18)
+
+
+### :scissors: Refactor
+
+* Change copyDirs related lang keys to tell the user about file specifications. ([52df3fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/52df3febc079e6fb9f4c5a1539d39b9220c93a9b))
+
+
+### 🦊 CI/CD
+
+* lolwhoops ([0ffa433](https://git.griefed.de/Griefed/ServerPackCreator/commit/0ffa433718143de67d8e44204bea45689cc73374))
+* Only build javaDoc on pages workflow ([edb3ef5](https://git.griefed.de/Griefed/ServerPackCreator/commit/edb3ef527bb9e2a6eab71bcc5cd03402ccb3bcf2))
+* Or not... ([7d8c644](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d8c6441382ad8b860cb5344ac4639c01f763965))
+* Switch image to safe space but most importanlty to make things a little easier for me ([3616478](https://git.griefed.de/Griefed/ServerPackCreator/commit/361647840c5bda246f150760ce7d06ec72bb9b45))
+
+
+### 🧪 Tests
+
+* Fix paths ([6485051](https://git.griefed.de/Griefed/ServerPackCreator/commit/6485051360e81af9b75a70c1cbc6795edb409537))
+* Fix tests...again..... ([99c092f](https://git.griefed.de/Griefed/ServerPackCreator/commit/99c092f38b58dbafb6d29f4f871132e24b8d392b))
+* Revert ci image partially ([af61ef0](https://git.griefed.de/Griefed/ServerPackCreator/commit/af61ef03e208484fd9532c8395b58424a139061d))
+
+
+### 🚀 Features
+
+* Allow users to specify explicit source/file;destination/file-combinations to include in generated server pack ([2843b4c](https://git.griefed.de/Griefed/ServerPackCreator/commit/2843b4ce5bf30b2d6951ce9902e6c6e0f86434ef))
+
+
+### 🛠 Fixes
+
+* Ensure no backslashes make it into our arrays and strings. Make file specifications relative to modpack directory. ([53db427](https://git.griefed.de/Griefed/ServerPackCreator/commit/53db42779aeea429724105554960562d74198b19))
+
+
+### Other
+
+* **deps:** update dependency commons-io:commons-io to v2.11.0 ([aa1baf9](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa1baf9c8040db19533947946ab118babcba1225))
+
 ### [2.0.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.0.6...2.0.7) (2021-07-10)
 
 
