@@ -83,9 +83,9 @@ dependencies {
     embed 'com.github.TheRandomLabs:CurseAPI:master-SNAPSHOT'
 
     // API and Tomcat
-    embed 'org.springframework.boot:spring-boot-starter-validation:2.5.2'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.5.2'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.5.2'
+    embed 'org.springframework.boot:spring-boot-starter-validation:2.5.3'
+    embed 'org.springframework.boot:spring-boot-starter-web:2.5.3'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.5.3'
     embed 'org.apache.logging.log4j:log4j-web:2.14.1'
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.5.3'
 
@@ -93,7 +93,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:3.11.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.3'
 
 }
 
