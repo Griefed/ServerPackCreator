@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -181,7 +182,7 @@ public class AddonsHandler {
             assert urlToJar != null;
             Config addonConfig = ConfigFactory.parseURL(urlToJar);
 
-            if (addonConfig.getString("serverpackcreator.addon.type").equals("serverpack")) {
+            if (addonConfig.getString("addontype").equals("serverpack")) {
                 serverPackAddons.add(addon);
             }
         }
@@ -199,10 +200,12 @@ public class AddonsHandler {
     }
 
     /**
-     * Runs every server pack addon with the passed configuration, allowing for further customization and actions after
-     * a server pack has been generated. For an example of a Server Pack Addon, see the example addon
-     * <a href="https://github.com/Griefed/ServerPackCreatorExampleAddon">ServerPackCreator-ServerPack-Addon-Example</a><p>
-     * <strong>NOTE: All addons are run in the <code>work/temp</code>-directory. Be aware of that when creating your addons!</strong>
+     * Runs every server pack addon with the passed configuration gathered by {@link Configuration#getConfigurationAsList()},
+     * allowing for further customization and actions after a server pack has been generated. The base path in which ServerPackCreator
+     * itself resides in is passed as the last argument, making it easier for you to work with server pack files and the like.<br>
+     * For an example of a Server Pack Addon, see the example addon <a href="https://github.com/Griefed/ServerPackCreatorExampleAddon">ServerPackCreator-ServerPack-Addon-Example</a>
+     * <p>
+     * <strong>NOTE: All addons are run in the <code>work/temp/addon_name</code>-directory. Be aware of that when creating your addons!</strong>
      * @author Griefed
      * @param serverPackConfiguration The instance of {@link Configuration} with which a server pack was generated.
      */
@@ -218,13 +221,24 @@ public class AddonsHandler {
         InputStreamReader inputStreamReader;
         String processLog;
 
-        File workDirectory = new File("work/temp");
+        String tempDirectory = "work/temp/";
+        String serverPackCreatorBaseDirectory = new File("").getAbsolutePath().replace("\\","/");
+        String addonName;
+        File workDirectory;
 
         if (!addonsToExecute.isEmpty()) {
 
             try {
 
                 for (String addon : addonsToExecute) {
+
+                    addonName = (addon.substring(addon.lastIndexOf("/") + 1)).substring(0, (addon.substring(addon.lastIndexOf("/") + 1)).length() - 4);
+
+                    workDirectory = new File(tempDirectory + addonName);
+                    Files.createDirectories(workDirectory.toPath());
+
+                    LOG_ADDONS.debug("Addon work-directory is: " + workDirectory);
+
                     commandArguments.clear();
 
                     commandArguments.add(serverPackConfiguration.getJavaPath());
@@ -232,6 +246,8 @@ public class AddonsHandler {
                     commandArguments.add(addon);
 
                     commandArguments.addAll(serverPackConfiguration.getConfigurationAsList());
+
+                    commandArguments.add(serverPackCreatorBaseDirectory);
 
                     processBuilder = new ProcessBuilder(commandArguments).directory(workDirectory);
 
