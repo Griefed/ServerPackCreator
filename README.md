@@ -126,7 +126,11 @@ mods-directory for textures, and if any are found, add them to BlueMap's resourc
 install BlueMap for the specified Minecraft and Forge/Fabric version and voilà! ServerPackCreator has BlueMap Support Automation
 functionality, thanks to an addon, without having to wait for me to write it and add it to ServerPackCreators core-functionality for you!
 
-For a detailed example of how such an addon is supposed to look, check the [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)!
+For a detailed example of how such an addon is supposed to look, check the ExampleAddon in the list below!
+
+| Addon | Creator | Description |
+| :---- | :------ | :---------- |
+| [ExampleServerPackAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon) | Griefed | An example addon providing a starting point for addon development. |
 
 # 6. Configuration
 
