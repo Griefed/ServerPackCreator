@@ -95,7 +95,6 @@ class CreateServerPackTest {
     void setUp() {
         localizationManager.checkLocaleFile();
         filesSetup.filesSetup();
-        addonsHandler.initializeAddons();
         MockitoAnnotations.openMocks(this);
     }
 
@@ -139,6 +138,8 @@ class CreateServerPackTest {
     @Test
     void runTest() throws IOException {
         filesSetup.filesSetup();
+        Files.copy(Paths.get("backend/test/resources/testresources/ServerPackCreatorExampleAddon-1.1.0.jar"), Paths.get("addons/ServerPackCreatorExampleAddon-1.1.0.jar"), REPLACE_EXISTING);
+        addonsHandler.initializeAddons();
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("serverpackcreator.conf"), REPLACE_EXISTING);
         createServerPack.run(configuration.getConfigFile());
         Assertions.assertTrue(new File("server-packs/forge_tests/libraries").isDirectory());
