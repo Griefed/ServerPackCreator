@@ -75,9 +75,10 @@ public class Main {
     private static final File log4j2xml = new File("log4j2.xml");
 
     /**
-     * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.
-     * Calls {@link DefaultFiles} so all default files are available.
-     * Checks arguments to determine which mode to enter.
+     * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.<p>
+     * Calls {@link DefaultFiles#filesSetup()} so all default files are available. Calls {@link AddonsHandler#initializeAddons()}
+     * to gather the list of addons to execute after server pack generation.<br>
+     * Checks arguments to determine which mode to enter. Valid arguments are "-lang", "-cli", "-cgen", "-weh" and "-help".<br>
      * Lists a couple of environment variables important for reporting issues.
      * @author Griefed
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
@@ -122,7 +123,6 @@ public class Main {
         // Print help and information about ServerPackCreator which could help the user figure out what to do.
         if (Arrays.asList(args).contains("-help")) {
             LOG.debug(localizationManager.getLocalizedString("main.log.debug.help.issued"));
-
             System.out.println(localizationManager.getLocalizedString("main.console.help01"));
             System.out.println(localizationManager.getLocalizedString("main.console.help02"));
             System.out.println(localizationManager.getLocalizedString("main.console.help03"));
