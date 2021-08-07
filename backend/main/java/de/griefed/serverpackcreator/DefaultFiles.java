@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * <strong>Table of methods</strong><p>
@@ -48,19 +50,14 @@ import java.nio.file.Paths;
  * 11.{@link #getForgeManifestUrl()}<br>
  * 12.{@link #getFabricManifestUrl()}<br>
  * 13.{@link #getFabricInstallerManifestUrl()}<br>
+ * 14.{@link #getMANIFEST_MINECRAFT()}<br>
+ * 14.{@link #getMANIFEST_FORGE()}<br>
+ * 14.{@link #getMANIFEST_FABRIC()}<br>
+ * 14.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
  * 14.{@link #filesSetup()}<br>
  * 15.{@link #checkForConfig()}<br>
- * 16.{@link #checkForFabricLinux()}<br>
- * 17.{@link #checkForFabricWindows()}<br>
- * 18.{@link #checkForForgeLinux()}<br>
- * 19.{@link #checkForForgeWindows()}<br>
- * 20.{@link #checkForProperties()}<br>
- * 21.{@link #checkForIcon()}<br>
- * 22.{@link #refreshValidationFiles()}<br>
- * 23.{@link #downloadMinecraftManifest()}<br>
- * 24.{@link #downloadFabricManifest()}<br>
- * 25.{@link #downloadForgeManifest()}<br>
- * 26.{@link #downloadFabricInstallerManifest()}
+ * 16.{@link #checkForFile(File)}<br>
+ * 17.{@link #refreshManifestFile(URL, File)}
  * <p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
@@ -109,6 +106,10 @@ public class DefaultFiles {
     private final File FILE_FORGE_LINUX = new File("start-forge.sh");
     private final File FILE_FABRIC_WINDOWS = new File("start-fabric.bat");
     private final File FILE_FABRIC_LINUX = new File("start-fabric.sh");
+    private final File MANIFEST_MINECRAFT = new File("minecraft-manifest.json");
+    private final File MANIFEST_FORGE = new File("forge-manifest.json");
+    private final File MANIFEST_FABRIC = new File("fabric-manifest.xml");
+    private final File MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
 
     /**
      * Getter for serverpackcreator.conf.
@@ -131,7 +132,7 @@ public class DefaultFiles {
     /**
      * Getter for server.properties.
      * @author Griefed
-     * @return Returns the server.properties-file for use in {@link #checkForProperties()}
+     * @return File. Returns the server.properties-file.
      */
     public File getPropertiesFile() {
         return FILE_PROPERTIES;
@@ -140,7 +141,7 @@ public class DefaultFiles {
     /**
      * Getter for server-icon.png
      * @author Griefed
-     * @return Returns the server-icon.png-file for use in {@link #checkForIcon()}
+     * @return File. Returns the server-icon.png-file.
      */
     public File getIconFile() {
         return FILE_ICON;
@@ -149,7 +150,7 @@ public class DefaultFiles {
     /**
      * Getter for start-forge.bat.
      * @author Griefed
-     * @return Returns the start-forge.bat-file for use in {@link #checkForForgeWindows()}
+     * @return File. Returns the start-forge.bat-file.
      */
     public File getForgeWindowsFile() {
         return FILE_FORGE_WINDOWS;
@@ -158,7 +159,7 @@ public class DefaultFiles {
     /**
      * Getter for start-forge.sh.
      * @author Griefed
-     * @return Returns the start-forge.sh-file for use in {@link #checkForForgeLinux()}
+     * @return File. Returns the start-forge.sh-file.
      */
     public File getForgeLinuxFile() {
         return FILE_FORGE_LINUX;
@@ -167,7 +168,7 @@ public class DefaultFiles {
     /**
      * Getter for start-fabric.bat.
      * @author Griefed
-     * @return Returns the start-fabric.bat-file for use in {@link #checkForFabricWindows()}
+     * @return File. Returns the start-fabric.bat-file.
      */
     public File getFabricWindowsFile() {
         return FILE_FABRIC_WINDOWS;
@@ -176,7 +177,7 @@ public class DefaultFiles {
     /**
      * Getter for start-fabric.sh.
      * @author Griefed
-     * @return Returns the start-fabric.sh-file for use in {@link #checkForFabricLinux()}
+     * @return File. Returns the start-fabric.sh-file.
      */
     public File getFabricLinuxFile() {
         return FILE_FABRIC_LINUX;
@@ -185,9 +186,9 @@ public class DefaultFiles {
     /**
      * Getter for Mojang's Minecraft version-manifest.
      * @author Griefed
-     * @return String. Returns the URL to the JSON-file for use in {@link #downloadMinecraftManifest()}
+     * @return URL. Returns the URL to the JSON-file.
      */
-    URL getMinecraftManifestUrl() {
+    public URL getMinecraftManifestUrl() {
         URL minecraftURL = null;
         String minecraftManifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
         try {
@@ -199,9 +200,9 @@ public class DefaultFiles {
     /**
      * Getter for Forge's version-manifest.
      * @author Griefed
-     * @return String. Returns the URL to the JSON-file for use in {@link #downloadForgeManifest()}
+     * @return URL. Returns the URL to the JSON-file.
      */
-    URL getForgeManifestUrl() {
+    public URL getForgeManifestUrl() {
         URL forgeURL = null;
         String forgeManifest = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
         try {
@@ -213,9 +214,9 @@ public class DefaultFiles {
     /**
      * Getter for Fabric's version-manifest.
      * @author Griefed
-     * @return String. Returns the URL to the JSON-file for use in {@link #downloadFabricManifest()}
+     * @return URL. Returns the URL to the XML-file.
      */
-    URL getFabricManifestUrl() {
+    public URL getFabricManifestUrl() {
         URL fabricURL = null;
         String fabricManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
         try {
@@ -227,7 +228,7 @@ public class DefaultFiles {
     /**
      * Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.
      * @author Griefed
-     * @return Returns the URL to the Fabric Installer Manifest.
+     * @return URL. Returns the URL to the XML-file.
      */
     public URL getFabricInstallerManifestUrl() {
         URL downloadURL = null;
@@ -241,6 +242,43 @@ public class DefaultFiles {
     }
 
     /**
+     * Getter for the Minecraft version manifest file.
+     * @author Griefed
+     * @return File. Returns the name of the Minecraft version manifest file.
+     */
+    public File getMANIFEST_MINECRAFT() {
+        return MANIFEST_MINECRAFT;
+    }
+
+    /**
+     * Getter for the Forge version manifest file.
+     * @author Griefed
+     * @return File. Returns the name of the Forge version manifest file.
+     */
+    public File getMANIFEST_FORGE() {
+        return MANIFEST_FORGE;
+    }
+
+    /**
+     * Getter for the Fabric version manifest file.
+     * @author Griefed
+     * @return File. Returns the name of the Fabric version manifest file.
+     */
+    public File getMANIFEST_FABRIC() {
+        return MANIFEST_FABRIC;
+    }
+
+    /**
+     * Getter for the Fabric installer version manifest file.
+     * @author Griefed
+     * @return File. Returns the name of the Fabric installer version manifest file.
+     */
+    public File getMANIFEST_FABRIC_INSTALLER() {
+        return MANIFEST_FABRIC_INSTALLER;
+    }
+
+
+    /**
      * Calls individual methods which check for existence of default files. Only this method should be called to check
      * for existence of all default files.<p>
      * If any file was newly generated from its template, a warning is printed informing the user about said newly
@@ -248,7 +286,7 @@ public class DefaultFiles {
      * and log.
      * @author Griefed
      */
-    void filesSetup() {
+    public void filesSetup() {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.enter"));
 
         try { Files.createDirectories(Paths.get("./server_files")); }
@@ -266,15 +304,19 @@ public class DefaultFiles {
         try { Files.createDirectories(Paths.get("./addons")); }
         catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "addons"), ex); }
 
-        refreshValidationFiles();
+        //refreshValidationFiles();
+        refreshManifestFile(getMinecraftManifestUrl(), getMANIFEST_MINECRAFT());
+        refreshManifestFile(getForgeManifestUrl(), getMANIFEST_FORGE());
+        refreshManifestFile(getFabricManifestUrl(), getMANIFEST_FABRIC());
+        refreshManifestFile(getFabricInstallerManifestUrl(), getMANIFEST_FABRIC_INSTALLER());
 
         boolean doesConfigExist         = checkForConfig();
-        boolean doesFabricLinuxExist    = checkForFabricLinux();
-        boolean doesFabricWindowsExist  = checkForFabricWindows();
-        boolean doesForgeLinuxExist     = checkForForgeLinux();
-        boolean doesForgeWindowsExist   = checkForForgeWindows();
-        boolean doesPropertiesExist     = checkForProperties();
-        boolean doesIconExist           = checkForIcon();
+        boolean doesFabricLinuxExist    = checkForFile(getFabricLinuxFile());
+        boolean doesFabricWindowsExist  = checkForFile(getFabricWindowsFile());
+        boolean doesForgeLinuxExist     = checkForFile(getForgeLinuxFile());
+        boolean doesForgeWindowsExist   = checkForFile(getForgeWindowsFile());
+        boolean doesPropertiesExist     = checkForFile(getPropertiesFile());
+        boolean doesIconExist           = checkForFile(getIconFile());
 
         // Inform user about customization of files if any of them were generated from the template.
         if (doesConfigExist            ||
@@ -339,27 +381,30 @@ public class DefaultFiles {
     }
 
     /**
-     * Checks for existence of Fabric start script for Linux. If it is not found, it is generated.
+     * Checks for existence of defaults files. If it is not found, it is generated.
      * @author Griefed
+     * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't, should be created.
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
-    boolean checkForFabricLinux() {
+    boolean checkForFile(File fileToCheckFor) {
         boolean firstRun = false;
-        if (!getFabricLinuxFile().exists()) {
+        if (!new File(String.format("server_files/%s", fileToCheckFor)).exists()) {
             try {
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getFabricLinuxFile().getName())));
-                if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", getFabricLinuxFile())));
-                    link.close();
-                }
 
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfabriclinux"));
+                FileUtils.copyInputStreamToFile(
+                        Objects.requireNonNull(DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", fileToCheckFor))),
+                        new File(String.format("./server_files/%s", fileToCheckFor)));
+
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfile"), fileToCheckFor));
+
                 firstRun = true;
 
             } catch (IOException ex) {
+
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforfabriclinux"), ex);
+
+                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforfile"), fileToCheckFor), ex);
                     firstRun = true;
                 }
             }
@@ -368,373 +413,59 @@ public class DefaultFiles {
     }
 
     /**
-     * Checks for existence of Fabric start script for Windows. If it is not found, it is generated.
-     * @author Griefed
-     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
-     * said newly generated file.
-     */
-    boolean checkForFabricWindows() {
-        boolean firstRun = false;
-        if (!getFabricWindowsFile().exists()) {
-            try {
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getFabricWindowsFile().getName())));
-                if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", getFabricWindowsFile())));
-                    link.close();
-                }
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfabricwindows"));
-                firstRun = true;
-
-            } catch (IOException ex) {
-                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforfabricwindows"), ex);
-                    firstRun = true;
-                }
-            }
-        }
-        return firstRun;
-    }
-
-    /**
-     * Checks for existence of Forge start script for Linux. If it is not found, it is generated.
-     * @author Griefed
-     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
-     * said newly generated file.
-     */
-    boolean checkForForgeLinux() {
-        boolean firstRun = false;
-        if (!getForgeLinuxFile().exists()) {
-            try {
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getForgeLinuxFile().getName())));
-                if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", getForgeLinuxFile())));
-                    link.close();
-                }
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforforgelinux"));
-                firstRun = true;
-
-            } catch (IOException ex) {
-                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforforgelinux"), ex);
-                    firstRun = true;
-                }
-            }
-        }
-        return firstRun;
-    }
-
-    /**
-     * Checks for existence of Forge start script for Windows. If it is not found, it is generated.
-     * @author Griefed
-     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
-     * said newly generated file.
-     */
-    boolean checkForForgeWindows() {
-        boolean firstRun = false;
-        if (!getForgeWindowsFile().exists()) {
-            try {
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getForgeWindowsFile().getName())));
-                if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", getForgeWindowsFile())));
-                    link.close();
-                }
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforforgewindows"));
-                firstRun = true;
-
-            } catch (IOException ex) {
-                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforforgewindows"), ex);
-                    firstRun = true;
-                }
-            }
-        }
-        return firstRun;
-    }
-
-    /**
-     * Checks for existence of server.properties file. If it is not found, it is generated.
-     * @author Griefed
-     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
-     * said newly generated file.
-     */
-    boolean checkForProperties() {
-        boolean firstRun = false;
-        if (!getPropertiesFile().exists()) {
-            try {
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getPropertiesFile().getName())));
-                if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", getPropertiesFile())));
-                    link.close();
-                }
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforproperties"));
-                firstRun = true;
-
-            } catch (IOException ex) {
-                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforproperties"), ex);
-                    firstRun = true;
-                }
-            }
-        }
-        return firstRun;
-    }
-
-    /**
-     * Checks for existence of server-icon.png file. If it is not found, it is generated.
-     * @author Griefed
-     * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
-     * said newly generated file.
-     */
-    boolean checkForIcon() {
-        boolean firstRun = false;
-        if (!getIconFile().exists()) {
-            try {
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", getIconFile().getName())));
-                if (link != null) {
-                    Files.copy(link, Paths.get(String.format("./server_files/%s", getIconFile())));
-                    link.close();
-                }
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforicon"));
-                firstRun = true;
-
-            } catch (IOException ex) {
-                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforicon"), ex);
-                    firstRun = true;
-                }
-            }
-        }
-        return firstRun;
-    }
-
-    /**
-     * Checks for existence of minecraft-manifest.json, fabric-manifest.xml and forge-manifest.json and deletes them if
-     * they exist. Makes calls to {@link #downloadMinecraftManifest()}, {@link #downloadFabricManifest()}, {@link #getFabricInstallerManifestUrl()} and {@link #downloadForgeManifest()}
-     * in order to update them.
-     * @author Griefed
-     */
-    void refreshValidationFiles() {
-        if (new File("./work/minecraft-manifest.json").delete()) {
-
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.minecraftmanifest.delete"));
-        }
-
-        if (new File("./work/fabric-manifest.xml").delete()) {
-
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricmanifest.delete"));
-        }
-
-        if (new File("./work/forge-manifest.json").delete()) {
-
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest.delete"));
-        }
-
-        if (new File("./work/fabric-installer-manifest.xml").delete()) {
-
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricinstallermanifest.delete"));
-        }
-
-        downloadMinecraftManifest();
-        downloadFabricManifest();
-        downloadFabricInstallerManifest();
-        downloadForgeManifest();
-    }
-
-    /**
-     * Downloads the Minecraft version manifest for version validation.
+     * Deletes the specified manifest if it is found, then downloads the specified manifest file again. Ensures we always
+     * have the latest manifest for version validation available.
      * @author whitebear60
+     * @param manifestUrl The URL to the file which is to be downloaded.
+     * @param manifestToRefresh The manifest file to delete and then download, "refreshing" it
+     * @author Griefed
      */
-    void downloadMinecraftManifest() {
+    void refreshManifestFile(URL manifestUrl, File manifestToRefresh) {
+
+        File fileName = new File(String.format("./work/%s", manifestToRefresh));
+
+        if (fileName.delete()) {
+            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.delete"), manifestToRefresh));
+        }
+
         try {
-            URL manifestJsonURL = getMinecraftManifestUrl();
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
+
+            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestUrl.openStream());
             FileOutputStream downloadManifestOutputStream;
 
             try {
-                downloadManifestOutputStream = new FileOutputStream("./work/minecraft-manifest.json");
+                downloadManifestOutputStream = new FileOutputStream(fileName);
             } catch (FileNotFoundException ex) {
 
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.minecraftmanifest"), ex);
+                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest"), fileName), ex);
 
-                File file = new File("./work/minecraft-manifest.json");
+                if (!fileName.exists()) {
+                    // TODO: New lang key
+                    LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.creating"), fileName));
 
-                if (!file.exists()) {
-
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.minecraftmanifest.create"));
-                    boolean jsonCreated = file.createNewFile();
-
-                    if (jsonCreated) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.minecraftmanifest.created"));
+                    if (fileName.createNewFile()) {
+                        // TODO: New lang key
+                        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.created"), fileName));
 
                     } else {
-
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.minecraftmanifest.parse"));
+                        // TODO: New lang key
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.manifest.create"), fileName));
                     }
                 }
-                downloadManifestOutputStream = new FileOutputStream("./work/minecraft-manifest.json");
+                downloadManifestOutputStream = new FileOutputStream(fileName);
             }
             FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
 
             downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             downloadManifestOutputStream.flush();
-            downloadManifestOutputStream.close();
 
+            downloadManifestOutputStream.close();
             readableByteChannel.close();
             downloadManifestOutputStreamChannel.close();
 
         } catch (Exception ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.minecraftmanifest"), ex);
-        }
-    }
-
-    /**
-     * Downloads the Fabric version manifest for version validation.
-     * @author whitebear60
-     */
-    void downloadFabricManifest() {
-        try {
-            URL manifestJsonURL = getFabricManifestUrl();
-
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-
-            FileOutputStream downloadManifestOutputStream;
-
-            try {
-                downloadManifestOutputStream = new FileOutputStream("./work/fabric-manifest.xml");
-            } catch (FileNotFoundException ex) {
-
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricmanifest"), ex);
-                File file = new File("./work/fabric-manifest.xml");
-
-                if (!file.exists()) {
-
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricmanifest.create"));
-                    boolean jsonCreated = file.createNewFile();
-
-                    if (jsonCreated) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricmanifest.created"));
-
-                    } else {
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricmanifest.parse"));
-                    }
-                }
-                downloadManifestOutputStream = new FileOutputStream("./work/fabric-manifest.xml");
-            }
-            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-
-            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            downloadManifestOutputStream.flush();
-            downloadManifestOutputStream.close();
-
-            readableByteChannel.close();
-            downloadManifestOutputStreamChannel.close();
-
-        } catch (Exception ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricmanifest"), ex);
-        }
-    }
-
-    /**
-     * Downloads the Forge version manifest for version validation.
-     * @author whitebear60
-     */
-    void downloadForgeManifest() {
-        try {
-            URL manifestJsonURL = getForgeManifestUrl();
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-            FileOutputStream downloadManifestOutputStream;
-
-            try {
-
-                downloadManifestOutputStream = new FileOutputStream("./work/forge-manifest.json");
-
-            } catch (FileNotFoundException ex) {
-
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.forgemanifest"), ex);
-                File file = new File("./work/forge-manifest.json");
-
-                if (!file.exists()) {
-
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.forgemanifest.create"));
-
-                    boolean jsonCreated = file.createNewFile();
-
-                    if (jsonCreated) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.forgemanifest.created"));
-                    } else {
-
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.forgemanifest.parse"));
-                    }
-                }
-                downloadManifestOutputStream = new FileOutputStream("./work/forge-manifest.json");
-            }
-            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-
-            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            downloadManifestOutputStream.flush();
-            downloadManifestOutputStream.close();
-
-            readableByteChannel.close();
-            downloadManifestOutputStreamChannel.close();
-
-        } catch (Exception ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.forgemanifest"), ex);
-        }
-    }
-
-    /**
-     * Downloads the Fabric installer manifest in order to acquire the latest installer version.
-     * @author whitebear60
-     */
-    void downloadFabricInstallerManifest() {
-        try {
-            URL manifestJsonURL = getFabricInstallerManifestUrl();
-
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestJsonURL.openStream());
-
-            FileOutputStream downloadManifestOutputStream;
-
-            try {
-                downloadManifestOutputStream = new FileOutputStream("./work/fabric-installer-manifest.xml");
-            } catch (FileNotFoundException ex) {
-
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.fabricinstallermanifest"), ex);
-                File file = new File("./work/fabric-installer-manifest.xml");
-
-                if (!file.exists()) {
-
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricinstallermanifest.create"));
-                    boolean jsonCreated = file.createNewFile();
-
-                    if (jsonCreated) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.fabricinstallermanifest.created"));
-
-                    } else {
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricinstallermanifest.parse"));
-                    }
-                }
-                downloadManifestOutputStream = new FileOutputStream("./work/fabric-installer-manifest.xml");
-            }
-            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
-
-            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            downloadManifestOutputStream.flush();
-            downloadManifestOutputStream.close();
-
-            readableByteChannel.close();
-            downloadManifestOutputStreamChannel.close();
-
-        } catch (Exception ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.fabricinstallermanifest"), ex);
+            // TODO: New lang key
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.manifest.download"), fileName), ex);
         }
     }
 }
