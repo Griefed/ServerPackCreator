@@ -96,10 +96,6 @@ public class Main {
                 }} catch (IOException ignored) {}
         }
 
-        // Tell log4j2 to use the log4j2.xml outside the JAR file for configuration
-        LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        context.setConfigLocation(log4j2xml.toURI());
-
         List<String> programArgs = Arrays.asList(args);
 
         LocalizationManager localizationManager = new LocalizationManager();
