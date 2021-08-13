@@ -3,7 +3,7 @@ name: Create GitHub Release after GitLab tag mirror
 on:
   push:
     tags:
-      - '*'
+      - \d+\.\d+\.\d+
 
 jobs:
   release:
@@ -63,6 +63,14 @@ jobs:
       - name: List files
         run: ls -ahl build/libs
 
+      - name: Rename files
+        run: |
+          echo "**** Renaming files to please the eye ****"
+          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
+          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
+          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
+
       # UPLOAD ASSETS TO RELEASE
       - name: Upload Release Asset Main Jar
         id: upload-release-asset
@@ -71,8 +79,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.jar
-          asset_name: serverpackcreator-${{steps.tag.outputs.tag}}.jar
+          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
+          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}.jar
           asset_content_type: application/jar
       - name: Upload Release Asset Executable
         id: upload-release-asset-executable
@@ -81,8 +89,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/serverpackcreator.exe
-          asset_name: serverpackcreator-${{steps.tag.outputs.tag}}.exe
+          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}.exe
           asset_content_type: application/jar
       - name: Upload Release Asset Sources Jar
         id: upload-release-asset-sources
@@ -91,8 +99,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar
-          asset_name: serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar
+          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
+          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
           asset_content_type: application/jar
       - name: Upload Release Asset Javadoc Jar
         id: upload-release-asset-javadoc
@@ -101,6 +109,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar
-          asset_name: serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar
+          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
+          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
           asset_content_type: application/jar
