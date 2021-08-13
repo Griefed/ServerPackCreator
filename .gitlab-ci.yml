@@ -206,6 +206,8 @@ Release:
   only:
     - master
     - main
+    - alpha
+    - beta
   except:
     refs:
       - tags
