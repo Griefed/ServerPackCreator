@@ -1,4 +1,15 @@
-branches: ['master','main']
+branches: [
+    'master',
+    'main',
+  {
+    name: 'alpha',
+    prerelease: true
+  },
+  {
+    name: 'beta',
+    prerelease: true
+  }
+]
 ci: true
 debug: true
 dryRun: false
