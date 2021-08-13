@@ -60,6 +60,8 @@ Gradle Test:
     refs:
       - tags
       - webservice
+      - alpha
+      - beta
     variables:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
@@ -93,6 +95,8 @@ Docker Test:
     refs:
       - tags
       - webservice
+      - alpha
+      - beta
     variables:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
@@ -148,6 +152,8 @@ Gradle Test Webservice:
     expire_in: 1 week
   only:
     - webservice
+    - alpha
+    - beta
 
 Docker Test Webservice:
   needs:
@@ -178,6 +184,8 @@ Docker Test Webservice:
       --file Dockerfile.webservice .
   only:
     - webservice
+    - alpha
+    - beta
 
 Release:
   needs:
@@ -298,8 +306,8 @@ Build Release:
       --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
       --data link_type="package"
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-  only:
-    - tags
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 Build Docker Release:
   stage: Build Release
@@ -327,8 +335,132 @@ Build Docker Release:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest" .
-  only:
-    - tags
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+
+Build PreRelease:
+  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+  stage: Build Release
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.1
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - echo "**** Running in $CI_JOB_ID ****"
+    - echo "**** Java location ****"
+    - which java
+    - echo "**** Java version ****"
+    - java -version
+    - echo "**** Allowing execution of gradlew ****"
+    - chmod +x gradlew
+    - echo "**** Ensure clean environment ****"
+    - ./gradlew about
+  script:
+    - echo "**** Building ServerPackCreator ****"
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
+    - echo "**** Listing build directory ****"
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build/libs
+    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+      build/libs/libraries
+    - echo "**** Renaming files to please the eye ****"
+    - mv
+      build/libs/serverpackcreator.exe
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+    - mv
+      build/libs/serverpackcreator.jar
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+    - mv
+      build/libs/serverpackcreator-javadoc.jar
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+    - mv
+      build/libs/serverpackcreator-sources.jar
+      build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build/libs
+    - echo "**** Uploading packages ****"
+    - 'curl
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"'
+    - 'curl
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
+    - 'curl
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"'
+    - 'curl
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"'
+    - echo "**** Create asset links ****"
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data tag_name="${CI_COMMIT_TAG}"
+      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe"
+      --data link_type="package"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data tag_name="${CI_COMMIT_TAG}"
+      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"
+      --data link_type="package"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data tag_name="${CI_COMMIT_TAG}"
+      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar"
+      --data link_type="package"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+    - 'curl
+      --request POST
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+      --data tag_name="${CI_COMMIT_TAG}"
+      --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
+      --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
+      --data link_type="package"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
+
+Build Docker PreRelease:
+  stage: Build Release
+  image: griefed/gitlab-ci-cd:1.0.1
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.1
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker pull "$CI_REGISTRY_IMAGE:develop-web"
+    - docker buildx build
+      --push
+      --platform linux/amd64,linux/arm/v7,linux/arm64
+      --cache-from "$CI_REGISTRY_IMAGE:develop-web"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --file Dockerfile.webservice .
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
 
 pages:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
@@ -356,32 +488,32 @@ pages:
       - public
     expire_in: 1 week
 
-Update Sponsors:
-  image: griefed/gitlab-ci-cd:1.0.1
-  stage: Sponsors
-  script:
-    - git clone https://github.com/Griefed/sponsors.git
-    - export NEW=$(<sponsors/README.md)
-    - export OLD=$(<README.md)
-    - |
-      if [[ "$NEW" != "$OLD" ]]; then
-        echo "**** Updating sponsors in README.md ****"
-        rm -f README.md
-        cp .gitlab/readme-template.md README.md
-        sed -i "s~SPONSORS~$NEW~g" README.md
-        echo "**** Sponsors updated:  ****"
-        cat README.md
-        echo "**** Pushing changes to repository ****"
-        CI_PUSH_REPO=`echo "$CI_REPOSITORY_URL $GITLAB_TOKEN" | sed 's/^.*\(@.*\)\s\(.*\)/https:\/\/oauth2:\2\1/g'`
-        git config http.sslverify false
-        git remote set-url --push origin "${CI_PUSH_REPO}"
-        git config user.name "$GITLAB_USER_NAME"
-        git config user.email "$GITLAB_USER_EMAIL"
-        git branch -d update-sponsors || true
-        git checkout -b update-sponsors
-        git add README.md
-        git commit -m "chore(sponsors): Update sponsors"
-        git push origin update-sponsors:${CI_BUILD_REF_NAME} || true
-      fi
-  only:
-    - schedules
+#Update Sponsors:
+#  image: griefed/gitlab-ci-cd:1.0.1
+#  stage: Sponsors
+#  script:
+#    - git clone https://github.com/Griefed/sponsors.git
+#    - export NEW=$(<sponsors/README.md)
+#    - export OLD=$(<README.md)
+#    - |
+#      if [[ "$NEW" != "$OLD" ]]; then
+#        echo "**** Updating sponsors in README.md ****"
+#        rm -f README.md
+#        cp .gitlab/readme-template.md README.md
+#        sed -i "s~SPONSORS~$NEW~g" README.md
+#        echo "**** Sponsors updated:  ****"
+#        cat README.md
+#        echo "**** Pushing changes to repository ****"
+#        CI_PUSH_REPO=`echo "$CI_REPOSITORY_URL $GITLAB_TOKEN" | sed 's/^.*\(@.*\)\s\(.*\)/https:\/\/oauth2:\2\1/g'`
+#        git config http.sslverify false
+#        git remote set-url --push origin "${CI_PUSH_REPO}"
+#        git config user.name "$GITLAB_USER_NAME"
+#        git config user.email "$GITLAB_USER_EMAIL"
+#        git branch -d update-sponsors || true
+#        git checkout -b update-sponsors
+#        git add README.md
+#        git commit -m "chore(sponsors): Update sponsors"
+#        git push origin update-sponsors:${CI_BUILD_REF_NAME} || true
+#      fi
+#  only:
+#    - schedules
