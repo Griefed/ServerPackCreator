@@ -143,17 +143,19 @@ class ConfigurationTest {
 
     ConfigurationTest() {
         localizationManager = new LocalizationManager();
+        localizationManager.checkLocaleFile();
         defaultFiles = new DefaultFiles(localizationManager);
+        defaultFiles.filesSetup();
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);
     }
 
-    @BeforeEach
+/*    @BeforeEach
     void setUp() {
         localizationManager.checkLocaleFile();
         defaultFiles.filesSetup();
         MockitoAnnotations.openMocks(this);
-    }
+    }*/
 
     @Test
     void getOldConfigFileTest() {

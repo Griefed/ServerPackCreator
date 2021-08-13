@@ -82,21 +82,22 @@ class CreateServerPackTest {
     private final AddonsHandler addonsHandler;
 
     CreateServerPackTest() {
-
         localizationManager = new LocalizationManager();
+        localizationManager.checkLocaleFile();
         addonsHandler = new AddonsHandler(localizationManager);
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);
         createServerPack = new CreateServerPack(localizationManager, curseCreateModpack, addonsHandler);
         filesSetup = new DefaultFiles(localizationManager);
+        filesSetup.filesSetup();
     }
 
-    @BeforeEach
+/*    @BeforeEach
     void setUp() {
         localizationManager.checkLocaleFile();
         filesSetup.filesSetup();
         MockitoAnnotations.openMocks(this);
-    }
+    }*/
 
     @Test
     void getPropertiesFileTest() {

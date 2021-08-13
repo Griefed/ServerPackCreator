@@ -239,6 +239,7 @@ public class CreateGui extends JPanel {
             } catch (ConfigException | NullPointerException | ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ignored) {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    //UIManager.setLookAndFeel(new MaterialLookAndFeel(new JMarsDarkTheme()));
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
                 }

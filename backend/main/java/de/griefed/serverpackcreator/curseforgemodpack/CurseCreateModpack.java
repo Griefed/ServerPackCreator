@@ -459,18 +459,25 @@ public class CurseCreateModpack {
      */
     boolean cleanupEnvironment(String modpackDir) {
         boolean cleanedUp = false;
+
         if (new File(modpackDir).exists()) {
+
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanupenvironment.enter"));
             Path modpackPath = Paths.get(modpackDir);
+
             try {
+
                 Files.walkFileTree(modpackPath,
+
                         new SimpleFileVisitor<Path>() {
+
                             @Override
                             public FileVisitResult postVisitDirectory(
                                     Path dir, IOException exc) throws IOException {
                                 Files.delete(dir);
                                 return FileVisitResult.CONTINUE;
                             }
+
                             @Override
                             public FileVisitResult visitFile(
                                     Path file, BasicFileAttributes attrs)
@@ -478,11 +485,16 @@ public class CurseCreateModpack {
                                 Files.delete(file);
                                 return FileVisitResult.CONTINUE;
                             }
+
                         });
+
             } catch (IOException ex) {
+
                 cleanedUp = true;
                 LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.cleanupenvironment"), modpackDir));
+
             } finally {
+
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanupenvironment.complete"));
             }
         }

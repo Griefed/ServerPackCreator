@@ -52,7 +52,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * {@link #copyOverrideTest()}<br>
  * {@link #checkCurseForgeDirTest()}<br>
  * {@link #unzipArchiveTest()}<br>
- * {@link #cleanupEnvironmentTest()}<p>
  */
 class CurseCreateModpackTest {
     @Mock
@@ -63,14 +62,15 @@ class CurseCreateModpackTest {
 
     CurseCreateModpackTest() {
         localizationManager = new LocalizationManager();
+        localizationManager.checkLocaleFile();
         curseCreateModpack = new CurseCreateModpack(localizationManager);
     }
 
-    @BeforeEach
+/*    @BeforeEach
     void setUp() {
         localizationManager.checkLocaleFile();
         MockitoAnnotations.openMocks(this);
-    }
+    }*/
 
     @Test
     void getsetProjectNameTest() {
@@ -283,42 +283,5 @@ class CurseCreateModpackTest {
         if (new File("./backend/test/resources/curseforge_tests/overrides").isDirectory()) {
             Path pathToBeDeleted = Paths.get("./backend/test/resources/curseforge_tests/overrides");
             Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
-    }
-
-    @Test
-    void cleanupEnvironmentTest() throws IOException {
-        String clientDir = "./backend/test/resources/forge_tests";
-        String serverDir = "./backend/test/resources/cleanup_tests/modpack";
-
-        Files.createDirectories(Paths.get(serverDir));
-
-        try {
-            Stream<Path> files = Files.walk(Paths.get(clientDir));
-            files.forEach(file -> {
-                try {
-
-                    Files.copy(
-                            file,
-                            Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
-                            REPLACE_EXISTING
-                    );
-
-                    appLogger.debug(String.format(localizationManager.getLocalizedString("createserverpack.log.debug.copyfiles"), file.toAbsolutePath()));
-                } catch (IOException ex) {
-                    if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                        appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.copyfiles.mods"), ex);
-                    }
-                }
-            });
-
-            files.close();
-
-        } catch (IOException ex) {
-            appLogger.error(localizationManager.getLocalizedString("createserverpack.log.error.copyfiles"), ex);
-        }
-
-        curseCreateModpack.cleanupEnvironment(serverDir);
-
-        Assertions.assertFalse(new File("./backend/test/resources/cleanup_tests/modpack").isDirectory());
     }
 }
