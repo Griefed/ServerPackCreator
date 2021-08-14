@@ -950,14 +950,7 @@ public class CreateServerPackTab extends JComponent {
 
                 textCopyDirs.setText(CONFIGURATION.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
 
-                if (!CONFIGURATION.checkJavaPath(config.getString("javaPath").replace("\\", "/"))) {
-
-                    textJavaPath.setText(CONFIGURATION.getJavaPathFromSystem());
-                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textjavapath.fallback"));
-
-                } else {
-                    textJavaPath.setText(config.getString("javaPath").replace("\\", "/"));
-                }
+                textJavaPath.setText(CONFIGURATION.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
 
                 textMinecraftVersion.setText(config.getString("minecraftVersion"));
 

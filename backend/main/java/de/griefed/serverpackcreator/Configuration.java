@@ -91,20 +91,19 @@ import java.util.*;
  * 42.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
  * 43.{@link #checkModpackDir(String)}<br>
  * 44.{@link #checkCopyDirs(List, String)}<br>
- * 45.{@link #getJavaPathFromSystem()}<br>
- * 46.{@link #checkJavaPath(String)}<br>
- * 47.{@link #checkModloader(String)}<br>
- * 48.{@link #setModLoaderCase(String)}<br>
- * 49.{@link #checkModloaderVersion(String, String)}<br>
- * 50.{@link #isMinecraftVersionCorrect(String)}<br>
- * 51.{@link #isFabricVersionCorrect(String)}<br>
- * 52.{@link #isForgeVersionCorrect(String)}<br>
- * 53.{@link #latestFabricLoader()}<br>
- * 54.{@link #createConfigurationFile()}<br>
- * 55.{@link #readStringArray()}<br>
- * 56.{@link #buildString(String...)}<br>
- * 57.{@link #readBoolean()}<br>
- * 58.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+ * 45.{@link #checkJavaPath(String)}<br>
+ * 46.{@link #checkModloader(String)}<br>
+ * 47.{@link #setModLoaderCase(String)}<br>
+ * 48.{@link #checkModloaderVersion(String, String)}<br>
+ * 49.{@link #isMinecraftVersionCorrect(String)}<br>
+ * 50.{@link #isFabricVersionCorrect(String)}<br>
+ * 51.{@link #isForgeVersionCorrect(String)}<br>
+ * 52.{@link #latestFabricLoader()}<br>
+ * 53.{@link #createConfigurationFile()}<br>
+ * 54.{@link #readStringArray()}<br>
+ * 55.{@link #buildString(String...)}<br>
+ * 56.{@link #readBoolean()}<br>
+ * 57.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
  * <p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should {@link #modpackDir}
  * be a combination of a CurseForge projectID and fileID.<p>
@@ -558,21 +557,7 @@ public class Configuration {
     /**
      * Sets {@link #setConfig(File)} and calls checks for the provided configuration-file. If any check returns <code>true</code>
      * then the server pack will not be created. In order to find out which check failed, the user has to check their
-     * serverpackcreator.log in the logs-directory. Calls<br>
-     * {@link #setConfig(File)}<br>
-     * {@link #getConfig()}<br>
-     * {@link #setClientMods(List)}<br>
-     * {@link #getFallbackModsList()}<br>
-     * {@link #setIncludeServerInstallation(boolean)}<br>
-     * {@link #setIncludeServerIcon(boolean)}<br>
-     * {@link #setIncludeServerProperties(boolean)}<br>
-     * {@link #setIncludeStartScripts(boolean)}<br>
-     * {@link #setIncludeZipCreation(boolean)}<br>
-     * {@link #checkModpackDir(String)}<br>
-     * {@link #checkCurseForge(String)}<br>
-     * {@link #isDir(String)}<br>
-     * {@link #isCurse()}<br>
-     * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}
+     * serverpackcreator.log in the logs-directory.
      * @author Griefed
      * @param configFile File. The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
      * @param shouldModpackBeCreated Boolean. Whether the CurseForge modpack should be downloaded and created.
@@ -596,6 +581,8 @@ public class Configuration {
             setClientMods(getConfig().getStringList("clientMods"));
         }
 
+        setJavaPath(checkJavaPath(getConfig().getString("javaPath").replace("\\", "/")));
+
         setIncludeServerInstallation(convertToBoolean(getConfig().getString("includeServerInstallation")));
 
         setIncludeServerIcon(convertToBoolean(getConfig().getString("includeServerIcon")));
@@ -610,7 +597,7 @@ public class Configuration {
 
             configHasError = isDir(getConfig().getString("modpackDir").replace("\\","/"));
 
-        } else if (checkCurseForge(getConfig().getString("modpackDir").replace("\\","/"))) {
+        } else if (checkCurseForge(getConfig().getString("modpackDir"))) {
 
             if (shouldModpackBeCreated) {
 
@@ -650,22 +637,6 @@ public class Configuration {
      * If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration
      * of: directories to copy to server pack,<br>
      * if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.
-     * Calls<br>
-     * {@link #setModpackDir(String)}<br>
-     * {@link #getModpackDir()}<br>
-     * {@link #checkCopyDirs(List, String)}<br>
-     * {@link #setCopyDirs(List)}<br>
-     * {@link #getIncludeServerInstallation()}<br>
-     * {@link #checkJavaPath(String)}<br>
-     * {@link #setJavaPath(String)}<br>
-     * {@link #getJavaPathFromSystem()}<br>
-     * {@link #isMinecraftVersionCorrect(String)}<br>
-     * {@link #setMinecraftVersion(String)}<br>
-     * {@link #checkModloader(String)}<br>
-     * {@link #setModLoader(String)}<br>
-     * {@link #setModLoaderCase(String)}<br>
-     * {@link #checkModloaderVersion(String, String)}<br>
-     * {@link #setModLoaderVersion(String)}<br>
      * @author Griefed
      * @param modpackDir String. Should an existing modpack be specified, all configurations are read from the provided
      *                   configuration file and checks are made in this directory.
@@ -686,29 +657,6 @@ public class Configuration {
         }
 
         if (getIncludeServerInstallation()) {
-
-            String systemJavaPath = getJavaPathFromSystem();
-            String configJavaPath = getConfig().getString("javaPath").replace("\\", "/");
-
-            if (checkJavaPath(configJavaPath)) {
-
-                setJavaPath(configJavaPath);
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.javapath"));
-
-            } else if (checkJavaPath(configJavaPath + ".exe")) {
-
-                setJavaPath(configJavaPath + ".exe");
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.exe"));
-
-            } else if (checkJavaPath(systemJavaPath)) {
-
-                setJavaPath(systemJavaPath);
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set.info"), systemJavaPath));
-
-            } else {
-                configHasError = true;
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.javapath"));
-            }
 
             if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
 
@@ -755,22 +703,7 @@ public class Configuration {
      * created from said combination, using {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)},
      * before proceeding to checking the rest of the configuration. If everything passes and the modpack was created,
      * a new configuration file is created, replacing the one used to create the modpack in the first place, with the
-     * modpackDir field pointing to the newly created modpack. Calls<br>
-     * {@link CurseAPI} and various methods of it.<br>
-     * {@link #setModpackDir(String)}<br>
-     * {@link #getModpackDir()}<br>
-     * {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}<br>
-     * {@link CurseModpack}<br>
-     * {@link #containsFabric(CurseModpack)}<br>
-     * {@link #setModLoader(String)}<br>
-     * {@link #setModLoaderVersion(String)}<br>
-     * {@link #setModLoaderCase(String)}<br>
-     * {@link #checkJavaPath(String)}<br>
-     * {@link #setJavaPath(String)}<br>
-     * {@link #getJavaPathFromSystem()}<br>
-     * {@link #setCopyDirs(List)}<br>
-     * {@link #suggestCopyDirs(String)}<br>
-     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}<br>
+     * modpackDir field pointing to the newly created modpack.
      * @author Griefed
      * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
      * project name and displayname, or when the creation of the modpack fails.
@@ -845,29 +778,6 @@ public class Configuration {
                             }
                         } catch (IOException ex) {
                             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.json"), ex);
-                        }
-
-                        String systemJavaPath = getJavaPathFromSystem();
-                        String configJavaPath = getConfig().getString("javaPath").replace("\\", "/");
-
-                        if (checkJavaPath(configJavaPath)) {
-
-                            setJavaPath(configJavaPath);
-                            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.javapath"));
-
-                        } else if (checkJavaPath(configJavaPath + ".exe")) {
-
-                            setJavaPath(configJavaPath + ".exe");
-                            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.exe"));
-
-                        } else if (checkJavaPath(systemJavaPath)) {
-
-                            setJavaPath(systemJavaPath);
-                            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set.info"), systemJavaPath));
-
-                        } else {
-                            configHasError = true;
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.javapath"));
                         }
 
                         setCopyDirs(suggestCopyDirs(getModpackDir()));
@@ -1256,57 +1166,51 @@ public class Configuration {
     }
 
     /**
-     * Checks the passed String whether it is empty, and if it is, automatically acquires the path to the users Java
-     * installation and appends bin/java.exe or bin/java depending on whether the path to said installation starts with
-     * Windows-typical C: prefix.
-     * @author Griefed
-     * @return String. Returns the passed String as is if it is not empty. Returns the automatically acquired path to the
-     * Java executable/binary if the passed String was empty.
-     */
-    public String getJavaPathFromSystem() {
-        String autoJavaPath;
-
-        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.info"));
-        autoJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
-
-        if (autoJavaPath.startsWith("C:")) {
-
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.javawindows"));
-            autoJavaPath = String.format("%s.exe", autoJavaPath);
-        }
-
-        LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), autoJavaPath));
-
-        return autoJavaPath;
-    }
-
-    /**
      * Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.
      * @author Griefed
      * @param pathToJava String. The path to check for java.exe and java.
-     * @return Boolean. Returns true if the String ends with java.exe or java, and if either of these files exist.
+     * @return String. Returns the path to the java installation. If user input was incorrect, SPC will try to acquire the path automatically.
      */
-    public boolean checkJavaPath(String pathToJava) {
-        boolean configCorrect = false;
+    public String checkJavaPath(String pathToJava) {
+        String checkedJavaPath = null;
 
-        if (new File(pathToJava).exists() && pathToJava.endsWith("java.exe")) {
+        try {
+            if (new File(pathToJava).exists() && pathToJava.endsWith("java.exe")) {
 
-            configCorrect = true;
+                checkedJavaPath = pathToJava;
 
-        } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
+            } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
 
-            configCorrect = true;
+                checkedJavaPath = pathToJava;
 
-        } else if (!new File(pathToJava).exists() && new File(pathToJava + ".exe").exists()) {
+            } else if (!new File(pathToJava).exists() && new File(pathToJava + ".exe").exists()) {
 
-            configCorrect = true;
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkjavapath.windows"));
+                checkedJavaPath = pathToJava + ".exe";
+                LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkjavapath.windows"));
 
-        } else {
+            } else {
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.info"));
+                checkedJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
 
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkjavapath"), pathToJava));
+                if (checkedJavaPath.startsWith("C:")) {
+
+                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.javawindows"));
+                    checkedJavaPath = String.format("%s.exe", checkedJavaPath);
+                }
+
+                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), checkedJavaPath));
+            }
+        } catch (NullPointerException ignored) {
+            checkedJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
+
+            if (checkedJavaPath.startsWith("C:")) {
+
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.javawindows"));
+                checkedJavaPath = String.format("%s.exe", checkedJavaPath);
+            }
+        } finally {
+            return checkedJavaPath;
         }
-        return configCorrect;
     }
 
     /**
@@ -1558,21 +1462,7 @@ public class Configuration {
      * At the end of this method, the user will have a newly configured and created configuration file for ServerPackCreator.<br>
      * <br>
      * Most user-input is checked after entry to ensure the configuration is already in working-condition after completion
-     * of this method.<br>
-     * Calls<br>
-     * {@link #checkModpackDir(String)}<br>
-     * {@link #readBoolean()}<br>
-     * {@link #getFallbackModsList()}<br>
-     * {@link #readStringArray()}<br>
-     * {@link #checkCopyDirs(List, String)}<br>
-     * {@link #isMinecraftVersionCorrect(String)}<br>
-     * {@link #checkModloader(String)}<br>
-     * {@link #setModLoaderCase(String)}<br>
-     * {@link #checkModloaderVersion(String, String)}<br>
-     * {@link #getJavaPathFromSystem()}<br>
-     * {@link #checkJavaPath(String)}<br>
-     * {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
-     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+     * of this method.
      * @author whitebear60
      * @author Griefed
      */
@@ -1734,21 +1624,13 @@ public class Configuration {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.enter2"));
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.example"));
 
-            do {
-                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.cli") + " ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.cli") + " ");
 
-                if (!checkJavaPath(getJavaPathFromSystem())) {
+            javaPath = checkJavaPath(reader.nextLine());
 
-                    javaPath = reader.nextLine();
+            System.out.println(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), javaPath));
 
-                } else {
 
-                    javaPath = getJavaPathFromSystem();
-
-                    System.out.println(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), javaPath));
-                }
-
-            } while (!checkJavaPath(javaPath));
 
             System.out.println();
 
@@ -1898,8 +1780,7 @@ public class Configuration {
         }
     }
 
-    /** Writes a new configuration file with the parameters passed to it.<br>
-     * Calls {@link #getConfigFile()}<br>
+    /** Writes a new configuration file with the parameters passed to it.
      * @author whitebear60
      * @author Griefed
      * @param modpackDir String. The path to the modpack.

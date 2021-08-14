@@ -22,12 +22,8 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -105,36 +101,33 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 64.{@link #checkCopyDirsTestFalse()}<br>
  * 65.{@link #checkCopyDirsTestFiles()}<br>
  * 66.{@link #checkCopyDirsTestFilesFalse()}<br>
- * 67.{@link #getJavaPathFromSystemTest()}<br>
- * 68.{@link #checkJavaPathTest()}<br>
- * 69.{@link #checkModloaderTestForge()}<br>
- * 70.{@link #checkModloaderTestForgeCase()}<br>
- * 71.{@link #checkModloaderTestFabric()}<br>
- * 72.{@link #checkModloaderTestFabricCase()}<br>
- * 73.{@link #checkModLoaderTestFalse()}<br>
- * 74.{@link #setModLoaderCaseTestForge()}<br>
- * 75.{@link #setModLoaderCaseTestFabric()}<br>
- * 76.{@link #setModLoaderCaseTestForgeCorrected()}<br>
- * 77.{@link #setModLoaderCaseTestFabricCorrected()}<br>
- * 78.{@link #checkModloaderVersionTestForge()}<br>
- * 79.{@link #checkModloaderVersionTestForgeFalse()}<br>
- * 80.{@link #checkModloaderVersionTestFabric()}<br>
- * 81.{@link #checkModloaderVersionTestFabricFalse()}<br>
- * 82.{@link #isMinecraftVersionCorrectTest()}<br>
- * 83.{@link #isMinecraftVersionCorrectTestFalse()}<br>
- * 84.{@link #isFabricVersionCorrectTest()}<br>
- * 85.{@link #isFabricVersionCorrectTestFalse()}<br>
- * 86.{@link #isForgeVersionCorrectTest()}<br>
- * 87.{@link #isForgeVersionCorrectTestFalse()}<br>
- * 88.{@link #latestFabricLoaderTest()}<br>
- * 89.{@link #latestFabricLoaderTestNotNull()}<br>
- * 90.{@link #buildStringTest()}<br>
- * 91.{@link #writeConfigToFileTestForge()}<br>
- * 92.{@link #writeConfigToFileTestFabric()}
+ * 67.{@link #checkJavaPathTest()}<br>
+ * 68.{@link #checkModloaderTestForge()}<br>
+ * 69.{@link #checkModloaderTestForgeCase()}<br>
+ * 70.{@link #checkModloaderTestFabric()}<br>
+ * 71.{@link #checkModloaderTestFabricCase()}<br>
+ * 72.{@link #checkModLoaderTestFalse()}<br>
+ * 73.{@link #setModLoaderCaseTestForge()}<br>
+ * 74.{@link #setModLoaderCaseTestFabric()}<br>
+ * 75.{@link #setModLoaderCaseTestForgeCorrected()}<br>
+ * 76.{@link #setModLoaderCaseTestFabricCorrected()}<br>
+ * 77.{@link #checkModloaderVersionTestForge()}<br>
+ * 78.{@link #checkModloaderVersionTestForgeFalse()}<br>
+ * 79.{@link #checkModloaderVersionTestFabric()}<br>
+ * 80.{@link #checkModloaderVersionTestFabricFalse()}<br>
+ * 81.{@link #isMinecraftVersionCorrectTest()}<br>
+ * 82.{@link #isMinecraftVersionCorrectTestFalse()}<br>
+ * 83.{@link #isFabricVersionCorrectTest()}<br>
+ * 84.{@link #isFabricVersionCorrectTestFalse()}<br>
+ * 85.{@link #isForgeVersionCorrectTest()}<br>
+ * 86.{@link #isForgeVersionCorrectTestFalse()}<br>
+ * 87.{@link #latestFabricLoaderTest()}<br>
+ * 88.{@link #latestFabricLoaderTestNotNull()}<br>
+ * 89.{@link #buildStringTest()}<br>
+ * 90.{@link #writeConfigToFileTestForge()}<br>
+ * 91.{@link #writeConfigToFileTestFabric()}
  */
 class ConfigurationTest {
-    @Mock
-    Logger appLogger;
 
     private final Configuration configuration;
     private final CurseCreateModpack curseCreateModpack;
@@ -149,13 +142,6 @@ class ConfigurationTest {
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);
     }
-
-/*    @BeforeEach
-    void setUp() {
-        localizationManager.checkLocaleFile();
-        defaultFiles.filesSetup();
-        MockitoAnnotations.openMocks(this);
-    }*/
 
     @Test
     void getOldConfigFileTest() {
@@ -623,6 +609,7 @@ class ConfigurationTest {
     void isCurseTest() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforge.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         configuration.setConfig(new File("./serverpackcreator.conf"));
+        configuration.setJavaPath(configuration.checkJavaPath(""));
         configuration.setIncludeServerInstallation(true);
         configuration.setIncludeServerIcon(true);
         configuration.setIncludeServerProperties(true);
@@ -870,16 +857,6 @@ class ConfigurationTest {
     }
 
     @Test
-    void getJavaPathFromSystemTest() {
-        String result = configuration.getJavaPathFromSystem();
-        String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
-        if (autoJavaPath.startsWith("C:")) {
-            autoJavaPath = String.format("%s.exe", autoJavaPath);
-        }
-        Assertions.assertEquals(autoJavaPath, result);
-    }
-
-    @Test
     void checkJavaPathTest() {
         String javaPath;
         String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
@@ -893,7 +870,8 @@ class ConfigurationTest {
         } else {
             javaPath = autoJavaPath;
         }
-        Assertions.assertTrue(configuration.checkJavaPath(javaPath));
+        Assertions.assertNotNull(configuration.checkJavaPath(javaPath));
+        Assertions.assertTrue(new File(configuration.checkJavaPath(javaPath)).exists());
     }
 
     @Test
