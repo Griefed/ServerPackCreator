@@ -34,6 +34,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * This class creates the tab which displays the About-tab, with the about text, the list of contributors, buttons for
@@ -45,6 +46,7 @@ public class AboutTab extends Component {
     private static final Logger LOG = LogManager.getLogger(AboutTab.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+    private Properties serverpackcreatorproperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -60,6 +62,14 @@ public class AboutTab extends Component {
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
+        }
+
     }
 
     private final Dimension DIMENSION_MISC_BUTTON = new Dimension(50,50);
@@ -274,7 +284,7 @@ public class AboutTab extends Component {
      */
     private String createHasteBinFromFile(File textFile) {
         String text = null;
-        String requestURL = "https://haste.zneix.eu/documents";
+        String requestURL = serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.hastebinserver","https://haste.zneix.eu/documents");
         String response = null;
 
         int postDataLength;
