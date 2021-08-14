@@ -5,8 +5,7 @@ on:
     tags:
       - .*.*.*
     tags-ignore:
-      - .*.*.*-alpha.*
-      - .*.*.*-beta.*
+      - .*.*.*-*
   workflow_dispatch:
 
 jobs:
