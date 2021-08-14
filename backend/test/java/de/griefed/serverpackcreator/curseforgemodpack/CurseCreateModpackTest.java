@@ -22,13 +22,8 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,7 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -54,8 +48,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * {@link #unzipArchiveTest()}<br>
  */
 class CurseCreateModpackTest {
-    @Mock
-    Logger appLogger;
 
     private final CurseCreateModpack curseCreateModpack;
     private final LocalizationManager localizationManager;
@@ -65,12 +57,6 @@ class CurseCreateModpackTest {
         localizationManager.init();
         curseCreateModpack = new CurseCreateModpack(localizationManager);
     }
-
-/*    @BeforeEach
-    void setUp() {
-        localizationManager.checkLocaleFile();
-        MockitoAnnotations.openMocks(this);
-    }*/
 
     @Test
     void getsetProjectNameTest() {

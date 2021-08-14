@@ -85,12 +85,6 @@ class DefaultFilesTest {
         defaultFiles = new DefaultFiles(localizationManager);
     }
 
-    /*@BeforeEach
-    void setUp() {
-        localizationManager.checkLocaleFile();
-        MockitoAnnotations.openMocks(this);
-    }*/
-
     @Test
     void getConfigFileTest() {
         Assertions.assertNotNull(defaultFiles.getConfigFile());

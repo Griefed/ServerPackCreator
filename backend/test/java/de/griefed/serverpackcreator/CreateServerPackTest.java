@@ -22,9 +22,7 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,13 +89,6 @@ class CreateServerPackTest {
         filesSetup = new DefaultFiles(localizationManager);
         filesSetup.filesSetup();
     }
-
-/*    @BeforeEach
-    void setUp() {
-        localizationManager.checkLocaleFile();
-        filesSetup.filesSetup();
-        MockitoAnnotations.openMocks(this);
-    }*/
 
     @Test
     void getPropertiesFileTest() {
