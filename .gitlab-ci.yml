@@ -56,10 +56,15 @@ Gradle Test:
       - build/libs/ServerPackCreator-sources.jar
       - build/reports/tests/test
     expire_in: 1 week
+  only:
+    - master
+    - main
   except:
     refs:
       - tags
       - webservice
+      - alpha
+      - beta
     variables:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
@@ -89,10 +94,15 @@ Docker Test:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
       --tag "$CI_REGISTRY_IMAGE:develop"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop" .
+  only:
+    - master
+    - main
   except:
     refs:
       - tags
       - webservice
+      - alpha
+      - beta
     variables:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
