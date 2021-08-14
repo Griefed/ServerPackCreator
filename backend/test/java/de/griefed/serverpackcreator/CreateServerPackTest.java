@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -80,6 +81,11 @@ class CreateServerPackTest {
     private final AddonsHandler addonsHandler;
 
     CreateServerPackTest() {
+        try {
+            FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         localizationManager = new LocalizationManager();
         localizationManager.init();
         addonsHandler = new AddonsHandler(localizationManager);

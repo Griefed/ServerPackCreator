@@ -80,6 +80,11 @@ class DefaultFilesTest {
     private final LocalizationManager localizationManager;
 
     DefaultFilesTest() {
+        try {
+            FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         localizationManager = new LocalizationManager();
         localizationManager.init();
         defaultFiles = new DefaultFiles(localizationManager);

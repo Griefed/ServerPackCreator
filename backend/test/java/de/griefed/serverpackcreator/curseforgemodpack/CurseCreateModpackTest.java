@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.curseforgemodpack;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.io.File;
@@ -53,6 +54,11 @@ class CurseCreateModpackTest {
     private final LocalizationManager localizationManager;
 
     CurseCreateModpackTest() {
+        try {
+            FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         localizationManager = new LocalizationManager();
         localizationManager.init();
         curseCreateModpack = new CurseCreateModpack(localizationManager);

@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.io.File;
@@ -135,6 +136,11 @@ class ConfigurationTest {
     private final DefaultFiles defaultFiles;
 
     ConfigurationTest() {
+        try {
+            FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         localizationManager = new LocalizationManager();
         localizationManager.init();
         defaultFiles = new DefaultFiles(localizationManager);
