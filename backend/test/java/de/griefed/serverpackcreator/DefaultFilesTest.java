@@ -81,7 +81,7 @@ class DefaultFilesTest {
 
     DefaultFilesTest() {
         localizationManager = new LocalizationManager();
-        localizationManager.checkLocaleFile();
+        localizationManager.init();
         defaultFiles = new DefaultFiles(localizationManager);
     }
 
