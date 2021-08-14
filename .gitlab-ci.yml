@@ -4,7 +4,7 @@ stages:
   - Documentation
   - Release
   - Build Release
-  - Sponsors
+  #- Sponsors
 
 Gradle Test:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
@@ -60,8 +60,6 @@ Gradle Test:
     refs:
       - tags
       - webservice
-      - alpha
-      - beta
     variables:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
@@ -95,97 +93,8 @@ Docker Test:
     refs:
       - tags
       - webservice
-      - alpha
-      - beta
     variables:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
-
-Gradle Test Webservice:
-  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
-  stage: Gradle Test
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.1
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    - which java
-    - echo "**** Java version ****"
-    - java -version
-    - echo "**** Allowing execution of gradlew ****"
-    - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - ./gradlew about
-  script:
-    - echo "**** Building ServerPackCreator ****"
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
-    - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      build/libs
-    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
-      build/libs/libraries
-    - echo "**** Renaming files to please the eye ****"
-    - mv
-      build/libs/serverpackcreator.exe
-      build/libs/ServerPackCreator-webservice.exe
-    - mv
-      build/libs/serverpackcreator.jar
-      build/libs/ServerPackCreator-webservice.jar
-    - mv
-      build/libs/serverpackcreator-javadoc.jar
-      build/libs/ServerPackCreator-webservice-javadoc.jar
-    - mv
-      build/libs/serverpackcreator-sources.jar
-      build/libs/ServerPackCreator-webservice-sources.jar
-  artifacts:
-    paths:
-      - build/libs/ServerPackCreator-webservice.exe
-      - build/libs/ServerPackCreator-webservice.jar
-      - build/libs/ServerPackCreator-webservice-javadoc.jar
-      - build/libs/ServerPackCreator-webservice-sources.jar
-      - build/reports/tests/test
-    expire_in: 1 week
-  only:
-    - webservice
-    - alpha
-    - beta
-
-Docker Test Webservice:
-  needs:
-    - job: 'Gradle Test Webservice'
-      artifacts: false
-  stage: Docker Test
-  image: griefed/gitlab-ci-cd:1.0.1
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.1
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - docker buildx create --use --name grfdbuilder
-  script:
-    - docker buildx build
-      --push
-      --no-cache
-      --platform linux/amd64,linux/arm/v7,linux/arm64
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
-      --tag "$CI_REGISTRY_IMAGE:develop-web"
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
-      --file Dockerfile.webservice .
-  only:
-    - webservice
-    - alpha
-    - beta
 
 Release:
   needs:
@@ -206,8 +115,6 @@ Release:
   only:
     - master
     - main
-    - alpha
-    - beta
   except:
     refs:
       - tags
@@ -327,11 +234,10 @@ Build Docker Release:
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
-    - docker pull "$CI_REGISTRY_IMAGE:develop"
     - docker buildx build
       --push
+      --no-cache
       --platform linux/amd64,linux/arm/v7,linux/arm64
-      --cache-from "$CI_REGISTRY_IMAGE:develop"
       --tag "$CI_REGISTRY_IMAGE:latest"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
@@ -339,6 +245,144 @@ Build Docker Release:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest" .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+
+pages:
+  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+  stage: Documentation
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.1
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - which java
+    - chmod +x gradlew
+    - ./gradlew clean
+  script:
+    - ./gradlew javaDoc --info -x test
+    - cp -Rf build/docs/javadoc public
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      public
+  only:
+    - master
+    - main
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 week
+
+Gradle Test Webservice:
+  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
+  stage: Gradle Test
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.1
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - echo "**** Running in $CI_JOB_ID ****"
+    - echo "**** Java location ****"
+    - which java
+    - echo "**** Java version ****"
+    - java -version
+    - echo "**** Allowing execution of gradlew ****"
+    - chmod +x gradlew
+    - echo "**** Ensure clean environment ****"
+    - ./gradlew about
+  script:
+    - echo "**** Building ServerPackCreator ****"
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
+    - echo "**** Listing build directory ****"
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
+      build/libs
+    - LC_COLLATE=C ls -ah --group-directories-first --color=auto
+      build/libs/libraries
+    - echo "**** Renaming files to please the eye ****"
+    - mv
+      build/libs/serverpackcreator.exe
+      build/libs/ServerPackCreator-webservice.exe
+    - mv
+      build/libs/serverpackcreator.jar
+      build/libs/ServerPackCreator-webservice.jar
+    - mv
+      build/libs/serverpackcreator-javadoc.jar
+      build/libs/ServerPackCreator-webservice-javadoc.jar
+    - mv
+      build/libs/serverpackcreator-sources.jar
+      build/libs/ServerPackCreator-webservice-sources.jar
+  artifacts:
+    paths:
+      - build/libs/ServerPackCreator-webservice.exe
+      - build/libs/ServerPackCreator-webservice.jar
+      - build/libs/ServerPackCreator-webservice-javadoc.jar
+      - build/libs/ServerPackCreator-webservice-sources.jar
+      - build/reports/tests/test
+    expire_in: 1 week
+  only:
+    - webservice
+    - alpha
+    - beta
+
+Docker Test Webservice:
+  needs:
+    - job: 'Gradle Test Webservice'
+      artifacts: false
+  stage: Docker Test
+  image: griefed/gitlab-ci-cd:1.0.1
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.1
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build
+      --push
+      --no-cache
+      --platform linux/amd64,linux/arm/v7,linux/arm64
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
+      --tag "$CI_REGISTRY_IMAGE:develop-web"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
+      --file Dockerfile.webservice .
+  only:
+    - webservice
+    - alpha
+    - beta
+
+PreRelease:
+  needs:
+    - job: 'Gradle Test Webservice'
+      artifacts: false
+    - job: 'Docker Test Webservice'
+      artifacts: false
+  stage: Release
+  image: griefed/gitlab-ci-cd:1.0.1
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.1
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  script:
+    - npx semantic-release
+  only:
+    - alpha
+    - beta
+  except:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
 Build PreRelease:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
@@ -361,7 +405,7 @@ Build PreRelease:
     - ./gradlew about
   script:
     - echo "**** Building ServerPackCreator ****"
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build
@@ -453,42 +497,15 @@ Build Docker PreRelease:
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
-    - docker pull "$CI_REGISTRY_IMAGE:develop-web"
     - docker buildx build
       --push
+      --no-cache
       --platform linux/amd64,linux/arm/v7,linux/arm64
-      --cache-from "$CI_REGISTRY_IMAGE:develop-web"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --file Dockerfile.webservice .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
-
-pages:
-  image: griefed/baseimage-ubuntu-jdk-8:1.0.5
-  stage: Documentation
-  services:
-    - name: griefed/gitlab-ci-cd:1.0.1
-      alias: docker
-  variables:
-    project_name: $CI_PROJECT_NAME
-    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-  before_script:
-    - which java
-    - chmod +x gradlew
-    - ./gradlew clean
-  script:
-    - ./gradlew javaDoc --info -x test
-    - cp -Rf build/docs/javadoc public
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
-      public
-  only:
-    - master
-    - main
-  artifacts:
-    paths:
-      - public
-    expire_in: 1 week
 
 #Update Sponsors:
 #  image: griefed/gitlab-ci-cd:1.0.1
