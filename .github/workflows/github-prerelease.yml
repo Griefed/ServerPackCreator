@@ -5,6 +5,7 @@ on:
     tags:
       - .*.*.*-alpha.*
       - .*.*.*-beta.*
+  workflow_dispatch:
 
 jobs:
   release:
