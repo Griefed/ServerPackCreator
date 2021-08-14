@@ -1,9 +1,9 @@
-name: Create GitHub Release after GitLab tag mirror
+name: Create GitHub Pre-Release after GitLab tag mirror
 
 on:
   push:
     tags:
-      - \d+\.\d+\.\d+
+      - \d+\.\d+\.\d+(-beta|-alpha)\.\d+
 
 jobs:
   release:
@@ -36,11 +36,11 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{steps.tag.outputs.tag}}
           body: |
-            Automatic release of version: **${{steps.tag.outputs.tag}}**
-            **Changes in this release:**
+            Automatic pre-release of version: **${{steps.tag.outputs.tag}}**
+            **Changes in this pre-release:**
             ${{ steps.conventional_changelog.outputs.changelog }}
           draft: false
-          prerelease: false
+          prerelease: true
 
       # BUILD PROJECT AND PUBLISH TO PACKAGES
       - name: Set up JDK 8
@@ -58,18 +58,18 @@ jobs:
           NEW_VERSION=$(echo "${{steps.tag.outputs.tag}}")
           echo "New version: ${NEW_VERSION}"
           echo "Github username: ${GITHUB_ACTOR}"
-          ./gradlew clean
-          ./gradlew -Pversion=${NEW_VERSION} publish createExe
+          ./gradlew about
+          ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
       - name: List files
         run: ls -ahl build/libs
 
       - name: Rename files
         run: |
           echo "**** Renaming files to please the eye ****"
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
+          mv build/libs/serverpackcreator.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+          mv build/libs/serverpackcreator.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
+          mv build/libs/serverpackcreator-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
+          mv build/libs/serverpackcreator-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
       # UPLOAD ASSETS TO RELEASE
       - name: Upload Release Asset Main Jar
         id: upload-release-asset
