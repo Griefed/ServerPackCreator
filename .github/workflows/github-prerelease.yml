@@ -3,8 +3,7 @@ name: Create GitHub Pre-Release after GitLab tag mirror
 on:
   push:
     tags:
-      - .*.*.*-alpha.*
-      - .*.*.*-beta.*
+      - .*.*.*-*
   workflow_dispatch:
 
 jobs:
