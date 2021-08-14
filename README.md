@@ -35,7 +35,7 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 **ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric modpack. Customize the configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.**
 
-I am making this in my spare time, therefore progress is slow. I also just started getting into Java programming, so expect the code to be of...questionable...quality.
+I am making this in my spare time, therefore progress is slow. I started getting into Java programming in february 2021, and I'm using ServerPackCreator as a way to teach myself Java, but also to create something useful for the Minecraft community.
 
 Use at your own risk! Be aware that data loss is possible.
 
