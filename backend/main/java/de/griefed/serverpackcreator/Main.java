@@ -73,6 +73,7 @@ public class Main {
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
     private static final File log4j2xml = new File("log4j2.xml");
+    private static final File properties = new File("serverpackcreator.properties");
 
     /**
      * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.<p>
@@ -86,15 +87,9 @@ public class Main {
      */
     public static void main(String[] args) {
 
-        // Copy our default log4j2.xml outside the JAR so users are able to set levels to DEBUG or other.
-        if (!log4j2xml.exists()) {
-            try {
-                InputStream link = (Main.class.getResourceAsStream(String.format("/%s", log4j2xml.getName())));
-                if (link != null) {
-                    Files.copy(link, Paths.get(String.format("%s", log4j2xml)));
-                    link.close();
-                }} catch (IOException ignored) {}
-        }
+        //Create our log4j2.xml and serverpackcreator.properties
+        createFile(log4j2xml);
+        createFile(properties);
 
         List<String> programArgs = Arrays.asList(args);
 
@@ -264,6 +259,17 @@ public class Main {
             CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack, addonsHandler);
             
             createGui.mainGUI();
+        }
+    }
+
+    private static void createFile(File fileToCreate) {
+        if (!fileToCreate.exists()) {
+            try {
+                InputStream link = (Main.class.getResourceAsStream(String.format("/%s", fileToCreate.getName())));
+                if (link != null) {
+                    Files.copy(link, Paths.get(String.format("%s", fileToCreate)));
+                    link.close();
+                }} catch (IOException ignored) {}
         }
     }
 }

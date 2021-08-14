@@ -36,7 +36,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,6 +65,9 @@ public class CreateServerPackTab extends JComponent {
     private final CreateServerPack CREATESERVERPACK;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final AddonsHandler ADDONSHANDLER;
+
+    private Properties serverpackcreatorproperties;
+
 
     /**
      * <strong>Constructor</strong><p>
@@ -111,6 +116,13 @@ public class CreateServerPackTab extends JComponent {
             this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER);
         } else {
             this.CREATESERVERPACK = injectedCreateServerPack;
+        }
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
         }
     }
 

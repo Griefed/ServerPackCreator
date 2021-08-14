@@ -83,7 +83,7 @@ class CreateServerPackTest {
 
     CreateServerPackTest() {
         localizationManager = new LocalizationManager();
-        localizationManager.checkLocaleFile();
+        localizationManager.init();
         addonsHandler = new AddonsHandler(localizationManager);
         curseCreateModpack = new CurseCreateModpack(localizationManager);
         configuration = new Configuration(localizationManager, curseCreateModpack);

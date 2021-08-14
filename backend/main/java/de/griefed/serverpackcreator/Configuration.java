@@ -118,6 +118,7 @@ public class Configuration {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
+    private Properties serverpackcreatorproperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -144,55 +145,41 @@ public class Configuration {
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
+        }
+
+        setFALLBACKMODSLIST();
+
     }
 
     private final File FILE_CONFIG_OLD = new File("creator.conf");
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
 
     /**
+     * Setter for the fallback modslist in case the users did not specify any clientside-only mods. Reads <code>de.griefed.serverpackcreator.configuration.fallbackmodslist</code>
+     * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished,ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings,EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft,JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu,preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales,WorldNameRandomizer</code>
+     */
+    public void setFALLBACKMODSLIST() {
+        this.FALLBACKMODSLIST = Arrays.asList(serverpackcreatorproperties.getProperty(
+                "de.griefed.serverpackcreator.configuration.fallbackmodslist",
+                "AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished," +
+                        "ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings," +
+                        "EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft," +
+                        "JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu," +
+                        "preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales," +
+                        "WorldNameRandomizer").split(","));
+    }
+
+    /**
      * If you wish to expand this list, open a feature request issue on <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a>
      * with the mod(s) you want to see added.
      */
-    private final List<String> FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(
-            "AmbientSounds",
-            "BackTools",
-            "BetterAdvancement",
-            "BetterFoliage",
-            "BetterPing",
-            "BetterPlacement",
-            "Blur",
-            "cherished",
-            "ClientTweaks",
-            "Controlling",
-            "CTM",
-            "customdiscordrpc",
-            "CustomMainMenu",
-            "DefaultOptions",
-            "durability",
-            "DynamicSurroundings",
-            "EiraMoticons",
-            "FullscreenWindowed",
-            "itemzoom",
-            "itlt",
-            "jeiintegration",
-            "jei-professions",
-            "just-enough-harvestcraft",
-            "JustEnoughResources",
-            "keywizard",
-            "modnametooltip",
-            "MouseTweaks",
-            "multihotbar-",
-            "Neat",
-            "OldJavaWarning",
-            "PackMenu",
-            "preciseblockplacing",
-            "ResourceLoader",
-            "SimpleDiscordRichPresence",
-            "SpawnerFix",
-            "timestamps",
-            "TipTheScales",
-            "WorldNameRandomizer"
-    ));
+    private List<String> FALLBACKMODSLIST = new ArrayList<>();
 
     private List<String>
             clientMods,
@@ -254,7 +241,7 @@ public class Configuration {
      * {@link #isDir(String)}<br>
      * {@link #isCurse()}
      */
-     Config getConfig() {
+    Config getConfig() {
         return config;
     }
 

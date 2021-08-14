@@ -29,7 +29,7 @@ import java.util.*;
 /**
  * <strong>Table of methods</strong><br>
  * {@link #getSupportedLanguages()}<br>
- * {@link #getLangPropertiesFile()}<br>
+ * {@link #getPropertiesFile()}<br>
  * {@link #getLocale()}<br>
  * {@link #init(String)}<br>
  * {@link #init(File)}<br>
@@ -52,7 +52,17 @@ import java.util.*;
 public class LocalizationManager {
 
     private static final Logger LOG = LogManager.getLogger(LocalizationManager.class);
-    private final File FILE_LANGPROPERTIES = new File("lang.properties");
+    private final File PROPERTIESFILE = new File("serverpackcreator.properties");
+    private Properties serverpackcreatorproperties;
+
+    public LocalizationManager() {
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
+        }
+    }
 
     /**
      * Current language of ServerPackCreator, mapped for easier further reference.
@@ -93,8 +103,8 @@ public class LocalizationManager {
      * @author whitebear60
      * @return File. Returns the file which will set the locale for ServerPackCreator.
      */
-    File getLangPropertiesFile() {
-        return FILE_LANGPROPERTIES;
+    File getPropertiesFile() {
+        return PROPERTIESFILE;
     }
 
     /**
@@ -260,50 +270,21 @@ public class LocalizationManager {
      * @author Griefed
      */
     public void checkLocaleFile() {
-        if (getLangPropertiesFile().exists()) {
-            try {
-                init(getLangPropertiesFile());
-            } catch (IncorrectLanguageException e) {
+        try {
+            init(getPropertiesFile());
+        } catch (IncorrectLanguageException e) {
 
-                LOG.error("Incorrect language specified, falling back to English (United States)...");
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(getLangPropertiesFile()))) {
+            LOG.error("Incorrect language specified, falling back to English (United States)...");
 
-                    if (!getLangPropertiesFile().exists()) {
-                        boolean langCreated = getLangPropertiesFile().createNewFile();
-                        if (langCreated) {
-                            LOG.debug("Lang properties file created successfully.");
-                        } else {
-                            LOG.debug("Lang properties file not created.");
-                        }
-                    }
-
-                    writer.write(String.format("# Supported languages: %s%n", Arrays.toString(getSupportedLanguages())));
-                    writer.write(String.format("lang=en_us%n"));
-
-                } catch (IOException ex) {
-                    LOG.error("Error: There was an error writing the localization properties file.", ex);
-                }
-                init();
-            }
-        } else {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(getLangPropertiesFile()))) {
-
-                if (!getLangPropertiesFile().exists()) {
-                    boolean langCreated = getLangPropertiesFile().createNewFile();
-                    if (langCreated) {
-                        LOG.debug("Lang properties file created successfully.");
-                    } else {
-                        LOG.debug("Lang properties file not created.");
-                    }
-                }
-
-                writer.write(String.format("# Supported languages: %s%n", Arrays.toString(getSupportedLanguages())));
-                writer.write(String.format("lang=en_us%n"));
-
-            } catch (IOException ex) {
-                LOG.error("Error: There was an error writing the localization properties file.", ex);
-            }
             init();
+
+            try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
+                serverpackcreatorproperties.setProperty("lang", "en_us");
+                serverpackcreatorproperties.store(outputStream, null);
+            } catch (IOException ex) {
+                LOG.error("Couldn't write properties-file.", ex);
+            }
+
         }
     }
 
@@ -316,22 +297,11 @@ public class LocalizationManager {
      * @param locale The locale the user specified when they ran serverpackcreator with -lang -your_locale.
      */
     void writeLocaleToFile(String locale) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(getLangPropertiesFile()))) {
-
-            if (!getLangPropertiesFile().exists()) {
-                boolean langCreated = getLangPropertiesFile().createNewFile();
-                if (langCreated) {
-                    LOG.debug("Lang properties file created successfully.");
-                } else {
-                    LOG.debug("Lang properties file not created.");
-                }
-            }
-
-            writer.write(String.format("# Supported languages: %s%n", Arrays.toString(getSupportedLanguages())));
-            writer.write(String.format("lang=%s%n", locale));
-
+        try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
+            serverpackcreatorproperties.setProperty("lang", locale);
+            serverpackcreatorproperties.store(outputStream, null);
         } catch (IOException ex) {
-            LOG.error("Error: There was an error writing the localization properties file.", ex);
+            LOG.error("Couldn't write properties-file.", ex);
         }
     }
 }

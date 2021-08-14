@@ -62,7 +62,7 @@ class CurseCreateModpackTest {
 
     CurseCreateModpackTest() {
         localizationManager = new LocalizationManager();
-        localizationManager.checkLocaleFile();
+        localizationManager.init();
         curseCreateModpack = new CurseCreateModpack(localizationManager);
     }
 

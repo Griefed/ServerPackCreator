@@ -143,7 +143,7 @@ class ConfigurationTest {
 
     ConfigurationTest() {
         localizationManager = new LocalizationManager();
-        localizationManager.checkLocaleFile();
+        localizationManager.init();
         defaultFiles = new DefaultFiles(localizationManager);
         defaultFiles.filesSetup();
         curseCreateModpack = new CurseCreateModpack(localizationManager);
