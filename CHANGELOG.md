@@ -1,3 +1,110 @@
+## [2.2.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.1.1...2.2.0-alpha.1) (2021-08-14)
+
+
+### :scissors: Refactor
+
+* Add -help argument explaining the basics of running ServerPackCreator. If -help is used, said help text is printed to the console and ServerPackCreator exited. ([4689f54](https://git.griefed.de/Griefed/ServerPackCreator/commit/4689f543359d7a5850d8cd26f2856ff88b719969))
+* Add -lang argument information to -help display ([164073f](https://git.griefed.de/Griefed/ServerPackCreator/commit/164073fc8b1a461d35f94921fb2f444728672738))
+* Copy log4j2.xml to basedir where JAR/EXE is executed. Improve logging-configuration and allow user to set level to DEBUG/INFO with '<Property name="log-level-spc">DEBUG</Property>' ([fcbe6cf](https://git.griefed.de/Griefed/ServerPackCreator/commit/fcbe6cfade911ee429bffd47b82cbe71b7f0d2bc))
+* Disbale whitelist for tempalte server.properties ([bc4018e](https://git.griefed.de/Griefed/ServerPackCreator/commit/bc4018edf2c33a240f4cdf7d9d1ad4378854c8ba))
+* Finish TODOs. Setup missing lang keys. Minor improvements to tests ([b884e7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b884e7a77469135a5e3eb0bf56c44fb1249d7f76))
+* Generate server packs in ./server-packs in the directory where ServerPackCreator is executed in. Prevents 1. in [#55](https://git.griefed.de/Griefed/ServerPackCreator/issues/55) where the Overwolf CurseForge App filewatcher can cause installed mods to disappear due to copying mods around inside the modpack directory. ([539341d](https://git.griefed.de/Griefed/ServerPackCreator/commit/539341d68f54965b958d74e11e7e9fcc31da9ada))
+* Improve automatic acquisition of java path from system environment. ([fae311e](https://git.griefed.de/Griefed/ServerPackCreator/commit/fae311ea2e5f0c38c7caec7a06d06ed43957eae5))
+* Improve configuration check and tests. Add more debug logging. Add tests. ([b6da489](https://git.griefed.de/Griefed/ServerPackCreator/commit/b6da489e08da8a20074f32ae938658649b982f3e))
+* Improve dialog after uploading config and logs to hastebin ([da5e298](https://git.griefed.de/Griefed/ServerPackCreator/commit/da5e2981333806adf93f63bb549a48cb5d1e91b3))
+* Improve dialog after uploading config and logs to hastebin ([13f4587](https://git.griefed.de/Griefed/ServerPackCreator/commit/13f4587e736743ae9217a12562077bcaeb33023b))
+* Instantiate CreateGui only when GUI is actually about to be used ([d39730c](https://git.griefed.de/Griefed/ServerPackCreator/commit/d39730c86c9e8726716d2f6a4ca15bba3743ad5a))
+* Modloader setting as a slider to select either Forge of Fabric ([4f9eb79](https://git.griefed.de/Griefed/ServerPackCreator/commit/4f9eb79f813d3f127d89d99151163f3186dabcf9))
+* Refactor lang keys to better reflect where they're used. Add more lang keys for logging. Improve wording. Fix some minor typos. ([354fb2e](https://git.griefed.de/Griefed/ServerPackCreator/commit/354fb2e7003df6293ebb496c22d085493eb868c5))
+* Refactor lang keys to better reflect where they're used. Add more lang keys for logging. Improve wording. Fix some minor typos. ([9553557](https://git.griefed.de/Griefed/ServerPackCreator/commit/9553557d40a129194c3b2fd478b83805f35b0805))
+* Replace e.getStateChange() with ItemEvent.SELECTED. ([ab87c06](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab87c06ea99443fa6856a152fd15d07fdd395c4e))
+* Replace slider for modloader selection with radio buttons. Looks better and cleaner. Selection fires less events than slider did. ([c36189c](https://git.griefed.de/Griefed/ServerPackCreator/commit/c36189cf5252e0fe27701e779f6e539b1d79a335))
+* Require file passed to CreateServerPack.run in order to generate server pack. Create new Configuration object with said file. Should allow parallel runs in the future, but needs to be tested when I get to that. ([67c0cba](https://git.griefed.de/Griefed/ServerPackCreator/commit/67c0cba498dece33f265c376c88cbe4b3ac6e77a))
+* Rewrite unzipping of CurseForge acquired modpack with zip4j library ([9f8c87f](https://git.griefed.de/Griefed/ServerPackCreator/commit/9f8c87fca09beb239030b4228958a0e52c0d83c1))
+* Set clientMods and javaPath with fallback-list and system environemnt respectively, if the config is empty or an invalid javaPath was specified. ([ff18c5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/ff18c5e56f1416316a20158f66ce9f24c1ff7cd5))
+* Set logger context with log4j2.component.properties ([7038dcf](https://git.griefed.de/Griefed/ServerPackCreator/commit/7038dcf76e61ca4adf85a2d842f4cdeafbc409e7))
+* Simplify default files setup by merging methods which create our files. Instead of a separate method for each file, we have one method which gets passed different parameters depending on which file we want to setup. Makes maintenance easiert and code easier to read. ([9111e7c](https://git.griefed.de/Griefed/ServerPackCreator/commit/9111e7c58508700b31efeb617f110bae9a8b9f7f))
+* Store Fabric installer manifest in work/*. Only refresh when SPC starts. Don't delete manifest files during runs of SPC. Rename lang keys to fit usage. Other misc changes. ([1927faa](https://git.griefed.de/Griefed/ServerPackCreator/commit/1927faa33da1063ba4eea239cabcf9c6a4335b8d))
+* Store Minecraft, Fabric and Forge version validation in work/*. Only refresh them when SPC starts. Setup work, work/temp and server-packs folder for future use. ([ab080a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab080a6024138972c0b34524c4c7a728c64b8f74))
+* Switch back to old pattern format so GUI looks clean again ([483bdc1](https://git.griefed.de/Griefed/ServerPackCreator/commit/483bdc15fedcf1db513b41169affda85a99cd0b4))
+* **webservice:** Allow user to specify mode. Test whether libatomic1 works now. ([6dfa0dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/6dfa0dcf44652910c83ce8b269929893aa04a4b3))
+* **webservice:** Set logging pattern for Spring to ours ([4348f76](https://git.griefed.de/Griefed/ServerPackCreator/commit/4348f7601b5d2818b0bd343e2f0cb33cab02e2ec))
+
+
+### 📔 Docs
+
+* Add author tags. Add link to GitHub issues in case anyone wants something added to fallbackModslist or directories for CurseForge automation. ([7699c64](https://git.griefed.de/Griefed/ServerPackCreator/commit/7699c64d4f7d14f3d13b86acb92489c1c0ba2a33))
+* Add call to initializeAddons to main description ([ac14f99](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac14f996a55402d1d5b8cc8930bbb1ead57852e7))
+* Spelling and grammar fixesas well as [@author](https://git.griefed.de/author) tag fixes. ([9d157d6](https://git.griefed.de/Griefed/ServerPackCreator/commit/9d157d6227ac3c484b740297c012f817c169abde))
+* **webservice:** Enable debug log output for Docker build ([eaae701](https://git.griefed.de/Griefed/ServerPackCreator/commit/eaae701fb7d5666251a07f93a8bcd67fa4785b3a))
+
+
+### 🦊 CI/CD
+
+* Update dependencies ([e726f31](https://git.griefed.de/Griefed/ServerPackCreator/commit/e726f316c5928856a7b911be92d910f2ea6e6d26))
+* Upgrade dependencies ([426ec44](https://git.griefed.de/Griefed/ServerPackCreator/commit/426ec440b54ff9909d202bbdfe697d1259d7773a))
+* **deps:** Update commons-io to 2.11.0 ([b8a673a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8a673a8b744eb7653a2bbd359c0caadeac7ea72))
+* **fabric:** Update default Fabric Installer version if it can not be acquired from external ([b6b0bc3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b6b0bc31f1b6c3f5065e6c65b7fb4c292e8aced6))
+* **fabric:** Update default Fabric Loader version if it can not be acquired from external ([aa2f9e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa2f9e16ee05e60374a6f6b33368a3fc9f928feb))
+* **webservice:** Do not run tests in Docker build. We have the Gradle Test stage for that. ([54b98fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/54b98fc7eb143fd402a355118eeddef60ff03742))
+* **webservice:** Ensure task are executed in correct order ([afb2f73](https://git.griefed.de/Griefed/ServerPackCreator/commit/afb2f73d0d27e4aaeaddbb4849e60a1b0a6f2b7d))
+* Add changes from main for GitHub workflows, delete no longer needed workflows. ([03ad356](https://git.griefed.de/Griefed/ServerPackCreator/commit/03ad356f762bd66d7cc887d537542fc06187cb2b))
+* Add readme-template and sponsors ci job ([5622dca](https://git.griefed.de/Griefed/ServerPackCreator/commit/5622dcaa0a32ecc40761056df461adc95ce08cce))
+* Build releases for alpha and beta branches ([8643327](https://git.griefed.de/Griefed/ServerPackCreator/commit/864332713be0adb15e8cebba0d679cdcebb755af))
+* Clean up and beautify ([d2ff50f](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2ff50fffc4571875724131a7b5d9cd4fbdf4521))
+* Create pre-releases for alpha and beta branches ([e6729ea](https://git.griefed.de/Griefed/ServerPackCreator/commit/e6729ea0a9f800def1c6de68c0ece7b4647ff111))
+* Further restrict jobs to specific branches. Sort jobs according to purpose ([444eede](https://git.griefed.de/Griefed/ServerPackCreator/commit/444eedec770570aab80f2183a86b147cb0a6688e))
+* Only run Gradle Test and Docker Test on main & master ([236c661](https://git.griefed.de/Griefed/ServerPackCreator/commit/236c661f6fa60a84f0290a295967186261ebce81))
+* Re-enable arch dependant nodedisturl ([f840e31](https://git.griefed.de/Griefed/ServerPackCreator/commit/f840e31a0e2fb95457a91d2e087ee66c756973d8))
+* Run correct Gradle tasks on tag mirror from GitLab to GItHub ([db6dcd0](https://git.griefed.de/Griefed/ServerPackCreator/commit/db6dcd0b245b2603b7aafea0c59cba114016a291))
+* Update siouan/frontend-gradle-plugin to 5.3.0 and remove arch dependant configuration of nodeDistributionUrlPathPattern. See https://github.com/siouan/frontend-gradle-plugin/issues/165 ([1177d05](https://git.griefed.de/Griefed/ServerPackCreator/commit/1177d056934bc2b8521f214b326c16d5e069fb7a))
+* **docs:** No need to run tests ([728af78](https://git.griefed.de/Griefed/ServerPackCreator/commit/728af78dc4cb6c1f93b730e7367fcefe85483365))
+* **webservice:** Add temporary job for testing webservice and fix gitignore ([350582e](https://git.griefed.de/Griefed/ServerPackCreator/commit/350582e3a829d285607a2a21d10889350cab4ee8))
+* **webservice:** Ensure quasar is installed before assembling frontend ([0f414ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f414ca06487647b964bfd3e2fa3daa4244b1ecc))
+* **webservice:** Fix URL for node distribution on arm ([f24663f](https://git.griefed.de/Griefed/ServerPackCreator/commit/f24663f1c72a88444a0cb1cfd264605f59fbb5aa))
+* **webservice:** Make sure arm-builds in Docker work with the frontend plugin ([2c3793c](https://git.griefed.de/Griefed/ServerPackCreator/commit/2c3793c0b2fa838504219f4c662723db9a928df8))
+* **webservice:** Make sure no cache interferes with Docker build. Install library in hopes of fixing a failure in the pipeline. ([5841007](https://git.griefed.de/Griefed/ServerPackCreator/commit/58410078abdaf7ee2bf878edac14143d73f4866b))
+* **webservice:** Scan dep updates for frontend, too (I hope this works lol) ([2994d25](https://git.griefed.de/Griefed/ServerPackCreator/commit/2994d257075deeda7817fad5990d02c2d5e7f867))
+
+
+### 🧪 Tests
+
+* Don't mention what is tested. Method names already tell us that. ([e32fd53](https://git.griefed.de/Griefed/ServerPackCreator/commit/e32fd534ec2498e8326d52da83759dd5d5e7bdac))
+* Fix a test regarding AddonHandler ([b737d92](https://git.griefed.de/Griefed/ServerPackCreator/commit/b737d92db767f961151cd22ca2c0227d0020fa5a))
+* Split test methods. Helps pin-pointing cause of error in case of failure. ([f2d723b](https://git.griefed.de/Griefed/ServerPackCreator/commit/f2d723b2e3ebf24e9bdb86c83c35a791efa082c8))
+* Ye olde I RUN FINE ON YOUR MACHINE BUT NOT ON ANOTHER NU-UUUUHHUUUU.....Sigh ([4442168](https://git.griefed.de/Griefed/ServerPackCreator/commit/444216872f3df37e7e7cb9681d3752d91eb82d17))
+
+
+### 🚀 Features
+
+* Addon functionality! This allows users to install addons to execute additional operations after a server pack was generated. See 5. in the README and the example addon at https://github.com/Griefed/ServerPackCreatorExampleAddon ([2a93e54](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a93e5476d11e84215667460997b694d30e93770))
+* Pass the path where ServerPackCreator resides in to addons. Create dedicated addon-directory in work/temp, avoiding potential conflict with other addons. ([c9050b6](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9050b68ee42b4dabcde73cfb8eaf1417ab0a312))
+
+
+### 🛠 Fixes
+
+* Create additional pattern for log files as ANSI colouring frakked up the formatting for log entries in files. ([f246bf8](https://git.griefed.de/Griefed/ServerPackCreator/commit/f246bf8777d72832041c16f3f1f4fe21305ef870))
+* Fix Forge installer log deletion. Forgot String.format with destination. ([1b44cb8](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b44cb8cc8022ffd7335e86823b98b7c31430e5f))
+* Fix loading config not setting modloader specified in config ([cb50348](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb50348c6a4e4615db397948aefca5edabbbb83a))
+* If no startup parameter is specified, assume -cli, else use the provided one. ([cad6e55](https://git.griefed.de/Griefed/ServerPackCreator/commit/cad6e55e73048003896fdde1f3e2b27ce69fa78a))
+* Make sure clientMods is set correctly with no starting [ or ending ] ([c98ef0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/c98ef0e0777673a6015d738c378b3bf30edf7eff))
+* Update frontend packages so it no longer throws some CSS minify errors around the block ([342e3c8](https://git.griefed.de/Griefed/ServerPackCreator/commit/342e3c895c6c090a09475d0d57a7c3d47e1238b7))
+
+
+### Other
+
+* Add GitLab templates for Service Desk ([6be793f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6be793fbe24177de6d17088f9ce0371c17fd0e77))
+* Add list of addons to README. Currently only the ExampleAddon I made is available. ([3367a8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/3367a8bf839486c86efdb41f32caa85bcbd5a6bb))
+* Label issues and pull requests made by sponsors ([95591f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/95591f90bb3af101ba7571230bccf7d2a19c450a))
+* README overhaul. Include guides. Update guides. Number chapters. Cleanup ([7d0d2bd](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d0d2bd5b2823e64a7aa20a2239699533f9dc930))
+* Remove no longer needed run configurations ([7e43ee3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e43ee3e6be65d55da98c2c06a19d69abd055880))
+* Rename job to better reflect what is actually happening ([4885952](https://git.griefed.de/Griefed/ServerPackCreator/commit/48859526c2c259ffb8f74f23ba83155409fe1384))
+* Some more logging ([d4fa143](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4fa143125b1eeb1e8e69e020906788a2224853f))
+* Update README with information from self-hosted GitLab pipeline status. Expand on deploy and versioning info. Add more Jetbrains swag. All that good stuff. ([c36ad6c](https://git.griefed.de/Griefed/ServerPackCreator/commit/c36ad6cd313c83b4b321ae768922bfd16c751f07))
+* **webservice:** Add instructions on how to build SPC locally ([6e873ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/6e873ac174109b6d837de2c237d587128f5763a3))
+* **webservice:** Expand readme with webservice related information ([fe5d440](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe5d440cc71a6445d211b7c3ca8ebfb0268eda6e))
+* **webservice:** Properly setup manifest. Include up-to-date copies of license, readme, contributing, code of conduct, changelog in the jar. Exclude said files in backend/main/resources with gitignore. ([4812918](https://git.griefed.de/Griefed/ServerPackCreator/commit/4812918a72bf9dfdec89d4f052b1d7f173ae688c))
+
 ### [2.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.1.0...2.1.1) (2021-07-21)
 
 
