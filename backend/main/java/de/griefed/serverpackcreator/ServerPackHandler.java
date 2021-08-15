@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
+import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import net.fabricmc.installer.util.LauncherMeta;
 import net.lingala.zip4j.ZipFile;

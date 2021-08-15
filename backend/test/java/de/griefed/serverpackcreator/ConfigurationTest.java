@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
-import de.griefed.serverpackcreator.curseforgemodpack.CurseModpack;
+import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
+import de.griefed.serverpackcreator.curseforge.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;

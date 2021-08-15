@@ -19,8 +19,9 @@
  */
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
-import de.griefed.serverpackcreator.gui.CreateGui;
+import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
+import de.griefed.serverpackcreator.spring.ServerPackCreatorApplication;
+import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
@@ -261,9 +262,9 @@ public class Main {
         // If no mode is specified, and we have a graphical environment, start in GUI mode.
         } else {
 
-            CreateGui createGui = new CreateGui(localizationManager, CONFIGURATIONHANDLER, curseCreateModpack, serverPackHandler, addonsHandler);
+            SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(localizationManager, CONFIGURATIONHANDLER, curseCreateModpack, serverPackHandler, addonsHandler);
             
-            createGui.mainGUI();
+            swingGuiInitializer.mainGUI();
         }
     }
 

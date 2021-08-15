@@ -7,7 +7,7 @@
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testruns" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="de.griefed.serverpackcreator.*" />
+        <option name="PATTERN" value="de.griefed.serverpackcreator.spring.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
