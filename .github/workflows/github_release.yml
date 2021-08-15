@@ -2,9 +2,12 @@ name: Create GitHub Release after GitLab tag mirror
 
 on:
   push:
+    branches-ignore:
+      - 'alpha'
+      - 'beta'
     tags:
-      - .*.*.*
       - '!.*.*.*-*'
+      - .*.*.*
   workflow_dispatch:
 
 jobs:
