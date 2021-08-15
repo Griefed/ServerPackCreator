@@ -2,11 +2,6 @@ name: Create GitHub Pre-Release after GitLab tag mirror
 
 on:
   push:
-    branches-ignore:
-      - 'main'
-      - 'master'
-      - 'develop'
-      - 'webservice'
     tags:
       - .*.*.*-*
   workflow_dispatch:
