@@ -42,7 +42,7 @@ import java.util.List;
  * 4. {@link #setListOfAddons()}<br>
  * 5. {@link #getListOfServerPackAddons()}<br>
  * 6. {@link #setListOfServerPackAddons(List)}<br>
- * 7. {@link #runServerPackAddons(Configuration)}
+ * 7. {@link #runServerPackAddons(ConfigurationModel, ConfigurationHandler)}
  * <p>
  * The AddonHandler provides the ability to load JAR-files from the addons-directory.<br>
  * This allows the execution of additional code after a server pack has been generated.<br>
@@ -200,16 +200,17 @@ public class AddonsHandler {
     }
 
     /**
-     * Runs every server pack addon with the passed configuration gathered by {@link Configuration#getConfigurationAsList()},
-     * allowing for further customization and actions after a server pack has been generated. The base path in which ServerPackCreator
-     * itself resides in is passed as the last argument, making it easier for you to work with server pack files and the like.<br>
+     * Runs every server pack addon with the passed configuration model, allowing for further customization and actions
+     * after a server pack has been generated. The base path in which ServerPackCreator itself resides in is passed as
+     * the last argument, making it easier for you to work with server pack files and the like.<br>
      * For an example of a Server Pack Addon, see the example addon <a href="https://github.com/Griefed/ServerPackCreatorExampleAddon">ServerPackCreator-ServerPack-Addon-Example</a>
      * <p>
      * <strong>NOTE: All addons are run in the <code>work/temp/addon_name</code>-directory. Be aware of that when creating your addons!</strong>
      * @author Griefed
-     * @param serverPackConfiguration The instance of {@link Configuration} with which a server pack was generated.
+     * @param configurationModel The instance of {@link ConfigurationModel} with which a server pack was generated.
+     * @param CONFIGURATIONHANDLER An instance of {@link ConfigurationHandler} to access {@link ConfigurationHandler#getConfigurationAsList(ConfigurationModel)}
      */
-    void runServerPackAddons(Configuration serverPackConfiguration) {
+    void runServerPackAddons(ConfigurationModel configurationModel, ConfigurationHandler CONFIGURATIONHANDLER) {
 
         List<String> commandArguments = new ArrayList<>();
         List<String> addonsToExecute = getListOfServerPackAddons();
@@ -241,11 +242,11 @@ public class AddonsHandler {
 
                     commandArguments.clear();
 
-                    commandArguments.add(serverPackConfiguration.getJavaPath());
+                    commandArguments.add(configurationModel.getJavaPath());
                     commandArguments.add("-jar");
                     commandArguments.add(addon);
 
-                    commandArguments.addAll(serverPackConfiguration.getConfigurationAsList());
+                    commandArguments.addAll(CONFIGURATIONHANDLER.getConfigurationAsList(configurationModel));
 
                     commandArguments.add(serverPackCreatorBaseDirectory);
 

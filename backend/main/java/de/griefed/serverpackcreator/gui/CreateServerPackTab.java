@@ -22,8 +22,9 @@ package de.griefed.serverpackcreator.gui;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import de.griefed.serverpackcreator.AddonsHandler;
-import de.griefed.serverpackcreator.Configuration;
-import de.griefed.serverpackcreator.CreateServerPack;
+import de.griefed.serverpackcreator.ConfigurationHandler;
+import de.griefed.serverpackcreator.ConfigurationModel;
+import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforgemodpack.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.input.Tailer;
@@ -60,9 +61,9 @@ import java.util.concurrent.Executors;
 public class CreateServerPackTab extends JComponent {
     private static final Logger LOG = LogManager.getLogger(CreateServerPackTab.class);
 
-    private final Configuration CONFIGURATION;
+    private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private final CreateServerPack CREATESERVERPACK;
+    private final ServerPackHandler CREATESERVERPACK;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final AddonsHandler ADDONSHANDLER;
 
@@ -74,19 +75,19 @@ public class CreateServerPackTab extends JComponent {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.<p>
-     * Receives an instance of {@link Configuration} required to successfully and correctly create the server pack.<p>
+     * Receives an instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.<p>
      * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
-     * Receives an instance of {@link CreateServerPack} which is required to generate a server pack.
+     * Receives an instance of {@link ServerPackHandler} which is required to generate a server pack.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedConfiguration Instance of {@link Configuration} required to successfully and correctly create the server pack.
+     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
-     * @param injectedCreateServerPack Instance of {@link CreateServerPack} required for the generation of server packs.
+     * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      */
-    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, Configuration injectedConfiguration, CurseCreateModpack injectedCurseCreateModpack, CreateServerPack injectedCreateServerPack, AddonsHandler injectedAddonsHandler) {
+    public CreateServerPackTab(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler, CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler, AddonsHandler injectedAddonsHandler) {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -100,22 +101,22 @@ public class CreateServerPackTab extends JComponent {
             this.ADDONSHANDLER = injectedAddonsHandler;
         }
 
-        if (injectedConfiguration == null) {
+        if (injectedConfigurationHandler == null) {
             this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
-        if (injectedConfiguration == null) {
-            this.CONFIGURATION = new Configuration(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+        if (injectedConfigurationHandler == null) {
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
         } else {
-            this.CONFIGURATION = injectedConfiguration;
+            this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
-        if (injectedCreateServerPack == null) {
-            this.CREATESERVERPACK = new CreateServerPack(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER);
+        if (injectedServerPackHandler == null) {
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER);
         } else {
-            this.CREATESERVERPACK = injectedCreateServerPack;
+            this.CREATESERVERPACK = injectedServerPackHandler;
         }
 
         try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
@@ -470,7 +471,7 @@ public class CreateServerPackTab extends JComponent {
                 }
 
                 textClientMods.setText(
-                        CONFIGURATION.buildString(
+                        CONFIGURATIONHANDLER.buildString(
                                 Arrays.toString(
                                         clientModsFilenames.toArray(new String[0])))
                 );
@@ -523,7 +524,7 @@ public class CreateServerPackTab extends JComponent {
                     copyDirsNames.add(directory.getName());
                 }
 
-                textCopyDirs.setText(CONFIGURATION.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+                textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
             }
         });
@@ -638,15 +639,15 @@ public class CreateServerPackTab extends JComponent {
 
                     textModpackDir.setText(newConfigFile.getString("modpackDir"));
 
-                    textClientMods.setText(CONFIGURATION.buildString(newConfigFile.getStringList("clientMods").toString()));
+                    textClientMods.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("clientMods").toString()));
 
-                    textCopyDirs.setText(CONFIGURATION.buildString(newConfigFile.getStringList("copyDirs").toString().replace("\\","/")));
+                    textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("copyDirs").toString().replace("\\","/")));
 
                     textJavaPath.setText(newConfigFile.getString("javaPath"));
 
                     textMinecraftVersion.setText(newConfigFile.getString("minecraftVersion"));
 
-                    String tmpModloader = CONFIGURATION.setModLoaderCase(newConfigFile.getString("modLoader"));
+                    String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(newConfigFile.getString("modLoader"));
                     if (tmpModloader.equals("Fabric")) {
 
                         fabricRadioButton.setSelected(true);
@@ -664,15 +665,15 @@ public class CreateServerPackTab extends JComponent {
 
                     textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
 
-                    checkBoxServer.setSelected(CONFIGURATION.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
+                    checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
 
-                    checkBoxIcon.setSelected(CONFIGURATION.convertToBoolean(newConfigFile.getString("includeServerIcon")));
+                    checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerIcon")));
 
-                    checkBoxProperties.setSelected(CONFIGURATION.convertToBoolean(newConfigFile.getString("includeServerProperties")));
+                    checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerProperties")));
 
-                    checkBoxScripts.setSelected(CONFIGURATION.convertToBoolean(newConfigFile.getString("includeStartScripts")));
+                    checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeStartScripts")));
 
-                    checkBoxZIP.setSelected(CONFIGURATION.convertToBoolean(newConfigFile.getString("includeZipCreation")));
+                    checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeZipCreation")));
 
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
                 }
@@ -791,7 +792,7 @@ public class CreateServerPackTab extends JComponent {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
 
-            CONFIGURATION.writeConfigToFile(
+            CONFIGURATIONHANDLER.writeConfigToFile(
                     textModpackDir.getText(),
                     textClientMods.getText(),
                     textCopyDirs.getText(),
@@ -807,7 +808,10 @@ public class CreateServerPackTab extends JComponent {
                     new File("serverpackcreator.tmp"),
                     true
             );
-            if (!CONFIGURATION.checkConfigFile(new File("serverpackcreator.tmp"), false)) {
+
+            ConfigurationModel configurationModel = new ConfigurationModel();
+
+            if (!CONFIGURATIONHANDLER.checkConfigFile(new File("serverpackcreator.tmp"), false, configurationModel)) {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
                 labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
@@ -824,7 +828,7 @@ public class CreateServerPackTab extends JComponent {
 
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
                 labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-                CONFIGURATION.writeConfigToFile(
+                CONFIGURATIONHANDLER.writeConfigToFile(
                         textModpackDir.getText(),
                         textClientMods.getText(),
                         textCopyDirs.getText(),
@@ -837,7 +841,7 @@ public class CreateServerPackTab extends JComponent {
                         checkBoxProperties.isSelected(),
                         checkBoxScripts.isSelected(),
                         checkBoxZIP.isSelected(),
-                        CONFIGURATION.getConfigFile(),
+                        CONFIGURATIONHANDLER.getConfigFile(),
                         false
                 );
 
@@ -855,7 +859,8 @@ public class CreateServerPackTab extends JComponent {
 
                 final ExecutorService executorService = Executors.newSingleThreadExecutor();
                 executorService.execute(() -> {
-                    if (CREATESERVERPACK.run(CONFIGURATION.getConfigFile())) {
+
+                    if (CREATESERVERPACK.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
                         tailer.stop();
 
                         System.gc();
@@ -863,8 +868,8 @@ public class CreateServerPackTab extends JComponent {
 
                         buttonGenerateServerPack.setEnabled(true);
                         labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
-                        textModpackDir.setText(CONFIGURATION.getModpackDir());
-                        textCopyDirs.setText(CONFIGURATION.buildString(CONFIGURATION.getCopyDirs().toString()));
+                        textModpackDir.setText(configurationModel.getModpackDir());
+                        textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));
 
                         JTextArea textArea = new JTextArea();
                         textArea.setOpaque(false);
@@ -872,7 +877,7 @@ public class CreateServerPackTab extends JComponent {
                         textArea.setText(String.format(
                                 "%s\n%s",
                                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                                String.format("server-packs/%s", CONFIGURATION.getModpackDir().substring(CONFIGURATION.getModpackDir().lastIndexOf("/") + 1))
+                                String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))
                                 )
                         );
 
@@ -884,7 +889,7 @@ public class CreateServerPackTab extends JComponent {
                                 JOptionPane.INFORMATION_MESSAGE) == 0) {
                             try {
 
-                                Desktop.getDesktop().open(new File(String.format("server-packs/%s", CONFIGURATION.getModpackDir().substring(CONFIGURATION.getModpackDir().lastIndexOf("/") + 1))));
+                                Desktop.getDesktop().open(new File(String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
                             } catch (IOException ex) {
                                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.browserserverpack"));
                             }
@@ -941,20 +946,20 @@ public class CreateServerPackTab extends JComponent {
 
                 if (config.getStringList("clientMods").isEmpty()) {
 
-                    textClientMods.setText(CONFIGURATION.buildString(CONFIGURATION.getFallbackModsList().toString()));
+                    textClientMods.setText(CONFIGURATIONHANDLER.buildString(CONFIGURATIONHANDLER.getFallbackModsList().toString()));
                     LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textclientmods.fallback"));
 
                 } else {
-                    textClientMods.setText(CONFIGURATION.buildString(config.getStringList("clientMods").toString()));
+                    textClientMods.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("clientMods").toString()));
                 }
 
-                textCopyDirs.setText(CONFIGURATION.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
+                textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
 
-                textJavaPath.setText(CONFIGURATION.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
+                textJavaPath.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
 
                 textMinecraftVersion.setText(config.getString("minecraftVersion"));
 
-                String tmpModloader = CONFIGURATION.setModLoaderCase(config.getString("modLoader"));
+                String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader"));
                 if (tmpModloader.equals("Fabric")) {
 
                     fabricRadioButton.setSelected(true);
@@ -972,15 +977,15 @@ public class CreateServerPackTab extends JComponent {
 
                 textModloaderVersion.setText(config.getString("modLoaderVersion"));
 
-                checkBoxServer.setSelected(CONFIGURATION.convertToBoolean(config.getString("includeServerInstallation")));
+                checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerInstallation")));
 
-                checkBoxIcon.setSelected(CONFIGURATION.convertToBoolean(config.getString("includeServerIcon")));
+                checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerIcon")));
 
-                checkBoxProperties.setSelected(CONFIGURATION.convertToBoolean(config.getString("includeServerProperties")));
+                checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerProperties")));
 
-                checkBoxScripts.setSelected(CONFIGURATION.convertToBoolean(config.getString("includeStartScripts")));
+                checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeStartScripts")));
 
-                checkBoxZIP.setSelected(CONFIGURATION.convertToBoolean(config.getString("includeZipCreation")));
+                checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeZipCreation")));
             }
         } catch (NullPointerException ignored) {}
 

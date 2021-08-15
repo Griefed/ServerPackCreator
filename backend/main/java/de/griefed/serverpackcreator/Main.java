@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.springframework.boot.system.ApplicationHome;
 
 import java.awt.*;
@@ -164,8 +163,8 @@ public class Main {
         DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
         AddonsHandler addonsHandler = new AddonsHandler(localizationManager);
         CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
-        Configuration configuration = new Configuration(localizationManager, curseCreateModpack);
-        CreateServerPack createServerPack = new CreateServerPack(localizationManager, curseCreateModpack, addonsHandler);
+        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(localizationManager, curseCreateModpack);
+        ServerPackHandler serverPackHandler = new ServerPackHandler(localizationManager, curseCreateModpack, addonsHandler, CONFIGURATIONHANDLER);
 
         //noinspection UnusedAssignment
         String jarPath = null,
@@ -210,9 +209,11 @@ public class Main {
         // Start generation of a new configuration file with user input.
         if (Arrays.asList(args).contains("-cgen")) {
 
-            configuration.createConfigurationFile();
+            CONFIGURATIONHANDLER.createConfigurationFile();
 
-            if (createServerPack.run(configuration.getConfigFile())) {
+            ConfigurationModel configurationModel = new ConfigurationModel();
+
+            if (serverPackHandler.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -224,10 +225,12 @@ public class Main {
             // Start generation of a new configuration with user input if no configuration file is present.
             if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
-                configuration.createConfigurationFile();
+                CONFIGURATIONHANDLER.createConfigurationFile();
             }
 
-            if (createServerPack.run(configuration.getConfigFile())) {
+            ConfigurationModel configurationModel = new ConfigurationModel();
+
+            if (serverPackHandler.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -244,10 +247,12 @@ public class Main {
             // Start generation of a new configuration with user input if no configuration file is present.
             if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
-                configuration.createConfigurationFile();
+                CONFIGURATIONHANDLER.createConfigurationFile();
             }
 
-            if (createServerPack.run(configuration.getConfigFile())) {
+            ConfigurationModel configurationModel = new ConfigurationModel();
+
+            if (serverPackHandler.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -256,7 +261,7 @@ public class Main {
         // If no mode is specified, and we have a graphical environment, start in GUI mode.
         } else {
 
-            CreateGui createGui = new CreateGui(localizationManager, configuration, curseCreateModpack, createServerPack, addonsHandler);
+            CreateGui createGui = new CreateGui(localizationManager, CONFIGURATIONHANDLER, curseCreateModpack, serverPackHandler, addonsHandler);
             
             createGui.mainGUI();
         }

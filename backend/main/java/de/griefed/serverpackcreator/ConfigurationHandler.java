@@ -47,73 +47,49 @@ import java.util.*;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #Configuration(LocalizationManager, CurseCreateModpack)}<br>
+ * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack)}<br>
  * 2. {@link #getOldConfigFile()}<br>
  * 3. {@link #getConfigFile()}<br>
  * 4. {@link #getConfig()}<br>
  * 5. {@link #setConfig(File)}<br>
  * 6. {@link #getFallbackModsList()}<br>
- * 7. {@link #getClientMods()}<br>
- * 8. {@link #setClientMods(List)}<br>
- * 9. {@link #getCopyDirs()}<br>
- * 10.{@link #setCopyDirs(List)}<br>
- * 11.{@link #getModpackDir()}<br>
- * 12.{@link #setModpackDir(String)}<br>
- * 13.{@link #getJavaPath()}<br>
- * 14.{@link #setJavaPath(String)}<br>
- * 15.{@link #getMinecraftVersion()}<br>
- * 16.{@link #setMinecraftVersion(String)}<br>
- * 17.{@link #getModLoader()}<br>
- * 18.{@link #setModLoader(String)}<br>
- * 19.{@link #getModLoaderVersion()}<br>
- * 20.{@link #setModLoaderVersion(String)}<br>
- * 21.{@link #getIncludeServerInstallation()}<br>
- * 22.{@link #setIncludeServerInstallation(boolean)}<br>
- * 23.{@link #getIncludeServerIcon()}<br>
- * 24.{@link #setIncludeServerIcon(boolean)}<br>
- * 25.{@link #getIncludeServerProperties()}<br>
- * 26.{@link #setIncludeServerProperties(boolean)}<br>
- * 27.{@link #getIncludeStartScripts()}<br>
- * 28.{@link #setIncludeStartScripts(boolean)}<br>
- * 29.{@link #getIncludeZipCreation()}<br>
- * 30.{@link #setIncludeZipCreation(boolean)}<br>
- * 31.{@link #getProjectID()}<br>
- * 32.{@link #setProjectID(int)}<br>
- * 33.{@link #getProjectFileID()}<br>
- * 34.{@link #setProjectFileID(int)}<br>
- * 35.{@link #checkConfigFile(File, boolean)}<br>
- * 36.{@link #isDir(String)}<br>
- * 37.{@link #isCurse()}<br>
- * 38.{@link #containsFabric(CurseModpack)}<br>
- * 39.{@link #suggestCopyDirs(String)}<br>
- * 40.{@link #checkCurseForge(String)}<br>
- * 41.{@link #convertToBoolean(String)}<br>
- * 42.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
- * 43.{@link #checkModpackDir(String)}<br>
- * 44.{@link #checkCopyDirs(List, String)}<br>
- * 45.{@link #checkJavaPath(String)}<br>
- * 46.{@link #checkModloader(String)}<br>
- * 47.{@link #setModLoaderCase(String)}<br>
- * 48.{@link #checkModloaderVersion(String, String)}<br>
- * 49.{@link #isMinecraftVersionCorrect(String)}<br>
- * 50.{@link #isFabricVersionCorrect(String)}<br>
- * 51.{@link #isForgeVersionCorrect(String)}<br>
- * 52.{@link #latestFabricLoader()}<br>
- * 53.{@link #createConfigurationFile()}<br>
- * 54.{@link #readStringArray()}<br>
- * 55.{@link #buildString(String...)}<br>
- * 56.{@link #readBoolean()}<br>
- * 57.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+ * 7. {@link #getProjectID()}<br>
+ * 8. {@link #setProjectID(int)}<br>
+ * 9. {@link #getProjectFileID()}<br>
+ * 10.{@link #setProjectFileID(int)}<br>
+ * 11.{@link #checkConfigFile(File, boolean, ConfigurationModel)}<br>
+ * 12.{@link #isDir(String, ConfigurationModel)}<br>
+ * 13.{@link #isCurse(ConfigurationModel)}<br>
+ * 14.{@link #containsFabric(CurseModpack)}<br>
+ * 15.{@link #suggestCopyDirs(String)}<br>
+ * 16.{@link #checkCurseForge(String)}<br>
+ * 17.{@link #convertToBoolean(String)}<br>
+ * 18.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
+ * 19.{@link #checkModpackDir(String)}<br>
+ * 20.{@link #checkCopyDirs(List, String)}<br>
+ * 21.{@link #checkJavaPath(String)}<br>
+ * 22.{@link #checkModloader(String)}<br>
+ * 23.{@link #setModLoaderCase(String)}<br>
+ * 24.{@link #checkModloaderVersion(String, String)}<br>
+ * 25.{@link #isMinecraftVersionCorrect(String)}<br>
+ * 26.{@link #isFabricVersionCorrect(String)}<br>
+ * 27.{@link #isForgeVersionCorrect(String)}<br>
+ * 28.{@link #latestFabricLoader()}<br>
+ * 29.{@link #createConfigurationFile()}<br>
+ * 30.{@link #readStringArray()}<br>
+ * 31.{@link #buildString(String...)}<br>
+ * 32.{@link #readBoolean()}<br>
+ * 33.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
  * <p>
- * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should {@link #modpackDir}
+ * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
  * Loads a configuration from a serverpackcreator.conf-file in the same directory in which ServerPackCreator resides in.
  * @author Griefed
  */
 @Component
-public class Configuration {
-    private static final Logger LOG = LogManager.getLogger(Configuration.class);
+public class ConfigurationHandler {
+    private static final Logger LOG = LogManager.getLogger(ConfigurationHandler.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
@@ -132,7 +108,7 @@ public class Configuration {
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      */
     @Autowired
-    public Configuration(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack) {
+    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack) {
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
@@ -180,24 +156,6 @@ public class Configuration {
      */
     private List<String> FALLBACKMODSLIST = new ArrayList<>();
 
-    private List<String>
-            clientMods,
-            copyDirs;
-
-    private String
-            modpackDir,
-            javaPath,
-            minecraftVersion,
-            modLoader,
-            modLoaderVersion;
-
-    private Boolean
-            includeServerInstallation,
-            includeServerIcon,
-            includeServerProperties,
-            includeStartScripts,
-            includeZipCreation;
-
     private int
             projectID,
             projectFileID;
@@ -223,9 +181,7 @@ public class Configuration {
     /**
      * Getter for serverpackcreator.conf.
      * @author Griefed
-     * @return File. Returns the serverpackcreator.conf-file for use in <br>
-     * {@link #isCurse()},<br>
-     * {@link #createConfigurationFile()},<br>
+     * @return File. Returns the serverpackcreator.conf-file.
      * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
      */
     public File getConfigFile() {
@@ -235,10 +191,7 @@ public class Configuration {
     /**
      * Getter for a {@link Config} containing a parsed configuration-file.
      * @author Griefed
-     * @return Config. Returns parsed serverpackcreator.conf for use in<br>
-     * {@link #checkConfigFile(File, boolean)}<br>
-     * {@link #isDir(String)}<br>
-     * {@link #isCurse()}
+     * @return Config. Returns parsed serverpackcreator.conf.
      */
     Config getConfig() {
         return config;
@@ -246,7 +199,6 @@ public class Configuration {
 
     /**
      * Setter for a {@link Config} containing a parsed configuration-file.
-     * For use in {@link #checkConfigFile(File, boolean)}
      * @author Griefed
      * @param newConfig The new file of which to store a Typesafe Config.
      */
@@ -261,259 +213,10 @@ public class Configuration {
     /**
      * Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.
      * @author Griefed
-     * @return List String. Returns the fallback clientside-only mods-list for use in {@link #checkConfigFile(File, boolean)}
+     * @return List String. Returns the fallback clientside-only mods-list.
      */
     public List<String> getFallbackModsList() {
         return FALLBACKMODSLIST;
-    }
-
-    /**
-     * Getter for a list of clientside-only mods to exclude from server pack.
-     * @author Griefed
-     * @return List String. Returns the list of clientside-only mods for use in<br>
-     * {@link #checkConfigFile(File, boolean)}<br>
-     * {@link #isCurse()}
-     */
-    List<String> getClientMods() {
-        return clientMods;
-    }
-
-    /**
-     * Setter for the list of clientside-only mods to exclude from server pack.
-     * For use in {@link #checkConfigFile(File, boolean)}
-     * @author Griefed
-     * @param newClientMods The new list of clientside-only mods to store.
-     */
-    void setClientMods(List<String> newClientMods) {
-        this.clientMods = newClientMods;
-    }
-
-    /**
-     * Getter for the list of directories in the modpack to copy to the server pack.
-     * @author Griefed
-     * @return List String. Returns the list of directories to copy to the server pack for use in<br>
-     * {@link #checkConfigFile(File, boolean)}<br>
-     * {@link #isCurse()}
-     */
-    public List<String> getCopyDirs() {
-        return copyDirs;
-    }
-
-    /**
-     * Setter for the list of directories in the modpack to copy to the server pack.
-     * For use in {@link #isDir(String)} and {@link #isCurse()}
-     * @author Griefed
-     * @param newCopyDirs The new list of directories to include in server pack to store.
-     */
-    void setCopyDirs(List<String> newCopyDirs) {
-        for (int i = 0; i < newCopyDirs.size(); i++) {
-            newCopyDirs.removeIf(n -> (n.equalsIgnoreCase("server_pack")));
-            newCopyDirs.replaceAll(n -> n.replace("\\","/"));
-        }
-        this.copyDirs = newCopyDirs;
-    }
-
-    /**
-     * Getter for the path to the modpack directory.
-     * @author Griefed
-     * @return String. Returns the path to the modpack directory for use in<br>
-     * {@link #checkConfigFile(File, boolean)}<br>
-     * {@link #isDir(String)}<br>
-     * {@link #isCurse()}
-     */
-    public String getModpackDir() {
-        return modpackDir;
-    }
-
-    /**
-     * Setter for the path to the modpack directory. Replaces any occurrences of \ with /.
-     * For use in {@link #isDir(String)} and {@link #isCurse()}
-     * @author Griefed
-     * @param newModpackDir The new modpack directory path to store.
-     */
-    void setModpackDir(String newModpackDir) {
-        newModpackDir = newModpackDir.replace("\\","/");
-        this.modpackDir = newModpackDir;
-    }
-
-    /**
-     * Getter for the path to the Java executable/binary.
-     * @author Griefed
-     * @return String. Returns the path to the Java executable/binary for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
-     */
-    String getJavaPath() {
-        return javaPath;
-    }
-
-    /**
-     * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.
-     * For use in {@link #isDir(String)} and {@link #isCurse()}
-     * @author Griefed
-     * @param newJavaPath The new Java path to store.
-     */
-    void setJavaPath(String newJavaPath) {
-        newJavaPath = newJavaPath.replace("\\", "/");
-        this.javaPath = newJavaPath;
-    }
-
-    /**
-     * Getter for the version of Minecraft used by the modpack.
-     * @author Griefed
-     * @return String. Returns the  for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
-     */
-    String getMinecraftVersion() {
-        return minecraftVersion;
-    }
-
-    /**
-     * Setter for the Minecraft version used by the modpack.
-     * For use in {@link #isDir(String)} and {@link #isCurse()}
-     * @author Griefed
-     * @param newMinecraftVersion The new Minecraft version to store.
-     */
-    void setMinecraftVersion(String newMinecraftVersion) {
-        this.minecraftVersion = newMinecraftVersion;
-    }
-
-    /**
-     * Getter for the modloader used by the modpack.
-     * @author Griefed
-     * @return String. Returns the modloader used by the modpack for use in<br>
-     * {@link #checkConfigFile(File, boolean)}<br>
-     * {@link #isDir(String)}<br>
-     * {@link #isCurse()}
-     */
-    String getModLoader() {
-        return modLoader;
-    }
-
-    /**
-     * Setter for the modloader used by the modpack.
-     * For use in {@link #isDir(String)} and {@link #isCurse()}
-     * @author Griefed
-     * @param newModLoader The new modloader to store.
-     */
-    void setModLoader(String newModLoader) {
-        this.modLoader = setModLoaderCase(newModLoader);
-    }
-
-    /**
-     * Getter for the version of the modloader used by the modpack.
-     * @author Griefed
-     * @return String. Returns the version of the modloader used by the modpack for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
-     */
-    String getModLoaderVersion() {
-        return modLoaderVersion;
-    }
-
-    /**
-     * Setter for the version of the modloader used by the modpack.
-     * For use in {@link #isDir(String)} and {@link #isCurse()}
-     * @author Griefed
-     * @param newModLoaderVersion The new modloader version to store.
-     */
-    void setModLoaderVersion(String newModLoaderVersion) {
-        this.modLoaderVersion = newModLoaderVersion;
-    }
-
-    /**
-     * Getter for whether the modloader server installation should be included.
-     * @author Griefed
-     * @return Boolean. Returns whether the server installation should be included, for use in<br>
-     * {@link #checkConfigFile(File, boolean)}<br>
-     * {@link #isDir(String)}<br>
-     * {@link #isCurse()}
-     */
-    boolean getIncludeServerInstallation() {
-        return includeServerInstallation;
-    }
-
-    /**
-     * Setter for whether the modloader server installation should be included.
-     * For use in {@link #checkConfigFile(File, boolean)}
-     * @author Griefed
-     * @param newIncludeServerInstallation The new boolean to store.
-     */
-    void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
-        this.includeServerInstallation = newIncludeServerInstallation;
-    }
-
-    /**
-     * Getter for whether the server-icon.png should be included in the server pack.
-     * @author Griefed
-     * @return Boolean. Returns whether the server-icon.png should be included in the server pack, for use in {@link #checkConfigFile(File, boolean)}
-     * and {@link #isCurse()}
-     */
-    boolean getIncludeServerIcon() {
-        return includeServerIcon;
-    }
-
-    /**
-     * Setter for whether the server-icon.png should be included in the server pack.
-     * For use in {@link #checkConfigFile(File, boolean)}
-     * @author Griefed
-     * @param newIncludeServerIcon The new boolean to store.
-     */
-    void setIncludeServerIcon(boolean newIncludeServerIcon) {
-        this.includeServerIcon = newIncludeServerIcon;
-    }
-
-    /**
-     * Getter for whether the server.properties should be included in the server pack.
-     * @author Griefed
-     * @return Boolean. Returns whether the server.properties should be included in the server pack, for use in
-     * {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
-     */
-    boolean getIncludeServerProperties() {
-        return includeServerProperties;
-    }
-
-    /**
-     * Setter for whether the server.properties should be included in the server pack.
-     * For use in {@link #checkConfigFile(File, boolean)}
-     * @author Griefed
-     * @param newIncludeServerProperties The new boolean to store.
-     */
-    void setIncludeServerProperties(boolean newIncludeServerProperties) {
-        this.includeServerProperties = newIncludeServerProperties;
-    }
-
-    /**
-     * Getter for whether the start scripts should be included in the server pack.
-     * @author Griefed
-     * @return Boolean. Returns the whether the start scripts should be included in the server pack, for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
-     */
-    boolean getIncludeStartScripts() {
-        return includeStartScripts;
-    }
-
-    /**
-     * Setter for whether the start scripts should be included in the server pack.
-     * For use in {@link #checkConfigFile(File, boolean)}
-     * @author Griefed
-     * @param newIncludeStartScripts The new boolean to store.
-     */
-    void setIncludeStartScripts(boolean newIncludeStartScripts) {
-        this.includeStartScripts = newIncludeStartScripts;
-    }
-
-    /**
-     * Getter for whether a ZIP-archive of the server pack should be created.
-     * @author Griefed
-     * @return Boolean. Returns whether a ZIP-archive of the server pack should be created, for use in {@link #checkConfigFile(File, boolean)} and {@link #isCurse()}
-     */
-    boolean getIncludeZipCreation() {
-        return includeZipCreation;
-    }
-
-    /**
-     * Setter for whether a ZIP-archive of the server pack should be created.
-     * For use in {@link #checkConfigFile(File, boolean)}
-     * @author Griefed
-     * @param newIncludeZipCreation The new boolean to store.
-     */
-    void setIncludeZipCreation(boolean newIncludeZipCreation) {
-        this.includeZipCreation = newIncludeZipCreation;
     }
 
     /**
@@ -538,7 +241,7 @@ public class Configuration {
     /**
      * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
      * @author Griefed
-     * @return Integer. Returns the CurseForge fileID of a modpack, for use in {@link #isCurse()} and {@link #checkCurseForge(String)}
+     * @return Integer. Returns the CurseForge fileID of a modpack.
      */
     int getProjectFileID() {
         return projectFileID;
@@ -561,9 +264,10 @@ public class Configuration {
      * @author Griefed
      * @param configFile File. The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
      * @param shouldModpackBeCreated Boolean. Whether the CurseForge modpack should be downloaded and created.
+     * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack.
      * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
-    public boolean checkConfigFile(File configFile, boolean shouldModpackBeCreated) {
+    public boolean checkConfigFile(File configFile, boolean shouldModpackBeCreated, ConfigurationModel configurationModel) {
         boolean configHasError = false;
 
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
@@ -576,32 +280,32 @@ public class Configuration {
 
         if (getConfig().getStringList("clientMods").isEmpty()) {
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
-            setClientMods(getFallbackModsList());
+            configurationModel.setClientMods(getFallbackModsList());
         } else {
-            setClientMods(getConfig().getStringList("clientMods"));
+            configurationModel.setClientMods(getConfig().getStringList("clientMods"));
         }
 
-        setJavaPath(checkJavaPath(getConfig().getString("javaPath").replace("\\", "/")));
+        configurationModel.setJavaPath(checkJavaPath(getConfig().getString("javaPath").replace("\\", "/")));
 
-        setIncludeServerInstallation(convertToBoolean(getConfig().getString("includeServerInstallation")));
+        configurationModel.setIncludeServerInstallation(convertToBoolean(getConfig().getString("includeServerInstallation")));
 
-        setIncludeServerIcon(convertToBoolean(getConfig().getString("includeServerIcon")));
+        configurationModel.setIncludeServerIcon(convertToBoolean(getConfig().getString("includeServerIcon")));
 
-        setIncludeServerProperties(convertToBoolean(getConfig().getString("includeServerProperties")));
+        configurationModel.setIncludeServerProperties(convertToBoolean(getConfig().getString("includeServerProperties")));
 
-        setIncludeStartScripts(convertToBoolean(getConfig().getString("includeStartScripts")));
+        configurationModel.setIncludeStartScripts(convertToBoolean(getConfig().getString("includeStartScripts")));
 
-        setIncludeZipCreation(convertToBoolean(getConfig().getString("includeZipCreation")));
+        configurationModel.setIncludeZipCreation(convertToBoolean(getConfig().getString("includeZipCreation")));
 
         if (checkModpackDir(getConfig().getString("modpackDir").replace("\\","/"))) {
 
-            configHasError = isDir(getConfig().getString("modpackDir").replace("\\","/"));
+            configHasError = isDir(getConfig().getString("modpackDir").replace("\\","/"), configurationModel);
 
         } else if (checkCurseForge(getConfig().getString("modpackDir"))) {
 
             if (shouldModpackBeCreated) {
 
-                configHasError = isCurse();
+                configHasError = isCurse(configurationModel);
 
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
@@ -611,18 +315,18 @@ public class Configuration {
             configHasError = true;
         }
 
-        printConfig(getModpackDir(),
-                getClientMods(),
-                getCopyDirs(),
-                getIncludeServerInstallation(),
-                getJavaPath(),
-                getMinecraftVersion(),
-                getModLoader(),
-                getModLoaderVersion(),
-                getIncludeServerIcon(),
-                getIncludeServerProperties(),
-                getIncludeStartScripts(),
-                getIncludeZipCreation());
+        printConfig(configurationModel.getModpackDir(),
+                configurationModel.getClientMods(),
+                configurationModel.getCopyDirs(),
+                configurationModel.getIncludeServerInstallation(),
+                configurationModel.getJavaPath(),
+                configurationModel.getMinecraftVersion(),
+                configurationModel.getModLoader(),
+                configurationModel.getModLoaderVersion(),
+                configurationModel.getIncludeServerIcon(),
+                configurationModel.getIncludeServerProperties(),
+                configurationModel.getIncludeStartScripts(),
+                configurationModel.getIncludeZipCreation());
 
         if (!configHasError) {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
@@ -640,15 +344,16 @@ public class Configuration {
      * @author Griefed
      * @param modpackDir String. Should an existing modpack be specified, all configurations are read from the provided
      *                   configuration file and checks are made in this directory.
+     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
      * @return Boolean. Returns true if an error is found during configuration check.
      */
-    boolean isDir(String modpackDir) {
+    boolean isDir(String modpackDir, ConfigurationModel configurationModel) {
         boolean configHasError = false;
-        setModpackDir(modpackDir);
+        configurationModel.setModpackDir(modpackDir);
 
-        if (checkCopyDirs(getConfig().getStringList("copyDirs"), getModpackDir())) {
+        if (checkCopyDirs(getConfig().getStringList("copyDirs"), configurationModel.getModpackDir())) {
 
-            setCopyDirs(getConfig().getStringList("copyDirs"));
+            configurationModel.setCopyDirs(getConfig().getStringList("copyDirs"));
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
 
         } else {
@@ -656,11 +361,11 @@ public class Configuration {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
         }
 
-        if (getIncludeServerInstallation()) {
+        if (configurationModel.getIncludeServerInstallation()) {
 
             if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
 
-                setMinecraftVersion(getConfig().getString("minecraftVersion"));
+                configurationModel.setMinecraftVersion(getConfig().getString("minecraftVersion"));
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
 
             } else {
@@ -670,12 +375,12 @@ public class Configuration {
 
             if (checkModloader(getConfig().getString("modLoader"))) {
 
-                setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
+                configurationModel.setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
-                if (checkModloaderVersion(getModLoader(), getConfig().getString("modLoaderVersion"))) {
+                if (checkModloaderVersion(configurationModel.getModLoader(), getConfig().getString("modLoaderVersion"))) {
 
-                    setModLoaderVersion(getConfig().getString("modLoaderVersion"));
+                    configurationModel.setModLoaderVersion(getConfig().getString("modLoaderVersion"));
                     LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
 
                 } else {
@@ -705,10 +410,11 @@ public class Configuration {
      * a new configuration file is created, replacing the one used to create the modpack in the first place, with the
      * modpackDir field pointing to the newly created modpack.
      * @author Griefed
+     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
      * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
      * project name and displayname, or when the creation of the modpack fails.
      */
-    boolean isCurse() {
+    boolean isCurse(ConfigurationModel configurationModel) {
         boolean configHasError = false;
         try {
             if (CurseAPI.project(getProjectID()).isPresent()) {
@@ -741,11 +447,11 @@ public class Configuration {
 
                 if (displayName != null && projectName != null) {
 
-                    setModpackDir(String.format("./%s/%s", projectName, displayName));
+                    configurationModel.setModpackDir(String.format("./%s/%s", projectName, displayName));
 
-                    if (CURSECREATEMODPACK.curseForgeModpack(getModpackDir(), getProjectID(), getProjectFileID())) {
+                    if (CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID())) {
                         try {
-                            byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", getModpackDir())));
+                            byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", configurationModel.getModpackDir())));
 
                             CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
 
@@ -759,44 +465,44 @@ public class Configuration {
                                     .replace("]", "")
                                     .split("-");
 
-                            setMinecraftVersion(minecraftLoaderVersions[0]
+                            configurationModel.setMinecraftVersion(minecraftLoaderVersions[0]
                                     .replace("[", ""));
 
                             if (containsFabric(modpack)) {
                                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
                                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.iscurse.fabric"));
 
-                                setModLoader("Fabric");
-                                setModLoaderVersion(latestFabricLoader());
+                                configurationModel.setModLoader("Fabric");
+                                configurationModel.setModLoaderVersion(latestFabricLoader());
 
                             } else {
                                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.iscurse.forge"));
 
-                                setModLoader("Forge");
-                                setModLoaderVersion(modLoaderVersion[1]);
+                                configurationModel.setModLoader("Forge");
+                                configurationModel.setModLoaderVersion(modLoaderVersion[1]);
 
                             }
                         } catch (IOException ex) {
                             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.json"), ex);
                         }
 
-                        setCopyDirs(suggestCopyDirs(getModpackDir()));
+                        configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
 
                         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
 
                         writeConfigToFile(
-                                getModpackDir(),
-                                buildString(getClientMods().toString()),
-                                buildString(getCopyDirs().toString()),
-                                getIncludeServerInstallation(),
-                                getJavaPath(),
-                                getMinecraftVersion(),
-                                getModLoader(),
-                                getModLoaderVersion(),
-                                getIncludeServerIcon(),
-                                getIncludeServerProperties(),
-                                getIncludeStartScripts(),
-                                getIncludeZipCreation(),
+                                configurationModel.getModpackDir(),
+                                buildString(configurationModel.getClientMods().toString()),
+                                buildString(configurationModel.getCopyDirs().toString()),
+                                configurationModel.getIncludeServerInstallation(),
+                                configurationModel.getJavaPath(),
+                                configurationModel.getMinecraftVersion(),
+                                configurationModel.getModLoader(),
+                                configurationModel.getModLoaderVersion(),
+                                configurationModel.getIncludeServerIcon(),
+                                configurationModel.getIncludeServerProperties(),
+                                configurationModel.getIncludeStartScripts(),
+                                configurationModel.getIncludeZipCreation(),
                                 getConfigFile(),
                                 false
                         );
@@ -1877,29 +1583,6 @@ public class Configuration {
     }
 
     /**
-     * Concatenates all configuration parameters into a String. Overrides the default toString() method.
-     * @author Griefed
-     * @return String. A concatenated string of the whole configuration.
-     */
-    @Override
-    public String toString() {
-        return "Configuration{" +
-                "clientMods=" + clientMods +
-                ", copyDirs=" + copyDirs +
-                ", modpackDir='" + modpackDir + '\'' +
-                ", javaPath='" + javaPath + '\'' +
-                ", minecraftVersion='" + minecraftVersion + '\'' +
-                ", modLoader='" + modLoader + '\'' +
-                ", modLoaderVersion='" + modLoaderVersion + '\'' +
-                ", includeServerInstallation=" + includeServerInstallation +
-                ", includeServerIcon=" + includeServerIcon +
-                ", includeServerProperties=" + includeServerProperties +
-                ", includeStartScripts=" + includeStartScripts +
-                ", includeZipCreation=" + includeZipCreation +
-                '}';
-    }
-
-    /**
      * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to any addon run by
      * ServerPackCreator in {@link AddonsHandler}.<br>
      * Values included in this list are:<br>
@@ -1916,23 +1599,24 @@ public class Configuration {
      * 11.includeStartScripts<br>
      * 12.includeZipCreation
      * @author Griefed
+     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
      * @return String List. A list of all configurations as strings.
      */
-    public List<String> getConfigurationAsList() {
+    public List<String> getConfigurationAsList(ConfigurationModel configurationModel) {
         List<String> configurationAsList = new ArrayList<>();
 
-        configurationAsList.add(getModpackDir());
-        configurationAsList.add(buildString(getClientMods().toString()));
-        configurationAsList.add(buildString(getCopyDirs().toString()));
-        configurationAsList.add(getJavaPath());
-        configurationAsList.add(getMinecraftVersion());
-        configurationAsList.add(getModLoader());
-        configurationAsList.add(getModLoaderVersion());
-        configurationAsList.add(String.valueOf(getIncludeServerInstallation()));
-        configurationAsList.add(String.valueOf(getIncludeServerIcon()));
-        configurationAsList.add(String.valueOf(getIncludeServerProperties()));
-        configurationAsList.add(String.valueOf(getIncludeStartScripts()));
-        configurationAsList.add(String.valueOf(getIncludeZipCreation()));
+        configurationAsList.add(configurationModel.getModpackDir());
+        configurationAsList.add(buildString(configurationModel.getClientMods().toString()));
+        configurationAsList.add(buildString(configurationModel.getCopyDirs().toString()));
+        configurationAsList.add(configurationModel.getJavaPath());
+        configurationAsList.add(configurationModel.getMinecraftVersion());
+        configurationAsList.add(configurationModel.getModLoader());
+        configurationAsList.add(configurationModel.getModLoaderVersion());
+        configurationAsList.add(String.valueOf(configurationModel.getIncludeServerInstallation()));
+        configurationAsList.add(String.valueOf(configurationModel.getIncludeServerIcon()));
+        configurationAsList.add(String.valueOf(configurationModel.getIncludeServerProperties()));
+        configurationAsList.add(String.valueOf(configurationModel.getIncludeStartScripts()));
+        configurationAsList.add(String.valueOf(configurationModel.getIncludeZipCreation()));
 
         LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.getconfigurationaslist"), configurationAsList));
 

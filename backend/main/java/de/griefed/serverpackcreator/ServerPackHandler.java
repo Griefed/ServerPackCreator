@@ -54,14 +54,14 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #CreateServerPack(LocalizationManager, CurseCreateModpack, AddonsHandler)}<br>
+ * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler)}<br>
  * 2. {@link #getPropertiesFile()}<br>
  * 3. {@link #getIconFile()}<br>
  * 4. {@link #getForgeWindowsFile()}<br>
  * 5. {@link #getForgeLinuxFile()}<br>
  * 6. {@link #getFabricWindowsFile()}<br>
  * 7. {@link #getFabricLinuxFile()}<br>
- * 9. {@link #run(File)}<br>
+ * 9. {@link #run(File, ConfigurationModel)}<br>
  * 10.{@link #cleanupEnvironment(String)}<br>
  * 11.{@link #copyStartScripts(String, String, boolean)}<br>
  * 12.{@link #copyFiles(String, List, List)}<br>
@@ -80,7 +80,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 25.{@link #downloadForgeJar(String, String, String)}<br>
  * 27.{@link #cleanUpServerPack(File, File, String, String, String, String)}
  * <p>
- * Requires an instance of {@link Configuration} from which to get all required information about the modpack and the
+ * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
  * <p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
@@ -92,13 +92,14 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * @author Griefed
  */
 @Component
-public class CreateServerPack {
+public class ServerPackHandler {
     private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
     private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final AddonsHandler ADDONSHANDLER;
+    private final ConfigurationHandler CONFIGURATIONHANDLER;
 
     /**
      * <strong>Constructor</strong><p>
@@ -109,9 +110,10 @@ public class CreateServerPack {
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} required for creating a modpack from CurseForge.
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
+     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required for accessing checks.
      */
     @Autowired
-    public CreateServerPack(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, AddonsHandler injectedAddonsHandler) {
+    public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, AddonsHandler injectedAddonsHandler, ConfigurationHandler injectedConfigurationHandler) {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -129,6 +131,12 @@ public class CreateServerPack {
             this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
         } else {
             this.ADDONSHANDLER = injectedAddonsHandler;
+        }
+
+        if (injectedConfigurationHandler == null) {
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+        } else {
+            this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
     }
@@ -207,76 +215,73 @@ public class CreateServerPack {
      * {@link #copyIcon(String)} to copy the server-icon.png to the server pack.<br>
      * {@link #copyProperties(String)} to copy the server.properties to the server pack.<br>
      * {@link #zipBuilder(String, String, boolean)} to create a ZIP-archive of the server pack.<br>
-     * {@link AddonsHandler#runServerPackAddons(Configuration)} to run all valid server pack addons.
+     * {@link AddonsHandler#runServerPackAddons(ConfigurationModel, ConfigurationHandler)} to run all valid server pack addons.
      * @author Griefed
-     * @param configFileToUse A ServerPackCreator-configuration-file for {@link Configuration} to check and  generate a
+     * @param configFileToUse A ServerPackCreator-configuration-file for {@link ConfigurationHandler} to check and  generate a
      * server pack from.
+     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
      * @return Boolean. Returns true if the server pack was successfully generated.
      */
-    @SuppressWarnings("UnusedAssignment")
-    public boolean run(File configFileToUse) {
+    public boolean run(File configFileToUse, ConfigurationModel configurationModel) {
         // TODO: Once API and webUI are implemented, test parallel runs. Parallel runs MUST be possible.
-        Configuration serverPackConfig = new Configuration(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
 
-        if (!serverPackConfig.checkConfigFile(configFileToUse, true)) {
+        if (!CONFIGURATIONHANDLER.checkConfigFile(configFileToUse, true, configurationModel)) {
 
             // Make sure no files from previously generated server packs interrupt us.
-            cleanupEnvironment(serverPackConfig.getModpackDir());
+            cleanupEnvironment(configurationModel.getModpackDir());
 
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-            copyFiles(serverPackConfig.getModpackDir(), serverPackConfig.getCopyDirs(), serverPackConfig.getClientMods());
+            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods());
 
             // Copy start scripts for specified modloader from server_files to server pack.
-            copyStartScripts(serverPackConfig.getModpackDir(), serverPackConfig.getModLoader(), serverPackConfig.getIncludeStartScripts());
+            copyStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts());
 
             // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
-            if (serverPackConfig.getIncludeServerInstallation()) {
-                installServer(serverPackConfig.getModLoader(), serverPackConfig.getModpackDir(), serverPackConfig.getMinecraftVersion(), serverPackConfig.getModLoaderVersion(), serverPackConfig.getJavaPath());
+            if (configurationModel.getIncludeServerInstallation()) {
+                installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
             }
 
             // If true, copy the server-icon.png from server_files to the server pack.
-            if (serverPackConfig.getIncludeServerIcon()) {
-                copyIcon(serverPackConfig.getModpackDir());
+            if (configurationModel.getIncludeServerIcon()) {
+                copyIcon(configurationModel.getModpackDir());
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
             }
 
             // If true, copy the server.properties from server_files to the server pack.
-            if (serverPackConfig.getIncludeServerProperties()) {
-                copyProperties(serverPackConfig.getModpackDir());
+            if (configurationModel.getIncludeServerProperties()) {
+                copyProperties(configurationModel.getModpackDir());
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
             }
 
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
-            if (serverPackConfig.getIncludeZipCreation()) {
-                zipBuilder(serverPackConfig.getModpackDir(), serverPackConfig.getMinecraftVersion(), serverPackConfig.getIncludeServerInstallation());
+            if (configurationModel.getIncludeZipCreation()) {
+                zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
             }
 
             // Inform user about location of newly generated server pack.
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), serverPackConfig.getModpackDir().substring(serverPackConfig.getModpackDir().lastIndexOf("/")+1)));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), serverPackConfig.getModpackDir().substring(serverPackConfig.getModpackDir().lastIndexOf("/")+1)));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
                 LOG.info("No Server Pack addons to execute.");
             } else {
                 LOG.info("Starting execution of Server Pack addons. Check addons.log in the logs-directory for details about their execution.");
-                ADDONSHANDLER.runServerPackAddons(serverPackConfig);
+                ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
                 LOG.info("Addons executed. Finishing...");
             }
 
-            serverPackConfig = null;
             return true;
 
         } else {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("main.log.error.runincli"));
 
-            serverPackConfig = null;
             return false;
         }
     }

@@ -130,10 +130,10 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  */
 class ConfigurationTest {
 
-    private final Configuration configuration;
-    private final CurseCreateModpack curseCreateModpack;
-    private final LocalizationManager localizationManager;
-    private final DefaultFiles defaultFiles;
+    private final ConfigurationHandler CONFIGURATIONHANDLER;
+    private final CurseCreateModpack CURSECREATEMODPACK;
+    private final LocalizationManager LOCALIZATIONMANAGER;
+    private final DefaultFiles DEFAULTFILES;
 
     ConfigurationTest() {
         try {
@@ -141,36 +141,36 @@ class ConfigurationTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        localizationManager = new LocalizationManager();
-        localizationManager.init();
-        defaultFiles = new DefaultFiles(localizationManager);
-        defaultFiles.filesSetup();
-        curseCreateModpack = new CurseCreateModpack(localizationManager);
-        configuration = new Configuration(localizationManager, curseCreateModpack);
+        LOCALIZATIONMANAGER = new LocalizationManager();
+        LOCALIZATIONMANAGER.init();
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
+        DEFAULTFILES.filesSetup();
+        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
+        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
     }
 
     @Test
     void getOldConfigFileTest() {
-        File file = configuration.getOldConfigFile();
+        File file = CONFIGURATIONHANDLER.getOldConfigFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getConfigFileTest() {
-        File file = configuration.getConfigFile();
+        File file = CONFIGURATIONHANDLER.getConfigFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getsetConfigTest() {
         File file = new File("backend/test/resources/testresources/serverpackcreator.conf");
-        configuration.setConfig(file);
-        Assertions.assertNotNull(configuration.getConfig());
+        CONFIGURATIONHANDLER.setConfig(file);
+        Assertions.assertNotNull(CONFIGURATIONHANDLER.getConfig());
     }
 
     @Test
     void getFallbackModsListTest() {
-        Assertions.assertNotNull(configuration.getFallbackModsList());
+        Assertions.assertNotNull(CONFIGURATIONHANDLER.getFallbackModsList());
     }
 
     @Test
@@ -215,7 +215,7 @@ class ConfigurationTest {
                 "TipTheScales",
                 "WorldNameRandomizer"
         ));
-        Assertions.assertEquals(fallbackMods, configuration.getFallbackModsList());
+        Assertions.assertEquals(fallbackMods, CONFIGURATIONHANDLER.getFallbackModsList());
     }
 
     @Test
@@ -245,8 +245,9 @@ class ConfigurationTest {
                 "TipTheScales",
                 "WorldNameRandomizer"
         ));
-        configuration.setClientMods(clientMods);
-        Assertions.assertEquals(clientMods, configuration.getClientMods());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setClientMods(clientMods);
+        Assertions.assertEquals(clientMods, configurationModel.getClientMods());
     }
 
     @Test
@@ -276,8 +277,9 @@ class ConfigurationTest {
                 "TipTheScales",
                 "WorldNameRandomizer"
         ));
-        configuration.setClientMods(clientMods);
-        Assertions.assertNotNull(configuration.getClientMods());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setClientMods(clientMods);
+        Assertions.assertNotNull(configurationModel.getClientMods());
     }
 
     @Test
@@ -297,8 +299,9 @@ class ConfigurationTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        configuration.setCopyDirs(testList);
-        Assertions.assertEquals(getList, configuration.getCopyDirs());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setCopyDirs(testList);
+        Assertions.assertEquals(getList, configurationModel.getCopyDirs());
     }
 
     @Test
@@ -311,8 +314,9 @@ class ConfigurationTest {
                 "defaultconfigs",
                 "server_pack"
         ));
-        configuration.setCopyDirs(testList);
-        Assertions.assertNotNull(configuration.getCopyDirs());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setCopyDirs(testList);
+        Assertions.assertNotNull(configurationModel.getCopyDirs());
     }
 
     @Test
@@ -325,216 +329,246 @@ class ConfigurationTest {
                 "defaultconfigs",
                 "server_pack"
         ));
-        configuration.setCopyDirs(testList);
-        Assertions.assertFalse(configuration.getCopyDirs().contains("server_pack"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setCopyDirs(testList);
+        Assertions.assertFalse(configurationModel.getCopyDirs().contains("server_pack"));
     }
 
     @Test
     void getsetModpackDirTest() {
         String modpackDir = "backend/test/resources/forge_tests";
-        configuration.setModpackDir(modpackDir);
-        Assertions.assertEquals(modpackDir, configuration.getModpackDir());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir(modpackDir);
+        Assertions.assertEquals(modpackDir, configurationModel.getModpackDir());
     }
 
     @Test
     void getsetModpackDirTestNotNull() {
         String modpackDir = "backend/test/resources/forge_tests";
-        configuration.setModpackDir(modpackDir);
-        Assertions.assertNotNull(configuration.getModpackDir());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir(modpackDir);
+        Assertions.assertNotNull(configurationModel.getModpackDir());
     }
 
     @Test
     void getsetModpackDirTestBackslash() {
         String modpackDir = "backend\\test\\resources\\forge_tests";
-        configuration.setModpackDir(modpackDir);
-        Assertions.assertEquals(modpackDir.replace("\\","/"),configuration.getModpackDir());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir(modpackDir);
+        Assertions.assertEquals(modpackDir.replace("\\","/"),configurationModel.getModpackDir());
     }
 
     @Test
     void getsetModpackDirTestBackslashFalse() {
         String modpackDir = "backend\\test\\resources\\forge_tests";
-        configuration.setModpackDir(modpackDir);
-        Assertions.assertFalse(configuration.getModpackDir().contains("\\"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir(modpackDir);
+        Assertions.assertFalse(configurationModel.getModpackDir().contains("\\"));
     }
 
     @Test
     void getsetModpackDirTestBackslashNotNull() {
         String modpackDir = "backend\\test\\resources\\forge_tests";
-        configuration.setModpackDir(modpackDir);
-        Assertions.assertNotNull(configuration.getModpackDir());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir(modpackDir);
+        Assertions.assertNotNull(configurationModel.getModpackDir());
     }
 
     @Test
     void getsetJavaPathTest() {
         String javaPath = "backend/test/resources/forge_tests";
-        configuration.setJavaPath(javaPath);
-        Assertions.assertEquals(javaPath, configuration.getJavaPath());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setJavaPath(javaPath);
+        Assertions.assertEquals(javaPath, configurationModel.getJavaPath());
     }
 
     @Test
     void getsetJavaPathTestNotNull() {
         String javaPath = "backend/test/resources/forge_tests";
-        configuration.setJavaPath(javaPath);
-        Assertions.assertNotNull(configuration.getJavaPath());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setJavaPath(javaPath);
+        Assertions.assertNotNull(configurationModel.getJavaPath());
     }
 
     @Test
     void getsetJavaPathTestBackslash() {
         String javaPath = "backend\\test\\resources\\forge_tests";
-        configuration.setJavaPath(javaPath);
-        Assertions.assertEquals(javaPath.replace("\\","/"),configuration.getJavaPath());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setJavaPath(javaPath);
+        Assertions.assertEquals(javaPath.replace("\\","/"),configurationModel.getJavaPath());
     }
 
     @Test
     void getsetJavaPathTestBackslashNotNull() {
         String javaPath = "backend\\test\\resources\\forge_tests";
-        configuration.setJavaPath(javaPath);
-        Assertions.assertNotNull(configuration.getJavaPath());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setJavaPath(javaPath);
+        Assertions.assertNotNull(configurationModel.getJavaPath());
     }
 
     @Test
     void getsetJavaPathTestBackslashNotEquals() {
         String javaPath = "backend\\test\\resources\\forge_tests";
-        configuration.setJavaPath(javaPath);
-        Assertions.assertNotEquals(javaPath, configuration.getJavaPath());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setJavaPath(javaPath);
+        Assertions.assertNotEquals(javaPath, configurationModel.getJavaPath());
     }
 
     @Test
     void getsetJavaPathTestBackslashFalse() {
         String javaPath = "backend\\test\\resources\\forge_tests";
-        configuration.setJavaPath(javaPath);
-        Assertions.assertFalse(configuration.getJavaPath().contains("\\"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setJavaPath(javaPath);
+        Assertions.assertFalse(configurationModel.getJavaPath().contains("\\"));
     }
 
     @Test
     void getsetMinecraftVersionTest() {
         String minecraftVersion = "1.16.5";
-        configuration.setMinecraftVersion(minecraftVersion);
-        Assertions.assertEquals(minecraftVersion, configuration.getMinecraftVersion());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setMinecraftVersion(minecraftVersion);
+        Assertions.assertEquals(minecraftVersion, configurationModel.getMinecraftVersion());
     }
 
     @Test
     void getsetMinecraftVersionTestNotNull() {
         String minecraftVersion = "1.16.5";
-        configuration.setMinecraftVersion(minecraftVersion);
-        Assertions.assertNotNull(configuration.getMinecraftVersion());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setMinecraftVersion(minecraftVersion);
+        Assertions.assertNotNull(configurationModel.getMinecraftVersion());
     }
 
     @Test
     void getsetModLoaderTest() {
         String modloader = "FoRgE";
-        configuration.setModLoader(modloader);
-        Assertions.assertEquals("Forge", configuration.getModLoader());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModLoader(modloader);
+        Assertions.assertEquals("Forge", configurationModel.getModLoader());
     }
 
     @Test
     void getsetModLoaderTestNotNull() {
         String modloader = "FoRgE";
-        configuration.setModLoader(modloader);
-        Assertions.assertNotNull(configuration.getModLoader());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModLoader(modloader);
+        Assertions.assertNotNull(configurationModel.getModLoader());
     }
 
     @Test
     void getsetModLoaderTestNotEquals() {
         String modloader = "FoRgE";
-        configuration.setModLoader(modloader);
-        Assertions.assertNotEquals(modloader, configuration.getModLoader());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModLoader(modloader);
+        Assertions.assertNotEquals(modloader, configurationModel.getModLoader());
     }
 
     @Test
     void getsetModLoaderVersionTest() {
         String modloaderVersion = "36.1.2";
-        configuration.setModLoaderVersion(modloaderVersion);
-        Assertions.assertEquals(modloaderVersion, configuration.getModLoaderVersion());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModLoaderVersion(modloaderVersion);
+        Assertions.assertEquals(modloaderVersion, configurationModel.getModLoaderVersion());
     }
 
     @Test
     void getsetModLoaderVersionTestNotNull() {
         String modloaderVersion = "36.1.2";
-        configuration.setModLoaderVersion(modloaderVersion);
-        Assertions.assertNotNull(configuration.getModLoaderVersion());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModLoaderVersion(modloaderVersion);
+        Assertions.assertNotNull(configurationModel.getModLoaderVersion());
     }
 
     @Test
     void getsetIncludeServerInstallationTest() {
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertTrue(configuration.getIncludeServerInstallation());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertTrue(configurationModel.getIncludeServerInstallation());
     }
 
     @Test
     void getsetIncludeServerInstallationTestFalse() {
-        configuration.setIncludeServerInstallation(false);
-        Assertions.assertFalse(configuration.getIncludeServerInstallation());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(false);
+        Assertions.assertFalse(configurationModel.getIncludeServerInstallation());
     }
 
     @Test
     void getsetIncludeServerIconTest() {
-        configuration.setIncludeServerIcon(true);
-        Assertions.assertTrue(configuration.getIncludeServerIcon());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerIcon(true);
+        Assertions.assertTrue(configurationModel.getIncludeServerIcon());
     }
 
     @Test
     void getsetIncludeServerIconTestFalse() {
-        configuration.setIncludeServerIcon(false);
-        Assertions.assertFalse(configuration.getIncludeServerIcon());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerIcon(false);
+        Assertions.assertFalse(configurationModel.getIncludeServerIcon());
     }
 
     @Test
     void getsetIncludeServerPropertiesTest() {
-        configuration.setIncludeServerProperties(true);
-        Assertions.assertTrue(configuration.getIncludeServerProperties());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerProperties(true);
+        Assertions.assertTrue(configurationModel.getIncludeServerProperties());
     }
 
     @Test
     void getsetIncludeServerPropertiesTestFalse() {
-        configuration.setIncludeServerProperties(false);
-        Assertions.assertFalse(configuration.getIncludeServerProperties());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerProperties(false);
+        Assertions.assertFalse(configurationModel.getIncludeServerProperties());
     }
 
     @Test
     void getsetIncludeStartScriptsTest() {
-        configuration.setIncludeStartScripts(true);
-        Assertions.assertTrue(configuration.getIncludeStartScripts());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeStartScripts(true);
+        Assertions.assertTrue(configurationModel.getIncludeStartScripts());
     }
 
     @Test
     void getsetIncludeStartScriptsTestFalse() {
-        configuration.setIncludeStartScripts(false);
-        Assertions.assertFalse(configuration.getIncludeStartScripts());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeStartScripts(false);
+        Assertions.assertFalse(configurationModel.getIncludeStartScripts());
     }
 
     @Test
     void getsetIncludeZipCreationTest() {
-        configuration.setIncludeZipCreation(true);
-        Assertions.assertTrue(configuration.getIncludeZipCreation());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeZipCreation(true);
+        Assertions.assertTrue(configurationModel.getIncludeZipCreation());
     }
 
     @Test
     void getsetIncludeZipCreationTestFalse() {
-        configuration.setIncludeZipCreation(false);
-        Assertions.assertFalse(configuration.getIncludeZipCreation());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeZipCreation(false);
+        Assertions.assertFalse(configurationModel.getIncludeZipCreation());
     }
 
     @Test
     void getsetProjectIDTest() {
         int projectID = 123456;
-        configuration.setProjectID(projectID);
-        Assertions.assertEquals(projectID, configuration.getProjectID());
+        CONFIGURATIONHANDLER.setProjectID(projectID);
+        Assertions.assertEquals(projectID, CONFIGURATIONHANDLER.getProjectID());
     }
 
     @Test
     void getsetProjectFileIDTest() {
         int fileID = 123456;
-        configuration.setProjectFileID(fileID);
-        Assertions.assertEquals(fileID, configuration.getProjectFileID());
+        CONFIGURATIONHANDLER.setProjectFileID(fileID);
+        Assertions.assertEquals(fileID, CONFIGURATIONHANDLER.getProjectFileID());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void checkConfigFileTest() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        boolean result = configuration.checkConfigFile(configuration.getConfigFile(), true);
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        boolean result = CONFIGURATIONHANDLER.checkConfigFile(CONFIGURATIONHANDLER.getConfigFile(), true, configurationModel);
         Assertions.assertFalse(result);
         new File("./serverpackcreator.conf").delete();
     }
@@ -543,9 +577,10 @@ class ConfigurationTest {
     @Test
     void isDirTest() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertFalse(configuration.isDir("./backend/test/resources/forge_tests"));
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -553,9 +588,10 @@ class ConfigurationTest {
     @Test
     void isDirTestCopyDirs() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_copydirs.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -563,9 +599,10 @@ class ConfigurationTest {
     @Test
     void isDirTestJavaPath() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_javapath.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertFalse(configuration.isDir("./backend/test/resources/forge_tests"));
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -573,9 +610,10 @@ class ConfigurationTest {
     @Test
     void isDirTestMinecraftVersion() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_minecraftversion.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
         new File("./serverpackcreator.conf").delete();
 
     }
@@ -584,9 +622,10 @@ class ConfigurationTest {
     @Test
     void isDirTestModLoader() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_modloader.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertFalse(configuration.isDir("./backend/test/resources/forge_tests"));
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -594,9 +633,10 @@ class ConfigurationTest {
     @Test
     void isDirTestModLoaderFalse() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_modloaderfalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -604,9 +644,10 @@ class ConfigurationTest {
     @Test
     void isDirTestModLoaderVersion() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_modloaderversion.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        Assertions.assertTrue(configuration.isDir("./backend/test/resources/forge_tests"));
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setIncludeServerInstallation(true);
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -614,16 +655,18 @@ class ConfigurationTest {
     @Test
     void isCurseTest() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforge.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setJavaPath(configuration.checkJavaPath(""));
-        configuration.setIncludeServerInstallation(true);
-        configuration.setIncludeServerIcon(true);
-        configuration.setIncludeServerProperties(true);
-        configuration.setIncludeStartScripts(true);
-        configuration.setIncludeZipCreation(true);
-        configuration.checkCurseForge("238298,3174854");
-        configuration.setClientMods(configuration.getFallbackModsList());
-        Assertions.assertFalse(configuration.isCurse());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        configurationModel.setJavaPath(CONFIGURATIONHANDLER.checkJavaPath(""));
+        configurationModel.setIncludeServerInstallation(true);
+        configurationModel.setIncludeServerIcon(true);
+        configurationModel.setIncludeServerProperties(true);
+        configurationModel.setIncludeStartScripts(true);
+        configurationModel.setIncludeZipCreation(true);
+        CONFIGURATIONHANDLER.checkCurseForge("238298,3174854");
+        configurationModel.setClientMods(CONFIGURATIONHANDLER.getFallbackModsList());
+
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
         String deleteFolder = "Vanilla Forge";
         if (new File(deleteFolder).isDirectory()) {
@@ -639,15 +682,16 @@ class ConfigurationTest {
     @Test
     void isCurseTestProjectIDFalse() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setIncludeServerInstallation(true);
-        configuration.setIncludeServerIcon(true);
-        configuration.setIncludeServerProperties(true);
-        configuration.setIncludeStartScripts(true);
-        configuration.setIncludeZipCreation(true);
-        configuration.checkCurseForge("999999,3174854");
-        configuration.setClientMods(configuration.getFallbackModsList());
-        Assertions.assertTrue(configuration.isCurse());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        configurationModel.setIncludeServerInstallation(true);
+        configurationModel.setIncludeServerIcon(true);
+        configurationModel.setIncludeServerProperties(true);
+        configurationModel.setIncludeStartScripts(true);
+        configurationModel.setIncludeZipCreation(true);
+        CONFIGURATIONHANDLER.checkCurseForge("999999,3174854");
+        configurationModel.setClientMods(CONFIGURATIONHANDLER.getFallbackModsList());
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -655,82 +699,83 @@ class ConfigurationTest {
     @Test
     void isCurseTestProjectFileIDFalse() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefilefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        configuration.setConfig(new File("./serverpackcreator.conf"));
-        configuration.setProjectID(238298);
-        configuration.setProjectFileID(999999);
-        Assertions.assertTrue(configuration.isCurse());
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        CONFIGURATIONHANDLER.setProjectID(238298);
+        CONFIGURATIONHANDLER.setProjectFileID(999999);
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
     @Test
     void containsFabricTest() throws IOException {
         byte[] fabricJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/fabric_manifest.json"));
-        CurseModpack fabricModpack = configuration.getObjectMapper().readValue(fabricJsonData, CurseModpack.class);
-        Assertions.assertTrue(configuration.containsFabric(fabricModpack));
+        CurseModpack fabricModpack = CONFIGURATIONHANDLER.getObjectMapper().readValue(fabricJsonData, CurseModpack.class);
+        Assertions.assertTrue(CONFIGURATIONHANDLER.containsFabric(fabricModpack));
     }
 
     @Test
     void containsFabricTestFalse() throws IOException {
         byte[] forgeJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/manifest.json"));
-        CurseModpack forgeModpack = configuration.getObjectMapper().readValue(forgeJsonData, CurseModpack.class);
-        Assertions.assertFalse(configuration.containsFabric(forgeModpack));
+        CurseModpack forgeModpack = CONFIGURATIONHANDLER.getObjectMapper().readValue(forgeJsonData, CurseModpack.class);
+        Assertions.assertFalse(CONFIGURATIONHANDLER.containsFabric(forgeModpack));
     }
 
     @Test
     void suggestCopyDirsTest() {
         String modpackDir = "backend/test/resources/forge_tests";
-        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("server_pack"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("config"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("defaultconfigs"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("mods"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("scripts"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("seeds"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("server_pack"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("config"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("defaultconfigs"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("mods"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("scripts"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("seeds"));
 
     }
 
     @Test
     void suggestCopyDirsTestFalse() {
         String modpackDir = "backend/test/resources/forge_tests";
-        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("server_pack"));
-        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("saves"));
-        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("logs"));
-        Assertions.assertFalse(configuration.suggestCopyDirs(modpackDir).contains("resourcepacks"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("scripts"));
-        Assertions.assertTrue(configuration.suggestCopyDirs(modpackDir).contains("seeds"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("server_pack"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("saves"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("logs"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("resourcepacks"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("scripts"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("seeds"));
     }
 
     @Test
     void checkCurseForgeTest() {
         String valid = "430517,3266321";
-        Assertions.assertTrue(configuration.checkCurseForge(valid));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCurseForge(valid));
     }
 
     @Test
     void checkCurseForgeTestFalse() {
         String invalid = "1,1234";
-        Assertions.assertFalse(configuration.checkCurseForge(invalid));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCurseForge(invalid));
     }
 
     @Test
     void convertToBooleanTestTrue() {
-        Assertions.assertTrue(configuration.convertToBoolean("True"));
-        Assertions.assertTrue(configuration.convertToBoolean("true"));
-        Assertions.assertTrue(configuration.convertToBoolean("1"));
-        Assertions.assertTrue(configuration.convertToBoolean("Yes"));
-        Assertions.assertTrue(configuration.convertToBoolean("yes"));
-        Assertions.assertTrue(configuration.convertToBoolean("Y"));
-        Assertions.assertTrue(configuration.convertToBoolean("y"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.convertToBoolean("True"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.convertToBoolean("true"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.convertToBoolean("1"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.convertToBoolean("Yes"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.convertToBoolean("yes"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.convertToBoolean("Y"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.convertToBoolean("y"));
     }
 
     @Test
     void convertToBooleanTestFalse() {
-        Assertions.assertFalse(configuration.convertToBoolean("False"));
-        Assertions.assertFalse(configuration.convertToBoolean("false"));
-        Assertions.assertFalse(configuration.convertToBoolean("0"));
-        Assertions.assertFalse(configuration.convertToBoolean("No"));
-        Assertions.assertFalse(configuration.convertToBoolean("no"));
-        Assertions.assertFalse(configuration.convertToBoolean("N"));
-        Assertions.assertFalse(configuration.convertToBoolean("n"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.convertToBoolean("False"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.convertToBoolean("false"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.convertToBoolean("0"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.convertToBoolean("No"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.convertToBoolean("no"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.convertToBoolean("N"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.convertToBoolean("n"));
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -778,7 +823,7 @@ class ConfigurationTest {
         boolean includeServerProperties = true;
         boolean includeStartScripts = true;
         boolean includeZipCreation = true;
-        configuration.printConfig(
+        CONFIGURATIONHANDLER.printConfig(
                 modpackDir,
                 clientMods,
                 copyDirs,
@@ -796,12 +841,12 @@ class ConfigurationTest {
     @Test
     void checkModpackDirTest() {
         String modpackDirCorrect = "./backend/test/resources/forge_tests";
-        Assertions.assertTrue(configuration.checkModpackDir(modpackDirCorrect));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModpackDir(modpackDirCorrect));
     }
 
     @Test
     void checkModpackDirTestFalse() {
-        Assertions.assertFalse(configuration.checkModpackDir("modpackDir"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModpackDir("modpackDir"));
     }
 
     @Test
@@ -814,7 +859,7 @@ class ConfigurationTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        Assertions.assertTrue(configuration.checkCopyDirs(copyDirs, modpackDir));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCopyDirs(copyDirs, modpackDir));
     }
 
     @Test
@@ -827,7 +872,7 @@ class ConfigurationTest {
                 "seedss",
                 "defaultconfigss"
         ));
-        Assertions.assertFalse(configuration.checkCopyDirs(copyDirsInvalid, modpackDir));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsInvalid, modpackDir));
     }
 
     @Test
@@ -842,7 +887,7 @@ class ConfigurationTest {
                 "test.txt;test.txt",
                 "test2.txt;test2.txt"
         ));
-        Assertions.assertTrue(configuration.checkCopyDirs(copyDirsAndFiles, modpackDir));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsAndFiles, modpackDir));
     }
 
     @Test
@@ -859,7 +904,7 @@ class ConfigurationTest {
                 "LICENSEee;test/LICENSE",
                 "LICENSEee;test/license.md"
         ));
-        Assertions.assertFalse(configuration.checkCopyDirs(copyDirsAndFilesFalse, modpackDir));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsAndFilesFalse, modpackDir));
     }
 
     @Test
@@ -876,113 +921,113 @@ class ConfigurationTest {
         } else {
             javaPath = autoJavaPath;
         }
-        Assertions.assertNotNull(configuration.checkJavaPath(javaPath));
-        Assertions.assertTrue(new File(configuration.checkJavaPath(javaPath)).exists());
+        Assertions.assertNotNull(CONFIGURATIONHANDLER.checkJavaPath(javaPath));
+        Assertions.assertTrue(new File(CONFIGURATIONHANDLER.checkJavaPath(javaPath)).exists());
     }
 
     @Test
     void checkModloaderTestForge() {
-        Assertions.assertTrue(configuration.checkModloader("Forge"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Forge"));
     }
 
     @Test
     void checkModloaderTestForgeCase() {
-        Assertions.assertTrue(configuration.checkModloader("fOrGe"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fOrGe"));
     }
 
     @Test
     void checkModloaderTestFabric() {
-        Assertions.assertTrue(configuration.checkModloader("Fabric"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Fabric"));
     }
 
     @Test
     void checkModloaderTestFabricCase() {
-        Assertions.assertTrue(configuration.checkModloader("fAbRiC"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fAbRiC"));
     }
 
     @Test
     void checkModLoaderTestFalse() {
-        Assertions.assertFalse(configuration.checkModloader("modloader"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloader("modloader"));
     }
 
     @Test
     void setModLoaderCaseTestForge() {
-        Assertions.assertEquals("Forge", configuration.setModLoaderCase("fOrGe"));
+        Assertions.assertEquals("Forge", CONFIGURATIONHANDLER.setModLoaderCase("fOrGe"));
     }
 
     @Test
     void setModLoaderCaseTestFabric() {
-        Assertions.assertEquals("Fabric", configuration.setModLoaderCase("fAbRiC"));
+        Assertions.assertEquals("Fabric", CONFIGURATIONHANDLER.setModLoaderCase("fAbRiC"));
     }
 
     @Test
     void setModLoaderCaseTestForgeCorrected() {
-        Assertions.assertEquals("Forge", configuration.setModLoaderCase("eeeeefOrGeeeeee"));
+        Assertions.assertEquals("Forge", CONFIGURATIONHANDLER.setModLoaderCase("eeeeefOrGeeeeee"));
     }
 
     @Test
     void setModLoaderCaseTestFabricCorrected() {
-        Assertions.assertEquals("Fabric", configuration.setModLoaderCase("hufwhafasfabricfagrsg"));
+        Assertions.assertEquals("Fabric", CONFIGURATIONHANDLER.setModLoaderCase("hufwhafasfabricfagrsg"));
     }
 
     @Test
     void checkModloaderVersionTestForge() {
-        Assertions.assertTrue(configuration.checkModloaderVersion("Forge", "36.1.2"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "36.1.2"));
     }
 
     @Test
     void checkModloaderVersionTestForgeFalse() {
-        Assertions.assertFalse(configuration.checkModloaderVersion("Forge", "90.0.0"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "90.0.0"));
     }
 
     @Test
     void checkModloaderVersionTestFabric() {
-        Assertions.assertTrue(configuration.checkModloaderVersion("Fabric", "0.11.3"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.11.3"));
     }
 
     @Test
     void checkModloaderVersionTestFabricFalse() {
-        Assertions.assertFalse(configuration.checkModloaderVersion("Fabric", "0.90.3"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.90.3"));
     }
 
     @Test
     void isMinecraftVersionCorrectTest() {
-        Assertions.assertTrue(configuration.isMinecraftVersionCorrect("1.16.5"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.16.5"));
     }
 
     @Test
     void isMinecraftVersionCorrectTestFalse() {
-        Assertions.assertFalse(configuration.isMinecraftVersionCorrect("1.99.5"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.99.5"));
     }
 
     @Test
     void isFabricVersionCorrectTest() {
-        Assertions.assertTrue(configuration.isFabricVersionCorrect("0.11.3"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isFabricVersionCorrect("0.11.3"));
     }
 
     @Test
     void isFabricVersionCorrectTestFalse() {
-        Assertions.assertFalse(configuration.isFabricVersionCorrect("0.90.3"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isFabricVersionCorrect("0.90.3"));
     }
 
     @Test
     void isForgeVersionCorrectTest() {
-        Assertions.assertTrue(configuration.isForgeVersionCorrect("36.1.2"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isForgeVersionCorrect("36.1.2"));
     }
 
     @Test
     void isForgeVersionCorrectTestFalse() {
-        Assertions.assertFalse(configuration.isForgeVersionCorrect("99.0.0"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isForgeVersionCorrect("99.0.0"));
     }
 
     @Test
     void latestFabricLoaderTest() {
-        Assertions.assertTrue(configuration.latestFabricLoader().matches("\\d+\\.\\d+\\.\\d+"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.latestFabricLoader().matches("\\d+\\.\\d+\\.\\d+"));
     }
 
     @Test
     void latestFabricLoaderTestNotNull() {
-        Assertions.assertNotNull(configuration.latestFabricLoader());
+        Assertions.assertNotNull(CONFIGURATIONHANDLER.latestFabricLoader());
     }
 
     @Test
@@ -994,7 +1039,7 @@ class ConfigurationTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        String result = configuration.buildString(args.toString());
+        String result = CONFIGURATIONHANDLER.buildString(args.toString());
         Assertions.assertEquals(args.toString(), String.format("[%s]",result));
     }
 
@@ -1040,10 +1085,10 @@ class ConfigurationTest {
         if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
         if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
 
-        Assertions.assertTrue(configuration.writeConfigToFile(
+        Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/forge_tests",
-                configuration.buildString(clientMods.toString()),
-                configuration.buildString(copyDirs.toString()),
+                CONFIGURATIONHANDLER.buildString(clientMods.toString()),
+                CONFIGURATIONHANDLER.buildString(copyDirs.toString()),
                 true,
                 javaPath,
                 "1.16.5",
@@ -1102,10 +1147,10 @@ class ConfigurationTest {
         if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
         if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
 
-        Assertions.assertTrue(configuration.writeConfigToFile(
+        Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/fabric_tests",
-                configuration.buildString(clientMods.toString()),
-                configuration.buildString(copyDirs.toString()),
+                CONFIGURATIONHANDLER.buildString(clientMods.toString()),
+                CONFIGURATIONHANDLER.buildString(copyDirs.toString()),
                 true,
                 javaPath,
                 "1.16.5",

@@ -50,8 +50,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  */
 class CurseCreateModpackTest {
 
-    private final CurseCreateModpack curseCreateModpack;
-    private final LocalizationManager localizationManager;
+    private final CurseCreateModpack CURSECREATEMODPACK;
+    private final LocalizationManager LOCALIZATIONMANAGER;
 
     CurseCreateModpackTest() {
         try {
@@ -59,35 +59,35 @@ class CurseCreateModpackTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        localizationManager = new LocalizationManager();
-        localizationManager.init();
-        curseCreateModpack = new CurseCreateModpack(localizationManager);
+        LOCALIZATIONMANAGER = new LocalizationManager();
+        LOCALIZATIONMANAGER.init();
+        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
     }
 
     @Test
     void getsetProjectNameTest() {
-        curseCreateModpack.setProjectName(238298);
-        Assertions.assertEquals("Vanilla Forge", curseCreateModpack.getProjectName());
-        curseCreateModpack.setProjectName(999999);
-        Assertions.assertEquals("999999", curseCreateModpack.getProjectName());
+        CURSECREATEMODPACK.setProjectName(238298);
+        Assertions.assertEquals("Vanilla Forge", CURSECREATEMODPACK.getProjectName());
+        CURSECREATEMODPACK.setProjectName(999999);
+        Assertions.assertEquals("999999", CURSECREATEMODPACK.getProjectName());
     }
 
     @Test
     void getsetFileNameAndDiskNameTest() {
-        curseCreateModpack.setFileNameAndDiskName(238298,3174854);
-        Assertions.assertEquals("Vanilla Forge 1.16.5", curseCreateModpack.getFileName());
-        Assertions.assertEquals("Vanilla Forge 1.16.5-1.0.zip", curseCreateModpack.getFileDiskName());
-        curseCreateModpack.setFileNameAndDiskName(999999,9999999);
-        Assertions.assertEquals("9999999", curseCreateModpack.getFileName());
-        Assertions.assertEquals("9999999", curseCreateModpack.getFileDiskName());
+        CURSECREATEMODPACK.setFileNameAndDiskName(238298,3174854);
+        Assertions.assertEquals("Vanilla Forge 1.16.5", CURSECREATEMODPACK.getFileName());
+        Assertions.assertEquals("Vanilla Forge 1.16.5-1.0.zip", CURSECREATEMODPACK.getFileDiskName());
+        CURSECREATEMODPACK.setFileNameAndDiskName(999999,9999999);
+        Assertions.assertEquals("9999999", CURSECREATEMODPACK.getFileName());
+        Assertions.assertEquals("9999999", CURSECREATEMODPACK.getFileDiskName());
     }
 
     @Test
     void setModloaderCaseTest() {
         String forge = "fOrGe";
         String fabric = "fAbRiC";
-        Assertions.assertEquals("Forge", curseCreateModpack.setModloaderCase(forge));
-        Assertions.assertEquals("Fabric", curseCreateModpack.setModloaderCase(fabric));
+        Assertions.assertEquals("Forge", CURSECREATEMODPACK.setModloaderCase(forge));
+        Assertions.assertEquals("Fabric", CURSECREATEMODPACK.setModloaderCase(fabric));
     }
 
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ResultOfMethodCallIgnored"})
@@ -102,7 +102,7 @@ class CurseCreateModpackTest {
                 .fileWithID(fileID))
                 .displayName();
         String modpackDir = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
-        Assertions.assertTrue(curseCreateModpack.curseForgeModpack(modpackDir, projectID, fileID));
+        Assertions.assertTrue(CURSECREATEMODPACK.curseForgeModpack(modpackDir, projectID, fileID));
         String deleteFile = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
         if (new File(deleteFile).isDirectory()) {
             Path pathToBeDeleted = Paths.get(deleteFile);
@@ -140,10 +140,10 @@ class CurseCreateModpackTest {
                 .files()
                 .fileWithID(fileID))
                 .displayName();
-        curseCreateModpack.setProjectName(238298);
-        curseCreateModpack.setFileNameAndDiskName(238298,3174854);
+        CURSECREATEMODPACK.setProjectName(238298);
+        CURSECREATEMODPACK.setFileNameAndDiskName(238298,3174854);
         String modpackDir = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
-        curseCreateModpack.initializeModpack(modpackDir, projectID, fileID);
+        CURSECREATEMODPACK.initializeModpack(modpackDir, projectID, fileID);
         Assertions.assertTrue(new File(String.format("./backend/test/resources/forge_tests/%s", projectName)).isDirectory());
         Assertions.assertTrue(new File(String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName)).isDirectory());
     }
@@ -153,7 +153,7 @@ class CurseCreateModpackTest {
     void downloadModsTest() throws IOException {
         String modpackDir = "./backend/test/resources/forge_tests";
         Files.copy(Paths.get("./backend/test/resources/testresources/manifest.json"), Paths.get("./backend/test/resources/forge_tests/manifest.json"), REPLACE_EXISTING);
-        curseCreateModpack.downloadMods(modpackDir);
+        CURSECREATEMODPACK.downloadMods(modpackDir);
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/BetterTitleScreen-1.16.4-1.10.2.jar").exists());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/jei-professions-1.0.0-1.16.4.jar").exists());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/ftb-backups-2.1.1.6.jar").exists());
@@ -171,7 +171,7 @@ class CurseCreateModpackTest {
     @Test
     void copyOverrideTest() throws IOException {
         String modpackDir = "./backend/test/resources/overridestest";
-        curseCreateModpack.copyOverride(modpackDir);
+        CURSECREATEMODPACK.copyOverride(modpackDir);
         Assertions.assertTrue(new File("./backend/test/resources/overridestest/config").isDirectory());
         Assertions.assertTrue(new File("./backend/test/resources/overridestest/defaultconfigs").isDirectory());
         Assertions.assertTrue(new File("./backend/test/resources/overridestest/mods").isDirectory());
@@ -258,7 +258,7 @@ class CurseCreateModpackTest {
     @Test
     void checkCurseForgeDirTest() {
         String modpackdir = "./backend/test/resources/forge_tests/overrides";
-        Assertions.assertFalse(curseCreateModpack.checkCurseForgeDir(modpackdir));
+        Assertions.assertFalse(CURSECREATEMODPACK.checkCurseForgeDir(modpackdir));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -266,7 +266,7 @@ class CurseCreateModpackTest {
     void unzipArchiveTest() throws IOException {
         String modpackDir = "backend/test/resources/curseforge_tests";
         String zipFile = "backend/test/resources/curseforge_tests/modpack.zip";
-        curseCreateModpack.unzipArchive(zipFile, modpackDir);
+        CURSECREATEMODPACK.unzipArchive(zipFile, modpackDir);
         Assertions.assertTrue(new File("./backend/test/resources/curseforge_tests/manifest.json").exists());
         Assertions.assertTrue(new File("./backend/test/resources/curseforge_tests/modlist.html").exists());
         Assertions.assertTrue(new File("./backend/test/resources/curseforge_tests/overrides").isDirectory());

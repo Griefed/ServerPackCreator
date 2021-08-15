@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.api.services;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import de.griefed.serverpackcreator.Configuration;
+import de.griefed.serverpackcreator.ConfigurationHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,11 +67,11 @@ public class ConfigurationService {
     @NotEmpty
     private String includeZipCreation;
 
-    private final Configuration CONFIGURATION;
+    private final ConfigurationHandler CONFIGURATIONHANDLER;
 
     @Autowired
-    ConfigurationService(Configuration injectedConfiguration) {
-        this.CONFIGURATION = injectedConfiguration;
+    ConfigurationService(ConfigurationHandler injectedConfigurationHandler) {
+        this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
     }
 
     public void setConfig(File configurationFile) {
@@ -96,7 +96,7 @@ public class ConfigurationService {
 
     private void setClientMods(Config config) {
         if (config.getStringList("clientMods").isEmpty()) {
-            this.clientMods = CONFIGURATION.getFallbackModsList();
+            this.clientMods = CONFIGURATIONHANDLER.getFallbackModsList();
         } else {
             this.clientMods = config.getStringList("clientMods");
         }
@@ -123,7 +123,7 @@ public class ConfigurationService {
     }
 
     private void setJavaPath(Config config) {
-        this.javaPath = CONFIGURATION.checkJavaPath(config.getString("javaPath"));
+        this.javaPath = CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath"));
     }
 
     public String getMinecraftVersion() {
