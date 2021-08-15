@@ -6,6 +6,7 @@ on:
       - 'main'
       - 'master'
       - 'develop'
+      - 'webservice'
     tags:
       - .*.*.*-*
   workflow_dispatch:
