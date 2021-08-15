@@ -2,11 +2,6 @@ name: Create GitHub Release after GitLab tag mirror
 
 on:
   push:
-    branches-ignore:
-      - 'alpha'
-      - 'beta'
-      - 'webservice'
-      - 'develop'
     tags:
       - '!.*.*.*-*'
       - .*.*.*
