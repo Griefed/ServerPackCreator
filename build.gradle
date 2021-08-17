@@ -105,6 +105,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+
     // Mention test result in logs
     testLogging {
         events "passed",
