@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import net.fabricmc.installer.util.LauncherMeta;
@@ -64,8 +65,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 9. {@link #run(File, ConfigurationModel)}<br>
  * 10.{@link #cleanupEnvironment(String)}<br>
  * 11.{@link #copyStartScripts(String, String, boolean)}<br>
- * 12.{@link #copyFiles(String, List, List)}<br>
- * 13.{@link #excludeClientMods(String, List)}<br>
+ * 12.{@link #copyFiles(String, List, List, String)}<br>
+ * 13.{@link #excludeClientMods(String, List, String)}<br>
  * 14.{@link #copyIcon(String)}<br>
  * 15.{@link #copyProperties(String)}<br>
  * 16.{@link #installServer(String, String, String, String, String)}<br>
@@ -100,6 +101,9 @@ public class ServerPackHandler {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final AddonsHandler ADDONSHANDLER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
+
+    private Properties serverpackcreatorproperties;
+
 
     /**
      * <strong>Constructor</strong><p>
@@ -137,6 +141,13 @@ public class ServerPackHandler {
             this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
+        }
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
         }
 
     }
@@ -206,7 +217,7 @@ public class ServerPackHandler {
      * Create a server pack if the check of the configuration file was successfull.<p>
      * Calls<br>
      * {@link #cleanupEnvironment(String)} to delete any previously generated server packs or ZIP-archives thereof.<br>
-     * {@link #copyFiles(String, List, List)} to copy all specified directories and mods, excluding clientside-only mods,
+     * {@link #copyFiles(String, List, List, String)} to copy all specified directories and mods, excluding clientside-only mods,
      * to the server pack.<br>
      * {@link #copyStartScripts(String, String, boolean)} to copy the start scripts for the specified modloader to the
      * server pack.<br>
@@ -231,7 +242,7 @@ public class ServerPackHandler {
             cleanupEnvironment(configurationModel.getModpackDir());
 
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods());
+            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
 
             // Copy start scripts for specified modloader from server_files to server pack.
             copyStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts());
@@ -414,14 +425,14 @@ public class ServerPackHandler {
      * server pack directory.
      * If a <code>source/file;destination/file</code>-combination is provided, the specified source-file is copied to
      * the specified destination-file.
-     * Calls {@link #excludeClientMods(String, List)} to generate a list of all mods to copy to server pack, excluding
+     * Calls {@link #excludeClientMods(String, List, String)} to generate a list of all mods to copy to server pack, excluding
      * clientside-only mods.
      * @author Griefed
      * @param modpackDir String. Files and directories are copied into the server_pack directory inside the modpack directory.
      * @param directoriesToCopy String List. All directories and files therein to copy to the server pack.
      * @param clientMods String List. List of clientside-only mods to exclude from the server pack.
      */
-    void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods) {
+    void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion) {
 
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
@@ -489,7 +500,7 @@ public class ServerPackHandler {
 
             } else if (directory.startsWith("mods") && clientMods.size() > 0) {
 
-                List<String> listOfFiles = excludeClientMods(clientDir, clientMods);
+                List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
 
                 try {
                     Files.createDirectories(Paths.get(serverDir));
@@ -548,22 +559,33 @@ public class ServerPackHandler {
     }
 
     /**
-     * Generates a list of all mods to include in the server pack excluding clientside-only mods.
+     * Generates a list of all mods to include in the server pack excluding clientside-only mods. Automatically detects
+     * clientside-only mods for Minecraft 1.13+, if the mods <code>mods.toml</code>-file is correctly set up.
      * @author Griefed
      * @param modsDir String. The mods-directory of the modpack of which to generate a list of all it's contents.
      * @param clientMods List String. A list of all clientside-only mods.
      * @return List String. A list of all mods to include in the server pack.
      */
-    List<String> excludeClientMods(String modsDir, List<String> clientMods) {
+    List<String> excludeClientMods(String modsDir, List<String> clientMods, String minecraftVersion) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.excludeclientmods"));
 
-        File[] listModsInModpack = new File(modsDir).listFiles();
+        File[] filesInModsDir = new File(modsDir).listFiles();
+        assert filesInModsDir != null;
+
         List<String> modsInModpack = new ArrayList<>();
+        List<String> modsDelta = new ArrayList<>();
+
+        String[] split = minecraftVersion.split("\\.");
+
+        if (Integer.parseInt(split[1]) > 12) {
+            modsDelta.addAll(scanTomls(filesInModsDir));
+        } else if (Integer.parseInt(split[1]) < 13) {
+            modsDelta.addAll(scanAnnotations(filesInModsDir));
+        }
 
         try {
-            assert listModsInModpack != null;
-            for (File mod : listModsInModpack) {
-                if (mod.isFile()) {
+            for (File mod : filesInModsDir) {
+                if (mod.isFile() && mod.toString().endsWith("jar")) {
                     modsInModpack.add(mod.getAbsolutePath());
                 }
             }
@@ -571,12 +593,29 @@ public class ServerPackHandler {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.excludeclientmods"), np);
         }
 
-        for (int iclient = 0; iclient < clientMods.size(); iclient++) {
+        if (!clientMods.get(0).equals("")) {
+            for (int iclient = 0; iclient < clientMods.size(); iclient++) {
 
-            int i = iclient;
+                int i = iclient;
 
-            modsInModpack.removeIf(n -> (n.contains(clientMods.get(i))));
+                if (modsInModpack.removeIf(n -> (n.contains(clientMods.get(i))))) {
+                    // TODO: Replace with lang key
+                    LOG.debug("Removed from mods list: " + clientMods.get(i));
+                }
 
+            }
+        }
+
+        if (modsDelta != null && modsDelta.size() > 0) {
+            for (int iclient = 0; iclient < modsDelta.size(); iclient++) {
+
+                int i = iclient;
+
+                if (modsInModpack.removeIf(n -> (n.replace("\\", "/").contains(modsDelta.get(i))))) {
+                    // TODO: Replace with lang key
+                    LOG.debug("Automatically excluding mod: " + modsDelta.get(i));
+                }
+            }
         }
 
         return modsInModpack;
@@ -1212,5 +1251,219 @@ public class ServerPackHandler {
         } else {
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
         }
+    }
+
+    /**
+     * Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.<br>
+     * If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br>
+     * If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER</code>, it is added.<br>
+     * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
+     * If no sideness can be found for a given mod, it is added to prevent false positives.
+     * @author Griefed
+     * @param filesInModsDir A list of in which to check the <code>mods.toml</code>-files.
+     * @return List String. List of mods not to include in server pack based on mods.toml-configuration.
+     */
+    private List<String> scanTomls(File[] filesInModsDir) {
+
+        List<String> serverMods = new ArrayList<>();
+        List<String> modsDelta = new ArrayList<>();
+
+        for (File mod : filesInModsDir) {
+            if (mod.toString().endsWith("jar")) {
+
+                try {
+
+                    String modToCheck = mod.toString().replace("\\", "/");
+                    URL urlToToml = new URL(String.format("jar:file:%s!/META-INF/mods.toml", modToCheck));
+                    InputStream inputStream = urlToToml.openStream();
+                    Toml modToml = new Toml().read(inputStream);
+                    String modId = modToml.getString("mods[0].modId");
+
+                    // Check whether the sideness is specified in [[mods]]
+                    try {
+                        if (modToml.getString("mods[0].side").toLowerCase().matches("(server|both)")) {
+
+                            if (!serverMods.contains(modId)) {
+
+                                // TODO: Replace with lang key
+                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                serverMods.add(modId);
+                            }
+
+                        }
+                    } catch (NullPointerException ignored) {
+                    }
+
+                    if (modToml.getList("dependencies." + modId) != null) {
+                        for (int i = 0; i < modToml.getList("dependencies." + modId).size(); i++) {
+
+                            // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
+                            try {
+                                if (modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
+
+                                    /*
+                                     * If Forge|Minecraft are listed as dependencies, but no sideness is specified, we need to add this mod just in case,
+                                     * so we do not exclude any mods which MAY need to be on the server.
+                                     */
+                                    if (modToml.getString("dependencies." + modId + "[" + i + "].side") == null) {
+
+                                        if (!serverMods.contains(modId)) {
+
+                                            // TODO: Replace with lang key
+                                            LOG.debug("Adding modId to list of server mods: " + modId);
+                                            serverMods.add(modId);
+                                        }
+                                    }
+
+                                    /*
+                                     * If Forge|Minecraft sideness is BOTH|SERVER, add the mod to the list.
+                                     */
+                                    if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+
+                                        if (!serverMods.contains(modId)) {
+
+                                            // TODO: Replace with lang key
+                                            LOG.debug("Adding modId to list of server mods: " + modId);
+                                            serverMods.add(modId);
+                                        }
+                                    }
+
+                                } else {
+                                    /*
+                                     * I know this looks stupid. If a mod does not specify BOTH|SERVER in either of the Forge or Minecraft dependencies,
+                                     * and NO sideness was detected in [[mods]], we need to add this mod just in case, so we do not exclude any mods
+                                     * which MAY need to be on the server.
+                                     */
+                                    if (!serverMods.contains(modId) && modToml.getString("mods[0].side") == null) {
+
+                                        // TODO: Replace with lang key
+                                        LOG.debug("Adding modId to list of server mods: " + modId);
+                                        serverMods.add(modId);
+                                    }
+                                }
+
+                            } catch (NullPointerException ignored) {
+                            }
+
+                            /*
+                             * Add every dependency of the mod we are currently checking, which specifies BOTH|SERVER as their sideness, to the list.
+                             */
+                            try {
+
+                                if (!modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
+                                    if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+
+                                        if (!serverMods.contains(modToml.getString("dependencies." + modId + "[" + i + "].modId"))) {
+
+                                            // TODO: Replace with lang key
+                                            LOG.debug("Adding modId to list of server mods: " + modToml.getString("dependencies." + modId + "[" + i + "].modId"));
+                                            serverMods.add(modToml.getString("dependencies." + modId + "[" + i + "].modId"));
+                                        }
+                                    }
+                                }
+
+                            } catch (NullPointerException ignored) {
+                            }
+
+                        }
+                    }
+
+                    /*
+                     * If sideness is neither specified in [[mods]] and no dependencies exist, we need to add this mod just in case, so we do
+                     * not exclude any mods which MAY need to be on the server.
+                     */
+                    if (modToml.getString("mods[0].side") == null) {
+                        if (modToml.getList("dependencies." + modId) == null) {
+
+                            if (!serverMods.contains(modId)) {
+
+                                // TODO: Replace with lang key
+                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                serverMods.add(modId);
+                            }
+                        }
+
+                    }
+
+                    inputStream.close();
+
+                } catch (IOException ignored) {
+                }
+
+            }
+        }
+
+        for (File mod : filesInModsDir) {
+            try {
+
+                String modToCheck = mod.toString().replace("\\", "/");
+                URL urlToToml = new URL(String.format("jar:file:%s!/META-INF/mods.toml", modToCheck));
+                InputStream inputStream = urlToToml.openStream();
+                Toml modToml = new Toml().read(inputStream);
+                boolean addToDelta = true;
+
+                for (String modId : serverMods) {
+
+                    if (modToml.getString("mods[0].modId").toLowerCase().matches(modId)) {
+                        addToDelta = false;
+                    }
+
+                }
+
+                if (addToDelta) {
+                    modsDelta.add(modToCheck);
+                }
+
+                inputStream.close();
+            } catch (IOException ignored) {
+            }
+        }
+
+        return modsDelta;
+    }
+
+    private List<String> scanAnnotations(File[] filesInModsDir) {
+
+        LOG.info("Scanning for 1.12.2 and before not yet implemented.");
+
+        List<String> serverMods = new ArrayList<>();
+        List<String> modsDelta = new ArrayList<>();
+
+/*        for (File mod : filesInModsDir) {
+            if (mod.toString().endsWith("jar")) {
+
+                try {
+
+                } catch(IOException ignored) {
+
+                }
+
+            }
+        }
+
+        for (File mod : filesInModsDir) {
+            try {
+
+                String modToCheck = mod.toString().replace("\\", "/");
+
+                boolean addToDelta = true;
+
+                for (String modId : serverMods) {
+
+                    if () {
+                        addToDelta = false;
+                    }
+
+                }
+
+                if (addToDelta) {
+                    modsDelta.add(modToCheck);
+                }
+
+            } catch (IOException ignored) {
+            }
+        }*/
+
+        return modsDelta;
     }
 }
