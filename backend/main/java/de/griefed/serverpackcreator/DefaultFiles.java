@@ -33,6 +33,10 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+/*import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.SQLException;*/
 import java.util.Objects;
 
 /**
@@ -110,6 +114,7 @@ public class DefaultFiles {
     private final File MANIFEST_FORGE = new File("forge-manifest.json");
     private final File MANIFEST_FABRIC = new File("fabric-manifest.xml");
     private final File MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
+    //private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
 
     /**
      * Getter for serverpackcreator.conf.
@@ -277,6 +282,13 @@ public class DefaultFiles {
         return MANIFEST_FABRIC_INSTALLER;
     }
 
+    /*
+     * Getter for the database containing a list of modIds.
+     * @return File. Returns the database-file.
+     */
+    /*public File getSERVERPACKCREATOR_DATABASE() {
+        return SERVERPACKCREATOR_DATABASE;
+    }*/
 
     /**
      * Calls individual methods which check for existence of default files. Only this method should be called to check
@@ -309,6 +321,8 @@ public class DefaultFiles {
         refreshManifestFile(getForgeManifestUrl(), getMANIFEST_FORGE());
         refreshManifestFile(getFabricManifestUrl(), getMANIFEST_FABRIC());
         refreshManifestFile(getFabricInstallerManifestUrl(), getMANIFEST_FABRIC_INSTALLER());
+
+        //checkDatabase();
 
         boolean doesConfigExist         = checkForConfig();
         boolean doesFabricLinuxExist    = checkForFile(getFabricLinuxFile());
@@ -440,15 +454,12 @@ public class DefaultFiles {
                 LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest"), fileName), ex);
 
                 if (!fileName.exists()) {
-                    // TODO: New lang key
                     LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.creating"), fileName));
 
                     if (fileName.createNewFile()) {
-                        // TODO: New lang key
                         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.created"), fileName));
 
                     } else {
-                        // TODO: New lang key
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.manifest.create"), fileName));
                     }
                 }
@@ -464,8 +475,33 @@ public class DefaultFiles {
             downloadManifestOutputStreamChannel.close();
 
         } catch (Exception ex) {
-            // TODO: New lang key
+
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.manifest.download"), fileName), ex);
         }
     }
+
+    /*
+     * Ensures serverpackcreator.db exists and checks whether all tables required are present in the database. If the database
+     * does not exist, it is created.
+     * @author Griefed
+     */
+    /*private void checkDatabase() {
+
+        try {
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + getSERVERPACKCREATOR_DATABASE());
+
+            if (connection != null) {
+                DatabaseMetaData databaseMetaData = connection.getMetaData();
+                LOG.debug("Database driver name: " + databaseMetaData.getDriverName());
+                LOG.debug("Database driver version: " + databaseMetaData.getDriverVersion());
+                LOG.debug("Database product name: " + databaseMetaData.getDatabaseProductName());
+                LOG.debug("Database product version: " + databaseMetaData.getDatabaseProductVersion());
+                connection.close();
+            }
+
+        } catch (SQLException ex) {
+            LOG.error("Error creating/accessing clientmods-database.", ex);
+        }
+
+    }*/
 }
