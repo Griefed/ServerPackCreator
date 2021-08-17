@@ -140,14 +140,38 @@ public class ConfigurationHandler {
      * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished,ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings,EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft,JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu,preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales,WorldNameRandomizer</code>
      */
     public void setFALLBACKMODSLIST() {
-        this.FALLBACKMODSLIST = Arrays.asList(serverpackcreatorproperties.getProperty(
-                "de.griefed.serverpackcreator.configuration.fallbackmodslist",
-                "AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished," +
-                        "ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings," +
-                        "EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft," +
-                        "JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu," +
-                        "preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales," +
-                        "WorldNameRandomizer").split(","));
+        if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
+
+            this.FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(
+                    "AmbientSounds","BackTools","BetterAdvancement","BetterFoliage","BetterPing","BetterPlacement","Blur","cherished",
+                            "ClientTweaks","Controlling","CTM","customdiscordrpc","CustomMainMenu","DefaultOptions","durability","DynamicSurroundings",
+                            "EiraMoticons","FullscreenWindowed","itemzoom","itlt","jeiintegration","jei-professions","just-enough-harvestcraft",
+                            "JustEnoughResources","keywizard","modnametooltip","MouseTweaks","multihotbar-","Neat","OldJavaWarning","PackMenu",
+                            "preciseblockplacing","ResourceLoader","SimpleDiscordRichPresence","SpawnerFix","timestamps","TipTheScales",
+                            "WorldNameRandomizer"));
+
+            LOG.debug("Fallbackmodslist property null. Using fallback: " + FALLBACKMODSLIST);
+
+        } else if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
+
+            this.FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(serverpackcreatorproperties.getProperty(
+                    "de.griefed.serverpackcreator.configuration.fallbackmodslist",
+                    "AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished," +
+                            "ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings," +
+                            "EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft," +
+                            "JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu," +
+                            "preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales," +
+                            "WorldNameRandomizer").split(",")));
+
+            LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
+
+        } else {
+
+            this.FALLBACKMODSLIST = Collections.singletonList((serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
+
+            LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
+        }
+
     }
 
     /**
