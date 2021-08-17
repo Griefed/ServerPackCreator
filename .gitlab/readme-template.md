@@ -621,3 +621,20 @@ Build with:
 `gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe`
 
 ---
+
+# 9. Third-Party libraries used in this project
+
+| Library | License |
+| :---- | :---- |
+[Typesafe](https://github.com/lightbend/config) | [License](backend/main/resources/third-party-licenses/Typesafe-Config-License)
+[Fasterxml Jackson Core](https://github.com/FasterXML/jackson-core) | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Core-License)
+[Fasterxml Jackson Databind](https://github.com/FasterXML/jackson) | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Databind-License)
+[Apache commons-io](https://github.com/apache/commons-io) | [License](backend/main/resources/third-party-licenses/Apache-Commons-IO-License)
+[Lingala zip4j](https://github.com/srikanth-lingala/zip4j) | [License](backend/main/resources/third-party-licenses/Lingala-zip4j-License)
+[moandjiezana toml4j](https://github.com/mwanji/toml4j) | [License](backend/main/resources/third-party-licenses/Moandjienza-toml4j-License)
+[FabricMC fabric-installer](https://github.com/FabricMC/fabric-installer) | [License](backend/main/resources/third-party-licenses/FabricMC-fabric-installer-License)
+[TheRandomLabs CurseAPI](https://github.com/TheRandomLabs/CurseAPI) | [License](backend/main/resources/third-party-licenses/TheRandomLabs-CurseAPI-License)
+[Xerial SQLite JDBC](https://github.com/xerial/sqlite-jdbc) | [License](backend/main/resources/third-party-licenses/Xerial-SQLite-JDBC-License)
+[Vincenzopalazzo Material-UI-Swing](https://github.com/vincenzopalazzo/material-ui-swing) | [License](backend/main/resources/third-party-licenses/Vincenzopalazzo-Material-UI-Swing)
+[Springframework Spring-Boot](https://github.com/spring-projects/spring-framework) | [License](backend/main/resources/third-party-licenses/Springframework-Spring-Boot-License)
+[Apache log4j](https://github.com/apache/log4j) | [License](backend/main/resources/third-party-licenses/Apache-log4j-License)
