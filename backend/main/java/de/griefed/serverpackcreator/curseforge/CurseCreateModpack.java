@@ -197,6 +197,13 @@ public class CurseCreateModpack {
         return returnLoader;
     }
 
+    public ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
+    }
+
     /**
      * Acquires the names of the CurseForge project and file. Should no filename exist, we will use the fileDiskName as
      * fallback to ensure we always have a folder-structure of projectName/FileDisplayName at hand in which the modpack
@@ -264,10 +271,7 @@ public class CurseCreateModpack {
 
         try {
             byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-            CurseModpack modpack = objectMapper.readValue(jsonData, CurseModpack.class);
+            CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
 
             String[] minecraftLoaderVersions = modpack.getMinecraft().toString().split(",");
             String[] modLoaderVersion = minecraftLoaderVersions[1].replace("[", "").replace("]", "").split("-");
