@@ -190,5 +190,7 @@ backend/test/resources/forge_tests/server_pack.zip
 /server-packs
 /log4j2.xml
 /addons
-/testruns
+/testruns/*
+!/testruns
 /serverpackcreator.properties
+/serverpackcreator.db
