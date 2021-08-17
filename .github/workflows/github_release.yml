@@ -3,7 +3,9 @@ name: Create GitHub Release after GitLab tag mirror
 on:
   push:
     tags:
-      - \d+\.\d+\.\d+
+      - '!.*.*.*-*'
+      - .*.*.*
+  workflow_dispatch:
 
 jobs:
   release:
@@ -70,6 +72,7 @@ jobs:
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
+
       # UPLOAD ASSETS TO RELEASE
       - name: Upload Release Asset Main Jar
         id: upload-release-asset
