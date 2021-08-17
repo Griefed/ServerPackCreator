@@ -185,7 +185,7 @@ public class LocalizationManager {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
             langProperties.load(bufferedReader);
 
-            LOG.debug(String.format("langProperties = %s", langProperties));
+            LOG.debug(String.format("serverpackcreator.properties = %s", langProperties));
 
         } catch (Exception ex) {
             LOG.error(ex);
