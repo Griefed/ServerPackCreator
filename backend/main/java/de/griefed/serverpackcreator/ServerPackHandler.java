@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -79,7 +81,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 23.{@link #downloadFabricJar(String)}<br>
  * 24.{@link #latestFabricInstaller()}<br>
  * 25.{@link #downloadForgeJar(String, String, String)}<br>
- * 27.{@link #cleanUpServerPack(File, File, String, String, String, String)}
+ * 27.{@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
+ * 28.{@link #scanTomls(File[])}
  * <p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
@@ -211,6 +214,13 @@ public class ServerPackHandler {
      */
     public File getFabricLinuxFile() {
         return FILE_FABRIC_LINUX;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
     }
 
     /**
@@ -431,6 +441,7 @@ public class ServerPackHandler {
      * @param modpackDir String. Files and directories are copied into the server_pack directory inside the modpack directory.
      * @param directoriesToCopy String List. All directories and files therein to copy to the server pack.
      * @param clientMods String List. List of clientside-only mods to exclude from the server pack.
+     * @param minecraftVersion String. The Minecraft version the modpack uses.
      */
     void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion) {
 
@@ -564,6 +575,7 @@ public class ServerPackHandler {
      * @author Griefed
      * @param modsDir String. The mods-directory of the modpack of which to generate a list of all it's contents.
      * @param clientMods List String. A list of all clientside-only mods.
+     * @param minecraftVersion String. The Minecraft version the modpack uses. Determines whether mods are scanned for sideness.
      * @return List String. A list of all mods to include in the server pack.
      */
     List<String> excludeClientMods(String modsDir, List<String> clientMods, String minecraftVersion) {
@@ -579,8 +591,6 @@ public class ServerPackHandler {
 
         if (Integer.parseInt(split[1]) > 12) {
             modsDelta.addAll(scanTomls(filesInModsDir));
-        } else if (Integer.parseInt(split[1]) < 13) {
-            modsDelta.addAll(scanAnnotations(filesInModsDir));
         }
 
         try {
@@ -606,7 +616,7 @@ public class ServerPackHandler {
             }
         }
 
-        if (modsDelta != null && modsDelta.size() > 0) {
+        if (modsDelta.size() > 0) {
             for (int iclient = 0; iclient < modsDelta.size(); iclient++) {
 
                 int i = iclient;
@@ -1418,51 +1428,6 @@ public class ServerPackHandler {
             } catch (IOException ignored) {
             }
         }
-
-        return modsDelta;
-    }
-
-    private List<String> scanAnnotations(File[] filesInModsDir) {
-
-        LOG.info("Scanning for 1.12.2 and before not yet implemented.");
-
-        List<String> serverMods = new ArrayList<>();
-        List<String> modsDelta = new ArrayList<>();
-
-/*        for (File mod : filesInModsDir) {
-            if (mod.toString().endsWith("jar")) {
-
-                try {
-
-                } catch(IOException ignored) {
-
-                }
-
-            }
-        }
-
-        for (File mod : filesInModsDir) {
-            try {
-
-                String modToCheck = mod.toString().replace("\\", "/");
-
-                boolean addToDelta = true;
-
-                for (String modId : serverMods) {
-
-                    if () {
-                        addToDelta = false;
-                    }
-
-                }
-
-                if (addToDelta) {
-                    modsDelta.add(modToCheck);
-                }
-
-            } catch (IOException ignored) {
-            }
-        }*/
 
         return modsDelta;
     }
