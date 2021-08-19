@@ -588,12 +588,16 @@ public class ServerPackHandler {
         List<String> modsInModpack = new ArrayList<>();
         List<String> autodiscoveredClientMods = new ArrayList<>();
 
-        String[] split = minecraftVersion.split("\\.");
+        if (serverpackcreatorproperties.get("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true")) {
 
-        if (Integer.parseInt(split[1]) > 12) {
-            autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
-        } else {
-            autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
+            String[] split = minecraftVersion.split("\\.");
+
+            if (Integer.parseInt(split[1]) > 12) {
+                autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
+            } else {
+                autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
+            }
+
         }
 
         try {
