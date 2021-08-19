@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
@@ -574,23 +575,29 @@ public class ServerPackHandler {
      * clientside-only mods for Minecraft 1.13+, if the mods <code>mods.toml</code>-file is correctly set up.
      * @author Griefed
      * @param modsDir String. The mods-directory of the modpack of which to generate a list of all it's contents.
-     * @param clientMods List String. A list of all clientside-only mods.
+     * @param userSpecifiedClientMods List String. A list of all clientside-only mods.
      * @param minecraftVersion String. The Minecraft version the modpack uses. Determines whether mods are scanned for sideness.
      * @return List String. A list of all mods to include in the server pack.
      */
-    List<String> excludeClientMods(String modsDir, List<String> clientMods, String minecraftVersion) {
+    List<String> excludeClientMods(String modsDir, List<String> userSpecifiedClientMods, String minecraftVersion) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.excludeclientmods"));
 
         File[] filesInModsDir = new File(modsDir).listFiles();
         assert filesInModsDir != null;
 
         List<String> modsInModpack = new ArrayList<>();
-        List<String> modsDelta = new ArrayList<>();
+        List<String> autodiscoveredClientMods = new ArrayList<>();
 
-        String[] split = minecraftVersion.split("\\.");
+        if (serverpackcreatorproperties.get("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true")) {
 
-        if (Integer.parseInt(split[1]) > 12) {
-            modsDelta.addAll(scanTomls(filesInModsDir));
+            String[] split = minecraftVersion.split("\\.");
+
+            if (Integer.parseInt(split[1]) > 12) {
+                autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
+            } else {
+                autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
+            }
+
         }
 
         try {
@@ -603,27 +610,27 @@ public class ServerPackHandler {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.excludeclientmods"), np);
         }
 
-        if (!clientMods.get(0).equals("")) {
-            for (int iclient = 0; iclient < clientMods.size(); iclient++) {
+        if (!userSpecifiedClientMods.get(0).equals("")) {
+            for (int m = 0; m < userSpecifiedClientMods.size(); m++) {
 
-                int i = iclient;
+                int i = m;
 
-                if (modsInModpack.removeIf(n -> (n.contains(clientMods.get(i))))) {
+                if (modsInModpack.removeIf(n -> (n.contains(userSpecifiedClientMods.get(i))))) {
                     // TODO: Replace with lang key
-                    LOG.debug("Removed from mods list: " + clientMods.get(i));
+                    LOG.debug("Removed user-specified mod from mods list as per input: " + userSpecifiedClientMods.get(i));
                 }
 
             }
         }
 
-        if (modsDelta.size() > 0) {
-            for (int iclient = 0; iclient < modsDelta.size(); iclient++) {
+        if (autodiscoveredClientMods.size() > 0) {
+            for (int m = 0; m < autodiscoveredClientMods.size(); m++) {
 
-                int i = iclient;
+                int i = m;
 
-                if (modsInModpack.removeIf(n -> (n.replace("\\", "/").contains(modsDelta.get(i))))) {
+                if (modsInModpack.removeIf(n -> (n.replace("\\", "/").contains(autodiscoveredClientMods.get(i))))) {
                     // TODO: Replace with lang key
-                    LOG.debug("Automatically excluding mod: " + modsDelta.get(i));
+                    LOG.debug("Automatically excluding mod: " + autodiscoveredClientMods.get(i));
                 }
             }
         }
@@ -1275,6 +1282,9 @@ public class ServerPackHandler {
      */
     private List<String> scanTomls(File[] filesInModsDir) {
 
+        // TODO: Replace with lang key
+        LOG.info("Scanning 1.13+ mods for sideness...");
+
         List<String> serverMods = new ArrayList<>();
         List<String> modsDelta = new ArrayList<>();
 
@@ -1425,6 +1435,165 @@ public class ServerPackHandler {
                 }
 
                 inputStream.close();
+            } catch (IOException ignored) {
+            }
+        }
+
+        return modsDelta;
+    }
+
+    private List<String> scanAnnotations(File[] filesInModsDir) {
+
+        // TODO: Replace with lang key
+        LOG.info("Scanning 1.12- mods for sideness...");
+
+        List<String> modDependencies = new ArrayList<>();
+        List<String> clientMods = new ArrayList<>();
+        List<String> modsDelta = new ArrayList<>();
+
+        for (File mod : filesInModsDir) {
+            if (mod.toString().endsWith("jar")) {
+
+                try {
+                    String modToCheck = mod.toString().replace("\\", "/");
+                    URL urlToJson = new URL(String.format("jar:file:%s!/META-INF/fml_cache_annotation.json", modToCheck));
+                    InputStream inputStream = urlToJson.openStream();
+                    JsonNode modJson = getObjectMapper().readTree(inputStream);
+                    String modId = null;
+
+                    //base of json
+                    for (JsonNode node : modJson) {
+
+                        try {
+                            // iterate though annotations
+                            for (JsonNode child : node.get("annotations")) {
+
+                                // Get the modId
+                                try {
+                                    if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
+                                        modId = child.get("values").get("modid").get("value").asText();
+                                    }
+                                } catch (NullPointerException ignored) {}
+
+                                // Add mod to list of clientmods if clientSideOnly is true
+                                try {
+                                    if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
+                                        if (!clientMods.contains(modId)) {
+                                            clientMods.add(modId);
+
+                                            // TODO: Replace with lang key
+                                            LOG.debug("Added clientMod: " + modId);
+                                        }
+                                    }
+                                } catch (NullPointerException ignored) {}
+
+                                // Get dependency modIds
+                                try {
+                                    if (!child.get("values").get("dependencies").get("value").asText().isEmpty()) {
+
+                                        if (child.get("values").get("dependencies").get("value").asText().contains(";")) {
+
+                                            String [] dependencies = child.get("values").get("dependencies").get("value").asText().split(";");
+
+                                            for (String dependency : dependencies) {
+
+                                                if (dependency.matches("(before:.*|after:.*|)")) {
+
+                                                    dependency = dependency.substring(dependency.lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
+
+                                                    if (!modDependencies.contains(dependency) && !dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
+                                                        modDependencies.add(dependency);
+
+                                                        // TODO: Replace with lang key
+                                                        LOG.debug("Added dependency " + dependency);
+                                                    }
+
+                                                }
+
+                                            }
+                                        } else {
+                                            if (child.get("values").get("dependencies").get("value").asText().matches("(before:.*|after:.*|)")) {
+
+                                                String dependency = child.get("values").get("dependencies").get("value").asText().substring(child.get("values").get("dependencies").get("value").asText().lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
+
+                                                if (!modDependencies.contains(dependency) && !dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
+                                                    modDependencies.add(dependency);
+
+                                                    // TODO: Replace with lang key
+                                                    LOG.debug("Added dependency " + dependency);
+                                                }
+
+                                            }
+                                        }
+
+                                    }
+                                } catch (NullPointerException ignored) {}
+
+                            }
+
+                        } catch (NullPointerException ignored) {}
+
+                    }
+
+                    inputStream.close();
+                } catch(IOException ignored) {}
+
+            }
+
+        }
+
+        for (String dependency : modDependencies) {
+
+            clientMods.removeIf(n -> (n.contains(dependency)));
+
+            // TODO: Replace with lang key
+            LOG.debug("Removing " + dependency + " from list of clientmods as it is a dependency for another mod.");
+        }
+
+        for (File mod : filesInModsDir) {
+            try {
+
+                String modToCheck = mod.toString().replace("\\", "/");
+                URL urlToJson = new URL(String.format("jar:file:%s!/META-INF/fml_cache_annotation.json", modToCheck));
+                InputStream inputStream = urlToJson.openStream();
+                JsonNode modJson = getObjectMapper().readTree(inputStream);
+                String modIdTocheck = null;
+
+                boolean addToDelta = false;
+
+                //base of json
+                for (JsonNode node : modJson) {
+
+                    try {
+                        // iterate though annotations
+                        for (JsonNode child : node.get("annotations")) {
+
+                            // Get the modId
+                            try {
+                                if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
+                                    modIdTocheck = child.get("values").get("modid").get("value").asText();
+                                }
+                            } catch (NullPointerException ignored) {}
+
+                            // Add mod to list of clientmods if clientSideOnly is true
+                            try {
+                                if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
+                                    if (clientMods.contains(modIdTocheck)) {
+                                        addToDelta = true;
+                                    }
+                                }
+                            } catch (NullPointerException ignored) {}
+
+                        }
+                    } catch (NullPointerException ignored) {}
+
+                }
+
+                if (addToDelta) {
+                    modsDelta.add(modToCheck);
+
+                }
+
             } catch (IOException ignored) {
             }
         }
