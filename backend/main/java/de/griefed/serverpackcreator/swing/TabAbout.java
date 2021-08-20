@@ -30,6 +30,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -85,7 +86,13 @@ public class TabAbout extends Component {
 
     private JComponent aboutPanel;
 
+    private JTextPane textPane;
+
     private JTextArea textArea;
+
+    private JButton buttonCreatePasteBin;
+    private JButton buttonOpenIssue;
+    private JButton buttonDiscord;
 
     private String configURL;
     private String serverpackcreatorlogURL;
@@ -119,7 +126,7 @@ public class TabAbout extends Component {
         constraints.gridwidth = 3;
 
         //About Panel
-        JTextPane textPane = new JTextPane();
+        textPane = new JTextPane();
         textPane.setEditable(false);
         textPane.setOpaque(false);
         textPane.setMinimumSize(new Dimension(getMaximumSize().width,520));
@@ -159,115 +166,136 @@ public class TabAbout extends Component {
         constraints.gridwidth = 1;
 
         //Button to upload log file to hastebin
-        JButton buttonCreatePasteBin = new JButton();
+        buttonCreatePasteBin = new JButton();
         buttonCreatePasteBin.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin"));
         buttonCreatePasteBin.setIcon(ICON_HASTEBIN);
         buttonCreatePasteBin.setPreferredSize(DIMENSION_MISC_BUTTON);
-        buttonCreatePasteBin.addActionListener(e -> {
-
-            textArea = new JTextArea();
-            textArea.setOpaque(false);
-            configURL = createHasteBinFromFile(FILE_CONFIG);
-            serverpackcreatorlogURL = createHasteBinFromFile(LOG_SERVERPACKCREATOR);
-
-            textAreaContent = String.format(
-                    "%s\n%s\n" +
-                    "%s\n%s\n" +
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.action"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.conf"),
-                    configURL,
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.spclog"),
-                    serverpackcreatorlogURL
-            );
-
-            textArea.setText(textAreaContent);
-
-            options = new String[] {
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.yes"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.clipboard"),
-            };
-
-            userResponse = JOptionPane.showOptionDialog(
-                    aboutPanel,
-                    textArea,
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE,
-                    ICON_HASTEBIN,
-                    options,
-                    options[0]
-            );
-
-            switch (userResponse) {
-                case 0:
-
-                    try {
-                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-
-                            Desktop.getDesktop().browse(URI.create(configURL));
-                            Desktop.getDesktop().browse(URI.create(serverpackcreatorlogURL));
-                        }
-                    } catch (IOException ex) {
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
-                    }
-                    break;
-
-                case 2:
-
-                    stringSelection = new StringSelection(textAreaContent);
-                    CLIPBOARD.setContents(stringSelection, null);
-                    break;
-
-                default:
-                    break;
-            }
-        });
+        buttonCreatePasteBin.addActionListener(this::createHasteBin);
         constraints.gridx = 0;
         constraints.gridy = 2;
         aboutPanel.add(buttonCreatePasteBin, constraints);
 
         //Button to open a new issue on GitHub
-        JButton buttonOpenIssue = new JButton();
+        buttonOpenIssue = new JButton();
         buttonOpenIssue.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.issue"));
         buttonOpenIssue.setIcon(ICON_ISSUE);
         buttonOpenIssue.setPreferredSize(DIMENSION_MISC_BUTTON);
-        buttonOpenIssue.addActionListener(e -> {
-
-            try {
-                if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
-                }
-            } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
-            }
-
-        });
+        buttonOpenIssue.addActionListener(this::openIssueLink);
         constraints.gridx = 1;
         constraints.gridy = 2;
         aboutPanel.add(buttonOpenIssue, constraints);
 
         //Button to open the invite link to the discord server
-        JButton buttonDiscord = new JButton();
+        buttonDiscord = new JButton();
         buttonDiscord.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.discord"));
         buttonDiscord.setIcon(ICON_PROSPER);
         buttonDiscord.setPreferredSize(DIMENSION_MISC_BUTTON);
-        buttonDiscord.addActionListener(e -> {
-
-            try {
-                if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    Desktop.getDesktop().browse(URI.create("https://discord.griefed.de"));
-                }
-            } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
-            }
-
-        });
+        buttonDiscord.addActionListener(this::openDiscordLink);
         constraints.gridx = 2;
         constraints.gridy = 2;
         aboutPanel.add(buttonDiscord, constraints);
 
         return aboutPanel;
+    }
+
+    /**
+     * Upon button-press, create HasteBins from the currently used config-file and latest serverpackcreator.log.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void createHasteBin(ActionEvent event) {
+
+        textArea = new JTextArea();
+        textArea.setOpaque(false);
+        configURL = createHasteBinFromFile(FILE_CONFIG);
+        serverpackcreatorlogURL = createHasteBinFromFile(LOG_SERVERPACKCREATOR);
+
+        textAreaContent = String.format(
+                "%s\n%s\n" +
+                        "%s\n%s\n" +
+                        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.action"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.conf"),
+                configURL,
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.spclog"),
+                serverpackcreatorlogURL
+        );
+
+        textArea.setText(textAreaContent);
+
+        options = new String[]{
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.yes"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.clipboard"),
+        };
+
+        userResponse = JOptionPane.showOptionDialog(
+                aboutPanel,
+                textArea,
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                ICON_HASTEBIN,
+                options,
+                options[0]
+        );
+
+        switch (userResponse) {
+            case 0:
+
+                try {
+                    if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+
+                        Desktop.getDesktop().browse(URI.create(configURL));
+                        Desktop.getDesktop().browse(URI.create(serverpackcreatorlogURL));
+                    }
+                } catch (IOException ex) {
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
+                }
+                break;
+
+            case 2:
+
+                stringSelection = new StringSelection(textAreaContent);
+                CLIPBOARD.setContents(stringSelection, null);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Upon button-press, open the GitHub issues link in the default-browser of the user.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void openIssueLink(ActionEvent event) {
+
+        try {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
+            }
+        } catch (IOException ex) {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
+        }
+
+    }
+
+    /**
+     * Upon button-press, open the Discord invite link in the default-browser of the user.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void openDiscordLink(ActionEvent event) {
+
+        try {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI.create("https://discord.griefed.de"));
+            }
+        } catch (IOException ex) {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("about.log.error.browser"), ex);
+        }
+
     }
 
     /**
@@ -344,5 +372,4 @@ public class TabAbout extends Component {
         }
 
     }
-
 }
