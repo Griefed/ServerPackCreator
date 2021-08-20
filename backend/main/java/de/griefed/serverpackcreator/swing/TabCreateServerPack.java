@@ -35,7 +35,10 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -141,6 +144,13 @@ public class TabCreateServerPack extends JComponent {
     private JScrollPane helpScrollPane;
 
     private JLabel labelGenerateServerPack;
+    private JLabel labelModpackDir;
+    private JLabel labelClientMods;
+    private JLabel labelCopyDirs;
+    private JLabel labelJavaPath;
+    private JLabel labelMinecraftVersion;
+    private JLabel labelModloader;
+    private JLabel labelModloaderVersion;
 
     private JTextField textModpackDir;
     private JTextField textClientMods;
@@ -172,6 +182,10 @@ public class TabCreateServerPack extends JComponent {
     private JFileChooser configChooser;
 
     private String chosenModloader;
+
+    private ButtonGroup modloaderGroup;
+    private JRadioButton forgeRadioButton;
+    private JRadioButton fabricRadioButton;
 
     /**
      * Getter for the chosen modloader from the JRadioButtons.
@@ -208,7 +222,7 @@ public class TabCreateServerPack extends JComponent {
         constraints.weightx = 0.7;
 
         //Label and textfield modpackDir
-        JLabel labelModpackDir = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir"));
+        labelModpackDir = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir"));
         labelModpackDir.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -222,7 +236,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(textModpackDir, constraints);
 
         //Label and textfield clientMods
-        JLabel labelClientMods = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods"));
+        labelClientMods = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods"));
         labelClientMods.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods.tip"));
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -236,7 +250,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(textClientMods, constraints);
 
         //Label and textfield copyDirs
-        JLabel labelCopyDirs = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs"));
+        labelCopyDirs = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs"));
         labelCopyDirs.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
         constraints.gridx = 0;
         constraints.gridy = 4;
@@ -250,7 +264,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(textCopyDirs, constraints);
 
         //Label and textfield javaPath
-        JLabel labelJavaPath = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath"));
+        labelJavaPath = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath"));
         labelJavaPath.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
         constraints.gridx = 0;
         constraints.gridy = 6;
@@ -264,7 +278,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(textJavaPath, constraints);
 
         //Label and textfield minecraftVersion
-        JLabel labelMinecraftVersion = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft"));
+        labelMinecraftVersion = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft"));
         labelMinecraftVersion.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft.tip"));
         constraints.gridx = 0;
         constraints.gridy = 8;
@@ -278,7 +292,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(textMinecraftVersion, constraints);
 
         //Label and textfield Modloader
-        JLabel labelModloader = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader"));
+        labelModloader = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader"));
         labelModloader.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader.tip"));
         constraints.gridx = 0;
         constraints.gridy = 10;
@@ -286,48 +300,32 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(labelModloader, constraints);
 
         //RadioButtons for Modloader selection.
-        ButtonGroup modloaderGroup = new ButtonGroup();
+        modloaderGroup = new ButtonGroup();
         constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
 
-        JRadioButton forgeRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge"),true);
+        forgeRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge"),true);
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.insets = new Insets(0,10,0,0);
         modloaderGroup.add(forgeRadioButton);
-        forgeRadioButton.addItemListener(e -> {
-            if (e.getStateChange()==ItemEvent.SELECTED) {
-                setChosenModloader("Forge");
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.selected"));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
-            } else if(e.getStateChange()==ItemEvent.DESELECTED) {
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.deselected"));
-            }
-        });
+        forgeRadioButton.addItemListener(this::setModloaderForge);
         createServerPackPanel.add(forgeRadioButton, constraints);
 
-        JRadioButton fabricRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric"),false);
+        fabricRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric"),false);
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.insets = new Insets(0,100,0,0);
         modloaderGroup.add(fabricRadioButton);
-        fabricRadioButton.addItemListener(e -> {
-            if (e.getStateChange()==ItemEvent.SELECTED) {
-                setChosenModloader("Fabric");
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.selected"));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
-            } else if (e.getStateChange()==ItemEvent.DESELECTED) {
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.deselected"));
-            }
-        });
+        fabricRadioButton.addItemListener(this::setModloaderFabric);
         createServerPackPanel.add(fabricRadioButton, constraints);
 
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridwidth = 2;
 
         //Label and textfield modloaderVersion
-        JLabel labelModloaderVersion = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion"));
+        labelModloaderVersion = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion"));
         labelModloaderVersion.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
         constraints.gridx = 0;
         constraints.gridy = 12;
@@ -397,35 +395,13 @@ public class TabCreateServerPack extends JComponent {
         buttonModpackDir.setMinimumSize(folderButtonDimension);
         buttonModpackDir.setPreferredSize(folderButtonDimension);
         buttonModpackDir.setMaximumSize(folderButtonDimension);
-        buttonModpackDir.addActionListener(e -> {
-            modpackDirChooser = new JFileChooser();
-
-            modpackDirChooser.setCurrentDirectory(new File("."));
-            modpackDirChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonmodpackdir.title"));
-            modpackDirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            modpackDirChooser.setAcceptAllFileFilterUsed(false);
-            modpackDirChooser.setMultiSelectionEnabled(false);
-            modpackDirChooser.setPreferredSize(chooserDimension);
-
-            if (modpackDirChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
-                try {
-                    textModpackDir.setText(modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
-
-                    LOG.info(String.format(
-                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonmodpack"),
-                            modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
-
-                } catch (IOException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonmodpack"),ex);
-                }
-            }
-        });
-        buttonModpackDir.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        buttonModpackDir.addActionListener(this::selectModpackDirectory);
+        buttonModpackDir.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent event) {
                 buttonModpackDir.setContentAreaFilled(true);
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent event) {
                 buttonModpackDir.setContentAreaFilled(false);
             }
         });
@@ -441,52 +417,13 @@ public class TabCreateServerPack extends JComponent {
         buttonClientMods.setMinimumSize(folderButtonDimension);
         buttonClientMods.setPreferredSize(folderButtonDimension);
         buttonClientMods.setMaximumSize(folderButtonDimension);
-        buttonClientMods.addActionListener(e -> {
-            clientModsChooser = new JFileChooser();
-
-            if (textModpackDir.getText().length() > 0 &&
-                    new File(textModpackDir.getText()).isDirectory() &&
-                    new File(String.format("%s/mods",textModpackDir.getText())).isDirectory()) {
-
-                clientModsChooser.setCurrentDirectory(new File(String.format("%s/mods",textModpackDir.getText())));
-            } else {
-                clientModsChooser.setCurrentDirectory(new File("."));
-            }
-
-            clientModsChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonclientmods.title"));
-            clientModsChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-            clientModsChooser.setFileFilter(new FileNameExtensionFilter(
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonclientmods.filter"),
-                    "jar"
-            ));
-
-            clientModsChooser.setAcceptAllFileFilterUsed(false);
-            clientModsChooser.setMultiSelectionEnabled(true);
-            clientModsChooser.setPreferredSize(chooserDimension);
-
-            if (clientModsChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
-                File[] clientMods = clientModsChooser.getSelectedFiles();
-                ArrayList<String> clientModsFilenames = new ArrayList<>();
-
-                for (File mod : clientMods) {
-                    clientModsFilenames.add(mod.getName());
-                }
-
-                textClientMods.setText(
-                        CONFIGURATIONHANDLER.buildString(
-                                Arrays.toString(
-                                        clientModsFilenames.toArray(new String[0])))
-                );
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
-            }
-        });
-        buttonClientMods.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        buttonClientMods.addActionListener(this::selectClientMods);
+        buttonClientMods.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent event) {
                 buttonClientMods.setContentAreaFilled(true);
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent event) {
                 buttonClientMods.setContentAreaFilled(false);
             }
         });
@@ -502,41 +439,13 @@ public class TabCreateServerPack extends JComponent {
         buttonCopyDirs.setMinimumSize(folderButtonDimension);
         buttonCopyDirs.setPreferredSize(folderButtonDimension);
         buttonCopyDirs.setMaximumSize(folderButtonDimension);
-        buttonCopyDirs.addActionListener(e -> {
-            copyDirsChooser = new JFileChooser();
-
-            if (textModpackDir.getText().length() > 0 &&
-                    new File(textModpackDir.getText()).isDirectory()) {
-
-                copyDirsChooser.setCurrentDirectory(new File(textModpackDir.getText()));
-            } else {
-                copyDirsChooser.setCurrentDirectory(new File("."));
-            }
-
-            copyDirsChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttoncopydirs.title"));
-            copyDirsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            copyDirsChooser.setAcceptAllFileFilterUsed(false);
-            copyDirsChooser.setMultiSelectionEnabled(true);
-            copyDirsChooser.setPreferredSize(chooserDimension);
-
-            if (copyDirsChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
-                File[] directoriesToCopy = copyDirsChooser.getSelectedFiles();
-                ArrayList<String> copyDirsNames = new ArrayList<>();
-
-                for (File directory : directoriesToCopy) {
-                    copyDirsNames.add(directory.getName());
-                }
-
-                textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
-            }
-        });
-        buttonCopyDirs.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        buttonCopyDirs.addActionListener(this::selectCopyDirs);
+        buttonCopyDirs.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent event) {
                 buttonCopyDirs.setContentAreaFilled(true);
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent event) {
                 buttonCopyDirs.setContentAreaFilled(false);
             }
         });
@@ -552,46 +461,13 @@ public class TabCreateServerPack extends JComponent {
         buttonJavaPath.setMinimumSize(folderButtonDimension);
         buttonJavaPath.setPreferredSize(folderButtonDimension);
         buttonJavaPath.setMaximumSize(folderButtonDimension);
-        buttonJavaPath.addActionListener(e -> {
-            javaChooser = new JFileChooser();
-
-            if (new File(String.format("%s/bin/",System.getProperty("java.home").replace("\\", "/"))).isDirectory()) {
-
-                javaChooser.setCurrentDirectory(new File(
-                        String.format("%s/bin/",
-                                System.getProperty("java.home").replace("\\", "/"))
-                ));
-
-            } else {
-                javaChooser.setCurrentDirectory(new File("."));
-            }
-
-            javaChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonjavapath.tile"));
-            javaChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            javaChooser.setAcceptAllFileFilterUsed(true);
-            javaChooser.setMultiSelectionEnabled(false);
-            javaChooser.setPreferredSize(chooserDimension);
-
-            if (javaChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
-                try {
-                    textJavaPath.setText(javaChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
-
-                    LOG.info(String.format(
-                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonjavapath"),
-                            javaChooser.getSelectedFile().getCanonicalPath().replace("\\","/")
-                    ));
-
-                } catch (IOException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonjavapath"),ex);
-                }
-            }
-        });
-        buttonJavaPath.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        buttonJavaPath.addActionListener(this::selectJavaInstallation);
+        buttonJavaPath.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent event) {
                 buttonJavaPath.setContentAreaFilled(true);
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent event) {
                 buttonJavaPath.setContentAreaFilled(false);
             }
         });
@@ -607,87 +483,13 @@ public class TabCreateServerPack extends JComponent {
         buttonLoadConfigFromFile.setMinimumSize(miscButtonDimension);
         buttonLoadConfigFromFile.setPreferredSize(miscButtonDimension);
         buttonLoadConfigFromFile.setMaximumSize(miscButtonDimension);
-        buttonLoadConfigFromFile.addActionListener(e -> {
-            configChooser = new JFileChooser();
-
-            configChooser.setCurrentDirectory(new File("."));
-            configChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.title"));
-            configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-            configChooser.setFileFilter(new FileNameExtensionFilter(
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),
-                    "conf"));
-
-            configChooser.setAcceptAllFileFilterUsed(false);
-            configChooser.setMultiSelectionEnabled(false);
-            configChooser.setPreferredSize(chooserDimension);
-
-            if (configChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
-
-                Config newConfigFile = null;
-
-                try {
-                    newConfigFile = ConfigFactory.parseFile(new File(configChooser.getSelectedFile().getCanonicalPath()));
-
-                    LOG.info(String.format(
-                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"),
-                            configChooser.getSelectedFile().getCanonicalPath()
-                    ));
-
-                } catch (IOException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"),ex);
-                }
-
-                if (newConfigFile != null) {
-
-                    textModpackDir.setText(newConfigFile.getString("modpackDir"));
-
-                    textClientMods.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("clientMods").toString()));
-
-                    textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("copyDirs").toString().replace("\\","/")));
-
-                    textJavaPath.setText(newConfigFile.getString("javaPath"));
-
-                    textMinecraftVersion.setText(newConfigFile.getString("minecraftVersion"));
-
-                    String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(newConfigFile.getString("modLoader"));
-                    if (tmpModloader.equals("Fabric")) {
-
-                        fabricRadioButton.setSelected(true);
-                        forgeRadioButton.setSelected(false);
-
-                        setChosenModloader("Fabric");
-
-                    } else {
-
-                        fabricRadioButton.setSelected(false);
-                        forgeRadioButton.setSelected(true);
-
-                        setChosenModloader("Forge");
-                    }
-
-                    textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
-
-                    checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
-
-                    checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerIcon")));
-
-                    checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerProperties")));
-
-                    checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeStartScripts")));
-
-                    checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeZipCreation")));
-
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
-                }
-            }
-        });
-        buttonLoadConfigFromFile.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        buttonLoadConfigFromFile.addActionListener(this::loadConfigFile);
+        buttonLoadConfigFromFile.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent event) {
                 buttonLoadConfigFromFile.setContentAreaFilled(true);
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent event) {
                 buttonLoadConfigFromFile.setContentAreaFilled(false);
             }
         });
@@ -705,59 +507,13 @@ public class TabCreateServerPack extends JComponent {
         buttonInfoWindow.setMinimumSize(miscButtonDimension);
         buttonInfoWindow.setPreferredSize(miscButtonDimension);
         buttonInfoWindow.setMaximumSize(miscButtonDimension);
-        buttonInfoWindow.addActionListener(e -> {
-
-            helpTextArea = new JTextArea(String.format(
-                    "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.directories"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloader"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
-            ));
-
-            helpTextArea.setEditable(false);
-            helpTextArea.setOpaque(false);
-
-            helpScrollPane = new JScrollPane(
-                    helpTextArea,
-                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-            );
-            helpScrollPane.setBorder(null);
-
-            helpTextArea.addHierarchyListener(e1 -> {
-                        Window window = SwingUtilities.getWindowAncestor(helpTextArea);
-                        if (window instanceof Dialog) {
-                            Dialog dialog = (Dialog) window;
-                            if (!dialog.isResizable()) {
-                                dialog.setResizable(true);
-                            }
-                        }
-            });
-
-            JOptionPane.showMessageDialog(
-                    createServerPackPanel,
-                    helpScrollPane,
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
-                    JOptionPane.INFORMATION_MESSAGE,
-                    helpIcon
-            );
-
-        });
-        buttonInfoWindow.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        buttonInfoWindow.addActionListener(this::openInfoWindow);
+        buttonInfoWindow.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent event) {
                 buttonInfoWindow.setContentAreaFilled(true);
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent event) {
                 buttonInfoWindow.setContentAreaFilled(false);
             }
         });
@@ -788,144 +544,13 @@ public class TabCreateServerPack extends JComponent {
         buttonGenerateServerPack.setMinimumSize(startDimension);
         buttonGenerateServerPack.setPreferredSize(startDimension);
         buttonGenerateServerPack.setMaximumSize(startDimension);
-        buttonGenerateServerPack.addActionListener(e -> {
-
-            buttonGenerateServerPack.setEnabled(false);
-
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
-            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
-
-            CONFIGURATIONHANDLER.writeConfigToFile(
-                    textModpackDir.getText(),
-                    textClientMods.getText(),
-                    textCopyDirs.getText(),
-                    checkBoxServer.isSelected(),
-                    textJavaPath.getText(),
-                    textMinecraftVersion.getText(),
-                    getChosenModloader(),
-                    textModloaderVersion.getText(),
-                    checkBoxIcon.isSelected(),
-                    checkBoxProperties.isSelected(),
-                    checkBoxScripts.isSelected(),
-                    checkBoxZIP.isSelected(),
-                    new File("serverpackcreator.tmp"),
-                    true
-            );
-
-            ConfigurationModel configurationModel = new ConfigurationModel();
-
-            if (!CONFIGURATIONHANDLER.checkConfigFile(new File("serverpackcreator.tmp"), false, configurationModel)) {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
-                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
-
-                if (new File("serverpackcreator.tmp").exists()) {
-                    boolean delTmp = new File("serverpackcreator.tmp").delete();
-                    if (delTmp) {
-                        labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
-                    } else {
-                        labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
-                    }
-                }
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-                CONFIGURATIONHANDLER.writeConfigToFile(
-                        textModpackDir.getText(),
-                        textClientMods.getText(),
-                        textCopyDirs.getText(),
-                        checkBoxServer.isSelected(),
-                        textJavaPath.getText(),
-                        textMinecraftVersion.getText(),
-                        getChosenModloader(),
-                        textModloaderVersion.getText(),
-                        checkBoxIcon.isSelected(),
-                        checkBoxProperties.isSelected(),
-                        checkBoxScripts.isSelected(),
-                        checkBoxZIP.isSelected(),
-                        CONFIGURATIONHANDLER.getConfigFile(),
-                        false
-                );
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
-                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
-
-
-                Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
-                    public void handle(String line) {
-                        synchronized (this) {
-                            labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
-                        }
-                    }
-                }, 100, false);
-
-                final ExecutorService executorService = Executors.newSingleThreadExecutor();
-                executorService.execute(() -> {
-
-                    if (CREATESERVERPACK.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
-                        tailer.stop();
-
-                        System.gc();
-                        System.runFinalization();
-
-                        buttonGenerateServerPack.setEnabled(true);
-                        labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
-                        textModpackDir.setText(configurationModel.getModpackDir());
-                        textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));
-
-                        JTextArea textArea = new JTextArea();
-                        textArea.setOpaque(false);
-
-                        textArea.setText(String.format(
-                                "%s\n%s",
-                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                                String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))
-                                )
-                        );
-
-                        if (JOptionPane.showConfirmDialog(
-                                createServerPackPanel,
-                                textArea,
-                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.INFORMATION_MESSAGE) == 0) {
-                            try {
-
-                                Desktop.getDesktop().open(new File(String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
-                            } catch (IOException ex) {
-                                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.browserserverpack"));
-                            }
-                        }
-                        buttonGenerateServerPack.setEnabled(true);
-                        System.gc();
-                        System.runFinalization();
-                        tailer.stop();
-                        executorService.shutdown();
-
-                    } else {
-                        tailer.stop();
-
-                        System.gc();
-                        System.runFinalization();
-
-                        buttonGenerateServerPack.setEnabled(true);
-                        labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
-
-                        executorService.shutdown();
-                    }
-                });
-            } else {
-                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
-                buttonGenerateServerPack.setEnabled(true);
-            }
-        });
-        buttonGenerateServerPack.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        buttonGenerateServerPack.addActionListener(this::generateServerpack);
+        buttonGenerateServerPack.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent event) {
                 buttonGenerateServerPack.setContentAreaFilled(true);
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent event) {
                 buttonGenerateServerPack.setContentAreaFilled(false);
             }
         });
@@ -940,12 +565,479 @@ public class TabCreateServerPack extends JComponent {
 // --------------------------------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
         constraints.fill = GridBagConstraints.NONE;
 
+        loadConfig();
+
+        return createServerPackPanel;
+    }
+
+    /**
+     * On selection, set the modloader to Forge.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void setModloaderForge(ItemEvent event) {
+        if (event.getStateChange() == ItemEvent.SELECTED) {
+            setChosenModloader("Forge");
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.selected"));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+        } else if (event.getStateChange() == ItemEvent.DESELECTED) {
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.deselected"));
+        }
+    }
+
+    /**
+     * On selection, set the modloader to Fabric.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void setModloaderFabric(ItemEvent event) {
+        if (event.getStateChange() == ItemEvent.SELECTED) {
+            setChosenModloader("Fabric");
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.selected"));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+        } else if (event.getStateChange() == ItemEvent.DESELECTED) {
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.deselected"));
+        }
+    }
+
+    /**
+     * Upon button-press, open a file-selector for the modpack-directory.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void selectModpackDirectory(ActionEvent event) {
+        modpackDirChooser = new JFileChooser();
+
+        modpackDirChooser.setCurrentDirectory(new File("."));
+        modpackDirChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonmodpackdir.title"));
+        modpackDirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        modpackDirChooser.setAcceptAllFileFilterUsed(false);
+        modpackDirChooser.setMultiSelectionEnabled(false);
+        modpackDirChooser.setPreferredSize(chooserDimension);
+
+        if (modpackDirChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
+            try {
+                textModpackDir.setText(modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+
+                LOG.info(String.format(
+                        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonmodpack"),
+                        modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/")));
+
+            } catch (IOException ex) {
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonmodpack"), ex);
+            }
+        }
+    }
+
+    /**
+     * Upon button-press, open a file-selector for clientside-only mods. If the modpack-directory is specified, the file-selector
+     * will open in the mods-directory in the modpack-directory.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void selectClientMods(ActionEvent event) {
+        clientModsChooser = new JFileChooser();
+
+        if (textModpackDir.getText().length() > 0 &&
+                new File(textModpackDir.getText()).isDirectory() &&
+                new File(String.format("%s/mods", textModpackDir.getText())).isDirectory()) {
+
+            clientModsChooser.setCurrentDirectory(new File(String.format("%s/mods", textModpackDir.getText())));
+        } else {
+            clientModsChooser.setCurrentDirectory(new File("."));
+        }
+
+        clientModsChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonclientmods.title"));
+        clientModsChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        clientModsChooser.setFileFilter(new FileNameExtensionFilter(
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonclientmods.filter"),
+                "jar"
+        ));
+
+        clientModsChooser.setAcceptAllFileFilterUsed(false);
+        clientModsChooser.setMultiSelectionEnabled(true);
+        clientModsChooser.setPreferredSize(chooserDimension);
+
+        if (clientModsChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
+            File[] clientMods = clientModsChooser.getSelectedFiles();
+            ArrayList<String> clientModsFilenames = new ArrayList<>();
+
+            for (File mod : clientMods) {
+                clientModsFilenames.add(mod.getName());
+            }
+
+            textClientMods.setText(
+                    CONFIGURATIONHANDLER.buildString(
+                            Arrays.toString(
+                                    clientModsFilenames.toArray(new String[0])))
+            );
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
+        }
+    }
+
+    /**
+     * Upon button-press, open a file-selector for directories which are to be copied to the server pack. If the modpack-directory
+     * is specified, the file-selector will be opened in the modpack-directory.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void selectCopyDirs(ActionEvent event) {
+        copyDirsChooser = new JFileChooser();
+
+        if (textModpackDir.getText().length() > 0 &&
+                new File(textModpackDir.getText()).isDirectory()) {
+
+            copyDirsChooser.setCurrentDirectory(new File(textModpackDir.getText()));
+        } else {
+            copyDirsChooser.setCurrentDirectory(new File("."));
+        }
+
+        copyDirsChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttoncopydirs.title"));
+        copyDirsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        copyDirsChooser.setAcceptAllFileFilterUsed(false);
+        copyDirsChooser.setMultiSelectionEnabled(true);
+        copyDirsChooser.setPreferredSize(chooserDimension);
+
+        if (copyDirsChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
+            File[] directoriesToCopy = copyDirsChooser.getSelectedFiles();
+            ArrayList<String> copyDirsNames = new ArrayList<>();
+
+            for (File directory : directoriesToCopy) {
+                copyDirsNames.add(directory.getName());
+            }
+
+            textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
+        }
+    }
+
+    /**
+     * Upon button-press, open a file-selector to select the Java-executable.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void selectJavaInstallation(ActionEvent event) {
+        javaChooser = new JFileChooser();
+
+        if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))).isDirectory()) {
+
+            javaChooser.setCurrentDirectory(new File(
+                    String.format("%s/bin/",
+                            System.getProperty("java.home").replace("\\", "/"))
+            ));
+
+        } else {
+            javaChooser.setCurrentDirectory(new File("."));
+        }
+
+        javaChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonjavapath.tile"));
+        javaChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        javaChooser.setAcceptAllFileFilterUsed(true);
+        javaChooser.setMultiSelectionEnabled(false);
+        javaChooser.setPreferredSize(chooserDimension);
+
+        if (javaChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
+            try {
+                textJavaPath.setText(javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+
+                LOG.info(String.format(
+                        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonjavapath"),
+                        javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/")
+                ));
+
+            } catch (IOException ex) {
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonjavapath"), ex);
+            }
+        }
+    }
+
+    /**
+     * Upon button-press, open a file-selector to load a serverpackcreator.conf-file into ServerPackCreator.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void loadConfigFile(ActionEvent event) {
+        configChooser = new JFileChooser();
+
+        configChooser.setCurrentDirectory(new File("."));
+        configChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.title"));
+        configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        configChooser.setFileFilter(new FileNameExtensionFilter(
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),
+                "conf"));
+
+        configChooser.setAcceptAllFileFilterUsed(false);
+        configChooser.setMultiSelectionEnabled(false);
+        configChooser.setPreferredSize(chooserDimension);
+
+        if (configChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
+
+            Config newConfigFile = null;
+
+            try {
+                newConfigFile = ConfigFactory.parseFile(new File(configChooser.getSelectedFile().getCanonicalPath()));
+
+                LOG.info(String.format(
+                        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"),
+                        configChooser.getSelectedFile().getCanonicalPath()
+                ));
+
+            } catch (IOException ex) {
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"), ex);
+            }
+
+            if (newConfigFile != null) {
+
+                textModpackDir.setText(newConfigFile.getString("modpackDir"));
+
+                textClientMods.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("clientMods").toString()));
+
+                textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("copyDirs").toString().replace("\\", "/")));
+
+                textJavaPath.setText(newConfigFile.getString("javaPath"));
+
+                textMinecraftVersion.setText(newConfigFile.getString("minecraftVersion"));
+
+                String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(newConfigFile.getString("modLoader"));
+                if (tmpModloader.equals("Fabric")) {
+
+                    fabricRadioButton.setSelected(true);
+                    forgeRadioButton.setSelected(false);
+
+                    setChosenModloader("Fabric");
+
+                } else {
+
+                    fabricRadioButton.setSelected(false);
+                    forgeRadioButton.setSelected(true);
+
+                    setChosenModloader("Forge");
+                }
+
+                textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
+
+                checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
+
+                checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerIcon")));
+
+                checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerProperties")));
+
+                checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeStartScripts")));
+
+                checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeZipCreation")));
+
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
+            }
+        }
+    }
+
+    /**
+     * Upon button-press, open an info-window containing information/help about how to configure ServerPackCreator.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void openInfoWindow(ActionEvent event) {
+
+        helpTextArea = new JTextArea(String.format(
+                "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.directories"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloader"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
+        ));
+
+        helpTextArea.setEditable(false);
+        helpTextArea.setOpaque(false);
+
+        helpScrollPane = new JScrollPane(
+                helpTextArea,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+        helpScrollPane.setBorder(null);
+
+        helpTextArea.addHierarchyListener(e1 -> {
+            Window window = SwingUtilities.getWindowAncestor(helpTextArea);
+            if (window instanceof Dialog) {
+                Dialog dialog = (Dialog) window;
+                if (!dialog.isResizable()) {
+                    dialog.setResizable(true);
+                }
+            }
+        });
+
+        JOptionPane.showMessageDialog(
+                createServerPackPanel,
+                helpScrollPane,
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
+                JOptionPane.INFORMATION_MESSAGE,
+                helpIcon
+        );
+    }
+
+    /**
+     * Upon button-press, check the entered configuration and if successfull, generate a server pack.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void generateServerpack(ActionEvent event) {
+
+        buttonGenerateServerPack.setEnabled(false);
+
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
+        labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
+
+        CONFIGURATIONHANDLER.writeConfigToFile(
+                textModpackDir.getText(),
+                textClientMods.getText(),
+                textCopyDirs.getText(),
+                checkBoxServer.isSelected(),
+                textJavaPath.getText(),
+                textMinecraftVersion.getText(),
+                getChosenModloader(),
+                textModloaderVersion.getText(),
+                checkBoxIcon.isSelected(),
+                checkBoxProperties.isSelected(),
+                checkBoxScripts.isSelected(),
+                checkBoxZIP.isSelected(),
+                new File("serverpackcreator.tmp"),
+                true
+        );
+
+        ConfigurationModel configurationModel = new ConfigurationModel();
+
+        if (!CONFIGURATIONHANDLER.checkConfigFile(new File("serverpackcreator.tmp"), false, configurationModel)) {
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
+            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
+
+            if (new File("serverpackcreator.tmp").exists()) {
+                boolean delTmp = new File("serverpackcreator.tmp").delete();
+                if (delTmp) {
+                    labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+                } else {
+                    labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
+                }
+            }
+
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
+            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
+            CONFIGURATIONHANDLER.writeConfigToFile(
+                    textModpackDir.getText(),
+                    textClientMods.getText(),
+                    textCopyDirs.getText(),
+                    checkBoxServer.isSelected(),
+                    textJavaPath.getText(),
+                    textMinecraftVersion.getText(),
+                    getChosenModloader(),
+                    textModloaderVersion.getText(),
+                    checkBoxIcon.isSelected(),
+                    checkBoxProperties.isSelected(),
+                    checkBoxScripts.isSelected(),
+                    checkBoxZIP.isSelected(),
+                    CONFIGURATIONHANDLER.getConfigFile(),
+                    false
+            );
+
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
+            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
+
+
+            Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
+                public void handle(String line) {
+                    synchronized (this) {
+                        labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
+                    }
+                }
+            }, 100, false);
+
+            final ExecutorService executorService = Executors.newSingleThreadExecutor();
+            executorService.execute(() -> {
+
+                if (CREATESERVERPACK.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
+                    tailer.stop();
+
+                    System.gc();
+                    System.runFinalization();
+
+                    buttonGenerateServerPack.setEnabled(true);
+                    labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+                    textModpackDir.setText(configurationModel.getModpackDir());
+                    textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));
+
+                    JTextArea textArea = new JTextArea();
+                    textArea.setOpaque(false);
+
+                    textArea.setText(String.format(
+                                    "%s\n%s",
+                                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
+                                    String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))
+                            )
+                    );
+
+                    if (JOptionPane.showConfirmDialog(
+                            createServerPackPanel,
+                            textArea,
+                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE) == 0) {
+                        try {
+
+                            Desktop.getDesktop().open(new File(String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
+                        } catch (IOException ex) {
+                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.browserserverpack"));
+                        }
+                    }
+                    buttonGenerateServerPack.setEnabled(true);
+                    System.gc();
+                    System.runFinalization();
+                    tailer.stop();
+                    executorService.shutdown();
+
+                } else {
+                    tailer.stop();
+
+                    System.gc();
+                    System.runFinalization();
+
+                    buttonGenerateServerPack.setEnabled(true);
+                    labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+
+                    executorService.shutdown();
+                }
+            });
+        } else {
+            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
+            buttonGenerateServerPack.setEnabled(true);
+        }
+    }
+
+    /**
+     * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into ServerPackCreator.
+     * @author Griefed
+     */
+    void loadConfig() {
         try {
             if (new File("serverpackcreator.conf").exists()) {
                 File configFile = new File("serverpackcreator.conf");
                 Config config = ConfigFactory.parseFile(configFile);
 
-                textModpackDir.setText(config.getString("modpackDir").replace("\\", "/"));
+                try {
+                    textModpackDir.setText(config.getString("modpackDir").replace("\\", "/"));
+                } catch (NullPointerException ignored) {
+
+                }
 
                 if (config.getStringList("clientMods").isEmpty()) {
 
@@ -960,11 +1052,14 @@ public class TabCreateServerPack extends JComponent {
 
                 textJavaPath.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
 
-                textMinecraftVersion.setText(config.getString("minecraftVersion"));
+                try {
+                    textMinecraftVersion.setText(config.getString("minecraftVersion"));
+                } catch (NullPointerException ignored) {
+
+                }
 
                 try {
-                    String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader"));
-                    if (tmpModloader.equals("Fabric")) {
+                    if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
 
                         fabricRadioButton.setSelected(true);
                         forgeRadioButton.setSelected(false);
@@ -984,7 +1079,9 @@ public class TabCreateServerPack extends JComponent {
                     setChosenModloader("Forge");
                 }
 
-                textModloaderVersion.setText(config.getString("modLoaderVersion"));
+                try {
+                    textModloaderVersion.setText(config.getString("modLoaderVersion"));
+                } catch (NullPointerException ignored) {}
 
                 checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerInstallation")));
 
@@ -997,7 +1094,5 @@ public class TabCreateServerPack extends JComponent {
                 checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeZipCreation")));
             }
         } catch (NullPointerException ignored) {}
-
-        return createServerPackPanel;
     }
 }
