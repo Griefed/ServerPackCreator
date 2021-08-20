@@ -57,7 +57,7 @@ import java.util.*;
  * 8. {@link #setProjectID(int)}<br>
  * 9. {@link #getProjectFileID()}<br>
  * 10.{@link #setProjectFileID(int)}<br>
- * 11.{@link #checkConfigFile(File, boolean, ConfigurationModel)}<br>
+ * 11.{@link #checkConfiguration(File, boolean, ConfigurationModel)}<br>
  * 12.{@link #isDir(String, ConfigurationModel)}<br>
  * 13.{@link #isCurse(ConfigurationModel)}<br>
  * 14.{@link #containsFabric(CurseModpack)}<br>
@@ -292,7 +292,7 @@ public class ConfigurationHandler {
      * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack.
      * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
-    public boolean checkConfigFile(File configFile, boolean shouldModpackBeCreated, ConfigurationModel configurationModel) {
+    public boolean checkConfiguration(File configFile, boolean shouldModpackBeCreated, ConfigurationModel configurationModel) {
         boolean configHasError = false;
 
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
@@ -327,6 +327,69 @@ public class ConfigurationHandler {
             configHasError = isDir(getConfig().getString("modpackDir").replace("\\","/"), configurationModel);
 
         } else if (checkCurseForge(getConfig().getString("modpackDir"))) {
+
+            if (shouldModpackBeCreated) {
+
+                configHasError = isCurse(configurationModel);
+
+            } else {
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
+            }
+
+        } else {
+            configHasError = true;
+        }
+
+        printConfig(configurationModel.getModpackDir(),
+                configurationModel.getClientMods(),
+                configurationModel.getCopyDirs(),
+                configurationModel.getIncludeServerInstallation(),
+                configurationModel.getJavaPath(),
+                configurationModel.getMinecraftVersion(),
+                configurationModel.getModLoader(),
+                configurationModel.getModLoaderVersion(),
+                configurationModel.getIncludeServerIcon(),
+                configurationModel.getIncludeServerProperties(),
+                configurationModel.getIncludeStartScripts(),
+                configurationModel.getIncludeZipCreation());
+
+        if (!configHasError) {
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
+        } else {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.failure"));
+        }
+
+        return configHasError;
+    }
+
+    /**
+     * Check the passed {@link ConfigurationModel}. If any check returns <code>true</code>
+     * then the server pack will not be created. In order to find out which check failed, the user has to check their
+     * serverpackcreator.log in the logs-directory.
+     * @author Griefed
+     * @param shouldModpackBeCreated Boolean. Whether the CurseForge modpack should be downloaded and created.
+     * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack.
+     * @return Boolean. Returns <code>false</code> if all checks are passed.
+     */
+    public boolean checkConfiguration(boolean shouldModpackBeCreated, ConfigurationModel configurationModel) {
+        boolean configHasError = false;
+
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
+
+        if (configurationModel.getClientMods().isEmpty()) {
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
+            configurationModel.setClientMods(getFallbackModsList());
+        } else {
+            configurationModel.setClientMods(configurationModel.getClientMods());
+        }
+
+        configurationModel.setJavaPath(checkJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
+
+        if (checkModpackDir(configurationModel.getModpackDir().replace("\\","/"))) {
+
+            configHasError = isDir(configurationModel);
+
+        } else if (checkCurseForge(configurationModel.getModpackDir())) {
 
             if (shouldModpackBeCreated) {
 
@@ -406,6 +469,65 @@ public class ConfigurationHandler {
                 if (checkModloaderVersion(configurationModel.getModLoader(), getConfig().getString("modLoaderVersion"))) {
 
                     configurationModel.setModLoaderVersion(getConfig().getString("modLoaderVersion"));
+                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
+
+                } else {
+                    configHasError = true;
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
+                }
+
+            } else {
+                configHasError = true;
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
+            }
+
+        } else {
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipstart"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipjava"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipminecraft"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodlaoder"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodloaderversion"));
+        }
+        return configHasError;
+    }
+
+    /**
+     * If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration
+     * of: directories to copy to server pack,<br>
+     * if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.
+     * @author Griefed
+     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @return Boolean. Returns true if an error is found during configuration check.
+     */
+    boolean isDir(ConfigurationModel configurationModel) {
+        boolean configHasError = false;
+
+        if (checkCopyDirs(configurationModel.getCopyDirs(), configurationModel.getModpackDir())) {
+
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
+
+        } else {
+            configHasError = true;
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
+        }
+
+        if (configurationModel.getIncludeServerInstallation()) {
+
+            if (isMinecraftVersionCorrect(configurationModel.getMinecraftVersion())) {
+
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
+
+            } else {
+                configHasError = true;
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
+            }
+
+            if (checkModloader(configurationModel.getModLoader())) {
+
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
+
+                if (checkModloaderVersion(configurationModel.getModLoader(), configurationModel.getModLoaderVersion())) {
+
                     LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
 
                 } else {

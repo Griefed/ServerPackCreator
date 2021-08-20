@@ -916,7 +916,7 @@ public class TabCreateServerPack extends JComponent {
 
         ConfigurationModel configurationModel = new ConfigurationModel();
 
-        if (!CONFIGURATIONHANDLER.checkConfigFile(new File("serverpackcreator.tmp"), false, configurationModel)) {
+        if (!CONFIGURATIONHANDLER.checkConfiguration(new File("serverpackcreator.tmp"), false, configurationModel)) {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 

@@ -568,7 +568,7 @@ class ConfigurationTest {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
-        boolean result = CONFIGURATIONHANDLER.checkConfigFile(CONFIGURATIONHANDLER.getConfigFile(), true, configurationModel);
+        boolean result = CONFIGURATIONHANDLER.checkConfiguration(CONFIGURATIONHANDLER.getConfigFile(), true, configurationModel);
         Assertions.assertFalse(result);
         new File("./serverpackcreator.conf").delete();
     }
@@ -1165,5 +1165,55 @@ class ConfigurationTest {
         ));
         Assertions.assertTrue(new File("./serverpackcreatorfabric.conf").exists());
         new File("./serverpackcreatorfabric.conf").delete();
+    }
+
+    @Test
+    void checkConfigModelTest() {
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        ));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir("./backend/test/resources/forge_tests");
+        configurationModel.setClientMods(clientMods);
+        configurationModel.setCopyDirs(copyDirs);
+        configurationModel.setJavaPath("");
+        configurationModel.setIncludeServerInstallation(true);
+        configurationModel.setIncludeServerIcon(true);
+        configurationModel.setIncludeServerProperties(true);
+        configurationModel.setIncludeStartScripts(true);
+        configurationModel.setIncludeZipCreation(true);
+        configurationModel.setModLoader("Forge");
+        configurationModel.setModLoaderVersion("36.1.2");
+        configurationModel.setMinecraftVersion("1.16.5");
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(false, configurationModel));
     }
 }

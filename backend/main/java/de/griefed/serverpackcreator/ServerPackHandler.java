@@ -225,19 +225,7 @@ public class ServerPackHandler {
     }
 
     /**
-     * Create a server pack if the check of the configuration file was successfull.<p>
-     * Calls<br>
-     * {@link #cleanupEnvironment(String)} to delete any previously generated server packs or ZIP-archives thereof.<br>
-     * {@link #copyFiles(String, List, List, String)} to copy all specified directories and mods, excluding clientside-only mods,
-     * to the server pack.<br>
-     * {@link #copyStartScripts(String, String, boolean)} to copy the start scripts for the specified modloader to the
-     * server pack.<br>
-     * {@link #installServer(String, String, String, String, String)} to install the server software for the specified
-     * modloader, modloader version and Minecraft version in the server pack.<br>
-     * {@link #copyIcon(String)} to copy the server-icon.png to the server pack.<br>
-     * {@link #copyProperties(String)} to copy the server.properties to the server pack.<br>
-     * {@link #zipBuilder(String, String, boolean)} to create a ZIP-archive of the server pack.<br>
-     * {@link AddonsHandler#runServerPackAddons(ConfigurationModel, ConfigurationHandler)} to run all valid server pack addons.
+     * Create a server pack if the check of the configuration-file was successfull.
      * @author Griefed
      * @param configFileToUse A ServerPackCreator-configuration-file for {@link ConfigurationHandler} to check and  generate a
      * server pack from.
@@ -247,7 +235,7 @@ public class ServerPackHandler {
     public boolean run(File configFileToUse, ConfigurationModel configurationModel) {
         // TODO: Once API and webUI are implemented, test parallel runs. Parallel runs MUST be possible.
 
-        if (!CONFIGURATIONHANDLER.checkConfigFile(configFileToUse, true, configurationModel)) {
+        if (!CONFIGURATIONHANDLER.checkConfiguration(configFileToUse, true, configurationModel)) {
 
             // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(configurationModel.getModpackDir());
