@@ -216,44 +216,14 @@ public class SwingGuiInitializer extends JPanel {
             // Bold fonts = true
             UIManager.put("swing.boldMetal", true);
             UIManager.put("Slider.focus", UIManager.get("Slider.background"));
-            /*
-             * A little secret setting which allows the user to temporarily overwrite the Look and Feel of ServerPackCreator.
-             * Note: This setting is not carried over to new configuration files written by ServerPackCreator when,
-             * for example, the configuration file for a modpack acquired from CurseForge is written.
-             * It was just something I wanted to play around with. So I did.
-             */
+
             try {
-                if (new File("serverpackcreator.conf").exists()) {
-
-                    secretFile = new File("serverpackcreator.conf");
-                    secret = ConfigFactory.parseFile(secretFile);
-
-                    if (secret.getString("topsicrets") != null && !secret.getString("topsicrets").equals("") && secret.getString("topsicrets").length() > 0) {
-
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("topsicrets"));
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("topsicrets.moar"));
-                        for (UIManager.LookAndFeelInfo look : UIManager.getInstalledLookAndFeels()) {
-                            LOG.info(look.getClassName());
-                        }
-
-                        UIManager.setLookAndFeel(secret.getString("topsicrets"));
-
-                    } else {
-                        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    }
-
-                } else {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                }
-
-            } catch (ConfigException | NullPointerException | ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ignored) {
-                try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    //UIManager.setLookAndFeel(new MaterialLookAndFeel(new JMarsDarkTheme()));
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
-                }
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                //UIManager.setLookAndFeel(new MaterialLookAndFeel(new JMarsDarkTheme()));
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
             }
+
 
             createAndShowGUI();
         });
