@@ -38,8 +38,6 @@ bower_components
 build/Release
 
 # Dependency directories
-frontend/node
-node_modules/
 jspm_packages/
 
 # TypeScript v1 declaration files
@@ -117,25 +115,12 @@ bin
 
 .DS_Store
 .thumbs.db
-node_modules
 
 # Quasar core related directories
 .quasar
 /dist
-
-# Cordova related directories and files
-/backend-cordova/node_modules
-/backend-cordova/platforms
-/backend-cordova/plugins
-/backend-cordova/www
-
-# Capacitor related directories and files
-/backend-capacitor/www
-/backend-capacitor/node_modules
-
-# BEX related directories and files
-/backend-bex/www
-/backend-bex/js/core
+frontend/node
+node_modules/
 
 # Editor directories and files
 .idea
