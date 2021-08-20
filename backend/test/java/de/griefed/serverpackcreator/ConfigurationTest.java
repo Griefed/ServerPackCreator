@@ -126,7 +126,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 88.{@link #latestFabricLoaderTestNotNull()}<br>
  * 89.{@link #buildStringTest()}<br>
  * 90.{@link #writeConfigToFileTestForge()}<br>
- * 91.{@link #writeConfigToFileTestFabric()}
+ * 91.{@link #writeConfigToFileTestFabric()}<br>
+ * 92.{@link #checkConfigModelTest()}
  */
 class ConfigurationTest {
 

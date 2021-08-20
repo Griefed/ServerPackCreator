@@ -297,6 +297,76 @@ public class ServerPackHandler {
     }
 
     /**
+     * Create a server pack if the check of the {@link ConfigurationModel} was successfull.
+     * @author Griefed
+     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @return Boolean. Returns true if the server pack was successfully generated.
+     */
+    public boolean run(ConfigurationModel configurationModel) {
+        // TODO: Once API and webUI are implemented, test parallel runs. Parallel runs MUST be possible.
+
+        if (!CONFIGURATIONHANDLER.checkConfiguration( true, configurationModel)) {
+
+            // Make sure no files from previously generated server packs interrupt us.
+            cleanupEnvironment(configurationModel.getModpackDir());
+
+            // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
+            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
+
+            // Copy start scripts for specified modloader from server_files to server pack.
+            copyStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts());
+
+            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
+            if (configurationModel.getIncludeServerInstallation()) {
+                installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
+            } else {
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
+            }
+
+            // If true, copy the server-icon.png from server_files to the server pack.
+            if (configurationModel.getIncludeServerIcon()) {
+                copyIcon(configurationModel.getModpackDir());
+            } else {
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
+            }
+
+            // If true, copy the server.properties from server_files to the server pack.
+            if (configurationModel.getIncludeServerProperties()) {
+                copyProperties(configurationModel.getModpackDir());
+            } else {
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
+            }
+
+            // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
+            if (configurationModel.getIncludeZipCreation()) {
+                zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
+            } else {
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
+            }
+
+            // Inform user about location of newly generated server pack.
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
+
+            if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
+                LOG.info("No Server Pack addons to execute.");
+            } else {
+                LOG.info("Starting execution of Server Pack addons. Check addons.log in the logs-directory for details about their execution.");
+                ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
+                LOG.info("Addons executed. Finishing...");
+            }
+
+            return true;
+
+        } else {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("main.log.error.runincli"));
+
+            return false;
+        }
+    }
+
+    /**
      * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
      * server pack is as clean as possible.
      * @author Griefed
