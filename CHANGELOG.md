@@ -1,3 +1,47 @@
+## [2.2.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.3...2.2.0-alpha.4) (2021-08-20)
+
+
+### 📔 Docs
+
+* Add javadoc for scanAnnotations ([e0a08f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0a08f9547891a2807fd20a89927856b2a86329d))
+
+
+### 🦊 CI/CD
+
+* Hopefully fix main release workflow trying to run on alpha/beta release ([9e6122e](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e6122e7a5523d3b35850721062fe385f8c5d207))
+
+
+### 🛠 Fixes
+
+* Modloader selection visually defaulted to Forge if no configuration was found in a given serverpackcreator.conf, but the value wasn't correctly set, resulting in the user having to select Forge manually anyway. ([d126447](https://git.griefed.de/Griefed/ServerPackCreator/commit/d12644714a8281e5dd7063521e28235b9204d5a3))
+
+## [2.2.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.2...2.2.0-alpha.3) (2021-08-19)
+
+
+### :scissors: Refactor
+
+* Move ObjectMapper init to getter like in ConfigurationHandler ([d73ebd4](https://git.griefed.de/Griefed/ServerPackCreator/commit/d73ebd40e3a77dc512bd4f542eb5780fa9663a3a))
+* Move ObjectMapper init to getter like in ConfigurationHandler ([ac955c5](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac955c520f434fba1dedaf0299213f6b85489709))
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([3638e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/3638e22dd96cea72ec86d22f7c16d335eefa9bf0)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([4977ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4977ae7f01db82b79b1af0057e505877e4307ad9)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
+
+
+### 📔 Docs
+
+* Add missing method to table ([d1fca12](https://git.griefed.de/Griefed/ServerPackCreator/commit/d1fca12b00b8b79cf0ede59d58295eeb61a80c5c))
+* Add missing method to table ([f04b728](https://git.griefed.de/Griefed/ServerPackCreator/commit/f04b72818257e1d71b2e60dd86af8921c32e45eb))
+
+
+### 🦊 CI/CD
+
+* Bring in changes to CI from main ([b89125b](https://git.griefed.de/Griefed/ServerPackCreator/commit/b89125ba34c873328f9e600f0bafd02586de1ad4))
+
+
+### 🚀 Features
+
+* Automatically detect clientside-only mods for Minecraft modpacks version 1.12 and older. ([e17322e](https://git.griefed.de/Griefed/ServerPackCreator/commit/e17322ed5db6bd18b4573be4a3562295317dd137))
+* Enable/disable clientside-only mods autodiscovery via property de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true / false. Closes [#62](https://git.griefed.de/Griefed/ServerPackCreator/issues/62). ([094a217](https://git.griefed.de/Griefed/ServerPackCreator/commit/094a217e83f2f27ba1e3746088b459a542411254))
+
 ## [2.2.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.1...2.2.0-alpha.2) (2021-08-17)
 
 
