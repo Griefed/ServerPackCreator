@@ -1,3 +1,20 @@
+## [2.2.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.3...2.2.0-alpha.4) (2021-08-20)
+
+
+### 📔 Docs
+
+* Add javadoc for scanAnnotations ([e0a08f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0a08f9547891a2807fd20a89927856b2a86329d))
+
+
+### 🦊 CI/CD
+
+* Hopefully fix main release workflow trying to run on alpha/beta release ([9e6122e](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e6122e7a5523d3b35850721062fe385f8c5d207))
+
+
+### 🛠 Fixes
+
+* Modloader selection visually defaulted to Forge if no configuration was found in a given serverpackcreator.conf, but the value wasn't correctly set, resulting in the user having to select Forge manually anyway. ([d126447](https://git.griefed.de/Griefed/ServerPackCreator/commit/d12644714a8281e5dd7063521e28235b9204d5a3))
+
 ## [2.2.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.2...2.2.0-alpha.3) (2021-08-19)
 
 
