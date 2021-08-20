@@ -290,6 +290,7 @@ public class TabCreateServerPack extends JComponent {
         constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
+
         JRadioButton forgeRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge"),true);
         constraints.gridx = 0;
         constraints.gridy = 11;
@@ -305,6 +306,7 @@ public class TabCreateServerPack extends JComponent {
             }
         });
         createServerPackPanel.add(forgeRadioButton, constraints);
+
         JRadioButton fabricRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric"),false);
         constraints.gridx = 0;
         constraints.gridy = 11;
@@ -320,6 +322,7 @@ public class TabCreateServerPack extends JComponent {
             }
         });
         createServerPackPanel.add(fabricRadioButton, constraints);
+
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridwidth = 2;
 
@@ -959,16 +962,22 @@ public class TabCreateServerPack extends JComponent {
 
                 textMinecraftVersion.setText(config.getString("minecraftVersion"));
 
-                String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader"));
-                if (tmpModloader.equals("Fabric")) {
+                try {
+                    String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader"));
+                    if (tmpModloader.equals("Fabric")) {
 
-                    fabricRadioButton.setSelected(true);
-                    forgeRadioButton.setSelected(false);
+                        fabricRadioButton.setSelected(true);
+                        forgeRadioButton.setSelected(false);
 
-                    setChosenModloader("Fabric");
+                        setChosenModloader("Fabric");
 
-                } else {
+                    } else {
+                        fabricRadioButton.setSelected(false);
+                        forgeRadioButton.setSelected(true);
 
+                        setChosenModloader("Forge");
+                    }
+                } catch (NullPointerException ignored) {
                     fabricRadioButton.setSelected(false);
                     forgeRadioButton.setSelected(true);
 

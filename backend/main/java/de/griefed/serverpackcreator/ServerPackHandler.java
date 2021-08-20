@@ -1442,6 +1442,14 @@ public class ServerPackHandler {
         return modsDelta;
     }
 
+    /**
+     * Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
+     * If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not listed as a dependency
+     * for another mod, it is added and therefore later on excluded from the server pack.
+     * @author Griefed
+     * @param filesInModsDir A list of in which to check the <code>mods.toml</code>-files.
+     * @return List String. List of mods not to include in server pack based on fml-cache-annotation.json-content.
+     */
     private List<String> scanAnnotations(File[] filesInModsDir) {
 
         // TODO: Replace with lang key
