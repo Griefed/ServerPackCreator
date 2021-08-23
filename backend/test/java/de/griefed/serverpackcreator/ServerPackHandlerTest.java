@@ -137,7 +137,6 @@ class ServerPackHandlerTest {
     @Test
     void runTest() throws IOException {
         DEFAULTFILES.filesSetup();
-        Files.copy(Paths.get("backend/test/resources/testresources/ServerPackCreatorExampleAddon-1.1.0.jar"), Paths.get("addons/ServerPackCreatorExampleAddon-1.1.0.jar"), REPLACE_EXISTING);
         ADDONSHANDLER.initializeAddons();
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("serverpackcreator.conf"), REPLACE_EXISTING);
         ConfigurationModel configurationModel = new ConfigurationModel();
