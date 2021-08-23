@@ -681,7 +681,7 @@ public class ServerPackHandler {
             }
         }
 
-        if (autodiscoveredClientMods.size() > 0) {
+        if (serverpackcreatorproperties.get("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true") && autodiscoveredClientMods.size() > 0) {
             for (int m = 0; m < autodiscoveredClientMods.size(); m++) {
 
                 int i = m;
