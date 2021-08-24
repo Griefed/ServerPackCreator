@@ -19,9 +19,6 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
-import com.typesafe.config.ConfigFactory;
 import de.griefed.serverpackcreator.AddonsHandler;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
@@ -37,7 +34,6 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -68,8 +64,6 @@ public class SwingGuiInitializer extends JPanel {
     private final BackgroundPanel BACKGROUNDPANEL;
     private final JFrame FRAME_SERVERPACKCREATOR;
 
-    private File secretFile;
-    private Config secret;
     private BufferedImage bufferedImage;
     /**
      * <strong>Constructor</strong><p>
@@ -123,8 +117,11 @@ public class SwingGuiInitializer extends JPanel {
 
 
 
-        try { bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));}
-        catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex); }
+        try {
+            bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));
+        } catch (IOException ex) {
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex);
+        }
 
         TabCreateServerPack TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER);
         TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER);
@@ -256,5 +253,8 @@ public class SwingGuiInitializer extends JPanel {
         FRAME_SERVERPACKCREATOR.pack();
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
+
+        FRAME_SERVERPACKCREATOR.revalidate();
+        FRAME_SERVERPACKCREATOR.repaint();
     }
 }
