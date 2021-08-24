@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
@@ -69,6 +70,7 @@ public class TabCreateServerPack extends JComponent {
     private final ServerPackHandler CREATESERVERPACK;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final AddonsHandler ADDONSHANDLER;
+    private final VersionLister VERSIONLISTER;
 
     private Properties serverpackcreatorproperties;
 
@@ -128,6 +130,8 @@ public class TabCreateServerPack extends JComponent {
         } catch (IOException ex) {
             LOG.error("Couldn't read properties file.", ex);
         }
+
+        this.VERSIONLISTER = new VersionLister();
     }
 
     private final ImageIcon loadIcon              = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/load.png")));
@@ -152,12 +156,16 @@ public class TabCreateServerPack extends JComponent {
     private JLabel labelModloader;
     private JLabel labelModloaderVersion;
 
+    private JComboBox<String> listMinecraftVersions;
+    private JComboBox<String> listForgeVersions;
+    private JComboBox<String> listFabricVersions;
+
+    private DefaultComboBoxModel<String> forgeComboBoxModel;
+
     private JTextField textModpackDir;
     private JTextField textClientMods;
     private JTextField textCopyDirs;
     private JTextField textJavaPath;
-    private JTextField textMinecraftVersion;
-    private JTextField textModloaderVersion;
 
     private JTextArea helpTextArea;
 
@@ -182,6 +190,9 @@ public class TabCreateServerPack extends JComponent {
     private JFileChooser configChooser;
 
     private String chosenModloader;
+    private String chosenMinecraftVersion;
+    private String chosenFabricVersion;
+    private String chosenForgeVersion;
 
     private ButtonGroup modloaderGroup;
     private JRadioButton forgeRadioButton;
@@ -210,10 +221,12 @@ public class TabCreateServerPack extends JComponent {
      * @author Griefed
      * @return JComponent. Returns a JPanel everything needed for displaying the TabCreateServerPack.
      * */
-    JComponent createServerPackTab() {
+    public JComponent createServerPackTab() {
 
+        // TODO: Move assignment to field declaration
         createServerPackPanel = new JPanel(false);
         createServerPackPanel.setLayout(new GridBagLayout());
+        // TODO: Move assignment to field declaration
         GridBagConstraints constraints = new GridBagConstraints();
 
 // ----------------------------------------------------------------------------------------LABELS AND TEXTFIELDS--------
@@ -226,12 +239,15 @@ public class TabCreateServerPack extends JComponent {
         labelModpackDir.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
         constraints.gridx = 0;
         constraints.gridy = 0;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModpackDir, constraints);
+        // TODO: Move assignment to field declaration
         textModpackDir = new JTextField("");
         textModpackDir.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
         constraints.gridx = 0;
         constraints.gridy = 1;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textModpackDir, constraints);
 
@@ -240,12 +256,15 @@ public class TabCreateServerPack extends JComponent {
         labelClientMods.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods.tip"));
         constraints.gridx = 0;
         constraints.gridy = 2;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelClientMods, constraints);
+        // TODO: Move assignment to field declaration
         textClientMods = new JTextField("");
         textClientMods.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods.tip"));
         constraints.gridx = 0;
         constraints.gridy = 3;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textClientMods, constraints);
 
@@ -254,12 +273,15 @@ public class TabCreateServerPack extends JComponent {
         labelCopyDirs.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
         constraints.gridx = 0;
         constraints.gridy = 4;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelCopyDirs, constraints);
+        // TODO: Move assignment to field declaration
         textCopyDirs = new JTextField("");
         textCopyDirs.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
         constraints.gridx = 0;
         constraints.gridy = 5;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textCopyDirs, constraints);
 
@@ -268,57 +290,63 @@ public class TabCreateServerPack extends JComponent {
         labelJavaPath.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
         constraints.gridx = 0;
         constraints.gridy = 6;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelJavaPath, constraints);
+        // TODO: Move assignment to field declaration
         textJavaPath = new JTextField("");
         textJavaPath.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
         constraints.gridx = 0;
         constraints.gridy = 7;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,0);
         createServerPackPanel.add(textJavaPath, constraints);
 
         //Label and textfield minecraftVersion
+        constraints.gridwidth = 1;
         labelMinecraftVersion = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft"));
         labelMinecraftVersion.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft.tip"));
         constraints.gridx = 0;
         constraints.gridy = 8;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelMinecraftVersion, constraints);
-        textMinecraftVersion = new JTextField("");
-        textMinecraftVersion.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft.tip"));
+        listMinecraftVersions = new JComboBox<>(VERSIONLISTER.getMinecraftReleaseVersionsAsArray());
+        listMinecraftVersions.setSelectedIndex(0);
+        listMinecraftVersions.addActionListener(this::actionEventComboBoxMinecraftVersion);
         constraints.gridx = 0;
         constraints.gridy = 9;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,0);
-        createServerPackPanel.add(textMinecraftVersion, constraints);
+        createServerPackPanel.add(listMinecraftVersions, constraints);
 
-        //Label and textfield Modloader
+        //Label and radio buttons Modloader
         labelModloader = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader"));
         labelModloader.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader.tip"));
-        constraints.gridx = 0;
-        constraints.gridy = 10;
+        constraints.gridx = 1;
+        constraints.gridy = 8;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModloader, constraints);
-
-        //RadioButtons for Modloader selection.
         modloaderGroup = new ButtonGroup();
-        constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-
         forgeRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.forge"),true);
-        constraints.gridx = 0;
-        constraints.gridy = 11;
+        constraints.gridx = 1;
+        constraints.gridy = 9;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,0);
         modloaderGroup.add(forgeRadioButton);
-        forgeRadioButton.addItemListener(this::setModloaderForge);
+        forgeRadioButton.addItemListener(this::itemEventRadioButtonModloaderForge);
         createServerPackPanel.add(forgeRadioButton, constraints);
-
         fabricRadioButton = new JRadioButton(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.fabric"),false);
-        constraints.gridx = 0;
-        constraints.gridy = 11;
+        constraints.gridx = 1;
+        constraints.gridy = 9;
+
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,100,0,0);
         modloaderGroup.add(fabricRadioButton);
-        fabricRadioButton.addItemListener(this::setModloaderFabric);
+        fabricRadioButton.addItemListener(this::itemEventRadioButtonModloaderFabric);
         createServerPackPanel.add(fabricRadioButton, constraints);
 
         constraints.fill = GridBagConstraints.HORIZONTAL;
@@ -327,18 +355,32 @@ public class TabCreateServerPack extends JComponent {
         //Label and textfield modloaderVersion
         labelModloaderVersion = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion"));
         labelModloaderVersion.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
-        constraints.gridx = 0;
-        constraints.gridy = 12;
+        constraints.gridx = 2;
+        constraints.gridy = 8;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(20,10,0,0);
         createServerPackPanel.add(labelModloaderVersion, constraints);
-        textModloaderVersion = new JTextField("");
-        textModloaderVersion.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
-        constraints.gridx = 0;
-        constraints.gridy = 13;
+        // TODO: Move assignment to field declaration
+        listFabricVersions = new JComboBox<>();
+        listFabricVersions.setModel(new DefaultComboBoxModel<>(VERSIONLISTER.getFabricVersionsAsArray()));
+        listFabricVersions.setSelectedIndex(0);
+        listFabricVersions.addActionListener(this::actionEventComboBoxFabricVersions);
+        listFabricVersions.setVisible(false);
+        // TODO: Move assignment to field declaration
+        listForgeVersions = new JComboBox<>();
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeVersionsAsArray(Objects.requireNonNull(listMinecraftVersions.getSelectedItem()).toString()));
+        listForgeVersions.setModel(forgeComboBoxModel);
+        listForgeVersions.setSelectedIndex(0);
+        listForgeVersions.addActionListener(this::actionEventComboBoxForgeVersions);
+        constraints.gridx = 2;
+        constraints.gridy = 9;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,0);
-        createServerPackPanel.add(textModloaderVersion, constraints);
+        createServerPackPanel.add(listFabricVersions, constraints);
+        createServerPackPanel.add(listForgeVersions, constraints);
 
 // ----------------------------------------------------------------------------------------LABELS AND CHECKBOXES--------
+        // TODO: Replace insets with field
         constraints.insets = new Insets(10,10,0,0);
         constraints.gridwidth = 1;
 
@@ -382,12 +424,14 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(checkBoxZIP, constraints);
 
 // ------------------------------------------------------------------------------------------------------BUTTONS--------
+        // TODO: Replace insets with field
         constraints.insets = new Insets(0,10,0,10);
 
         constraints.weightx = 0;
         constraints.weighty = 0;
 
         //Select modpackDir button
+        // TODO: Move assignment to field declaration
         buttonModpackDir = new JButton();
         buttonModpackDir.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonmodpackdir"));
         buttonModpackDir.setContentAreaFilled(false);
@@ -396,6 +440,7 @@ public class TabCreateServerPack extends JComponent {
         buttonModpackDir.setPreferredSize(folderButtonDimension);
         buttonModpackDir.setMaximumSize(folderButtonDimension);
         buttonModpackDir.addActionListener(this::selectModpackDirectory);
+        // TODO: Extract method to simplify adding mouse listener
         buttonModpackDir.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonModpackDir.setContentAreaFilled(true);
@@ -410,6 +455,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(buttonModpackDir, constraints);
 
         //Select clientside-mods button
+        // TODO: Move assignment to field declaration
         buttonClientMods = new JButton();
         buttonClientMods.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonclientmods"));
         buttonClientMods.setContentAreaFilled(false);
@@ -418,6 +464,7 @@ public class TabCreateServerPack extends JComponent {
         buttonClientMods.setPreferredSize(folderButtonDimension);
         buttonClientMods.setMaximumSize(folderButtonDimension);
         buttonClientMods.addActionListener(this::selectClientMods);
+        // TODO: Extract method to simplify adding mouse listener
         buttonClientMods.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonClientMods.setContentAreaFilled(true);
@@ -432,6 +479,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(buttonClientMods, constraints);
 
         //Select directories to copy to server pack button
+        // TODO: Move assignment to field declaration
         buttonCopyDirs = new JButton();
         buttonCopyDirs.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttoncopydirs"));
         buttonCopyDirs.setContentAreaFilled(false);
@@ -440,6 +488,7 @@ public class TabCreateServerPack extends JComponent {
         buttonCopyDirs.setPreferredSize(folderButtonDimension);
         buttonCopyDirs.setMaximumSize(folderButtonDimension);
         buttonCopyDirs.addActionListener(this::selectCopyDirs);
+        // TODO: Extract method to simplify adding mouse listener
         buttonCopyDirs.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonCopyDirs.setContentAreaFilled(true);
@@ -454,6 +503,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(buttonCopyDirs, constraints);
 
         //Select javaPath button
+        // TODO: Move assignment to field declaration
         buttonJavaPath = new JButton();
         buttonJavaPath.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonjavapath"));
         buttonJavaPath.setContentAreaFilled(false);
@@ -462,6 +512,7 @@ public class TabCreateServerPack extends JComponent {
         buttonJavaPath.setPreferredSize(folderButtonDimension);
         buttonJavaPath.setMaximumSize(folderButtonDimension);
         buttonJavaPath.addActionListener(this::selectJavaInstallation);
+        // TODO: Extract method to simplify adding mouse listener
         buttonJavaPath.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonJavaPath.setContentAreaFilled(true);
@@ -476,6 +527,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(buttonJavaPath, constraints);
 
         //Load config from file
+        // TODO: Move assignment to field declaration
         buttonLoadConfigFromFile = new JButton();
         buttonLoadConfigFromFile.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig"));
         buttonLoadConfigFromFile.setContentAreaFilled(false);
@@ -484,6 +536,7 @@ public class TabCreateServerPack extends JComponent {
         buttonLoadConfigFromFile.setPreferredSize(miscButtonDimension);
         buttonLoadConfigFromFile.setMaximumSize(miscButtonDimension);
         buttonLoadConfigFromFile.addActionListener(this::loadConfigFile);
+        // TODO: Extract method to simplify adding mouse listener
         buttonLoadConfigFromFile.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonLoadConfigFromFile.setContentAreaFilled(true);
@@ -500,6 +553,7 @@ public class TabCreateServerPack extends JComponent {
         createServerPackPanel.add(buttonLoadConfigFromFile, constraints);
 
         //Open window with detailed information about the UI
+        // TODO: Move assignment to field declaration
         buttonInfoWindow = new JButton();
         buttonInfoWindow.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.button"));
         buttonInfoWindow.setContentAreaFilled(false);
@@ -508,6 +562,7 @@ public class TabCreateServerPack extends JComponent {
         buttonInfoWindow.setPreferredSize(miscButtonDimension);
         buttonInfoWindow.setMaximumSize(miscButtonDimension);
         buttonInfoWindow.addActionListener(this::openInfoWindow);
+        // TODO: Extract method to simplify adding mouse listener
         buttonInfoWindow.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonInfoWindow.setContentAreaFilled(true);
@@ -525,6 +580,7 @@ public class TabCreateServerPack extends JComponent {
 
 // ---------------------------------------------------------------------------------MAIN ACTION BUTTON AND LABEL--------
         constraints.fill = GridBagConstraints.NONE;
+        // TODO: Replace insets with field
         constraints.insets = new Insets(5,0,5,0);
 
         labelGenerateServerPack = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.ready"));
@@ -537,6 +593,7 @@ public class TabCreateServerPack extends JComponent {
         constraints.anchor = GridBagConstraints.PAGE_END;
         createServerPackPanel.add(labelGenerateServerPack, constraints);
 
+        // TODO: Move assignment to field declaration
         buttonGenerateServerPack = new JButton();
         buttonGenerateServerPack.setContentAreaFilled(false);
         buttonGenerateServerPack.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.tip"));
@@ -545,6 +602,7 @@ public class TabCreateServerPack extends JComponent {
         buttonGenerateServerPack.setPreferredSize(startDimension);
         buttonGenerateServerPack.setMaximumSize(startDimension);
         buttonGenerateServerPack.addActionListener(this::generateServerpack);
+        // TODO: Extract method to simplify adding mouse listener
         buttonGenerateServerPack.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonGenerateServerPack.setContentAreaFilled(true);
@@ -565,9 +623,56 @@ public class TabCreateServerPack extends JComponent {
 // --------------------------------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
         constraints.fill = GridBagConstraints.NONE;
 
-        loadConfig();
+        loadConfig(new File("serverpackcreator.conf"));
 
         return createServerPackPanel;
+    }
+
+    /**
+     * Setter for the list of available Forge versions depending on the passed Minecraft version.
+     * @author Griefed
+     * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list of available Forge versions.
+     */
+    private void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeVersionsAsArray(chosenMinecraftVersion));
+        listForgeVersions.setModel(forgeComboBoxModel);
+        listForgeVersions.setSelectedIndex(0);
+        listForgeVersions.revalidate();
+        listForgeVersions.repaint();
+    }
+
+    /**
+     * Setter for the Minecraft version depending on which one is selected in the GUI.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void actionEventComboBoxMinecraftVersion(ActionEvent event) {
+        chosenMinecraftVersion = Objects.requireNonNull(listMinecraftVersions.getSelectedItem()).toString();
+        changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(listMinecraftVersions.getSelectedItem()).toString());
+        // TODO: Replace with lang key
+        LOG.debug("Selected Minecraft version: " + listMinecraftVersions.getSelectedItem());
+    }
+
+    /**
+     * Setter for the Fabric version depending on which one is selected in the GUI.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void actionEventComboBoxFabricVersions(ActionEvent event) {
+        chosenFabricVersion = Objects.requireNonNull(listFabricVersions.getSelectedItem()).toString();
+        // TODO: Replace with lang key
+        LOG.debug("Selected Fabric version: " + listFabricVersions.getSelectedItem());
+    }
+
+    /**
+     * Setter for the Forge version depending on which one is selected in the GUI.
+     * @author Griefed
+     * @param event The event which triggers this method.
+     */
+    private void actionEventComboBoxForgeVersions(ActionEvent event) {
+        chosenForgeVersion = Objects.requireNonNull(listForgeVersions.getSelectedItem()).toString();
+        // TODO: Replace with lang key
+        LOG.debug("Selected Forge version: " + listForgeVersions.getSelectedItem());
     }
 
     /**
@@ -575,13 +680,23 @@ public class TabCreateServerPack extends JComponent {
      * @author Griefed
      * @param event The event which triggers this method.
      */
-    private void setModloaderForge(ItemEvent event) {
+    private void itemEventRadioButtonModloaderForge(ItemEvent event) {
         if (event.getStateChange() == ItemEvent.SELECTED) {
+
+            listFabricVersions.setVisible(false);
             setChosenModloader("Forge");
+            chosenForgeVersion = Objects.requireNonNull(listForgeVersions.getSelectedItem()).toString();
+
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.selected"));
+            // TODO: Replace with lang key
+            LOG.debug("Forge version selected: " + chosenForgeVersion);
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+
         } else if (event.getStateChange() == ItemEvent.DESELECTED) {
+
+            listFabricVersions.setVisible(true);
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.deselected"));
+
         }
     }
 
@@ -590,13 +705,38 @@ public class TabCreateServerPack extends JComponent {
      * @author Griefed
      * @param event The event which triggers this method.
      */
-    private void setModloaderFabric(ItemEvent event) {
+    private void itemEventRadioButtonModloaderFabric(ItemEvent event) {
         if (event.getStateChange() == ItemEvent.SELECTED) {
+
+            listForgeVersions.setVisible(false);
             setChosenModloader("Fabric");
+            chosenFabricVersion = Objects.requireNonNull(listFabricVersions.getSelectedItem()).toString();
+
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.selected"));
+            // TODO: Replace with lang key
+            LOG.debug("Fabric version selected: " + chosenFabricVersion);
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+
         } else if (event.getStateChange() == ItemEvent.DESELECTED) {
+
+            listForgeVersions.setVisible(true);
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.deselected"));
+        }
+    }
+
+    /**
+     * Getter for the selected modloader version depending on which modloader is currently selected.
+     * @author Griefed
+     * @return String. Returns the modloader version depending on which modloader is currently selected.
+     */
+    private String getSelectedModloaderVersion() {
+        if (chosenModloader.equalsIgnoreCase("Fabric")) {
+
+            return chosenFabricVersion;
+
+        } else {
+
+            return chosenForgeVersion;
         }
     }
 
@@ -774,10 +914,21 @@ public class TabCreateServerPack extends JComponent {
 
         if (configChooser.showOpenDialog(createServerPackPanel) == JFileChooser.APPROVE_OPTION) {
 
-            Config newConfigFile = null;
-
             try {
-                newConfigFile = ConfigFactory.parseFile(new File(configChooser.getSelectedFile().getCanonicalPath()));
+                try {
+                    loadConfig(new File(configChooser.getSelectedFile().getCanonicalPath()));
+
+                    LOG.info(String.format(
+                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"),
+                            configChooser.getSelectedFile().getCanonicalPath()
+                    ));
+
+                } catch (IOException ex) {
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"), ex);
+                }
+
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
+
 
                 LOG.info(String.format(
                         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"),
@@ -786,49 +937,6 @@ public class TabCreateServerPack extends JComponent {
 
             } catch (IOException ex) {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"), ex);
-            }
-
-            if (newConfigFile != null) {
-
-                textModpackDir.setText(newConfigFile.getString("modpackDir"));
-
-                textClientMods.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("clientMods").toString()));
-
-                textCopyDirs.setText(CONFIGURATIONHANDLER.buildString(newConfigFile.getStringList("copyDirs").toString().replace("\\", "/")));
-
-                textJavaPath.setText(newConfigFile.getString("javaPath"));
-
-                textMinecraftVersion.setText(newConfigFile.getString("minecraftVersion"));
-
-                String tmpModloader = CONFIGURATIONHANDLER.setModLoaderCase(newConfigFile.getString("modLoader"));
-                if (tmpModloader.equals("Fabric")) {
-
-                    fabricRadioButton.setSelected(true);
-                    forgeRadioButton.setSelected(false);
-
-                    setChosenModloader("Fabric");
-
-                } else {
-
-                    fabricRadioButton.setSelected(false);
-                    forgeRadioButton.setSelected(true);
-
-                    setChosenModloader("Forge");
-                }
-
-                textModloaderVersion.setText(newConfigFile.getString("modLoaderVersion"));
-
-                checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerInstallation")));
-
-                checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerIcon")));
-
-                checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeServerProperties")));
-
-                checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeStartScripts")));
-
-                checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(newConfigFile.getString("includeZipCreation")));
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
             }
         }
     }
@@ -903,9 +1011,9 @@ public class TabCreateServerPack extends JComponent {
                 textCopyDirs.getText(),
                 checkBoxServer.isSelected(),
                 textJavaPath.getText(),
-                textMinecraftVersion.getText(),
+                chosenMinecraftVersion,
                 getChosenModloader(),
-                textModloaderVersion.getText(),
+                getSelectedModloaderVersion(),
                 checkBoxIcon.isSelected(),
                 checkBoxProperties.isSelected(),
                 checkBoxScripts.isSelected(),
@@ -939,9 +1047,9 @@ public class TabCreateServerPack extends JComponent {
                     textCopyDirs.getText(),
                     checkBoxServer.isSelected(),
                     textJavaPath.getText(),
-                    textMinecraftVersion.getText(),
+                    chosenMinecraftVersion,
                     getChosenModloader(),
-                    textModloaderVersion.getText(),
+                    getSelectedModloaderVersion(),
                     checkBoxIcon.isSelected(),
                     checkBoxProperties.isSelected(),
                     checkBoxScripts.isSelected(),
@@ -1026,11 +1134,11 @@ public class TabCreateServerPack extends JComponent {
     /**
      * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into ServerPackCreator.
      * @author Griefed
+     * @param configFile File. The configuration file to parse and load into the GUI.
      */
-    void loadConfig() {
+    protected void loadConfig(File configFile) {
         try {
             if (new File("serverpackcreator.conf").exists()) {
-                File configFile = new File("serverpackcreator.conf");
                 Config config = ConfigFactory.parseFile(configFile);
 
                 try {
@@ -1053,35 +1161,54 @@ public class TabCreateServerPack extends JComponent {
                 textJavaPath.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
 
                 try {
-                    textMinecraftVersion.setText(config.getString("minecraftVersion"));
-                } catch (NullPointerException ignored) {
-
-                }
+                    String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
+                    if (!config.getString("minecraftVersion").equals("")) {
+                        for (int i = 0; i < mcver.length; i++) {
+                            if (mcver[i].equals(config.getString("minecraftVersion"))) {
+                                listMinecraftVersions.setSelectedIndex(i);
+                                chosenMinecraftVersion = config.getString("minecraftVersion");
+                            }
+                        }
+                    }
+                } catch (NullPointerException ignored) {}
 
                 try {
+                    String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
+                    String[] forgever = VERSIONLISTER.getForgeVersionsAsArray(config.getString("minecraftVersion"));
+                    String modloaderver = config.getString("modLoaderVersion");
+                    changeForgeVersionListDependingOnMinecraftVersion(config.getString("minecraftVersion"));
                     if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
 
-                        fabricRadioButton.setSelected(true);
-                        forgeRadioButton.setSelected(false);
+                        updateModloaderGuiComponents(true, false, "Fabric");
 
-                        setChosenModloader("Fabric");
+                        if (!config.getString("modLoaderVersion").equals("")) {
+                            for (int i = 0; i < fabricver.length; i++) {
+                                if (fabricver[i].equals(config.getString("modLoaderVersion"))) {
+                                    listFabricVersions.setSelectedIndex(i);
+                                    chosenFabricVersion = config.getString("modLoaderVersion");
+                                }
+                            }
+                        }
 
                     } else {
-                        fabricRadioButton.setSelected(false);
-                        forgeRadioButton.setSelected(true);
 
-                        setChosenModloader("Forge");
+                        updateModloaderGuiComponents(false, true, "Forge");
+
+                        if (!config.getString("modLoaderVersion").equals("")) {
+                            for (int i = 0; i < forgever.length; i++) {
+                                if (forgever[i].equals(modloaderver)) {
+                                    listForgeVersions.setSelectedIndex(i);
+                                    chosenForgeVersion = config.getString("modLoaderVersion");
+                                }
+                            }
+                        }
                     }
                 } catch (NullPointerException ignored) {
-                    fabricRadioButton.setSelected(false);
-                    forgeRadioButton.setSelected(true);
 
-                    setChosenModloader("Forge");
+                    updateModloaderGuiComponents(false, true, "Forge");
+
+                    changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(listMinecraftVersions.getSelectedItem()).toString());
                 }
-
-                try {
-                    textModloaderVersion.setText(config.getString("modLoaderVersion"));
-                } catch (NullPointerException ignored) {}
 
                 checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerInstallation")));
 
@@ -1093,6 +1220,28 @@ public class TabCreateServerPack extends JComponent {
 
                 checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeZipCreation")));
             }
-        } catch (NullPointerException ignored) {}
+        } catch (NullPointerException ignored) {
+
+        } finally {
+            createServerPackPanel.revalidate();
+            createServerPackPanel.repaint();
+        }
+    }
+
+    /**
+     * Helper method for {@link #loadConfig(File)} which changes various states of GUI components.
+     * @author Griefed
+     * @param fabric Boolean. Whether Fabric is active.
+     * @param forge Boolean. Whether Forge is active.
+     * @param chosenModloader String. The modloader to set.
+     */
+    private void updateModloaderGuiComponents(boolean fabric, boolean forge, String chosenModloader) {
+        fabricRadioButton.setSelected(fabric);
+        listFabricVersions.setVisible(fabric);
+
+        forgeRadioButton.setSelected(forge);
+        listForgeVersions.setVisible(forge);
+
+        setChosenModloader(chosenModloader);
     }
 }
