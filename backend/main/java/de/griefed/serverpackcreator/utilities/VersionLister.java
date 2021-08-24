@@ -367,8 +367,6 @@ public class VersionLister {
         try {
             Document fabricXml = getFabricXml();
 
-            LOG.debug("Root node: " + fabricXml.getDocumentElement().getNodeName());
-
             NodeList versions = fabricXml.getElementsByTagName("version");
 
             for (int i = 0; i < versions.getLength(); i++) {
@@ -403,7 +401,7 @@ public class VersionLister {
             LOG.error("Couldn't read Fabric manifest.", ex);
         }
 
-        LOG.debug("Fabric versions: " + fabricLatestOrRelease);
+        LOG.debug("Fabric " + versionSpecifier + " version: " + fabricLatestOrRelease);
 
         return fabricLatestOrRelease;
     }
