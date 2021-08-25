@@ -92,7 +92,9 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      */
-    public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler, CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler, AddonsHandler injectedAddonsHandler) {
+    public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
+                               CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
+                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister) {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -131,21 +133,31 @@ public class TabCreateServerPack extends JComponent {
             LOG.error("Couldn't read properties file.", ex);
         }
 
-        this.VERSIONLISTER = new VersionLister();
+        this.VERSIONLISTER = injectedVersionLister;
     }
 
-    private final ImageIcon LOADICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/load.png")));
     private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/folder.png")));
     private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/start_generation.png")));
-    private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/help.png")));
     private final Dimension FOLDERBUTTONDIMENTION = new Dimension(24,24);
-    private final Dimension MISCBUTTONDIMENSION = new Dimension(50,50);
     private final Dimension STARTDIMENSION = new Dimension(64,64);
     private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
 
-    private final JComponent CREATESERVERPACKPANEL = new JPanel(false);
+    private final JButton BUTTON_MODPACKDIRECTORY = new JButton();
+    private final JButton BUTTON_CLIENTSIDEMODS = new JButton();
+    private final JButton BUTTON_COPYDIRECTORIES = new JButton();
+    private final JButton BUTTON_JAVAPATH = new JButton();
+    private final JButton BUTTON_GENERATESERVERPACK = new JButton();
 
-    private JScrollPane helpScrollPane;
+    private final ButtonGroup BUTTONGROUP_MODLOADERRADIOBUTTONS = new ButtonGroup();
+
+    private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20,10,0,0);
+    private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0,10,0,0);
+    private final Insets ZERO_ONEHUNDRET_ZERO_ZERO = new Insets(0,100,0,0);
+    private final Insets TEN_TEN_ZERO_ZERO = new Insets(10,10,0,0);
+    private final Insets ZERO_TEN_ZERO_TEN = new Insets(0,10,0,10);
+    private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5,0,5,0);
+
+    private final GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
 
     private JLabel labelGenerateServerPack;
     private JLabel labelModpackDir;
@@ -156,56 +168,37 @@ public class TabCreateServerPack extends JComponent {
     private JLabel labelModloader;
     private JLabel labelModloaderVersion;
 
-    private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
-    private final JComboBox<String> COMBOBOX_FORGEVERSIONS = new JComboBox<>();
-    private final JComboBox<String> COMBOBOX_FABRICVERSIONS = new JComboBox<>();
-
     private DefaultComboBoxModel<String> forgeComboBoxModel;
-
-    private final JTextField TEXTFIELD_MODPACKDIRECTORY = new JTextField("");
-    private final JTextField TEXTFIELD_CLIENTSIDEMODS = new JTextField("");
-    private final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
-    private final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
-
-    private JTextArea helpTextArea;
-
-    private JCheckBox checkBoxServer;
-    private JCheckBox checkBoxIcon;
-    private JCheckBox checkBoxProperties;
-    private JCheckBox checkBoxScripts;
-    private JCheckBox checkBoxZIP;
-
-    private final JButton BUTTON_MODPACKDIRECTORY = new JButton();
-    private final JButton BUTTON_CLIENTSIDEMODS = new JButton();
-    private final JButton BUTTON_COPYDIRECTORIES = new JButton();
-    private final JButton BUTTON_JAVAPATH = new JButton();
-    private final JButton BUTTON_LOADCONFIGURATIONFROMFILE = new JButton();
-    private final JButton BUTTON_OPENINFOWINDOW = new JButton();
-    private final JButton BUTTON_GENERATESERVERPACK = new JButton();
 
     private JFileChooser modpackDirChooser;
     private JFileChooser clientModsChooser;
     private JFileChooser copyDirsChooser;
     private JFileChooser javaChooser;
-    private JFileChooser configChooser;
 
-    private String chosenModloader;
-    private String chosenMinecraftVersion;
-    private String chosenFabricVersion;
-    private String chosenForgeVersion;
+    protected final JComponent CREATESERVERPACKPANEL = new JPanel(false);
 
-    private final ButtonGroup BUTTONGROUP_MODLOADERRADIOBUTTONS = new ButtonGroup();
-    private JRadioButton forgeRadioButton;
-    private JRadioButton fabricRadioButton;
+    protected final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
+    protected final JComboBox<String> COMBOBOX_FORGEVERSIONS = new JComboBox<>();
+    protected final JComboBox<String> COMBOBOX_FABRICVERSIONS = new JComboBox<>();
 
-    private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20,10,0,0);
-    private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0,10,0,0);
-    private final Insets ZERO_ONEHUNDRET_ZERO_ZERO = new Insets(0,100,0,0);
-    private final Insets TEN_TEN_ZERO_ZERO = new Insets(10,10,0,0);
-    private final Insets ZERO_TEN_ZERO_TEN = new Insets(0,10,0,10);
-    private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5,0,5,0);
+    protected final JTextField TEXTFIELD_MODPACKDIRECTORY = new JTextField("");
+    protected final JTextField TEXTFIELD_CLIENTSIDEMODS = new JTextField("");
+    protected final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
+    protected final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
 
-    private final GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
+    protected JCheckBox checkBoxServer;
+    protected JCheckBox checkBoxIcon;
+    protected JCheckBox checkBoxProperties;
+    protected JCheckBox checkBoxScripts;
+    protected JCheckBox checkBoxZIP;
+
+    protected String chosenModloader;
+    protected String chosenMinecraftVersion;
+    protected String chosenFabricVersion;
+    protected String chosenForgeVersion;
+
+    protected JRadioButton forgeRadioButton;
+    protected JRadioButton fabricRadioButton;
 
     /**
      * Getter for the chosen modloader from the JRadioButtons.
@@ -252,8 +245,8 @@ public class TabCreateServerPack extends JComponent {
 
 // ----------------------------------------------------------------------------------------LABELS AND TEXTFIELDS--------
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
-        GRIDBAGCONSTRAINTS.gridwidth = 2;
-        GRIDBAGCONSTRAINTS.weightx = 0.7;
+        GRIDBAGCONSTRAINTS.gridwidth = 4;
+        GRIDBAGCONSTRAINTS.weightx = 1;
 
         //Label and textfield modpackDir
         labelModpackDir = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir"));
@@ -265,7 +258,7 @@ public class TabCreateServerPack extends JComponent {
 
         CREATESERVERPACKPANEL.add(labelModpackDir, GRIDBAGCONSTRAINTS);
 
-        TEXTFIELD_MODPACKDIRECTORY.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
+        this.TEXTFIELD_MODPACKDIRECTORY.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 1;
@@ -462,8 +455,8 @@ public class TabCreateServerPack extends JComponent {
         checkBoxZIP = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip"),true);
         checkBoxZIP.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip.tip"));
 
-        GRIDBAGCONSTRAINTS.gridx = 0;
-        GRIDBAGCONSTRAINTS.gridy = 16;
+        GRIDBAGCONSTRAINTS.gridx = 2;
+        GRIDBAGCONSTRAINTS.gridy = 14;
 
         CREATESERVERPACKPANEL.add(checkBoxZIP, GRIDBAGCONSTRAINTS);
 
@@ -482,7 +475,7 @@ public class TabCreateServerPack extends JComponent {
         BUTTON_MODPACKDIRECTORY.addActionListener(this::selectModpackDirectory);
         addMouseListenerContentAreaFilledToButton(BUTTON_MODPACKDIRECTORY);
 
-        GRIDBAGCONSTRAINTS.gridx = 2;
+        GRIDBAGCONSTRAINTS.gridx = 4;
         GRIDBAGCONSTRAINTS.gridy = 1;
 
         CREATESERVERPACKPANEL.add(BUTTON_MODPACKDIRECTORY, GRIDBAGCONSTRAINTS);
@@ -496,7 +489,7 @@ public class TabCreateServerPack extends JComponent {
         BUTTON_CLIENTSIDEMODS.addActionListener(this::selectClientMods);
         addMouseListenerContentAreaFilledToButton(BUTTON_CLIENTSIDEMODS);
 
-        GRIDBAGCONSTRAINTS.gridx = 2;
+        GRIDBAGCONSTRAINTS.gridx = 4;
         GRIDBAGCONSTRAINTS.gridy = 3;
 
         CREATESERVERPACKPANEL.add(BUTTON_CLIENTSIDEMODS, GRIDBAGCONSTRAINTS);
@@ -510,7 +503,7 @@ public class TabCreateServerPack extends JComponent {
         BUTTON_COPYDIRECTORIES.addActionListener(this::selectCopyDirs);
         addMouseListenerContentAreaFilledToButton(BUTTON_COPYDIRECTORIES);
 
-        GRIDBAGCONSTRAINTS.gridx = 2;
+        GRIDBAGCONSTRAINTS.gridx = 4;
         GRIDBAGCONSTRAINTS.gridy = 5;
 
         CREATESERVERPACKPANEL.add(BUTTON_COPYDIRECTORIES, GRIDBAGCONSTRAINTS);
@@ -524,42 +517,10 @@ public class TabCreateServerPack extends JComponent {
         BUTTON_JAVAPATH.addActionListener(this::selectJavaInstallation);
         addMouseListenerContentAreaFilledToButton(BUTTON_JAVAPATH);
 
-        GRIDBAGCONSTRAINTS.gridx = 2;
+        GRIDBAGCONSTRAINTS.gridx = 4;
         GRIDBAGCONSTRAINTS.gridy = 7;
 
         CREATESERVERPACKPANEL.add(BUTTON_JAVAPATH, GRIDBAGCONSTRAINTS);
-
-        BUTTON_LOADCONFIGURATIONFROMFILE.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig"));
-        BUTTON_LOADCONFIGURATIONFROMFILE.setContentAreaFilled(false);
-        BUTTON_LOADCONFIGURATIONFROMFILE.setIcon(LOADICON);
-        BUTTON_LOADCONFIGURATIONFROMFILE.setMinimumSize(MISCBUTTONDIMENSION);
-        BUTTON_LOADCONFIGURATIONFROMFILE.setPreferredSize(MISCBUTTONDIMENSION);
-        BUTTON_LOADCONFIGURATIONFROMFILE.setMaximumSize(MISCBUTTONDIMENSION);
-        BUTTON_LOADCONFIGURATIONFROMFILE.addActionListener(this::loadConfigFile);
-        addMouseListenerContentAreaFilledToButton(BUTTON_LOADCONFIGURATIONFROMFILE);
-
-        GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.CENTER;
-        GRIDBAGCONSTRAINTS.gridx = 3;
-        GRIDBAGCONSTRAINTS.gridy = 1;
-        GRIDBAGCONSTRAINTS.gridheight = 3;
-
-        CREATESERVERPACKPANEL.add(BUTTON_LOADCONFIGURATIONFROMFILE, GRIDBAGCONSTRAINTS);
-
-        BUTTON_OPENINFOWINDOW.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.button"));
-        BUTTON_OPENINFOWINDOW.setContentAreaFilled(false);
-        BUTTON_OPENINFOWINDOW.setIcon(HELPICON);
-        BUTTON_OPENINFOWINDOW.setMinimumSize(MISCBUTTONDIMENSION);
-        BUTTON_OPENINFOWINDOW.setPreferredSize(MISCBUTTONDIMENSION);
-        BUTTON_OPENINFOWINDOW.setMaximumSize(MISCBUTTONDIMENSION);
-        BUTTON_OPENINFOWINDOW.addActionListener(this::openInfoWindow);
-        addMouseListenerContentAreaFilledToButton(BUTTON_OPENINFOWINDOW);
-
-        GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.CENTER;
-        GRIDBAGCONSTRAINTS.gridx = 3;
-        GRIDBAGCONSTRAINTS.gridy = 5;
-        GRIDBAGCONSTRAINTS.gridheight = 3;
-
-        CREATESERVERPACKPANEL.add(BUTTON_OPENINFOWINDOW, GRIDBAGCONSTRAINTS);
 
 // ---------------------------------------------------------------------------------MAIN ACTION BUTTON AND LABEL--------
 
@@ -611,6 +572,7 @@ public class TabCreateServerPack extends JComponent {
      * @param buttonToAddMouseListenerTo JButton. The button to add the mouse listener to.
      */
     private void addMouseListenerContentAreaFilledToButton(JButton buttonToAddMouseListenerTo) {
+
         buttonToAddMouseListenerTo.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent event) {
                 buttonToAddMouseListenerTo.setContentAreaFilled(true);
@@ -627,12 +589,12 @@ public class TabCreateServerPack extends JComponent {
      * @author Griefed
      * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list of available Forge versions.
      */
-    private void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
+    void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
+
         forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeVersionsAsArray(chosenMinecraftVersion));
+
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
-        COMBOBOX_FORGEVERSIONS.revalidate();
-        COMBOBOX_FORGEVERSIONS.repaint();
     }
 
     /**
@@ -641,8 +603,11 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void actionEventComboBoxMinecraftVersion(ActionEvent event) {
+
         chosenMinecraftVersion = Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString();
+
         changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
+
         // TODO: Replace with lang key
         LOG.debug("Selected Minecraft version: " + COMBOBOX_MINECRAFTVERSIONS.getSelectedItem());
     }
@@ -653,7 +618,9 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void actionEventComboBoxFabricVersions(ActionEvent event) {
+
         chosenFabricVersion = Objects.requireNonNull(COMBOBOX_FABRICVERSIONS.getSelectedItem()).toString();
+
         // TODO: Replace with lang key
         LOG.debug("Selected Fabric version: " + COMBOBOX_FABRICVERSIONS.getSelectedItem());
     }
@@ -664,7 +631,9 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void actionEventComboBoxForgeVersions(ActionEvent event) {
+
         chosenForgeVersion = Objects.requireNonNull(COMBOBOX_FORGEVERSIONS.getSelectedItem()).toString();
+
         // TODO: Replace with lang key
         LOG.debug("Selected Forge version: " + COMBOBOX_FORGEVERSIONS.getSelectedItem());
     }
@@ -675,20 +644,26 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void itemEventRadioButtonModloaderForge(ItemEvent event) {
+
         if (event.getStateChange() == ItemEvent.SELECTED) {
 
             COMBOBOX_FABRICVERSIONS.setVisible(false);
+
             setChosenModloader("Forge");
+
             chosenForgeVersion = Objects.requireNonNull(COMBOBOX_FORGEVERSIONS.getSelectedItem()).toString();
 
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.selected"));
+
             // TODO: Replace with lang key
             LOG.debug("Forge version selected: " + chosenForgeVersion);
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
 
         } else if (event.getStateChange() == ItemEvent.DESELECTED) {
 
             COMBOBOX_FABRICVERSIONS.setVisible(true);
+
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.deselected"));
 
         }
@@ -700,20 +675,26 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void itemEventRadioButtonModloaderFabric(ItemEvent event) {
+
         if (event.getStateChange() == ItemEvent.SELECTED) {
 
             COMBOBOX_FORGEVERSIONS.setVisible(false);
+
             setChosenModloader("Fabric");
+
             chosenFabricVersion = Objects.requireNonNull(COMBOBOX_FABRICVERSIONS.getSelectedItem()).toString();
 
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.selected"));
+
             // TODO: Replace with lang key
             LOG.debug("Fabric version selected: " + chosenFabricVersion);
+
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
 
         } else if (event.getStateChange() == ItemEvent.DESELECTED) {
 
             COMBOBOX_FORGEVERSIONS.setVisible(true);
+
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.deselected"));
         }
     }
@@ -724,6 +705,7 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void selectModpackDirectory(ActionEvent event) {
+
         modpackDirChooser = new JFileChooser();
 
         modpackDirChooser.setCurrentDirectory(new File("."));
@@ -754,6 +736,7 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void selectClientMods(ActionEvent event) {
+
         clientModsChooser = new JFileChooser();
 
         if (TEXTFIELD_MODPACKDIRECTORY.getText().length() > 0 &&
@@ -801,6 +784,7 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void selectCopyDirs(ActionEvent event) {
+
         copyDirsChooser = new JFileChooser();
 
         if (TEXTFIELD_MODPACKDIRECTORY.getText().length() > 0 &&
@@ -836,6 +820,7 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void selectJavaInstallation(ActionEvent event) {
+
         javaChooser = new JFileChooser();
 
         if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))).isDirectory()) {
@@ -868,107 +853,6 @@ public class TabCreateServerPack extends JComponent {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonjavapath"), ex);
             }
         }
-    }
-
-    /**
-     * Upon button-press, open a file-selector to load a serverpackcreator.conf-file into ServerPackCreator.
-     * @author Griefed
-     * @param event The event which triggers this method.
-     */
-    private void loadConfigFile(ActionEvent event) {
-        configChooser = new JFileChooser();
-
-        configChooser.setCurrentDirectory(new File("."));
-        configChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.title"));
-        configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-        configChooser.setFileFilter(new FileNameExtensionFilter(
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),
-                "conf"));
-
-        configChooser.setAcceptAllFileFilterUsed(false);
-        configChooser.setMultiSelectionEnabled(false);
-        configChooser.setPreferredSize(CHOOSERDIMENSION);
-
-        if (configChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
-
-            try {
-                try {
-                    loadConfig(new File(configChooser.getSelectedFile().getCanonicalPath()));
-
-                    LOG.info(String.format(
-                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"),
-                            configChooser.getSelectedFile().getCanonicalPath()
-                    ));
-
-                } catch (IOException ex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"), ex);
-                }
-
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile.finish"));
-
-
-                LOG.info(String.format(
-                        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonloadconfigfromfile"),
-                        configChooser.getSelectedFile().getCanonicalPath()
-                ));
-
-            } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"), ex);
-            }
-        }
-    }
-
-    /**
-     * Upon button-press, open an info-window containing information/help about how to configure ServerPackCreator.
-     * @author Griefed
-     * @param event The event which triggers this method.
-     */
-    private void openInfoWindow(ActionEvent event) {
-
-        helpTextArea = new JTextArea(String.format(
-                "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.directories"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloader"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
-        ));
-
-        helpTextArea.setEditable(false);
-        helpTextArea.setOpaque(false);
-
-        helpScrollPane = new JScrollPane(
-                helpTextArea,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        );
-        helpScrollPane.setBorder(null);
-
-        helpTextArea.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(helpTextArea);
-            if (window instanceof Dialog) {
-                Dialog dialog = (Dialog) window;
-                if (!dialog.isResizable()) {
-                    dialog.setResizable(true);
-                }
-            }
-        });
-
-        JOptionPane.showMessageDialog(
-                CREATESERVERPACKPANEL,
-                helpScrollPane,
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
-                JOptionPane.INFORMATION_MESSAGE,
-                HELPICON
-        );
     }
 
     /**
@@ -1115,105 +999,109 @@ public class TabCreateServerPack extends JComponent {
      * @param configFile File. The configuration file to parse and load into the GUI.
      */
     protected void loadConfig(File configFile) {
+
         try {
-            if (new File("serverpackcreator.conf").exists()) {
-                Config config = ConfigFactory.parseFile(configFile);
 
-                try {
-                    TEXTFIELD_MODPACKDIRECTORY.setText(config.getString("modpackDir").replace("\\", "/"));
-                } catch (NullPointerException ignored) {
+            Config config = ConfigFactory.parseFile(configFile);
 
+            try {
+                TEXTFIELD_MODPACKDIRECTORY.setText(config.getString("modpackDir").replace("\\", "/"));
+            } catch (NullPointerException ex) {
+                LOG.error("Error modpackdir", ex);
+            }
+
+            if (config.getStringList("clientMods").isEmpty()) {
+
+                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(CONFIGURATIONHANDLER.getFallbackModsList().toString()));
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textclientmods.fallback"));
+
+            } else {
+                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("clientMods").toString()));
+            }
+
+            TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
+
+            TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
+
+            try {
+                String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
+                if (!config.getString("minecraftVersion").equals("")) {
+                    for (int i = 0; i < mcver.length; i++) {
+                        if (mcver[i].equals(config.getString("minecraftVersion"))) {
+                            COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
+                            chosenMinecraftVersion = config.getString("minecraftVersion");
+                        }
+                    }
                 }
+            } catch (NullPointerException ex) {
+                LOG.error("Error minecraft version", ex);
+            }
 
-                if (config.getStringList("clientMods").isEmpty()) {
+            try {
+                String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
+                String[] forgever = VERSIONLISTER.getForgeVersionsAsArray(config.getString("minecraftVersion"));
 
-                    TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(CONFIGURATIONHANDLER.getFallbackModsList().toString()));
-                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textclientmods.fallback"));
+                String modloaderver = config.getString("modLoaderVersion");
+
+                changeForgeVersionListDependingOnMinecraftVersion(config.getString("minecraftVersion"));
+
+                if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
+
+                    updateModloaderGuiComponents(true, false, "Fabric");
+
+                    if (!config.getString("modLoaderVersion").equals("")) {
+                        for (int i = 0; i < fabricver.length; i++) {
+                            if (fabricver[i].equals(config.getString("modLoaderVersion"))) {
+                                COMBOBOX_FABRICVERSIONS.setSelectedIndex(i);
+                                chosenFabricVersion = config.getString("modLoaderVersion");
+                            }
+                        }
+                    }
 
                 } else {
-                    TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("clientMods").toString()));
-                }
-
-                TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
-
-                TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
-
-                try {
-                    String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
-                    if (!config.getString("minecraftVersion").equals("")) {
-                        for (int i = 0; i < mcver.length; i++) {
-                            if (mcver[i].equals(config.getString("minecraftVersion"))) {
-                                COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
-                                chosenMinecraftVersion = config.getString("minecraftVersion");
-                            }
-                        }
-                    }
-                } catch (NullPointerException ignored) {}
-
-                try {
-                    String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
-                    String[] forgever = VERSIONLISTER.getForgeVersionsAsArray(config.getString("minecraftVersion"));
-                    String modloaderver = config.getString("modLoaderVersion");
-                    changeForgeVersionListDependingOnMinecraftVersion(config.getString("minecraftVersion"));
-                    if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
-
-                        updateModloaderGuiComponents(true, false, "Fabric");
-
-                        if (!config.getString("modLoaderVersion").equals("")) {
-                            for (int i = 0; i < fabricver.length; i++) {
-                                if (fabricver[i].equals(config.getString("modLoaderVersion"))) {
-                                    COMBOBOX_FABRICVERSIONS.setSelectedIndex(i);
-                                    chosenFabricVersion = config.getString("modLoaderVersion");
-                                }
-                            }
-                        }
-
-                    } else {
-
-                        updateModloaderGuiComponents(false, true, "Forge");
-
-                        if (!config.getString("modLoaderVersion").equals("")) {
-                            for (int i = 0; i < forgever.length; i++) {
-                                if (forgever[i].equals(modloaderver)) {
-                                    COMBOBOX_FORGEVERSIONS.setSelectedIndex(i);
-                                    chosenForgeVersion = config.getString("modLoaderVersion");
-                                }
-                            }
-                        }
-                    }
-                } catch (NullPointerException ignored) {
 
                     updateModloaderGuiComponents(false, true, "Forge");
 
-                    changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
+                    if (!config.getString("modLoaderVersion").equals("")) {
+                        for (int i = 0; i < forgever.length; i++) {
+                            if (forgever[i].equals(modloaderver)) {
+                                COMBOBOX_FORGEVERSIONS.setSelectedIndex(i);
+                                chosenForgeVersion = config.getString("modLoaderVersion");
+                            }
+                        }
+                    }
                 }
+            } catch (NullPointerException ex) {
+                LOG.error("Error modloader versions", ex);
+                updateModloaderGuiComponents(false, true, "Forge");
 
-                checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerInstallation")));
-
-                checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerIcon")));
-
-                checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerProperties")));
-
-                checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeStartScripts")));
-
-                checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeZipCreation")));
+                changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
             }
-        } catch (NullPointerException ignored) {
 
-        } finally {
-            CREATESERVERPACKPANEL.revalidate();
-            CREATESERVERPACKPANEL.repaint();
+            checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerInstallation")));
+
+            checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerIcon")));
+
+            checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerProperties")));
+
+            checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeStartScripts")));
+
+            checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeZipCreation")));
+
+        } catch (NullPointerException ex) {
+            LOG.error("Error config", ex);
         }
     }
 
     /**
-     * Helper method for {@link #loadConfig(File)} which changes various states of GUI components.
+     * Helper method which changes various states of GUI components.
      * @author Griefed
      * @param fabric Boolean. Whether Fabric is active.
      * @param forge Boolean. Whether Forge is active.
      * @param chosenModloader String. The modloader to set.
      */
     private void updateModloaderGuiComponents(boolean fabric, boolean forge, String chosenModloader) {
+
         fabricRadioButton.setSelected(fabric);
         COMBOBOX_FABRICVERSIONS.setVisible(fabric);
 

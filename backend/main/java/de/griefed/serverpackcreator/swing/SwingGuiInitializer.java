@@ -24,7 +24,11 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
+import de.griefed.serverpackcreator.swing.themes.LightTheme;
+import de.griefed.serverpackcreator.utilities.VersionLister;
+import mdlaf.MaterialLookAndFeel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,8 +38,11 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><br>
@@ -53,18 +60,39 @@ public class SwingGuiInitializer extends JPanel {
 
     private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/banner.png")));
     private final Image ICON_SERVERPACKCREATOR = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/app.png")));
-    private final Dimension DIMENSION_WINDOW = new Dimension(800,860);
+    private final Dimension DIMENSION_WINDOW = new Dimension(925,750);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final ServerPackHandler CREATESERVERPACK;
     private final AddonsHandler ADDONSHANDLER;
+    private final VersionLister VERSIONLISTER;
+
+    private final LightTheme LIGHTTHEME = new LightTheme();
+    private final DarkTheme DARKTHEME = new DarkTheme();
+
+    private final MaterialLookAndFeel LAF_LIGHT = new MaterialLookAndFeel(LIGHTTHEME);
+    private final MaterialLookAndFeel LAF_DARK = new MaterialLookAndFeel(DARKTHEME);
 
     private final BackgroundPanel BACKGROUNDPANEL;
+
     private final JFrame FRAME_SERVERPACKCREATOR;
 
+    private final TabCreateServerPack TAB_CREATESERVERPACK;
+    private final TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR;
+    private final TabModloaderInstallerLog TAB_LOG_MODLOADERINSTALLER;
+    private final TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER;
+    private final TabAbout TAB_ABOUT;
+
+    private final JTabbedPane TABBEDPANE;
+
+    private final MenuBar MENUBAR;
+
     private BufferedImage bufferedImage;
+
+    private Properties serverpackcreatorproperties;
+
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -115,25 +143,32 @@ public class SwingGuiInitializer extends JPanel {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
 
-
-
         try {
             bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));
         } catch (IOException ex) {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex);
         }
 
-        TabCreateServerPack TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER);
-        TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER);
-        TabModloaderInstallerLog TAB_LOG_MODLOADERINSTALLER = new TabModloaderInstallerLog(LOCALIZATIONMANAGER);
-        TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog(LOCALIZATIONMANAGER);
-        TabAbout TAB_ABOUT = new TabAbout(LOCALIZATIONMANAGER);
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
+        }
 
-        FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui"));
+        this.VERSIONLISTER = new VersionLister();
 
-        BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
+        this.TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER);
+        this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER);
+        this.TAB_LOG_MODLOADERINSTALLER = new TabModloaderInstallerLog(LOCALIZATIONMANAGER);
+        this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog(LOCALIZATIONMANAGER);
+        this.TAB_ABOUT = new TabAbout(LOCALIZATIONMANAGER);
 
-        JTabbedPane TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
+        this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui"));
+
+        this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
+
+        this.TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
 
         /*
          * Remove the border insets so the panes fully fill out the area available to them. Prevents the image
@@ -200,6 +235,18 @@ public class SwingGuiInitializer extends JPanel {
         TABBEDPANE.setOpaque(false);
 
         TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+
+        MENUBAR = new MenuBar(
+                LOCALIZATIONMANAGER,
+                LIGHTTHEME,
+                DARKTHEME,
+                FRAME_SERVERPACKCREATOR,
+                LAF_LIGHT,
+                LAF_DARK,
+                TAB_CREATESERVERPACK
+        );
+
+        FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
     }
 
     /**
@@ -210,17 +257,24 @@ public class SwingGuiInitializer extends JPanel {
      */
     public void mainGUI() {
         SwingUtilities.invokeLater(() -> {
-            // Bold fonts = true
-            UIManager.put("swing.boldMetal", true);
-            UIManager.put("Slider.focus", UIManager.get("Slider.background"));
 
             try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                //UIManager.setLookAndFeel(new MaterialLookAndFeel(new JMarsDarkTheme()));
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+
+                if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.gui.darkmode").equals("true")) {
+
+                    UIManager.setLookAndFeel(LAF_DARK);
+                    MaterialLookAndFeel.changeTheme(DARKTHEME);
+
+                } else {
+
+                    UIManager.setLookAndFeel(LAF_LIGHT);
+                    MaterialLookAndFeel.changeTheme(LIGHTTHEME);
+
+                }
+
+            } catch (/*ClassNotFoundException | InstantiationException | IllegalAccessException |*/ UnsupportedLookAndFeelException ex) {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
             }
-
 
             createAndShowGUI();
         });
@@ -243,7 +297,7 @@ public class SwingGuiInitializer extends JPanel {
 
         FRAME_SERVERPACKCREATOR.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
 
-        FRAME_SERVERPACKCREATOR.add(new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER), BorderLayout.CENTER);
+        FRAME_SERVERPACKCREATOR.add(TABBEDPANE, BorderLayout.CENTER);
 
         FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
@@ -252,9 +306,14 @@ public class SwingGuiInitializer extends JPanel {
 
         FRAME_SERVERPACKCREATOR.pack();
 
-        FRAME_SERVERPACKCREATOR.setVisible(true);
+        /*
+         * I know this looks stupid. Why update the tree if it isn't even visible yet?
+         * Because otherwise, when switching from light to dark-theme, the inset for tabs of the tabbed pane suddenly
+         * changes, which looks ugly. Calling this does the same, but before the GUI is visible. Dirty hack? Maybe.
+         * Does it work? Yeah.
+         */
+        SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
 
-        FRAME_SERVERPACKCREATOR.revalidate();
-        FRAME_SERVERPACKCREATOR.repaint();
+        FRAME_SERVERPACKCREATOR.setVisible(true);
     }
 }
