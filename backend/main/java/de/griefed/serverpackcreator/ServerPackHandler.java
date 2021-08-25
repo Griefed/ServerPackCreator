@@ -646,7 +646,7 @@ public class ServerPackHandler {
         List<String> modsInModpack = new ArrayList<>();
         List<String> autodiscoveredClientMods = new ArrayList<>();
 
-        if (serverpackcreatorproperties.get("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true")) {
+        if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true")) {
 
             String[] split = minecraftVersion.split("\\.");
 
@@ -681,7 +681,7 @@ public class ServerPackHandler {
             }
         }
 
-        if (serverpackcreatorproperties.get("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true") && autodiscoveredClientMods.size() > 0) {
+        if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true") && autodiscoveredClientMods.size() > 0) {
             for (int m = 0; m < autodiscoveredClientMods.size(); m++) {
 
                 int i = m;
