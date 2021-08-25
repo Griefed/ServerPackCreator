@@ -99,7 +99,7 @@ public class LocalizationManager {
     }
 
     /**
-     * Getter for the lang.properties file which will set the locale for ServerPackCreator.
+     * Getter for the serverpackcreator.properties file which contains the locale for ServerPackCreator.
      * @author whitebear60
      * @return File. Returns the file which will set the locale for ServerPackCreator.
      */
