@@ -1,3 +1,45 @@
+## [2.2.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.4...2.2.0-alpha.5) (2021-08-25)
+
+
+### :scissors: Refactor
+
+* Change labels for Minecraft, modloader and modloader version to better reflect new feature of selection from lists. ([84755a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/84755a185c02948050d0e534b2a5771898f13aff))
+* Extract actions and events into separate methods. Improves maintainability. ([7a335da](https://git.griefed.de/Griefed/ServerPackCreator/commit/7a335dab87acbd4f136e520fb6c1af012659606d))
+* Extract actions and events into separate methods. Improves maintainability. ([9268245](https://git.griefed.de/Griefed/ServerPackCreator/commit/9268245df88d96fbe358b68de488992e102d448c))
+* Improve debug logging for VersionLister ([29be15f](https://git.griefed.de/Griefed/ServerPackCreator/commit/29be15fa5ba18ce8bdb0f4345e989ef843a63e75))
+* Move assignemts to field declaration where applicable. Extract method for adding MouseListeners to buttons. ([b37ad30](https://git.griefed.de/Griefed/ServerPackCreator/commit/b37ad30ce88e570e4b8632760dee5cebab28f8da))
+* Prevent going through a list of clientside-only mods automatically gathered from modpack is property is false. ([51a3e42](https://git.griefed.de/Griefed/ServerPackCreator/commit/51a3e42ea18e37453734c5cc6c4e2e63fea8bfee))
+
+
+### 📔 Docs
+
+* Name correct filename for properties according to merge of lang.properties with serverpackcreator.properties ([ed42dcd](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed42dcd14479013e979f9793aae884b0c0cf1836))
+
+
+### 🧪 Tests
+
+* Remove addon execution from tests, as parallel running tests caused problems because the addon can only be accessed by one thread at a time. ([b963b10](https://git.griefed.de/Griefed/ServerPackCreator/commit/b963b1094e3a470213fc737f9effa305960ad31f))
+
+
+### 🚀 Features
+
+* Allow check of configuration from an instance of ConfigurationModel, without any file involved. ([17529fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/17529fa958fbb386dfe7bdc91eaec2f9ceff39f5))
+* Allow generation of a server pack from an instance of ConfigurationModel ([5b54a1c](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b54a1ca9b3be3cc7d72e3c1851a636ee81a482e))
+* New theme and cleaned up GUI. MenuBar for various things (wip). Lists for version selection. Switch between darkmode and lightmode and remember last mode used. More things, check commit. ([949fb6a](https://git.griefed.de/Griefed/ServerPackCreator/commit/949fb6aecd47518e0b91ca3a8be0516a9f2cb540))
+* Read Minecraft, Forge and Fabric versions from their manifests into lists which can then be used in GUIs. ([c9ce1ff](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9ce1ff41f12b6eeef9dc00827d3e6a129ee8a5f))
+* Select Minecraft and modloader versions from lists instead of entering text into a textfield. ([5b56f18](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b56f18a90e7d3f1bfda98d5ae509a9cda29e959))
+
+
+### 🛠 Fixes
+
+* Correctlry get property which decides whether autodiscovery of clientside-only mods should be enabled ([3c5deff](https://git.griefed.de/Griefed/ServerPackCreator/commit/3c5deff79acf70d5d6ea6d578cc4e73faf85d4d3))
+
+
+### Other
+
+* Remove no longer needed lang keys ([6435fbc](https://git.griefed.de/Griefed/ServerPackCreator/commit/6435fbc73be7405290a48a16c2b053a0fa09e1ed))
+* Remove unneeded imports ([8482d29](https://git.griefed.de/Griefed/ServerPackCreator/commit/8482d295eb1d731d1c02c654363dafe235ba9910))
+
 ## [2.2.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.3...2.2.0-alpha.4) (2021-08-20)
 
 
