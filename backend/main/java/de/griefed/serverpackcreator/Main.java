@@ -160,6 +160,8 @@ public class Main {
             System.exit(0);
         }
 
+        // TODO: DI serverpackcreator.properties
+
         // Prepare instances for dependency injection
         DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
         AddonsHandler addonsHandler = new AddonsHandler(localizationManager);
