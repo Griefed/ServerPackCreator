@@ -1,3 +1,27 @@
+## [3.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.5...3.0.0-alpha.1) (2021-08-27)
+
+
+### :scissors: Refactor
+
+* Upgrade to Gradle 7.2. Remove Fabric-Installer dependecy by retrieving the Minecraft server url ourselves. ([e297f63](https://git.griefed.de/Griefed/ServerPackCreator/commit/e297f6347e393359ac71b0a70c388afd759355a8))
+
+
+### 📔 Docs
+
+* Update README with new feature information and reflect changes made to file-structure ([04ffed5](https://git.griefed.de/Griefed/ServerPackCreator/commit/04ffed5e30c450520132d984e0c2974cafc777d1))
+* Update README with new feature information and reflect changes made to file-structure ([b3f211c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b3f211cf51abd589672fe3005f0cfc9ef76cec76))
+
+
+### 🚀 Features
+
+* **gui:** Various changes. Too many to list. MenuBar entries, Theme changes. MenuItem funcitionality etc. etc. ([28c088c](https://git.griefed.de/Griefed/ServerPackCreator/commit/28c088cc5395a432ac6cbd83f2b31643922bf858))
+
+
+### Other
+
+* Fix tests, docs and add TODOs regarding lang keys ([2dac4e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/2dac4e1f0a7e53f7b04cfce982c1a6d2c99c5747))
+* Remove no longer relevant license ([64fbeeb](https://git.griefed.de/Griefed/ServerPackCreator/commit/64fbeeb9593a3696b9a53f1f436bbdf6d00e22e9))
+
 ## [2.2.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.4...2.2.0-alpha.5) (2021-08-25)
 
 
