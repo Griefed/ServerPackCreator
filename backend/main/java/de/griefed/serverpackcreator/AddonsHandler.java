@@ -238,6 +238,7 @@ public class AddonsHandler {
                     workDirectory = new File(tempDirectory + addonName);
                     Files.createDirectories(workDirectory.toPath());
 
+                    // TODO: Replace with lang key
                     LOG_ADDONS.debug("Addon work-directory is: " + workDirectory);
 
                     commandArguments.clear();

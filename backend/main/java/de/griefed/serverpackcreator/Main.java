@@ -30,12 +30,14 @@ import org.springframework.boot.system.ApplicationHome;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong>
@@ -74,6 +76,8 @@ public class Main {
 
     private static final File log4j2xml = new File("log4j2.xml");
     private static final File properties = new File("serverpackcreator.properties");
+    
+
 
     /**
      * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.<p>
@@ -91,83 +95,90 @@ public class Main {
         createFile(log4j2xml);
         createFile(properties);
 
+        Properties serverpackcreatorproperties = null;
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            serverpackcreatorproperties = new Properties();
+            serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
+        }
+
         List<String> programArgs = Arrays.asList(args);
 
-        LocalizationManager localizationManager = new LocalizationManager();
+        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager();
         if (Arrays.asList(args).contains("-lang")) {
             try {
                 // Init the LocalizationManager with the locale passed by the cli arguments.
-                localizationManager.init(programArgs.get(programArgs.indexOf("-lang") + 1));
+                LOCALIZATIONMANAGER.init(programArgs.get(programArgs.indexOf("-lang") + 1));
             } catch (IncorrectLanguageException e) {
                 LOG.info(programArgs.get(programArgs.indexOf("-lang") + 1));
                 // We can not use localized string here, because the localization manager has not yet been initialized.
                 LOG.error("Incorrect language specified, falling back to English (United States)...");
 
                 // Init the LocalizationManager with the default locale en_US.
-                localizationManager.init();
+                LOCALIZATIONMANAGER.init();
             }
         } else {
             // Check local lang.properties file for locale setting.
-            localizationManager.checkLocaleFile();
+            LOCALIZATIONMANAGER.checkLocaleFile();
         }
 
         // Print help and information about ServerPackCreator which could help the user figure out what to do.
         if (Arrays.asList(args).contains("-help")) {
-            LOG.debug(localizationManager.getLocalizedString("main.log.debug.help.issued"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help01"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help02"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help03"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help04"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help05"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help06"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help07"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help08"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help09"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help10"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help11"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help12"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help13"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help14"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help15"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help16"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help17"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help18"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help19"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help20"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help21"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help22"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help23"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help24"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help25"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help26"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help27"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help28"));
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.help.issued"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help01"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help02"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help03"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help04"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help05"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help06"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help07"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help08"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help09"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help10"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help11"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help12"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help13"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help14"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help15"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help16"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help17"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help18"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help19"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help20"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help21"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help22"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help23"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help24"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help25"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help26"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help27"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help28"));
             System.out.println("#");
-            System.out.println(localizationManager.getLocalizedString("main.console.help29"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help30"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help31"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help32"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help33"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help34"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help29"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help30"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help31"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help32"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help33"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help34"));
             System.out.println("#");
-            System.out.println(localizationManager.getLocalizedString("main.console.help35"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help36"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help37"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help38"));
-            System.out.println(localizationManager.getLocalizedString("main.console.help39"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help35"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help36"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help37"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help38"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help39"));
 
-            LOG.debug(localizationManager.getLocalizedString("main.log.debug.help.exit"));
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.help.exit"));
             System.exit(0);
         }
 
-        // TODO: DI serverpackcreator.properties
-
         // Prepare instances for dependency injection
-        DefaultFiles defaultFiles = new DefaultFiles(localizationManager);
-        AddonsHandler addonsHandler = new AddonsHandler(localizationManager);
-        CurseCreateModpack curseCreateModpack = new CurseCreateModpack(localizationManager);
-        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(localizationManager, curseCreateModpack);
-        ServerPackHandler serverPackHandler = new ServerPackHandler(localizationManager, curseCreateModpack, addonsHandler, CONFIGURATIONHANDLER);
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
+        AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
+        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
+        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
+        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
 
         //noinspection UnusedAssignment
         String jarPath = null,
@@ -177,16 +188,16 @@ public class Main {
                osName = null,
                osVersion = null;
 
-        LOG.debug(localizationManager.getLocalizedString("main.log.debug.warning"));
-        LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip0"));
-        LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip1"));
-        LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip2"));
-        LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip3"));
-        LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip4"));
-        LOG.warn(localizationManager.getLocalizedString("main.log.warn.wip0"));
+        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip3"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip4"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
 
         //Print system information to console and logs.
-        LOG.debug(localizationManager.getLocalizedString("main.log.debug.gathering"));
+        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.gathering"));
         ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
         jarPath = home.getSource().toString().replace("\\","/");
         jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
@@ -194,20 +205,20 @@ public class Main {
         osArch = System.getProperty("os.arch");
         osName = System.getProperty("os.name");
         osVersion = System.getProperty("os.version");
-        LOG.info(localizationManager.getLocalizedString("main.log.info.system.enter"));
-        LOG.info(String.format(localizationManager.getLocalizedString("main.log.info.system.jarpath"), jarPath));
-        LOG.info(String.format(localizationManager.getLocalizedString("main.log.info.system.jarname"), jarName));
-        LOG.info(String.format(localizationManager.getLocalizedString("main.log.info.system.java"), javaVersion));
-        LOG.info(String.format(localizationManager.getLocalizedString("main.log.info.system.osarchitecture"), osArch));
-        LOG.info(String.format(localizationManager.getLocalizedString("main.log.info.system.osname"), osName));
-        LOG.info(String.format(localizationManager.getLocalizedString("main.log.info.system.osversion"), osVersion));
-        LOG.info(localizationManager.getLocalizedString("main.log.info.system.include"));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), jarPath));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), jarName));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"), javaVersion));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osarchitecture"), osArch));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"), osName));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), osVersion));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
         // Ensure default files are present.
-        defaultFiles.filesSetup();
+        DEFAULTFILES.filesSetup();
 
         // Check addons and generate addon-lists.
-        addonsHandler.initializeAddons();
+        ADDONSHANDLER.initializeAddons();
 
         // Start generation of a new configuration file with user input.
         if (Arrays.asList(args).contains("-cgen")) {
@@ -216,7 +227,7 @@ public class Main {
 
             ConfigurationModel configurationModel = new ConfigurationModel();
 
-            if (serverPackHandler.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
+            if (SERVERPACKHANDLER.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -233,7 +244,7 @@ public class Main {
 
             ConfigurationModel configurationModel = new ConfigurationModel();
 
-            if (serverPackHandler.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
+            if (SERVERPACKHANDLER.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -255,7 +266,7 @@ public class Main {
 
             ConfigurationModel configurationModel = new ConfigurationModel();
 
-            if (serverPackHandler.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
+            if (SERVERPACKHANDLER.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
                 System.exit(0);
             } else {
                 System.exit(1);
@@ -264,7 +275,7 @@ public class Main {
         // If no mode is specified, and we have a graphical environment, start in GUI mode.
         } else {
 
-            SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(localizationManager, CONFIGURATIONHANDLER, curseCreateModpack, serverPackHandler, addonsHandler);
+            SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, serverpackcreatorproperties);
             
             swingGuiInitializer.mainGUI();
         }

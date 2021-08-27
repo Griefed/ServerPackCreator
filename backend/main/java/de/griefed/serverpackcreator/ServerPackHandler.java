@@ -57,7 +57,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler)}<br>
+ * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler, Properties)}<br>
  * 2. {@link #getSTART_FABRIC_SHELL}<br>
  * 3. {@link #getSTART_FABRIC_BATCH}<br>
  * 4. {@link #getSTART_FORGE_SHELL}<br>
@@ -108,7 +108,6 @@ public class ServerPackHandler {
 
     private Properties serverpackcreatorproperties;
 
-
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -119,9 +118,12 @@ public class ServerPackHandler {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} required for creating a modpack from CurseForge.
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required for accessing checks.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, AddonsHandler injectedAddonsHandler, ConfigurationHandler injectedConfigurationHandler) {
+    public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, AddonsHandler injectedAddonsHandler, ConfigurationHandler injectedConfigurationHandler, Properties injectedServerPackCreatorProperties) {
+
+        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -142,16 +144,9 @@ public class ServerPackHandler {
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-        }
-
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
         }
 
     }
@@ -322,10 +317,13 @@ public class ServerPackHandler {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
+                // TODO: Replace with lang key
                 LOG.info("No Server Pack addons to execute.");
             } else {
+                // TODO: Replace with lang key
                 LOG.info("Starting execution of Server Pack addons. Check addons.log in the logs-directory for details about their execution.");
                 ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
+                // TODO: Replace with lang key
                 LOG.info("Addons executed. Finishing...");
             }
 
@@ -392,10 +390,13 @@ public class ServerPackHandler {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
+                // TODO: Replace with lang key
                 LOG.info("No Server Pack addons to execute.");
             } else {
+                // TODO: Replace with lang key
                 LOG.info("Starting execution of Server Pack addons. Check addons.log in the logs-directory for details about their execution.");
                 ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
+                // TODO: Replace with lang key
                 LOG.info("Addons executed. Finishing...");
             }
 
@@ -475,6 +476,7 @@ public class ServerPackHandler {
      * @param modpackDir String. Start scripts are copied into the server_pack directory in the modpack directory.
      * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
      * @param includeStartScripts Boolean. Whether to copy the start scripts into the server pack.
+     * @param javaArguments String. Java arguments to write the start-scripts with.
      */
     void createStartScripts(String modpackDir, String modLoader, boolean includeStartScripts, String javaArguments) {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
@@ -502,6 +504,7 @@ public class ServerPackHandler {
                 writer.close();
 
             } catch (IOException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Error generating batch-script for Forge.", ex);
             }
 
@@ -520,6 +523,7 @@ public class ServerPackHandler {
                 writer.close();
 
             } catch (IOException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Error generating shell-script for Forge.", ex);
             }
 
@@ -542,6 +546,7 @@ public class ServerPackHandler {
                 writer.close();
 
             } catch (IOException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Error generating batch-script for Forge.", ex);
             }
 
@@ -560,6 +565,7 @@ public class ServerPackHandler {
                 writer.close();
 
             } catch (IOException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Error generating shell-script for Forge.", ex);
             }
 
@@ -1100,8 +1106,9 @@ public class ServerPackHandler {
         } catch (IOException ex) {
             LOG.error("Error generating download scripts.", ex);
         }
-        
+        // TODO: Replace with lang key
         LOG.debug(String.format("Generated batch download script. Content: %s", readBatch));
+        // TODO: Replace with lang key
         LOG.debug(String.format("Generated shell download script. Content: %s", readShell));
     }
 

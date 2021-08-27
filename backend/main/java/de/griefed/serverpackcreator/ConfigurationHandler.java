@@ -47,7 +47,7 @@ import java.util.*;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack)}<br>
+ * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, Properties)}<br>
  * 2. {@link #getOldConfigFile()}<br>
  * 3. {@link #getConfigFile()}<br>
  * 4. {@link #getConfig()}<br>
@@ -107,9 +107,10 @@ public class ConfigurationHandler {
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack) {
+    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, Properties injectedServerPackCreatorProperties) {
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
@@ -122,12 +123,7 @@ public class ConfigurationHandler {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
-        }
+        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
 
         setFALLBACKMODSLIST();
 
@@ -151,6 +147,7 @@ public class ConfigurationHandler {
                             "preciseblockplacing","ResourceLoader","SimpleDiscordRichPresence","SpawnerFix","timestamps","TipTheScales",
                             "WorldNameRandomizer"));
 
+            // TODO: Replace with lang key
             LOG.debug("Fallbackmodslist property null. Using fallback: " + FALLBACKMODSLIST);
 
         } else if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
@@ -170,6 +167,7 @@ public class ConfigurationHandler {
 
             this.FALLBACKMODSLIST = Collections.singletonList((serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
 
+            // TODO: Replace with lang key
             LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
         }
 
@@ -324,7 +322,10 @@ public class ConfigurationHandler {
 
         try {
             configurationModel.setJavaArgs(getConfig().getString("javaArgs"));
+
         } catch (ConfigException | NullPointerException ex) {
+
+            // TODO: Replace with lang key
             LOG.info("No configuration for javaArgs found in config file. Setting javaArgs to \"empty\".");
             configurationModel.setJavaArgs("empty");
         }
@@ -873,6 +874,7 @@ public class ConfigurationHandler {
      * @param includeProperties Boolean. Whether to include the server.properties in the server pack.
      * @param includeScripts Boolean. Whether to include the start scripts for the specified modloader in the server pack.
      * @param includeZip Boolean. Whether to create a zip-archive of the server pack, excluding the Minecraft server JAR according to Mojang's TOS and EULA.
+     * @param javaArgs String. Java arguments to write the start-scripts with.
      */
     void printConfig(String modpackDirectory,
                      List<String> clientsideMods,
@@ -923,6 +925,7 @@ public class ConfigurationHandler {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.properties"), includeProperties));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.scripts"), includeScripts));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"), includeZip));
+        // TODO: Replace with lang key
         LOG.info("Java arguments for start-scripts: " + javaArgs);
     }
 
@@ -1519,6 +1522,7 @@ public class ConfigurationHandler {
 
 //-------------------------------------------------------------------------JAVA ARGS TO EXECUTE THE SERVER WITH---------
 
+            // TODO: Replace with lang key
             LOG.info("Specify the Java arguments, if any, to execute the server with. Can be left blank.");
 
             System.out.print("Java args: ");
@@ -1528,6 +1532,7 @@ public class ConfigurationHandler {
                 javaArgs = "empty";
             }
 
+            // TODO: Replace with lang key
             LOG.info("Specified the following Java arguments for start-scripts: " + javaArgs);
 
 //------------------------------------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
@@ -1659,6 +1664,7 @@ public class ConfigurationHandler {
      * @param includeProperties Boolean. Whether to include a properties file in the server pack.
      * @param includeScripts Boolean. Whether to include start scripts in the server pack.
      * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server JAR.
+     * @param javaArgs String. Java arguments to write the start-scripts with.
      * @param fileName The name under which to write the new configuration file.
      * @param isTemporary Decides whether to delete existing config-file. If isTemporary is false, existing config files will be deleted before writing the new file.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
@@ -1714,6 +1720,7 @@ public class ConfigurationHandler {
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includezipcreation"), includeZip,
                 "# Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n# Leave as \"empty\" to not have Java arguments in your start-scripts.", javaArgs
         );
+        // TODO: Replace with lang key
 
         if (!isTemporary) {
             if (getConfigFile().exists()) {

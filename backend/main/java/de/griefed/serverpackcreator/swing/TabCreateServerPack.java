@@ -100,10 +100,13 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedVersionLister Instance of {@link VersionLister} required for setting/changing comboboxes.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister) {
+                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties) {
+
+        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -124,22 +127,15 @@ public class TabCreateServerPack extends JComponent {
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
-        }
-
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
         }
 
         this.VERSIONLISTER = injectedVersionLister;
@@ -954,6 +950,7 @@ public class TabCreateServerPack extends JComponent {
                                 String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))),
                                 serverPackGeneratedAttributeSet);
                     } catch (BadLocationException ex) {
+                        // TODO: Replace with lang key
                         LOG.error("Error inserting text into aboutDocument.", ex);
                     }
                     serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
@@ -1042,6 +1039,7 @@ public class TabCreateServerPack extends JComponent {
             try {
                 TEXTFIELD_MODPACKDIRECTORY.setText(config.getString("modpackDir").replace("\\", "/"));
             } catch (NullPointerException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Error modpackdir", ex);
             }
 
@@ -1069,6 +1067,7 @@ public class TabCreateServerPack extends JComponent {
                     }
                 }
             } catch (NullPointerException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Error minecraft version", ex);
             }
 
@@ -1107,6 +1106,7 @@ public class TabCreateServerPack extends JComponent {
                     }
                 }
             } catch (NullPointerException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Error modloader versions", ex);
                 updateModloaderGuiComponents(false, true, "Forge");
 
@@ -1126,11 +1126,13 @@ public class TabCreateServerPack extends JComponent {
             try {
                 setJavaArgs(config.getString("javaArgs"));
             } catch (ConfigException | NullPointerException ex) {
+                // TODO: Replace with lang key
                 LOG.error("No setting for javaArgs found. Using \"empty\"");
                 setJavaArgs("empty");
             }
 
         } catch (NullPointerException ex) {
+            // TODO: Replace with lang key
             LOG.error("Error config", ex);
         }
     }

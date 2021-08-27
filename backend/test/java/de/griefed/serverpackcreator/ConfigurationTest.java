@@ -26,7 +26,9 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -135,6 +137,7 @@ class ConfigurationTest {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final DefaultFiles DEFAULTFILES;
+    private Properties serverpackcreatorproperties;
 
     ConfigurationTest() {
         try {
@@ -142,12 +145,20 @@ class ConfigurationTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
         LOCALIZATIONMANAGER = new LocalizationManager();
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
         DEFAULTFILES.filesSetup();
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
     }
 
     @Test
@@ -664,6 +675,7 @@ class ConfigurationTest {
         configurationModel.setIncludeServerProperties(true);
         configurationModel.setIncludeStartScripts(true);
         configurationModel.setIncludeZipCreation(true);
+        configurationModel.setJavaArgs("empty");
         CONFIGURATIONHANDLER.checkCurseForge("238298,3174854");
         configurationModel.setClientMods(CONFIGURATIONHANDLER.getFallbackModsList());
 

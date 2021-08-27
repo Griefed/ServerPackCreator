@@ -56,7 +56,7 @@ public class MenuBar extends Component {
 
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
-                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane) {
+                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, Properties injectedServerPackCreatorProperties) {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -72,17 +72,13 @@ public class MenuBar extends Component {
         this.TAB_CREATESERVERPACK = injectedTabCreateServerPack;
         this.TABBEDPANE = injectedTabbedPane;
 
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
-        }
+        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
 
-        if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.gui.darkmode").equals("true")) {
+        try {
+            isDarkTheme = Boolean.parseBoolean(serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+        } catch (NullPointerException ex) {
             isDarkTheme = true;
-        } else {
-            isDarkTheme = false;
+            serverpackcreatorproperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
         }
 
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
@@ -101,6 +97,7 @@ public class MenuBar extends Component {
         try {
             aboutWindowDocument.insertString(0, aboutWindowText, aboutAttributeSet);
         } catch (BadLocationException ex) {
+            // TODO: Replace with lang key
             LOG.error("Error inserting text into aboutDocument.", ex);
         }
         aboutWindowTextPane.addHierarchyListener(e1 -> {
@@ -138,6 +135,7 @@ public class MenuBar extends Component {
         try {
             helpWindowDocument.insertString(0, helpWindowText, helpAttributeSet);
         } catch (BadLocationException ex) {
+            // TODO: Replace with lang key
             LOG.error("Error inserting text into aboutDocument.", ex);
         }
         helpWindowTextPane.addHierarchyListener(e1 -> {
@@ -150,9 +148,13 @@ public class MenuBar extends Component {
             }
         });
 
+        // TODO: Replace with lang key
         javaArgsOptions[0] = "OK";
+        // TODO: Replace with lang key
         javaArgsOptions[1] = "Use Aikars flags";
+        // TODO: Replace with lang key
         javaArgsOptions[2] = "Empty";
+        // TODO: Replace with lang key
         javaArgsOptions[3] = "Cancel";
 
         javaArgsSelections[0] = "empty";
@@ -231,41 +233,72 @@ public class MenuBar extends Component {
     public JMenuBar createMenuBar() {
 
         // create menus
+        // TODO: Replace with lang key
         fileMenu = new JMenu("File");
+        // TODO: Replace with lang key
         editMenu = new JMenu("Edit");
+        // TODO: Replace with lang key
         viewMenu = new JMenu("View");
+        // TODO: Replace with lang key
         aboutMenu = new JMenu("About");
+        // TODO: Replace with lang key
         help_OpenHelpWindowMenuItem = new JMenuItem("Help");
 
         // create menu items
+        // TODO: Replace with lang key
         file_LoadConfigMenuItem = new JMenuItem("Load Configuration");
+        // TODO: Replace with lang key
         file_SaveConfigMenuItem = new JMenuItem("Save Configuration");
+        // TODO: Replace with lang key
         file_SaveAsConfigMenuItem = new JMenuItem("Save Configuration As...");
+        // TODO: Replace with lang key
         file_UploadConfigurationToHasteBin = new JMenuItem("Upload Configuration to HasteBin");
+        // TODO: Replace with lang key
         file_UploadServerPackCreatorLogToHasteBin = new JMenuItem("Upload ServerPackCreator Log to HasteBin");
+        // TODO: Replace with lang key
         file_RefreshManifestsMenuItem = new JMenuItem("Reload Version-Manifests");
+        // TODO: Replace with lang key
         file_RefreshInstalledAddonsMenuItem = new JMenuItem("Reload Installed Addons");
+        // TODO: Replace with lang key
         file_ExitConfigMenuItem = new JMenuItem("Exit");
 
+        // TODO: Replace with lang key
         edit_SwitchTheme = new JMenuItem("Toggle light/dark-mode");
+        // TODO: Replace with lang key
         edit_ChangeJavaArgs = new JMenuItem("Edit Start-Scripts Java Args");
+        // TODO: Replace with lang key
         edit_OpenInEditorServerProperties = new JMenuItem("Open server.properties in Editor");
+        // TODO: Replace with lang key
         edit_OpenInEditorStartScriptWindowsFabric = new JMenuItem("Open start-fabric.bat in Editor");
+        // TODO: Replace with lang key
         edit_OpenInEditorStartScriptLinuxFabric = new JMenuItem("Open start-fabric.sh in Editor");
+        // TODO: Replace with lang key
         edit_OpenInEditorStartScriptWindowsForge = new JMenuItem("Open start-forge.bat in Editor");
+        // TODO: Replace with lang key
         edit_OpenInEditorStartScriptLinuxForge = new JMenuItem("Open start-forge.sh in Editor");
 
+        // TODO: Replace with lang key
         view_OpenAddonsDirectoryMenuItem = new JMenuItem("Open addons-directory");
+        // TODO: Replace with lang key
         view_ExampleAddonRepositoryMenuItem = new JMenuItem("Visit example-addon repository");
+        // TODO: Replace with lang key
         view_OpenServerPackCreatorDirectoryMenuItem = new JMenuItem("Open installation-directory");
+        // TODO: Replace with lang key
         view_OpenServerPacksDirectoryMenuItem = new JMenuItem("Open server packs directory");
+        // TODO: Replace with lang key
         view_OpenServerFilesDirectoryMenuItem = new JMenuItem("Open server-files directory");
 
+        // TODO: Replace with lang key
         about_OpenAboutWindowMenuItem = new JMenuItem("About");
+        // TODO: Replace with lang key
         about_OpenGitHubPageMenuItem = new JMenuItem("View Repository on GitHub");
+        // TODO: Replace with lang key
         about_OpenGitHubIssuesPageMenuItem = new JMenuItem("View Issues on GitHub");
+        // TODO: Replace with lang key
         about_OpenReleasesPageMenuItem = new JMenuItem("View Releases on GitHub");
+        // TODO: Replace with lang key
         about_OpenDiscordLinkMenuItem = new JMenuItem("Join my Discord server!");
+        // TODO: Replace with lang key
         about_OpenDonationsPageMenuItem = new JMenuItem("Support me!");
 
         // create action listeners for items
@@ -353,42 +386,52 @@ public class MenuBar extends Component {
     }
 
     private void actionEventOpenDiscordLinkMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Join Discord.");
     }
 
     private void actionEventOpenIssuesMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Open Issues page on GitHub.");
     }
 
     private void actionEventUploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
     }
 
     private void actionEventUploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Upload Configuration to HasteBin.");
     }
 
     private void actionEventOpenInEditorStartScriptLinuxForge(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Open start-forge.sh in Editor.");
     }
 
     private void actionEventOpenInEditorStartScriptWindowsForge(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Open start-forge.bat in Editor.");
     }
 
     private void actionEventOpenInEditorStartScriptLinuxFabric(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Open start-fabric.sh in Editor.");
     }
 
     private void actionEventOpenInEditorStartScriptWindowsFabric(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Open start-fabric.bat in Editor.");
     }
 
     private void actionEventOpenInEditorServerProperties(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Open server.properties in Editor.");
     }
 
     private void actionEventChangeJavaArgsMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Edit Start-Scripts Java Args.");
 
         javaArgs.setText(TAB_CREATESERVERPACK.getJavaArgs());
@@ -427,16 +470,18 @@ public class MenuBar extends Component {
             default:
 
         }
-
+        // TODO: Replace with lang key
         LOG.debug("Java args set to: " + TAB_CREATESERVERPACK.getJavaArgs());
     }
 
     private void actionEventExitMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Exit.");
         FRAME_SERVERPACKCREATOR.dispatchEvent(CLOSEEVENT);
     }
 
     private void actionEventSaveAsConfigToFileMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Save As...");
 
         configChooser = new JFileChooser();
@@ -453,6 +498,7 @@ public class MenuBar extends Component {
             try {
                 TAB_CREATESERVERPACK.saveConfig(new File(configChooser.getSelectedFile().getCanonicalPath()), true);
 
+                // TODO: Replace with lang key
                 LOG.info("Saved configuration to: " + configChooser.getSelectedFile().getCanonicalPath());
 
             } catch (IOException ex) {
@@ -462,11 +508,13 @@ public class MenuBar extends Component {
     }
 
     private void actionEventSaveConfigToFileMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Save.");
         TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"), false);
     }
 
     private void actionEventSwitchThemeMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked Toggle light/dark-mode.");
 
         if (!isDarkTheme) {
@@ -486,10 +534,12 @@ public class MenuBar extends Component {
                     serverpackcreatorproperties.store(outputStream, null);
 
                 } catch (IOException ex) {
+                    // TODO: Replace with lang key
                     LOG.error("Couldn't write properties-file.", ex);
                 }
 
             } catch (UnsupportedLookAndFeelException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Couldn't change theme.", ex);
             }
         } else {
@@ -509,10 +559,12 @@ public class MenuBar extends Component {
                     serverpackcreatorproperties.store(outputStream, null);
 
                 } catch (IOException ex) {
+                    // TODO: Replace with lang key
                     LOG.error("Couldn't write properties-file.", ex);
                 }
 
             } catch (UnsupportedLookAndFeelException ex) {
+                // TODO: Replace with lang key
                 LOG.error("Couldn't change theme.", ex);
             }
         }
@@ -524,6 +576,7 @@ public class MenuBar extends Component {
      * @param actionEvent The event which triggers this method.
      */
     private void actionEventLoadConfigurationFromFileMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked load configuration from file.");
 
         configChooser = new JFileChooser();
@@ -565,34 +618,42 @@ public class MenuBar extends Component {
     }
 
     private void actionEventRefreshManifestsMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked refresh manifests.");
     }
 
     private void actionEventRefreshInstalledAddonsMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked refresh installed addons.");
     }
 
     private void actionEventOpenAddonsDirectoryMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open addons directory.");
     }
 
     private void actionEventViewExampleAddonMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked view example addon");
     }
 
     private void actionEventOpenSPCDirectoryMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open installation directory.");
     }
 
     private void actionEventOpenServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open server packs directory.");
     }
 
     private void actionEventOpenServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open server files directory.");
     }
 
     private void actionEventOpenAboutSPCMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open about window.");
 
         materialTextPaneUI.installUI(aboutWindowTextPane);
@@ -612,6 +673,7 @@ public class MenuBar extends Component {
      * @param actionEvent The event which triggers this method.
      */
     private void actionEventOpenHelpMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open help window.");
 
         materialTextPaneUI.installUI(helpWindowTextPane);
@@ -626,14 +688,17 @@ public class MenuBar extends Component {
     }
 
     private void actionEventOpenGitHubMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open GitHub repository link.");
     }
 
     private void actionEventOpenDonateMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open donations link.");
     }
 
     private void actionEventOpenReleaseMenuItem(ActionEvent actionEvent) {
+        // TODO: Replace with lang key
         LOG.debug("Clicked open releases link");
     }
 }

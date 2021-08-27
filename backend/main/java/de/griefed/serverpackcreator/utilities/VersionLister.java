@@ -375,9 +375,11 @@ public class VersionLister {
 
 
         } catch (IOException | ParserConfigurationException | SAXException ex) {
+            // TODO: Replace with lang key
             LOG.error("Couldn't read Fabric manifest.", ex);
         }
 
+        // TODO: Replace with lang key
         LOG.debug("Fabric versions: " + fabricReleases);
 
         return fabricReleases;
@@ -398,6 +400,7 @@ public class VersionLister {
             fabricLatestOrRelease = fabricXml.getElementsByTagName(versionSpecifier).item(0).getChildNodes().item(0).getNodeValue();
 
         } catch (IOException | ParserConfigurationException | SAXException ex) {
+            // TODO: Replace with lang key
             LOG.error("Couldn't read Fabric manifest.", ex);
         }
 

@@ -26,14 +26,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -76,6 +75,7 @@ class ServerPackHandlerTest {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final AddonsHandler ADDONSHANDLER;
+    private Properties serverpackcreatorproperties;
 
     ServerPackHandlerTest() {
         try {
@@ -83,12 +83,20 @@ class ServerPackHandlerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
         LOCALIZATIONMANAGER = new LocalizationManager();
         LOCALIZATIONMANAGER.init();
         ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
-        CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER);
+        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
+        CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
         DEFAULTFILES.filesSetup();
     }
@@ -653,6 +661,7 @@ class ServerPackHandlerTest {
         configurationModel.setModLoader("Forge");
         configurationModel.setModLoaderVersion("36.1.2");
         configurationModel.setMinecraftVersion("1.16.5");
+        configurationModel.setJavaArgs("");
         DEFAULTFILES.filesSetup();
         ADDONSHANDLER.initializeAddons();
         CREATESERVERPACK.run(configurationModel);

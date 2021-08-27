@@ -46,10 +46,6 @@ import java.util.Objects;
  * 3. {@link #getOldConfigFile()}<br>
  * 4. {@link #getPropertiesFile()}<br>
  * 5. {@link #getIconFile()}<br>
- * 6. {@link #getForgeWindowsFile()}<br>
- * 7. {@link #getForgeLinuxFile()}<br>
- * 8. {@link #getFabricWindowsFile()}<br>
- * 9. {@link #getFabricLinuxFile()}<br>
  * 10.{@link #getMinecraftManifestUrl()}<br>
  * 11.{@link #getForgeManifestUrl()}<br>
  * 12.{@link #getFabricManifestUrl()}<br>
@@ -452,6 +448,7 @@ public class DefaultFiles {
             }
 
         } catch (SQLException ex) {
+        // TODO: Replace with lang key
             LOG.error("Error creating/accessing clientmods-database.", ex);
         }
 

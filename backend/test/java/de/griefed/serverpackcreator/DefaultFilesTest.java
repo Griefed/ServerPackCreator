@@ -231,10 +231,6 @@ class DefaultFilesTest {
         Assertions.assertTrue(new File("./server-packs").isDirectory());
         Assertions.assertTrue(new File("./server_files/server.properties").exists());
         Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
-        Assertions.assertTrue(new File("./server_files/start-fabric.bat").exists());
-        Assertions.assertTrue(new File("./server_files/start-fabric.sh").exists());
-        Assertions.assertTrue(new File("./server_files/start-forge.bat").exists());
-        Assertions.assertTrue(new File("./server_files/start-forge.sh").exists());
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
         Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
         Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
