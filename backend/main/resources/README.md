@@ -75,20 +75,26 @@ Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONT
 
 1. **Generate a config step-by-step by running with argument**`-cgen`
 2. **Download a modpack and create a server pack from it.**
+    1. Enter a CurseForge projectID;FileID-combination as the modpack directory.
 3. **Install a Forge or Fabric modloader server in your server pack**
 4. **Configurable list of clientside-only mods to not include your server pack**
+    1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`
 5. **Configurable list of directories from your modpack to include in your server pack**
     1. Copying worlds from `saves/world` will result in the world being copied to `server_pack/world`
-6. **Include Forge or Fabric start scripts in your server pack**
+    2. Specify extra files to include in server pack like follows `source/path/to/file;server_pack/destination_file`
+6. **Generate Forge or Fabric start-scripts in your server pack**
+    1. Specify JVM flags / Java Args for your start scripts!
 7. **Include a server-icon.png-file in your server pack**
+    1. Replace the file in `server-files` with your own!
 8. **Include a server.properties-file in your server pack**
+    1. Replace the file in `server-files` with your own!
 9. **Create a ZIP-archive of your server pack**
 10. **GUI to fully configure and run ServerPackCreator**
     1. Load existing config
     1. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
     1. Logs from last run in separate tabs
-    1. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
-11. **Webservice providing a web-frontend to configure, generate and download server packs.**
+    1. And much more!
+11. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs.**
     1. Upload config files
     2. Upload CurseForge modpack-archives to generate server packs from
     3. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
@@ -136,7 +142,6 @@ For a detailed example of how such an addon is supposed to look, check the Examp
 
 After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator resides in.
 Inside it are files you can customize, so they suit your modpack and server pack:
-1. Start scripts for Forge and Fabric modloaders, for Linux and Windows systems
 2. server-icon.png
 3. server.properties
 
@@ -152,10 +157,6 @@ File | Description
 serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/serverpackcreator.conf).
 server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties).
 server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server-icon.png).
-start-fabric.bat | Fabric server start script for windows systems. See [start-fabric.bat](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-fabric.bat).
-start-fabric.sh | Fabric server start script for linux systems. See [start-fabric.sh](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-fabric.sh).
-start-forge.bat | Forge server start script for windows systems. See [start-forge.bat](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-forge.bat).
-start-forge.sh | Forge server start script for linux systems. See [start-forge.sh](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/start-forge.sh).
 
 The serverpackcreator.conf file allows you to customize a couple of different things:
 
@@ -173,6 +174,7 @@ includeServerIcon | Whether to include server-icon.png in your serverpack. Must 
 includeServerProperties | Whether to include server.properties in your serverpack. Must be `true` or `false`.
 includeStartScripts | Whether to include start scripts in your serverpack. Must be `true` or `false`.
 includeZipCreation | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.
+javaArgs | JVM flags / Java Args to add to the generated start-scripts. Set to "empty" to not use any in your start-scripts.
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
@@ -188,9 +190,7 @@ The `.exe` can be executed as usual by simply double-clicking it and is GUI excl
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the lang.properties-file with your specified locale.
 2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will set the locale to en_us by default and create the lang.properties-file.
-3. Create a `lang.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and input your locale like this `lang=your_locale` for example `lang=en_us`
-
-See [SUPPORTED_LANGUAGES](https://github.com/Griefed/ServerPackCreator/blob/main/src/main/java/de/griefed/serverpackcreator/i18n/LocalizationManager.java) in `LocalizationManager.java` for a list of supported locales.
+3. Modify the `serverpackcreator.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for example `lang=en_us`
 
 ## 7.2 Using the GUI
 
@@ -215,10 +215,6 @@ The first run of ServerPackCreator will create a couple of default files in the 
 - `server.properties`
 
 - `server-icon.png`
-
-- `start-fabric.bat` and `start-fabric.sh`
-
-- `start-forge.bat` and `start-forge.sh`
 
 Once the ServerPackCreator window opened, you need to fill in all the information you gathered in the previously mentioned steps 1 to 3 into the designated textfields.
 From top to bottom:
@@ -249,6 +245,8 @@ Last but not least, checkboxes:
 
 **"Create ZIP-archive of server pack?"** Whether ServerPackCreator should create a zipped archive of your server pack.
 
+**Edit JVM flags** Open the dialog for editing of your JVM flags / Java Args via Menu->Edit->Edit Start-Scripts Java Args.
+
 After you've customized and configured everything to your liking, click the button on the bottom. ServerPackCreator will check your configuration for errors and start generating your server pack should no errors be detected. When the server pack is finished, a prompt will open which will ask you whether you want to browse your newly created server pack in your file explorer.
 
 That's pretty much it! Sounds like a lot, but honestly, all the stuff you need to do in order to configure ServerPackCreator you pretty much need to do anyway if you want to create a server pack.
@@ -273,16 +271,14 @@ This will generate the default files of ServerpackCreator and tell you to custom
 ```console
 .
 ├── serverpackcreator.conf
+├── serverpackcreator.properties
+├── log4j2.xml
 ├── logs
 │   ├── serverpackcreator.log
 │   └── modloader_installer.log
 ├── server_files
 │   ├── server-icon.png
 │   ├── server.properties
-│   ├── start-fabric.bat
-│   ├── start-fabric.sh
-│   ├── start-forge.bat
-│   └── start-forge.sh
 └── ServerPackCreator.jar
 ```
 
@@ -309,30 +305,20 @@ Example after successfully running SPC:
 ```console
 .
 ├── serverpackcreator.conf
+├── serverpackcreator.properties
+├── log4j2.xml
 ├── logs
 │   ├── serverpackcreator.log
+│   ├── addons.log
 │   └── modloader_installer.log
 ├── server_files
 │   ├── server-icon.png
-│   ├── server.properties
-│   ├── start-fabric.bat
-│   ├── start-fabric.sh
-│   ├── start-forge.bat
-│   └── start-forge.sh
+│   └── server.properties
 ├── ServerPackCreator-1.1.0.jar
-└── Survive Create Prosper 4
-    ├── background.gif
-    ├── config
-    ├── config.json
-    ├── defaultconfigs
-    ├── manifest.json
-    ├── mods
-    ├── natives
-    ├── packmenu
-    ├── scripts
-    ├── seeds
-    ├── server_pack
-    └── server_pack.zip
+└── server-packs
+    └── Survive Create Prosper 4
+        └── ...
+    └── Survive Create Prosper 4_server_pack.zip
 ```
 
 ### 7.3.2 Linux
@@ -373,16 +359,15 @@ This will generate the default files of ServerpackCreator and tell you to custom
 ```console
 .
 ├── serverpackcreator.conf
+├── serverpackcreator.properties
+├── log4j2.xml
 ├── logs
 │   ├── serverpackcreator.log
+│   ├── addons.log
 │   └── modloader_installer.log
 ├── server_files
 │   ├── server-icon.png
-│   ├── server.properties
-│   ├── start-fabric.bat
-│   ├── start-fabric.sh
-│   ├── start-forge.bat
-│   └── start-forge.sh
+│   └── server.properties
 └── ServerPackCreator-X.X.X.jar
 ```
 
@@ -409,30 +394,20 @@ Example after successfully running SPC:
 ```console
 .
 ├── serverpackcreator.conf
+├── serverpackcreator.properties
+├── log4j2.xml
 ├── logs
 │   ├── serverpackcreator.log
+│   ├── addons.log
 │   └── modloader_installer.log
 ├── server_files
 │   ├── server-icon.png
-│   ├── server.properties
-│   ├── start-fabric.bat
-│   ├── start-fabric.sh
-│   ├── start-forge.bat
-│   └── start-forge.sh
+│   └── server.properties
 ├── ServerPackCreator-1.1.0.jar
-└── Survive Create Prosper 4
-    ├── background.gif
-    ├── config
-    ├── config.json
-    ├── defaultconfigs
-    ├── manifest.json
-    ├── mods
-    ├── natives
-    ├── packmenu
-    ├── scripts
-    ├── seeds
-    ├── server_pack
-    └── server_pack.zip
+└── server-packs
+    └── Survive Create Prosper 4
+        └── ...
+    └── Survive Create Prosper 4_server_pack.zip
 ```
 
 ### 7.3.3 Mac
@@ -456,17 +431,20 @@ This will generate the default files of ServerpackCreator and tell you to custom
 ```console
 .
 ├── serverpackcreator.conf
+├── serverpackcreator.properties
+├── log4j2.xml
 ├── logs
 │   ├── serverpackcreator.log
+│   ├── addons.log
 │   └── modloader_installer.log
 ├── server_files
 │   ├── server-icon.png
-│   ├── server.properties
-│   ├── start-fabric.bat
-│   ├── start-fabric.sh
-│   ├── start-forge.bat
-│   └── start-forge.sh
-└── ServerPackCreator.jar
+│   └── server.properties
+├── ServerPackCreator-1.1.0.jar
+└── server-packs
+    └── Survive Create Prosper 4
+        └── ...
+    └── Survive Create Prosper 4_server_pack.zip
 ```
 
 With the example above, the settings would look exactly like they are already set in the serverpackcreator.conf. Note that modpackDir points at a directory *relative* to the ServerPackCreator.jar. Absolute paths *should* be usable, but are currently untested.
@@ -492,30 +470,20 @@ Example after successfully running SPC:
 ```console
 .
 ├── serverpackcreator.conf
+├── serverpackcreator.properties
+├── log4j2.xml
 ├── logs
 │   ├── serverpackcreator.log
+│   ├── addons.log
 │   └── modloader_installer.log
 ├── server_files
 │   ├── server-icon.png
-│   ├── server.properties
-│   ├── start-fabric.bat
-│   ├── start-fabric.sh
-│   ├── start-forge.bat
-│   └── start-forge.sh
+│   └── server.properties
 ├── ServerPackCreator-1.1.0.jar
-└── Survive Create Prosper 4
-    ├── background.gif
-    ├── config
-    ├── config.json
-    ├── defaultconfigs
-    ├── manifest.json
-    ├── mods
-    ├── natives
-    ├── packmenu
-    ├── scripts
-    ├── seeds
-    ├── server_pack
-    └── server_pack.zip
+└── server-packs
+    └── Survive Create Prosper 4
+        └── ...
+    └── Survive Create Prosper 4_server_pack.zip
 ```
 
 ## 7.4 Docker
@@ -632,7 +600,6 @@ Build with:
 [Apache commons-io](https://github.com/apache/commons-io) | [License](backend/main/resources/third-party-licenses/Apache-Commons-IO-License)
 [Lingala zip4j](https://github.com/srikanth-lingala/zip4j) | [License](backend/main/resources/third-party-licenses/Lingala-zip4j-License)
 [moandjiezana toml4j](https://github.com/mwanji/toml4j) | [License](backend/main/resources/third-party-licenses/Moandjienza-toml4j-License)
-[FabricMC fabric-installer](https://github.com/FabricMC/fabric-installer) | [License](backend/main/resources/third-party-licenses/FabricMC-fabric-installer-License)
 [TheRandomLabs CurseAPI](https://github.com/TheRandomLabs/CurseAPI) | [License](backend/main/resources/third-party-licenses/TheRandomLabs-CurseAPI-License)
 [Xerial SQLite JDBC](https://github.com/xerial/sqlite-jdbc) | [License](backend/main/resources/third-party-licenses/Xerial-SQLite-JDBC-License)
 [Vincenzopalazzo Material-UI-Swing](https://github.com/vincenzopalazzo/material-ui-swing) | [License](backend/main/resources/third-party-licenses/Vincenzopalazzo-Material-UI-Swing)
