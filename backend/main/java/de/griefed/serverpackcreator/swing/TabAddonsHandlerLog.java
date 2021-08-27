@@ -59,8 +59,9 @@ public class TabAddonsHandlerLog extends JComponent {
         Tailer.create(new File("./logs/addons.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-
-                    textArea.append(line + "\n");
+                    if (!line.contains("DEBUG")) {
+                        textArea.append(line + "\n");
+                    }
                 }
             }
         }, 2000, false);

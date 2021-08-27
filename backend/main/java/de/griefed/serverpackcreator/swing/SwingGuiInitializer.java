@@ -29,11 +29,14 @@ import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import mdlaf.MaterialLookAndFeel;
+import mdlaf.components.tabbedpane.MaterialTabbedPaneUI;
+import mdlaf.utils.MaterialColors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -170,19 +173,6 @@ public class SwingGuiInitializer extends JPanel {
 
         this.TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
 
-        /*
-         * Remove the border insets so the panes fully fill out the area available to them. Prevents the image
-         * painted by BackgroundPanel from being displayed along the border of the pane.
-         */
-        TABBEDPANE.setUI(new BasicTabbedPaneUI() {
-            private final Insets borderInsets = new Insets(0, 0, 0, 0);
-
-            @Override
-            protected Insets getContentBorderInsets(int tabPlacement) {
-                return borderInsets;
-            }
-        });
-
         TABBEDPANE.addTab(
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
                 null,
@@ -215,24 +205,7 @@ public class SwingGuiInitializer extends JPanel {
 
         TABBEDPANE.setMnemonicAt(3, KeyEvent.VK_4);
 
-        TABBEDPANE.addTab(
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.about.title"),
-                null,
-                TAB_ABOUT.aboutTab(),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
-
-        TABBEDPANE.setMnemonicAt(4, KeyEvent.VK_5);
-
-        TABBEDPANE.setOpaque(true);
-
         add(TABBEDPANE);
-
-        /*
-         * We need both in order to have a transparent TabbedPane
-         * behind which we can see the image painted by BackgroundPanel
-         */
-        setOpaque(false);
-        TABBEDPANE.setOpaque(false);
 
         TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
@@ -243,7 +216,8 @@ public class SwingGuiInitializer extends JPanel {
                 FRAME_SERVERPACKCREATOR,
                 LAF_LIGHT,
                 LAF_DARK,
-                TAB_CREATESERVERPACK
+                TAB_CREATESERVERPACK,
+                TABBEDPANE
         );
 
         FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
@@ -272,7 +246,7 @@ public class SwingGuiInitializer extends JPanel {
 
                 }
 
-            } catch (/*ClassNotFoundException | InstantiationException | IllegalAccessException |*/ UnsupportedLookAndFeelException ex) {
+            } catch (UnsupportedLookAndFeelException ex) {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
             }
 
@@ -286,7 +260,7 @@ public class SwingGuiInitializer extends JPanel {
      */
     private void createAndShowGUI() {
 
-        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
 
@@ -313,6 +287,8 @@ public class SwingGuiInitializer extends JPanel {
          * Does it work? Yeah.
          */
         SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
+
+        TABBEDPANE.setOpaque(true);
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
     }
