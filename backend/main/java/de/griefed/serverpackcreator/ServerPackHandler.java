@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import net.fabricmc.installer.util.LauncherMeta;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
@@ -59,31 +58,32 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 /**
  * <strong>Table of methods</strong><p>
  * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler)}<br>
- * 2. {@link #getPropertiesFile()}<br>
- * 3. {@link #getIconFile()}<br>
- * 4. {@link #getForgeWindowsFile()}<br>
- * 5. {@link #getForgeLinuxFile()}<br>
- * 6. {@link #getFabricWindowsFile()}<br>
- * 7. {@link #getFabricLinuxFile()}<br>
- * 9. {@link #run(File, ConfigurationModel)}<br>
- * 10.{@link #cleanupEnvironment(String)}<br>
- * 11.{@link #copyStartScripts(String, String, boolean)}<br>
- * 12.{@link #copyFiles(String, List, List, String)}<br>
- * 13.{@link #excludeClientMods(String, List, String)}<br>
- * 14.{@link #copyIcon(String)}<br>
- * 15.{@link #copyProperties(String)}<br>
- * 16.{@link #installServer(String, String, String, String, String)}<br>
- * 17.{@link #zipBuilder(String, String, boolean)}<br>
- * 18.{@link #generateDownloadScripts(String, String, String)}<br>
- * 19.{@link #fabricShell(String, String)}<br>
- * 20.{@link #fabricBatch(String, String)}<br>
- * 21.{@link #forgeShell(String, String)}<br>
- * 22.{@link #forgeBatch(String, String)}<br>
+ * 2. {@link #getSTART_FABRIC_SHELL}<br>
+ * 3. {@link #getSTART_FABRIC_BATCH}<br>
+ * 4. {@link #getSTART_FORGE_SHELL}<br>
+ * 5. {@link #getSTART_FORGE_BATCH}<br>
+ * 6. {@link #getPropertiesFile()}<br>
+ * 7. {@link #getIconFile()}<br>
+ * 8. {@link #getForgeWindowsFile()}<br>
+ * 9. {@link #getForgeLinuxFile()}<br>
+ * 10.{@link #getFabricWindowsFile()}<br>
+ * 11.{@link #getFabricLinuxFile()}<br>
+ * 12.{@link #run(File, ConfigurationModel)}<br>
+ * 13.{@link #cleanupEnvironment(String)}<br>
+ * 14.{@link #createStartScripts(String, String, boolean, String)}<br>
+ * 15.{@link #copyFiles(String, List, List, String)}<br>
+ * 16.{@link #excludeClientMods(String, List, String)}<br>
+ * 17.{@link #copyIcon(String)}<br>
+ * 18.{@link #copyProperties(String)}<br>
+ * 19.{@link #installServer(String, String, String, String, String)}<br>
+ * 20.{@link #zipBuilder(String, String, boolean)}<br>
+ * 21.{@link #getMinecraftServerJarUrl(String)}<br>
+ * 22.{@link #generateDownloadScripts(String, String, String)}<br>
  * 23.{@link #downloadFabricJar(String)}<br>
  * 24.{@link #latestFabricInstaller()}<br>
  * 25.{@link #downloadForgeJar(String, String, String)}<br>
- * 27.{@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
- * 28.{@link #scanTomls(File[])}
+ * 26.{@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
+ * 27.{@link #scanTomls(File[])}
  * <p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
@@ -163,6 +163,48 @@ public class ServerPackHandler {
     private final File FILE_FABRIC_WINDOWS = new File("start-fabric.bat");
     private final File FILE_FABRIC_LINUX = new File("start-fabric.sh");
 
+    private final String START_FABRIC_SHELL = "#!/usr/bin/env bash\njava %s -jar fabric-server-launch.jar";
+    private final String START_FABRIC_BATCH = "java %s -jar fabric-server-launch.jar\npause";
+
+    private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
+    private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
+
+    /**
+     * Getter for the String which will make up the shell-start-script for Fabric servers.
+     * @author Griefed
+     * @return String. Returns the String which will make up the shell-start-script for Fabric servers.
+     */
+    public String getSTART_FABRIC_SHELL() {
+        return START_FABRIC_SHELL;
+    }
+
+    /**
+     * Getter for the String which will make up the batch-start-script for Fabric servers.
+     * @author Griefed
+     * @return String. Returns the String which will make up the batch-start-script for Fabric servers.
+     */
+    public String getSTART_FABRIC_BATCH() {
+        return START_FABRIC_BATCH;
+    }
+
+    /**
+     * Getter for the String which will make up the shell-start-script for Forge servers.
+     * @author Griefed
+     * @return String. Returns the String which will make up the shell-start-script for Forge servers.
+     */
+    public String getSTART_FORGE_SHELL() {
+        return START_FORGE_SHELL;
+    }
+
+    /**
+     * Getter for the String which will make up the batch-start-script for Forge servers.
+     * @author Griefed
+     * @return String. Returns the String which will make up the batch-start-script for Forge servers.
+     */
+    public String getSTART_FORGE_BATCH() {
+        return START_FORGE_BATCH;
+    }
+
     /**
      * Getter for server.properties.
      * @author Griefed
@@ -184,7 +226,7 @@ public class ServerPackHandler {
     /**
      * Getter for start-forge.bat.
      * @author Griefed
-     * @return Returns the start-forge.bat-file for use in {@link #copyStartScripts(String, String, boolean)}
+     * @return Returns the start-forge.bat-file for use in {@link #createStartScripts(String, String, boolean, String)}
      */
     public File getForgeWindowsFile() {
         return FILE_FORGE_WINDOWS;
@@ -193,7 +235,7 @@ public class ServerPackHandler {
     /**
      * Getter for start-forge.sh
      * @author Griefed
-     * @return Returns the start-forge.sh-file for use in {@link #copyStartScripts(String, String, boolean)}
+     * @return Returns the start-forge.sh-file for use in {@link #createStartScripts(String, String, boolean, String)}
      */
     public File getForgeLinuxFile() {
         return FILE_FORGE_LINUX;
@@ -202,7 +244,7 @@ public class ServerPackHandler {
     /**
      * Getter for start-fabric.bat.
      * @author Griefed
-     * @return Returns the start-fabric.bat-file for use in {@link #copyStartScripts(String, String, boolean)}
+     * @return Returns the start-fabric.bat-file for use in {@link #createStartScripts(String, String, boolean, String)}
      */
     public File getFabricWindowsFile() {
         return FILE_FABRIC_WINDOWS;
@@ -211,7 +253,7 @@ public class ServerPackHandler {
     /**
      * Getter for start-fabric.sh.
      * @author Griefed
-     * @return Returns the start-fabric.sh-file for use in {@link #copyStartScripts(String, String, boolean)}
+     * @return Returns the start-fabric.sh-file for use in {@link #createStartScripts(String, String, boolean, String)}
      */
     public File getFabricLinuxFile() {
         return FILE_FABRIC_LINUX;
@@ -244,7 +286,7 @@ public class ServerPackHandler {
             copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
 
             // Copy start scripts for specified modloader from server_files to server pack.
-            copyStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts());
+            createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
 
             // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
             if (configurationModel.getIncludeServerInstallation()) {
@@ -314,7 +356,7 @@ public class ServerPackHandler {
             copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
 
             // Copy start scripts for specified modloader from server_files to server pack.
-            copyStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts());
+            createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
 
             // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
             if (configurationModel.getIncludeServerInstallation()) {
@@ -434,30 +476,51 @@ public class ServerPackHandler {
      * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
      * @param includeStartScripts Boolean. Whether to copy the start scripts into the server pack.
      */
-    void copyStartScripts(String modpackDir, String modLoader, boolean includeStartScripts) {
+    void createStartScripts(String modpackDir, String modLoader, boolean includeStartScripts, String javaArguments) {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
+
+        if (javaArguments.equals("empty")) {
+            javaArguments = "";
+        }
 
         if (modLoader.equalsIgnoreCase("Forge") && includeStartScripts) {
 
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.forge"));
 
             try {
-
-                Files.copy(
-                        Paths.get(String.format("server_files/%s", getForgeWindowsFile())),
-                        Paths.get(String.format("server-packs/%s/%s", destination, getForgeWindowsFile())),
-                        REPLACE_EXISTING
+                BufferedWriter writer = new BufferedWriter(
+                        new FileWriter(
+                                String.valueOf(
+                                        Paths.get(
+                                                String.format("server-packs/%s/%s", destination, getForgeWindowsFile())
+                                        )
+                                )
+                        )
                 );
 
-                Files.copy(
-                        Paths.get(String.format("server_files/%s", getForgeLinuxFile())),
-                        Paths.get(String.format("server-packs/%s/%s", destination, getForgeLinuxFile())),
-                        REPLACE_EXISTING
-                );
+                writer.write(String.format(getSTART_FORGE_BATCH(), javaArguments));
+                writer.close();
 
             } catch (IOException ex) {
+                LOG.error("Error generating batch-script for Forge.", ex);
+            }
 
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copystartscripts"), ex);
+            try {
+                BufferedWriter writer = new BufferedWriter(
+                        new FileWriter(
+                                String.valueOf(
+                                        Paths.get(
+                                                String.format("server-packs/%s/%s", destination, getForgeLinuxFile())
+                                        )
+                                )
+                        )
+                );
+
+                writer.write(String.format(getSTART_FORGE_SHELL(), javaArguments));
+                writer.close();
+
+            } catch (IOException ex) {
+                LOG.error("Error generating shell-script for Forge.", ex);
             }
 
         } else if (modLoader.equalsIgnoreCase("Fabric") && includeStartScripts) {
@@ -465,22 +528,39 @@ public class ServerPackHandler {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.fabric"));
 
             try {
-
-                Files.copy(
-                        Paths.get(String.format("server_files/%s", getFabricWindowsFile())),
-                        Paths.get(String.format("server-packs/%s/%s", destination, getFabricWindowsFile())),
-                        REPLACE_EXISTING
+                BufferedWriter writer = new BufferedWriter(
+                        new FileWriter(
+                                String.valueOf(
+                                        Paths.get(
+                                                String.format("server-packs/%s/%s", destination, getFabricWindowsFile())
+                                        )
+                                )
+                        )
                 );
 
-                Files.copy(
-                        Paths.get(String.format("server_files/%s", getFabricLinuxFile())),
-                        Paths.get(String.format("server-packs/%s/%s", destination, getFabricLinuxFile())),
-                        REPLACE_EXISTING
-                );
+                writer.write(String.format(getSTART_FABRIC_BATCH(), javaArguments));
+                writer.close();
 
             } catch (IOException ex) {
+                LOG.error("Error generating batch-script for Forge.", ex);
+            }
 
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copystartscripts"), ex);
+            try {
+                BufferedWriter writer = new BufferedWriter(
+                        new FileWriter(
+                                String.valueOf(
+                                        Paths.get(
+                                                String.format("server-packs/%s/%s", destination, getFabricLinuxFile())
+                                        )
+                                )
+                        )
+                );
+
+                writer.write(String.format(getSTART_FABRIC_SHELL(), javaArguments));
+                writer.close();
+
+            } catch (IOException ex) {
+                LOG.error("Error generating shell-script for Forge.", ex);
             }
 
         } else {
@@ -933,13 +1013,43 @@ public class ServerPackHandler {
     }
 
     /**
-     * Depending on the specified modloader and Minecraft version, this method makes calls to generate the corresponding
-     * download scripts for the Minecraft server JAR.<p>
-     * Calls<p>
-     * {@link #fabricShell(String, String)} if the modloader is Fabric.
-     * {@link #fabricBatch(String, String)} if the modloader is Fabric.
-     * {@link #forgeShell(String, String)} if the modloader is Forge.
-     * {@link #forgeBatch(String, String)} if the modloader is Forge.
+     * Retrives the URL to the Minecraft server for the specified Minecraft version.
+     * @author Griefed
+     * @param minecraftVersion String. The Minecraft version for which to retrieve the URL for the server-jar.
+     * @return String. The URL to the server-jar of the specified Minecraft version as a string.
+     */
+    private String getMinecraftServerJarUrl(String minecraftVersion) {
+        String minecraftVersionJarUrl = null;
+
+        try {
+            JsonNode minecraftJson = getObjectMapper().readTree(Files.readAllBytes(new File("./work/minecraft-manifest.json").toPath()));
+
+            JsonNode versions = minecraftJson.get("versions");
+
+            for (JsonNode version : versions) {
+                try {
+                    if (version.get("id").asText().equals(minecraftVersion)) {
+
+                        try (InputStream inputStream = new URL(version.get("url").asText()).openStream()) {
+                            JsonNode serverNode = getObjectMapper().readTree(inputStream);
+
+                            minecraftVersionJarUrl = serverNode.get("downloads").get("server").get("url").asText();
+                        }
+
+                    }
+                } catch (NullPointerException ignored) {}
+            }
+
+        } catch (IOException ex) {
+            // TODO: Replace with lang key
+            LOG.error("Couldn't read Minecraft manifest.", ex);
+        }
+
+        return minecraftVersionJarUrl;
+    }
+
+    /**
+     * Generates download scripts for the Minecraft server-jar depending on the specified modloader and Minecraft version.
      * @author Griefed
      * @param modLoader String. Determines whether the scripts are generated for Forge or Fabric.
      * @param modpackDir String. The scripts are generated in the server_pack directory inside the modpack directory.
@@ -947,188 +1057,52 @@ public class ServerPackHandler {
      */
     void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
 
-        if (modLoader.equalsIgnoreCase("Fabric")) {
-
-            fabricShell(modpackDir, minecraftVersion);
-            fabricBatch(modpackDir, minecraftVersion);
-
-        } else if (modLoader.equalsIgnoreCase("Forge")) {
-
-            forgeShell(modpackDir, minecraftVersion);
-            forgeBatch(modpackDir, minecraftVersion);
-
-        } else {
-
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
-        }
-    }
-
-    /**
-     * Generates Fabric Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
-     * @author Griefed
-     * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
-     * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
-     */
-    void fabricShell(String modpackDir, String minecraftVersion) {
-
+        String minecraftServerUrl = getMinecraftServerJarUrl(minecraftVersion);
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
-        try {
+        Path pathBatch = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar.bat", destination));
+        Path pathShell = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar.sh", destination));
 
-            String downloadMinecraftServer = (new URL(
-                    LauncherMeta
-                            .getLauncherMeta()
-                            .getVersion(minecraftVersion)
-                            .getVersionMeta()
-                            .downloads
-                            .get("server")
-                            .url))
-                    .toString();
+        String batchContent = null;
+        String shellContent = null;
+        String readBatch = null;
+        String readShell = null;
 
-            String shFabric = String.format("#!/bin/bash\n#Download the Minecraft_server.jar for your modpack\n\nwget -O server.jar %s", downloadMinecraftServer);
+        byte[] stringToBytesBatch;
+        byte[] stringToBytesShell;
+        
+        switch (modLoader) {
+            case "Fabric":
 
-            Path pathSh = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar_fabric.sh", destination));
+                batchContent = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'server.jar')\"", minecraftServerUrl);
+                shellContent = String.format("#!/bin/bash\n#Download the Minecraft_server.jar for your modpack\n\nwget -O server.jar %s", minecraftServerUrl);
+                break;
 
-            byte[] strToBytesSh = shFabric.getBytes();
+            case "Forge":
 
-            Files.write(pathSh, strToBytesSh);
+                batchContent = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'minecraft_server.%s.jar')\"", minecraftServerUrl, minecraftVersion);
+                shellContent = String.format("#!/bin/bash\n# Download the Minecraft_server.jar for your modpack\n\nwget -O minecraft_server.%s.jar %s", minecraftVersion, minecraftServerUrl);
+                break;
 
-            String readSh = Files.readAllLines(pathSh).get(0);
-
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.fabricshell"), readSh));
-
-        } catch (IOException ex) {
-
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.fabricshell"), ex);
+            default:
+                LOG.error("No valid modloader specified!");
         }
 
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabricshell"));
-    }
-
-    /**
-     * Generates Fabric Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
-     * @author Griefed
-     * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
-     * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
-     */
-    void fabricBatch(String modpackDir, String minecraftVersion) {
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-
         try {
+            stringToBytesBatch = batchContent.getBytes();
+            stringToBytesShell = shellContent.getBytes();
 
-            String downloadMinecraftServer = (new URL(
-                    LauncherMeta
-                            .getLauncherMeta()
-                            .getVersion(minecraftVersion)
-                            .getVersionMeta()
-                            .downloads
-                            .get("server")
-                            .url))
-                    .toString();
+            Files.write(pathBatch, stringToBytesBatch);
+            Files.write(pathShell, stringToBytesShell);
 
-            String batFabric = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'server.jar')\"", downloadMinecraftServer);
-
-            Path pathBat = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar_fabric.bat", destination));
-
-            byte[] strToBytesBat = batFabric.getBytes();
-
-            Files.write(pathBat, strToBytesBat);
-
-            String readBat = Files.readAllLines(pathBat).get(0);
-
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.fabricbatch"), readBat));
-
+            readBatch = Files.readAllLines(pathBatch).get(0);
+            readShell = Files.readAllLines(pathShell).get(0);
         } catch (IOException ex) {
-
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.fabricbatch"), ex);
+            LOG.error("Error generating download scripts.", ex);
         }
-
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabricbatch"));
-    }
-
-    /**
-     * Generates Forge Linux-shell download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
-     * @author Griefed
-     * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
-     * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
-     */
-    void forgeShell(String modpackDir, String minecraftVersion) {
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-
-        try {
-
-            String downloadMinecraftServer = (new URL(
-                    LauncherMeta
-                            .getLauncherMeta()
-                            .getVersion(minecraftVersion)
-                            .getVersionMeta()
-                            .downloads
-                            .get("server")
-                            .url))
-                    .toString();
-
-            String shForge = String.format("#!/bin/bash\n# Download the Minecraft_server.jar for your modpack\n\nwget -O minecraft_server.%s.jar %s", minecraftVersion, downloadMinecraftServer);
-
-            Path pathSh = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar_forge.sh", destination));
-
-            byte[] strToBytesSh = shForge.getBytes();
-
-            Files.write(pathSh, strToBytesSh);
-
-            String readSh = Files.readAllLines(pathSh).get(0);
-
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.forgeshell"), readSh));
-
-        } catch (IOException ex) {
-
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.forgeshell"), ex);
-        }
-
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.forgeshell"));
-    }
-
-    /**
-     * Generates Forge Windows-Batch download scripts for Mojang's Minecraft server JAR for the specified Minecraft version.
-     * @author Griefed
-     * @param modpackDir String. The script is generated in the server_pack directory inside the modpack directory.
-     * @param minecraftVersion String. The Minecraft version for which to download the server JAR.
-     */
-    void forgeBatch(String modpackDir, String minecraftVersion) {
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-
-        try {
-
-            String downloadMinecraftServer = (new URL(
-                    LauncherMeta
-                            .getLauncherMeta()
-                            .getVersion(minecraftVersion)
-                            .getVersionMeta()
-                            .downloads
-                            .get("server")
-                            .url))
-                    .toString();
-
-            String batForge = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'minecraft_server.%s.jar')\"", downloadMinecraftServer, minecraftVersion);
-
-            Path pathBat = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar_forge.bat", destination));
-
-            byte[] strToBytesBat = batForge.getBytes();
-
-            Files.write(pathBat, strToBytesBat);
-
-            String readBat = Files.readAllLines(pathBat).get(0);
-
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.forgebatch"), readBat));
-
-        } catch (IOException ex) {
-
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.forgebatch"), ex);
-        }
-
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.forgebatch"));
+        
+        LOG.debug(String.format("Generated batch download script. Content: %s", readBatch));
+        LOG.debug(String.format("Generated shell download script. Content: %s", readShell));
     }
 
     /**

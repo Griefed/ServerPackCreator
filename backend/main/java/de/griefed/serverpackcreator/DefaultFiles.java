@@ -106,10 +106,6 @@ public class DefaultFiles {
     private final File FILE_CONFIG_OLD = new File("creator.conf");
     private final File FILE_PROPERTIES = new File("server.properties");
     private final File FILE_ICON = new File("server-icon.png");
-    private final File FILE_FORGE_WINDOWS = new File("start-forge.bat");
-    private final File FILE_FORGE_LINUX = new File("start-forge.sh");
-    private final File FILE_FABRIC_WINDOWS = new File("start-fabric.bat");
-    private final File FILE_FABRIC_LINUX = new File("start-fabric.sh");
     private final File MANIFEST_MINECRAFT = new File("minecraft-manifest.json");
     private final File MANIFEST_FORGE = new File("forge-manifest.json");
     private final File MANIFEST_FABRIC = new File("fabric-manifest.xml");
@@ -150,42 +146,6 @@ public class DefaultFiles {
      */
     public File getIconFile() {
         return FILE_ICON;
-    }
-
-    /**
-     * Getter for start-forge.bat.
-     * @author Griefed
-     * @return File. Returns the start-forge.bat-file.
-     */
-    public File getForgeWindowsFile() {
-        return FILE_FORGE_WINDOWS;
-    }
-
-    /**
-     * Getter for start-forge.sh.
-     * @author Griefed
-     * @return File. Returns the start-forge.sh-file.
-     */
-    public File getForgeLinuxFile() {
-        return FILE_FORGE_LINUX;
-    }
-
-    /**
-     * Getter for start-fabric.bat.
-     * @author Griefed
-     * @return File. Returns the start-fabric.bat-file.
-     */
-    public File getFabricWindowsFile() {
-        return FILE_FABRIC_WINDOWS;
-    }
-
-    /**
-     * Getter for start-fabric.sh.
-     * @author Griefed
-     * @return File. Returns the start-fabric.sh-file.
-     */
-    public File getFabricLinuxFile() {
-        return FILE_FABRIC_LINUX;
     }
 
     /**
@@ -325,19 +285,11 @@ public class DefaultFiles {
         //checkDatabase();
 
         boolean doesConfigExist         = checkForConfig();
-        boolean doesFabricLinuxExist    = checkForFile(getFabricLinuxFile());
-        boolean doesFabricWindowsExist  = checkForFile(getFabricWindowsFile());
-        boolean doesForgeLinuxExist     = checkForFile(getForgeLinuxFile());
-        boolean doesForgeWindowsExist   = checkForFile(getForgeWindowsFile());
         boolean doesPropertiesExist     = checkForFile(getPropertiesFile());
         boolean doesIconExist           = checkForFile(getIconFile());
 
         // Inform user about customization of files if any of them were generated from the template.
         if (doesConfigExist            ||
-                doesFabricLinuxExist   ||
-                doesFabricWindowsExist ||
-                doesForgeLinuxExist    ||
-                doesForgeWindowsExist  ||
                 doesPropertiesExist    ||
                 doesIconExist) {
 

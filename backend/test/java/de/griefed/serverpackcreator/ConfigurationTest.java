@@ -820,6 +820,7 @@ class ConfigurationTest {
         String minecraftVersion = "1.16.5";
         String modLoader = "Forge";
         String modLoaderVersion = "36.1.2";
+        String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
         boolean includeServerIcon = true;
         boolean includeServerProperties = true;
         boolean includeStartScripts = true;
@@ -836,7 +837,8 @@ class ConfigurationTest {
                 includeServerIcon,
                 includeServerProperties,
                 includeStartScripts,
-                includeZipCreation);
+                includeZipCreation,
+                javaArgs);
     }
 
     @Test
@@ -1086,6 +1088,8 @@ class ConfigurationTest {
         if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
         if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
 
+        String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
+
         Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/forge_tests",
                 CONFIGURATIONHANDLER.buildString(clientMods.toString()),
@@ -1099,6 +1103,7 @@ class ConfigurationTest {
                 true,
                 true,
                 true,
+                javaArgs,
                 new File("./serverpackcreatorforge.conf"),
                 false
         ));
@@ -1148,6 +1153,8 @@ class ConfigurationTest {
         if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
         if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
 
+        String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
+
         Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/fabric_tests",
                 CONFIGURATIONHANDLER.buildString(clientMods.toString()),
@@ -1161,6 +1168,7 @@ class ConfigurationTest {
                 true,
                 true,
                 true,
+                javaArgs,
                 new File("./serverpackcreatorfabric.conf"),
                 false
         ));

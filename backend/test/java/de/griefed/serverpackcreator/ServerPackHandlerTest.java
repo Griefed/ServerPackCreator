@@ -61,16 +61,12 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 20.{@link #zipBuilderForgeTest()}<br>
  * 21.{@link #generateDownloadScriptsFabricTest()}<br>
  * 22.{@link #generateDownloadScriptsForgeTest()}<br>
- * 23.{@link #fabricShellTest()}<br>
- * 24.{@link #fabricBatchTest()}<br>
- * 25.{@link #forgeShellTest()}<br>
- * 26.{@link #forgeBatchTest()}<br>
- * 27.{@link #downloadFabricJarTest()}<br>
- * 28.{@link #latestFabricInstallerTest()}<br>
- * 29.{@link #downloadForgeJarTest()}<br>
- * 32.{@link #cleanUpServerPackForgeTest()}<br>
- * 33.{@link #cleanUpServerPackFabricTest()}<br>
- * 34.{@link #runConfigModelTest()}
+ * 23.{@link #downloadFabricJarTest()}<br>
+ * 24.{@link #latestFabricInstallerTest()}<br>
+ * 25.{@link #downloadForgeJarTest()}<br>
+ * 26.{@link #cleanUpServerPackForgeTest()}<br>
+ * 27.{@link #cleanUpServerPackFabricTest()}<br>
+ * 28.{@link #runConfigModelTest()}
  */
 class ServerPackHandlerTest {
 
@@ -150,8 +146,8 @@ class ServerPackHandlerTest {
 
         Assertions.assertTrue(new File("server-packs/forge_tests/1.16.5.json").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_forge.bat").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_forge.sh").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.bat").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.sh").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
@@ -217,7 +213,7 @@ class ServerPackHandlerTest {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
         String modLoader = "Fabric";
         DEFAULTFILES.filesSetup();
-        CREATESERVERPACK.copyStartScripts(modpackDir, modLoader, true);
+        CREATESERVERPACK.createStartScripts(modpackDir, modLoader, true, "zvh54u89kagsphvz8a45u3g9j");
         Assertions.assertTrue(new File(String.format("server-packs/%s/start-fabric.bat", destination)).exists());
         Assertions.assertTrue(new File(String.format("server-packs/%s/start-fabric.sh", destination)).exists());
         new File(String.format("server-packs/%s/start-fabric.bat", destination)).delete();
@@ -238,7 +234,7 @@ class ServerPackHandlerTest {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
         String modLoader = "Forge";
         DEFAULTFILES.filesSetup();
-        CREATESERVERPACK.copyStartScripts(modpackDir, modLoader, true);
+        CREATESERVERPACK.createStartScripts(modpackDir, modLoader, true, "zvh54u89kagsphvz8a45u3g9j");
         Assertions.assertTrue(new File(String.format("server-packs/%s/start-forge.bat", destination)).exists());
         Assertions.assertTrue(new File(String.format("server-packs/%s/start-forge.sh", destination)).exists());
         new File(String.format("server-packs/%s/start-forge.bat", destination)).delete();
@@ -473,8 +469,8 @@ class ServerPackHandlerTest {
         Assertions.assertTrue(new File(String.format("server-packs/%s/1.16.5.json", destination)).exists());
         Assertions.assertTrue(new File(String.format("server-packs/%s/forge.jar", destination)).exists());
         Assertions.assertTrue(new File(String.format("server-packs/%s/minecraft_server.1.16.5.jar", destination)).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.bat", destination)).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.sh", destination)).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.bat", destination)).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.sh", destination)).exists());
         new File(String.format("server-packs/%s/1.16.5.json", destination)).delete();
         new File(String.format("server-packs/%s/forge.jar", destination)).delete();
         new File(String.format("server-packs/%s/forge-installer.jar", destination)).delete();
@@ -518,8 +514,8 @@ class ServerPackHandlerTest {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
         String minecraftVersion = "1.16.5";
         CREATESERVERPACK.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar_fabric.bat", destination)).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar_fabric.sh", destination)).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.bat", destination)).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.sh", destination)).exists());
         new File(String.format("server-packs/%s/download_minecraft-server.jar_fabric.bat", destination)).delete();
         new File(String.format("server-packs/%s/download_minecraft-server.jar_fabric.sh", destination)).delete();
     }
@@ -533,58 +529,10 @@ class ServerPackHandlerTest {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
         String minecraftVersion = "1.16.5";
         CREATESERVERPACK.generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.bat", destination)).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.sh", destination)).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.bat", destination)).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.sh", destination)).exists());
         new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.bat", destination)).delete();
         new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.sh", destination)).delete();
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void fabricShellTest() throws IOException {
-        DEFAULTFILES.filesSetup();
-        String modpackDir = "./backend/test/resources/forge_tests";
-        Files.createDirectories(Paths.get("server-packs/forge_tests"));
-        String minecraftVersion = "1.16.5";
-        CREATESERVERPACK.fabricShell(modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_fabric.sh").exists());
-        new File("server-packs/forge_tests/download_minecraft-server.jar_fabric.sh").delete();
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void fabricBatchTest() throws IOException {
-        DEFAULTFILES.filesSetup();
-        String modpackDir = "./backend/test/resources/forge_tests";
-        Files.createDirectories(Paths.get("server-packs/forge_tests"));
-        String minecraftVersion = "1.16.5";
-        CREATESERVERPACK.fabricBatch(modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_fabric.bat").exists());
-        new File("server-packs/forge_tests/download_minecraft-server.jar_fabric.bat").delete();
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void forgeShellTest() throws IOException {
-        DEFAULTFILES.filesSetup();
-        String modpackDir = "./backend/test/resources/forge_tests";
-        Files.createDirectories(Paths.get("server-packs/forge_tests"));
-        String minecraftVersion = "1.16.5";
-        CREATESERVERPACK.forgeShell(modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_forge.sh").exists());
-        new File("server-packs/forge_tests/download_minecraft-server.jar_forge.sh").delete();
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void forgeBatchTest() throws IOException {
-        DEFAULTFILES.filesSetup();
-        String modpackDir = "./backend/test/resources/forge_tests";
-        Files.createDirectories(Paths.get("server-packs/forge_tests"));
-        String minecraftVersion = "1.16.5";
-        CREATESERVERPACK.forgeBatch(modpackDir, minecraftVersion);
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_forge.bat").exists());
-        new File("server-packs/forge_tests/download_minecraft-server.jar_forge.bat").delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -717,8 +665,8 @@ class ServerPackHandlerTest {
 
         Assertions.assertTrue(new File("server-packs/forge_tests/1.16.5.json").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_forge.bat").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar_forge.sh").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.bat").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.sh").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
