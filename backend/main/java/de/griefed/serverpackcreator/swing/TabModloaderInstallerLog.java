@@ -88,7 +88,9 @@ public class TabModloaderInstallerLog extends JComponent {
 
                         textArea.setText("");
                     }
-                    textArea.append(line + "\n");
+                    if (!line.contains("DEBUG")) {
+                        textArea.append(line + "\n");
+                    }
                 }
             }
         }, 2000, false);

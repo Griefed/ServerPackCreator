@@ -85,7 +85,9 @@ public class TabServerPackCreatorLog extends JComponent {
                     if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
                         textArea.setText("");
                     }
-                    textArea.append(line + "\n");
+                    if (!line.contains("DEBUG")) {
+                        textArea.append(line + "\n");
+                    }
                 }
             }
         }, 2000, false);

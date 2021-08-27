@@ -29,11 +29,14 @@ import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import mdlaf.MaterialLookAndFeel;
+import mdlaf.components.tabbedpane.MaterialTabbedPaneUI;
+import mdlaf.utils.MaterialColors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -46,7 +49,7 @@ import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><br>
- * {@link #SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler)}<br>
+ * {@link #SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, Properties)}<br>
  * {@link #mainGUI()}<br>
  * {@link #createAndShowGUI()}<p>
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
@@ -109,9 +112,12 @@ public class SwingGuiInitializer extends JPanel {
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
-    public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler, CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler, AddonsHandler injectedAddonsHandler) {
+    public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler, CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler, AddonsHandler injectedAddonsHandler, Properties injectedServerPackCreatorProperties) {
         super(new GridLayout(1, 1));
+
+        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -132,13 +138,13 @@ public class SwingGuiInitializer extends JPanel {
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -149,16 +155,9 @@ public class SwingGuiInitializer extends JPanel {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex);
         }
 
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
-        }
-
         this.VERSIONLISTER = new VersionLister();
 
-        this.TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER);
+        this.TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER, serverpackcreatorproperties);
         this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER);
         this.TAB_LOG_MODLOADERINSTALLER = new TabModloaderInstallerLog(LOCALIZATIONMANAGER);
         this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog(LOCALIZATIONMANAGER);
@@ -169,19 +168,6 @@ public class SwingGuiInitializer extends JPanel {
         this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
         this.TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
-
-        /*
-         * Remove the border insets so the panes fully fill out the area available to them. Prevents the image
-         * painted by BackgroundPanel from being displayed along the border of the pane.
-         */
-        TABBEDPANE.setUI(new BasicTabbedPaneUI() {
-            private final Insets borderInsets = new Insets(0, 0, 0, 0);
-
-            @Override
-            protected Insets getContentBorderInsets(int tabPlacement) {
-                return borderInsets;
-            }
-        });
 
         TABBEDPANE.addTab(
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.createserverpack.title"),
@@ -215,24 +201,7 @@ public class SwingGuiInitializer extends JPanel {
 
         TABBEDPANE.setMnemonicAt(3, KeyEvent.VK_4);
 
-        TABBEDPANE.addTab(
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.about.title"),
-                null,
-                TAB_ABOUT.aboutTab(),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.about.tip"));
-
-        TABBEDPANE.setMnemonicAt(4, KeyEvent.VK_5);
-
-        TABBEDPANE.setOpaque(true);
-
         add(TABBEDPANE);
-
-        /*
-         * We need both in order to have a transparent TabbedPane
-         * behind which we can see the image painted by BackgroundPanel
-         */
-        setOpaque(false);
-        TABBEDPANE.setOpaque(false);
 
         TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
@@ -243,7 +212,9 @@ public class SwingGuiInitializer extends JPanel {
                 FRAME_SERVERPACKCREATOR,
                 LAF_LIGHT,
                 LAF_DARK,
-                TAB_CREATESERVERPACK
+                TAB_CREATESERVERPACK,
+                TABBEDPANE,
+                serverpackcreatorproperties
         );
 
         FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
@@ -272,7 +243,7 @@ public class SwingGuiInitializer extends JPanel {
 
                 }
 
-            } catch (/*ClassNotFoundException | InstantiationException | IllegalAccessException |*/ UnsupportedLookAndFeelException ex) {
+            } catch (UnsupportedLookAndFeelException ex) {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
             }
 
@@ -286,7 +257,7 @@ public class SwingGuiInitializer extends JPanel {
      */
     private void createAndShowGUI() {
 
-        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
 
@@ -313,6 +284,8 @@ public class SwingGuiInitializer extends JPanel {
          * Does it work? Yeah.
          */
         SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
+
+        TABBEDPANE.setOpaque(true);
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
     }

@@ -26,7 +26,9 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -135,6 +137,7 @@ class ConfigurationTest {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final DefaultFiles DEFAULTFILES;
+    private Properties serverpackcreatorproperties;
 
     ConfigurationTest() {
         try {
@@ -142,12 +145,20 @@ class ConfigurationTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverpackcreatorproperties = new Properties();
+            this.serverpackcreatorproperties.load(inputStream);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
         LOCALIZATIONMANAGER = new LocalizationManager();
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
         DEFAULTFILES.filesSetup();
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK);
+        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
     }
 
     @Test
@@ -664,6 +675,7 @@ class ConfigurationTest {
         configurationModel.setIncludeServerProperties(true);
         configurationModel.setIncludeStartScripts(true);
         configurationModel.setIncludeZipCreation(true);
+        configurationModel.setJavaArgs("empty");
         CONFIGURATIONHANDLER.checkCurseForge("238298,3174854");
         configurationModel.setClientMods(CONFIGURATIONHANDLER.getFallbackModsList());
 
@@ -820,6 +832,7 @@ class ConfigurationTest {
         String minecraftVersion = "1.16.5";
         String modLoader = "Forge";
         String modLoaderVersion = "36.1.2";
+        String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
         boolean includeServerIcon = true;
         boolean includeServerProperties = true;
         boolean includeStartScripts = true;
@@ -836,7 +849,8 @@ class ConfigurationTest {
                 includeServerIcon,
                 includeServerProperties,
                 includeStartScripts,
-                includeZipCreation);
+                includeZipCreation,
+                javaArgs);
     }
 
     @Test
@@ -1086,6 +1100,8 @@ class ConfigurationTest {
         if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
         if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
 
+        String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
+
         Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/forge_tests",
                 CONFIGURATIONHANDLER.buildString(clientMods.toString()),
@@ -1099,6 +1115,7 @@ class ConfigurationTest {
                 true,
                 true,
                 true,
+                javaArgs,
                 new File("./serverpackcreatorforge.conf"),
                 false
         ));
@@ -1148,6 +1165,8 @@ class ConfigurationTest {
         if (autoJavaPath.startsWith("C:")) {autoJavaPath = String.format("%s.exe", autoJavaPath);}
         if (new File("/usr/bin/java").exists()) {javaPath = "/usr/bin/java";} else {javaPath = autoJavaPath;}
 
+        String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
+
         Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/fabric_tests",
                 CONFIGURATIONHANDLER.buildString(clientMods.toString()),
@@ -1161,6 +1180,7 @@ class ConfigurationTest {
                 true,
                 true,
                 true,
+                javaArgs,
                 new File("./serverpackcreatorfabric.conf"),
                 false
         ));

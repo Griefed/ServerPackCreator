@@ -13,7 +13,8 @@ public class ConfigurationModel {
             javaPath,
             minecraftVersion,
             modLoader,
-            modLoaderVersion;
+            modLoaderVersion,
+            javaArgs;
 
     private Boolean
             includeServerInstallation,
@@ -262,13 +263,31 @@ public class ConfigurationModel {
     }
 
     /**
+     * Getter for the Java arguments with which the start-scripts will be generated.
+     * @author Griefed
+     * @return String. Returns the Java arguments with which the start-scripts will be generated.
+     */
+    public String getJavaArgs() {
+        return javaArgs;
+    }
+
+    /**
+     * Setter for the Java arguments with which the start-scripts will be generated.
+     * @author Griefed
+     * @param javaArgs String. Sets the Java arguments with which the start-scripts will be generated.
+     */
+    public void setJavaArgs(String javaArgs) {
+        this.javaArgs = javaArgs;
+    }
+
+    /**
      * Concatenates all configuration parameters into a String. Overrides the default toString() method.
      * @author Griefed
      * @return String. A concatenated string of the whole configuration.
      */
     @Override
     public String toString() {
-        return "Configuration{" +
+        return "ConfigurationModel{" +
                 "clientMods=" + clientMods +
                 ", copyDirs=" + copyDirs +
                 ", modpackDir='" + modpackDir + '\'' +
@@ -276,6 +295,7 @@ public class ConfigurationModel {
                 ", minecraftVersion='" + minecraftVersion + '\'' +
                 ", modLoader='" + modLoader + '\'' +
                 ", modLoaderVersion='" + modLoaderVersion + '\'' +
+                ", javaArgs='" + javaArgs + '\'' +
                 ", includeServerInstallation=" + includeServerInstallation +
                 ", includeServerIcon=" + includeServerIcon +
                 ", includeServerProperties=" + includeServerProperties +

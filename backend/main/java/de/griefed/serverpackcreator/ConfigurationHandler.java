@@ -47,7 +47,7 @@ import java.util.*;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack)}<br>
+ * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, Properties)}<br>
  * 2. {@link #getOldConfigFile()}<br>
  * 3. {@link #getConfigFile()}<br>
  * 4. {@link #getConfig()}<br>
@@ -64,7 +64,7 @@ import java.util.*;
  * 15.{@link #suggestCopyDirs(String)}<br>
  * 16.{@link #checkCurseForge(String)}<br>
  * 17.{@link #convertToBoolean(String)}<br>
- * 18.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean)}<br>
+ * 18.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String)}<br>
  * 19.{@link #checkModpackDir(String)}<br>
  * 20.{@link #checkCopyDirs(List, String)}<br>
  * 21.{@link #checkJavaPath(String)}<br>
@@ -79,7 +79,7 @@ import java.util.*;
  * 30.{@link #readStringArray()}<br>
  * 31.{@link #buildString(String...)}<br>
  * 32.{@link #readBoolean()}<br>
- * 33.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}<br>
+ * 33.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
  * 34.{@link #getConfigurationAsList(ConfigurationModel)}
  * <p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
@@ -107,9 +107,10 @@ public class ConfigurationHandler {
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack) {
+    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, Properties injectedServerPackCreatorProperties) {
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
@@ -122,12 +123,7 @@ public class ConfigurationHandler {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
-        }
+        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
 
         setFALLBACKMODSLIST();
 
@@ -151,6 +147,7 @@ public class ConfigurationHandler {
                             "preciseblockplacing","ResourceLoader","SimpleDiscordRichPresence","SpawnerFix","timestamps","TipTheScales",
                             "WorldNameRandomizer"));
 
+            // TODO: Replace with lang key
             LOG.debug("Fallbackmodslist property null. Using fallback: " + FALLBACKMODSLIST);
 
         } else if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
@@ -170,6 +167,7 @@ public class ConfigurationHandler {
 
             this.FALLBACKMODSLIST = Collections.singletonList((serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
 
+            // TODO: Replace with lang key
             LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
         }
 
@@ -197,7 +195,7 @@ public class ConfigurationHandler {
     /**
      * Getter for creator.conf.
      * @author Griefed
-     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}
      */
     public File getOldConfigFile() {
         return FILE_CONFIG_OLD;
@@ -207,7 +205,7 @@ public class ConfigurationHandler {
      * Getter for serverpackcreator.conf.
      * @author Griefed
      * @return File. Returns the serverpackcreator.conf-file.
-     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, File, boolean)}
+     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}
      */
     public File getConfigFile() {
         return FILE_CONFIG;
@@ -322,6 +320,16 @@ public class ConfigurationHandler {
 
         configurationModel.setIncludeZipCreation(convertToBoolean(getConfig().getString("includeZipCreation")));
 
+        try {
+            configurationModel.setJavaArgs(getConfig().getString("javaArgs"));
+
+        } catch (ConfigException | NullPointerException ex) {
+
+            // TODO: Replace with lang key
+            LOG.info("No configuration for javaArgs found in config file. Setting javaArgs to \"empty\".");
+            configurationModel.setJavaArgs("empty");
+        }
+
         if (checkModpackDir(getConfig().getString("modpackDir").replace("\\","/"))) {
 
             configHasError = isDir(getConfig().getString("modpackDir").replace("\\","/"), configurationModel);
@@ -351,7 +359,8 @@ public class ConfigurationHandler {
                 configurationModel.getIncludeServerIcon(),
                 configurationModel.getIncludeServerProperties(),
                 configurationModel.getIncludeStartScripts(),
-                configurationModel.getIncludeZipCreation());
+                configurationModel.getIncludeZipCreation(),
+                configurationModel.getJavaArgs());
 
         if (!configHasError) {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
@@ -414,7 +423,8 @@ public class ConfigurationHandler {
                 configurationModel.getIncludeServerIcon(),
                 configurationModel.getIncludeServerProperties(),
                 configurationModel.getIncludeStartScripts(),
-                configurationModel.getIncludeZipCreation());
+                configurationModel.getIncludeZipCreation(),
+                configurationModel.getJavaArgs());
 
         if (!configHasError) {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
@@ -449,45 +459,36 @@ public class ConfigurationHandler {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
         }
 
-        if (configurationModel.getIncludeServerInstallation()) {
+        if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
 
-            if (isMinecraftVersionCorrect(getConfig().getString("minecraftVersion"))) {
+            configurationModel.setMinecraftVersion(getConfig().getString("minecraftVersion"));
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
 
-                configurationModel.setMinecraftVersion(getConfig().getString("minecraftVersion"));
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
+        } else {
+            configHasError = true;
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
+        }
 
-            } else {
-                configHasError = true;
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
-            }
+        if (checkModloader(getConfig().getString("modLoader"))) {
 
-            if (checkModloader(getConfig().getString("modLoader"))) {
+            configurationModel.setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
-                configurationModel.setModLoader(setModLoaderCase(getConfig().getString("modLoader")));
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
+            if (checkModloaderVersion(configurationModel.getModLoader(), getConfig().getString("modLoaderVersion"))) {
 
-                if (checkModloaderVersion(configurationModel.getModLoader(), getConfig().getString("modLoaderVersion"))) {
-
-                    configurationModel.setModLoaderVersion(getConfig().getString("modLoaderVersion"));
-                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
-
-                } else {
-                    configHasError = true;
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
-                }
+                configurationModel.setModLoaderVersion(getConfig().getString("modLoaderVersion"));
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
 
             } else {
                 configHasError = true;
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
             }
 
         } else {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipstart"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipjava"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipminecraft"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodlaoder"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodloaderversion"));
+            configHasError = true;
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
         }
+
         return configHasError;
     }
 
@@ -511,42 +512,33 @@ public class ConfigurationHandler {
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
         }
 
-        if (configurationModel.getIncludeServerInstallation()) {
+        if (isMinecraftVersionCorrect(configurationModel.getMinecraftVersion())) {
 
-            if (isMinecraftVersionCorrect(configurationModel.getMinecraftVersion())) {
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
 
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
+        } else {
+            configHasError = true;
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
+        }
 
-            } else {
-                configHasError = true;
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
-            }
+        if (checkModloader(configurationModel.getModLoader())) {
 
-            if (checkModloader(configurationModel.getModLoader())) {
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
+            if (checkModloaderVersion(configurationModel.getModLoader(), configurationModel.getModLoaderVersion())) {
 
-                if (checkModloaderVersion(configurationModel.getModLoader(), configurationModel.getModLoaderVersion())) {
-
-                    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
-
-                } else {
-                    configHasError = true;
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
-                }
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
 
             } else {
                 configHasError = true;
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
             }
 
         } else {
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipstart"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipjava"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipminecraft"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodlaoder"));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodloaderversion"));
+            configHasError = true;
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
         }
+
         return configHasError;
     }
 
@@ -650,6 +642,7 @@ public class ConfigurationHandler {
                                 configurationModel.getIncludeServerProperties(),
                                 configurationModel.getIncludeStartScripts(),
                                 configurationModel.getIncludeZipCreation(),
+                                configurationModel.getJavaArgs(),
                                 getConfigFile(),
                                 false
                         );
@@ -881,6 +874,7 @@ public class ConfigurationHandler {
      * @param includeProperties Boolean. Whether to include the server.properties in the server pack.
      * @param includeScripts Boolean. Whether to include the start scripts for the specified modloader in the server pack.
      * @param includeZip Boolean. Whether to create a zip-archive of the server pack, excluding the Minecraft server JAR according to Mojang's TOS and EULA.
+     * @param javaArgs String. Java arguments to write the start-scripts with.
      */
     void printConfig(String modpackDirectory,
                      List<String> clientsideMods,
@@ -893,7 +887,8 @@ public class ConfigurationHandler {
                      boolean includeIcon,
                      boolean includeProperties,
                      boolean includeScripts,
-                     boolean includeZip) {
+                     boolean includeZip,
+                     String javaArgs) {
 
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.start"));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modpackdir"), modpackDirectory));
@@ -930,6 +925,8 @@ public class ConfigurationHandler {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.properties"), includeProperties));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.scripts"), includeScripts));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"), includeZip));
+        // TODO: Replace with lang key
+        LOG.info("Java arguments for start-scripts: " + javaArgs);
     }
 
     /**
@@ -1338,7 +1335,8 @@ public class ConfigurationHandler {
                 minecraftVersion,
                 modLoader,
                 modLoaderVersion,
-                tmpModpackDir;
+                tmpModpackDir,
+                javaArgs;
 
         Scanner reader = new Scanner(System.in);
 
@@ -1522,6 +1520,21 @@ public class ConfigurationHandler {
 
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeZipCreation));
 
+//-------------------------------------------------------------------------JAVA ARGS TO EXECUTE THE SERVER WITH---------
+
+            // TODO: Replace with lang key
+            LOG.info("Specify the Java arguments, if any, to execute the server with. Can be left blank.");
+
+            System.out.print("Java args: ");
+            javaArgs = reader.nextLine();
+
+            if (javaArgs.equals("")) {
+                javaArgs = "empty";
+            }
+
+            // TODO: Replace with lang key
+            LOG.info("Specified the following Java arguments for start-scripts: " + javaArgs);
+
 //------------------------------------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
             printConfig(modpackDir,
                     clientMods,
@@ -1534,7 +1547,9 @@ public class ConfigurationHandler {
                     includeServerIcon,
                     includeServerProperties,
                     includeStartScripts,
-                    includeZipCreation);
+                    includeZipCreation,
+                    javaArgs);
+
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.enter"));
 
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
@@ -1556,6 +1571,7 @@ public class ConfigurationHandler {
                 includeServerProperties,
                 includeStartScripts,
                 includeZipCreation,
+                javaArgs,
                 getConfigFile(),
                 false
         )) {
@@ -1648,6 +1664,7 @@ public class ConfigurationHandler {
      * @param includeProperties Boolean. Whether to include a properties file in the server pack.
      * @param includeScripts Boolean. Whether to include start scripts in the server pack.
      * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server JAR.
+     * @param javaArgs String. Java arguments to write the start-scripts with.
      * @param fileName The name under which to write the new configuration file.
      * @param isTemporary Decides whether to delete existing config-file. If isTemporary is false, existing config files will be deleted before writing the new file.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
@@ -1664,10 +1681,15 @@ public class ConfigurationHandler {
                                      boolean includeProperties,
                                      boolean includeScripts,
                                      boolean includeZip,
+                                     String javaArgs,
                                      File fileName,
                                      boolean isTemporary) {
 
         boolean configWritten = false;
+
+        if (javaArgs.equals("")) {
+            javaArgs = "empty";
+        }
 
         //Griefed: What the fuck. This reads like someone having a stroke. What have I created here?
         String configString = String.format(
@@ -1682,7 +1704,8 @@ public class ConfigurationHandler {
                         "%s\nincludeServerIcon = %b\n\n" +
                         "%s\nincludeServerProperties = %b\n\n" +
                         "%s\nincludeStartScripts = %b\n\n" +
-                        "%s\nincludeZipCreation = %b\n",
+                        "%s\nincludeZipCreation = %b\n\n" +
+                        "%s\njavaArgs = \"%s\"\n",
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), clientMods,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), copyDirs.replace("\\","/"),
@@ -1694,8 +1717,10 @@ public class ConfigurationHandler {
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeservericon"), includeIcon,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverproperties"), includeProperties,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includestartscripts"), includeScripts,
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includezipcreation"), includeZip
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includezipcreation"), includeZip,
+                "# Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n# Leave as \"empty\" to not have Java arguments in your start-scripts.", javaArgs
         );
+        // TODO: Replace with lang key
 
         if (!isTemporary) {
             if (getConfigFile().exists()) {
