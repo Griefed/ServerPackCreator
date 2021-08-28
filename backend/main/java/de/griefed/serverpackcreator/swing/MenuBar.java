@@ -646,6 +646,22 @@ public class MenuBar extends Component {
      */
     private void actionEventOpenInEditorServerProperties(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server.properties in Editor.");
+
+        try {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+                Desktop.getDesktop().open(
+                        new File(
+                                applicationHome.getSource().toString().replace("\\","/")
+                                        .replace(applicationHome.getSource().toString()
+                                                .substring(
+                                                        applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
+                                        .replace("\\","/")
+                                        + "/server_files/server.properties")
+                );
+            }
+        } catch (IOException ex) {
+            LOG.error("Error opening browser for ServerPackCreator GitHub repository.", ex);
+        }
     }
 
     /**
