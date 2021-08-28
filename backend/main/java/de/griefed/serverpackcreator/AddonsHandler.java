@@ -208,9 +208,9 @@ public class AddonsHandler {
      * <strong>NOTE: All addons are run in the <code>work/temp/addon_name</code>-directory. Be aware of that when creating your addons!</strong>
      * @author Griefed
      * @param configurationModel The instance of {@link ConfigurationModel} with which a server pack was generated.
-     * @param CONFIGURATIONHANDLER An instance of {@link ConfigurationHandler} to access {@link ConfigurationHandler#getConfigurationAsList(ConfigurationModel)}
+     * @param configurationHandler An instance of {@link ConfigurationHandler} to access {@link ConfigurationHandler#getConfigurationAsList(ConfigurationModel)}
      */
-    void runServerPackAddons(ConfigurationModel configurationModel, ConfigurationHandler CONFIGURATIONHANDLER) {
+    void runServerPackAddons(ConfigurationModel configurationModel, ConfigurationHandler configurationHandler) {
 
         List<String> commandArguments = new ArrayList<>();
         List<String> addonsToExecute = getListOfServerPackAddons();
@@ -247,7 +247,7 @@ public class AddonsHandler {
                     commandArguments.add("-jar");
                     commandArguments.add(addon);
 
-                    commandArguments.addAll(CONFIGURATIONHANDLER.getConfigurationAsList(configurationModel));
+                    commandArguments.addAll(configurationHandler.getConfigurationAsList(configurationModel));
 
                     commandArguments.add(serverPackCreatorBaseDirectory);
 
