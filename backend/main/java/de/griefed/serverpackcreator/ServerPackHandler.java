@@ -51,6 +51,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -163,6 +165,8 @@ public class ServerPackHandler {
 
     private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
     private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
+
+    private final ExecutorService executeRun = Executors.newSingleThreadExecutor();
 
     /**
      * Getter for the String which will make up the shell-start-script for Fabric servers.
@@ -322,14 +326,11 @@ public class ServerPackHandler {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
-                // TODO: Replace with lang key
-                LOG.info("No Server Pack addons to execute.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
             } else {
-                // TODO: Replace with lang key
-                LOG.info("Starting execution of Server Pack addons. Check addons.log in the logs-directory for details about their execution.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
                 ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
-                // TODO: Replace with lang key
-                LOG.info("Addons executed. Finishing...");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
             }
 
             return true;
@@ -401,14 +402,11 @@ public class ServerPackHandler {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
-                // TODO: Replace with lang key
-                LOG.info("No Server Pack addons to execute.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
             } else {
-                // TODO: Replace with lang key
-                LOG.info("Starting execution of Server Pack addons. Check addons.log in the logs-directory for details about their execution.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
                 ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
-                // TODO: Replace with lang key
-                LOG.info("Addons executed. Finishing...");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
             }
 
             return true;
@@ -1362,8 +1360,7 @@ public class ServerPackHandler {
      */
     private List<String> scanTomls(File[] filesInModsDir) {
 
-        // TODO: Replace with lang key
-        LOG.info("Scanning 1.13+ mods for sideness...");
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scantoml"));
 
         List<String> serverMods = new ArrayList<>();
         List<String> modsDelta = new ArrayList<>();
@@ -1526,8 +1523,7 @@ public class ServerPackHandler {
      */
     private List<String> scanAnnotations(File[] filesInModsDir) {
 
-        // TODO: Replace with lang key
-        LOG.info("Scanning 1.12- mods for sideness...");
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scanannotation"));
 
         List<String> modDependencies = new ArrayList<>();
         List<String> clientMods = new ArrayList<>();

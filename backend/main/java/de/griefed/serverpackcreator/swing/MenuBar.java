@@ -283,10 +283,8 @@ public class MenuBar extends Component {
             }
         });
 
-        // TODO: Replace with lang key.
-        FILETOOLARGETEXT = "Size exceeds 10MB. Must be smaller\nthan 10MB for HasteBin upload.  ";
-        // TODO: Replace with lang key.
-        FILETOOLARGETITLE = "File too large!";
+        FILETOOLARGETEXT = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolarge");
+        FILETOOLARGETITLE = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolargetitle");
         fileTooLargeWindowTextPane.setOpaque(false);
         fileTooLargeWindowTextPane.setEditable(false);
         fileTooLargeWindowTextPane.setMinimumSize(FILETOOLARGEDIMENSION);
@@ -312,14 +310,10 @@ public class MenuBar extends Component {
             }
         });
 
-        // TODO: Replace with lang key
-        JAVAARGSOPTIONS[0] = "OK";
-        // TODO: Replace with lang key
-        JAVAARGSOPTIONS[1] = "Use Aikars flags";
-        // TODO: Replace with lang key
-        JAVAARGSOPTIONS[2] = "Empty";
-        // TODO: Replace with lang key
-        JAVAARGSOPTIONS[3] = "Cancel";
+        JAVAARGSOPTIONS[0] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.ok");
+        JAVAARGSOPTIONS[1] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.aikar");
+        JAVAARGSOPTIONS[2] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.empty");
+        JAVAARGSOPTIONS[3] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.cancel");
 
         JAVAARGSSELECTIONS[0] = "empty";
         JAVAARGSSELECTIONS[1] = "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 " +
@@ -351,63 +345,37 @@ public class MenuBar extends Component {
     public JMenuBar createMenuBar() {
 
         // create menus
-        // TODO: Replace with lang key
-        fileMenu = new JMenu("File");
-        // TODO: Replace with lang key
-        editMenu = new JMenu("Edit");
-        // TODO: Replace with lang key
-        viewMenu = new JMenu("View");
-        // TODO: Replace with lang key
-        aboutMenu = new JMenu("About");
-        // TODO: Replace with lang key
-        help_OpenHelpWindowMenuItem = new JMenuItem("Help");
+        fileMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.file"));
+        editMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.edit"));
+        viewMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.view"));
+        aboutMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.about"));
+        help_OpenHelpWindowMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.help"));
 
         // create menu items
-        // TODO: Replace with lang key
-        file_LoadConfigMenuItem = new JMenuItem("Load Configuration");
-        // TODO: Replace with lang key
-        file_SaveConfigMenuItem = new JMenuItem("Save Configuration");
-        // TODO: Replace with lang key
-        file_SaveAsConfigMenuItem = new JMenuItem("Save Configuration As...");
-        // TODO: Replace with lang key
-        file_UploadConfigurationToHasteBin = new JMenuItem("Upload Configuration to HasteBin");
-        // TODO: Replace with lang key
-        file_UploadServerPackCreatorLogToHasteBin = new JMenuItem("Upload ServerPackCreator Log to HasteBin");
-        // TODO: Replace with lang key
-        file_ExitConfigMenuItem = new JMenuItem("Exit");
+        file_LoadConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.loadconfig"));
+        file_SaveConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveconfig"));
+        file_SaveAsConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveas"));
+        file_UploadConfigurationToHasteBin = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadconfig"));
+        file_UploadServerPackCreatorLogToHasteBin = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadlog"));
+        file_ExitConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.exit"));
 
-        // TODO: Replace with lang key
-        edit_SwitchTheme = new JMenuItem("Toggle light/dark-mode");
-        // TODO: Replace with lang key
-        edit_ChangeJavaArgs = new JMenuItem("Edit Start-Scripts Java Args");
-        // TODO: Replace with lang key
-        edit_OpenInEditorServerProperties = new JMenuItem("Open server.properties in Editor");
-        // TODO: Replace with lang key
-        edit_OpenInEditorServerIcon = new JMenuItem("Open server-icon.png in Editor");
+        edit_SwitchTheme = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.theme"));
+        edit_ChangeJavaArgs = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.javaargs"));
+        edit_OpenInEditorServerProperties = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverproperties"));
+        edit_OpenInEditorServerIcon = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.servericon"));
 
-        // TODO: Replace with lang key
-        view_OpenAddonsDirectoryMenuItem = new JMenuItem("Open addons-directory");
-        // TODO: Replace with lang key
-        view_ExampleAddonRepositoryMenuItem = new JMenuItem("Visit example-addon repository");
-        // TODO: Replace with lang key
-        view_OpenServerPackCreatorDirectoryMenuItem = new JMenuItem("Open installation-directory");
-        // TODO: Replace with lang key
-        view_OpenServerPacksDirectoryMenuItem = new JMenuItem("Open server packs directory");
-        // TODO: Replace with lang key
-        view_OpenServerFilesDirectoryMenuItem = new JMenuItem("Open server-files directory");
+        view_OpenAddonsDirectoryMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.addonsdir"));
+        view_ExampleAddonRepositoryMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.exampleaddonrepo"));
+        view_OpenServerPackCreatorDirectoryMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.spcdir"));
+        view_OpenServerPacksDirectoryMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverpacksdir"));
+        view_OpenServerFilesDirectoryMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverfilesdir"));
 
-        // TODO: Replace with lang key
-        about_OpenAboutWindowMenuItem = new JMenuItem("About");
-        // TODO: Replace with lang key
-        about_OpenGitHubPageMenuItem = new JMenuItem("View Repository on GitHub");
-        // TODO: Replace with lang key
-        about_OpenGitHubIssuesPageMenuItem = new JMenuItem("View Issues on GitHub");
-        // TODO: Replace with lang key
-        about_OpenReleasesPageMenuItem = new JMenuItem("View Releases on GitHub");
-        // TODO: Replace with lang key
-        about_OpenDiscordLinkMenuItem = new JMenuItem("Join my Discord server!");
-        // TODO: Replace with lang key
-        about_OpenDonationsPageMenuItem = new JMenuItem("Support me!");
+        about_OpenAboutWindowMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.about"));
+        about_OpenGitHubPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.repository"));
+        about_OpenGitHubIssuesPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.issues"));
+        about_OpenReleasesPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.releases"));
+        about_OpenDiscordLinkMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.discord"));
+        about_OpenDonationsPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.donate"));
 
         // create action listeners for items
         file_LoadConfigMenuItem.addActionListener(this::actionEventLoadConfigurationFromFileMenuItem);

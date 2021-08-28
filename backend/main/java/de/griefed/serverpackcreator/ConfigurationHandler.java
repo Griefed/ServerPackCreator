@@ -326,8 +326,7 @@ public class ConfigurationHandler {
 
         } catch (ConfigException | NullPointerException ex) {
 
-            // TODO: Replace with lang key
-            LOG.info("No configuration for javaArgs found in config file. Setting javaArgs to \"empty\".");
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javargs.notfound"));
             configurationModel.setJavaArgs("empty");
         }
 
@@ -971,8 +970,7 @@ public class ConfigurationHandler {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.properties"), includeProperties));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.scripts"), includeScripts));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"), includeZip));
-        // TODO: Replace with lang key
-        LOG.info("Java arguments for start-scripts: " + javaArgs);
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"), javaArgs));
     }
 
     /**
@@ -1612,18 +1610,16 @@ public class ConfigurationHandler {
 
 //-------------------------------------------------------------------------JAVA ARGS TO EXECUTE THE SERVER WITH---------
 
-            // TODO: Replace with lang key
-            LOG.info("Specify the Java arguments, if any, to execute the server with. Can be left blank.");
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javaargs.cli"));
 
-            System.out.print("Java args: ");
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javaargs.enter"));
             javaArgs = reader.nextLine();
 
             if (javaArgs.equals("")) {
                 javaArgs = "empty";
             }
 
-            // TODO: Replace with lang key
-            LOG.info("Specified the following Java arguments for start-scripts: " + javaArgs);
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"), javaArgs));
 
 //------------------------------------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
             printConfig(modpackDir,
@@ -1811,9 +1807,8 @@ public class ConfigurationHandler {
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverproperties"), includeProperties,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includestartscripts"), includeScripts,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includezipcreation"), includeZip,
-                "# Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n# Leave as \"empty\" to not have Java arguments in your start-scripts.", javaArgs
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javaargs"), javaArgs
         );
-        // TODO: Replace with lang key
 
         if (!isTemporary) {
             if (getConfigFile().exists()) {

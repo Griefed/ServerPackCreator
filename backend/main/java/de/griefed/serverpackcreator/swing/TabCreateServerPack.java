@@ -1110,8 +1110,7 @@ public class TabCreateServerPack extends JComponent {
             try {
                 setJavaArgs(config.getString("javaArgs"));
             } catch (ConfigException | NullPointerException ex) {
-                // TODO: Replace with lang key
-                LOG.warn("No setting for javaArgs found. Using \"empty\"");
+                LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.javaargs"));
                 setJavaArgs("empty");
             }
 
