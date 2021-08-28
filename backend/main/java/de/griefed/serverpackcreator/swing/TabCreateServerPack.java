@@ -44,9 +44,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -413,12 +411,12 @@ public class TabCreateServerPack extends JComponent {
 
         CREATESERVERPACKPANEL.add(labelModloaderVersion, GRIDBAGCONSTRAINTS);
 
-        COMBOBOX_FABRICVERSIONS.setModel(new DefaultComboBoxModel<>(VERSIONLISTER.getFabricVersionsAsArray()));
+        COMBOBOX_FABRICVERSIONS.setModel(new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getFabricVersionsAsArray())));
         COMBOBOX_FABRICVERSIONS.setSelectedIndex(0);
         COMBOBOX_FABRICVERSIONS.addActionListener(this::actionEventComboBoxFabricVersions);
         COMBOBOX_FABRICVERSIONS.setVisible(false);
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeVersionsAsArray(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString()));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString())));
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -614,7 +612,7 @@ public class TabCreateServerPack extends JComponent {
      */
     void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeVersionsAsArray(chosenMinecraftVersion));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(chosenMinecraftVersion)));
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
