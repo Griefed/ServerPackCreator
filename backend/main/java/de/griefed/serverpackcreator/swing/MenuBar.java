@@ -4,6 +4,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import mdlaf.MaterialLookAndFeel;
+import mdlaf.components.textfield.MaterialTextFieldUI;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -165,7 +166,7 @@ public class MenuBar extends Component {
                 "-XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 " +
                 "-XX:InitiatingHeapOccupancyPercent=15 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true";
 
-        Dimension dimension = new Dimension(750,20);
+        Dimension dimension = new Dimension(750,25);
         javaArgs.setMinimumSize(dimension);
         javaArgs.setMaximumSize(dimension);
         javaArgs.setPreferredSize(dimension);
@@ -434,7 +435,13 @@ public class MenuBar extends Component {
         // TODO: Replace with lang key
         LOG.debug("Clicked Edit Start-Scripts Java Args.");
 
-        javaArgs.setText(TAB_CREATESERVERPACK.getJavaArgs());
+        if (TAB_CREATESERVERPACK.getJavaArgs().equalsIgnoreCase("empty")) {
+            javaArgs.setText("");
+        } else {
+            javaArgs.setText(TAB_CREATESERVERPACK.getJavaArgs());
+        }
+
+        new MaterialTextFieldUI().installUI(javaArgs);
 
         switch (JOptionPane.showOptionDialog(
                 FRAME_SERVERPACKCREATOR,
