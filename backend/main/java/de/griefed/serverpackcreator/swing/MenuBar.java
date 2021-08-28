@@ -113,6 +113,7 @@ public class MenuBar extends Component {
     private JMenuItem edit_SwitchTheme;
     private JMenuItem edit_ChangeJavaArgs;
     private JMenuItem edit_OpenInEditorServerProperties;
+    private JMenuItem edit_OpenInEditorServerIcon;
 
     private JMenuItem view_OpenServerPackCreatorDirectoryMenuItem;
     private JMenuItem view_OpenServerPacksDirectoryMenuItem;
@@ -381,6 +382,8 @@ public class MenuBar extends Component {
         edit_ChangeJavaArgs = new JMenuItem("Edit Start-Scripts Java Args");
         // TODO: Replace with lang key
         edit_OpenInEditorServerProperties = new JMenuItem("Open server.properties in Editor");
+        // TODO: Replace with lang key
+        edit_OpenInEditorServerIcon = new JMenuItem("Open server-icon.png in Editor");
 
         // TODO: Replace with lang key
         view_OpenAddonsDirectoryMenuItem = new JMenuItem("Open addons-directory");
@@ -417,6 +420,7 @@ public class MenuBar extends Component {
         edit_SwitchTheme.addActionListener(this::actionEventSwitchThemeMenuItem);
         edit_ChangeJavaArgs.addActionListener(this::actionEventChangeJavaArgsMenuItem);
         edit_OpenInEditorServerProperties.addActionListener(this::actionEventOpenInEditorServerProperties);
+        edit_OpenInEditorServerIcon.addActionListener(this::actionEventOpenServerIcon);
 
         view_OpenServerPackCreatorDirectoryMenuItem.addActionListener(this::actionEventOpenSPCDirectoryMenuItem);
         view_OpenServerPacksDirectoryMenuItem.addActionListener(this::actionEventOpenServerPacksDirectoryMenuItem);
@@ -447,6 +451,7 @@ public class MenuBar extends Component {
         editMenu.add(edit_ChangeJavaArgs);
         editMenu.add(new JSeparator());
         editMenu.add(edit_OpenInEditorServerProperties);
+        editMenu.add(edit_OpenInEditorServerIcon);
         editMenu.add(new JSeparator());
         editMenu.add(edit_SwitchTheme);
 
@@ -657,6 +662,31 @@ public class MenuBar extends Component {
                                                         applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
                                         .replace("\\","/")
                                         + "/server_files/server.properties")
+                );
+            }
+        } catch (IOException ex) {
+            LOG.error("Error opening browser for ServerPackCreator GitHub repository.", ex);
+        }
+    }
+
+    /**
+     * Upon button-press, open the server-icon.png-file, in the server-files directory, in the users default picture-viewer.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventOpenServerIcon(ActionEvent actionEvent) {
+        LOG.debug("Clicked Open server-icon.png in Editor.");
+
+        try {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                Desktop.getDesktop().open(
+                        new File(
+                                applicationHome.getSource().toString().replace("\\","/")
+                                        .replace(applicationHome.getSource().toString()
+                                                .substring(
+                                                        applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
+                                        .replace("\\","/")
+                                        + "/server_files/server-icon.png")
                 );
             }
         } catch (IOException ex) {
