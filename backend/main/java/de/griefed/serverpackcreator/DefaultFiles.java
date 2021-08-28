@@ -153,8 +153,10 @@ public class DefaultFiles {
         URL minecraftURL = null;
         String minecraftManifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
         try {
-            minecraftURL = new URL(minecraftManifest); }
-        catch (IOException ex) { LOG.error(ex); }
+            minecraftURL = new URL(minecraftManifest);
+        } catch (IOException ex) {
+            LOG.error("Error assigning the Minecraft manifest URL.",ex);
+        }
         return minecraftURL;
     }
 
@@ -167,8 +169,10 @@ public class DefaultFiles {
         URL forgeURL = null;
         String forgeManifest = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
         try {
-            forgeURL = new URL(forgeManifest); }
-        catch (IOException ex) { LOG.error(ex); }
+            forgeURL = new URL(forgeManifest);
+        } catch (IOException ex) {
+            LOG.error("Error assigning the Forge manifest URL.",ex);
+        }
         return forgeURL;
     }
 
@@ -181,8 +185,10 @@ public class DefaultFiles {
         URL fabricURL = null;
         String fabricManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml";
         try {
-            fabricURL = new URL(fabricManifest); }
-        catch (IOException ex) { LOG.error(ex); }
+            fabricURL = new URL(fabricManifest);
+        } catch (IOException ex) {
+            LOG.error("Error assigning the Fabric manifest URL.",ex);
+        }
         return fabricURL;
     }
 
@@ -193,12 +199,12 @@ public class DefaultFiles {
      */
     public URL getFabricInstallerManifestUrl() {
         URL downloadURL = null;
-
         String fabricInstallerManifest = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml";
-
-        try { downloadURL = new URL(fabricInstallerManifest); }
-        catch (IOException ex) { LOG.error(ex); }
-
+        try {
+            downloadURL = new URL(fabricInstallerManifest);
+        } catch (IOException ex) {
+            LOG.error("Error assigning the Fabric-Installer manifest URL.",ex);
+        }
         return downloadURL;
     }
 
@@ -257,20 +263,35 @@ public class DefaultFiles {
     public void filesSetup() {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.enter"));
 
-        try { Files.createDirectories(Paths.get("./server_files")); }
-        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "server_files"), ex); }
+        try {
+            Files.createDirectories(Paths.get("./server_files"));
+        } catch (IOException ex) {
+            LOG.error("Could not create server_files directory.", ex);
+        }
 
-        try { Files.createDirectories(Paths.get("./work")); }
-        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "work"), ex); }
+        try {
+            Files.createDirectories(Paths.get("./work"));
+        } catch (IOException ex) {
+            LOG.error("Could not create work directory.", ex);
+        }
 
-        try { Files.createDirectories(Paths.get("./work/temp")); }
-        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "work/temp"), ex); }
+        try {
+            Files.createDirectories(Paths.get("./work/temp"));
+        } catch (IOException ex) {
+            LOG.error("Could not create work/temp directory.", ex);
+        }
 
-        try { Files.createDirectories(Paths.get("./server-packs")); }
-        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "server-packs"), ex); }
+        try {
+            Files.createDirectories(Paths.get("./server-packs"));
+        } catch (IOException ex) {
+            LOG.error("Could not create server-packs directory.", ex);
+        }
 
-        try { Files.createDirectories(Paths.get("./addons")); }
-        catch (IOException ex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.filessetup"), "addons"), ex); }
+        try {
+            Files.createDirectories(Paths.get("./addons"));
+        } catch (IOException ex) {
+            LOG.error("Could not create addons directory.", ex);
+        }
 
         //refreshValidationFiles();
         refreshManifestFile(getMinecraftManifestUrl(), getMANIFEST_MINECRAFT());
@@ -289,6 +310,7 @@ public class DefaultFiles {
                 doesPropertiesExist    ||
                 doesIconExist) {
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning1"));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning2"));
@@ -296,6 +318,7 @@ public class DefaultFiles {
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
 
         } else {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.finish"));
         }
     }
@@ -314,11 +337,12 @@ public class DefaultFiles {
 
                 boolean isOldConfigDeleted = getOldConfigFile().delete();
                 if (isOldConfigDeleted) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
                 }
 
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforconfig.old"), ex);
+                LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
             }
         } else if (!getConfigFile().exists()) {
             try {
@@ -329,12 +353,13 @@ public class DefaultFiles {
                     link.close();
                 }
 
+                /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
                 firstRun = true;
 
             } catch (IOException ex) {
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforconfig.config"), ex);
+                    LOG.error("Could not extract default config-file.", ex);
                     firstRun = true;
                 }
             }
@@ -358,6 +383,7 @@ public class DefaultFiles {
                         Objects.requireNonNull(DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/server_files/%s", fileToCheckFor))),
                         new File(String.format("./server_files/%s", fileToCheckFor)));
 
+                /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfile"), fileToCheckFor));
 
                 firstRun = true;
@@ -366,7 +392,7 @@ public class DefaultFiles {
 
                 if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
 
-                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.checkforfile"), fileToCheckFor), ex);
+                    LOG.error(String.format("Could not extract default %s file.", fileToCheckFor), ex);
                     firstRun = true;
                 }
             }
@@ -387,7 +413,7 @@ public class DefaultFiles {
         File fileName = new File(String.format("./work/%s", manifestToRefresh));
 
         if (fileName.delete()) {
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.delete"), manifestToRefresh));
+            LOG.debug(String.format("Deleted %s.", manifestToRefresh));
         }
 
         try {
@@ -399,16 +425,17 @@ public class DefaultFiles {
                 downloadManifestOutputStream = new FileOutputStream(fileName);
             } catch (FileNotFoundException ex) {
 
-                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest"), fileName), ex);
+                LOG.debug(String.format("Couldn't find %s.", fileName), ex);
 
                 if (!fileName.exists()) {
-                    LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.creating"), fileName));
+                    LOG.debug(String.format("Creating Manifest %s.", fileName));
 
                     if (fileName.createNewFile()) {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.created"), fileName));
 
                     } else {
-                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.manifest.create"), fileName));
+                        LOG.error(String.format("Error: Could not create Manifest %s.", fileName));
                     }
                 }
                 downloadManifestOutputStream = new FileOutputStream(fileName);
@@ -424,7 +451,7 @@ public class DefaultFiles {
 
         } catch (Exception ex) {
 
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.manifest.download"), fileName), ex);
+            LOG.error(String.format("Error: Something went wrong during the download of the %s Manifest.", fileName), ex);
         }
     }
 
@@ -448,7 +475,6 @@ public class DefaultFiles {
             }
 
         } catch (SQLException ex) {
-        // TODO: Replace with lang key
             LOG.error("Error creating/accessing clientmods-database.", ex);
         }
 

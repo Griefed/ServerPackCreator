@@ -238,11 +238,8 @@ public class TabCreateServerPack extends JComponent {
      */
     private String getSelectedModloaderVersion() {
         if (chosenModloader.equalsIgnoreCase("Fabric")) {
-
             return chosenFabricVersion;
-
         } else {
-
             return chosenForgeVersion;
         }
     }
@@ -629,7 +626,6 @@ public class TabCreateServerPack extends JComponent {
 
         changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
 
-        // TODO: Replace with lang key
         LOG.debug("Selected Minecraft version: " + COMBOBOX_MINECRAFTVERSIONS.getSelectedItem());
     }
 
@@ -642,7 +638,6 @@ public class TabCreateServerPack extends JComponent {
 
         chosenFabricVersion = Objects.requireNonNull(COMBOBOX_FABRICVERSIONS.getSelectedItem()).toString();
 
-        // TODO: Replace with lang key
         LOG.debug("Selected Fabric version: " + COMBOBOX_FABRICVERSIONS.getSelectedItem());
     }
 
@@ -655,7 +650,6 @@ public class TabCreateServerPack extends JComponent {
 
         chosenForgeVersion = Objects.requireNonNull(COMBOBOX_FORGEVERSIONS.getSelectedItem()).toString();
 
-        // TODO: Replace with lang key
         LOG.debug("Selected Forge version: " + COMBOBOX_FORGEVERSIONS.getSelectedItem());
     }
 
@@ -674,18 +668,13 @@ public class TabCreateServerPack extends JComponent {
 
             chosenForgeVersion = Objects.requireNonNull(COMBOBOX_FORGEVERSIONS.getSelectedItem()).toString();
 
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.selected"));
-
-            // TODO: Replace with lang key
-            LOG.debug("Forge version selected: " + chosenForgeVersion);
-
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+            LOG.debug("Forge selected. Version: " + chosenForgeVersion);
 
         } else if (event.getStateChange() == ItemEvent.DESELECTED) {
 
             COMBOBOX_FABRICVERSIONS.setVisible(true);
 
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.forge.deselected"));
+            LOG.debug("Forge deselected.");
 
         }
     }
@@ -705,18 +694,13 @@ public class TabCreateServerPack extends JComponent {
 
             chosenFabricVersion = Objects.requireNonNull(COMBOBOX_FABRICVERSIONS.getSelectedItem()).toString();
 
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.selected"));
-
-            // TODO: Replace with lang key
-            LOG.debug("Fabric version selected: " + chosenFabricVersion);
-
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.slider.selected"), getChosenModloader()));
+            LOG.debug("Fabric selected. Version: " + chosenFabricVersion);
 
         } else if (event.getStateChange() == ItemEvent.DESELECTED) {
 
             COMBOBOX_FORGEVERSIONS.setVisible(true);
 
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.debug.createserverpack.slider.fabric.deselected"));
+            LOG.debug("Fabric deselected.");
         }
     }
 
@@ -740,12 +724,11 @@ public class TabCreateServerPack extends JComponent {
             try {
                 TEXTFIELD_MODPACKDIRECTORY.setText(modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
-                LOG.info(String.format(
-                        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonmodpack"),
-                        modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/")));
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.debug("Selected modpack directory: " + modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonmodpack"), ex);
+                LOG.error("Error getting directory from modpack directory chooser.", ex);
             }
         }
     }
@@ -794,7 +777,8 @@ public class TabCreateServerPack extends JComponent {
                             Arrays.toString(
                                     clientModsFilenames.toArray(new String[0])))
             );
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonclientmods"), clientModsFilenames));
+
+            LOG.debug("Selected mods: " + clientModsFilenames);
         }
     }
 
@@ -831,7 +815,8 @@ public class TabCreateServerPack extends JComponent {
             }
 
             TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncopydirs"), copyDirsNames));
+
+            LOG.debug("Selected directories: " + copyDirsNames);
         }
     }
 
@@ -865,13 +850,10 @@ public class TabCreateServerPack extends JComponent {
             try {
                 TEXTFIELD_JAVAPATH.setText(javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
-                LOG.info(String.format(
-                        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttonjavapath"),
-                        javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/")
-                ));
+                LOG.debug("Set path to Java executable to: " + javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
             } catch (IOException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonjavapath"), ex);
+                LOG.error("LOCALIZATIONMANAGER.getLocalizedString(\"createserverpack.log.error.buttonjavapath\")", ex);
             }
         }
     }
@@ -893,6 +875,7 @@ public class TabCreateServerPack extends JComponent {
             }
         }, 100, false);
 
+        /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
         labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
 
@@ -901,6 +884,7 @@ public class TabCreateServerPack extends JComponent {
         ConfigurationModel configurationModel = new ConfigurationModel();
 
         if (!CONFIGURATIONHANDLER.checkConfiguration(new File("serverpackcreator.tmp"), false, configurationModel)) {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
@@ -908,18 +892,22 @@ public class TabCreateServerPack extends JComponent {
                 boolean delTmp = new File("serverpackcreator.tmp").delete();
                 if (delTmp) {
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+                    /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
                 } else {
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
+                    /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
                 }
             }
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
 
             saveConfig(CONFIGURATIONHANDLER.getConfigFile(), false);
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
 
@@ -948,9 +936,9 @@ public class TabCreateServerPack extends JComponent {
                                 String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))),
                                 serverPackGeneratedAttributeSet);
                     } catch (BadLocationException ex) {
-                        // TODO: Replace with lang key
                         LOG.error("Error inserting text into aboutDocument.", ex);
                     }
+
                     serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
                     materialTextPaneUI.installUI(serverPackGeneratedTextPane);
 
@@ -964,7 +952,7 @@ public class TabCreateServerPack extends JComponent {
                         try {
                             Desktop.getDesktop().open(new File(String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
                         } catch (IOException ex) {
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.browserserverpack"));
+                            LOG.error("Error opening file explorer for server pack.", ex);
                         }
 
                     }
@@ -1037,14 +1025,13 @@ public class TabCreateServerPack extends JComponent {
             try {
                 TEXTFIELD_MODPACKDIRECTORY.setText(config.getString("modpackDir").replace("\\", "/"));
             } catch (NullPointerException ex) {
-                // TODO: Replace with lang key
-                LOG.error("Error modpackdir", ex);
+                LOG.error("Error parsing modpackdir from configfile: " + configFile, ex);
             }
 
             if (config.getStringList("clientMods").isEmpty()) {
 
                 TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(CONFIGURATIONHANDLER.getFallbackModsList().toString()));
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textclientmods.fallback"));
+                LOG.debug("Set clientMods with fallback list.");
 
             } else {
                 TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("clientMods").toString()));
@@ -1065,8 +1052,7 @@ public class TabCreateServerPack extends JComponent {
                     }
                 }
             } catch (NullPointerException ex) {
-                // TODO: Replace with lang key
-                LOG.error("Error minecraft version", ex);
+                LOG.error("Error parsing minecraft-version from configfile: " + configFile, ex);
             }
 
             try {
@@ -1104,8 +1090,8 @@ public class TabCreateServerPack extends JComponent {
                     }
                 }
             } catch (NullPointerException ex) {
-                // TODO: Replace with lang key
-                LOG.error("Error modloader versions", ex);
+
+                LOG.error("Error parsing modloader-version from configfile: " + configFile, ex);
                 updateModloaderGuiComponents(false, true, "Forge");
 
                 changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
@@ -1125,13 +1111,13 @@ public class TabCreateServerPack extends JComponent {
                 setJavaArgs(config.getString("javaArgs"));
             } catch (ConfigException | NullPointerException ex) {
                 // TODO: Replace with lang key
-                LOG.error("No setting for javaArgs found. Using \"empty\"");
+                LOG.warn("No setting for javaArgs found. Using \"empty\"");
                 setJavaArgs("empty");
             }
 
         } catch (NullPointerException ex) {
-            // TODO: Replace with lang key
-            LOG.error("Error config", ex);
+
+            LOG.error("Error parsing configfile.", ex);
         }
     }
 

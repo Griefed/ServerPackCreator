@@ -228,7 +228,10 @@ public class CurseCreateModpack {
                 setProjectName(projectID);
                 setFileNameAndDiskName(projectID, fileID);
             }
-        } catch (CurseException cex) { LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.curseforgemodpack"), projectID, fileID), cex); }
+        } catch (CurseException cex) {
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.curseforgemodpack"), projectID, fileID), cex);
+        }
 
         if (!checkCurseForgeDir(modpackDir) &&
                 !getProjectName().equals(String.valueOf(projectID)) &&
@@ -258,16 +261,20 @@ public class CurseCreateModpack {
      */
     void initializeModpack(String modpackDir, Integer projectID, Integer fileID) {
         try {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.download"), getProjectName(), getFileName()));
 
             CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
         } catch (CurseException cex) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.initializemodpack.download"), getFileName(), getProjectName(), modpackDir));
+            LOG.error(String.format("Error: Could not download file %s for project %s to directory %s.", getFileName(), getProjectName(), modpackDir));
         }
 
         unzipArchive(String.format("%s/%s", modpackDir, getFileDiskName()), modpackDir);
         boolean isFileDeleted = new File(String.format("%s/%s", modpackDir, getFileDiskName())).delete();
-        if (isFileDeleted) { LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.deletezip")); }
+        if (isFileDeleted) {
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.deletezip"));
+        }
 
         try {
             byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
@@ -276,6 +283,7 @@ public class CurseCreateModpack {
             String[] minecraftLoaderVersions = modpack.getMinecraft().toString().split(",");
             String[] modLoaderVersion = minecraftLoaderVersions[1].replace("[", "").replace("]", "").split("-");
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.infoheader"));
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackname"), modpack.getName()));
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackversion"), modpack.getVersion()));
@@ -284,7 +292,9 @@ public class CurseCreateModpack {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloader"), setModloaderCase(modLoaderVersion[0])));
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloaderversion"), modLoaderVersion[1]));
 
-        } catch (IOException ex) { LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.initializemodpack.readmodpack"), ex); }
+        } catch (IOException ex) {
+            LOG.error("Error: There was a fault during json parsing.", ex);
+        }
 
         copyOverride(modpackDir);
         if (new File(String.format("%s/overrides", modpackDir)).isDirectory()) {
@@ -293,7 +303,7 @@ public class CurseCreateModpack {
                 //noinspection ResultOfMethodCallIgnored
                 Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             } catch (IOException ex) {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.overrides"));
+                LOG.debug("Directory \"overrides\" not found. Skipping delete action...");
             }
         }
 
@@ -312,6 +322,7 @@ public class CurseCreateModpack {
      * @param modpackDir String. All mods are downloaded to the child-directory "mods" inside the modpack directory.
      */
     void downloadMods(String modpackDir) {
+        /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.downloadmods.info"));
         List<String> failedDownloads = new ArrayList<>();
 
@@ -346,7 +357,7 @@ public class CurseCreateModpack {
                     modFileName = Objects.requireNonNull(CurseAPI.project(modID).get().files().fileWithID(fileID)).nameOnDisk();
 
                 } catch (CurseException cex) {
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.curseforgeinfo"), cex);
+                    LOG.error("Error: Couldn't retrieve CurseForge project name and file name.", cex);
                 }
 
                 try {
@@ -355,20 +366,26 @@ public class CurseCreateModpack {
                     //Download mod
                     CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
 
-                    try { Thread.sleep(1000); }
-                    catch (InterruptedException iex) { LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.debug.downloadmods.sleep"), iex); }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException iex) {
+                        LOG.debug("Error during interruption event.", iex);
+                    }
 
                 } catch (CurseException cex) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.errordownload"), modName, modID, modFileName, fileID));
 
                     try {
 
+                        /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.downloadmods.tryagain"), modName, modID, modFileName, fileID));
                         //Retry download if previous attempt failed
                         CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
 
                     } catch (CurseException cex2) {
 
+                        /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.retryfail"), modName, modID, modFileName, fileID));
 
                         try {
@@ -377,17 +394,18 @@ public class CurseCreateModpack {
 
                         } catch (CurseException cex3) {
 
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.urlfail"));
+                            LOG.error("Error: An error occurred during URL retrieval.", cex3);
                         }
                     }
                 }
             }
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.fail"));
+            LOG.error("Error: An error was encountered in the downloadMods method.", ex);
         }
         if (failedDownloads.size() != 0) {
             //Print the URLs of failed downloads, if there are any
             for (int i = 0; i <= failedDownloads.size(); i++) {
+                /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.urllist"), failedDownloads.get(i)));
             }
         }
@@ -400,22 +418,23 @@ public class CurseCreateModpack {
      *                  are copied to the parent directory, the modpack directory.
      */
     void copyOverride(String modpackDir) {
+        /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.copyoverrides.info"));
         try {
             Stream<Path> files = Files.walk(Paths.get(String.format("%s/overrides", modpackDir)));
             files.forEach(file -> {
                 try {
                     Files.copy(file, Paths.get(modpackDir).resolve(Paths.get(String.format("%s/overrides", modpackDir)).relativize(file)), REPLACE_EXISTING);
-                    LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.debug.copyoverrides.status"), file.toAbsolutePath()));
+                    LOG.debug("Copying: " + file.toAbsolutePath());
                 } catch (IOException ex) {
                     if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.copyoverrides.copy"), ex);
+                        LOG.error("An error occurred copying files from overrides to parent directory.", ex);
                     }
                 }
             });
             files.close();
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.copyoverrides.copy"), ex);
+            LOG.error("An error occurred copying files from overrides to parent directory.", ex);
         }
     }
 
@@ -432,8 +451,10 @@ public class CurseCreateModpack {
     boolean checkCurseForgeDir(String modpackDir) {
         boolean isModpackPresent = false;
         if (!(new File(modpackDir).isDirectory()) && !(new File(String.format("%s/manifest.json", modpackDir)).exists())) {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir.create"));
         } else {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));
             isModpackPresent = cleanupEnvironment(modpackDir);
         }
@@ -447,11 +468,12 @@ public class CurseCreateModpack {
      * @param modpackDir The directory into which the ZIP-archive will be unzipped into.
      */
     void unzipArchive(String zipFile, String modpackDir) {
+        /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.unziparchive"));
         try {
             new ZipFile(zipFile).extractAll(modpackDir);
         } catch (ZipException ex) {
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.unziparchive.extract"), zipFile), ex);
+            LOG.error("Error: There was an error extracting the archive " + zipFile, ex);
         }
     }
 
@@ -467,6 +489,7 @@ public class CurseCreateModpack {
 
         if (new File(modpackDir).exists()) {
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanupenvironment.enter"));
             Path modpackPath = Paths.get(modpackDir);
 
@@ -496,10 +519,11 @@ public class CurseCreateModpack {
             } catch (IOException ex) {
 
                 cleanedUp = true;
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.cleanupenvironment"), modpackDir));
+                LOG.error("Error deleting a file from the CurseForge directory " + modpackDir, ex);
 
             } finally {
 
+                /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanupenvironment.complete"));
             }
         }

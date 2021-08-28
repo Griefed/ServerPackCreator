@@ -108,7 +108,7 @@ public class AddonsHandler {
      */
     private List<String> setListOfAddons() {
 
-        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.debug.setlistofaddons"));
+        LOG.debug("Preparing list of installed addons.");
 
         File[] listAddonsInstalled = new File("addons").listFiles();
         List<String> addonsInstalled = new ArrayList<>();
@@ -124,15 +124,18 @@ public class AddonsHandler {
             }
         } catch (NullPointerException np) {
 
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.error.setlistofaddons"), np);
+            LOG.error("LOCALIZATIONMANAGER.getLocalizedString(\"addonshandler.log.error.setlistofaddons\")", np);
         }
 
         if (!addonsInstalled.isEmpty()) {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.info.setlistofaddons"));
             for (String addon : addonsInstalled) {
+                /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format("    %s", addon));
             }
         } else {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.info.setlistofaddons.notfound"));
         }
 
@@ -161,7 +164,7 @@ public class AddonsHandler {
 
         List<String> serverPackAddons = new ArrayList<>();
 
-        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.debug.setlistofserverpackaddons"));
+        LOG.debug("Preparing list of Server Pack addons.");
 
         URL urlToJar;
 
@@ -169,14 +172,14 @@ public class AddonsHandler {
 
             urlToJar = null;
 
-            LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.debug.setlistofserverpackaddons.analyzing"), addon));
+            LOG.debug("Analyzing " + addon);
 
             try {
-                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.debug.setlistofserverpackaddons.assigning"), addon));
+                LOG.debug("Assigning URL with " + addon);
                 urlToJar = new URL(String.format("jar:file:%s!/addon.conf", addon));
-                LOG.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.debug.setlistofserverpackaddons.url"), urlToJar));
+                LOG.debug("URL is: " + urlToJar);
             } catch (MalformedURLException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.error.setlistofserverpackaddons.url"), ex);
+                LOG.error("Error assigning URL for addon.", ex);
             }
 
             assert urlToJar != null;
@@ -188,11 +191,13 @@ public class AddonsHandler {
         }
 
         if (!serverPackAddons.isEmpty()) {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.info.setlistofserverpackaddons"));
             for (String addon : serverPackAddons) {
                 LOG.info(String.format("    %s", addon));
             }
         } else {
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.info.setlistofserverpackaddons.notfound"));
         }
 
@@ -238,7 +243,6 @@ public class AddonsHandler {
                     workDirectory = new File(tempDirectory + addonName);
                     Files.createDirectories(workDirectory.toPath());
 
-                    // TODO: Replace with lang key
                     LOG_ADDONS.debug("Addon work-directory is: " + workDirectory);
 
                     commandArguments.clear();
@@ -253,7 +257,7 @@ public class AddonsHandler {
 
                     processBuilder = new ProcessBuilder(commandArguments).directory(workDirectory);
 
-                    LOG_ADDONS.debug(String.format(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.debug.runserverpackaddons"), processBuilder.command()));
+                    LOG_ADDONS.debug("ProcessBuilder command is: " + processBuilder.command());
 
                     processBuilder.redirectErrorStream(true);
 
@@ -280,9 +284,10 @@ public class AddonsHandler {
                 }
 
             } catch (IOException ex) {
-                LOG_ADDONS.error(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.error.runserverpackaddons"), ex);
+                LOG_ADDONS.error("Error executing Server Pack addon.", ex);
             }
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG_ADDONS.info(LOCALIZATIONMANAGER.getLocalizedString("addonshandler.log.info.runserverpackaddons"));
         }
     }

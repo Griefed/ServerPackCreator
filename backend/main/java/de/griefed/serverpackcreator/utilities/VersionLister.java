@@ -304,7 +304,6 @@ public class VersionLister {
             }
 
         } catch (IOException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Minecraft manifest.", ex);
         }
 
@@ -327,7 +326,6 @@ public class VersionLister {
             minecraftVersion = minecraftJson.get("latest").get(type).asText();
 
         } catch (IOException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Minecraft manifest.", ex);
         }
 
@@ -359,7 +357,6 @@ public class VersionLister {
             }
 
         } catch (IOException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Forge manifest.", ex);
         }
 
@@ -404,11 +401,9 @@ public class VersionLister {
 
 
         } catch (IOException | ParserConfigurationException | SAXException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Fabric manifest.", ex);
         }
 
-        // TODO: Replace with lang key
         LOG.debug("Fabric versions: " + fabricReleases);
 
         return fabricReleases;
@@ -429,7 +424,6 @@ public class VersionLister {
             fabricLatestOrRelease = fabricXml.getElementsByTagName(versionSpecifier).item(0).getChildNodes().item(0).getNodeValue();
 
         } catch (IOException | ParserConfigurationException | SAXException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Fabric manifest.", ex);
         }
 

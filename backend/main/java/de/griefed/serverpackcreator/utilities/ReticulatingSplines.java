@@ -23,7 +23,6 @@ import java.util.Random;
 
 /**
  * <strong>Table of methods</strong><br>
- * {@link #RETICULATING}<br>
  * {@link #getRandomInt()}<br>
  * {@link #getSpline()}<br>
  * {@link #reticulate()}<p>
