@@ -71,6 +71,9 @@ generateNotes:
     linkReferences: true
     presetConfig:
       types:  # looks like it only works with 'conventionalcommits' preset
+        - type: 'breaking'
+          section: '🧨 Breaking changes!'
+          hidden: false
         - type: 'build'
           section: '🦊 CI/CD'
           hidden: false
