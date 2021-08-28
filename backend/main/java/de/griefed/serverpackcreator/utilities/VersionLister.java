@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -202,6 +203,34 @@ public class VersionLister {
      */
     public String getFabricReleaseVersion() {
         return fabricReleaseVersion;
+    }
+
+    /**
+     * Reverses the order of a passed String List.
+     * @author Griefed
+     * @param listToReverse The String List to reverseOrderArray-order.
+     * @return String List. The passed String List in reverseOrderArray-order.
+     */
+    public List<String> reverseOrderList(List<String> listToReverse) {
+        Collections.reverse(listToReverse);
+        return listToReverse;
+    }
+
+    /**
+     * Reverses the order of a passed String array.
+     * @author Griefed
+     * @param arrayToReverse The String array to reverseOrderArray-order.
+     * @return String Array. The passed String array in reverseOrderArray-order.
+     */
+    public String[] reverseOrderArray(String[] arrayToReverse) {
+        int arrayLength = arrayToReverse.length;
+        String entry;
+        for (int i = 0; i < arrayLength / 2; i++) {
+            entry = arrayToReverse[i];
+            arrayToReverse[i] = arrayToReverse[arrayLength - i - 1];
+            arrayToReverse[arrayLength - i - 1] = entry;
+        }
+        return arrayToReverse;
     }
 
     /**
