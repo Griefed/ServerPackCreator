@@ -78,9 +78,10 @@ import java.util.*;
  * 29.{@link #createConfigurationFile()}<br>
  * 30.{@link #readStringArray()}<br>
  * 31.{@link #buildString(String...)}<br>
- * 32.{@link #readBoolean()}<br>
- * 33.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
- * 34.{@link #getConfigurationAsList(ConfigurationModel)}
+ * 32.{@link #encapsulateListElements(List)}<br>
+ * 33.{@link #readBoolean()}<br>
+ * 34.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
+ * 35.{@link #getConfigurationAsList(ConfigurationModel)}
  * <p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
