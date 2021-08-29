@@ -79,7 +79,7 @@ import java.util.*;
  * 30.{@link #readStringArray()}<br>
  * 31.{@link #buildString(String...)}<br>
  * 32.{@link #readBoolean()}<br>
- * 33.{@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
+ * 33.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
  * 34.{@link #getConfigurationAsList(ConfigurationModel)}
  * <p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
@@ -193,7 +193,7 @@ public class ConfigurationHandler {
     /**
      * Getter for creator.conf.
      * @author Griefed
-     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}
+     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}
      */
     public File getOldConfigFile() {
         return FILE_CONFIG_OLD;
@@ -203,7 +203,7 @@ public class ConfigurationHandler {
      * Getter for serverpackcreator.conf.
      * @author Griefed
      * @return File. Returns the serverpackcreator.conf-file.
-     * {@link #writeConfigToFile(String, String, String, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}
+     * {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}
      */
     public File getConfigFile() {
         return FILE_CONFIG;
@@ -661,8 +661,8 @@ public class ConfigurationHandler {
 
                         writeConfigToFile(
                                 configurationModel.getModpackDir(),
-                                buildString(configurationModel.getClientMods().toString()),
-                                buildString(configurationModel.getCopyDirs().toString()),
+                                configurationModel.getClientMods(),
+                                configurationModel.getCopyDirs(),
                                 configurationModel.getIncludeServerInstallation(),
                                 configurationModel.getJavaPath(),
                                 configurationModel.getMinecraftVersion(),
@@ -1647,8 +1647,8 @@ public class ConfigurationHandler {
 //-----------------------------------------------------------------------------------------WRITE CONFIG TO FILE---------
         if (writeConfigToFile(
                 modpackDir,
-                buildString(Arrays.toString(tmpClientMods)),
-                buildString(Arrays.toString(tmpCopyDirs)),
+                Arrays.asList(tmpClientMods),
+                Arrays.asList(tmpCopyDirs),
                 includeServerInstallation,
                 javaPath,
                 minecraftVersion,
@@ -1698,6 +1698,27 @@ public class ConfigurationHandler {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Arrays.toString(args));
         stringBuilder.delete(0, 2).reverse().delete(0,2).reverse();
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Encapsulate every element of the passed String List in quotes. Returns the list as <code>["element1","element2","element3"</code> etc.
+     * @author Griefed
+     * @param listToEncapsulate The String List of which to encapsulate every element in.
+     * @return String. Returns a concatenated String with all elements of the passed list encapsulated.
+     */
+    public String encapsulateListElements(List<String> listToEncapsulate) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("[\"").append(listToEncapsulate.get(0).replace("\\", "/")).append("\"");
+
+        for (String element : listToEncapsulate) {
+            stringBuilder.append(",\"").append(element.replace("\\", "/")).append("\"");
+        }
+
+        stringBuilder.append("]");
+
         return stringBuilder.toString();
     }
 
@@ -1759,8 +1780,8 @@ public class ConfigurationHandler {
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
      */
     public boolean writeConfigToFile(String modpackDir,
-                                     String clientMods,
-                                     String copyDirs,
+                                     List<String> clientMods,
+                                     List<String> copyDirs,
                                      boolean includeServer,
                                      String javaPath,
                                      String minecraftVersion,
@@ -1783,8 +1804,8 @@ public class ConfigurationHandler {
         //Griefed: What the fuck. This reads like someone having a stroke. What have I created here?
         String configString = String.format(
                         "%s\nmodpackDir = \"%s\"\n\n" +
-                        "%s\nclientMods = [%s]\n\n" +
-                        "%s\ncopyDirs =[%s]\n\n" +
+                        "%s\nclientMods = %s\n\n" +
+                        "%s\ncopyDirs = %s\n\n" +
                         "%s\nincludeServerInstallation = %b\n\n" +
                         "%s\njavaPath = \"%s\"\n\n" +
                         "%s\nminecraftVersion = \"%s\"\n\n" +
@@ -1796,8 +1817,8 @@ public class ConfigurationHandler {
                         "%s\nincludeZipCreation = %b\n\n" +
                         "%s\njavaArgs = \"%s\"\n",
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), clientMods,
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), copyDirs.replace("\\","/"),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), encapsulateListElements(clientMods),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), encapsulateListElements(copyDirs),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverinstallation"), includeServer,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javapath"), javaPath.replace("\\","/"),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.minecraftversion"), minecraftVersion,

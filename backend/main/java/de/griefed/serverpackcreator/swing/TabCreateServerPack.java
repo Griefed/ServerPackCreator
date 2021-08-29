@@ -46,6 +46,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -992,10 +993,13 @@ public class TabCreateServerPack extends JComponent {
             javaArgs = "empty";
         }
 
+        List<String> tempClientMods = new ArrayList<>(Arrays.asList(TEXTFIELD_CLIENTSIDEMODS.getText().replace(", ", ",").split(",")));
+        List<String> tempCopyDirs = new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(",")));
+
         CONFIGURATIONHANDLER.writeConfigToFile(
                 TEXTFIELD_MODPACKDIRECTORY.getText(),
-                TEXTFIELD_CLIENTSIDEMODS.getText(),
-                TEXTFIELD_COPYDIRECTORIES.getText(),
+                tempClientMods,
+                tempCopyDirs,
                 checkBoxServer.isSelected(),
                 TEXTFIELD_JAVAPATH.getText(),
                 chosenMinecraftVersion,

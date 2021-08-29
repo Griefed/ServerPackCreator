@@ -1104,8 +1104,8 @@ class ConfigurationTest {
 
         Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/forge_tests",
-                CONFIGURATIONHANDLER.buildString(clientMods.toString()),
-                CONFIGURATIONHANDLER.buildString(copyDirs.toString()),
+                clientMods,
+                copyDirs,
                 true,
                 javaPath,
                 "1.16.5",
@@ -1169,8 +1169,8 @@ class ConfigurationTest {
 
         Assertions.assertTrue(CONFIGURATIONHANDLER.writeConfigToFile(
                 "./backend/test/resources/fabric_tests",
-                CONFIGURATIONHANDLER.buildString(clientMods.toString()),
-                CONFIGURATIONHANDLER.buildString(copyDirs.toString()),
+                clientMods,
+                copyDirs,
                 true,
                 javaPath,
                 "1.16.5",
