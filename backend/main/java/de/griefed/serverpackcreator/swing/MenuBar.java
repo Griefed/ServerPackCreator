@@ -23,6 +23,8 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import mdlaf.MaterialLookAndFeel;
+import mdlaf.components.combobox.MaterialComboBoxUI;
+import mdlaf.components.panel.MaterialPanelUI;
 import mdlaf.components.textfield.MaterialTextFieldUI;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.FileUtils;
@@ -75,6 +77,7 @@ public class MenuBar extends Component {
     private final Dimension JAVAARGSDIMENSION = new Dimension(750,25);
     private final Dimension ABOUTDIMENSION = new Dimension(925,520);
     private final Dimension FILETOOLARGEDIMENSION = new Dimension(200,10);
+    private final Dimension HELPDIMENSION = new Dimension(750,200);
 
     private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/help.png")));
     private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/hastebin.png")));
@@ -91,6 +94,8 @@ public class MenuBar extends Component {
     private final String[] JAVAARGSOPTIONS = new String[4];
     private final String[] JAVAARGSSELECTIONS = new String[2];
     private final String[] HASTEOPTIONS = new String[3];
+    private final String[] HELPTEXTS = new String[13];
+    private final String[] HELPSELECTIONS = new String[13];
 
     private final JTextField JAVAARGS = new JTextField();
 
@@ -151,6 +156,14 @@ public class MenuBar extends Component {
     private JTextPane fileTooLargeWindowTextPane = new JTextPane();
 
     private MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+    private MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
+    private MaterialPanelUI materialPanelUI = new MaterialPanelUI();
+    private MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
+
+    private DefaultComboBoxModel<String> helpComboBoxModel;
+    private JComboBox<String> helpComboBox;
+    private JTextArea helpTextArea = new JTextArea();
+    private JPanel helpPanel = new JPanel();
 
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
@@ -326,6 +339,41 @@ public class MenuBar extends Component {
         JAVAARGS.setMinimumSize(JAVAARGSDIMENSION);
         JAVAARGS.setMaximumSize(JAVAARGSDIMENSION);
         JAVAARGS.setPreferredSize(JAVAARGSDIMENSION);
+
+        HELPTEXTS[0] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir");
+        HELPTEXTS[1] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods");
+        HELPTEXTS[2] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.directories");
+        HELPTEXTS[3] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava");
+        HELPTEXTS[4] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion");
+        HELPTEXTS[5] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloader");
+        HELPTEXTS[6] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion");
+        HELPTEXTS[7] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver");
+        HELPTEXTS[8] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires");
+        HELPTEXTS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts");
+        HELPTEXTS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon");
+        HELPTEXTS[11] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip");
+        HELPTEXTS[12] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.javaargs");
+
+        HELPSELECTIONS[0] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir");
+        HELPSELECTIONS[1] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods");
+        HELPSELECTIONS[2] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs");
+        HELPSELECTIONS[3] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath");
+        HELPSELECTIONS[4] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft");
+        HELPSELECTIONS[5] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader");
+        HELPSELECTIONS[6] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion");
+        HELPSELECTIONS[7] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver");
+        HELPSELECTIONS[8] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties");
+        HELPSELECTIONS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts");
+        HELPSELECTIONS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon");
+        HELPSELECTIONS[11] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip");
+        HELPSELECTIONS[12] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.javaargs");
+
+        helpTextArea.setEditable(false);
+        helpPanel.setLayout(new BoxLayout(helpPanel, BoxLayout.Y_AXIS));
+        helpPanel.setMinimumSize(HELPDIMENSION);
+        helpPanel.setPreferredSize(HELPDIMENSION);
+        helpPanel.setMaximumSize(HELPDIMENSION);
+
     }
 
     /**
@@ -404,6 +452,17 @@ public class MenuBar extends Component {
         about_OpenDonationsPageMenuItem.addActionListener(this::actionEventOpenDonateMenuItem);
 
         help_OpenHelpWindowMenuItem.addActionListener(this::actionEventOpenHelpMenuItem);
+
+        helpComboBoxModel = new DefaultComboBoxModel<>(HELPSELECTIONS);
+        helpComboBox = new JComboBox<>(helpComboBoxModel);
+
+        helpComboBox.setSelectedIndex(0);
+        helpTextArea.setText(HELPTEXTS[0]);
+
+        helpPanel.add(helpTextArea);
+        helpPanel.add(helpComboBox);
+
+        helpComboBox.addActionListener(this::actionEventSetHelpText);
 
         // add items to menus
         fileMenu.add(file_LoadConfigMenuItem);
@@ -999,15 +1058,23 @@ public class MenuBar extends Component {
     private void actionEventOpenHelpMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open help window.");
 
-        materialTextPaneUI.installUI(helpWindowTextPane);
+        materialComboBoxUI.installUI(helpComboBox);
+        //materialPanelUI.installUI(helpPanel);
+        materialTextFieldUI.installUI(helpTextArea);
+        //materialTextPaneUI.installUI(helpWindowTextPane);
 
         JOptionPane.showMessageDialog(
                 FRAME_SERVERPACKCREATOR,
-                helpWindowTextPane,
+                helpPanel,
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
                 JOptionPane.INFORMATION_MESSAGE,
                 HELPICON
         );
+    }
+
+    private void actionEventSetHelpText(ActionEvent actionEvent) {
+        LOG.debug("Selected helpItem: " + helpComboBox.getSelectedIndex());
+        helpTextArea.setText(HELPTEXTS[helpComboBox.getSelectedIndex()]);
     }
 
     /**
