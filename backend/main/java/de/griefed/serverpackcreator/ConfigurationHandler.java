@@ -327,7 +327,7 @@ public class ConfigurationHandler {
 
         } catch (ConfigException | NullPointerException ex) {
 
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javargs.notfound"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javaargs.notfound"));
             configurationModel.setJavaArgs("empty");
         }
 
