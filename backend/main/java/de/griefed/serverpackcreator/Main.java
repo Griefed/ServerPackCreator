@@ -42,7 +42,8 @@ import java.util.Properties;
 /**
  * <strong>Table of methods</strong>
  * <p>
- * {@link #main(String[])}
+ * {@link #main(String[])}<br>
+ * {@link #createFile(File)}
  * <p>
  * Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
  * one of the following modes will be entered:<p>
@@ -76,8 +77,6 @@ public class Main {
 
     private static final File log4j2xml = new File("log4j2.xml");
     private static final File properties = new File("serverpackcreator.properties");
-    
-
 
     /**
      * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.<p>
@@ -126,7 +125,7 @@ public class Main {
 
         // Print help and information about ServerPackCreator which could help the user figure out what to do.
         if (Arrays.asList(args).contains("-help")) {
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.help.issued"));
+            LOG.debug("Issued printing of help.");
             System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help01"));
             System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help02"));
             System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help03"));
@@ -169,7 +168,7 @@ public class Main {
             System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help38"));
             System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help39"));
 
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.help.exit"));
+            LOG.debug("Help printed. Exiting with code 0.");
             System.exit(0);
         }
 
@@ -188,7 +187,8 @@ public class Main {
                osName = null,
                osVersion = null;
 
-        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.debug("LOCALIZATIONMANAGER.getLocalizedString(\"main.log.debug.warning\")");
         LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
         LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
         LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
@@ -197,7 +197,7 @@ public class Main {
         LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
 
         //Print system information to console and logs.
-        LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.gathering"));
+        LOG.debug("Gathering system information to include in log to make debugging easier.");
         ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
         jarPath = home.getSource().toString().replace("\\","/");
         jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
@@ -205,6 +205,7 @@ public class Main {
         osArch = System.getProperty("os.arch");
         osName = System.getProperty("os.name");
         osVersion = System.getProperty("os.version");
+        /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), jarPath));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), jarName));
@@ -288,7 +289,10 @@ public class Main {
                 if (link != null) {
                     Files.copy(link, Paths.get(String.format("%s", fileToCreate)));
                     link.close();
-                }} catch (IOException ignored) {}
+                }
+            } catch (IOException ex) {
+                LOG.error("Error creating file: " + fileToCreate, ex);
+            }
         }
     }
 }

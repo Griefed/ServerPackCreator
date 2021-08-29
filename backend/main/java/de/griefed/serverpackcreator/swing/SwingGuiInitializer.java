@@ -29,21 +29,15 @@ import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import mdlaf.MaterialLookAndFeel;
-import mdlaf.components.tabbedpane.MaterialTabbedPaneUI;
-import mdlaf.utils.MaterialColors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.plaf.TabbedPaneUI;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -152,7 +146,7 @@ public class SwingGuiInitializer extends JPanel {
         try {
             bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));
         } catch (IOException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui.image"), ex);
+            LOG.error("Could not read image for tiling.", ex);
         }
 
         this.VERSIONLISTER = new VersionLister();
@@ -244,7 +238,7 @@ public class SwingGuiInitializer extends JPanel {
                 }
 
             } catch (UnsupportedLookAndFeelException ex) {
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("tabbedpane.log.error"), ex);
+                LOG.error("Error: There was an error setting the look and feel.", ex);
             }
 
             createAndShowGUI();

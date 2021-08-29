@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -205,6 +206,34 @@ public class VersionLister {
     }
 
     /**
+     * Reverses the order of a passed String List.
+     * @author Griefed
+     * @param listToReverse The String List to reverseOrderArray-order.
+     * @return String List. The passed String List in reverseOrderArray-order.
+     */
+    public List<String> reverseOrderList(List<String> listToReverse) {
+        Collections.reverse(listToReverse);
+        return listToReverse;
+    }
+
+    /**
+     * Reverses the order of a passed String array.
+     * @author Griefed
+     * @param arrayToReverse The String array to reverseOrderArray-order.
+     * @return String Array. The passed String array in reverseOrderArray-order.
+     */
+    public String[] reverseOrderArray(String[] arrayToReverse) {
+        int arrayLength = arrayToReverse.length;
+        String entry;
+        for (int i = 0; i < arrayLength / 2; i++) {
+            entry = arrayToReverse[i];
+            arrayToReverse[i] = arrayToReverse[arrayLength - i - 1];
+            arrayToReverse[arrayLength - i - 1] = entry;
+        }
+        return arrayToReverse;
+    }
+
+    /**
      * Getter for the list of Minecraft release versions as an array.
      * @author Griefed
      * @return String Array. Returns the list of Minecraft release versions as an array.
@@ -275,7 +304,6 @@ public class VersionLister {
             }
 
         } catch (IOException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Minecraft manifest.", ex);
         }
 
@@ -298,7 +326,6 @@ public class VersionLister {
             minecraftVersion = minecraftJson.get("latest").get(type).asText();
 
         } catch (IOException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Minecraft manifest.", ex);
         }
 
@@ -330,7 +357,6 @@ public class VersionLister {
             }
 
         } catch (IOException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Forge manifest.", ex);
         }
 
@@ -375,11 +401,9 @@ public class VersionLister {
 
 
         } catch (IOException | ParserConfigurationException | SAXException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Fabric manifest.", ex);
         }
 
-        // TODO: Replace with lang key
         LOG.debug("Fabric versions: " + fabricReleases);
 
         return fabricReleases;
@@ -400,7 +424,6 @@ public class VersionLister {
             fabricLatestOrRelease = fabricXml.getElementsByTagName(versionSpecifier).item(0).getChildNodes().item(0).getNodeValue();
 
         } catch (IOException | ParserConfigurationException | SAXException ex) {
-            // TODO: Replace with lang key
             LOG.error("Couldn't read Fabric manifest.", ex);
         }
 
