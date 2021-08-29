@@ -1714,8 +1714,8 @@ public class ConfigurationHandler {
 
         stringBuilder.append("[\"").append(listToEncapsulate.get(0).replace("\\", "/")).append("\"");
 
-        for (String element : listToEncapsulate) {
-            stringBuilder.append(",\"").append(element.replace("\\", "/")).append("\"");
+        for (int i = 1; i < listToEncapsulate.size(); i++) {
+            stringBuilder.append(",\"").append(listToEncapsulate.get(i).replace("\\", "/")).append("\"");
         }
 
         stringBuilder.append("]");
