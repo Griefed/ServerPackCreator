@@ -276,7 +276,7 @@ public class TabCreateServerPack extends JComponent {
 
         CREATESERVERPACKPANEL.add(labelModpackDir, GRIDBAGCONSTRAINTS);
 
-        this.TEXTFIELD_MODPACKDIRECTORY.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
+        TEXTFIELD_MODPACKDIRECTORY.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 1;
