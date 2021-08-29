@@ -1,3 +1,44 @@
+## [3.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.1...3.0.0-alpha.2) (2021-08-29)
+
+
+### :scissors: Refactor
+
+* Add additional catch for NPE. Fix typo in docs. Remove unused field. ([b5f9042](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5f90421002124b7a1e53f2c11581ead7fab00a2))
+* Just some renamings...nothing important. ([2c65582](https://git.griefed.de/Griefed/ServerPackCreator/commit/2c65582691abf06558deaf4461c90265770bb6d1))
+* Only provide translations for messages which actually have a need for translation. Error/debug messages mainly do not need to be translated, as those will be reported in issues, therefore I need to be able to read them. ([2132baa](https://git.griefed.de/Griefed/ServerPackCreator/commit/2132baa6a19000ffdabec555a3e3bca5c8fc0708))
+* Reverse lists of modloader versions to display in order of newest to oldest versions. Closes issue [#74](https://git.griefed.de/Griefed/ServerPackCreator/issues/74). ([4534d87](https://git.griefed.de/Griefed/ServerPackCreator/commit/4534d8774056f9de3d2063ea130c7bd85a4a6137))
+
+
+### 📔 Docs
+
+* Update table of methods ([dabf028](https://git.griefed.de/Griefed/ServerPackCreator/commit/dabf02866d58a72159642452c46b3ca6f109791a))
+
+
+### 🦊 CI/CD
+
+* Add Breaking section to changelog ([7165659](https://git.griefed.de/Griefed/ServerPackCreator/commit/7165659d8ccb507be63047c3b0f37d2fca2ac859))
+
+
+### 🚀 Features
+
+* Add methods to reverse the order of a String List or String Array. Allows setting of lists in GUI with newest to oldest versions. ([11d565e](https://git.griefed.de/Griefed/ServerPackCreator/commit/11d565ef61ed9ea2d324b82b4cb49ec529ffe624))
+* **gui:** Open server-icon.png in users default picture-viewer. From there on, users can open their favourite editing software. ([d960dd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/d960dd28f7e796b8d7f84dfbcfe55273e60cfec8))
+* **gui:** Open server.properties in users default text editor via Edit->Open server.properties in Editor ([1bf7533](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bf75338e60b4fe0ff85eca6a55308eb4538fe7f))
+* **gui:** Redesign help window. Users can choose what they need help with from a list, which then displays the help-text for the chosen item. ([7c490a3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c490a3d2a205181c61148ad4ff9b8872ff5961b))
+* **gui:** Set LAF for Java Args correctly. If javaArgs is "empty", display textField as "" to not confuse users. ([462e7a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/462e7a1cef59715b08ff5f20ac03ae760a45132c))
+
+
+### 🛠 Fixes
+
+* Allow translating for full GUI as well as missing parts in backend. ([366cb10](https://git.griefed.de/Griefed/ServerPackCreator/commit/366cb106fddbebb1411105d466017c2f36e19a63))
+* Prevent encapsulateListElements from writing duplicate entries ([1e64cd6](https://git.griefed.de/Griefed/ServerPackCreator/commit/1e64cd67dcbfcf95ccb544f84b70ee39e5123e75))
+* When writing configfiles, encapsulate every element of String Lists in `"` in order to avoid problems described in issue [#71](https://git.griefed.de/Griefed/ServerPackCreator/issues/71). Fixes and closes issue [#71](https://git.griefed.de/Griefed/ServerPackCreator/issues/71). ([0e029ec](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e029ec477864ea765e8ad446ac2b9b93186b952))
+
+
+### Other
+
+* Fix minor typo in language key ([9177763](https://git.griefed.de/Griefed/ServerPackCreator/commit/91777632c7ef1715f45af28ddb4f0848d5abb432))
+
 ## [3.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.5...3.0.0-alpha.1) (2021-08-27)
 
 
