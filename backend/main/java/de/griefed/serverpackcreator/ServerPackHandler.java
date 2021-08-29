@@ -166,8 +166,6 @@ public class ServerPackHandler {
     private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
     private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
 
-    private final ExecutorService executeRun = Executors.newSingleThreadExecutor();
-
     /**
      * Getter for the String which will make up the shell-start-script for Fabric servers.
      * @author Griefed
@@ -1050,7 +1048,7 @@ public class ServerPackHandler {
     }
 
     /**
-     * Retrives the URL to the Minecraft server for the specified Minecraft version.
+     * Retrieves the URL to the Minecraft server for the specified Minecraft version.
      * @author Griefed
      * @param minecraftVersion String. The Minecraft version for which to retrieve the URL for the server-jar.
      * @return String. The URL to the server-jar of the specified Minecraft version as a string.
@@ -1133,7 +1131,7 @@ public class ServerPackHandler {
 
             readBatch = Files.readAllLines(pathBatch).get(0);
             readShell = Files.readAllLines(pathShell).get(0);
-        } catch (IOException ex) {
+        } catch (NullPointerException | IOException ex) {
             LOG.error("Error generating download scripts.", ex);
         }
         LOG.debug(String.format("Generated batch download script. Content: %s", readBatch));
