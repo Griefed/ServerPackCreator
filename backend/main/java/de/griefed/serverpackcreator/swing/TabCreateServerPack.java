@@ -414,7 +414,7 @@ public class TabCreateServerPack extends JComponent {
         COMBOBOX_FABRICVERSIONS.addActionListener(this::actionEventComboBoxFabricVersions);
         COMBOBOX_FABRICVERSIONS.setVisible(false);
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString())));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeMeta().get(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString()));
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -610,7 +610,7 @@ public class TabCreateServerPack extends JComponent {
      */
     void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(chosenMinecraftVersion)));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion));
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -1061,7 +1061,8 @@ public class TabCreateServerPack extends JComponent {
 
             try {
                 String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
-                String[] forgever = VERSIONLISTER.getForgeVersionsAsArray(config.getString("minecraftVersion"));
+                //String[] forgever = VERSIONLISTER.getForgeVersionsAsArray(config.getString("minecraftVersion"));
+                String[] forgever = VERSIONLISTER.getForgeMeta().get(config.getString("minecraftVersion"));
 
                 String modloaderver = config.getString("modLoaderVersion");
 
