@@ -32,12 +32,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * <strong>table of methods</strong><p>
@@ -96,13 +95,25 @@ public class VersionLister {
 
     private final HashMap<String, String[]> forgeMeta;
 
+    private Properties serverPackCreatorProperties;
+
     /**
-     * <strong>Constructor</strong><p>
-     *     Creates the Minecraft and Fabric version lists as well as Fabric-Latest and Fabric-Release versions.
-     * </p>
+     * Creates the Minecraft and Fabric version lists as well as Fabric-Latest and Fabric-Release versions.
      * @author Griefed
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
-    public VersionLister() {
+    public VersionLister(Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         this.minecraftReleaseVersion = setMinecraftSpecificVersion("release");
         this.minecraftReleaseVersions = getMinecraftVersionsList("release");
 

@@ -24,7 +24,6 @@ import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.combobox.MaterialComboBoxUI;
-import mdlaf.components.panel.MaterialPanelUI;
 import mdlaf.components.textfield.MaterialTextFieldUI;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.FileUtils;
@@ -99,7 +98,7 @@ public class MenuBar extends Component {
 
     private final JTextField JAVAARGS = new JTextField();
 
-    private Properties serverpackcreatorproperties;
+    private Properties serverPackCreatorProperties;
 
     private boolean isDarkTheme;
 
@@ -157,7 +156,6 @@ public class MenuBar extends Component {
 
     private MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
     private MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
-    private MaterialPanelUI materialPanelUI = new MaterialPanelUI();
     private MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
 
     private DefaultComboBoxModel<String> helpComboBoxModel;
@@ -165,12 +163,36 @@ public class MenuBar extends Component {
     private JTextArea helpTextArea = new JTextArea();
     private JPanel helpPanel = new JPanel();
 
+    /**
+     * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
+     * @author Griefed
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedLightTheme Instance of {@link LightTheme} required for theme switching.
+     * @param injectedDarkTheme Instance of {@link DarkTheme} required for theme switching.
+     * @param injectedJFrame The parent from in which everything ServerPackCreator is displayed in.
+     * @param injectedLAF_Light Instance of {@link MaterialLookAndFeel} with our {@link LightTheme}.
+     * @param injectedLAF_Dark Instance of {@link MaterialLookAndFeel} with our {@link DarkTheme}.
+     * @param injectedTabCreateServerPack Our tab for configuring ServerPackCreator.
+     * @param injectedTabbedPane The tabbed pane which holds all our tabs.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     */
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
                    TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, Properties injectedServerPackCreatorProperties) {
 
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -183,14 +205,12 @@ public class MenuBar extends Component {
         this.TAB_CREATESERVERPACK = injectedTabCreateServerPack;
         this.TABBEDPANE = injectedTabbedPane;
 
-        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
-
         try {
-            isDarkTheme = Boolean.parseBoolean(serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+            isDarkTheme = Boolean.parseBoolean(serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
         } catch (NullPointerException ex) {
             LOG.error("No setting for darkmode found in properties-file. Using true.");
             isDarkTheme = true;
-            serverpackcreatorproperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
+            serverPackCreatorProperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
         }
 
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
@@ -848,8 +868,8 @@ public class MenuBar extends Component {
 
                 try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
 
-                    serverpackcreatorproperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
-                    serverpackcreatorproperties.store(outputStream, null);
+                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
+                    serverPackCreatorProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -871,8 +891,8 @@ public class MenuBar extends Component {
 
                 try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
 
-                    serverpackcreatorproperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
-                    serverpackcreatorproperties.store(outputStream, null);
+                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
+                    serverPackCreatorProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -1160,7 +1180,7 @@ public class MenuBar extends Component {
      */
     private String createHasteBinFromFile(File textFile) {
         String text = null;
-        String requestURL = serverpackcreatorproperties.getProperty(
+        String requestURL = serverPackCreatorProperties.getProperty(
                 "de.griefed.serverpackcreator.configuration.hastebinserver",
                 "https://haste.zneix.eu/documents"
         );

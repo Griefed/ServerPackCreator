@@ -95,18 +95,18 @@ public class Main {
         createFile(log4j2xml);
         createFile(properties);
 
-        Properties serverpackcreatorproperties = null;
+        Properties serverPackCreatorProperties = null;
 
         try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            serverpackcreatorproperties = new Properties();
-            serverpackcreatorproperties.load(inputStream);
+            serverPackCreatorProperties = new Properties();
+            serverPackCreatorProperties.load(inputStream);
         } catch (IOException ex) {
             LOG.error("Couldn't read properties file.", ex);
         }
 
         List<String> programArgs = Arrays.asList(args);
 
-        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager();
+        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         if (Arrays.asList(args).contains("-lang")) {
             try {
                 // Init the LocalizationManager with the locale passed by the cli arguments.
@@ -210,12 +210,12 @@ public class Main {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
         // Prepare instances for dependency injection
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
-        VersionLister VERSIONLISTER = new VersionLister();
-        AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
-        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverpackcreatorproperties);
-        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties, VERSIONLISTER);
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        VersionLister VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+        AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
+        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
 
         // Start generation of a new configuration file with user input.
         if (Arrays.asList(args).contains("-cgen")) {
@@ -272,7 +272,7 @@ public class Main {
         // If no mode is specified, and we have a graphical environment, start in GUI mode.
         } else {
 
-            SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, serverpackcreatorproperties, VERSIONLISTER);
+            SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, serverPackCreatorProperties, VERSIONLISTER);
             
             swingGuiInitializer.mainGUI();
         }

@@ -27,10 +27,15 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 public class TabAddonsHandlerLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+    private Properties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -39,10 +44,22 @@ public class TabAddonsHandlerLog extends JComponent {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
-    public TabAddonsHandlerLog(LocalizationManager injectedLocalizationManager) {
+    public TabAddonsHandlerLog(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }

@@ -53,14 +53,23 @@ public class LocalizationManager {
 
     private static final Logger LOG = LogManager.getLogger(LocalizationManager.class);
     private final File PROPERTIESFILE = new File("serverpackcreator.properties");
-    private Properties serverpackcreatorproperties;
+    private Properties serverPackCreatorProperties;
 
-    public LocalizationManager() {
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
+    /**
+     * Constructor for our LocalizationManager.
+     * @author Griefed
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     */
+    public LocalizationManager(Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }
     }
 
@@ -279,8 +288,8 @@ public class LocalizationManager {
             init();
 
             try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-                serverpackcreatorproperties.setProperty("lang", "en_us");
-                serverpackcreatorproperties.store(outputStream, null);
+                serverPackCreatorProperties.setProperty("lang", "en_us");
+                serverPackCreatorProperties.store(outputStream, null);
             } catch (IOException ex) {
                 LOG.error("Couldn't write properties-file.", ex);
             }
@@ -298,8 +307,8 @@ public class LocalizationManager {
      */
     void writeLocaleToFile(String locale) {
         try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-            serverpackcreatorproperties.setProperty("lang", locale);
-            serverpackcreatorproperties.store(outputStream, null);
+            serverPackCreatorProperties.setProperty("lang", locale);
+            serverPackCreatorProperties.store(outputStream, null);
         } catch (IOException ex) {
             LOG.error("Couldn't write properties-file.", ex);
         }

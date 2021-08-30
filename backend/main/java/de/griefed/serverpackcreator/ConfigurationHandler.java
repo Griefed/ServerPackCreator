@@ -87,7 +87,7 @@ public class ConfigurationHandler {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionLister VERSIONLISTER;
-    private Properties serverpackcreatorproperties;
+    private Properties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -105,28 +105,36 @@ public class ConfigurationHandler {
      */
     @Autowired
     public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister();
+            this.VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
         } else {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
-        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
-
         setFALLBACKMODSLIST();
-
     }
 
     private final File FILE_CONFIG_OLD = new File("creator.conf");
@@ -137,7 +145,7 @@ public class ConfigurationHandler {
      * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished,ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings,EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft,JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu,preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales,WorldNameRandomizer</code>
      */
     public void setFALLBACKMODSLIST() {
-        if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
+        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
 
             this.FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(
                     "AmbientSounds","BackTools","BetterAdvancement","BetterFoliage","BetterPing","BetterPlacement","Blur","cherished",
@@ -149,9 +157,9 @@ public class ConfigurationHandler {
 
             LOG.debug("Fallbackmodslist property null. Using fallback: " + FALLBACKMODSLIST);
 
-        } else if (serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
+        } else if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
 
-            this.FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(serverpackcreatorproperties.getProperty(
+            this.FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(serverPackCreatorProperties.getProperty(
                     "de.griefed.serverpackcreator.configuration.fallbackmodslist",
                     "AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished," +
                             "ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings," +
@@ -164,7 +172,7 @@ public class ConfigurationHandler {
 
         } else {
 
-            this.FALLBACKMODSLIST = Collections.singletonList((serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
+            this.FALLBACKMODSLIST = Collections.singletonList((serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
 
             LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
         }

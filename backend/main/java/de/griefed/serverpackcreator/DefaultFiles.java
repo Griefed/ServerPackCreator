@@ -38,10 +38,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;*/
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #DefaultFiles(LocalizationManager)}<br>
+ * 1. {@link #DefaultFiles(LocalizationManager, Properties)}<br>
  * 2. {@link #getConfigFile()}<br>
  * 3. {@link #getOldConfigFile()}<br>
  * 4. {@link #getPropertiesFile()}<br>
@@ -81,6 +82,7 @@ public class DefaultFiles {
     private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+    private Properties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -88,11 +90,23 @@ public class DefaultFiles {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public DefaultFiles(LocalizationManager injectedLocalizationManager) {
+    public DefaultFiles(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }

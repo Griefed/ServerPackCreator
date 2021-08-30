@@ -81,7 +81,7 @@ class ServerPackHandlerTest {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
-    private Properties serverpackcreatorproperties;
+    private Properties serverPackCreatorProperties;
 
     ServerPackHandlerTest() {
         try {
@@ -91,21 +91,20 @@ class ServerPackHandlerTest {
         }
 
         try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
+            this.serverPackCreatorProperties = new Properties();
+            this.serverPackCreatorProperties.load(inputStream);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
-        LOCALIZATIONMANAGER = new LocalizationManager();
+        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
-        DEFAULTFILES.filesSetup();
-        VERSIONLISTER = new VersionLister();
-        ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
-        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverpackcreatorproperties);
-        SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties, VERSIONLISTER);
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+        ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
+        SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
 
     }
 

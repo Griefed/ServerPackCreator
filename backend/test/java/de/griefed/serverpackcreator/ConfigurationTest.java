@@ -138,7 +138,7 @@ class ConfigurationTest {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final DefaultFiles DEFAULTFILES;
     private final VersionLister VERSIONLISTER;
-    private Properties serverpackcreatorproperties;
+    private Properties serverPackCreatorProperties;
 
     ConfigurationTest() {
         try {
@@ -148,18 +148,18 @@ class ConfigurationTest {
         }
 
         try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverpackcreatorproperties = new Properties();
-            this.serverpackcreatorproperties.load(inputStream);
+            this.serverPackCreatorProperties = new Properties();
+            this.serverPackCreatorProperties.load(inputStream);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
-        LOCALIZATIONMANAGER = new LocalizationManager();
+        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
-        VERSIONLISTER = new VersionLister();
-        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverpackcreatorproperties);
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
     }
 
     @Test

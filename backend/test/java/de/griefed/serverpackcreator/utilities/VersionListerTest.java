@@ -6,7 +6,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
@@ -35,13 +40,19 @@ public class VersionListerTest {
     private final DefaultFiles DEFAULTFILES;
     private final VersionLister VERSIONLISTER;
     private static final Logger LOG = LogManager.getLogger(VersionListerTest.class);
+    private Properties serverPackCreatorProperties;
 
     public VersionListerTest() {
-        LOCALIZATIONMANAGER = new LocalizationManager();
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+            this.serverPackCreatorProperties = new Properties();
+            this.serverPackCreatorProperties.load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
+        }
+        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
-        DEFAULTFILES.filesSetup();
-        this.VERSIONLISTER = new VersionLister();
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        this.VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
     }
 
     @Test

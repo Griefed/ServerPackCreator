@@ -32,7 +32,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -42,7 +44,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * <strong>Table of methods</strong><br>
- * {@link #CurseCreateModpack(LocalizationManager)}<br>
+ * {@link #CurseCreateModpack(LocalizationManager, Properties)}<br>
  * {@link #setModloaderCase(String)}<br>
  * {@link #curseForgeModpack(String, Integer, Integer)}<br>
  * {@link #initializeModpack(String, Integer, Integer)}<br>
@@ -79,6 +81,8 @@ public class CurseCreateModpack {
     private String fileName;
     private String fileDiskName;
 
+    private Properties serverPackCreatorProperties;
+
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -86,11 +90,23 @@ public class CurseCreateModpack {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public CurseCreateModpack(LocalizationManager injectedLocalizationManager) {
+    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
