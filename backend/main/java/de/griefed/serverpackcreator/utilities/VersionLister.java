@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -85,6 +86,8 @@ public class VersionLister {
     private final String fabricLatestVersion;
     private final String fabricReleaseVersion;
 
+    private final HashMap<String, String[]> forgeMeta;
+
     /**
      * <strong>Constructor</strong><p>
      *     Creates the Minecraft and Fabric version lists as well as Fabric-Latest and Fabric-Release versions.
@@ -101,6 +104,8 @@ public class VersionLister {
         this.fabricVersions = setFabricVersionList();
         this.fabricLatestVersion = setFabricSpecificVersion("latest");
         this.fabricReleaseVersion = setFabricSpecificVersion("release");
+
+        this.forgeMeta = setForgeMeta();
     }
 
     /**
@@ -203,6 +208,33 @@ public class VersionLister {
      */
     public String getFabricReleaseVersion() {
         return fabricReleaseVersion;
+    }
+
+    /**
+     * Getter for the Forge version meta in convenient HashMap format. Keys are Minecraft versions, values are String arrays
+     * containing all available Forge versions, or <code>None</code> if Forge is not available for a given Minecraft version.
+     * @author Griefed
+     * @return HashMap String, String Array. Returns the HashMap with all Minecraft versions as keys and the Forge versions
+     * as values, in arrays.
+     */
+    public HashMap<String, String[]> getForgeMeta() {
+        return forgeMeta;
+    }
+
+    /**
+     * Create a HashMap of all Minecraft versions and their available Forge versions.
+     * @author Griefed
+     * @return HashMap String, String Array. Returns the HashMap with all Minecraft versions as keys and the Forge versions
+     * as values, in arrays.
+     */
+    private HashMap<String, String[]> setForgeMeta() {
+        HashMap<String, String[]> hashMap = new HashMap<>();
+
+        for (String version : minecraftReleaseVersions) {
+            hashMap.put(version, reverseOrderArray(getForgeVersionsAsArray(version)));
+        }
+
+        return hashMap;
     }
 
     /**
