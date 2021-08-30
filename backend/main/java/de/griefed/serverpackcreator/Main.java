@@ -172,20 +172,13 @@ public class Main {
             System.exit(0);
         }
 
-        // Prepare instances for dependency injection
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
-        AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
-        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
-        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
-
         //noinspection UnusedAssignment
         String jarPath = null,
-               jarName = null,
-               javaVersion = null,
-               osArch = null,
-               osName = null,
-               osVersion = null;
+                jarName = null,
+                javaVersion = null,
+                osArch = null,
+                osName = null,
+                osVersion = null;
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.debug("LOCALIZATIONMANAGER.getLocalizedString(\"main.log.debug.warning\")");
@@ -214,12 +207,13 @@ public class Main {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"), osName));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), osVersion));
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
-
-        // Ensure default files are present.
-        DEFAULTFILES.filesSetup();
-
-        // Check addons and generate addon-lists.
-        ADDONSHANDLER.initializeAddons();
+        
+        // Prepare instances for dependency injection
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
+        AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
+        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
+        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
+        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
 
         // Start generation of a new configuration file with user input.
         if (Arrays.asList(args).contains("-cgen")) {

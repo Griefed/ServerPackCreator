@@ -79,6 +79,8 @@ public class AddonsHandler {
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
+
+        initializeAddons();
     }
 
     /**

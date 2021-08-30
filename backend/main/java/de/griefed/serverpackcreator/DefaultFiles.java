@@ -96,6 +96,8 @@ public class DefaultFiles {
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
+
+        filesSetup();
     }
 
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
