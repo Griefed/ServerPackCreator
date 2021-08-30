@@ -43,7 +43,7 @@ import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><br>
- * {@link #SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, Properties)}<br>
+ * {@link #SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, Properties, VersionLister)}<br>
  * {@link #mainGUI()}<br>
  * {@link #createAndShowGUI()}<p>
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
@@ -107,8 +107,11 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related in the GUI.
      */
-    public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler, CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler, AddonsHandler injectedAddonsHandler, Properties injectedServerPackCreatorProperties) {
+    public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
+                               CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
+                               AddonsHandler injectedAddonsHandler, Properties injectedServerPackCreatorProperties, VersionLister injectedVersionLister) {
         super(new GridLayout(1, 1));
 
         this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
@@ -131,14 +134,20 @@ public class SwingGuiInitializer extends JPanel {
             this.ADDONSHANDLER = injectedAddonsHandler;
         }
 
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister();
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
+        }
+
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverpackcreatorproperties);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties, VERSIONLISTER);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -148,8 +157,6 @@ public class SwingGuiInitializer extends JPanel {
         } catch (IOException ex) {
             LOG.error("Could not read image for tiling.", ex);
         }
-
-        this.VERSIONLISTER = new VersionLister();
 
         this.TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER, serverpackcreatorproperties);
         this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER);

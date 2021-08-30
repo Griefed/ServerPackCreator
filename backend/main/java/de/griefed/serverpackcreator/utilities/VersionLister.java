@@ -52,14 +52,18 @@ import java.util.List;
  * 9. {@link #getFabricVersions()}<br>
  * 10.{@link #getFabricLatestVersion()}<br>
  * 11.{@link #getFabricReleaseVersion()}<br>
- * 12.{@link #getMinecraftReleaseVersionsAsArray()}<br>
- * 13.{@link #getFabricVersionsAsArray()}<br>
- * 14.{@link #getForgeVersionsAsArray(String)}<br>
- * 15.{@link #getMinecraftVersionsList(String)}<br>
- * 16.{@link #setMinecraftSpecificVersion(String)}<br>
- * 17.{@link #getForgeVersionsList(String)}<br>
- * 18.{@link #setFabricVersionList()}<br>
- * 19.{@link #setFabricSpecificVersion(String)}<br>
+ * 12.{@link #getForgeMeta()}<br>
+ * 13.{@link #setForgeMeta()}<br>
+ * 14.{@link #getMinecraftReleaseVersionsAsArray()}<br>
+ * 15.{@link #getFabricVersionsAsArray()}<br>
+ * 16.{@link #getForgeVersionsAsArray(String)}<br>
+ * 17.{@link #getMinecraftVersionsList(String)}<br>
+ * 18.{@link #setMinecraftSpecificVersion(String)}<br>
+ * 19.{@link #getForgeVersionsList(String)}<br>
+ * 20.{@link #setFabricVersionList()}<br>
+ * 21.{@link #setFabricSpecificVersion(String, Document)}<br>
+ * 22.{@link #getFabricLatestInstallerVersion()}<br>
+ * 23.{@link #getFabricReleaseInstallerVersion()}
  * <p>
  * Create lists of versions for Minecraft, Fabric and Forge. Provides getters for retrieving Minecraft and Fabric version
  * lists and {@link #getForgeVersionsList(String)} to retrieve a list of available Forge versions for a given Minecraft
@@ -75,6 +79,7 @@ public class VersionLister {
     private final File minecraftManifest = new File("./work/minecraft-manifest.json");
     private final File forgeManifest = new File("./work/forge-manifest.json");
     private final File fabricManifest = new File("./work/fabric-manifest.xml");
+    private final File fabricInstallerManifest = new File("./work/fabric-installer-manifest.xml");
 
     private final String minecraftReleaseVersion;
     private final List<String> minecraftReleaseVersions;
@@ -85,6 +90,9 @@ public class VersionLister {
     private final List<String> fabricVersions;
     private final String fabricLatestVersion;
     private final String fabricReleaseVersion;
+
+    private final String fabricLatestInstallerVersion;
+    private final String fabricReleaseInstallerVersion;
 
     private final HashMap<String, String[]> forgeMeta;
 
@@ -102,8 +110,11 @@ public class VersionLister {
         this.minecraftSnapshotVersions = getMinecraftVersionsList("snapshot");
 
         this.fabricVersions = setFabricVersionList();
-        this.fabricLatestVersion = setFabricSpecificVersion("latest");
-        this.fabricReleaseVersion = setFabricSpecificVersion("release");
+        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(getFabricManifest()));
+        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(getFabricManifest()));
+
+        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(getFabricInstallerManifest()));
+        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(getFabricInstallerManifest()));
 
         this.forgeMeta = setForgeMeta();
     }
@@ -133,6 +144,15 @@ public class VersionLister {
      */
     public File getFabricManifest() {
         return fabricManifest;
+    }
+
+    /**
+     * Getter for the Fabric installer manifest-file.
+     * @author Griefed
+     * @return File. Returns the location to the Fabric installer manifest-file.
+     */
+    public File getFabricInstallerManifest() {
+        return fabricInstallerManifest;
     }
 
     /**
@@ -235,6 +255,24 @@ public class VersionLister {
         }
 
         return hashMap;
+    }
+
+    /**
+     * Getter for the release version of the Fabric installer.
+     * @author Griefed
+     * @return String. Returns the latest installer version for Fabric.
+     */
+    public String getFabricLatestInstallerVersion() {
+        return fabricLatestInstallerVersion;
+    }
+
+    /**
+     * Getter for the release version of the Fabric installer.
+     * @author Griefed
+     * @return String. Returns the release installer version for Fabric.
+     */
+    public String getFabricReleaseInstallerVersion() {
+        return fabricReleaseInstallerVersion;
     }
 
     /**
@@ -396,19 +434,29 @@ public class VersionLister {
     }
 
     /**
-     * Helper method for {@link #setFabricVersionList()} and {@link #setFabricSpecificVersion(String)}. Reads the Fabric
+     * Helper method for {@link #setFabricVersionList()} and {@link #setFabricSpecificVersion(String, Document)}. Reads the Fabric
      * manifest-file into a {@link Document} and {@link Document#normalize()} it.
      * @author Griefed
+     * @param manifest The xml-file to parse into a Document.
      * @return Document. Returns the file parsed into a Document.
-     * @throws ParserConfigurationException Throws if the file could not be parsed.
-     * @throws SAXException Throws if the file could not be parsed.
-     * @throws IOException Throws if the file could not be found/read/parsed etc.
      */
     @NotNull
-    private Document getFabricXml() throws ParserConfigurationException, SAXException, IOException {
+    private Document getXml(File manifest) {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        Document xml = documentBuilder.parse(getFabricManifest());
+        DocumentBuilder documentBuilder = null;
+        Document xml = null;
+        try {
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        try {
+            assert documentBuilder != null;
+            xml = documentBuilder.parse(manifest);
+        } catch (SAXException | IOException e) {
+            e.printStackTrace();
+        }
+        assert xml != null;
         xml.normalize();
         return xml;
     }
@@ -422,18 +470,12 @@ public class VersionLister {
 
         List<String> fabricReleases = new ArrayList<>();
 
-        try {
-            Document fabricXml = getFabricXml();
+        Document fabricXml = getXml(getFabricManifest());
 
-            NodeList versions = fabricXml.getElementsByTagName("version");
+        NodeList versions = fabricXml.getElementsByTagName("version");
 
-            for (int i = 0; i < versions.getLength(); i++) {
-                fabricReleases.add(versions.item(i).getChildNodes().item(0).getNodeValue());
-            }
-
-
-        } catch (IOException | ParserConfigurationException | SAXException ex) {
-            LOG.error("Couldn't read Fabric manifest.", ex);
+        for (int i = 0; i < versions.getLength(); i++) {
+            fabricReleases.add(versions.item(i).getChildNodes().item(0).getNodeValue());
         }
 
         LOG.debug("Fabric versions: " + fabricReleases);
@@ -445,22 +487,10 @@ public class VersionLister {
      * Retrieve the Fabric version for the specified release-type.
      * @author Griefed
      * @param versionSpecifier String. Release-type which specifies which Fabric version is retrieved. Can be <code>latest, release</code>
+     * @param manifest Document. The document from which to gather information from.
      * @return String. Returns the Fabric version for the specified release-type.
      */
-    private String setFabricSpecificVersion(String versionSpecifier) {
-        String fabricLatestOrRelease = null;
-
-        try {
-            Document fabricXml = getFabricXml();
-
-            fabricLatestOrRelease = fabricXml.getElementsByTagName(versionSpecifier).item(0).getChildNodes().item(0).getNodeValue();
-
-        } catch (IOException | ParserConfigurationException | SAXException ex) {
-            LOG.error("Couldn't read Fabric manifest.", ex);
-        }
-
-        LOG.debug("Fabric " + versionSpecifier + " version: " + fabricLatestOrRelease);
-
-        return fabricLatestOrRelease;
+    private String setFabricSpecificVersion(String versionSpecifier, Document manifest) {
+        return manifest.getElementsByTagName(versionSpecifier).item(0).getChildNodes().item(0).getNodeValue();
     }
 }

@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 /**
  * <strong>Table of methods</strong><p>
@@ -23,7 +24,10 @@ import org.junit.jupiter.api.Test;
  * 12.{@link #getForgeVersionTest()}<br>
  * 13.{@link #getMinecraftReleaseVersionsAsArrayTest()}<br>
  * 14.{@link #getFabricVersionsAsArrayTest()}<br>
- * 15.{@link #getForgeVersionsAsArrayTest()}
+ * 15.{@link #getForgeVersionsAsArrayTest()}<br>
+ * 16.{@link #getForgeMetaTest()}
+ * 17.{@link #getFabricLatestInstallerVersionTest()}<br>
+ * 18.{@link #getFabricReleaseInstallerVersionTest()}
  */
 public class VersionListerTest {
 
@@ -121,6 +125,24 @@ public class VersionListerTest {
         for (int i = 0; i < VERSIONLISTER.getMinecraftReleaseVersions().size(); i++) {
             Assertions.assertNotNull(VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersions().get(i)));
         }
+    }
+
+    @Test
+    void getForgeMetaTest() {
+        List<String> minecraftVersions = VERSIONLISTER.getMinecraftReleaseVersions();
+        for (String version : minecraftVersions) {
+            Assertions.assertNotNull(VERSIONLISTER.getForgeMeta().get(version));
+        }
+    }
+
+    @Test
+    void getFabricLatestInstallerVersionTest() {
+        Assertions.assertNotNull(VERSIONLISTER.getFabricLatestInstallerVersion());
+    }
+
+    @Test
+    void getFabricReleaseInstallerVersionTest() {
+        Assertions.assertNotNull(VERSIONLISTER.getFabricReleaseInstallerVersion());
     }
 
 }

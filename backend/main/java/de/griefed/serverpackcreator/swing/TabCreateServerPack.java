@@ -119,25 +119,29 @@ public class TabCreateServerPack extends JComponent {
             this.ADDONSHANDLER = injectedAddonsHandler;
         }
 
-        if (injectedConfigurationHandler == null) {
+        if (injectedCurseCreateModpack == null) {
             this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister();
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
+        }
+
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverpackcreatorproperties);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties, VERSIONLISTER);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
-
-        this.VERSIONLISTER = injectedVersionLister;
 
         serverPackGeneratedTextPane.setOpaque(false);
         serverPackGeneratedTextPane.setEditable(false);

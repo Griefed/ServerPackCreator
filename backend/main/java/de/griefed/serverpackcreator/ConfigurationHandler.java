@@ -27,19 +27,11 @@ import com.typesafe.config.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforge.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,7 +39,7 @@ import java.util.*;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, Properties)}<br>
+ * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, VersionLister, Properties)}<br>
  * 2. {@link #getOldConfigFile()}<br>
  * 3. {@link #getConfigFile()}<br>
  * 4. {@link #getConfig()}<br>
@@ -70,18 +62,17 @@ import java.util.*;
  * 21.{@link #checkJavaPath(String)}<br>
  * 22.{@link #checkModloader(String)}<br>
  * 23.{@link #setModLoaderCase(String)}<br>
- * 24.{@link #checkModloaderVersion(String, String)}<br>
+ * 24.{@link #checkModloaderVersion(String, String, String)}<br>
  * 25.{@link #isMinecraftVersionCorrect(String)}<br>
  * 26.{@link #isFabricVersionCorrect(String)}<br>
- * 27.{@link #isForgeVersionCorrect(String)}<br>
- * 28.{@link #latestFabricLoader()}<br>
- * 29.{@link #createConfigurationFile()}<br>
- * 30.{@link #readStringArray()}<br>
- * 31.{@link #buildString(String...)}<br>
- * 32.{@link #encapsulateListElements(List)}<br>
- * 33.{@link #readBoolean()}<br>
- * 34.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
- * 35.{@link #getConfigurationAsList(ConfigurationModel)}
+ * 27.{@link #isForgeVersionCorrect(String, String)}<br>
+ * 28.{@link #createConfigurationFile()}<br>
+ * 29.{@link #readStringArray()}<br>
+ * 30.{@link #buildString(String...)}<br>
+ * 31.{@link #encapsulateListElements(List)}<br>
+ * 32.{@link #readBoolean()}<br>
+ * 33.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
+ * 34.{@link #getConfigurationAsList(ConfigurationModel)}
  * <p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
@@ -95,6 +86,7 @@ public class ConfigurationHandler {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
+    private final VersionLister VERSIONLISTER;
     private Properties serverpackcreatorproperties;
 
     /**
@@ -109,9 +101,10 @@ public class ConfigurationHandler {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedVersionLister Instance of {@link VersionLister} required for everything version-related.
      */
     @Autowired
-    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, Properties injectedServerPackCreatorProperties) {
+    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties) {
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
@@ -122,6 +115,12 @@ public class ConfigurationHandler {
             this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
+        }
+
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister();
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
         }
 
         this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
@@ -488,7 +487,7 @@ public class ConfigurationHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
-            if (checkModloaderVersion(configurationModel.getModLoader(), getConfig().getString("modLoaderVersion"))) {
+            if (checkModloaderVersion(configurationModel.getModLoader(), getConfig().getString("modLoaderVersion"), configurationModel.getMinecraftVersion())) {
 
                 configurationModel.setModLoaderVersion(getConfig().getString("modLoaderVersion"));
                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -547,7 +546,7 @@ public class ConfigurationHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
-            if (checkModloaderVersion(configurationModel.getModLoader(), configurationModel.getModLoaderVersion())) {
+            if (checkModloaderVersion(configurationModel.getModLoader(), configurationModel.getModLoaderVersion(), configurationModel.getMinecraftVersion())) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
@@ -641,7 +640,7 @@ public class ConfigurationHandler {
                                 LOG.debug("Setting modloader to Fabric.");
 
                                 configurationModel.setModLoader("Fabric");
-                                configurationModel.setModLoaderVersion(latestFabricLoader());
+                                configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
 
                             } else {
                                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -1168,19 +1167,20 @@ public class ConfigurationHandler {
     /**
      * Depending on whether Forge or Fabric was specified as the modloader, this will call the corresponding version check
      * to verify that the user correctly set their modloader version.<br>
-     * If the user specified Forge as their modloader, {@link #isForgeVersionCorrect(String)} is called and the version
+     * If the user specified Forge as their modloader, {@link #isForgeVersionCorrect(String, String)} is called and the version
      * the user specified is checked against Forge's version manifest..<br>
      * If the user specified Fabric as their modloader, {@link #isFabricVersionCorrect(String)} is called and the version
      * the user specified is checked against Fabric's version manifest.
      * @author Griefed
      * @param modloader String. The passed modloader which determines whether the check for Forge or Fabric is called.
      * @param modloaderVersion String. The version of the modloader which is checked against the corresponding modloaders manifest.
+     * @param minecraftVersion String. The version of Minecraft used for checking the Forge version.
      * @return Boolean. Returns true if the specified modloader version was found in the corresponding manifest.
      */
-    boolean checkModloaderVersion(String modloader, String modloaderVersion) {
+    boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
         boolean isVersionCorrect = false;
 
-        if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion)) {
+        if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion, minecraftVersion)) {
 
             isVersionCorrect = true;
 
@@ -1196,34 +1196,15 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Checks whether the passed String is empty and if it is not. check the String against Mojang's version manifest
-     * to validate the version.
-     * @author whitebear60
-     * @param minecraftVersion String. The version to check for in Mojang's version manifest.
+     * Check whether the specified Minecraft version is correct by searching the version list of the Minecraft manifest
+     * for the specified version.
+     * @author Griefed
+     * @param minecraftVersion String. The version to check for in Minecraft's version manifest.
      * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.
      */
     boolean isMinecraftVersionCorrect(String minecraftVersion) {
         if (!minecraftVersion.equals("")) {
-            try {
-
-                File manifestJsonFile = new File("./work/minecraft-manifest.json");
-
-                Scanner jsonReader = new Scanner(manifestJsonFile);
-
-                String jsonData = jsonReader.nextLine();
-
-                jsonReader.close();
-
-                jsonData = jsonData.replaceAll("\\s", "");
-
-                return jsonData.trim().contains(String.format("\"id\":\"%s\"", minecraftVersion));
-
-            } catch (Exception ex) {
-
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isminecraftversioncorrect.validate"), minecraftVersion), ex);
-                return false;
-            }
+            return VERSIONLISTER.getMinecraftReleaseVersions().contains(minecraftVersion);
         } else {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isminecraftversioncorrect.empty"));
@@ -1232,45 +1213,15 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Checks whether the passed String is empty and if it is not. check the String against Fabric's version manifest
-     * to validate the version.
-     * @author whitebear60
+     * Check whether the specified Fabric version is correct by searching the version list of the Fabric manifest
+     * for the specified version.
+     * @author Griefed
      * @param fabricVersion String. The version to check for in Fabric's version manifest.
      * @return Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.
      */
     boolean isFabricVersionCorrect(String fabricVersion) {
         if (!fabricVersion.equals("")) {
-            try {
-
-                File manifestXMLFile = new File("./work/fabric-manifest.xml");
-
-                Scanner xmlReader = new Scanner(manifestXMLFile);
-
-                ArrayList<String> dataList = new ArrayList<>();
-
-                while (xmlReader.hasNextLine()) {
-                    dataList.add(xmlReader.nextLine());
-                }
-
-                String[] dataArray = new String[dataList.size()];
-
-                String manifestXML;
-
-                dataList.toArray(dataArray);
-
-                manifestXML = Arrays.toString(dataArray);
-
-                xmlReader.close();
-
-                manifestXML = manifestXML.replaceAll("\\s", "");
-
-                return manifestXML.trim().contains(fabricVersion);
-
-            } catch (Exception ex) {
-                LOG.error("An error occurred during Fabric version validation.", ex);
-                return false;
-            }
-
+            return VERSIONLISTER.getFabricVersions().contains(fabricVersion);
         } else {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isfabricversioncorrect.empty"));
@@ -1279,85 +1230,30 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Checks whether the passed String is empty and if it is not. check the String against Forge's version manifest
-     * to validate the version.
-     * @author whitebear60
+     * Check whether the specified Forge version is correct by searching the version list of the Forge manifest
+     * for the specified version.
+     * @author Griefed
      * @param forgeVersion String. The version to check for in Forge's version manifest.
+     * @param minecraftVersion String. The minecraft version to check the Forge version with.
      * @return Boolean. Returns true if the specified Forge version could be found in Forge's manifest.
      */
-    boolean isForgeVersionCorrect(String forgeVersion) {
+    boolean isForgeVersionCorrect(String forgeVersion, String minecraftVersion) {
         if (!forgeVersion.equals("")) {
             try {
-
-                File manifestJsonFile = new File("./work/forge-manifest.json");
-
-                Scanner jsonReader = new Scanner(manifestJsonFile);
-
-                ArrayList<String> dataList = new ArrayList<>();
-
-                while (jsonReader.hasNextLine()) {
-                    dataList.add(jsonReader.nextLine());
+                for (String version : VERSIONLISTER.getForgeMeta().get(minecraftVersion)) {
+                    if (version.equals(forgeVersion)) {
+                        return true;
+                    }
                 }
-
-                String[] dataArray = new String[dataList.size()];
-
-                String manifestJSON;
-
-                dataList.toArray(dataArray);
-
-                manifestJSON = Arrays.toString(dataArray);
-
-                jsonReader.close();
-
-                manifestJSON = manifestJSON.replaceAll("\\s", "");
-
-                return manifestJSON.trim().contains(forgeVersion);
-
-            } catch (Exception ex) {
-
-                LOG.error("An error occurred during Forge version validation.", ex);
+            } catch (NullPointerException ignored) {
                 return false;
             }
+            return false;
         } else {
-
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isforgeversioncorrect.empty"));
             return false;
         }
-    }
-
-    /**
-     * Returns the latest version for the Fabric-loader. If Fabric's version manifest should be unreachable for whatever
-     * reason, version 0.11.3 is returned by default.
-     * @author whitebear60
-     * @return Boolean. Returns true if the download was successful. False if not.
-     */
-    String latestFabricLoader() {
-        String result;
-        try {
-
-            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-
-            DocumentBuilder builder = domFactory.newDocumentBuilder();
-
-            Document fabricXml = builder.parse(new File("./work/fabric-manifest.xml"));
-
-            XPathFactory xPathFactory = XPathFactory.newInstance();
-
-            XPath xpath = xPathFactory.newXPath();
-
-            result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.latestfabricloader.created"));
-
-        } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-            result = "0.11.6";
-            LOG.error("LOCALIZATIONMANAGER.getLocalizedString(\"configuration.log.error.latestfabricloader.parse\")", ex);
-        }
-
-        return result;
-
     }
 
     /**
@@ -1544,7 +1440,7 @@ public class ConfigurationHandler {
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloaderversion.cli") + " ");
                 modLoaderVersion = reader.nextLine();
 
-            } while (!checkModloaderVersion(modLoader, modLoaderVersion));
+            } while (!checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), modLoaderVersion));

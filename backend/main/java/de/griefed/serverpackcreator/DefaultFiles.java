@@ -51,13 +51,13 @@ import java.util.Objects;
  * 12.{@link #getFabricManifestUrl()}<br>
  * 13.{@link #getFabricInstallerManifestUrl()}<br>
  * 14.{@link #getMANIFEST_MINECRAFT()}<br>
- * 14.{@link #getMANIFEST_FORGE()}<br>
- * 14.{@link #getMANIFEST_FABRIC()}<br>
- * 14.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
- * 14.{@link #filesSetup()}<br>
- * 15.{@link #checkForConfig()}<br>
- * 16.{@link #checkForFile(File)}<br>
- * 17.{@link #refreshManifestFile(URL, File)}
+ * 15.{@link #getMANIFEST_FORGE()}<br>
+ * 16.{@link #getMANIFEST_FABRIC()}<br>
+ * 17.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
+ * 18.{@link #filesSetup()}<br>
+ * 19.{@link #checkForConfig()}<br>
+ * 20.{@link #checkForFile(File)}<br>
+ * 21.{@link #refreshManifestFile(URL, File)}
  * <p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>

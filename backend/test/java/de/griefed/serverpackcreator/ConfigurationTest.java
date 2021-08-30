@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforge.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -124,12 +125,11 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 84.{@link #isFabricVersionCorrectTestFalse()}<br>
  * 85.{@link #isForgeVersionCorrectTest()}<br>
  * 86.{@link #isForgeVersionCorrectTestFalse()}<br>
- * 87.{@link #latestFabricLoaderTest()}<br>
- * 88.{@link #latestFabricLoaderTestNotNull()}<br>
- * 89.{@link #buildStringTest()}<br>
- * 90.{@link #writeConfigToFileTestForge()}<br>
- * 91.{@link #writeConfigToFileTestFabric()}<br>
- * 92.{@link #checkConfigModelTest()}
+ * 87.{@link #buildStringTest()}<br>
+ * 88.{@link #writeConfigToFileTestForge()}<br>
+ * 89.{@link #writeConfigToFileTestFabric()}<br>
+ * 90.{@link #checkConfigModelTest()}<br>
+ * 91.{@link #encapsulateListElementsTest()}
  */
 class ConfigurationTest {
 
@@ -137,6 +137,7 @@ class ConfigurationTest {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final DefaultFiles DEFAULTFILES;
+    private final VersionLister VERSIONLISTER;
     private Properties serverpackcreatorproperties;
 
     ConfigurationTest() {
@@ -156,9 +157,9 @@ class ConfigurationTest {
         LOCALIZATIONMANAGER = new LocalizationManager();
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER);
-        DEFAULTFILES.filesSetup();
+        VERSIONLISTER = new VersionLister();
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
+        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverpackcreatorproperties);
     }
 
     @Test
@@ -987,22 +988,22 @@ class ConfigurationTest {
 
     @Test
     void checkModloaderVersionTestForge() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "36.1.2"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "36.1.2", "1.16.5"));
     }
 
     @Test
     void checkModloaderVersionTestForgeFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "90.0.0"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "90.0.0", "1.16.5"));
     }
 
     @Test
     void checkModloaderVersionTestFabric() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.11.3"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.11.3", "1.16.5"));
     }
 
     @Test
     void checkModloaderVersionTestFabricFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.90.3"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
     }
 
     @Test
@@ -1027,22 +1028,12 @@ class ConfigurationTest {
 
     @Test
     void isForgeVersionCorrectTest() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isForgeVersionCorrect("36.1.2"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isForgeVersionCorrect("36.1.2", "1.16.5"));
     }
 
     @Test
     void isForgeVersionCorrectTestFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isForgeVersionCorrect("99.0.0"));
-    }
-
-    @Test
-    void latestFabricLoaderTest() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.latestFabricLoader().matches("\\d+\\.\\d+\\.\\d+"));
-    }
-
-    @Test
-    void latestFabricLoaderTestNotNull() {
-        Assertions.assertNotNull(CONFIGURATIONHANDLER.latestFabricLoader());
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isForgeVersionCorrect("99.0.0","1.16.5"));
     }
 
     @Test
@@ -1236,5 +1227,35 @@ class ConfigurationTest {
         configurationModel.setModLoaderVersion("36.1.2");
         configurationModel.setMinecraftVersion("1.16.5");
         Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(false, configurationModel));
+    }
+
+    @Test
+    void encapsulateListElementsTest() {
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
+                "A[mbient]Sounds",
+                "Back[Tools",
+                "Bett[er[][]Advancement",
+                "Bett   erPing",
+                "cheri[ ]shed",
+                "ClientT&/$weaks",
+                "Control§!%(?=)ling",
+                "Defau/()&=?ltOptions",
+                "durabi!§/&?lity",
+                "DynamicS[]urroundings",
+                "itemz\\oom",
+                "jei-/($?professions",
+                "jeiinteg}][ration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        ));
+        Assertions.assertNotNull(CONFIGURATIONHANDLER.encapsulateListElements(clientMods));
     }
 }

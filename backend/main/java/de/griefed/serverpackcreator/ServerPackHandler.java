@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.VersionLister;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
@@ -33,16 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -57,7 +48,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler, Properties)}<br>
+ * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler, Properties, VersionLister)}<br>
  * 2. {@link #getSTART_FABRIC_SHELL}<br>
  * 3. {@link #getSTART_FABRIC_BATCH}<br>
  * 4. {@link #getSTART_FORGE_SHELL}<br>
@@ -80,10 +71,9 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 21.{@link #getMinecraftServerJarUrl(String)}<br>
  * 22.{@link #generateDownloadScripts(String, String, String)}<br>
  * 23.{@link #downloadFabricJar(String)}<br>
- * 24.{@link #latestFabricInstaller()}<br>
- * 25.{@link #downloadForgeJar(String, String, String)}<br>
- * 26.{@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
- * 27.{@link #scanTomls(File[])}
+ * 24.{@link #downloadForgeJar(String, String, String)}<br>
+ * 25.{@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
+ * 26.{@link #scanTomls(File[])}
  * <p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
@@ -105,6 +95,7 @@ public class ServerPackHandler {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final AddonsHandler ADDONSHANDLER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
+    private final VersionLister VERSIONLISTER;
 
     private Properties serverpackcreatorproperties;
 
@@ -119,9 +110,12 @@ public class ServerPackHandler {
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required for accessing checks.
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related.
      */
     @Autowired
-    public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, AddonsHandler injectedAddonsHandler, ConfigurationHandler injectedConfigurationHandler, Properties injectedServerPackCreatorProperties) {
+    public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
+                             AddonsHandler injectedAddonsHandler, ConfigurationHandler injectedConfigurationHandler,
+                             Properties injectedServerPackCreatorProperties, VersionLister injectedVersionLister) {
 
         this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
 
@@ -143,8 +137,14 @@ public class ServerPackHandler {
             this.ADDONSHANDLER = injectedAddonsHandler;
         }
 
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister();
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
+        }
+
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverpackcreatorproperties);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
@@ -1121,7 +1121,9 @@ public class ServerPackHandler {
         }
 
         try {
+            assert batchContent != null;
             stringToBytesBatch = batchContent.getBytes();
+            assert shellContent != null;
             stringToBytesShell = shellContent.getBytes();
 
             Files.write(pathBatch, stringToBytesBatch);
@@ -1137,9 +1139,7 @@ public class ServerPackHandler {
     }
 
     /**
-     * Downloads the latest Fabric installer into the server pack.<p>
-     * Calls<p>
-     * {@link #latestFabricInstaller()} to acquire the latest version of the Fabric installer.
+     * Downloads the release Fabric installer into the server pack.<p>
      * @author Griefed
      * @param modpackDir String. The Fabric installer is downloaded into the server_pack directory inside the modpack directory.
      * @return Boolean. Returns true if the download was successfull.
@@ -1155,8 +1155,7 @@ public class ServerPackHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.downloadfabricjar.enter"));
 
-            String latestFabricInstaller = latestFabricInstaller();
-            URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", latestFabricInstaller, latestFabricInstaller));
+            URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", VERSIONLISTER.getFabricReleaseInstallerVersion(), VERSIONLISTER.getFabricReleaseInstallerVersion()));
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
 
@@ -1186,38 +1185,6 @@ public class ServerPackHandler {
             downloaded = true;
         }
         return downloaded;
-    }
-
-    /**
-     * Acquires the latest version of the Fabric modloader installer and returns it as a string. If acquisition of the
-     * latest version fails, version 0.7.4 is returned by default.
-     * @author whitebear60
-     * @return String. Returns the version of the latest Fabric modloader installer.
-     */
-    String latestFabricInstaller() {
-        String result;
-        try {
-            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-
-            DocumentBuilder builder = domFactory.newDocumentBuilder();
-
-            Document fabricXml = builder.parse(new File("./work/fabric-installer-manifest.xml"));
-
-            XPathFactory xPathFactory = XPathFactory.newInstance();
-
-            XPath xpath = xPathFactory.newXPath();
-
-            result = (String) xpath.evaluate("/metadata/versioning/release", fabricXml, XPathConstants.STRING);
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.latestfabricinstaller"));
-
-        } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
-
-            LOG.error("Could not retrieve Installer XML file. Defaulting to Installer version 0.7.2.", ex);
-            result = "0.7.4";
-        }
-        return result;
     }
 
     /**
