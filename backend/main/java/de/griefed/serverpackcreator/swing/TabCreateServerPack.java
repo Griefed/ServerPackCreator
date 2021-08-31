@@ -43,10 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -118,6 +115,10 @@ public class TabCreateServerPack extends JComponent {
     private final JTextField TEXTFIELD_CLIENTSIDEMODS = new JTextField("");
     private final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
     private final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
+
+    private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
+
+    private final String SERVER_PACKS_DIR;
 
     private Properties serverPackCreatorProperties;
 
@@ -228,6 +229,46 @@ public class TabCreateServerPack extends JComponent {
         StyleConstants.setFontSize(serverPackGeneratedAttributeSet, 14);
         serverPackGeneratedTextPane.setCharacterAttributes(serverPackGeneratedAttributeSet, true);
         StyleConstants.setAlignment(serverPackGeneratedAttributeSet, StyleConstants.ALIGN_LEFT);
+
+        String tempDir = null;
+        try {
+            tempDir = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+        } catch (NullPointerException npe) {
+            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+            tempDir = "server-packs";
+        } finally {
+            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
+                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks",tempDir);
+                SERVER_PACKS_DIR = tempDir;
+
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
+                    serverPackCreatorProperties.store(outputStream, null);
+                } catch (IOException ex) {
+                    LOG.error("Couldn't write properties-file.", ex);
+                }
+
+            } else {
+                SERVER_PACKS_DIR = "server-packs";
+            }
+        }
+    }
+
+    /**
+     * Getter for the serverpackcreator.properties-file.
+     * @author Griefed
+     * @return File. Returns the serverpackcreator.properties-file.
+     */
+    public File getFILE_SERVERPACKCREATOR_PROPERTIES() {
+        return FILE_SERVERPACKCREATOR_PROPERTIES;
+    }
+
+    /**
+     * Getter for the directory in which server-packs will be generated and stored in.
+     * @author Griefed
+     * @return String. Returns the path to the server-packs directory as a string.
+     */
+    public String getSERVER_PACKS_DIR() {
+        return SERVER_PACKS_DIR;
     }
 
     /**
@@ -945,7 +986,7 @@ public class TabCreateServerPack extends JComponent {
                     try {
                         serverPackGeneratedDocument.insertString(0, String.format("%s\n%s",
                                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                                String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))),
+                                String.format("%s/%s", getSERVER_PACKS_DIR(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))),
                                 serverPackGeneratedAttributeSet);
                     } catch (BadLocationException ex) {
                         LOG.error("Error inserting text into aboutDocument.", ex);
@@ -962,7 +1003,7 @@ public class TabCreateServerPack extends JComponent {
                             JOptionPane.INFORMATION_MESSAGE) == 0) {
 
                         try {
-                            Desktop.getDesktop().open(new File(String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
+                            Desktop.getDesktop().open(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
                         } catch (IOException ex) {
                             LOG.error("Error opening file explorer for server pack.", ex);
                         }

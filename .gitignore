@@ -179,3 +179,4 @@ backend/test/resources/forge_tests/server_pack.zip
 !/testruns
 /serverpackcreator.properties
 /serverpackcreator.db
+/server.properties

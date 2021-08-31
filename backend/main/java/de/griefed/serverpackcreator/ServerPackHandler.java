@@ -98,6 +98,7 @@ public class ServerPackHandler {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final VersionLister VERSIONLISTER;
 
+    private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
     private final File FILE_PROPERTIES = new File("server.properties");
     private final File FILE_ICON = new File("server-icon.png");
     private final File FILE_FORGE_WINDOWS = new File("start-forge.bat");
@@ -109,6 +110,7 @@ public class ServerPackHandler {
     private final String START_FABRIC_BATCH = "java %s -jar fabric-server-launch.jar\npause";
     private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
     private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
+    private final String SERVER_PACKS_DIR;
 
     private Properties serverPackCreatorProperties;
 
@@ -171,6 +173,45 @@ public class ServerPackHandler {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
+        String tempDir = null;
+        try {
+            tempDir = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+        } catch (NullPointerException npe) {
+            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+            tempDir = "server-packs";
+        } finally {
+            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
+                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks",tempDir);
+                SERVER_PACKS_DIR = tempDir;
+
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
+                    serverPackCreatorProperties.store(outputStream, null);
+                } catch (IOException ex) {
+                    LOG.error("Couldn't write properties-file.", ex);
+                }
+
+            } else {
+                SERVER_PACKS_DIR = "server-packs";
+            }
+        }
+    }
+
+    /**
+     * Getter for the serverpackcreator.properties-file.
+     * @author Griefed
+     * @return File. Returns the serverpackcreator.properties-file.
+     */
+    public File getFILE_SERVERPACKCREATOR_PROPERTIES() {
+        return FILE_SERVERPACKCREATOR_PROPERTIES;
+    }
+
+    /**
+     * Getter for the directory in which server-packs will be generated and stored in.
+     * @author Griefed
+     * @return String. Returns the path to the server-packs directory as a string.
+     */
+    public String getSERVER_PACKS_DIR() {
+        return SERVER_PACKS_DIR;
     }
 
     /**
@@ -433,11 +474,11 @@ public class ServerPackHandler {
     void cleanupEnvironment(String modpackDir) {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
-        if (new File(String.format("server-packs/%s", destination)).exists()) {
+        if (new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)).exists()) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.folder.enter"));
-            Path serverPack = Paths.get(String.format("server-packs/%s", destination));
+            Path serverPack = Paths.get(String.format("%s/%s", getSERVER_PACKS_DIR(), destination));
 
             try {
 
@@ -474,12 +515,12 @@ public class ServerPackHandler {
             }
         }
 
-        if (new File(String.format("server-packs/%s_server_pack.zip", destination)).exists()) {
+        if (new File(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), destination)).exists()) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.zip.enter"));
 
-            boolean isZipDeleted = new File(String.format("server-packs/%s_server_pack.zip", destination)).delete();
+            boolean isZipDeleted = new File(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), destination)).delete();
 
             if (isZipDeleted) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -516,7 +557,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("server-packs/%s/%s", destination, getForgeWindowsFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getForgeWindowsFile())
                                         )
                                 )
                         )
@@ -534,7 +575,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("server-packs/%s/%s", destination, getForgeLinuxFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getForgeLinuxFile())
                                         )
                                 )
                         )
@@ -557,7 +598,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("server-packs/%s/%s", destination, getFabricWindowsFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getFabricWindowsFile())
                                         )
                                 )
                         )
@@ -575,7 +616,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("server-packs/%s/%s", destination, getFabricLinuxFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getFabricLinuxFile())
                                         )
                                 )
                         )
@@ -613,7 +654,7 @@ public class ServerPackHandler {
 
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
-        String serverPath = String.format("server-packs/%s", destination);
+        String serverPath = String.format("%s/%s", getSERVER_PACKS_DIR(), destination);
 
         try {
 
@@ -819,7 +860,7 @@ public class ServerPackHandler {
 
             Files.copy(
                     Paths.get(String.format("server_files/%s", getIconFile())),
-                    Paths.get(String.format("server-packs/%s/%s", destination, getIconFile())),
+                    Paths.get(String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getIconFile())),
                     REPLACE_EXISTING
             );
 
@@ -844,7 +885,7 @@ public class ServerPackHandler {
 
             Files.copy(
                     Paths.get(String.format("server_files/%s", getPropertiesFile())),
-                    Paths.get(String.format("server-packs/%s/%s", destination, getPropertiesFile())),
+                    Paths.get(String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getPropertiesFile())),
                     REPLACE_EXISTING
             );
 
@@ -874,11 +915,14 @@ public class ServerPackHandler {
 
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
-        File fabricInstaller = new File(String.format("server-packs/%s/fabric-installer.jar", destination));
+        File fabricInstaller = new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination));
 
-        File forgeInstaller = new File(String.format("server-packs/%s/forge-installer.jar", destination));
+        File forgeInstaller = new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination));
 
         List<String> commandArguments = new ArrayList<>();
+
+        Process process = null;
+        BufferedReader reader = null;
 
         if (modLoader.equalsIgnoreCase("Fabric")) {
             try {
@@ -901,14 +945,14 @@ public class ServerPackHandler {
                     commandArguments.add(modLoaderVersion);
                     commandArguments.add("-downloadMinecraft");
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("server-packs/%s", destination)));
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)));
 
                     LOG.debug("ProcessBuilder command: " + processBuilder.command());
 
                     processBuilder.redirectErrorStream(true);
-                    Process process = processBuilder.start();
+                    process = processBuilder.start();
 
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
 
                     while (true) {
@@ -920,13 +964,10 @@ public class ServerPackHandler {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
 
-                    reader.close();
-
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.details"));
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
 
-                    process.destroy();
                 } else {
 
                     LOG.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
@@ -935,6 +976,16 @@ public class ServerPackHandler {
             } catch (IOException ex) {
 
                 LOG.error("An error occurred during Fabric installation.", ex);
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+                if (process != null) {
+                    process.destroy();
+                }
             }
         } else if (modLoader.equalsIgnoreCase("Forge")) {
 
@@ -952,14 +1003,14 @@ public class ServerPackHandler {
                     commandArguments.add("forge-installer.jar");
                     commandArguments.add("--installServer");
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("server-packs/%s", destination)));
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)));
 
                     LOG.debug("ProcessBuilder command: " + processBuilder.command());
 
                     processBuilder.redirectErrorStream(true);
-                    Process process = processBuilder.start();
+                    process = processBuilder.start();
 
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
 
                     while (true) {
@@ -971,13 +1022,9 @@ public class ServerPackHandler {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
 
-                    reader.close();
-
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.details"));
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
-
-                    process.destroy();
 
                 } else {
 
@@ -986,6 +1033,16 @@ public class ServerPackHandler {
             } catch (IOException ex) {
 
                 LOG.error("An error occurred during Forge installation.", ex);
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+                if (process != null) {
+                    process.destroy();
+                }
             }
         } else {
 
@@ -1021,8 +1078,8 @@ public class ServerPackHandler {
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
         List<File> filesToExclude = new ArrayList<>(Arrays.asList(
-                new File(String.format("server-packs/%s/minecraft_server.%s.jar", destination, minecraftVersion)),
-                new File(String.format("server-packs/%s/server.jar", destination))
+                new File(String.format("%s/%s/minecraft_server.%s.jar", getSERVER_PACKS_DIR(), destination, minecraftVersion)),
+                new File(String.format("%s/%s/server.jar", getSERVER_PACKS_DIR(), destination))
         ));
 
         ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
@@ -1035,7 +1092,7 @@ public class ServerPackHandler {
 
         try {
 
-            new ZipFile(String.format("server-packs/%s_server_pack.zip", destination)).addFolder(new File(String.format("server-packs/%s", destination)), zipParameters);
+            new ZipFile(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), destination)).addFolder(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)), zipParameters);
 
         } catch (IOException ex) {
 
@@ -1101,8 +1158,8 @@ public class ServerPackHandler {
         String minecraftServerUrl = getMinecraftServerJarUrl(minecraftVersion);
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
-        Path pathBatch = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar.bat", destination));
-        Path pathShell = Paths.get(String.format("server-packs/%s/download_minecraft-server.jar.sh", destination));
+        Path pathBatch = Paths.get(String.format("%s/%s/download_minecraft-server.jar.bat", getSERVER_PACKS_DIR(), destination));
+        Path pathShell = Paths.get(String.format("%s/%s/download_minecraft-server.jar.sh", getSERVER_PACKS_DIR(), destination));
 
         String batchContent = null;
         String shellContent = null;
@@ -1168,7 +1225,7 @@ public class ServerPackHandler {
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
 
-            FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("server-packs/%s/fabric-installer.jar", destination));
+            FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination));
             FileChannel downloadFabricFileChannel = downloadFabricFileOutputStream.getChannel();
             downloadFabricFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
@@ -1180,9 +1237,9 @@ public class ServerPackHandler {
         } catch (IOException ex) {
             LOG.error("An error occurred downloading Fabric.", ex);
 
-            if (new File(String.format("server-packs/%s/fabric-installer.jar", destination)).exists()) {
+            if (new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
                 try {
-                    Files.delete(Paths.get(String.format("server-packs/%s/fabric-installer.jar", destination)));
+                    Files.delete(Paths.get(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination)));
 
                 } catch (IOException exc) {
                     LOG.error("Couldn't delete corrupted Fabric installer.", exc);
@@ -1190,7 +1247,7 @@ public class ServerPackHandler {
             }
         }
 
-        if (new File(String.format("server-packs/%s/fabric-installer.jar", destination)).exists()) {
+        if (new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
             downloaded = true;
         }
         return downloaded;
@@ -1217,7 +1274,7 @@ public class ServerPackHandler {
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
 
-            FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("server-packs/%s/forge-installer.jar", destination));
+            FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination));
             FileChannel downloadForgeFileChannel = downloadForgeFileOutputStream.getChannel();
             downloadForgeFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
@@ -1229,15 +1286,15 @@ public class ServerPackHandler {
         } catch (IOException ex) {
             LOG.error("An error occurred downloading Forge.", ex);
 
-            if (new File(String.format("server-packs/%s/forge-installer.jar", destination)).exists()) {
+            if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
 
-                if (new File(String.format("server-packs/%s/forge-installer.jar", destination)).delete()) {
+                if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination)).delete()) {
                     LOG.error("Deleted incomplete Forge-installer...");
                 }
             }
         }
 
-        if (new File(String.format("server-packs/%s/forge-installer.jar", destination)).exists()) {
+        if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
             downloaded = true;
         }
         return downloaded;
@@ -1276,21 +1333,22 @@ public class ServerPackHandler {
             try {
 
                 Files.copy(
-                        Paths.get(String.format("server-packs/%s/forge-%s-%s.jar", destination, minecraftVersion, modLoaderVersion)),
-                        Paths.get(String.format("server-packs/%s/forge.jar", destination)),
+                        Paths.get(String.format("%s/%s/forge-%s-%s.jar", getSERVER_PACKS_DIR(), destination, minecraftVersion, modLoaderVersion)),
+                        Paths.get(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), destination)),
                         REPLACE_EXISTING);
 
                 boolean isOldJarDeleted = (new File(
-                        String.format("server-packs/%s/forge-%s-%s.jar",
+                        String.format("%s/%s/forge-%s-%s.jar",
+                                getSERVER_PACKS_DIR(),
                                 destination,
                                 minecraftVersion,
                                 modLoaderVersion))).delete();
 
                 boolean isInstallerDeleted = forgeInstaller.delete();
 
-                boolean isInstallerLogDeleted = new File(String.format("server-packs/%s/installer.log", destination)).delete();
+                boolean isInstallerLogDeleted = new File(String.format("%s/%s/installer.log", getSERVER_PACKS_DIR(), destination)).delete();
 
-                if ((isOldJarDeleted) && (new File(String.format("server-packs/%s/forge.jar", destination)).exists())) {
+                if ((isOldJarDeleted) && (new File(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), destination)).exists())) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename"));
                 } else {

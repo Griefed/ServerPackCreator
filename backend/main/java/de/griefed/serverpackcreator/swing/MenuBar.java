@@ -83,12 +83,13 @@ public class MenuBar extends Component {
 
     private final JMenuBar MENUBAR = new JMenuBar();
 
-    private final File PROPERTIESFILE = new File("serverpackcreator.properties");
+    private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
 
     private final String HELPWINDOWTEXT;
     private final String ABOUTWINDOWTEXT;
     private final String FILETOOLARGETEXT;
     private final String FILETOOLARGETITLE;
+    private final String SERVER_PACKS_DIR;
 
     private final String[] JAVAARGSOPTIONS = new String[4];
     private final String[] JAVAARGSSELECTIONS = new String[2];
@@ -97,6 +98,32 @@ public class MenuBar extends Component {
     private final String[] HELPSELECTIONS = new String[13];
 
     private final JTextField JAVAARGS = new JTextField();
+
+    private final StyledDocument helpWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument aboutWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument configWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument spcLogWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument fileTooLargeWindowDocument = new DefaultStyledDocument();
+
+    private final SimpleAttributeSet aboutAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet helpAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet configAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet spcLogAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet fileTooLargeAttributeSet = new SimpleAttributeSet();
+
+    private final JTextPane helpWindowTextPane = new JTextPane(helpWindowDocument);
+    private final JTextPane aboutWindowTextPane = new JTextPane(aboutWindowDocument);
+    private final JTextPane configWindowTextPane = new JTextPane(configWindowDocument);
+    private final JTextPane spcLogWindowTextPane = new JTextPane(spcLogWindowDocument);
+    private final JTextPane fileTooLargeWindowTextPane = new JTextPane();
+
+    private final MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+    private final MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
+    private final MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
+
+    private final JTextArea helpTextArea = new JTextArea();
+
+    private final JPanel helpPanel = new JPanel();
 
     private Properties serverPackCreatorProperties;
 
@@ -136,32 +163,9 @@ public class MenuBar extends Component {
 
     private JFileChooser configChooser;
 
-    private final StyledDocument helpWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument aboutWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument configWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument spcLogWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument fileTooLargeWindowDocument = new DefaultStyledDocument();
-
-    private final SimpleAttributeSet aboutAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet helpAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet configAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet spcLogAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet fileTooLargeAttributeSet = new SimpleAttributeSet();
-
-    private final JTextPane helpWindowTextPane = new JTextPane(helpWindowDocument);
-    private final JTextPane aboutWindowTextPane = new JTextPane(aboutWindowDocument);
-    private final JTextPane configWindowTextPane = new JTextPane(configWindowDocument);
-    private final JTextPane spcLogWindowTextPane = new JTextPane(spcLogWindowDocument);
-    private final JTextPane fileTooLargeWindowTextPane = new JTextPane();
-
-    private final MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
-    private final MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
-    private final MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
-
     private DefaultComboBoxModel<String> helpComboBoxModel;
     private JComboBox<String> helpComboBox;
-    private final JTextArea helpTextArea = new JTextArea();
-    private final JPanel helpPanel = new JPanel();
+
 
     /**
      * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
@@ -394,6 +398,36 @@ public class MenuBar extends Component {
         helpPanel.setPreferredSize(HELPDIMENSION);
         helpPanel.setMaximumSize(HELPDIMENSION);
 
+        String tempDir = null;
+        try {
+            tempDir = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+        } catch (NullPointerException npe) {
+            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+            tempDir = "server-packs";
+        } finally {
+            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
+                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks",tempDir);
+                SERVER_PACKS_DIR = tempDir;
+
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
+                    serverPackCreatorProperties.store(outputStream, null);
+                } catch (IOException ex) {
+                    LOG.error("Couldn't write properties-file.", ex);
+                }
+
+            } else {
+                SERVER_PACKS_DIR = "server-packs";
+            }
+        }
+    }
+
+    /**
+     * Getter for the directory in which server-packs will be generated and stored in.
+     * @author Griefed
+     * @return String. Returns the path to the server-packs directory as a string.
+     */
+    public String getSERVER_PACKS_DIR() {
+        return SERVER_PACKS_DIR;
     }
 
     /**
@@ -401,8 +435,8 @@ public class MenuBar extends Component {
      * @author Griefed
      * @return File. Returns the serverpackcreator.properties-file.
      */
-    File getPropertiesFile() {
-        return PROPERTIESFILE;
+    public File getFILE_SERVERPACKCREATOR_PROPERTIES() {
+        return FILE_SERVERPACKCREATOR_PROPERTIES;
     }
 
     /**
@@ -866,7 +900,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
 
                     serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
                     serverPackCreatorProperties.store(outputStream, null);
@@ -889,7 +923,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
 
                     serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
                     serverPackCreatorProperties.store(outputStream, null);
@@ -1014,15 +1048,7 @@ public class MenuBar extends Component {
         LOG.debug("Clicked open server packs directory.");
 
         try {
-            Desktop.getDesktop().open(
-                    new File(
-                            applicationHome.getSource().toString().replace("\\","/")
-                                    .replace(applicationHome.getSource().toString()
-                                            .substring(
-                                                    applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                    .replace("\\","/")
-                                    + "/server-packs")
-            );
+            Desktop.getDesktop().open(new File(getSERVER_PACKS_DIR()));
         } catch (IOException ex) {
             LOG.error("Error opening file explorer for server-packs.", ex);
         }
