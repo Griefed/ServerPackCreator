@@ -618,7 +618,7 @@ public class ConfigurationHandler {
 
                 if (displayName != null && projectName != null) {
 
-                    configurationModel.setModpackDir(String.format("./%s/%s", projectName, displayName));
+                    configurationModel.setModpackDir(String.format("./work/modpacks/%s/%s", projectName, displayName));
 
                     if (CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID())) {
                         try {
