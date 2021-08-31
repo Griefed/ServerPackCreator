@@ -928,11 +928,6 @@ public class TabCreateServerPack extends JComponent {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
 
-            SwingUtilities.invokeLater(() -> {
-
-
-                    });
-
             final ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.execute(() -> {
 
@@ -1062,28 +1057,49 @@ public class TabCreateServerPack extends JComponent {
             TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
 
             try {
+                String minecraftVersion;
+                try {
+                    minecraftVersion = config.getString("minecraftVersion");
+                } catch (NullPointerException npe) {
+                    minecraftVersion = "1.17.1";
+                }
+
+                if (minecraftVersion.equals("")) {
+                    minecraftVersion = "1.17.1";
+                }
+
                 String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
-                if (!config.getString("minecraftVersion").equals("")) {
-                    for (int i = 0; i < mcver.length; i++) {
-                        if (mcver[i].equals(config.getString("minecraftVersion"))) {
-                            COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
-                            chosenMinecraftVersion = config.getString("minecraftVersion");
-                        }
+                for (int i = 0; i < mcver.length; i++) {
+                    if (mcver[i].equals(minecraftVersion)) {
+                        COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
+                        chosenMinecraftVersion = minecraftVersion;
                     }
                 }
+
             } catch (NullPointerException ex) {
                 LOG.error("Error parsing minecraft-version from configfile: " + configFile, ex);
             }
 
             try {
-                String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
-                String[] forgever = VERSIONLISTER.getForgeMeta().get(config.getString("minecraftVersion"));
+
+                String modloader;
+                try {
+                    if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
+                        modloader = "Fabric";
+                    } else if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Forge")) {
+                        modloader = "Forge";
+                    } else {
+                        modloader = "Forge";
+                    }
+                } catch (NullPointerException | ConfigException ex) {
+                    modloader = "Forge";
+                }
 
                 String modloaderver = config.getString("modLoaderVersion");
+                
+                if (modloader.equals("Fabric")) {
 
-                changeForgeVersionListDependingOnMinecraftVersion(config.getString("minecraftVersion"));
-
-                if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
+                    String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
 
                     updateModloaderGuiComponents(true, false, "Fabric");
 
@@ -1097,6 +1113,8 @@ public class TabCreateServerPack extends JComponent {
                     }
 
                 } else {
+                    String[] forgever = VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion);
+                    changeForgeVersionListDependingOnMinecraftVersion(chosenMinecraftVersion);
 
                     updateModloaderGuiComponents(false, true, "Forge");
 
