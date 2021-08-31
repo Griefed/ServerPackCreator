@@ -39,7 +39,10 @@ import java.util.Properties;
 public class TabModloaderInstallerLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+
     private Properties serverPackCreatorProperties;
+
+    private JTextArea textArea;
 
     /**
      * <strong>Constructor</strong><p>
@@ -69,8 +72,6 @@ public class TabModloaderInstallerLog extends JComponent {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
-
-    private JTextArea textArea;
 
     /**
      * Create the tab for the modloader_installer.log tailer in a JScrollPane with an always available vertical scrollbar

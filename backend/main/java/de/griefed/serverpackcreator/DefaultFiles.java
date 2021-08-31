@@ -82,6 +82,17 @@ public class DefaultFiles {
     private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+
+    private final File FILE_CONFIG = new File("serverpackcreator.conf");
+    private final File FILE_CONFIG_OLD = new File("creator.conf");
+    private final File FILE_PROPERTIES = new File("server.properties");
+    private final File FILE_ICON = new File("server-icon.png");
+    private final File MANIFEST_MINECRAFT = new File("minecraft-manifest.json");
+    private final File MANIFEST_FORGE = new File("forge-manifest.json");
+    private final File MANIFEST_FABRIC = new File("fabric-manifest.xml");
+    private final File MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
+    //private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
+
     private Properties serverPackCreatorProperties;
 
     /**
@@ -113,16 +124,6 @@ public class DefaultFiles {
 
         filesSetup();
     }
-
-    private final File FILE_CONFIG = new File("serverpackcreator.conf");
-    private final File FILE_CONFIG_OLD = new File("creator.conf");
-    private final File FILE_PROPERTIES = new File("server.properties");
-    private final File FILE_ICON = new File("server-icon.png");
-    private final File MANIFEST_MINECRAFT = new File("minecraft-manifest.json");
-    private final File MANIFEST_FORGE = new File("forge-manifest.json");
-    private final File MANIFEST_FABRIC = new File("fabric-manifest.xml");
-    private final File MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
-    //private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
 
     /**
      * Getter for serverpackcreator.conf.

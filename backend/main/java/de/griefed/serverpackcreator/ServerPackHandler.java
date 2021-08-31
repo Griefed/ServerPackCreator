@@ -88,6 +88,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  */
 @Component
 public class ServerPackHandler {
+
     private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
     private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
@@ -96,6 +97,18 @@ public class ServerPackHandler {
     private final AddonsHandler ADDONSHANDLER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final VersionLister VERSIONLISTER;
+
+    private final File FILE_PROPERTIES = new File("server.properties");
+    private final File FILE_ICON = new File("server-icon.png");
+    private final File FILE_FORGE_WINDOWS = new File("start-forge.bat");
+    private final File FILE_FORGE_LINUX = new File("start-forge.sh");
+    private final File FILE_FABRIC_WINDOWS = new File("start-fabric.bat");
+    private final File FILE_FABRIC_LINUX = new File("start-fabric.sh");
+
+    private final String START_FABRIC_SHELL = "#!/usr/bin/env bash\njava %s -jar fabric-server-launch.jar";
+    private final String START_FABRIC_BATCH = "java %s -jar fabric-server-launch.jar\npause";
+    private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
+    private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
 
     private Properties serverPackCreatorProperties;
 
@@ -159,19 +172,6 @@ public class ServerPackHandler {
         }
 
     }
-
-    private final File FILE_PROPERTIES = new File("server.properties");
-    private final File FILE_ICON = new File("server-icon.png");
-    private final File FILE_FORGE_WINDOWS = new File("start-forge.bat");
-    private final File FILE_FORGE_LINUX = new File("start-forge.sh");
-    private final File FILE_FABRIC_WINDOWS = new File("start-fabric.bat");
-    private final File FILE_FABRIC_LINUX = new File("start-fabric.sh");
-
-    private final String START_FABRIC_SHELL = "#!/usr/bin/env bash\njava %s -jar fabric-server-launch.jar";
-    private final String START_FABRIC_BATCH = "java %s -jar fabric-server-launch.jar\npause";
-
-    private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
-    private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
 
     /**
      * Getter for the String which will make up the shell-start-script for Fabric servers.

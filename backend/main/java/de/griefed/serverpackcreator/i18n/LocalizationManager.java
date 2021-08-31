@@ -52,8 +52,37 @@ import java.util.*;
 public class LocalizationManager {
 
     private static final Logger LOG = LogManager.getLogger(LocalizationManager.class);
+
     private final File PROPERTIESFILE = new File("serverpackcreator.properties");
+
+    /**
+     * Current language of ServerPackCreator, mapped for easier further reference.
+     */
+    private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>();
+
+    /**
+     * Keys that used for current language mapping.
+     */
+    private final String MAP_PATH_LANGUAGE = "language";
+    private final String MAP_PATH_COUNTRY = "country";
+
+    /**
+     * Languages supported by ServerPackCreator.
+     */
+    private final String[] SUPPORTED_LANGUAGES = new String[] {
+            "en_us",
+            "uk_ua",
+            "de_de"
+    };
+
+    /**
+     * Localized strings which ServerPackCreator uses.
+     */
+    private ResourceBundle localeResources;
+
+
     private Properties serverPackCreatorProperties;
+
 
     /**
      * Constructor for our LocalizationManager.
@@ -72,31 +101,6 @@ public class LocalizationManager {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }
     }
-
-    /**
-     * Current language of ServerPackCreator, mapped for easier further reference.
-     */
-    private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>();
-
-    /**
-     * Localized strings which ServerPackCreator uses.
-     */
-    private ResourceBundle localeResources;
-
-    /**
-     * Keys that used for current language mapping.
-     */
-    private final String MAP_PATH_LANGUAGE = "language";
-    private final String MAP_PATH_COUNTRY = "country";
-
-    /**
-     * Languages supported by ServerPackCreator.
-     */
-    private final String[] SUPPORTED_LANGUAGES = {
-            "en_us",
-            "uk_ua",
-            "de_de"
-    };
 
     /**
      * Getter for the array of languages supported by ServerPackCreator.

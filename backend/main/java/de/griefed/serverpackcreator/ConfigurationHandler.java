@@ -82,12 +82,24 @@ import java.util.*;
  */
 @Component
 public class ConfigurationHandler {
+
     private static final Logger LOG = LogManager.getLogger(ConfigurationHandler.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionLister VERSIONLISTER;
+
+    private final File FILE_CONFIG_OLD = new File("creator.conf");
+    private final File FILE_CONFIG = new File("serverpackcreator.conf");
+
     private Properties serverPackCreatorProperties;
+
+    private List<String> FALLBACKMODSLIST = new ArrayList<>();
+
+    private int projectID;
+    private int projectFileID;
+
+    private Config config;
 
     /**
      * <strong>Constructor</strong><p>
@@ -137,9 +149,6 @@ public class ConfigurationHandler {
         setFALLBACKMODSLIST();
     }
 
-    private final File FILE_CONFIG_OLD = new File("creator.conf");
-    private final File FILE_CONFIG = new File("serverpackcreator.conf");
-
     /**
      * Setter for the fallback modslist in case the users did not specify any clientside-only mods. Reads <code>de.griefed.serverpackcreator.configuration.fallbackmodslist</code>
      * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished,ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings,EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft,JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu,preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales,WorldNameRandomizer</code>
@@ -178,18 +187,6 @@ public class ConfigurationHandler {
         }
 
     }
-
-    /**
-     * If you wish to expand this list, open a feature request issue on <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a>
-     * with the mod(s) you want to see added.
-     */
-    private List<String> FALLBACKMODSLIST = new ArrayList<>();
-
-    private int
-            projectID,
-            projectFileID;
-
-    private Config config;
 
     public ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();

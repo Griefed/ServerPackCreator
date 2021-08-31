@@ -67,6 +67,7 @@ import java.util.concurrent.Executors;
  * @author Griefed
  */
 public class TabCreateServerPack extends JComponent {
+
     private static final Logger LOG = LogManager.getLogger(TabCreateServerPack.class);
 
     private final ConfigurationHandler CONFIGURATIONHANDLER;
@@ -76,13 +77,80 @@ public class TabCreateServerPack extends JComponent {
     private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
 
+    private final StyledDocument serverPackGeneratedDocument = new DefaultStyledDocument();
+
+    private final SimpleAttributeSet serverPackGeneratedAttributeSet = new SimpleAttributeSet();
+
+    private final JTextPane serverPackGeneratedTextPane = new JTextPane(serverPackGeneratedDocument);
+
+    private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/folder.png")));
+    private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/start_generation.png")));
+    private final Dimension FOLDERBUTTONDIMENTION = new Dimension(24,24);
+    private final Dimension STARTDIMENSION = new Dimension(64,64);
+    private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
+
+    private final JButton BUTTON_MODPACKDIRECTORY = new JButton();
+    private final JButton BUTTON_CLIENTSIDEMODS = new JButton();
+    private final JButton BUTTON_COPYDIRECTORIES = new JButton();
+    private final JButton BUTTON_JAVAPATH = new JButton();
+    private final JButton BUTTON_GENERATESERVERPACK = new JButton();
+
+    private final ButtonGroup BUTTONGROUP_MODLOADERRADIOBUTTONS = new ButtonGroup();
+
+    private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20,10,0,0);
+    private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0,10,0,0);
+    private final Insets ZERO_ONEHUNDRET_ZERO_ZERO = new Insets(0,100,0,0);
+    private final Insets TEN_TEN_ZERO_ZERO = new Insets(10,10,0,0);
+    private final Insets ZERO_TEN_ZERO_TEN = new Insets(0,10,0,10);
+    private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5,0,5,0);
+
+    private final GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
+
+    private final JComponent CREATESERVERPACKPANEL = new JPanel(false);
+
+    private final MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+
+    private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
+    private final JComboBox<String> COMBOBOX_FORGEVERSIONS = new JComboBox<>();
+    private final JComboBox<String> COMBOBOX_FABRICVERSIONS = new JComboBox<>();
+
+    private final JTextField TEXTFIELD_MODPACKDIRECTORY = new JTextField("");
+    private final JTextField TEXTFIELD_CLIENTSIDEMODS = new JTextField("");
+    private final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
+    private final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
+
     private Properties serverPackCreatorProperties;
 
-    private StyledDocument serverPackGeneratedDocument = new DefaultStyledDocument();
+    private JLabel labelGenerateServerPack;
+    private JLabel labelModpackDir;
+    private JLabel labelClientMods;
+    private JLabel labelCopyDirs;
+    private JLabel labelJavaPath;
+    private JLabel labelMinecraftVersion;
+    private JLabel labelModloader;
+    private JLabel labelModloaderVersion;
 
-    private SimpleAttributeSet serverPackGeneratedAttributeSet = new SimpleAttributeSet();
+    private DefaultComboBoxModel<String> forgeComboBoxModel;
 
-    private JTextPane serverPackGeneratedTextPane = new JTextPane(serverPackGeneratedDocument);
+    private JFileChooser modpackDirChooser;
+    private JFileChooser clientModsChooser;
+    private JFileChooser copyDirsChooser;
+    private JFileChooser javaChooser;
+
+    private JCheckBox checkBoxServer;
+    private JCheckBox checkBoxIcon;
+    private JCheckBox checkBoxProperties;
+    private JCheckBox checkBoxScripts;
+    private JCheckBox checkBoxZIP;
+
+    private String chosenModloader;
+    private String chosenMinecraftVersion;
+    private String chosenFabricVersion;
+    private String chosenForgeVersion;
+    private String javaArgs = "empty";
+
+    private JRadioButton forgeRadioButton;
+    private JRadioButton fabricRadioButton;
 
     /**
      * <strong>Constructor</strong><p>
@@ -161,73 +229,6 @@ public class TabCreateServerPack extends JComponent {
         serverPackGeneratedTextPane.setCharacterAttributes(serverPackGeneratedAttributeSet, true);
         StyleConstants.setAlignment(serverPackGeneratedAttributeSet, StyleConstants.ALIGN_LEFT);
     }
-
-    private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/folder.png")));
-    private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/start_generation.png")));
-    private final Dimension FOLDERBUTTONDIMENTION = new Dimension(24,24);
-    private final Dimension STARTDIMENSION = new Dimension(64,64);
-    private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
-
-    private final JButton BUTTON_MODPACKDIRECTORY = new JButton();
-    private final JButton BUTTON_CLIENTSIDEMODS = new JButton();
-    private final JButton BUTTON_COPYDIRECTORIES = new JButton();
-    private final JButton BUTTON_JAVAPATH = new JButton();
-    private final JButton BUTTON_GENERATESERVERPACK = new JButton();
-
-    private final ButtonGroup BUTTONGROUP_MODLOADERRADIOBUTTONS = new ButtonGroup();
-
-    private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20,10,0,0);
-    private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0,10,0,0);
-    private final Insets ZERO_ONEHUNDRET_ZERO_ZERO = new Insets(0,100,0,0);
-    private final Insets TEN_TEN_ZERO_ZERO = new Insets(10,10,0,0);
-    private final Insets ZERO_TEN_ZERO_TEN = new Insets(0,10,0,10);
-    private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5,0,5,0);
-
-    private final GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
-
-    private final JComponent CREATESERVERPACKPANEL = new JPanel(false);
-
-    private MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
-
-    private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
-    private final JComboBox<String> COMBOBOX_FORGEVERSIONS = new JComboBox<>();
-    private final JComboBox<String> COMBOBOX_FABRICVERSIONS = new JComboBox<>();
-
-    private final JTextField TEXTFIELD_MODPACKDIRECTORY = new JTextField("");
-    private final JTextField TEXTFIELD_CLIENTSIDEMODS = new JTextField("");
-    private final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
-    private final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
-
-    private JLabel labelGenerateServerPack;
-    private JLabel labelModpackDir;
-    private JLabel labelClientMods;
-    private JLabel labelCopyDirs;
-    private JLabel labelJavaPath;
-    private JLabel labelMinecraftVersion;
-    private JLabel labelModloader;
-    private JLabel labelModloaderVersion;
-
-    private DefaultComboBoxModel<String> forgeComboBoxModel;
-
-    private JFileChooser modpackDirChooser;
-    private JFileChooser clientModsChooser;
-    private JFileChooser copyDirsChooser;
-    private JFileChooser javaChooser;
-
-    private JCheckBox checkBoxServer;
-    private JCheckBox checkBoxIcon;
-    private JCheckBox checkBoxProperties;
-    private JCheckBox checkBoxScripts;
-    private JCheckBox checkBoxZIP;
-
-    private String chosenModloader;
-    private String chosenMinecraftVersion;
-    private String chosenFabricVersion;
-    private String chosenForgeVersion;
-    private String javaArgs = "empty";
-
-    private JRadioButton forgeRadioButton;
-    private JRadioButton fabricRadioButton;
 
     /**
      * Getter for the chosen modloader from the JRadioButtons.
@@ -1076,7 +1077,6 @@ public class TabCreateServerPack extends JComponent {
 
             try {
                 String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
-                //String[] forgever = VERSIONLISTER.getForgeVersionsAsArray(config.getString("minecraftVersion"));
                 String[] forgever = VERSIONLISTER.getForgeMeta().get(config.getString("minecraftVersion"));
 
                 String modloaderver = config.getString("modLoaderVersion");

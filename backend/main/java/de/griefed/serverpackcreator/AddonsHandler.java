@@ -61,9 +61,10 @@ public class AddonsHandler {
 
     private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
 
+    private final LocalizationManager LOCALIZATIONMANAGER;
+
     private List<String> listOfAddons;
     private List<String> listOfServerPackAddons;
-    private final LocalizationManager LOCALIZATIONMANAGER;
 
     private Properties serverPackCreatorProperties;
 

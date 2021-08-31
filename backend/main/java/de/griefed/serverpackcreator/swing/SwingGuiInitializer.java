@@ -55,6 +55,7 @@ import java.util.Properties;
  * @author Griefed
  */
 public class SwingGuiInitializer extends JPanel {
+
     private static final Logger LOG = LogManager.getLogger(SwingGuiInitializer.class);
 
     private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/banner.png")));

@@ -77,6 +77,7 @@ public class Main {
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
     private static final File log4j2xml = new File("log4j2.xml");
+
     private static final File properties = new File("serverpackcreator.properties");
 
     /**

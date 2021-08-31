@@ -39,7 +39,10 @@ import java.util.Properties;
 public class TabServerPackCreatorLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+
     private Properties serverPackCreatorProperties;
+
+    private JTextArea textArea;
 
     /**
      * <strong>Constructor</strong><p>
@@ -68,8 +71,6 @@ public class TabServerPackCreatorLog extends JComponent {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
-
-    private JTextArea textArea;
 
     /**
      * Create the tab for the serverpackcreator.log tailer in a JScrollPane with an always available vertical scrollbar

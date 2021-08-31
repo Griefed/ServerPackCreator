@@ -136,32 +136,32 @@ public class MenuBar extends Component {
 
     private JFileChooser configChooser;
 
-    private StyledDocument helpWindowDocument = new DefaultStyledDocument();
-    private StyledDocument aboutWindowDocument = new DefaultStyledDocument();
-    private StyledDocument configWindowDocument = new DefaultStyledDocument();
-    private StyledDocument spcLogWindowDocument = new DefaultStyledDocument();
-    private StyledDocument fileTooLargeWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument helpWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument aboutWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument configWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument spcLogWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument fileTooLargeWindowDocument = new DefaultStyledDocument();
 
-    private SimpleAttributeSet aboutAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet helpAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet configAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet spcLogAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet fileTooLargeAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet aboutAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet helpAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet configAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet spcLogAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet fileTooLargeAttributeSet = new SimpleAttributeSet();
 
-    private JTextPane helpWindowTextPane = new JTextPane(helpWindowDocument);
-    private JTextPane aboutWindowTextPane = new JTextPane(aboutWindowDocument);
-    private JTextPane configWindowTextPane = new JTextPane(configWindowDocument);
-    private JTextPane spcLogWindowTextPane = new JTextPane(spcLogWindowDocument);
-    private JTextPane fileTooLargeWindowTextPane = new JTextPane();
+    private final JTextPane helpWindowTextPane = new JTextPane(helpWindowDocument);
+    private final JTextPane aboutWindowTextPane = new JTextPane(aboutWindowDocument);
+    private final JTextPane configWindowTextPane = new JTextPane(configWindowDocument);
+    private final JTextPane spcLogWindowTextPane = new JTextPane(spcLogWindowDocument);
+    private final JTextPane fileTooLargeWindowTextPane = new JTextPane();
 
-    private MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
-    private MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
-    private MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
+    private final MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+    private final MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
+    private final MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
 
     private DefaultComboBoxModel<String> helpComboBoxModel;
     private JComboBox<String> helpComboBox;
-    private JTextArea helpTextArea = new JTextArea();
-    private JPanel helpPanel = new JPanel();
+    private final JTextArea helpTextArea = new JTextArea();
+    private final JPanel helpPanel = new JPanel();
 
     /**
      * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
@@ -565,7 +565,7 @@ public class MenuBar extends Component {
 
     /**
      * Upon button-press, uploads the serverpackcreator.log-file to HasteBin and display a dialog asking the user whether
-     * they want to open the URL in their default browser or copy the link to their clipboard. If the filesize exceeds 10MB,
+     * they want to open the URL in their default browser or copy the link to their clipboard. If the filesize exceeds 10 MB,
      * a warning is displayed, telling the user about filesize limitations of HasteBin.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
@@ -676,7 +676,7 @@ public class MenuBar extends Component {
     }
 
     /**
-     * Opens a dialog informing the user that a file exceeds 10MB in size.
+     * Opens a dialog informing the user that a file exceeds 10 MB in size.
      * @author Griefed
      */
     private void fileTooLargeDialog() {
@@ -743,7 +743,7 @@ public class MenuBar extends Component {
 
     /**
      * Upon button-press, open a dialog which allows the user to specify JVM flags/Java args for the start-scripts which
-     * can be created by ServerPackCreator. Provides options to use Aikars flags, clear the args, confirm the current
+     * can be created by ServerPackCreator. Provide options to use Aikars flags, clear the args, confirm the current
      * configuration and save it as well as simply canceling the dialog.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
@@ -1149,10 +1149,10 @@ public class MenuBar extends Component {
     }
 
     /**
-     * Checks the filesize of the given file whether it is smaller or bigger than 10MB.
+     * Checks the filesize of the given file whether it is smaller or bigger than 10 MB.
      * @author Griefed
      * @param fileToCheck The file or directory to check.
-     * @return Boolean. True if the file is smaller, false if the file is bigger than 10MB.
+     * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
      */
     private boolean checkFileSize(File fileToCheck) {
         long fileSize = FileUtils.sizeOf(fileToCheck);
