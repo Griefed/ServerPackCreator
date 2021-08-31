@@ -81,10 +81,8 @@ public class Main {
     private static final File properties = new File("serverpackcreator.properties");
 
     /**
-     * Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.<p>
-     * Calls {@link DefaultFiles#filesSetup()} so all default files are available. Calls {@link AddonsHandler#initializeAddons()}
-     * to gather the list of addons to execute after server pack generation.<br>
-     * Checks arguments to determine which mode to enter. Valid arguments are "-lang", "-cli", "-cgen", "-weh" and "-help".<br>
+     * Runs dependency injection and decides which mode to enter depending on the arguments with which ServerPackCreator
+     * is executed. Valid arguments are "-lang", "-cli", "-cgen", "-weh" and "-help".<br>
      * Lists a couple of environment variables important for reporting issues.
      * @author Griefed
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
@@ -124,6 +122,44 @@ public class Main {
             // Check local lang.properties file for locale setting.
             LOCALIZATIONMANAGER.checkLocaleFile();
         }
+
+        //Print system information to console and logs.
+        LOG.debug("Gathering system information to include in log to make debugging easier.");
+        ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
+        String jarPath = home.getSource().toString().replace("\\", "/");
+        String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
+        String javaVersion = System.getProperty("java.version");
+        String osArch = System.getProperty("os.arch");
+        String osName = System.getProperty("os.name");
+        String osVersion = System.getProperty("os.version");
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.debug("LOCALIZATIONMANAGER.getLocalizedString(\"main.log.debug.warning\")");
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip3"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip4"));
+        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), jarPath));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), jarName));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"), javaVersion));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osarchitecture"), osArch));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"), osName));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), osVersion));
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
+
+        // Prepare instances for dependency injection
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        VersionLister VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+        AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
+        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
 
         // Print help and information about ServerPackCreator which could help the user figure out what to do.
         if (Arrays.asList(args).contains("-help")) {
@@ -172,55 +208,9 @@ public class Main {
 
             LOG.debug("Help printed. Exiting with code 0.");
             System.exit(0);
-        }
+        } else if (Arrays.asList(args).contains("-cgen")) {
 
-        //noinspection UnusedAssignment
-        String jarPath = null,
-                jarName = null,
-                javaVersion = null,
-                osArch = null,
-                osName = null,
-                osVersion = null;
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.debug("LOCALIZATIONMANAGER.getLocalizedString(\"main.log.debug.warning\")");
-        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
-        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
-        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
-        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip3"));
-        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip4"));
-        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
-
-        //Print system information to console and logs.
-        LOG.debug("Gathering system information to include in log to make debugging easier.");
-        ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
-        jarPath = home.getSource().toString().replace("\\","/");
-        jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
-        javaVersion = System.getProperty("java.version");
-        osArch = System.getProperty("os.arch");
-        osName = System.getProperty("os.name");
-        osVersion = System.getProperty("os.version");
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), jarPath));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), jarName));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"), javaVersion));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osarchitecture"), osArch));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"), osName));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), osVersion));
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
-
-        // Prepare instances for dependency injection
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
-        VersionLister VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
-        AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
-        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
-        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
-        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
-
-        // Start generation of a new configuration file with user input.
-        if (Arrays.asList(args).contains("-cgen")) {
-
+            // Start generation of a new configuration file with user input.
             CONFIGURATIONHANDLER.createConfigurationFile();
 
             ConfigurationModel configurationModel = new ConfigurationModel();
