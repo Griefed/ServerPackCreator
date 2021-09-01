@@ -64,19 +64,20 @@ import java.util.concurrent.Executors;
  * 11.{@link #getChosenModloader()}<br>
  * 12.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
  * 13.{@link #getJavaArgs()}<br>
- * 14.{@link #getSelectedModloaderVersion()}<br>
- * 15.{@link #getSERVER_PACKS_DIR()}<br>
- * 16.{@link #itemEventRadioButtonModloaderFabric(ItemEvent)}<br>
- * 17.{@link #itemEventRadioButtonModloaderForge(ItemEvent)}<br>
- * 18.{@link #loadConfig(File)}<br>
- * 19.{@link #saveConfig(File, boolean)}<br>
- * 20.{@link #selectClientMods(ActionEvent)}<br>
- * 21.{@link #selectCopyDirs(ActionEvent)}<br>
- * 22.{@link #selectJavaInstallation(ActionEvent)}<br>
- * 23.{@link #selectModpackDirectory(ActionEvent)}<br>
- * 24.{@link #setChosenModloader(String)}<br>
- * 25.{@link #setJavaArgs(String)}<br>
- * 26.{@link #updateModloaderGuiComponents(boolean, boolean, String)}<p>
+ * 14.{@link #getJavaPath()}<br>
+ * 15.{@link #getSelectedModloaderVersion()}<br>
+ * 16.{@link #getSERVER_PACKS_DIR()}<br>
+ * 17.{@link #itemEventRadioButtonModloaderFabric(ItemEvent)}<br>
+ * 18.{@link #itemEventRadioButtonModloaderForge(ItemEvent)}<br>
+ * 19.{@link #loadConfig(File)}<br>
+ * 20.{@link #saveConfig(File, boolean)}<br>
+ * 21.{@link #selectClientMods(ActionEvent)}<br>
+ * 22.{@link #selectCopyDirs(ActionEvent)}<br>
+ * 23.{@link #selectJavaInstallation(ActionEvent)}<br>
+ * 24.{@link #selectModpackDirectory(ActionEvent)}<br>
+ * 25.{@link #setChosenModloader(String)}<br>
+ * 26.{@link #setJavaArgs(String)}<br>
+ * 27.{@link #updateModloaderGuiComponents(boolean, boolean, String)}<p>
  * This class creates the tab which displays the labels, textfields, buttons and functions in order to create a new
  * server pack. Available are:<br>
  * JLabels and JTextFields for modpackDir, clientMods, copyDirs, javaPath, minecraftVersion, modLoader, modLoaderVersion<br>
@@ -327,10 +328,28 @@ public class TabCreateServerPack extends JComponent {
         }
     }
 
+    /**
+     * Getter for the currently set JVM flags / Java args.
+     * @author Griefed
+     * @return String. Returns the currently set JVM flags / Java args.
+     */
     public String getJavaArgs() {
         return javaArgs;
     }
 
+    /**
+     * Getter for the current text from the currently set Javapath in the Javapath textfield.
+     * @author Griefed
+     * @return String. Returns the current text from the currently set Javapath in the Javapath textfield.
+     */
+    public String getJavaPath() {
+        return TEXTFIELD_JAVAPATH.getText();
+    }
+
+    /**
+     * Setter for the JVM flags / Java args.
+     * @author Griefed
+     */
     public void setJavaArgs(String javaArgs) {
         this.javaArgs = javaArgs;
     }
@@ -969,7 +988,7 @@ public class TabCreateServerPack extends JComponent {
      * Opens a filechooser to select the Java-executable/binary.
      * @author Griefed
      */
-    private void chooseJava() {
+    void chooseJava() {
         javaChooser = new JFileChooser();
 
         if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))).isDirectory()) {
