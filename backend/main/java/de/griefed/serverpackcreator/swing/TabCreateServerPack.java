@@ -1068,14 +1068,15 @@ public class TabCreateServerPack extends JComponent {
                     BUTTON_GENERATESERVERPACK.setEnabled(true);
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
-                    TEXTFIELD_MODPACKDIRECTORY.setText(configurationModel.getModpackDir());
-                    TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));
+                    loadConfig(new File("serverpackcreator.conf"));
+                    /*TEXTFIELD_MODPACKDIRECTORY.setText(configurationModel.getModpackDir());
+                    TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));*/
 
                     serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
                     MATERIALTEXTPANEUI.installUI(serverPackGeneratedTextPane);
 
                     if (JOptionPane.showConfirmDialog(
-                            CREATESERVERPACKPANEL,
+                            FRAME_SERVERPACKCREATOR,
                             serverPackGeneratedTextPane,
                             LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
                             JOptionPane.YES_NO_OPTION,
