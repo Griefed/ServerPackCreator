@@ -623,8 +623,6 @@ public class ConfigurationHandler {
 
                     configurationModel.setModpackDir(String.format("./work/modpacks/%s/%s", getProjectID(), getProjectFileID() + "_" + displayName));
 
-                        //if (CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID())) {
-
                     CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID());
 
                     try {
@@ -687,12 +685,6 @@ public class ConfigurationHandler {
                             getConfigFile(),
                             false
                     );
-
-                        /*} else {
-                            *//* This log is meant to be read by the user, therefore we allow translation. *//*
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.create"));
-                            configHasError = true;
-                        }*/
 
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */

@@ -326,63 +326,75 @@ public class ServerPackHandler {
         // TODO: Once API and webUI are implemented, test parallel runs. Parallel runs MUST be possible.
 
         if (!CONFIGURATIONHANDLER.checkConfiguration(configFileToUse, true, configurationModel)) {
+            if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled").equals("false") &&
+                    new File(String.format("%s/%s",
+                            getSERVER_PACKS_DIR(),
+                            configurationModel.getModpackDir().substring(
+                                    configurationModel.getModpackDir().lastIndexOf("/") + 1))
+                    ).exists()) {
 
-            // Make sure no files from previously generated server packs interrupt us.
-            cleanupEnvironment(configurationModel.getModpackDir());
+                // TODO: Replace with lang key
+                LOG.info("Server pack already exists and overwrite disabled.");
+                return true;
 
-            // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
-
-            // Copy start scripts for specified modloader from server_files to server pack.
-            createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
-
-            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
-            if (configurationModel.getIncludeServerInstallation()) {
-                installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
             } else {
+                // Make sure no files from previously generated server packs interrupt us.
+                cleanupEnvironment(configurationModel.getModpackDir());
+
+                // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
+                copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
+
+                // Copy start scripts for specified modloader from server_files to server pack.
+                createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
+
+                // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
+                if (configurationModel.getIncludeServerInstallation()) {
+                    installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
+                }
+
+                // If true, copy the server-icon.png from server_files to the server pack.
+                if (configurationModel.getIncludeServerIcon()) {
+                    copyIcon(configurationModel.getModpackDir());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
+                }
+
+                // If true, copy the server.properties from server_files to the server pack.
+                if (configurationModel.getIncludeServerProperties()) {
+                    copyProperties(configurationModel.getModpackDir());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
+                }
+
+                // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
+                if (configurationModel.getIncludeZipCreation()) {
+                    zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
+                }
+
+                // Inform user about location of newly generated server pack.
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
+
+                if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
+                } else {
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
+                    ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
+                }
+
+                return true;
             }
-
-            // If true, copy the server-icon.png from server_files to the server pack.
-            if (configurationModel.getIncludeServerIcon()) {
-                copyIcon(configurationModel.getModpackDir());
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
-            }
-
-            // If true, copy the server.properties from server_files to the server pack.
-            if (configurationModel.getIncludeServerProperties()) {
-                copyProperties(configurationModel.getModpackDir());
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
-            }
-
-            // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
-            if (configurationModel.getIncludeZipCreation()) {
-                zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
-            }
-
-            // Inform user about location of newly generated server pack.
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
-
-            if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
-            } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
-                ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
-            }
-
-            return true;
 
         } else {
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -403,62 +415,75 @@ public class ServerPackHandler {
 
         if (!CONFIGURATIONHANDLER.checkConfiguration( true, configurationModel)) {
 
-            // Make sure no files from previously generated server packs interrupt us.
-            cleanupEnvironment(configurationModel.getModpackDir());
+            if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled").equals("false") &&
+                    new File(String.format("%s/%s",
+                            getSERVER_PACKS_DIR(),
+                            configurationModel.getModpackDir().substring(
+                                    configurationModel.getModpackDir().lastIndexOf("/") + 1))
+                    ).exists()) {
 
-            // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
+                // TODO: Replace with lang key
+                LOG.info("Server pack already exists and overwrite disabled.");
+                return true;
 
-            // Copy start scripts for specified modloader from server_files to server pack.
-            createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
-
-            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
-            if (configurationModel.getIncludeServerInstallation()) {
-                installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
             } else {
+                // Make sure no files from previously generated server packs interrupt us.
+                cleanupEnvironment(configurationModel.getModpackDir());
+
+                // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
+                copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
+
+                // Copy start scripts for specified modloader from server_files to server pack.
+                createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
+
+                // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
+                if (configurationModel.getIncludeServerInstallation()) {
+                    installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
+                }
+
+                // If true, copy the server-icon.png from server_files to the server pack.
+                if (configurationModel.getIncludeServerIcon()) {
+                    copyIcon(configurationModel.getModpackDir());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
+                }
+
+                // If true, copy the server.properties from server_files to the server pack.
+                if (configurationModel.getIncludeServerProperties()) {
+                    copyProperties(configurationModel.getModpackDir());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
+                }
+
+                // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
+                if (configurationModel.getIncludeZipCreation()) {
+                    zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
+                }
+
+                // Inform user about location of newly generated server pack.
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
+
+                if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
+                } else {
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
+                    ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
+                }
+
+                return true;
             }
-
-            // If true, copy the server-icon.png from server_files to the server pack.
-            if (configurationModel.getIncludeServerIcon()) {
-                copyIcon(configurationModel.getModpackDir());
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
-            }
-
-            // If true, copy the server.properties from server_files to the server pack.
-            if (configurationModel.getIncludeServerProperties()) {
-                copyProperties(configurationModel.getModpackDir());
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
-            }
-
-            // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
-            if (configurationModel.getIncludeZipCreation()) {
-                zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
-            }
-
-            // Inform user about location of newly generated server pack.
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/")+1)));
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
-
-            if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
-            } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
-                ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
-            }
-
-            return true;
 
         } else {
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -1057,7 +1082,7 @@ public class ServerPackHandler {
 
         generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
 
-        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpackcleanup.enabled").equalsIgnoreCase("true")) {
+        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled").equalsIgnoreCase("true")) {
             cleanUpServerPack(
                     fabricInstaller,
                     forgeInstaller,
