@@ -131,7 +131,7 @@ public class TabCreateServerPack extends JComponent {
 
     private final JComponent CREATESERVERPACKPANEL = new JPanel(false);
 
-    private final MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+    private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
 
     private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
     private final JComboBox<String> COMBOBOX_FORGEVERSIONS = new JComboBox<>();
@@ -249,12 +249,8 @@ public class TabCreateServerPack extends JComponent {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
 
-        serverPackGeneratedTextPane.setOpaque(false);
-        serverPackGeneratedTextPane.setEditable(false);
-        StyleConstants.setBold(serverPackGeneratedAttributeSet, true);
-        StyleConstants.setFontSize(serverPackGeneratedAttributeSet, 14);
-        serverPackGeneratedTextPane.setCharacterAttributes(serverPackGeneratedAttributeSet, true);
-        StyleConstants.setAlignment(serverPackGeneratedAttributeSet, StyleConstants.ALIGN_LEFT);
+
+
 
         String tempDir = null;
         try {
@@ -662,7 +658,19 @@ public class TabCreateServerPack extends JComponent {
 
 // --------------------------------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
-
+        serverPackGeneratedTextPane.setOpaque(false);
+        serverPackGeneratedTextPane.setEditable(false);
+        StyleConstants.setBold(serverPackGeneratedAttributeSet, true);
+        StyleConstants.setFontSize(serverPackGeneratedAttributeSet, 14);
+        serverPackGeneratedTextPane.setCharacterAttributes(serverPackGeneratedAttributeSet, true);
+        StyleConstants.setAlignment(serverPackGeneratedAttributeSet, StyleConstants.ALIGN_LEFT);
+        try {
+            serverPackGeneratedDocument.insertString(0,
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
+                    serverPackGeneratedAttributeSet);
+        } catch (BadLocationException ex) {
+            LOG.error("Error inserting text into aboutDocument.", ex);
+        }
         loadConfig(new File("serverpackcreator.conf"));
 
         return CREATESERVERPACKPANEL;
@@ -1054,20 +1062,12 @@ public class TabCreateServerPack extends JComponent {
 
                     BUTTON_GENERATESERVERPACK.setEnabled(true);
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+
                     TEXTFIELD_MODPACKDIRECTORY.setText(configurationModel.getModpackDir());
                     TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));
 
-                    try {
-                        serverPackGeneratedDocument.insertString(0, String.format("%s\n%s",
-                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                                String.format("%s/%s", getSERVER_PACKS_DIR(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))),
-                                serverPackGeneratedAttributeSet);
-                    } catch (BadLocationException ex) {
-                        LOG.error("Error inserting text into aboutDocument.", ex);
-                    }
-
                     serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
-                    materialTextPaneUI.installUI(serverPackGeneratedTextPane);
+                    MATERIALTEXTPANEUI.installUI(serverPackGeneratedTextPane);
 
                     if (JOptionPane.showConfirmDialog(
                             CREATESERVERPACKPANEL,
@@ -1083,6 +1083,7 @@ public class TabCreateServerPack extends JComponent {
                         }
 
                     }
+
                     BUTTON_GENERATESERVERPACK.setEnabled(true);
                     System.gc();
                     System.runFinalization();
@@ -1090,6 +1091,7 @@ public class TabCreateServerPack extends JComponent {
                     executorService.shutdown();
 
                 } else {
+
                     tailer.stop();
 
                     System.gc();
@@ -1099,6 +1101,7 @@ public class TabCreateServerPack extends JComponent {
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
                     executorService.shutdown();
+
                 }
             });
 
