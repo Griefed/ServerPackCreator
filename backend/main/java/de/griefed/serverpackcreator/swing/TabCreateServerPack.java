@@ -494,6 +494,7 @@ public class TabCreateServerPack extends JComponent {
         //Checkbox installServer
         checkBoxServer = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver"),true);
         checkBoxServer.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.tip"));
+        checkBoxServer.addActionListener(this::actionEventCheckBoxServer);
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 14;
@@ -639,6 +640,46 @@ public class TabCreateServerPack extends JComponent {
         loadConfig(new File("serverpackcreator.conf"));
 
         return CREATESERVERPACKPANEL;
+    }
+
+    /**
+     * Checks whether the checkbox for the modloader-server installation is selected and whether the path to the Java-installation
+     * is defined. If true and empty, a message is displayed, warning the user that Javapath needs to be defined for the
+     * modloader-server installation to work. If "Yes" is clicked, a filechooser will open where the user can select their
+     * Java-executable/binary. If "No" is selected, the user is warned about the consequences of not setting the Javapath.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventCheckBoxServer(ActionEvent actionEvent) {
+        // TODO: Replace with lang keys
+        if (checkBoxServer.isSelected() && TEXTFIELD_JAVAPATH.getText().equals("")) {
+            switch (JOptionPane.showConfirmDialog(
+                    CREATESERVERPACKPANEL,
+                    "Install modlaoder-server selected, but no path to Java defined. Choose now?",
+                    "Javapath not sespecified!",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            )) {
+                case 0:
+
+                    chooseJava();
+                    break;
+
+                case 1:
+
+                    JOptionPane.showMessageDialog(
+                            CREATESERVERPACKPANEL,
+                            "Caution: Javapath needs to be defined in order to install the modloader-server!",
+                            "WARNING!",
+                            JOptionPane.ERROR_MESSAGE,
+                            null
+                    );
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 
     /**
@@ -884,7 +925,14 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void selectJavaInstallation(ActionEvent event) {
+        chooseJava();
+    }
 
+    /**
+     * Opens a filechooser to select the Java-executable/binary.
+     * @author Griefed
+     */
+    private void chooseJava() {
         javaChooser = new JFileChooser();
 
         if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))).isDirectory()) {
