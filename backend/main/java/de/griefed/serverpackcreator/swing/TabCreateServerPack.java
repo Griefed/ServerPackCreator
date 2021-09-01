@@ -51,7 +51,7 @@ import java.util.concurrent.Executors;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #TabCreateServerPack(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, VersionLister, Properties)} (LocalizationManager, Properties)}<br>
+ * 1. {@link #TabCreateServerPack(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, VersionLister, Properties, JFrame)}<br>
  * 2. {@link #actionEventCheckBoxServer(ActionEvent)}<br>
  * 3. {@link #actionEventComboBoxFabricVersions(ActionEvent)}<br>
  * 4. {@link #actionEventComboBoxForgeVersions(ActionEvent)}<br>
@@ -92,6 +92,8 @@ import java.util.concurrent.Executors;
 public class TabCreateServerPack extends JComponent {
 
     private static final Logger LOG = LogManager.getLogger(TabCreateServerPack.class);
+
+    private final JFrame FRAME_SERVERPACKCREATOR;
 
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final LocalizationManager LOCALIZATIONMANAGER;
@@ -197,10 +199,12 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedVersionLister Instance of {@link VersionLister} required for setting/changing comboboxes.
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties) {
+                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties,
+                               JFrame injectedServerPackCreatorFrame) {
 
         if (injectedServerPackCreatorProperties == null) {
             try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
@@ -249,8 +253,7 @@ public class TabCreateServerPack extends JComponent {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
 
-
-
+        this.FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
 
         String tempDir = null;
         try {
@@ -1005,6 +1008,8 @@ public class TabCreateServerPack extends JComponent {
      */
     private void generateServerpack(ActionEvent event) {
 
+        FRAME_SERVERPACKCREATOR.setResizable(false);
+
         BUTTON_GENERATESERVERPACK.setEnabled(false);
 
         Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
@@ -1085,10 +1090,14 @@ public class TabCreateServerPack extends JComponent {
                     }
 
                     BUTTON_GENERATESERVERPACK.setEnabled(true);
+
                     System.gc();
                     System.runFinalization();
+
                     tailer.stop();
                     executorService.shutdown();
+
+                    FRAME_SERVERPACKCREATOR.setResizable(true);
 
                 } else {
 
@@ -1102,12 +1111,15 @@ public class TabCreateServerPack extends JComponent {
 
                     executorService.shutdown();
 
+                    FRAME_SERVERPACKCREATOR.setResizable(true);
+
                 }
             });
 
         } else {
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
             BUTTON_GENERATESERVERPACK.setEnabled(true);
+            FRAME_SERVERPACKCREATOR.setResizable(true);
         }
     }
 
