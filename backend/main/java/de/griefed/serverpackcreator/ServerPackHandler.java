@@ -1057,13 +1057,18 @@ public class ServerPackHandler {
 
         generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
 
-        cleanUpServerPack(
-                fabricInstaller,
-                forgeInstaller,
-                modLoader,
-                modpackDir,
-                minecraftVersion,
-                modLoaderVersion);
+        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpackcleanup.enabled").equalsIgnoreCase("true")) {
+            cleanUpServerPack(
+                    fabricInstaller,
+                    forgeInstaller,
+                    modLoader,
+                    modpackDir,
+                    minecraftVersion,
+                    modLoaderVersion);
+        } else {
+            // TODO: Replace with lang key
+            LOG.info("Server pack cleanup disabled.");
+        }
     }
 
     /**

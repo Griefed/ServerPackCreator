@@ -86,6 +86,8 @@ public class CurseCreateModpack {
     private String projectName;
     private String fileName;
     private String fileDiskName;
+    private String projectID;
+    private String fileID;
 
     private Properties serverPackCreatorProperties;
 
@@ -240,10 +242,13 @@ public class CurseCreateModpack {
      *                 download the modpack.
      * @param fileID Integer. The ID of the file. Used to gather information about the CurseForge file and to download
      *              the modpack.
-     * @return Boolean. Returns true if the modpack was successfully created.
+     * //@return Boolean. Returns true if the modpack was successfully created.
      */
-    public boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
+    public void curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
+
+        this.projectID = projectID.toString();
+        this.fileID = fileID.toString();
 
         try {
             if (CurseAPI.project(projectID).isPresent()) {
@@ -262,9 +267,12 @@ public class CurseCreateModpack {
 
             initializeModpack(modpackDir, projectID, fileID);
             modpackCreated = true;
+        } else {
+            // TODO: Replace with lang key
+            LOG.info("Modpack is already downloaded and present.");
         }
 
-        return modpackCreated;
+        //return modpackCreated;
     }
 
     /**
@@ -476,9 +484,17 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir.create"));
         } else {
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));
-            isModpackPresent = cleanupEnvironment(modpackDir);
+            if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.curseforgecleanup.enabled").equalsIgnoreCase("true")) {
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));
+                isModpackPresent = cleanupEnvironment(modpackDir);
+
+            } else {
+                // TODO: Replace with lang key
+                LOG.info("CurseForge cleanup disabled.");
+                isModpackPresent = true;
+            }
         }
         return isModpackPresent;
     }

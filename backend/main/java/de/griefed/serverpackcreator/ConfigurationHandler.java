@@ -621,81 +621,85 @@ public class ConfigurationHandler {
 
                 if (displayName != null && projectName != null) {
 
-                    configurationModel.setModpackDir(String.format("./work/modpacks/%s/%s", projectName, displayName));
+                    configurationModel.setModpackDir(String.format("./work/modpacks/%s/%s", getProjectID(), getProjectFileID() + "_" + displayName));
 
-                    if (CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID())) {
-                        try {
-                            byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", configurationModel.getModpackDir())));
+                        //if (CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID())) {
 
-                            CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
+                    CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID());
 
-                            String[] minecraftLoaderVersions = modpack
-                                    .getMinecraft()
-                                    .toString()
-                                    .split(",");
+                    try {
+                        byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", configurationModel.getModpackDir())));
 
-                            String[] modLoaderVersion = minecraftLoaderVersions[1]
-                                    .replace("[", "")
-                                    .replace("]", "")
-                                    .split("-");
+                        CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
 
-                            configurationModel.setMinecraftVersion(minecraftLoaderVersions[0]
-                                    .replace("[", ""));
+                        String[] minecraftLoaderVersions = modpack
+                                .getMinecraft()
+                                .toString()
+                                .split(",");
 
-                            if (containsFabric(modpack)) {
-                                /* This log is meant to be read by the user, therefore we allow translation. */
-                                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-                                LOG.debug("Setting modloader to Fabric.");
+                        String[] modLoaderVersion = minecraftLoaderVersions[1]
+                                .replace("[", "")
+                                .replace("]", "")
+                                .split("-");
 
-                                configurationModel.setModLoader("Fabric");
-                                configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
+                        configurationModel.setMinecraftVersion(minecraftLoaderVersions[0]
+                                .replace("[", ""));
 
-                            } else {
-                                /* This log is meant to be read by the user, therefore we allow translation. */
-                                LOG.debug("Setting modloader to Forge.");
+                        if (containsFabric(modpack)) {
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                            LOG.debug("Setting modloader to Fabric.");
 
-                                configurationModel.setModLoader("Forge");
-                                configurationModel.setModLoaderVersion(modLoaderVersion[1]);
+                            configurationModel.setModLoader("Fabric");
+                            configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
 
-                            }
-                        } catch (IOException ex) {
-                            LOG.error("Error: There was a fault during json parsing.", ex);
+                        } else {
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            LOG.debug("Setting modloader to Forge.");
+
+                            configurationModel.setModLoader("Forge");
+                            configurationModel.setModLoaderVersion(modLoaderVersion[1]);
+
                         }
-
-                        configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
-
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
-
-                        writeConfigToFile(
-                                configurationModel.getModpackDir(),
-                                configurationModel.getClientMods(),
-                                configurationModel.getCopyDirs(),
-                                configurationModel.getIncludeServerInstallation(),
-                                configurationModel.getJavaPath(),
-                                configurationModel.getMinecraftVersion(),
-                                configurationModel.getModLoader(),
-                                configurationModel.getModLoaderVersion(),
-                                configurationModel.getIncludeServerIcon(),
-                                configurationModel.getIncludeServerProperties(),
-                                configurationModel.getIncludeStartScripts(),
-                                configurationModel.getIncludeZipCreation(),
-                                configurationModel.getJavaArgs(),
-                                getConfigFile(),
-                                false
-                        );
-
-                    } else {
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.create"));
-                        configHasError = true;
+                    } catch (IOException ex) {
+                        LOG.error("Error: There was a fault during json parsing.", ex);
                     }
+
+                    configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
+
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
+
+                    writeConfigToFile(
+                            configurationModel.getModpackDir(),
+                            configurationModel.getClientMods(),
+                            configurationModel.getCopyDirs(),
+                            configurationModel.getIncludeServerInstallation(),
+                            configurationModel.getJavaPath(),
+                            configurationModel.getMinecraftVersion(),
+                            configurationModel.getModLoader(),
+                            configurationModel.getModLoaderVersion(),
+                            configurationModel.getIncludeServerIcon(),
+                            configurationModel.getIncludeServerProperties(),
+                            configurationModel.getIncludeStartScripts(),
+                            configurationModel.getIncludeZipCreation(),
+                            configurationModel.getJavaArgs(),
+                            getConfigFile(),
+                            false
+                    );
+
+                        /*} else {
+                            *//* This log is meant to be read by the user, therefore we allow translation. *//*
+                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.create"));
+                            configHasError = true;
+                        }*/
 
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.ids"));
                     configHasError = true;
                 }
+
 
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
