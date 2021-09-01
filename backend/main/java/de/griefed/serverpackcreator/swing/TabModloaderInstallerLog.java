@@ -133,7 +133,7 @@ public class TabModloaderInstallerLog extends JComponent {
     private void createTailer() {
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(() -> {
-            Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
+            Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
                 public void handle(String line) {
                     if (
                             line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter")) ||
