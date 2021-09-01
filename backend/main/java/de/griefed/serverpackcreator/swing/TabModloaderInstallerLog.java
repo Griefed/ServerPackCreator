@@ -31,6 +31,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * This class creates the tab which display the latest modloader_installer.log tailer.
@@ -98,7 +100,7 @@ public class TabModloaderInstallerLog extends JComponent {
         textArea = new JTextArea();
         textArea.setEditable(false);
 
-        Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
+        /*Tailer.create(new File("./logs/modloader_installer.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
                     if (
@@ -112,7 +114,9 @@ public class TabModloaderInstallerLog extends JComponent {
                     }
                 }
             }
-        }, 2000, false);
+        }, 2000, false);*/
+
+        createTailer();
 
         JScrollPane scrollPane = new JScrollPane(
                 textArea,
@@ -124,5 +128,26 @@ public class TabModloaderInstallerLog extends JComponent {
         modloaderInstallerLogPanel.add(scrollPane, constraints);
 
         return modloaderInstallerLogPanel;
+    }
+
+    private void createTailer() {
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> {
+            Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
+                public void handle(String line) {
+                    if (
+                            line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter")) ||
+                                    line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"))) {
+
+                        textArea.setText("");
+                    }
+                    if (!line.contains("DEBUG")) {
+                        textArea.append(line + "\n");
+                    }
+                }
+            },
+            2000,
+            false);
+        });
     }
 }

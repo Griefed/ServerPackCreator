@@ -31,6 +31,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TabAddonsHandlerLog extends JComponent {
 
@@ -93,7 +95,7 @@ public class TabAddonsHandlerLog extends JComponent {
         textArea = new JTextArea();
         textArea.setEditable(false);
 
-        Tailer.create(new File("./logs/addons.log"), new TailerListenerAdapter() {
+        /*Tailer.create(new File("./logs/addons.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
                     if (!line.contains("DEBUG")) {
@@ -101,7 +103,9 @@ public class TabAddonsHandlerLog extends JComponent {
                     }
                 }
             }
-        }, 2000, false);
+        }, 2000, false);*/
+
+        createTailer();
 
         JScrollPane scrollPane = new JScrollPane(
                 textArea,
@@ -114,4 +118,20 @@ public class TabAddonsHandlerLog extends JComponent {
 
         return addonsHandlerLogTab;
     }
+
+    private void createTailer() {
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> {
+            Tailer.create(new File("./logs/addons.log"), new TailerListenerAdapter() {
+                public void handle(String line) {
+                    if (!line.contains("DEBUG")) {
+                        textArea.append(line + "\n");
+                    }
+                }
+            },
+            2000,
+            false);
+        });
+    }
+
 }
