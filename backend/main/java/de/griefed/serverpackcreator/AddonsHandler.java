@@ -38,13 +38,12 @@ import java.util.Properties;
 /**
  * <strong>Table of methods</strong><p>
  * 1. {@link #AddonsHandler(LocalizationManager, Properties)}<br>
- * 2. {@link #initializeAddons()}<br>
  * 3. {@link #getListOfAddons()}<br>
- * 4. {@link #setListOfAddons()}<br>
  * 5. {@link #getListOfServerPackAddons()}<br>
- * 6. {@link #setListOfServerPackAddons(List)}<br>
- * 7. {@link #runServerPackAddons(ConfigurationModel, ConfigurationHandler)}
- * <p>
+ * 2. {@link #initializeAddons()}<br>
+ * 7. {@link #runServerPackAddons(ConfigurationModel, ConfigurationHandler)}<br>
+ * 4. {@link #setListOfAddons()}<br>
+ * 6. {@link #setListOfServerPackAddons(List)}<p>
  * The AddonHandler provides the ability to load JAR-files from the addons-directory.<br>
  * This allows the execution of additional code after a server pack has been generated.<br>
  * Please note: I am not responsible for data loss or damage caused by using addons. I have no way of verifying whether

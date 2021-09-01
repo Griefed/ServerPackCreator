@@ -49,32 +49,35 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 /**
  * <strong>Table of methods</strong><p>
  * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler, Properties, VersionLister)}<br>
- * 2. {@link #getSTART_FABRIC_SHELL}<br>
- * 3. {@link #getSTART_FABRIC_BATCH}<br>
- * 4. {@link #getSTART_FORGE_SHELL}<br>
- * 5. {@link #getSTART_FORGE_BATCH}<br>
- * 6. {@link #getPropertiesFile()}<br>
- * 7. {@link #getIconFile()}<br>
- * 8. {@link #getForgeWindowsFile()}<br>
- * 9. {@link #getForgeLinuxFile()}<br>
- * 10.{@link #getFabricWindowsFile()}<br>
+ * 2. {@link #cleanupEnvironment(String)}<br>
+ * 3. {@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
+ * 4. {@link #copyFiles(String, List, List, String)}<br>
+ * 5. {@link #copyIcon(String)}<br>
+ * 6. {@link #createStartScripts(String, String, boolean, String)}<br>
+ * 7. {@link #downloadFabricJar(String)}<br>
+ * 8. {@link #downloadForgeJar(String, String, String)}<br>
+ * 9. {@link #excludeClientMods(String, List, String)}<br>
+ * 10.{@link #generateDownloadScripts(String, String, String)}<br>
  * 11.{@link #getFabricLinuxFile()}<br>
- * 12.{@link #run(File, ConfigurationModel)}<br>
- * 13.{@link #cleanupEnvironment(String)}<br>
- * 14.{@link #createStartScripts(String, String, boolean, String)}<br>
- * 15.{@link #copyFiles(String, List, List, String)}<br>
- * 16.{@link #excludeClientMods(String, List, String)}<br>
- * 17.{@link #copyIcon(String)}<br>
- * 18.{@link #copyProperties(String)}<br>
- * 19.{@link #installServer(String, String, String, String, String)}<br>
- * 20.{@link #zipBuilder(String, String, boolean)}<br>
- * 21.{@link #getMinecraftServerJarUrl(String)}<br>
- * 22.{@link #generateDownloadScripts(String, String, String)}<br>
- * 23.{@link #downloadFabricJar(String)}<br>
- * 24.{@link #downloadForgeJar(String, String, String)}<br>
- * 25.{@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
- * 26.{@link #scanTomls(File[])}
- * <p>
+ * 12.{@link #getFabricWindowsFile()}<br>
+ * 13.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
+ * 14.{@link #getForgeLinuxFile()}<br>
+ * 15.{@link #getForgeWindowsFile()}<br>
+ * 16.{@link #getIconFile()}<br>
+ * 17.{@link #getMinecraftServerJarUrl(String)}<br>
+ * 18.{@link #getObjectMapper()}<br>
+ * 19.{@link #getPropertiesFile()}<br>
+ * 20.{@link #getSERVER_PACKS_DIR()}<br>
+ * 21.{@link #getSTART_FABRIC_BATCH}<br>
+ * 22.{@link #getSTART_FABRIC_SHELL}<br>
+ * 23.{@link #getSTART_FORGE_BATCH}<br>
+ * 24.{@link #getSTART_FORGE_SHELL}<br>
+ * 25.{@link #installServer(String, String, String, String, String)}<br>
+ * 26.{@link #run(ConfigurationModel)}<br>
+ * 27.{@link #run(File, ConfigurationModel)}<br>
+ * 28.{@link #scanAnnotations(File[])}<br>
+ * 29.{@link #scanTomls(File[])}<br>
+ * 30.{@link #zipBuilder(String, String, boolean)}<p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
  * <p>

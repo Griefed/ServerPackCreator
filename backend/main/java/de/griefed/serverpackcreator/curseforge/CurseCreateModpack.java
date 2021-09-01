@@ -43,16 +43,22 @@ import java.util.stream.Stream;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
- * <strong>Table of methods</strong><br>
- * {@link #CurseCreateModpack(LocalizationManager, Properties)}<br>
- * {@link #setModloaderCase(String)}<br>
- * {@link #curseForgeModpack(String, Integer, Integer)}<br>
- * {@link #initializeModpack(String, Integer, Integer)}<br>
- * {@link #downloadMods(String)}<br>
- * {@link #copyOverride(String)}<br>
- * {@link #checkCurseForgeDir(String)}<br>
- * {@link #unzipArchive(String, String)}<br>
- * {@link #cleanupEnvironment(String)}<p>
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #CurseCreateModpack(LocalizationManager, Properties)}<br>
+ * 2. {@link #checkCurseForgeDir(String)}<br>
+ * 3. {@link #cleanupEnvironment(String)}<br>
+ * 4. {@link #copyOverride(String)}<br>
+ * 5. {@link #curseForgeModpack(String, Integer, Integer)}<br>
+ * 6. {@link #downloadMods(String)}<br>
+ * 7. {@link #getFileDiskName()}<br>
+ * 8. {@link #getFileName()}<br>
+ * 9. {@link #getObjectMapper()}<br>
+ * 10.{@link #getProjectName()}<br>
+ * 11.{@link #initializeModpack(String, Integer, Integer)}<br>
+ * 12.{@link #setFileNameAndDiskName(int, int)}<br>
+ * 13.{@link #setModloaderCase(String)}<br>
+ * 14.{@link #setProjectName(int)}<br>
+ * 15.{@link #unzipArchive(String, String)}<p>
  * Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
  * override directory to the parent directory, download all mods in said modpack, and delete no longer needed files.
  * Modpacks are create in a ProjectName/FileDisplayName structure. Before a modpack is created, the FileDisplayName folder

@@ -35,6 +35,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #TabServerPackCreatorLog(LocalizationManager, Properties)}<br>
+ * 2. {@link #createTailer()}<br>
+ * 3. {@link #serverPackCreatorLogTab()}<p>
  * This class creates the tab which display the latest serverpackcreator.log tailer.
  * @author Griefed
  */

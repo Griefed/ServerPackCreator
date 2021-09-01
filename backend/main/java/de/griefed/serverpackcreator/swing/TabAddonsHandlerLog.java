@@ -34,6 +34,14 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #TabAddonsHandlerLog(LocalizationManager, Properties)} (LocalizationManager, Properties)}<br>
+ * 2. {@link #createTailer()}<br>
+ * 3. {@link #addonsHandlerLogTab()} ()}<p>
+ * This class creates the tab which display the latest addons.log tailer.
+ * @author Griefed
+ */
 public class TabAddonsHandlerLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;

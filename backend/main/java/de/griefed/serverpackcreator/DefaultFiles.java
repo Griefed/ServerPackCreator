@@ -43,23 +43,22 @@ import java.util.Properties;
 /**
  * <strong>Table of methods</strong><p>
  * 1. {@link #DefaultFiles(LocalizationManager, Properties)}<br>
- * 2. {@link #getConfigFile()}<br>
- * 3. {@link #getOldConfigFile()}<br>
- * 4. {@link #getPropertiesFile()}<br>
- * 5. {@link #getIconFile()}<br>
- * 10.{@link #getMinecraftManifestUrl()}<br>
- * 11.{@link #getForgeManifestUrl()}<br>
- * 12.{@link #getFabricManifestUrl()}<br>
- * 13.{@link #getFabricInstallerManifestUrl()}<br>
- * 14.{@link #getMANIFEST_MINECRAFT()}<br>
- * 15.{@link #getMANIFEST_FORGE()}<br>
- * 16.{@link #getMANIFEST_FABRIC()}<br>
- * 17.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
- * 18.{@link #filesSetup()}<br>
- * 19.{@link #checkForConfig()}<br>
- * 20.{@link #checkForFile(File)}<br>
- * 21.{@link #refreshManifestFile(URL, File)}
- * <p>
+ * 2. {@link #checkForConfig()}<br>
+ * 3. {@link #checkForFile(File)}<br>
+ * 4. {@link #filesSetup()}<br>
+ * 5. {@link #getConfigFile()}<br>
+ * 6. {@link #getFabricInstallerManifestUrl()}<br>
+ * 7. {@link #getFabricManifestUrl()}<br>
+ * 8. {@link #getForgeManifestUrl()}<br>
+ * 9. {@link #getIconFile()}<br>
+ * 10.{@link #getMANIFEST_FABRIC()}<br>
+ * 11.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
+ * 12.{@link #getMANIFEST_FORGE()}<br>
+ * 13.{@link #getMANIFEST_MINECRAFT()}<br>
+ * 14.{@link #getMinecraftManifestUrl()}<br>
+ * 15.{@link #getOldConfigFile()}<br>
+ * 16.{@link #getPropertiesFile()}<br>
+ * 17.{@link #refreshManifestFile(URL, File)}<p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
  * Ensures all files needed by ServerPackCreator are available. If any one is missing, a new one is generated from the

@@ -1,6 +1,7 @@
 package de.griefed.serverpackcreator.swing.themes;
 
 import mdlaf.themes.JMarsDarkTheme;
+import mdlaf.themes.MaterialLiteTheme;
 import mdlaf.utils.MaterialColors;
 
 import javax.swing.*;
@@ -9,6 +10,11 @@ import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.InsetsUIResource;
 import java.awt.*;
 
+/**
+ * This is the dark-theme which ServerPackCreator uses. It is based on {@link JMarsDarkTheme} via <code>extends</code>
+ * which allows us to use the base dark-theme as a starting point but changing every aspect of it in whatever way we like.
+ * @author Griefed
+ */
 public class DarkTheme extends JMarsDarkTheme {
 
     private ColorUIResource selectedBackground = new ColorUIResource(50, 66, 74);

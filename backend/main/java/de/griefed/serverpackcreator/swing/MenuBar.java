@@ -48,6 +48,42 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Properties;
 
+/**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #MenuBar(LocalizationManager, LightTheme, DarkTheme, JFrame, MaterialLookAndFeel, MaterialLookAndFeel, TabCreateServerPack, JTabbedPane, Properties)} (LocalizationManager, Properties)}<br>
+ * 2. {@link #actionEventChangeJavaArgsMenuItem(ActionEvent)}<br>
+ * 3. {@link #actionEventExitMenuItem(ActionEvent)}<br>
+ * 4. {@link #actionEventLoadConfigurationFromFileMenuItem(ActionEvent)}<br>
+ * 5. {@link #actionEventOpenAboutSPCMenuItem(ActionEvent)}<br>
+ * 6. {@link #actionEventOpenAddonsDirectoryMenuItem(ActionEvent)}<br>
+ * 7. {@link #actionEventOpenDiscordLinkMenuItem(ActionEvent)}<br>
+ * 8. {@link #actionEventOpenDonateMenuItem(ActionEvent)}<br>
+ * 9. {@link #actionEventOpenGitHubMenuItem(ActionEvent)}<br>
+ * 10.{@link #actionEventOpenHelpMenuItem(ActionEvent)}<br>
+ * 11.{@link #actionEventOpenInEditorServerProperties(ActionEvent)}<br>
+ * 12.{@link #actionEventOpenIssuesMenuItem(ActionEvent)}<br>
+ * 13.{@link #actionEventOpenReleaseMenuItem(ActionEvent)}<br>
+ * 14.{@link #actionEventOpenServerFilesDirectoryMenuItem(ActionEvent)}<br>
+ * 15.{@link #actionEventOpenServerIcon(ActionEvent)}<br>
+ * 16.{@link #actionEventOpenServerPacksDirectoryMenuItem(ActionEvent)}<br>
+ * 17.{@link #actionEventOpenSPCDirectoryMenuItem(ActionEvent)}<br>
+ * 18.{@link #actionEventSaveAsConfigToFileMenuItem(ActionEvent)}<br>
+ * 19.{@link #actionEventSaveConfigToFileMenuItem(ActionEvent)}<br>
+ * 20.{@link #actionEventSetHelpText(ActionEvent)}<br>
+ * 21.{@link #actionEventSwitchThemeMenuItem(ActionEvent)}<br>
+ * 22.{@link #actionEventUploadConfigurationToHasteBinMenuItem(ActionEvent)}<br>
+ * 23.{@link #actionEventUploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent)}<br>
+ * 24.{@link #actionEventViewExampleAddonMenuItem(ActionEvent)}<br>
+ * 25.{@link #checkFileSize(File)}<br>
+ * 26.{@link #createHasteBinFromFile(File)}<br>
+ * 27.{@link #createMenuBar()}<br>
+ * 28.{@link #fileTooLargeDialog()}
+ * 29.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}
+ * 30.{@link #getSERVER_PACKS_DIR()}<p>
+ * This class creates our menubar which will be displayed at the top of the ServerPackCreator frame. It contains various
+ * menus and menuitems to execute, change, open and edit various different aspects of ServerPackCreator.
+ * @author Griefed
+ */
 public class MenuBar extends Component {
 
     private static final Logger LOG = LogManager.getLogger(MenuBar.class);

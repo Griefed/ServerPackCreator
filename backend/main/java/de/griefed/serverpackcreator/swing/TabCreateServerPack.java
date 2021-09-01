@@ -50,6 +50,33 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #TabCreateServerPack(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, VersionLister, Properties)} (LocalizationManager, Properties)}<br>
+ * 2. {@link #actionEventCheckBoxServer(ActionEvent)}<br>
+ * 3. {@link #actionEventComboBoxFabricVersions(ActionEvent)}<br>
+ * 4. {@link #actionEventComboBoxForgeVersions(ActionEvent)}<br>
+ * 5. {@link #actionEventComboBoxMinecraftVersion(ActionEvent)}<br>
+ * 6. {@link #addMouseListenerContentAreaFilledToButton(JButton)}<br>
+ * 7. {@link #changeForgeVersionListDependingOnMinecraftVersion(String)}<br>
+ * 8. {@link #chooseJava()}<br>
+ * 9. {@link #createServerPackTab()}<br>
+ * 10.{@link #generateServerpack(ActionEvent)}<br>
+ * 11.{@link #getChosenModloader()}<br>
+ * 12.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
+ * 13.{@link #getJavaArgs()}<br>
+ * 14.{@link #getSelectedModloaderVersion()}<br>
+ * 15.{@link #getSERVER_PACKS_DIR()}<br>
+ * 16.{@link #itemEventRadioButtonModloaderFabric(ItemEvent)}<br>
+ * 17.{@link #itemEventRadioButtonModloaderForge(ItemEvent)}<br>
+ * 18.{@link #loadConfig(File)}<br>
+ * 19.{@link #saveConfig(File, boolean)}<br>
+ * 20.{@link #selectClientMods(ActionEvent)}<br>
+ * 21.{@link #selectCopyDirs(ActionEvent)}<br>
+ * 22.{@link #selectJavaInstallation(ActionEvent)}<br>
+ * 23.{@link #selectModpackDirectory(ActionEvent)}<br>
+ * 24.{@link #setChosenModloader(String)}<br>
+ * 25.{@link #setJavaArgs(String)}<br>
+ * 26.{@link #updateModloaderGuiComponents(boolean, boolean, String)}<p>
  * This class creates the tab which displays the labels, textfields, buttons and functions in order to create a new
  * server pack. Available are:<br>
  * JLabels and JTextFields for modpackDir, clientMods, copyDirs, javaPath, minecraftVersion, modLoader, modLoaderVersion<br>
@@ -58,9 +85,8 @@ import java.util.concurrent.Executors;
  * A button for displaying an information windows which provides detailed explanation of the important parts of the GUI.<br>
  * The button start the generation of a new server pack.<br>
  * The label under the button to start the generation of a new server pack, which displays the latest log entry of the
- * serverpackcreator.log <em>during</em> the creation of a new server pack.<p>
- *     If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
- * </p>
+ * serverpackcreator.log <em>during</em> the creation of a new server pack.<br>
+ * If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
  * @author Griefed
  */
 public class TabCreateServerPack extends JComponent {

@@ -40,40 +40,43 @@ import java.util.*;
 /**
  * <strong>Table of methods</strong><p>
  * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, VersionLister, Properties)}<br>
- * 2. {@link #getOldConfigFile()}<br>
- * 3. {@link #getConfigFile()}<br>
- * 4. {@link #getConfig()}<br>
- * 5. {@link #setConfig(File)}<br>
- * 6. {@link #getFallbackModsList()}<br>
- * 7. {@link #getProjectID()}<br>
- * 8. {@link #setProjectID(int)}<br>
- * 9. {@link #getProjectFileID()}<br>
- * 10.{@link #setProjectFileID(int)}<br>
- * 11.{@link #checkConfiguration(File, boolean, ConfigurationModel)}<br>
- * 12.{@link #isDir(String, ConfigurationModel)}<br>
- * 13.{@link #isCurse(ConfigurationModel)}<br>
- * 14.{@link #containsFabric(CurseModpack)}<br>
- * 15.{@link #suggestCopyDirs(String)}<br>
- * 16.{@link #checkCurseForge(String)}<br>
- * 17.{@link #convertToBoolean(String)}<br>
- * 18.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String)}<br>
- * 19.{@link #checkModpackDir(String)}<br>
- * 20.{@link #checkCopyDirs(List, String)}<br>
- * 21.{@link #checkJavaPath(String)}<br>
- * 22.{@link #checkModloader(String)}<br>
- * 23.{@link #setModLoaderCase(String)}<br>
- * 24.{@link #checkModloaderVersion(String, String, String)}<br>
- * 25.{@link #isMinecraftVersionCorrect(String)}<br>
- * 26.{@link #isFabricVersionCorrect(String)}<br>
- * 27.{@link #isForgeVersionCorrect(String, String)}<br>
- * 28.{@link #createConfigurationFile()}<br>
- * 29.{@link #readStringArray()}<br>
- * 30.{@link #buildString(String...)}<br>
- * 31.{@link #encapsulateListElements(List)}<br>
- * 32.{@link #readBoolean()}<br>
- * 33.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<br>
- * 34.{@link #getConfigurationAsList(ConfigurationModel)}
- * <p>
+ * 2. {@link #buildString(String...)}<br>
+ * 4. {@link #checkConfiguration(boolean, ConfigurationModel)}<br>
+ * 5. {@link #checkConfiguration(File, boolean, ConfigurationModel)}<br>
+ * 6. {@link #checkCopyDirs(List, String)}<br>
+ * 7. {@link #checkCurseForge(String)}<br>
+ * 8. {@link #checkJavaPath(String)}<br>
+ * 9. {@link #checkModloader(String)}<br>
+ * 10.{@link #checkModloaderVersion(String, String, String)}<br>
+ * 11.{@link #checkModpackDir(String)}<br>
+ * 12.{@link #containsFabric(CurseModpack)}<br>
+ * 13.{@link #convertToBoolean(String)}<br>
+ * 14.{@link #createConfigurationFile()}<br>
+ * 15.{@link #encapsulateListElements(List)}<br>
+ * 16 {@link #getConfig()}<br>
+ * 17 {@link #getConfigFile()}<br>
+ * 18.{@link #getConfigurationAsList(ConfigurationModel)}<br>
+ * 19 {@link #getFallbackModsList()}<br>
+ * 20.{@link #getObjectMapper()}<br>
+ * 21.{@link #getOldConfigFile()}<br>
+ * 22.{@link #getProjectFileID()}<br>
+ * 23.{@link #getProjectID()}<br>
+ * 24.{@link #isCurse(ConfigurationModel)}<br>
+ * 25.{@link #isDir(ConfigurationModel)}<br>
+ * 26.{@link #isDir(String, ConfigurationModel)}<br>
+ * 27.{@link #isFabricVersionCorrect(String)}<br>
+ * 28.{@link #isForgeVersionCorrect(String, String)}<br>
+ * 29.{@link #isMinecraftVersionCorrect(String)}<br>
+ * 30.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String)}<br>
+ * 31.{@link #readBoolean()}<br>
+ * 32.{@link #readStringArray()}<br>
+ * 33.{@link #setConfig(File)}<br>
+ * 34.{@link #setFALLBACKMODSLIST()}<br>
+ * 35.{@link #setModLoaderCase(String)}<br>
+ * 36.{@link #setProjectFileID(int)}<br>
+ * 37.{@link #setProjectID(int)}<br>
+ * 38.{@link #suggestCopyDirs(String)}<br>
+ * 39.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>

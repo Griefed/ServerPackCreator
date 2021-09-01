@@ -44,10 +44,10 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong><br>
+ * <strong>Table of methods</strong><p>
  * {@link #SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, Properties, VersionLister)}<br>
- * {@link #mainGUI()}<br>
- * {@link #createAndShowGUI()}<p>
+ * {@link #createAndShowGUI()}<br>
+ * {@link #mainGUI()} ()}<p>
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
  * which then calls {@link #createAndShowGUI()} in order to create and show the GUI of ServerPackCreator. Instances of
  * the {@link TabCreateServerPack}, {@link TabServerPackCreatorLog}, {@link TabModloaderInstallerLog}

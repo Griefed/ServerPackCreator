@@ -40,30 +40,35 @@ import java.util.*;
 
 /**
  * <strong>table of methods</strong><p>
- * 1. {@link #getMinecraftManifest()}<br>
- * 2. {@link #getForgeManifest()}<br>
- * 3. {@link #getFabricManifest()}<br>
- * 4. {@link #getObjectMapper()}<br>
- * 5. {@link #getMinecraftReleaseVersion()}<br>
- * 6. {@link #getMinecraftReleaseVersions()}<br>
- * 7. {@link #getMinecraftSnapshotVersion()}<br>
- * 8. {@link #getMinecraftSnapshotVersions()}<br>
- * 9. {@link #getFabricVersions()}<br>
- * 10.{@link #getFabricLatestVersion()}<br>
- * 11.{@link #getFabricReleaseVersion()}<br>
- * 12.{@link #getForgeMeta()}<br>
- * 13.{@link #setForgeMeta()}<br>
- * 14.{@link #getMinecraftReleaseVersionsAsArray()}<br>
- * 15.{@link #getFabricVersionsAsArray()}<br>
- * 16.{@link #getForgeVersionsAsArray(String)}<br>
- * 17.{@link #getMinecraftVersionsList(String)}<br>
- * 18.{@link #setMinecraftSpecificVersion(String)}<br>
- * 19.{@link #getForgeVersionsList(String)}<br>
- * 20.{@link #setFabricVersionList()}<br>
- * 21.{@link #setFabricSpecificVersion(String, Document)}<br>
- * 22.{@link #getFabricLatestInstallerVersion()}<br>
- * 23.{@link #getFabricReleaseInstallerVersion()}
- * <p>
+ * 1. {@link #VersionLister(Properties)}<br>
+ * 2. {@link #getFabricInstallerManifest()}<br>
+ * 3. {@link #getFabricLatestInstallerVersion()}<br>
+ * 4. {@link #getFabricLatestVersion()}<br>
+ * 5. {@link #getFabricManifest()}<br>
+ * 6. {@link #getFabricReleaseInstallerVersion()}<br>
+ * 7. {@link #getFabricReleaseVersion()}<br>
+ * 8. {@link #getFabricVersions()}<br>
+ * 9. {@link #getFabricVersionsAsArray()}<br>
+ * 10.{@link #getForgeManifest()}<br>
+ * 11.{@link #getForgeMeta()}<br>
+ * 12.{@link #getForgeVersionsAsArray(String)}<br>
+ * 13.{@link #getForgeVersionsList(String)}<br>
+ * 14.{@link #getJson(File)}<br>
+ * 15.{@link #getMinecraftManifest()}<br>
+ * 16.{@link #getMinecraftReleaseVersion()}<br>
+ * 17.{@link #getMinecraftReleaseVersions()}<br>
+ * 18.{@link #getMinecraftReleaseVersionsAsArray()}<br>
+ * 19.{@link #getMinecraftSnapshotVersion()}<br>
+ * 20.{@link #getMinecraftSnapshotVersions()}<br>
+ * 21.{@link #getMinecraftVersionsList(String)}<br>
+ * 22.{@link #getObjectMapper()}<br>
+ * 23.{@link #getXml(File)}<br>
+ * 24.{@link #reverseOrderArray(String[])}<br>
+ * 25.{@link #reverseOrderList(List)}<br>
+ * 26.{@link #setFabricSpecificVersion(String, Document)}<br>
+ * 27.{@link #setFabricVersionList()}<br>
+ * 28.{@link #setForgeMeta()}<br>
+ * 29.{@link #setMinecraftSpecificVersion(String)}<p>
  * Create lists of versions for Minecraft, Fabric and Forge. Provides getters for retrieving Minecraft and Fabric version
  * lists and {@link #getForgeVersionsList(String)} to retrieve a list of available Forge versions for a given Minecraft
  * version. Instantiating this class automatically creates the Minecraft and Fabric lists, for immediate access through

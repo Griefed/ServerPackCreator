@@ -41,11 +41,9 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong>
- * <p>
- * {@link #main(String[])}<br>
- * {@link #createFile(File)}
- * <p>
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #main(String[])}<br>
+ * 2. {@link #createFile(File)}<p>
  * Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
  * one of the following modes will be entered:<p>
  * <strong>-cgen</strong><p>
