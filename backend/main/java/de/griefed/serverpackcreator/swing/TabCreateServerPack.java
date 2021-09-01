@@ -657,7 +657,7 @@ public class TabCreateServerPack extends JComponent {
                     CREATESERVERPACKPANEL,
                     "Install modlaoder-server selected, but no path to Java defined. Choose now?",
                     "Javapath not sespecified!",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE
             )) {
                 case 0:
