@@ -51,6 +51,8 @@ public class TabModloaderInstallerLog extends JComponent {
 
     private JTextArea textArea;
 
+    private int i = 0;
+
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -122,6 +124,11 @@ public class TabModloaderInstallerLog extends JComponent {
     private void createTailer() {
         class MyTailerListener extends TailerListenerAdapter {
             public void handle(String line) {
+                i++;
+                if (i >= 1000) {
+                    textArea.setText("");
+                    i = 0;
+                }
                 if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter")) ||
                     line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"))) {
 
