@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.utilities.SmartScroller;
 import org.apache.commons.io.input.Tailer;
+import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
 import javax.swing.*;
@@ -103,19 +104,6 @@ public class TabServerPackCreatorLog extends JComponent {
         textArea = new JTextArea();
         textArea.setEditable(false);
 
-        /*Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
-            public void handle(String line) {
-                synchronized (this) {
-                    if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
-                        textArea.setText("");
-                    }
-                    if (!line.contains("DEBUG")) {
-                        textArea.append(line + "\n");
-                    }
-                }
-            }
-        }, 2000, false);*/
-
         createTailer();
 
         JScrollPane scrollPane = new JScrollPane(
@@ -131,20 +119,20 @@ public class TabServerPackCreatorLog extends JComponent {
     }
 
     private void createTailer() {
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(() -> {
-            Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
-                public void handle(String line) {
-                    if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
-                        textArea.setText("");
-                    }
-                    if (!line.contains("DEBUG")) {
-                        textArea.append(line + "\n");
-                    }
+        class MyTailerListener extends TailerListenerAdapter {
+            public void handle(String line) {
+                if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
+                    textArea.setText("");
                 }
-            },
-                    2000,
-                    false);
-        });
+                if (!line.contains("DEBUG")) {
+                    textArea.append(line + "\n");
+                }
+            }
+        }
+        TailerListener tailerListener = new MyTailerListener();
+        Tailer tailer = new Tailer(new File("./logs/serverpackcreator.log"), tailerListener, 2000);
+        Thread thread = new Thread(tailer);
+        thread.setDaemon(true);
+        thread.start();
     }
 }
