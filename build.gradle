@@ -1,3 +1,4 @@
+//file:noinspection GroovyAssignabilityCheck
 import java.text.SimpleDateFormat
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
@@ -8,13 +9,12 @@ plugins {
     id 'maven-publish'
 
     id 'edu.sc.seis.launch4j' version '2.5.0'
-    id "org.siouan.frontend-jdk8" version "5.3.0"
+    id 'org.siouan.frontend-jdk8' version '5.3.0'
 
     id 'org.springframework.boot' version '2.5.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
-//noinspection GroovyUnusedAssignment
 sourceCompatibility = targetCompatibility = '1.8'
 
 repositories {
@@ -26,12 +26,10 @@ repositories {
 group = 'de.griefed'
 
 sourceSets {
-    //noinspection GroovyAssignabilityCheck
     main {
         java {
             srcDirs = ['backend/main/java']
         }
-        //noinspection GroovyAssignabilityCheck
         resources {
             srcDirs = ['backend/main/resources']
         }
@@ -40,7 +38,6 @@ sourceSets {
         java {
             srcDirs = ['backend/test/java']
         }
-        //noinspection GroovyAssignabilityCheck
         resources {
             srcDirs = ['backend/test/resources']
         }
@@ -76,12 +73,11 @@ configurations {
 dependencies {
     // Backend
     embed 'com.typesafe:config:1.4.1'
-    embed 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
     embed 'commons-io:commons-io:2.11.0'
     embed 'net.lingala.zip4j:zip4j:2.9.0'
     embed 'com.moandjiezana.toml:toml4j:0.7.2'
     embed 'com.github.TheRandomLabs:CurseAPI:cdc5d48'
-    embed 'org.xerial:sqlite-jdbc:3.36.0.1'
+    embed 'org.xerial:sqlite-jdbc:3.36.0.2'
 
     //Swing GUI
     embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
@@ -96,7 +92,7 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.5.4'
 
     // Testing
-    testImplementation 'org.mockito:mockito-core:3.12.1'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.4'
@@ -188,7 +184,6 @@ java {
 
 bootJar {
     // Customize MANIFEST to include relevant information.
-    //noinspection GroovyAssignabilityCheck
     manifest {
         attributes  "Start-Class"    : "de.griefed.serverpackcreator.Main",
                     "Description"    : "Create server packs from Minecraft modpacks.",
@@ -211,7 +206,6 @@ jar {
     }
 
     // Customize MANIFEST to include relevant information.
-    //noinspection GroovyAssignabilityCheck
     manifest {
         attributes(
                 "Main-Class"     : "de.griefed.serverpackcreator.Main",
@@ -256,11 +250,8 @@ publishing {
         }
     }
     publications {
-        //noinspection GroovyAssignabilityCheck
         gpr(MavenPublication) {
-            //noinspection GroovyAssignabilityCheck
             artifactId='serverpackcreator'
-            //noinspection GroovyAssignabilityCheck
             from (components.java)
         }
     }
