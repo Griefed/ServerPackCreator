@@ -349,6 +349,7 @@ public class TabCreateServerPack extends JComponent {
     /**
      * Setter for the JVM flags / Java args.
      * @author Griefed
+     * @param javaArgs String. The javaargs to set.
      */
     public void setJavaArgs(String javaArgs) {
         this.javaArgs = javaArgs;
