@@ -43,14 +43,41 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #TabCreateServerPack(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, VersionLister, Properties, JFrame)}<br>
+ * 2. {@link #actionEventCheckBoxServer(ActionEvent)}<br>
+ * 3. {@link #actionEventComboBoxFabricVersions(ActionEvent)}<br>
+ * 4. {@link #actionEventComboBoxForgeVersions(ActionEvent)}<br>
+ * 5. {@link #actionEventComboBoxMinecraftVersion(ActionEvent)}<br>
+ * 6. {@link #addMouseListenerContentAreaFilledToButton(JButton)}<br>
+ * 7. {@link #changeForgeVersionListDependingOnMinecraftVersion(String)}<br>
+ * 8. {@link #chooseJava()}<br>
+ * 9. {@link #createServerPackTab()}<br>
+ * 10.{@link #generateServerpack(ActionEvent)}<br>
+ * 11.{@link #getChosenModloader()}<br>
+ * 12.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
+ * 13.{@link #getJavaArgs()}<br>
+ * 14.{@link #getJavaPath()}<br>
+ * 15.{@link #getSelectedModloaderVersion()}<br>
+ * 16.{@link #getSERVER_PACKS_DIR()}<br>
+ * 17.{@link #itemEventRadioButtonModloaderFabric(ItemEvent)}<br>
+ * 18.{@link #itemEventRadioButtonModloaderForge(ItemEvent)}<br>
+ * 19.{@link #loadConfig(File)}<br>
+ * 20.{@link #saveConfig(File, boolean)}<br>
+ * 21.{@link #selectClientMods(ActionEvent)}<br>
+ * 22.{@link #selectCopyDirs(ActionEvent)}<br>
+ * 23.{@link #selectJavaInstallation(ActionEvent)}<br>
+ * 24.{@link #selectModpackDirectory(ActionEvent)}<br>
+ * 25.{@link #setChosenModloader(String)}<br>
+ * 26.{@link #setJavaArgs(String)}<br>
+ * 27.{@link #updateModloaderGuiComponents(boolean, boolean, String)}<p>
  * This class creates the tab which displays the labels, textfields, buttons and functions in order to create a new
  * server pack. Available are:<br>
  * JLabels and JTextFields for modpackDir, clientMods, copyDirs, javaPath, minecraftVersion, modLoader, modLoaderVersion<br>
@@ -59,13 +86,15 @@ import java.util.concurrent.Executors;
  * A button for displaying an information windows which provides detailed explanation of the important parts of the GUI.<br>
  * The button start the generation of a new server pack.<br>
  * The label under the button to start the generation of a new server pack, which displays the latest log entry of the
- * serverpackcreator.log <em>during</em> the creation of a new server pack.<p>
- *     If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
- * </p>
+ * serverpackcreator.log <em>during</em> the creation of a new server pack.<br>
+ * If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
  * @author Griefed
  */
 public class TabCreateServerPack extends JComponent {
+
     private static final Logger LOG = LogManager.getLogger(TabCreateServerPack.class);
+
+    private final JFrame FRAME_SERVERPACKCREATOR;
 
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final LocalizationManager LOCALIZATIONMANAGER;
@@ -74,78 +103,11 @@ public class TabCreateServerPack extends JComponent {
     private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
 
-    private Properties serverpackcreatorproperties;
+    private final StyledDocument serverPackGeneratedDocument = new DefaultStyledDocument();
 
-    private StyledDocument serverPackGeneratedDocument = new DefaultStyledDocument();
+    private final SimpleAttributeSet serverPackGeneratedAttributeSet = new SimpleAttributeSet();
 
-    private SimpleAttributeSet serverPackGeneratedAttributeSet = new SimpleAttributeSet();
-
-    private JTextPane serverPackGeneratedTextPane = new JTextPane(serverPackGeneratedDocument);
-
-    /**
-     * <strong>Constructor</strong><p>
-     * Used for Dependency Injection.<p>
-     * Receives an instance of {@link LocalizationManager} or creates one if the received
-     * one is null. Required for use of localization.<p>
-     * Receives an instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.<p>
-     * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
-     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
-     * Receives an instance of {@link ServerPackHandler} which is required to generate a server pack.
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.
-     * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
-     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
-     * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
-     * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
-     * @param injectedVersionLister Instance of {@link VersionLister} required for setting/changing comboboxes.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
-     */
-    public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
-                               CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties) {
-
-        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
-
-        if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
-        } else {
-            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
-        }
-
-        if (injectedAddonsHandler == null) {
-            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER);
-        } else {
-            this.ADDONSHANDLER = injectedAddonsHandler;
-        }
-
-        if (injectedConfigurationHandler == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER);
-        } else {
-            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
-        }
-
-        if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, serverpackcreatorproperties);
-        } else {
-            this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-        }
-
-        if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverpackcreatorproperties);
-        } else {
-            this.CREATESERVERPACK = injectedServerPackHandler;
-        }
-
-        this.VERSIONLISTER = injectedVersionLister;
-
-        serverPackGeneratedTextPane.setOpaque(false);
-        serverPackGeneratedTextPane.setEditable(false);
-        StyleConstants.setBold(serverPackGeneratedAttributeSet, true);
-        StyleConstants.setFontSize(serverPackGeneratedAttributeSet, 14);
-        serverPackGeneratedTextPane.setCharacterAttributes(serverPackGeneratedAttributeSet, true);
-        StyleConstants.setAlignment(serverPackGeneratedAttributeSet, StyleConstants.ALIGN_LEFT);
-    }
+    private final JTextPane serverPackGeneratedTextPane = new JTextPane(serverPackGeneratedDocument);
 
     private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/folder.png")));
     private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/start_generation.png")));
@@ -172,7 +134,7 @@ public class TabCreateServerPack extends JComponent {
 
     private final JComponent CREATESERVERPACKPANEL = new JPanel(false);
 
-    private MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+    private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
 
     private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
     private final JComboBox<String> COMBOBOX_FORGEVERSIONS = new JComboBox<>();
@@ -182,6 +144,12 @@ public class TabCreateServerPack extends JComponent {
     private final JTextField TEXTFIELD_CLIENTSIDEMODS = new JTextField("");
     private final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
     private final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
+
+    private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
+
+    private final String SERVER_PACKS_DIR;
+
+    private Properties serverPackCreatorProperties;
 
     private JLabel labelGenerateServerPack;
     private JLabel labelModpackDir;
@@ -215,6 +183,121 @@ public class TabCreateServerPack extends JComponent {
     private JRadioButton fabricRadioButton;
 
     /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection.<p>
+     * Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.<p>
+     * Receives an instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.<p>
+     * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
+     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * Receives an instance of {@link ServerPackHandler} which is required to generate a server pack.
+     * @author Griefed
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.
+     * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
+     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
+     * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
+     * @param injectedVersionLister Instance of {@link VersionLister} required for setting/changing comboboxes.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
+     */
+    public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
+                               CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
+                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties,
+                               JFrame injectedServerPackCreatorFrame) {
+
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
+        if (injectedLocalizationManager == null) {
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        } else {
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+        }
+
+        if (injectedAddonsHandler == null) {
+            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        } else {
+            this.ADDONSHANDLER = injectedAddonsHandler;
+        }
+
+        if (injectedCurseCreateModpack == null) {
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        } else {
+            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
+        }
+
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
+        }
+
+        if (injectedConfigurationHandler == null) {
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
+        } else {
+            this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
+        }
+
+        if (injectedServerPackHandler == null) {
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
+        } else {
+            this.CREATESERVERPACK = injectedServerPackHandler;
+        }
+
+        this.FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
+
+        String tempDir = null;
+        try {
+            tempDir = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+        } catch (NullPointerException npe) {
+            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+            tempDir = "server-packs";
+        } finally {
+            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
+                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks",tempDir);
+                SERVER_PACKS_DIR = tempDir;
+
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
+                    serverPackCreatorProperties.store(outputStream, null);
+                } catch (IOException ex) {
+                    LOG.error("Couldn't write properties-file.", ex);
+                }
+
+            } else {
+                SERVER_PACKS_DIR = "server-packs";
+            }
+        }
+    }
+
+    /**
+     * Getter for the serverpackcreator.properties-file.
+     * @author Griefed
+     * @return File. Returns the serverpackcreator.properties-file.
+     */
+    public File getFILE_SERVERPACKCREATOR_PROPERTIES() {
+        return FILE_SERVERPACKCREATOR_PROPERTIES;
+    }
+
+    /**
+     * Getter for the directory in which server-packs will be generated and stored in.
+     * @author Griefed
+     * @return String. Returns the path to the server-packs directory as a string.
+     */
+    public String getSERVER_PACKS_DIR() {
+        return SERVER_PACKS_DIR;
+    }
+
+    /**
      * Getter for the chosen modloader from the JRadioButtons.
      * @author Griefed
      * @return String. Returns either Fabric or Forge.
@@ -245,10 +328,29 @@ public class TabCreateServerPack extends JComponent {
         }
     }
 
+    /**
+     * Getter for the currently set JVM flags / Java args.
+     * @author Griefed
+     * @return String. Returns the currently set JVM flags / Java args.
+     */
     public String getJavaArgs() {
         return javaArgs;
     }
 
+    /**
+     * Getter for the current text from the currently set Javapath in the Javapath textfield.
+     * @author Griefed
+     * @return String. Returns the current text from the currently set Javapath in the Javapath textfield.
+     */
+    public String getJavaPath() {
+        return TEXTFIELD_JAVAPATH.getText();
+    }
+
+    /**
+     * Setter for the JVM flags / Java args.
+     * @author Griefed
+     * @param javaArgs String. The javaargs to set.
+     */
     public void setJavaArgs(String javaArgs) {
         this.javaArgs = javaArgs;
     }
@@ -414,7 +516,7 @@ public class TabCreateServerPack extends JComponent {
         COMBOBOX_FABRICVERSIONS.addActionListener(this::actionEventComboBoxFabricVersions);
         COMBOBOX_FABRICVERSIONS.setVisible(false);
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString())));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeMeta().get(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString()));
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -437,6 +539,7 @@ public class TabCreateServerPack extends JComponent {
         //Checkbox installServer
         checkBoxServer = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver"),true);
         checkBoxServer.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.tip"));
+        checkBoxServer.addActionListener(this::actionEventCheckBoxServer);
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 14;
@@ -578,10 +681,62 @@ public class TabCreateServerPack extends JComponent {
 
 // --------------------------------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
-
+        serverPackGeneratedTextPane.setOpaque(false);
+        serverPackGeneratedTextPane.setEditable(false);
+        StyleConstants.setBold(serverPackGeneratedAttributeSet, true);
+        StyleConstants.setFontSize(serverPackGeneratedAttributeSet, 14);
+        serverPackGeneratedTextPane.setCharacterAttributes(serverPackGeneratedAttributeSet, true);
+        StyleConstants.setAlignment(serverPackGeneratedAttributeSet, StyleConstants.ALIGN_LEFT);
+        try {
+            serverPackGeneratedDocument.insertString(0,
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
+                    serverPackGeneratedAttributeSet);
+        } catch (BadLocationException ex) {
+            LOG.error("Error inserting text into aboutDocument.", ex);
+        }
         loadConfig(new File("serverpackcreator.conf"));
 
         return CREATESERVERPACKPANEL;
+    }
+
+    /**
+     * Checks whether the checkbox for the modloader-server installation is selected and whether the path to the Java-installation
+     * is defined. If true and empty, a message is displayed, warning the user that Javapath needs to be defined for the
+     * modloader-server installation to work. If "Yes" is clicked, a filechooser will open where the user can select their
+     * Java-executable/binary. If "No" is selected, the user is warned about the consequences of not setting the Javapath.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventCheckBoxServer(ActionEvent actionEvent) {
+        // TODO: Replace with lang keys
+        if (checkBoxServer.isSelected() && TEXTFIELD_JAVAPATH.getText().equals("")) {
+            switch (JOptionPane.showConfirmDialog(
+                    CREATESERVERPACKPANEL,
+                    "Install modlaoder-server selected, but no path to Java defined. Choose now?",
+                    "Javapath not sespecified!",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            )) {
+                case 0:
+
+                    chooseJava();
+                    break;
+
+                case 1:
+
+                    JOptionPane.showMessageDialog(
+                            CREATESERVERPACKPANEL,
+                            "Caution: Javapath needs to be defined in order to install the modloader-server!",
+                            "WARNING!",
+                            JOptionPane.ERROR_MESSAGE,
+                            null
+                    );
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 
     /**
@@ -610,7 +765,7 @@ public class TabCreateServerPack extends JComponent {
      */
     void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(chosenMinecraftVersion)));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion));
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -827,7 +982,14 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void selectJavaInstallation(ActionEvent event) {
+        chooseJava();
+    }
 
+    /**
+     * Opens a filechooser to select the Java-executable/binary.
+     * @author Griefed
+     */
+    void chooseJava() {
         javaChooser = new JFileChooser();
 
         if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))).isDirectory()) {
@@ -865,6 +1027,8 @@ public class TabCreateServerPack extends JComponent {
      * @param event The event which triggers this method.
      */
     private void generateServerpack(ActionEvent event) {
+
+        FRAME_SERVERPACKCREATOR.setResizable(false);
 
         BUTTON_GENERATESERVERPACK.setEnabled(false);
 
@@ -912,11 +1076,6 @@ public class TabCreateServerPack extends JComponent {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
 
-            SwingUtilities.invokeLater(() -> {
-
-
-                    });
-
             final ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.execute(() -> {
 
@@ -928,42 +1087,41 @@ public class TabCreateServerPack extends JComponent {
 
                     BUTTON_GENERATESERVERPACK.setEnabled(true);
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
-                    TEXTFIELD_MODPACKDIRECTORY.setText(configurationModel.getModpackDir());
-                    TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));
 
-                    try {
-                        serverPackGeneratedDocument.insertString(0, String.format("%s\n%s",
-                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                                String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))),
-                                serverPackGeneratedAttributeSet);
-                    } catch (BadLocationException ex) {
-                        LOG.error("Error inserting text into aboutDocument.", ex);
-                    }
+                    loadConfig(new File("serverpackcreator.conf"));
+                    /*TEXTFIELD_MODPACKDIRECTORY.setText(configurationModel.getModpackDir());
+                    TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));*/
 
                     serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
-                    materialTextPaneUI.installUI(serverPackGeneratedTextPane);
+                    MATERIALTEXTPANEUI.installUI(serverPackGeneratedTextPane);
 
                     if (JOptionPane.showConfirmDialog(
-                            CREATESERVERPACKPANEL,
+                            FRAME_SERVERPACKCREATOR,
                             serverPackGeneratedTextPane,
                             LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.INFORMATION_MESSAGE) == 0) {
 
                         try {
-                            Desktop.getDesktop().open(new File(String.format("server-packs/%s", configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
+                            Desktop.getDesktop().open(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
                         } catch (IOException ex) {
                             LOG.error("Error opening file explorer for server pack.", ex);
                         }
 
                     }
+
                     BUTTON_GENERATESERVERPACK.setEnabled(true);
+
                     System.gc();
                     System.runFinalization();
+
                     tailer.stop();
                     executorService.shutdown();
 
+                    FRAME_SERVERPACKCREATOR.setResizable(true);
+
                 } else {
+
                     tailer.stop();
 
                     System.gc();
@@ -973,12 +1131,16 @@ public class TabCreateServerPack extends JComponent {
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
                     executorService.shutdown();
+
+                    FRAME_SERVERPACKCREATOR.setResizable(true);
+
                 }
             });
 
         } else {
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
             BUTTON_GENERATESERVERPACK.setEnabled(true);
+            FRAME_SERVERPACKCREATOR.setResizable(true);
         }
     }
 
@@ -1046,28 +1208,49 @@ public class TabCreateServerPack extends JComponent {
             TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
 
             try {
+                String minecraftVersion;
+                try {
+                    minecraftVersion = config.getString("minecraftVersion");
+                } catch (NullPointerException npe) {
+                    minecraftVersion = "1.17.1";
+                }
+
+                if (minecraftVersion.equals("")) {
+                    minecraftVersion = "1.17.1";
+                }
+
                 String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
-                if (!config.getString("minecraftVersion").equals("")) {
-                    for (int i = 0; i < mcver.length; i++) {
-                        if (mcver[i].equals(config.getString("minecraftVersion"))) {
-                            COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
-                            chosenMinecraftVersion = config.getString("minecraftVersion");
-                        }
+                for (int i = 0; i < mcver.length; i++) {
+                    if (mcver[i].equals(minecraftVersion)) {
+                        COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
+                        chosenMinecraftVersion = minecraftVersion;
                     }
                 }
+
             } catch (NullPointerException ex) {
                 LOG.error("Error parsing minecraft-version from configfile: " + configFile, ex);
             }
 
             try {
-                String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
-                String[] forgever = VERSIONLISTER.getForgeVersionsAsArray(config.getString("minecraftVersion"));
+
+                String modloader;
+                try {
+                    if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
+                        modloader = "Fabric";
+                    } else if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Forge")) {
+                        modloader = "Forge";
+                    } else {
+                        modloader = "Forge";
+                    }
+                } catch (NullPointerException | ConfigException ex) {
+                    modloader = "Forge";
+                }
 
                 String modloaderver = config.getString("modLoaderVersion");
+                
+                if (modloader.equals("Fabric")) {
 
-                changeForgeVersionListDependingOnMinecraftVersion(config.getString("minecraftVersion"));
-
-                if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
+                    String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
 
                     updateModloaderGuiComponents(true, false, "Fabric");
 
@@ -1081,6 +1264,8 @@ public class TabCreateServerPack extends JComponent {
                     }
 
                 } else {
+                    String[] forgever = VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion);
+                    changeForgeVersionListDependingOnMinecraftVersion(chosenMinecraftVersion);
 
                     updateModloaderGuiComponents(false, true, "Forge");
 

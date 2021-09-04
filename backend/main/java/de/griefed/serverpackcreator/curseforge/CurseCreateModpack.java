@@ -32,7 +32,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -41,16 +43,22 @@ import java.util.stream.Stream;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
- * <strong>Table of methods</strong><br>
- * {@link #CurseCreateModpack(LocalizationManager)}<br>
- * {@link #setModloaderCase(String)}<br>
- * {@link #curseForgeModpack(String, Integer, Integer)}<br>
- * {@link #initializeModpack(String, Integer, Integer)}<br>
- * {@link #downloadMods(String)}<br>
- * {@link #copyOverride(String)}<br>
- * {@link #checkCurseForgeDir(String)}<br>
- * {@link #unzipArchive(String, String)}<br>
- * {@link #cleanupEnvironment(String)}<p>
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #CurseCreateModpack(LocalizationManager, Properties)}<br>
+ * 2. {@link #checkCurseForgeDir(String)}<br>
+ * 3. {@link #cleanupEnvironment(String)}<br>
+ * 4. {@link #copyOverride(String)}<br>
+ * 5. {@link #curseForgeModpack(String, Integer, Integer)}<br>
+ * 6. {@link #downloadMods(String)}<br>
+ * 7. {@link #getFileDiskName()}<br>
+ * 8. {@link #getFileName()}<br>
+ * 9. {@link #getObjectMapper()}<br>
+ * 10.{@link #getProjectName()}<br>
+ * 11.{@link #initializeModpack(String, Integer, Integer)}<br>
+ * 12.{@link #setFileNameAndDiskName(int, int)}<br>
+ * 13.{@link #setModloaderCase(String)}<br>
+ * 14.{@link #setProjectName(int)}<br>
+ * 15.{@link #unzipArchive(String, String)}<p>
  * Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
  * override directory to the parent directory, download all mods in said modpack, and delete no longer needed files.
  * Modpacks are create in a ProjectName/FileDisplayName structure. Before a modpack is created, the FileDisplayName folder
@@ -78,6 +86,10 @@ public class CurseCreateModpack {
     private String projectName;
     private String fileName;
     private String fileDiskName;
+    private String projectID;
+    private String fileID;
+
+    private Properties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -86,11 +98,23 @@ public class CurseCreateModpack {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public CurseCreateModpack(LocalizationManager injectedLocalizationManager) {
+    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -218,10 +242,13 @@ public class CurseCreateModpack {
      *                 download the modpack.
      * @param fileID Integer. The ID of the file. Used to gather information about the CurseForge file and to download
      *              the modpack.
-     * @return Boolean. Returns true if the modpack was successfully created.
+     * //@return Boolean. Returns true if the modpack was successfully created.
      */
-    public boolean curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
+    public void curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
         boolean modpackCreated = false;
+
+        this.projectID = projectID.toString();
+        this.fileID = fileID.toString();
 
         try {
             if (CurseAPI.project(projectID).isPresent()) {
@@ -240,9 +267,12 @@ public class CurseCreateModpack {
 
             initializeModpack(modpackDir, projectID, fileID);
             modpackCreated = true;
+        } else {
+            // TODO: Replace with lang key
+            LOG.info("Modpack is already downloaded and present.");
         }
 
-        return modpackCreated;
+        //return modpackCreated;
     }
 
     /**
@@ -454,9 +484,17 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir.create"));
         } else {
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));
-            isModpackPresent = cleanupEnvironment(modpackDir);
+            if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.curseforge.cleanup.enabled").equalsIgnoreCase("true")) {
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));
+                isModpackPresent = cleanupEnvironment(modpackDir);
+
+            } else {
+                // TODO: Replace with lang key
+                LOG.info("CurseForge cleanup disabled.");
+                isModpackPresent = true;
+            }
         }
         return isModpackPresent;
     }

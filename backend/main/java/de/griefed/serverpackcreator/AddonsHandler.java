@@ -33,17 +33,17 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #AddonsHandler(LocalizationManager)}<br>
- * 2. {@link #initializeAddons()}<br>
+ * 1. {@link #AddonsHandler(LocalizationManager, Properties)}<br>
  * 3. {@link #getListOfAddons()}<br>
- * 4. {@link #setListOfAddons()}<br>
  * 5. {@link #getListOfServerPackAddons()}<br>
- * 6. {@link #setListOfServerPackAddons(List)}<br>
- * 7. {@link #runServerPackAddons(ConfigurationModel, ConfigurationHandler)}
- * <p>
+ * 2. {@link #initializeAddons()}<br>
+ * 7. {@link #runServerPackAddons(ConfigurationModel, ConfigurationHandler)}<br>
+ * 4. {@link #setListOfAddons()}<br>
+ * 6. {@link #setListOfServerPackAddons(List)}<p>
  * The AddonHandler provides the ability to load JAR-files from the addons-directory.<br>
  * This allows the execution of additional code after a server pack has been generated.<br>
  * Please note: I am not responsible for data loss or damage caused by using addons. I have no way of verifying whether
@@ -60,9 +60,12 @@ public class AddonsHandler {
 
     private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
 
+    private final LocalizationManager LOCALIZATIONMANAGER;
+
     private List<String> listOfAddons;
     private List<String> listOfServerPackAddons;
-    private final LocalizationManager LOCALIZATIONMANAGER;
+
+    private Properties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -71,14 +74,28 @@ public class AddonsHandler {
      * one is null. Required for use of localization.<p>
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public AddonsHandler(LocalizationManager injectedLocalizationManager) {
+    public AddonsHandler(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
+
+        initializeAddons();
     }
 
     /**

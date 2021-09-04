@@ -537,7 +537,8 @@ services:
       - COPYDIRS= # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
       - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
     volumes:
-      - /host/path/todata:data # Created modpacks and server packs will be here
+      - /host/path/todata:/data # ServerPackCreator files like configuration files are here
+      - /host/path/todata:/server-packs # Created server packs will be here
     ports:
       - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
 ```
@@ -563,7 +564,8 @@ docker create \
   -e COPYDIRS= `# Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.` \
   -e CLIENTMODS= `# Comma-separated. Client-side mods to delete from server pack.` \
   -p 8080:8080 `# Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web.` \
-  -v /host/path/todata:data `# Created modpacks and server packs will be here` \
+  -v /host/path/todata:/data `# ServerPackCreator files like configuration files are here` \
+  -v /host/path/todata:/server-packs `# Created server packs will be here` \
   --restart "no" \ `# Set to unless-stopped if you set STARTUP_PARAMETER=web`
   griefed/serverpackcreator:latest
 ```

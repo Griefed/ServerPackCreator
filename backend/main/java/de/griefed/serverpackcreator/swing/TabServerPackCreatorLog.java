@@ -22,19 +22,34 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.utilities.SmartScroller;
 import org.apache.commons.io.input.Tailer;
+import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #TabServerPackCreatorLog(LocalizationManager, Properties)}<br>
+ * 2. {@link #createTailer()}<br>
+ * 3. {@link #serverPackCreatorLogTab()}<p>
  * This class creates the tab which display the latest serverpackcreator.log tailer.
  * @author Griefed
  */
 public class TabServerPackCreatorLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+
+    private Properties serverPackCreatorProperties;
+
+    private JTextArea textArea;
 
     /**
      * <strong>Constructor</strong><p>
@@ -43,16 +58,26 @@ public class TabServerPackCreatorLog extends JComponent {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
-    public TabServerPackCreatorLog(LocalizationManager injectedLocalizationManager) {
+    public TabServerPackCreatorLog(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
     }
-
-    private JTextArea textArea;
 
     /**
      * Create the tab for the serverpackcreator.log tailer in a JScrollPane with an always available vertical scrollbar
@@ -79,18 +104,7 @@ public class TabServerPackCreatorLog extends JComponent {
         textArea = new JTextArea();
         textArea.setEditable(false);
 
-        Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
-            public void handle(String line) {
-                synchronized (this) {
-                    if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
-                        textArea.setText("");
-                    }
-                    if (!line.contains("DEBUG")) {
-                        textArea.append(line + "\n");
-                    }
-                }
-            }
-        }, 2000, false);
+        createTailer();
 
         JScrollPane scrollPane = new JScrollPane(
                 textArea,
@@ -102,5 +116,23 @@ public class TabServerPackCreatorLog extends JComponent {
         serverPackCreatorLogPanel.add(scrollPane, constraints);
 
         return serverPackCreatorLogPanel;
+    }
+
+    private void createTailer() {
+        class MyTailerListener extends TailerListenerAdapter {
+            public void handle(String line) {
+                if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
+                    textArea.setText("");
+                }
+                if (!line.contains("DEBUG")) {
+                    textArea.append(line + "\n");
+                }
+            }
+        }
+        TailerListener tailerListener = new MyTailerListener();
+        Tailer tailer = new Tailer(new File("./logs/serverpackcreator.log"), tailerListener, 2000);
+        Thread thread = new Thread(tailer);
+        thread.setDaemon(true);
+        thread.start();
     }
 }

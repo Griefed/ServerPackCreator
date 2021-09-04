@@ -24,7 +24,6 @@ import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.combobox.MaterialComboBoxUI;
-import mdlaf.components.panel.MaterialPanelUI;
 import mdlaf.components.textfield.MaterialTextFieldUI;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.FileUtils;
@@ -49,6 +48,42 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Properties;
 
+/**
+ * <strong>Table of methods</strong><p>
+ * 1. {@link #MenuBar(LocalizationManager, LightTheme, DarkTheme, JFrame, MaterialLookAndFeel, MaterialLookAndFeel, TabCreateServerPack, JTabbedPane, Properties)} (LocalizationManager, Properties)}<br>
+ * 2. {@link #actionEventChangeJavaArgsMenuItem(ActionEvent)}<br>
+ * 3. {@link #actionEventExitMenuItem(ActionEvent)}<br>
+ * 4. {@link #actionEventLoadConfigurationFromFileMenuItem(ActionEvent)}<br>
+ * 5. {@link #actionEventOpenAboutSPCMenuItem(ActionEvent)}<br>
+ * 6. {@link #actionEventOpenAddonsDirectoryMenuItem(ActionEvent)}<br>
+ * 7. {@link #actionEventOpenDiscordLinkMenuItem(ActionEvent)}<br>
+ * 8. {@link #actionEventOpenDonateMenuItem(ActionEvent)}<br>
+ * 9. {@link #actionEventOpenGitHubMenuItem(ActionEvent)}<br>
+ * 10.{@link #actionEventOpenHelpMenuItem(ActionEvent)}<br>
+ * 11.{@link #actionEventOpenInEditorServerProperties(ActionEvent)}<br>
+ * 12.{@link #actionEventOpenIssuesMenuItem(ActionEvent)}<br>
+ * 13.{@link #actionEventOpenReleaseMenuItem(ActionEvent)}<br>
+ * 14.{@link #actionEventOpenServerFilesDirectoryMenuItem(ActionEvent)}<br>
+ * 15.{@link #actionEventOpenServerIcon(ActionEvent)}<br>
+ * 16.{@link #actionEventOpenServerPacksDirectoryMenuItem(ActionEvent)}<br>
+ * 17.{@link #actionEventOpenSPCDirectoryMenuItem(ActionEvent)}<br>
+ * 18.{@link #actionEventSaveAsConfigToFileMenuItem(ActionEvent)}<br>
+ * 19.{@link #actionEventSaveConfigToFileMenuItem(ActionEvent)}<br>
+ * 20.{@link #actionEventSetHelpText(ActionEvent)}<br>
+ * 21.{@link #actionEventSwitchThemeMenuItem(ActionEvent)}<br>
+ * 22.{@link #actionEventUploadConfigurationToHasteBinMenuItem(ActionEvent)}<br>
+ * 23.{@link #actionEventUploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent)}<br>
+ * 24.{@link #actionEventViewExampleAddonMenuItem(ActionEvent)}<br>
+ * 25.{@link #checkFileSize(File)}<br>
+ * 26.{@link #createHasteBinFromFile(File)}<br>
+ * 27.{@link #createMenuBar()}<br>
+ * 28.{@link #fileTooLargeDialog()}
+ * 29.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}
+ * 30.{@link #getSERVER_PACKS_DIR()}<p>
+ * This class creates our menubar which will be displayed at the top of the ServerPackCreator frame. It contains various
+ * menus and menuitems to execute, change, open and edit various different aspects of ServerPackCreator.
+ * @author Griefed
+ */
 public class MenuBar extends Component {
 
     private static final Logger LOG = LogManager.getLogger(MenuBar.class);
@@ -84,12 +119,13 @@ public class MenuBar extends Component {
 
     private final JMenuBar MENUBAR = new JMenuBar();
 
-    private final File PROPERTIESFILE = new File("serverpackcreator.properties");
+    private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
 
     private final String HELPWINDOWTEXT;
     private final String ABOUTWINDOWTEXT;
     private final String FILETOOLARGETEXT;
     private final String FILETOOLARGETITLE;
+    private final String SERVER_PACKS_DIR;
 
     private final String[] JAVAARGSOPTIONS = new String[4];
     private final String[] JAVAARGSSELECTIONS = new String[2];
@@ -99,7 +135,33 @@ public class MenuBar extends Component {
 
     private final JTextField JAVAARGS = new JTextField();
 
-    private Properties serverpackcreatorproperties;
+    private final StyledDocument helpWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument aboutWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument configWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument spcLogWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument fileTooLargeWindowDocument = new DefaultStyledDocument();
+
+    private final SimpleAttributeSet aboutAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet helpAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet configAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet spcLogAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet fileTooLargeAttributeSet = new SimpleAttributeSet();
+
+    private final JTextPane helpWindowTextPane = new JTextPane(helpWindowDocument);
+    private final JTextPane aboutWindowTextPane = new JTextPane(aboutWindowDocument);
+    private final JTextPane configWindowTextPane = new JTextPane(configWindowDocument);
+    private final JTextPane spcLogWindowTextPane = new JTextPane(spcLogWindowDocument);
+    private final JTextPane fileTooLargeWindowTextPane = new JTextPane();
+
+    private final MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+    private final MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
+    private final MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
+
+    private final JTextArea helpTextArea = new JTextArea();
+
+    private final JPanel helpPanel = new JPanel();
+
+    private Properties serverPackCreatorProperties;
 
     private boolean isDarkTheme;
 
@@ -137,40 +199,40 @@ public class MenuBar extends Component {
 
     private JFileChooser configChooser;
 
-    private StyledDocument helpWindowDocument = new DefaultStyledDocument();
-    private StyledDocument aboutWindowDocument = new DefaultStyledDocument();
-    private StyledDocument configWindowDocument = new DefaultStyledDocument();
-    private StyledDocument spcLogWindowDocument = new DefaultStyledDocument();
-    private StyledDocument fileTooLargeWindowDocument = new DefaultStyledDocument();
-
-    private SimpleAttributeSet aboutAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet helpAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet configAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet spcLogAttributeSet = new SimpleAttributeSet();
-    private SimpleAttributeSet fileTooLargeAttributeSet = new SimpleAttributeSet();
-
-    private JTextPane helpWindowTextPane = new JTextPane(helpWindowDocument);
-    private JTextPane aboutWindowTextPane = new JTextPane(aboutWindowDocument);
-    private JTextPane configWindowTextPane = new JTextPane(configWindowDocument);
-    private JTextPane spcLogWindowTextPane = new JTextPane(spcLogWindowDocument);
-    private JTextPane fileTooLargeWindowTextPane = new JTextPane();
-
-    private MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
-    private MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
-    private MaterialPanelUI materialPanelUI = new MaterialPanelUI();
-    private MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
-
     private DefaultComboBoxModel<String> helpComboBoxModel;
     private JComboBox<String> helpComboBox;
-    private JTextArea helpTextArea = new JTextArea();
-    private JPanel helpPanel = new JPanel();
 
+
+    /**
+     * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
+     * @author Griefed
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedLightTheme Instance of {@link LightTheme} required for theme switching.
+     * @param injectedDarkTheme Instance of {@link DarkTheme} required for theme switching.
+     * @param injectedJFrame The parent from in which everything ServerPackCreator is displayed in.
+     * @param injectedLAF_Light Instance of {@link MaterialLookAndFeel} with our {@link LightTheme}.
+     * @param injectedLAF_Dark Instance of {@link MaterialLookAndFeel} with our {@link DarkTheme}.
+     * @param injectedTabCreateServerPack Our tab for configuring ServerPackCreator.
+     * @param injectedTabbedPane The tabbed pane which holds all our tabs.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     */
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
                    TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, Properties injectedServerPackCreatorProperties) {
 
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -183,14 +245,12 @@ public class MenuBar extends Component {
         this.TAB_CREATESERVERPACK = injectedTabCreateServerPack;
         this.TABBEDPANE = injectedTabbedPane;
 
-        this.serverpackcreatorproperties = injectedServerPackCreatorProperties;
-
         try {
-            isDarkTheme = Boolean.parseBoolean(serverpackcreatorproperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+            isDarkTheme = Boolean.parseBoolean(serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
         } catch (NullPointerException ex) {
             LOG.error("No setting for darkmode found in properties-file. Using true.");
             isDarkTheme = true;
-            serverpackcreatorproperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
+            serverPackCreatorProperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
         }
 
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
@@ -374,6 +434,36 @@ public class MenuBar extends Component {
         helpPanel.setPreferredSize(HELPDIMENSION);
         helpPanel.setMaximumSize(HELPDIMENSION);
 
+        String tempDir = null;
+        try {
+            tempDir = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+        } catch (NullPointerException npe) {
+            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
+            tempDir = "server-packs";
+        } finally {
+            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
+                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks",tempDir);
+                SERVER_PACKS_DIR = tempDir;
+
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
+                    serverPackCreatorProperties.store(outputStream, null);
+                } catch (IOException ex) {
+                    LOG.error("Couldn't write properties-file.", ex);
+                }
+
+            } else {
+                SERVER_PACKS_DIR = "server-packs";
+            }
+        }
+    }
+
+    /**
+     * Getter for the directory in which server-packs will be generated and stored in.
+     * @author Griefed
+     * @return String. Returns the path to the server-packs directory as a string.
+     */
+    public String getSERVER_PACKS_DIR() {
+        return SERVER_PACKS_DIR;
     }
 
     /**
@@ -381,8 +471,8 @@ public class MenuBar extends Component {
      * @author Griefed
      * @return File. Returns the serverpackcreator.properties-file.
      */
-    File getPropertiesFile() {
-        return PROPERTIESFILE;
+    public File getFILE_SERVERPACKCREATOR_PROPERTIES() {
+        return FILE_SERVERPACKCREATOR_PROPERTIES;
     }
 
     /**
@@ -545,7 +635,7 @@ public class MenuBar extends Component {
 
     /**
      * Upon button-press, uploads the serverpackcreator.log-file to HasteBin and display a dialog asking the user whether
-     * they want to open the URL in their default browser or copy the link to their clipboard. If the filesize exceeds 10MB,
+     * they want to open the URL in their default browser or copy the link to their clipboard. If the filesize exceeds 10 MB,
      * a warning is displayed, telling the user about filesize limitations of HasteBin.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
@@ -656,7 +746,7 @@ public class MenuBar extends Component {
     }
 
     /**
-     * Opens a dialog informing the user that a file exceeds 10MB in size.
+     * Opens a dialog informing the user that a file exceeds 10 MB in size.
      * @author Griefed
      */
     private void fileTooLargeDialog() {
@@ -723,7 +813,7 @@ public class MenuBar extends Component {
 
     /**
      * Upon button-press, open a dialog which allows the user to specify JVM flags/Java args for the start-scripts which
-     * can be created by ServerPackCreator. Provides options to use Aikars flags, clear the args, confirm the current
+     * can be created by ServerPackCreator. Provide options to use Aikars flags, clear the args, confirm the current
      * configuration and save it as well as simply canceling the dialog.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
@@ -846,10 +936,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
 
-                    serverpackcreatorproperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
-                    serverpackcreatorproperties.store(outputStream, null);
+                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
+                    serverPackCreatorProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -869,10 +959,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
+                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
 
-                    serverpackcreatorproperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
-                    serverpackcreatorproperties.store(outputStream, null);
+                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
+                    serverPackCreatorProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -994,15 +1084,7 @@ public class MenuBar extends Component {
         LOG.debug("Clicked open server packs directory.");
 
         try {
-            Desktop.getDesktop().open(
-                    new File(
-                            applicationHome.getSource().toString().replace("\\","/")
-                                    .replace(applicationHome.getSource().toString()
-                                            .substring(
-                                                    applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                    .replace("\\","/")
-                                    + "/server-packs")
-            );
+            Desktop.getDesktop().open(new File(getSERVER_PACKS_DIR()));
         } catch (IOException ex) {
             LOG.error("Error opening file explorer for server-packs.", ex);
         }
@@ -1129,10 +1211,10 @@ public class MenuBar extends Component {
     }
 
     /**
-     * Checks the filesize of the given file whether it is smaller or bigger than 10MB.
+     * Checks the filesize of the given file whether it is smaller or bigger than 10 MB.
      * @author Griefed
      * @param fileToCheck The file or directory to check.
-     * @return Boolean. True if the file is smaller, false if the file is bigger than 10MB.
+     * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
      */
     private boolean checkFileSize(File fileToCheck) {
         long fileSize = FileUtils.sizeOf(fileToCheck);
@@ -1160,7 +1242,7 @@ public class MenuBar extends Component {
      */
     private String createHasteBinFromFile(File textFile) {
         String text = null;
-        String requestURL = serverpackcreatorproperties.getProperty(
+        String requestURL = serverPackCreatorProperties.getProperty(
                 "de.griefed.serverpackcreator.configuration.hastebinserver",
                 "https://haste.zneix.eu/documents"
         );

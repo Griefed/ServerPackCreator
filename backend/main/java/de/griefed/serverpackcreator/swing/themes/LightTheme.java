@@ -9,6 +9,11 @@ import javax.swing.*;
 import javax.swing.plaf.BorderUIResource;
 import java.awt.*;
 
+/**
+ * This is the light-theme which ServerPackCreator uses. It is based on {@link MaterialLiteTheme} via <code>extends</code>
+ * which allows us to use the base light-theme as a starting point but changing every aspect of it in whatever way we like.
+ * @author Griefed
+ */
 public class LightTheme extends MaterialLiteTheme {
 
     @Override

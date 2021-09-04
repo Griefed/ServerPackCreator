@@ -36,7 +36,7 @@ public class ReticulatingSplines {
     /**
      * The list of messages as they were available in SimCity, plus Reticulating Splines added by myself, for good measure.
      */
-    private final String[] RETICULATING = {
+    private final String[] RETICULATING = new String[] {
             "Adding Hidden Agendas",
             "Adjusting Bell Curves",
             "Aesthesizing Industrial Areas",

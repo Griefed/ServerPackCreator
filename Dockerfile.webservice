@@ -28,6 +28,8 @@ RUN \
   echo "**** Creating our folder(s) ****" && \
   mkdir -p \
     /app/serverpackcreator && \
+  mkdir \
+    /server-packs && \
   echo "**** Cleanup ****" && \
     rm -rf \
       /root/.cache \
@@ -39,6 +41,6 @@ COPY backend/main/resources/de/griefed/resources/server_files /defaults/server_f
 
 COPY root/ /
 
-VOLUME /data
+VOLUME /data /server-packs
 
 EXPOSE 8080

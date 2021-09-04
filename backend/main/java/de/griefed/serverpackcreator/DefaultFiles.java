@@ -38,27 +38,27 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;*/
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #DefaultFiles(LocalizationManager)}<br>
- * 2. {@link #getConfigFile()}<br>
- * 3. {@link #getOldConfigFile()}<br>
- * 4. {@link #getPropertiesFile()}<br>
- * 5. {@link #getIconFile()}<br>
- * 10.{@link #getMinecraftManifestUrl()}<br>
- * 11.{@link #getForgeManifestUrl()}<br>
- * 12.{@link #getFabricManifestUrl()}<br>
- * 13.{@link #getFabricInstallerManifestUrl()}<br>
- * 14.{@link #getMANIFEST_MINECRAFT()}<br>
- * 14.{@link #getMANIFEST_FORGE()}<br>
- * 14.{@link #getMANIFEST_FABRIC()}<br>
- * 14.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
- * 14.{@link #filesSetup()}<br>
- * 15.{@link #checkForConfig()}<br>
- * 16.{@link #checkForFile(File)}<br>
- * 17.{@link #refreshManifestFile(URL, File)}
- * <p>
+ * 1. {@link #DefaultFiles(LocalizationManager, Properties)}<br>
+ * 2. {@link #checkForConfig()}<br>
+ * 3. {@link #checkForFile(File)}<br>
+ * 4. {@link #filesSetup()}<br>
+ * 5. {@link #getConfigFile()}<br>
+ * 6. {@link #getFabricInstallerManifestUrl()}<br>
+ * 7. {@link #getFabricManifestUrl()}<br>
+ * 8. {@link #getForgeManifestUrl()}<br>
+ * 9. {@link #getIconFile()}<br>
+ * 10.{@link #getMANIFEST_FABRIC()}<br>
+ * 11.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
+ * 12.{@link #getMANIFEST_FORGE()}<br>
+ * 13.{@link #getMANIFEST_MINECRAFT()}<br>
+ * 14.{@link #getMinecraftManifestUrl()}<br>
+ * 15.{@link #getOldConfigFile()}<br>
+ * 16.{@link #getPropertiesFile()}<br>
+ * 17.{@link #refreshManifestFile(URL, File)}<p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
  * Ensures all files needed by ServerPackCreator are available. If any one is missing, a new one is generated from the
@@ -82,22 +82,6 @@ public class DefaultFiles {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
 
-    /**
-     * <strong>Constructor</strong><p>
-     * Used for Dependency Injection. Receives an instance of {@link LocalizationManager} or creates one if the received
-     * one is null. Required for use of localization.
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     */
-    @Autowired
-    public DefaultFiles(LocalizationManager injectedLocalizationManager) {
-        if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager();
-        } else {
-            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
-        }
-    }
-
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
     private final File FILE_CONFIG_OLD = new File("creator.conf");
     private final File FILE_PROPERTIES = new File("server.properties");
@@ -107,6 +91,38 @@ public class DefaultFiles {
     private final File MANIFEST_FABRIC = new File("fabric-manifest.xml");
     private final File MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
     //private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
+
+    private Properties serverPackCreatorProperties;
+
+    /**
+     * <strong>Constructor</strong><p>
+     * Used for Dependency Injection. Receives an instance of {@link LocalizationManager} or creates one if the received
+     * one is null. Required for use of localization.
+     * @author Griefed
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     */
+    @Autowired
+    public DefaultFiles(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+        if (injectedServerPackCreatorProperties == null) {
+            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+                this.serverPackCreatorProperties = new Properties();
+                this.serverPackCreatorProperties.load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
+        } else {
+            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+        }
+
+        if (injectedLocalizationManager == null) {
+            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        } else {
+            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+        }
+
+        filesSetup();
+    }
 
     /**
      * Getter for serverpackcreator.conf.
