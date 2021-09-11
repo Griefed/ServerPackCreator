@@ -16,18 +16,18 @@
   },
   "dependencies": {
     "@quasar/cli": "^1.2.1",
-    "@quasar/extras": "1.10.9",
-    "axios": "0.21.1",
-    "core-js": "3.16.0",
-    "quasar": "2.0.3"
+    "@quasar/extras": "^1.10.12",
+    "axios": "^0.21.4",
+    "core-js": "^3.17.3",
+    "quasar": "^2.0.4"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.14.9",
-    "@quasar/app": "3.0.4",
-    "eslint": "7.32.0",
-    "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-vue": "7.15.1",
-    "eslint-webpack-plugin": "2.5.4"
+    "@babel/eslint-parser": "^7.15.4",
+    "@quasar/app": "^3.1.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-vue": "^7.17.0",
+    "eslint-webpack-plugin": "^3.0.1"
   },
   "browserslist": [
     "last 10 Chrome versions",
@@ -41,8 +41,8 @@
     "last 5 Opera versions"
   ],
   "engines": {
-    "node": ">= 16.1.0",
-    "npm": ">= 7.17.0",
-    "yarn": ">= 1.22.10"
+    "node": "^16.9.1",
+    "npm": "^7.21.1",
+    "yarn": "^1.22.11"
   }
 }
