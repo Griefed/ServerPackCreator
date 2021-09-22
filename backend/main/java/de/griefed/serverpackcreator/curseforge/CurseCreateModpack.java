@@ -245,7 +245,6 @@ public class CurseCreateModpack {
      * //@return Boolean. Returns true if the modpack was successfully created.
      */
     public void curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
-        boolean modpackCreated = false;
 
         this.projectID = projectID.toString();
         this.fileID = fileID.toString();
@@ -266,13 +265,12 @@ public class CurseCreateModpack {
 
 
             initializeModpack(modpackDir, projectID, fileID);
-            modpackCreated = true;
+
         } else {
-            // TODO: Replace with lang key
-            LOG.info("Modpack is already downloaded and present.");
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.overwrite"));
         }
 
-        //return modpackCreated;
+
     }
 
     /**
@@ -491,8 +489,7 @@ public class CurseCreateModpack {
                 isModpackPresent = cleanupEnvironment(modpackDir);
 
             } else {
-                // TODO: Replace with lang key
-                LOG.info("CurseForge cleanup disabled.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanup"));
                 isModpackPresent = true;
             }
         }

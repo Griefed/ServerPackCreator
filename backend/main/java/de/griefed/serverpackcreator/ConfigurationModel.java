@@ -16,6 +16,8 @@ public class ConfigurationModel {
             modLoaderVersion,
             javaArgs;
 
+    private String serverPackSuffix = "";
+
     private Boolean
             includeServerInstallation,
             includeServerIcon,
@@ -23,6 +25,23 @@ public class ConfigurationModel {
             includeStartScripts,
             includeZipCreation;
 
+    /**
+     * Getter for the suffix of the server pack to be generated.
+     * @author Griefed
+     * @return String. Returns the suffix for the server pack to be generated.
+     */
+    public String getServerPackSuffix() {
+        return serverPackSuffix;
+    }
+
+    /**
+     * Setter for the suffix of the server pack to be generated
+     * @author Griefed
+     * @param serverPackSuffix String. The suffix of the server pack to be generated.
+     */
+    public void setServerPackSuffix(String serverPackSuffix) {
+        this.serverPackSuffix = serverPackSuffix;
+    }
 
     /**
      * Getter for a list of clientside-only mods to exclude from server pack.
