@@ -2,11 +2,13 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +45,11 @@ public class VersionListerTest {
     private Properties serverPackCreatorProperties;
 
     public VersionListerTest() {
+        try {
+            FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
             this.serverPackCreatorProperties = new Properties();
             this.serverPackCreatorProperties.load(inputStream);

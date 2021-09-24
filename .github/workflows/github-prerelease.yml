@@ -60,7 +60,7 @@ jobs:
           echo "New version: ${NEW_VERSION}"
           echo "Github username: ${GITHUB_ACTOR}"
           ./gradlew about
-          ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
+          ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
       - name: List files
         run: ls -ahl build/libs
 
