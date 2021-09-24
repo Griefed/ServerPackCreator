@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
-import de.griefed.serverpackcreator.curseforge.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.commons.io.FileUtils;
@@ -724,14 +724,14 @@ class ConfigurationTest {
     @Test
     void containsFabricTest() throws IOException {
         byte[] fabricJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/fabric_manifest.json"));
-        CurseModpack fabricModpack = CONFIGURATIONHANDLER.getObjectMapper().readValue(fabricJsonData, CurseModpack.class);
+        JsonNode fabricModpack = CONFIGURATIONHANDLER.getObjectMapper().readTree(fabricJsonData);
         Assertions.assertTrue(CONFIGURATIONHANDLER.containsFabric(fabricModpack));
     }
 
     @Test
     void containsFabricTestFalse() throws IOException {
         byte[] forgeJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/manifest.json"));
-        CurseModpack forgeModpack = CONFIGURATIONHANDLER.getObjectMapper().readValue(forgeJsonData, CurseModpack.class);
+        JsonNode forgeModpack = CONFIGURATIONHANDLER.getObjectMapper().readTree(forgeJsonData);
         Assertions.assertFalse(CONFIGURATIONHANDLER.containsFabric(forgeModpack));
     }
 

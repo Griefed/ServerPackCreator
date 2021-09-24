@@ -20,12 +20,12 @@
 package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import com.typesafe.config.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
-import de.griefed.serverpackcreator.curseforge.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.logging.log4j.LogManager;
@@ -33,8 +33,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -49,7 +47,7 @@ import java.util.*;
  * 9. {@link #checkModloader(String)}<br>
  * 10.{@link #checkModloaderVersion(String, String, String)}<br>
  * 11.{@link #checkModpackDir(String)}<br>
- * 12.{@link #containsFabric(CurseModpack)}<br>
+ * 12.{@link #containsFabric(JsonNode)}<br>
  * 13.{@link #convertToBoolean(String)}<br>
  * 14.{@link #createConfigurationFile()}<br>
  * 15.{@link #encapsulateListElements(List)}<br>
@@ -250,16 +248,16 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * @author Griefed
-     * @return Integer. Returns the CurseForge projectID of a modpack, for use in {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)} and {@link #checkCurseForge(String)}
+     * @return Integer. Returns the CurseForge projectID of a modpack, for use in {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)} and {@link #checkCurseForge(String)}
      */
     int getProjectID() {
         return projectID;
     }
 
     /**
-     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
      * @author Griefed
      * @param newProjectID The new projectID to store.
@@ -269,7 +267,7 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * @author Griefed
      * @return Integer. Returns the CurseForge fileID of a modpack.
      */
@@ -278,7 +276,7 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
      * @author Griefed
      * @param newProjectFileID The new projectFileID to store.
@@ -576,7 +574,7 @@ public class ConfigurationHandler {
 
     /**
      * If modpackDir in the configuration file is a CurseForge projectID,fileID combination, then the modpack is first
-     * created from said combination, using {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)},
+     * created from said combination, using {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)},
      * before proceeding to checking the rest of the configuration. If everything passes and the modpack was created,
      * a new configuration file is created, replacing the one used to create the modpack in the first place, with the
      * modpackDir field pointing to the newly created modpack.
@@ -621,46 +619,25 @@ public class ConfigurationHandler {
 
                 if (displayName != null && projectName != null) {
 
-                    configurationModel.setModpackDir(String.format("./work/modpacks/%s/%s", getProjectID(), getProjectFileID() + "_" + displayName));
+                    CURSECREATEMODPACK.curseForgeModpack(configurationModel, getProjectID(), getProjectFileID());
 
-                    CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID());
+                    configurationModel.setMinecraftVersion(CURSECREATEMODPACK.getCurseModpack().get("minecraft").get("version").asText());
 
-                    try {
-                        byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", configurationModel.getModpackDir())));
+                    if (containsFabric(CURSECREATEMODPACK.getCurseModpack())) {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                        LOG.debug("Setting modloader to Fabric.");
 
-                        CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
+                        configurationModel.setModLoader("Fabric");
+                        configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
 
-                        String[] minecraftLoaderVersions = modpack
-                                .getMinecraft()
-                                .toString()
-                                .split(",");
+                    } else {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
+                        LOG.debug("Setting modloader to Forge.");
 
-                        String[] modLoaderVersion = minecraftLoaderVersions[1]
-                                .replace("[", "")
-                                .replace("]", "")
-                                .split("-");
+                        configurationModel.setModLoader("Forge");
+                        configurationModel.setModLoaderVersion(CURSECREATEMODPACK.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
 
-                        configurationModel.setMinecraftVersion(minecraftLoaderVersions[0]
-                                .replace("[", ""));
-
-                        if (containsFabric(modpack)) {
-                            /* This log is meant to be read by the user, therefore we allow translation. */
-                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-                            LOG.debug("Setting modloader to Fabric.");
-
-                            configurationModel.setModLoader("Fabric");
-                            configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
-
-                        } else {
-                            /* This log is meant to be read by the user, therefore we allow translation. */
-                            LOG.debug("Setting modloader to Forge.");
-
-                            configurationModel.setModLoader("Forge");
-                            configurationModel.setModLoaderVersion(modLoaderVersion[1]);
-
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Error: There was a fault during json parsing.", ex);
                     }
 
                     configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
@@ -711,21 +688,18 @@ public class ConfigurationHandler {
      * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
      * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
      * @author Griefed
-     * @param modpack CurseModpack. Contains information about the CurseForge modpack. Used to get a list of all projects
-     *               required by the modpack.
+     * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
      * @return Boolean. Returns true if Jumploader is found.
      */
-    boolean containsFabric(CurseModpack modpack) {
+    boolean containsFabric(JsonNode modpackJson) {
         boolean hasJumploader = false;
 
-        for (int i = 0; i < modpack.getFiles().size(); i++) {
+        for (int i = 0; i < modpackJson.get("files").size(); i++) {
 
-            String[] mods = modpack.getFiles().get(i).toString().split(",");
+            LOG.debug(String.format("Mod ID: %s", modpackJson.get("files").get(i).get("projectID").asText()));
+            LOG.debug(String.format("File ID: %s", modpackJson.get("files").get(i).get("fileID").asText()));
 
-            LOG.debug(String.format("Mod ID: %s", mods[0]));
-            LOG.debug(String.format("File ID: %s", mods[1]));
-
-            if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
+            if (modpackJson.get("files").get(i).get("projectID").asText().equalsIgnoreCase("361988") || modpackJson.get("files").get(i).get("fileID").asText().equalsIgnoreCase("306612")) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));

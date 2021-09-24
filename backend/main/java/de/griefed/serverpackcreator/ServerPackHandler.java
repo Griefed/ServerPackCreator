@@ -309,6 +309,11 @@ public class ServerPackHandler {
         return FILE_FABRIC_LINUX;
     }
 
+    /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
     public ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
