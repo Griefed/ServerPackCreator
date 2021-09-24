@@ -20,9 +20,11 @@
 package de.griefed.serverpackcreator.curseforge;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
+import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 import net.lingala.zip4j.ZipFile;
@@ -48,17 +50,19 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 2. {@link #checkCurseForgeDir(String)}<br>
  * 3. {@link #cleanupEnvironment(String)}<br>
  * 4. {@link #copyOverride(String)}<br>
- * 5. {@link #curseForgeModpack(String, Integer, Integer)}<br>
+ * 5. {@link #curseForgeModpack(ConfigurationModel, Integer, Integer)}<br>
  * 6. {@link #downloadMods(String)}<br>
- * 7. {@link #getFileDiskName()}<br>
- * 8. {@link #getFileName()}<br>
- * 9. {@link #getObjectMapper()}<br>
- * 10.{@link #getProjectName()}<br>
- * 11.{@link #initializeModpack(String, Integer, Integer)}<br>
- * 12.{@link #setFileNameAndDiskName(int, int)}<br>
- * 13.{@link #setModloaderCase(String)}<br>
- * 14.{@link #setProjectName(int)}<br>
- * 15.{@link #unzipArchive(String, String)}<p>
+ * 7. {@link #getCurseModpack()}<br>
+ * 8. {@link #getFileDiskName()}<br>
+ * 9. {@link #getFileName()}<br>
+ * 10.{@link #getObjectMapper()}<br>
+ * 11.{@link #getProjectName()}<br>
+ * 12.{@link #initializeModpack(String, Integer, Integer)}<br>
+ * 13.{@link #setCurseModpack(JsonNode)}<br>
+ * 14.{@link #setFileNameAndDiskName(int, int)}<br>
+ * 15.{@link #setModloaderCase(String)}<br>
+ * 16.{@link #setProjectName(int)}<br>
+ * 17.{@link #unzipArchive(String, String)}<p>
  * Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
  * override directory to the parent directory, download all mods in said modpack, and delete no longer needed files.
  * Modpacks are create in a ProjectName/FileDisplayName structure. Before a modpack is created, the FileDisplayName folder
@@ -83,11 +87,15 @@ public class CurseCreateModpack {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
 
+    private final ReticulatingSplines reticulatingSplines = new ReticulatingSplines();
+
+    private final Random randInt = new Random();
+
     private String projectName;
     private String fileName;
     private String fileDiskName;
-    private String projectID;
-    private String fileID;
+
+    private JsonNode curseModpack;
 
     private Properties serverPackCreatorProperties;
 
@@ -150,6 +158,15 @@ public class CurseCreateModpack {
     }
 
     /**
+     * Setter for the JsonNode containing all information about the CurseForge modpack.
+     * @author Griefed
+     * @param curseModpack JsonNode. A JsonNode containing all information about the CurseForge modpack.
+     */
+    void setCurseModpack(JsonNode curseModpack) {
+        this.curseModpack = curseModpack;
+    }
+
+    /**
      * Setter for the CurseForge file name and file disk name.
      * @author Griefed
      * @param newProjectID The ID of the CurseForge project.
@@ -195,6 +212,15 @@ public class CurseCreateModpack {
     }
 
     /**
+     * Getter for the JsonNode containing all information about the CurseForge modpack.
+     * @author Griefed
+     * @return JsonNode. The JsonNode containing all information about the CurseForge modpack.
+     */
+    public JsonNode getCurseModpack() {
+        return curseModpack;
+    }
+
+    /**
      * Getter for the CurseForge file disk name.
      * @author Griefed
      * @return String. Returns the file disk name of the CurseForge file.
@@ -221,7 +247,12 @@ public class CurseCreateModpack {
         return returnLoader;
     }
 
-    public ObjectMapper getObjectMapper() {
+    /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
+    ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
@@ -236,43 +267,38 @@ public class CurseCreateModpack {
      * {@link #checkCurseForgeDir(String)}<br>
      * {@link #initializeModpack(String, Integer, Integer)}
      * @author Griefed
-     * @param modpackDir String. Combination of project name and file name. Created during download procedure
-     *                  and later replaces the modpackDir variable in the configuration file.
+     * @param configurationModel Instance of {@link ConfigurationModel}. Required for getting the directory in which we
+     *                           will create our modpack.
      * @param projectID Integer. The ID of the project. Used to gather information about the CurseForge project and to
      *                 download the modpack.
      * @param fileID Integer. The ID of the file. Used to gather information about the CurseForge file and to download
      *              the modpack.
-     * //@return Boolean. Returns true if the modpack was successfully created.
      */
-    public void curseForgeModpack(String modpackDir, Integer projectID, Integer fileID) {
-        boolean modpackCreated = false;
-
-        this.projectID = projectID.toString();
-        this.fileID = fileID.toString();
+    public void curseForgeModpack(ConfigurationModel configurationModel, Integer projectID, Integer fileID) {
 
         try {
             if (CurseAPI.project(projectID).isPresent()) {
+
                 setProjectName(projectID);
                 setFileNameAndDiskName(projectID, fileID);
+
+                configurationModel.setModpackDir(String.format("./work/modpacks/%s/%s", projectID, fileID));
             }
         } catch (CurseException cex) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.curseforgemodpack"), projectID, fileID), cex);
         }
 
-        if (!checkCurseForgeDir(modpackDir) &&
+        if (    !checkCurseForgeDir(configurationModel.getModpackDir()) &&
                 !getProjectName().equals(String.valueOf(projectID)) &&
                 !getFileDiskName().equals(String.valueOf(fileID))) {
 
 
-            initializeModpack(modpackDir, projectID, fileID);
-            modpackCreated = true;
-        } else {
-            // TODO: Replace with lang key
-            LOG.info("Modpack is already downloaded and present.");
-        }
+            initializeModpack(configurationModel.getModpackDir(), projectID, fileID);
 
-        //return modpackCreated;
+        } else {
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.overwrite"));
+        }
     }
 
     /**
@@ -308,19 +334,16 @@ public class CurseCreateModpack {
 
         try {
             byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
-            CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
-
-            String[] minecraftLoaderVersions = modpack.getMinecraft().toString().split(",");
-            String[] modLoaderVersion = minecraftLoaderVersions[1].replace("[", "").replace("]", "").split("-");
+            setCurseModpack(getObjectMapper().readTree(jsonData));
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.infoheader"));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackname"), modpack.getName()));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackversion"), modpack.getVersion()));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackauthor"), modpack.getAuthor()));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackminecraftversion"), minecraftLoaderVersions[0].replace("[", "")));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloader"), setModloaderCase(modLoaderVersion[0])));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloaderversion"), modLoaderVersion[1]));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackname"), getCurseModpack().get("name").asText()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackversion"), getCurseModpack().get("version").asText()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackauthor"), getCurseModpack().get("author").asText()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackminecraftversion"), getCurseModpack().get("minecraft").get("version").asText()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloader"), getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(0,5)));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloaderversion"), getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6)));
 
         } catch (IOException ex) {
             LOG.error("Error: There was a fault during json parsing.", ex);
@@ -356,82 +379,67 @@ public class CurseCreateModpack {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.downloadmods.info"));
         List<String> failedDownloads = new ArrayList<>();
 
-        try {
-            byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
+        for (int i = 0; i < getCurseModpack().get("files").size(); i++) {
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+            if (randInt.nextInt(getCurseModpack().get("files").size())==randInt.nextInt(getCurseModpack().get("files").size())) {
+                LOG.info(reticulatingSplines.reticulate());
+            }
 
-            CurseModpack curseModpack = objectMapper.readValue(jsonData, CurseModpack.class);
-            Random randInt = new Random();
-            ReticulatingSplines reticulatingSplines = new ReticulatingSplines();
-            for (int i = 0; i < curseModpack.getFiles().size(); i++) {
-                if (randInt.nextInt(curseModpack.getFiles().size())==i) {
-                    LOG.info(reticulatingSplines.reticulate());
+            String modName, modFileName;
+            modName = modFileName = "";
+
+            try {
+
+                //noinspection OptionalGetWithoutIsPresent
+                modName = CurseAPI.project(getCurseModpack().get("files").get(i).get("projectID").asInt()).get().name();
+
+                //noinspection OptionalGetWithoutIsPresent
+                modFileName = CurseAPI.project(getCurseModpack().get("files").get(i).get("projectID").asInt()).get().files().fileWithID(getCurseModpack().get("files").get(i).get("fileID").asInt()).nameOnDisk();
+
+            } catch (CurseException cex) {
+                LOG.error("Error: Couldn't retrieve CurseForge project name and file name.", cex);
+            }
+
+            try {
+
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.downloadmods.specificmod"), i+1, getCurseModpack().get("files").size(), modName, modFileName));
+                //Download mod
+                CurseAPI.downloadFileToDirectory(getCurseModpack().get("files").get(i).get("projectID").asInt(), getCurseModpack().get("files").get(i).get("fileID").asInt(), Paths.get(String.format("%s/mods", modpackDir)));
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException iex) {
+                    LOG.debug("Error during interruption event.", iex);
                 }
-                String[] mods = curseModpack.getFiles().get(i).toString().split(",");
 
-                String modName, modFileName;
-                modName = modFileName = "";
-
-                int modID, fileID;
-                modID = Integer.parseInt(mods[0]);
-                fileID = Integer.parseInt(mods[1]);
+            } catch (CurseException cex) {
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.errordownload"), modName, getCurseModpack().get("files").get(i).get("projectID").asInt(), modFileName, getCurseModpack().get("files").get(i).get("fileID").asInt()));
 
                 try {
 
-                    //noinspection OptionalGetWithoutIsPresent
-                    modName = CurseAPI.project(modID).get().name();
-                    //noinspection OptionalGetWithoutIsPresent
-                    modFileName = Objects.requireNonNull(CurseAPI.project(modID).get().files().fileWithID(fileID)).nameOnDisk();
-
-                } catch (CurseException cex) {
-                    LOG.error("Error: Couldn't retrieve CurseForge project name and file name.", cex);
-                }
-
-                try {
-
-                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.downloadmods.specificmod"), i+1, curseModpack.getFiles().size(), modName, modFileName));
-                    //Download mod
-                    CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException iex) {
-                        LOG.debug("Error during interruption event.", iex);
-                    }
-
-                } catch (CurseException cex) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.errordownload"), modName, modID, modFileName, fileID));
+                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.downloadmods.tryagain"), modName, getCurseModpack().get("files").get(i).get("projectID").asInt(), modFileName, getCurseModpack().get("files").get(i).get("fileID").asInt()));
+                    //Retry download if previous attempt failed
+                    CurseAPI.downloadFileToDirectory(getCurseModpack().get("files").get(i).get("projectID").asInt(), getCurseModpack().get("files").get(i).get("fileID").asInt(), Paths.get(String.format("%s/mods", modpackDir)));
+
+                } catch (CurseException cex2) {
+
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.retryfail"), modName, getCurseModpack().get("files").get(i).get("projectID").asInt(), modFileName, getCurseModpack().get("files").get(i).get("fileID").asInt()));
 
                     try {
+                        //Add URL of failed download to list
+                        failedDownloads.add(String.format("Mod: %s, ID: %d. File: %s, ID: %d, URL: %s", modName, getCurseModpack().get("files").get(i).get("projectID").asInt(), modFileName, getCurseModpack().get("files").get(i).get("fileID").asInt(), CurseAPI.fileDownloadURL(getCurseModpack().get("files").get(i).get("projectID").asInt(), getCurseModpack().get("files").get(i).get("fileID").asInt())));
 
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.downloadmods.tryagain"), modName, modID, modFileName, fileID));
-                        //Retry download if previous attempt failed
-                        CurseAPI.downloadFileToDirectory(modID, fileID, Paths.get(String.format("%s/mods", modpackDir)));
+                    } catch (CurseException cex3) {
 
-                    } catch (CurseException cex2) {
-
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.downloadmods.retryfail"), modName, modID, modFileName, fileID));
-
-                        try {
-                            //Add URL of failed download to list
-                            failedDownloads.add(String.format("Mod: %s, ID: %d. File: %s, ID: %d, URL: %s", modName, modID, modFileName, fileID, CurseAPI.fileDownloadURL(modID, fileID)));
-
-                        } catch (CurseException cex3) {
-
-                            LOG.error("Error: An error occurred during URL retrieval.", cex3);
-                        }
+                        LOG.error("Error: An error occurred during URL retrieval.", cex3);
                     }
                 }
             }
-        } catch (IOException ex) {
-            LOG.error("Error: An error was encountered in the downloadMods method.", ex);
         }
+
         if (failedDownloads.size() != 0) {
             //Print the URLs of failed downloads, if there are any
             for (int i = 0; i <= failedDownloads.size(); i++) {
@@ -491,8 +499,7 @@ public class CurseCreateModpack {
                 isModpackPresent = cleanupEnvironment(modpackDir);
 
             } else {
-                // TODO: Replace with lang key
-                LOG.info("CurseForge cleanup disabled.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanup"));
                 isModpackPresent = true;
             }
         }

@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.curseforge;
 
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
+import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
@@ -107,14 +108,15 @@ class CurseCreateModpackTest {
     void curseForgeModpackTest() throws CurseException, IOException {
         int projectID = 238298;
         int fileID = 3174854;
+        ConfigurationModel configurationModel = new ConfigurationModel();
         String projectName = CurseAPI.project(projectID).get().name();
         String displayName = Objects.requireNonNull(CurseAPI.project(projectID)
                 .get()
                 .files()
                 .fileWithID(fileID))
                 .displayName();
-        String modpackDir = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
-        /*Assertions.assertTrue(*/CURSECREATEMODPACK.curseForgeModpack(modpackDir, projectID, fileID);/*);*/
+        configurationModel.setModpackDir(String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName));
+        /*Assertions.assertTrue(*/CURSECREATEMODPACK.curseForgeModpack(configurationModel, projectID, fileID);/*);*/
         String deleteFile = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
         if (new File(deleteFile).isDirectory()) {
             Path pathToBeDeleted = Paths.get(deleteFile);
@@ -165,6 +167,7 @@ class CurseCreateModpackTest {
     void downloadModsTest() throws IOException {
         String modpackDir = "./backend/test/resources/forge_tests";
         Files.copy(Paths.get("./backend/test/resources/testresources/manifest.json"), Paths.get("./backend/test/resources/forge_tests/manifest.json"), REPLACE_EXISTING);
+        CURSECREATEMODPACK.setCurseModpack(CURSECREATEMODPACK.getObjectMapper().readTree(Files.readAllBytes(Paths.get("./backend/test/resources/forge_tests/manifest.json"))));
         CURSECREATEMODPACK.downloadMods(modpackDir);
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/BetterTitleScreen-1.16.4-1.10.2.jar").exists());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/jei-professions-1.0.0-1.16.4.jar").exists());

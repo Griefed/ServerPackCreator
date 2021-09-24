@@ -144,6 +144,7 @@ public class TabCreateServerPack extends JComponent {
     private final JTextField TEXTFIELD_CLIENTSIDEMODS = new JTextField("");
     private final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
     private final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
+    private final JTextField TEXTFIELD_SERVERPACKSUFFIX = new JTextField("");
 
     private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
 
@@ -159,6 +160,7 @@ public class TabCreateServerPack extends JComponent {
     private JLabel labelMinecraftVersion;
     private JLabel labelModloader;
     private JLabel labelModloaderVersion;
+    private JLabel labelServerPackSuffix;
 
     private DefaultComboBoxModel<String> forgeComboBoxModel;
 
@@ -366,7 +368,7 @@ public class TabCreateServerPack extends JComponent {
 
 // ----------------------------------------------------------------------------------------LABELS AND TEXTFIELDS--------
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
-        GRIDBAGCONSTRAINTS.gridwidth = 4;
+        GRIDBAGCONSTRAINTS.gridwidth = 3;
         GRIDBAGCONSTRAINTS.weightx = 1;
 
         //Label and textfield modpackDir
@@ -386,6 +388,30 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_ZERO;
 
         CREATESERVERPACKPANEL.add(TEXTFIELD_MODPACKDIRECTORY, GRIDBAGCONSTRAINTS);
+
+        //Label and textfield server pack suffix
+        labelServerPackSuffix = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelsuffix"));
+        labelServerPackSuffix.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelsuffix.tip"));
+
+        GRIDBAGCONSTRAINTS.gridwidth = 2;
+        GRIDBAGCONSTRAINTS.weightx = 1;
+        GRIDBAGCONSTRAINTS.gridx = 3;
+        GRIDBAGCONSTRAINTS.gridy = 0;
+        GRIDBAGCONSTRAINTS.insets = TWENTY_TEN_ZERO_ZERO;
+
+        CREATESERVERPACKPANEL.add(labelServerPackSuffix, GRIDBAGCONSTRAINTS);
+
+        TEXTFIELD_SERVERPACKSUFFIX.setToolTipText("Suffix to append to the name of the server pack to be generated.");
+
+        GRIDBAGCONSTRAINTS.gridwidth = 1;
+        GRIDBAGCONSTRAINTS.gridx = 3;
+        GRIDBAGCONSTRAINTS.gridy = 1;
+        GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_ZERO;
+
+        CREATESERVERPACKPANEL.add(TEXTFIELD_SERVERPACKSUFFIX, GRIDBAGCONSTRAINTS);
+
+        GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
+        GRIDBAGCONSTRAINTS.gridwidth = 4;
 
         //Label and textfield clientMods
         labelClientMods = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods"));
@@ -708,12 +734,11 @@ public class TabCreateServerPack extends JComponent {
      * @param actionEvent The event which triggers this method.
      */
     private void actionEventCheckBoxServer(ActionEvent actionEvent) {
-        // TODO: Replace with lang keys
         if (checkBoxServer.isSelected() && TEXTFIELD_JAVAPATH.getText().equals("")) {
             switch (JOptionPane.showConfirmDialog(
                     CREATESERVERPACKPANEL,
-                    "Install modlaoder-server selected, but no path to Java defined. Choose now?",
-                    "Javapath not sespecified!",
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.confirm.message"),
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.confirm.title"),
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE
             )) {
@@ -726,8 +751,8 @@ public class TabCreateServerPack extends JComponent {
 
                     JOptionPane.showMessageDialog(
                             CREATESERVERPACKPANEL,
-                            "Caution: Javapath needs to be defined in order to install the modloader-server!",
-                            "WARNING!",
+                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.message.message"),
+                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.message.title"),
                             JOptionPane.ERROR_MESSAGE,
                             null
                     );
@@ -1048,6 +1073,8 @@ public class TabCreateServerPack extends JComponent {
 
         ConfigurationModel configurationModel = new ConfigurationModel();
 
+        configurationModel.setServerPackSuffix(TEXTFIELD_SERVERPACKSUFFIX.getText());
+
         if (!CONFIGURATIONHANDLER.checkConfiguration(new File("serverpackcreator.tmp"), false, configurationModel)) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
@@ -1089,8 +1116,6 @@ public class TabCreateServerPack extends JComponent {
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
                     loadConfig(new File("serverpackcreator.conf"));
-                    /*TEXTFIELD_MODPACKDIRECTORY.setText(configurationModel.getModpackDir());
-                    TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(configurationModel.getCopyDirs().toString()));*/
 
                     serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
                     MATERIALTEXTPANEUI.installUI(serverPackGeneratedTextPane);

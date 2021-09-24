@@ -16,6 +16,8 @@ public class ConfigurationModel {
             modLoaderVersion,
             javaArgs;
 
+    private String serverPackSuffix = "";
+
     private Boolean
             includeServerInstallation,
             includeServerIcon,
@@ -23,13 +25,30 @@ public class ConfigurationModel {
             includeStartScripts,
             includeZipCreation;
 
+    /**
+     * Getter for the suffix of the server pack to be generated.
+     * @author Griefed
+     * @return String. Returns the suffix for the server pack to be generated.
+     */
+    public String getServerPackSuffix() {
+        return serverPackSuffix;
+    }
+
+    /**
+     * Setter for the suffix of the server pack to be generated
+     * @author Griefed
+     * @param serverPackSuffix String. The suffix of the server pack to be generated.
+     */
+    public void setServerPackSuffix(String serverPackSuffix) {
+        this.serverPackSuffix = serverPackSuffix;
+    }
 
     /**
      * Getter for a list of clientside-only mods to exclude from server pack.
      * @author Griefed
      * @return List String. Returns the list of clientside-only mods.
      */
-    List<String> getClientMods() {
+    public List<String> getClientMods() {
         return clientMods;
     }
 
@@ -38,7 +57,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newClientMods The new list of clientside-only mods to store.
      */
-    void setClientMods(List<String> newClientMods) {
+    public void setClientMods(List<String> newClientMods) {
         this.clientMods = newClientMods;
     }
 
@@ -56,7 +75,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newCopyDirs The new list of directories to include in server pack to store.
      */
-    void setCopyDirs(List<String> newCopyDirs) {
+    public void setCopyDirs(List<String> newCopyDirs) {
         for (int i = 0; i < newCopyDirs.size(); i++) {
             newCopyDirs.removeIf(n -> (n.equalsIgnoreCase("server_pack")));
             newCopyDirs.replaceAll(n -> n.replace("\\","/"));
@@ -78,7 +97,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newModpackDir The new modpack directory path to store.
      */
-    void setModpackDir(String newModpackDir) {
+    public void setModpackDir(String newModpackDir) {
         newModpackDir = newModpackDir.replace("\\","/");
         this.modpackDir = newModpackDir;
     }
@@ -88,7 +107,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return String. Returns the path to the Java executable/binary.
      */
-    String getJavaPath() {
+    public String getJavaPath() {
         return javaPath;
     }
 
@@ -97,7 +116,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newJavaPath The new Java path to store.
      */
-    void setJavaPath(String newJavaPath) {
+    public void setJavaPath(String newJavaPath) {
         newJavaPath = newJavaPath.replace("\\", "/");
         this.javaPath = newJavaPath;
     }
@@ -107,7 +126,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return String. Returns the Minecraft version used in the modpack.
      */
-    String getMinecraftVersion() {
+    public String getMinecraftVersion() {
         return minecraftVersion;
     }
 
@@ -116,7 +135,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newMinecraftVersion The new Minecraft version to store.
      */
-    void setMinecraftVersion(String newMinecraftVersion) {
+    public void setMinecraftVersion(String newMinecraftVersion) {
         this.minecraftVersion = newMinecraftVersion;
     }
 
@@ -125,7 +144,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return String. Returns the modloader used by the modpack.
      */
-    String getModLoader() {
+    public String getModLoader() {
         return modLoader;
     }
 
@@ -134,7 +153,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newModLoader The new modloader to store.
      */
-    void setModLoader(String newModLoader) {
+    public void setModLoader(String newModLoader) {
         if (newModLoader.equalsIgnoreCase("Forge")) {
 
             newModLoader = "Forge";
@@ -159,7 +178,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return String. Returns the version of the modloader used by the modpack.
      */
-    String getModLoaderVersion() {
+    public String getModLoaderVersion() {
         return modLoaderVersion;
     }
 
@@ -168,7 +187,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newModLoaderVersion The new modloader version to store.
      */
-    void setModLoaderVersion(String newModLoaderVersion) {
+    public void setModLoaderVersion(String newModLoaderVersion) {
         this.modLoaderVersion = newModLoaderVersion;
     }
 
@@ -177,7 +196,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return Boolean. Returns whether the server installation should be included.
      */
-    boolean getIncludeServerInstallation() {
+    public boolean getIncludeServerInstallation() {
         return includeServerInstallation;
     }
 
@@ -186,7 +205,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newIncludeServerInstallation The new boolean to store.
      */
-    void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
+    public void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
         this.includeServerInstallation = newIncludeServerInstallation;
     }
 
@@ -195,7 +214,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return Boolean. Returns whether the server-icon.png should be included in the server pack.
      */
-    boolean getIncludeServerIcon() {
+    public boolean getIncludeServerIcon() {
         return includeServerIcon;
     }
 
@@ -204,7 +223,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newIncludeServerIcon The new boolean to store.
      */
-    void setIncludeServerIcon(boolean newIncludeServerIcon) {
+    public void setIncludeServerIcon(boolean newIncludeServerIcon) {
         this.includeServerIcon = newIncludeServerIcon;
     }
 
@@ -213,7 +232,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return Boolean. Returns whether the server.properties should be included in the server pack.
      */
-    boolean getIncludeServerProperties() {
+    public boolean getIncludeServerProperties() {
         return includeServerProperties;
     }
 
@@ -222,7 +241,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newIncludeServerProperties The new boolean to store.
      */
-    void setIncludeServerProperties(boolean newIncludeServerProperties) {
+    public void setIncludeServerProperties(boolean newIncludeServerProperties) {
         this.includeServerProperties = newIncludeServerProperties;
     }
 
@@ -231,7 +250,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return Boolean. Returns the whether the start scripts should be included in the server pack.
      */
-    boolean getIncludeStartScripts() {
+    public boolean getIncludeStartScripts() {
         return includeStartScripts;
     }
 
@@ -240,7 +259,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newIncludeStartScripts The new boolean to store.
      */
-    void setIncludeStartScripts(boolean newIncludeStartScripts) {
+    public void setIncludeStartScripts(boolean newIncludeStartScripts) {
         this.includeStartScripts = newIncludeStartScripts;
     }
 
@@ -249,7 +268,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @return Boolean. Returns whether a ZIP-archive of the server pack should be created.
      */
-    boolean getIncludeZipCreation() {
+    public boolean getIncludeZipCreation() {
         return includeZipCreation;
     }
 
@@ -258,7 +277,7 @@ public class ConfigurationModel {
      * @author Griefed
      * @param newIncludeZipCreation The new boolean to store.
      */
-    void setIncludeZipCreation(boolean newIncludeZipCreation) {
+    public void setIncludeZipCreation(boolean newIncludeZipCreation) {
         this.includeZipCreation = newIncludeZipCreation;
     }
 

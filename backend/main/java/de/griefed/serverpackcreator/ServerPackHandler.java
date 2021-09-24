@@ -49,35 +49,36 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 /**
  * <strong>Table of methods</strong><p>
  * 1. {@link #ServerPackHandler(LocalizationManager, CurseCreateModpack, AddonsHandler, ConfigurationHandler, Properties, VersionLister)}<br>
- * 2. {@link #cleanupEnvironment(String)}<br>
- * 3. {@link #cleanUpServerPack(File, File, String, String, String, String)}<br>
+ * 2. {@link #cleanupEnvironment()}<br>
+ * 3. {@link #cleanUpServerPack(File, File, String, String, String)}<br>
  * 4. {@link #copyFiles(String, List, List, String)}<br>
- * 5. {@link #copyIcon(String)}<br>
- * 6. {@link #createStartScripts(String, String, boolean, String)}<br>
- * 7. {@link #downloadFabricJar(String)}<br>
- * 8. {@link #downloadForgeJar(String, String, String)}<br>
+ * 5. {@link #copyIcon()}<br>
+ * 6. {@link #createStartScripts(String, boolean, String)}<br>
+ * 7. {@link #downloadFabricJar()}<br>
+ * 8. {@link #downloadForgeJar(String, String)}<br>
  * 9. {@link #excludeClientMods(String, List, String)}<br>
- * 10.{@link #generateDownloadScripts(String, String, String)}<br>
- * 11.{@link #getFabricLinuxFile()}<br>
- * 12.{@link #getFabricWindowsFile()}<br>
- * 13.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
- * 14.{@link #getForgeLinuxFile()}<br>
- * 15.{@link #getForgeWindowsFile()}<br>
- * 16.{@link #getIconFile()}<br>
- * 17.{@link #getMinecraftServerJarUrl(String)}<br>
- * 18.{@link #getObjectMapper()}<br>
- * 19.{@link #getPropertiesFile()}<br>
- * 20.{@link #getSERVER_PACKS_DIR()}<br>
- * 21.{@link #getSTART_FABRIC_BATCH}<br>
- * 22.{@link #getSTART_FABRIC_SHELL}<br>
- * 23.{@link #getSTART_FORGE_BATCH}<br>
- * 24.{@link #getSTART_FORGE_SHELL}<br>
- * 25.{@link #installServer(String, String, String, String, String)}<br>
- * 26.{@link #run(ConfigurationModel)}<br>
- * 27.{@link #run(File, ConfigurationModel)}<br>
- * 28.{@link #scanAnnotations(File[])}<br>
- * 29.{@link #scanTomls(File[])}<br>
- * 30.{@link #zipBuilder(String, String, boolean)}<p>
+ * 10.{@link #excludeFileOrDirectory(String)}<br>
+ * 11.{@link #generateDownloadScripts(String, String)}<br>
+ * 12.{@link #getFabricLinuxFile()}<br>
+ * 13.{@link #getFabricWindowsFile()}<br>
+ * 14.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
+ * 15.{@link #getForgeLinuxFile()}<br>
+ * 16.{@link #getForgeWindowsFile()}<br>
+ * 17.{@link #getIconFile()}<br>
+ * 18.{@link #getMinecraftServerJarUrl(String)}<br>
+ * 19.{@link #getObjectMapper()}<br>
+ * 20.{@link #getPropertiesFile()}<br>
+ * 21.{@link #getSERVER_PACKS_DIR()}<br>
+ * 22.{@link #getSTART_FABRIC_BATCH}<br>
+ * 23.{@link #getSTART_FABRIC_SHELL}<br>
+ * 24.{@link #getSTART_FORGE_BATCH}<br>
+ * 25.{@link #getSTART_FORGE_SHELL}<br>
+ * 26.{@link #installServer(String, String, String, String)}<br>
+ * 27.{@link #run(ConfigurationModel)}<br>
+ * 28.{@link #run(File, ConfigurationModel)}<br>
+ * 29.{@link #scanAnnotations(File[])}<br>
+ * 30.{@link #scanTomls(File[])}<br>
+ * 31.{@link #zipBuilder(String, boolean)}<p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
  * <p>
@@ -116,6 +117,8 @@ public class ServerPackHandler {
     private final String SERVER_PACKS_DIR;
 
     private Properties serverPackCreatorProperties;
+
+    private String serverPackDestination;
 
     /**
      * <strong>Constructor</strong><p>
@@ -256,7 +259,7 @@ public class ServerPackHandler {
     /**
      * Getter for server.properties.
      * @author Griefed
-     * @return Returns the server.properties-file for use in {@link #copyProperties(String)}
+     * @return Returns the server.properties-file for use in {@link #copyProperties()}
      */
     public File getPropertiesFile() {
         return FILE_PROPERTIES;
@@ -265,7 +268,7 @@ public class ServerPackHandler {
     /**
      * Getter for server-icon.png
      * @author Griefed
-     * @return Returns the server-icon.png-file for use in {@link #copyIcon(String)}
+     * @return Returns the server-icon.png-file for use in {@link #copyIcon()}
      */
     public File getIconFile() {
         return FILE_ICON;
@@ -274,7 +277,7 @@ public class ServerPackHandler {
     /**
      * Getter for start-forge.bat.
      * @author Griefed
-     * @return Returns the start-forge.bat-file for use in {@link #createStartScripts(String, String, boolean, String)}
+     * @return Returns the start-forge.bat-file for use in {@link #createStartScripts(String, boolean, String)}
      */
     public File getForgeWindowsFile() {
         return FILE_FORGE_WINDOWS;
@@ -283,7 +286,7 @@ public class ServerPackHandler {
     /**
      * Getter for start-forge.sh
      * @author Griefed
-     * @return Returns the start-forge.sh-file for use in {@link #createStartScripts(String, String, boolean, String)}
+     * @return Returns the start-forge.sh-file for use in {@link #createStartScripts(String, boolean, String)}
      */
     public File getForgeLinuxFile() {
         return FILE_FORGE_LINUX;
@@ -292,7 +295,7 @@ public class ServerPackHandler {
     /**
      * Getter for start-fabric.bat.
      * @author Griefed
-     * @return Returns the start-fabric.bat-file for use in {@link #createStartScripts(String, String, boolean, String)}
+     * @return Returns the start-fabric.bat-file for use in {@link #createStartScripts(String, boolean, String)}
      */
     public File getFabricWindowsFile() {
         return FILE_FABRIC_WINDOWS;
@@ -301,17 +304,41 @@ public class ServerPackHandler {
     /**
      * Getter for start-fabric.sh.
      * @author Griefed
-     * @return Returns the start-fabric.sh-file for use in {@link #createStartScripts(String, String, boolean, String)}
+     * @return Returns the start-fabric.sh-file for use in {@link #createStartScripts(String, boolean, String)}
      */
     public File getFabricLinuxFile() {
         return FILE_FABRIC_LINUX;
     }
 
+    /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
     public ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         return objectMapper;
+    }
+
+    /**
+     * Getter for the destination of the server pack to be generated.
+     * @author Griefed
+     * @return String. Returns the destination of the server pack to be generated.
+     */
+    public String getServerPackDestination() {
+        return serverPackDestination;
+    }
+
+    /**
+     * Setter for the destination of the server pack to be generated.
+     * @author Griefed
+     * @param modpackDir String. The destination of the server pack to be generated.
+     * @param serverPackSuffix String. The suffix for the server pack to be generated.
+     */
+    public void setServerPackDestination(String modpackDir, String serverPackSuffix) {
+        this.serverPackDestination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1) + serverPackSuffix;
     }
 
     /**
@@ -326,30 +353,36 @@ public class ServerPackHandler {
         // TODO: Once API and webUI are implemented, test parallel runs. Parallel runs MUST be possible.
 
         if (!CONFIGURATIONHANDLER.checkConfiguration(configFileToUse, true, configurationModel)) {
+
+            /*
+             * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
+             * If the server pack exists and overwrite is disabled, no new server pack will be generated.
+             */
             if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled").equals("false") &&
                     new File(String.format("%s/%s",
                             getSERVER_PACKS_DIR(),
-                            configurationModel.getModpackDir().substring(
-                                    configurationModel.getModpackDir().lastIndexOf("/") + 1))
+                            getServerPackDestination())
                     ).exists()) {
 
-                // TODO: Replace with lang key
-                LOG.info("Server pack already exists and overwrite disabled.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.overwrite"));
                 return true;
 
             } else {
+
+                setServerPackDestination(configurationModel.getModpackDir(), configurationModel.getServerPackSuffix());
+
                 // Make sure no files from previously generated server packs interrupt us.
-                cleanupEnvironment(configurationModel.getModpackDir());
+                cleanupEnvironment();
 
                 // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
                 copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
 
                 // Copy start scripts for specified modloader from server_files to server pack.
-                createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
+                createStartScripts(configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
 
                 // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
                 if (configurationModel.getIncludeServerInstallation()) {
-                    installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
+                    installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
@@ -357,7 +390,7 @@ public class ServerPackHandler {
 
                 // If true, copy the server-icon.png from server_files to the server pack.
                 if (configurationModel.getIncludeServerIcon()) {
-                    copyIcon(configurationModel.getModpackDir());
+                    copyIcon();
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
@@ -365,7 +398,7 @@ public class ServerPackHandler {
 
                 // If true, copy the server.properties from server_files to the server pack.
                 if (configurationModel.getIncludeServerProperties()) {
-                    copyProperties(configurationModel.getModpackDir());
+                    copyProperties();
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
@@ -373,7 +406,7 @@ public class ServerPackHandler {
 
                 // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
                 if (configurationModel.getIncludeZipCreation()) {
-                    zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
+                    zipBuilder(configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
@@ -381,8 +414,8 @@ public class ServerPackHandler {
 
                 // Inform user about location of newly generated server pack.
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), getServerPackDestination()));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), getServerPackDestination()));
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
                 if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
@@ -415,30 +448,35 @@ public class ServerPackHandler {
 
         if (!CONFIGURATIONHANDLER.checkConfiguration( true, configurationModel)) {
 
+            /*
+             * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
+             * If the server pack exists and overwrite is disabled, no new server pack will be generated.
+             */
             if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled").equals("false") &&
                     new File(String.format("%s/%s",
                             getSERVER_PACKS_DIR(),
-                            configurationModel.getModpackDir().substring(
-                                    configurationModel.getModpackDir().lastIndexOf("/") + 1))
+                            getServerPackDestination())
                     ).exists()) {
 
-                // TODO: Replace with lang key
-                LOG.info("Server pack already exists and overwrite disabled.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.overwrite"));
                 return true;
 
             } else {
+
+                setServerPackDestination(configurationModel.getModpackDir(), configurationModel.getServerPackSuffix());
+
                 // Make sure no files from previously generated server packs interrupt us.
-                cleanupEnvironment(configurationModel.getModpackDir());
+                cleanupEnvironment();
 
                 // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
                 copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
 
                 // Copy start scripts for specified modloader from server_files to server pack.
-                createStartScripts(configurationModel.getModpackDir(), configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
+                createStartScripts(configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
 
                 // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
                 if (configurationModel.getIncludeServerInstallation()) {
-                    installServer(configurationModel.getModLoader(), configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
+                    installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath());
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
@@ -446,7 +484,7 @@ public class ServerPackHandler {
 
                 // If true, copy the server-icon.png from server_files to the server pack.
                 if (configurationModel.getIncludeServerIcon()) {
-                    copyIcon(configurationModel.getModpackDir());
+                    copyIcon();
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
@@ -454,7 +492,7 @@ public class ServerPackHandler {
 
                 // If true, copy the server.properties from server_files to the server pack.
                 if (configurationModel.getIncludeServerProperties()) {
-                    copyProperties(configurationModel.getModpackDir());
+                    copyProperties();
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
@@ -462,7 +500,7 @@ public class ServerPackHandler {
 
                 // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
                 if (configurationModel.getIncludeZipCreation()) {
-                    zipBuilder(configurationModel.getModpackDir(), configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
+                    zipBuilder(configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation());
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
@@ -470,8 +508,8 @@ public class ServerPackHandler {
 
                 // Inform user about location of newly generated server pack.
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.serverpack"), getServerPackDestination()));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), getServerPackDestination()));
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
                 if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
@@ -497,16 +535,14 @@ public class ServerPackHandler {
      * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
      * server pack is as clean as possible.
      * @author Griefed
-     * @param modpackDir String. The server_pack directory and ZIP-archive will be deleted inside the modpack directory.
      */
-    void cleanupEnvironment(String modpackDir) {
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
+    void cleanupEnvironment() {
 
-        if (new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)).exists()) {
+        if (new File(String.format("%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination())).exists()) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.folder.enter"));
-            Path serverPack = Paths.get(String.format("%s/%s", getSERVER_PACKS_DIR(), destination));
+            Path serverPack = Paths.get(String.format("%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination()));
 
             try {
 
@@ -534,7 +570,7 @@ public class ServerPackHandler {
             } catch (IOException ex) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupenvironment.folder.delete"), modpackDir));
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupenvironment.folder.delete"), getServerPackDestination()));
 
             } finally {
 
@@ -543,12 +579,12 @@ public class ServerPackHandler {
             }
         }
 
-        if (new File(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), destination)).exists()) {
+        if (new File(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), getServerPackDestination())).exists()) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.zip.enter"));
 
-            boolean isZipDeleted = new File(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), destination)).delete();
+            boolean isZipDeleted = new File(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), getServerPackDestination())).delete();
 
             if (isZipDeleted) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -563,13 +599,11 @@ public class ServerPackHandler {
     /**
      * Copies start scripts for the specified modloader into the server pack.
      * @author Griefed
-     * @param modpackDir String. Start scripts are copied into the server_pack directory in the modpack directory.
      * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
      * @param includeStartScripts Boolean. Whether to copy the start scripts into the server pack.
      * @param javaArguments String. Java arguments to write the start-scripts with.
      */
-    void createStartScripts(String modpackDir, String modLoader, boolean includeStartScripts, String javaArguments) {
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
+    void createStartScripts(String modLoader, boolean includeStartScripts, String javaArguments) {
 
         if (javaArguments.equals("empty")) {
             javaArguments = "";
@@ -585,7 +619,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getForgeWindowsFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getForgeWindowsFile())
                                         )
                                 )
                         )
@@ -603,7 +637,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getForgeLinuxFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getForgeLinuxFile())
                                         )
                                 )
                         )
@@ -626,7 +660,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getFabricWindowsFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getFabricWindowsFile())
                                         )
                                 )
                         )
@@ -644,7 +678,7 @@ public class ServerPackHandler {
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getFabricLinuxFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getFabricLinuxFile())
                                         )
                                 )
                         )
@@ -680,9 +714,7 @@ public class ServerPackHandler {
      */
     void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion) {
 
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-
-        String serverPath = String.format("%s/%s", getSERVER_PACKS_DIR(), destination);
+        String serverPath = String.format("%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination());
 
         try {
 
@@ -775,31 +807,39 @@ public class ServerPackHandler {
 
 
             } else {
-                try {
+                if (!directory.startsWith("!")) {
+                    try {
 
-                    Stream<Path> files = Files.walk(Paths.get(clientDir));
+                        Stream<Path> files = Files.walk(Paths.get(clientDir));
 
-                    files.forEach(file -> {
-                        try {
+                        files.forEach(file -> {
+                            if (excludeFileOrDirectory(file.toString())) {
 
-                            Files.copy(
-                                    file,
-                                    Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
-                                    REPLACE_EXISTING
-                            );
+                                LOG.debug("Excluding " + file + " from server pack");
 
-                            LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
-                        } catch (IOException ex) {
-                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                LOG.error("An error occurred copying files to the serverpack.", ex);
+                            } else {
+                                try {
+
+                                    Files.copy(
+                                            file,
+                                            Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
+                                            REPLACE_EXISTING
+                                    );
+
+                                    LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
+                                } catch (IOException ex) {
+                                    if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                        LOG.error("An error occurred copying files to the serverpack.", ex);
+                                    }
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    files.close();
+                        files.close();
 
-                } catch (IOException ex) {
-                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    } catch (IOException ex) {
+                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    }
                 }
             }
         }
@@ -873,22 +913,36 @@ public class ServerPackHandler {
     }
 
     /**
+     * Check whether the given file is present in the list of directories to exclude from the server pack.
+     * @author Griefed
+     * @param fileToCheckFor String. The string to check for.
+     * @return Boolean. Returns true if the file is found in the list of directories to exclude, false if not.
+     */
+    private boolean excludeFileOrDirectory(String fileToCheckFor) {
+        boolean isPresentInList = false;
+        for (String entry : CONFIGURATIONHANDLER.getDIRECTORIESTOEXCLUDELIST()) {
+            if (fileToCheckFor.contains(entry)) {
+                isPresentInList = true;
+                break;
+            }
+        }
+        return isPresentInList;
+    }
+
+    /**
      * Copies the server-icon.png into server_pack.
      * @author Griefed
-     * @param modpackDir String. The server-icon.png is copied into the server_pack directory inside the modpack directory.
      */
-    void copyIcon(String modpackDir) {
+    void copyIcon() {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyicon"));
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
         try {
 
             Files.copy(
                     Paths.get(String.format("server_files/%s", getIconFile())),
-                    Paths.get(String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getIconFile())),
+                    Paths.get(String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getIconFile())),
                     REPLACE_EXISTING
             );
 
@@ -900,20 +954,17 @@ public class ServerPackHandler {
     /**
      * Copies the server.properties into server_pack.
      * @author Griefed
-     * @param modpackDir String. The server.properties file is copied into the server_pack directory inside the modpack directory.
      */
-    void copyProperties(String modpackDir) {
+    void copyProperties() {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyproperties"));
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
         try {
 
             Files.copy(
                     Paths.get(String.format("server_files/%s", getPropertiesFile())),
-                    Paths.get(String.format("%s/%s/%s", getSERVER_PACKS_DIR(), destination, getPropertiesFile())),
+                    Paths.get(String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getPropertiesFile())),
                     REPLACE_EXISTING
             );
 
@@ -925,27 +976,24 @@ public class ServerPackHandler {
     /**
      * Installs the modloader server for the specified modloader, modloader version and Minecraft version.
      * Calls<p>
-     * {@link #downloadFabricJar(String)} to download the Fabric installer into the server_pack directory.<p>
-     * {@link #downloadForgeJar(String, String, String)} to download the Forge installer for the specified Forge version
+     * {@link #downloadFabricJar()} to download the Fabric installer into the server_pack directory.<p>
+     * {@link #downloadForgeJar(String, String)} to download the Forge installer for the specified Forge version
      * and Minecraft version.<p>
-     * {@link #generateDownloadScripts(String, String, String)} to generate the download scripts of the Minecraft server JAR
+     * {@link #generateDownloadScripts(String, String)} to generate the download scripts of the Minecraft server JAR
      * for the specified Minecraft version and file-name depending on whether the modloader is Forge or Fabric.<p>
-     * {@link #cleanUpServerPack(File, File, String, String, String, String)} to delete no longer needed files generated
+     * {@link #cleanUpServerPack(File, File, String, String, String)} to delete no longer needed files generated
      * by the installation process of the modloader server software.
      * @author Griefed
      * @param modLoader String. The modloader for which to install the server software. Either Forge or Fabric.
-     * @param modpackDir String. The server software is installed into the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. The Minecraft version for which to install the modloader and Minecraft server.
      * @param modLoaderVersion String. The modloader version for which to install the modloader and Minecraft server.
      * @param javaPath String. The path to the Java executable/binary which is needed to execute the Forge/Fabric installers.
      */
-    void installServer(String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion, String javaPath) {
+    void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath) {
 
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
+        File fabricInstaller = new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination()));
 
-        File fabricInstaller = new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination));
-
-        File forgeInstaller = new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination));
+        File forgeInstaller = new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination()));
 
         List<String> commandArguments = new ArrayList<>();
 
@@ -959,7 +1007,7 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
                 LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
 
-                if (downloadFabricJar(modpackDir)) {
+                if (downloadFabricJar()) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
 
@@ -973,7 +1021,7 @@ public class ServerPackHandler {
                     commandArguments.add(modLoaderVersion);
                     commandArguments.add("-downloadMinecraft");
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)));
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination())));
 
                     LOG.debug("ProcessBuilder command: " + processBuilder.command());
 
@@ -1023,7 +1071,7 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
                 LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
 
-                if (downloadForgeJar(minecraftVersion, modLoaderVersion, modpackDir)) {
+                if (downloadForgeJar(minecraftVersion, modLoaderVersion)) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
                     commandArguments.add(javaPath);
@@ -1031,7 +1079,7 @@ public class ServerPackHandler {
                     commandArguments.add("forge-installer.jar");
                     commandArguments.add("--installServer");
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)));
+                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination())));
 
                     LOG.debug("ProcessBuilder command: " + processBuilder.command());
 
@@ -1080,39 +1128,34 @@ public class ServerPackHandler {
 
         commandArguments.clear();
 
-        generateDownloadScripts(modLoader, modpackDir, minecraftVersion);
+        generateDownloadScripts(modLoader, minecraftVersion);
 
         if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled").equalsIgnoreCase("true")) {
             cleanUpServerPack(
                     fabricInstaller,
                     forgeInstaller,
                     modLoader,
-                    modpackDir,
                     minecraftVersion,
                     modLoaderVersion);
         } else {
-            // TODO: Replace with lang key
-            LOG.info("Server pack cleanup disabled.");
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanup"));
         }
     }
 
     /**
      * Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p>
      * @author Griefed
-     * @param modpackDir String. The directory server_pack will be zipped and placed inside the modpack directory.
      * @param minecraftVersion String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR info should be printed.
      */
-    void zipBuilder(String modpackDir, String minecraftVersion, boolean includeServerInstallation) {
+    void zipBuilder(String minecraftVersion, boolean includeServerInstallation) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.enter"));
 
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-
         List<File> filesToExclude = new ArrayList<>(Arrays.asList(
-                new File(String.format("%s/%s/minecraft_server.%s.jar", getSERVER_PACKS_DIR(), destination, minecraftVersion)),
-                new File(String.format("%s/%s/server.jar", getSERVER_PACKS_DIR(), destination))
+                new File(String.format("%s/%s/minecraft_server.%s.jar", getSERVER_PACKS_DIR(), getServerPackDestination(), minecraftVersion)),
+                new File(String.format("%s/%s/server.jar", getSERVER_PACKS_DIR(), getServerPackDestination()))
         ));
 
         ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
@@ -1125,7 +1168,7 @@ public class ServerPackHandler {
 
         try {
 
-            new ZipFile(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), destination)).addFolder(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), destination)), zipParameters);
+            new ZipFile(String.format("%s/%s_server_pack.zip", getSERVER_PACKS_DIR(), getServerPackDestination())).addFolder(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination())), zipParameters);
 
         } catch (IOException ex) {
 
@@ -1183,16 +1226,14 @@ public class ServerPackHandler {
      * Generates download scripts for the Minecraft server-jar depending on the specified modloader and Minecraft version.
      * @author Griefed
      * @param modLoader String. Determines whether the scripts are generated for Forge or Fabric.
-     * @param modpackDir String. The scripts are generated in the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. Determines the Minecraft version for which the scripts are generated.
      */
-    void generateDownloadScripts(String modLoader, String modpackDir, String minecraftVersion) {
+    void generateDownloadScripts(String modLoader, String minecraftVersion) {
 
         String minecraftServerUrl = getMinecraftServerJarUrl(minecraftVersion);
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
 
-        Path pathBatch = Paths.get(String.format("%s/%s/download_minecraft-server.jar.bat", getSERVER_PACKS_DIR(), destination));
-        Path pathShell = Paths.get(String.format("%s/%s/download_minecraft-server.jar.sh", getSERVER_PACKS_DIR(), destination));
+        Path pathBatch = Paths.get(String.format("%s/%s/download_minecraft-server.jar.bat", getSERVER_PACKS_DIR(), getServerPackDestination()));
+        Path pathShell = Paths.get(String.format("%s/%s/download_minecraft-server.jar.sh", getSERVER_PACKS_DIR(), getServerPackDestination()));
 
         String batchContent = null;
         String shellContent = null;
@@ -1240,12 +1281,9 @@ public class ServerPackHandler {
     /**
      * Downloads the release Fabric installer into the server pack.<p>
      * @author Griefed
-     * @param modpackDir String. The Fabric installer is downloaded into the server_pack directory inside the modpack directory.
      * @return Boolean. Returns true if the download was successfull.
      */
-    boolean downloadFabricJar(String modpackDir) {
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
+    boolean downloadFabricJar() {
 
         boolean downloaded = false;
 
@@ -1258,7 +1296,7 @@ public class ServerPackHandler {
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
 
-            FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination));
+            FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination()));
             FileChannel downloadFabricFileChannel = downloadFabricFileOutputStream.getChannel();
             downloadFabricFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
@@ -1270,9 +1308,9 @@ public class ServerPackHandler {
         } catch (IOException ex) {
             LOG.error("An error occurred downloading Fabric.", ex);
 
-            if (new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
+            if (new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).exists()) {
                 try {
-                    Files.delete(Paths.get(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination)));
+                    Files.delete(Paths.get(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination())));
 
                 } catch (IOException exc) {
                     LOG.error("Couldn't delete corrupted Fabric installer.", exc);
@@ -1280,7 +1318,7 @@ public class ServerPackHandler {
             }
         }
 
-        if (new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
+        if (new File(String.format("%s/%s/fabric-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).exists()) {
             downloaded = true;
         }
         return downloaded;
@@ -1291,12 +1329,9 @@ public class ServerPackHandler {
      * @author Griefed
      * @param minecraftVersion String. The Minecraft version for which to download the modloader server installer.
      * @param modLoaderVersion String. The Forge version for which to download the modloader server installer.
-     * @param modpackDir String. The modloader installer is downloaded to the server_pack directory inside the modloader directory.
      * @return Boolean. Returns true if the download was successful.
      */
-    boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String modpackDir) {
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
+    boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion) {
 
         boolean downloaded = false;
 
@@ -1307,7 +1342,7 @@ public class ServerPackHandler {
 
             ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
 
-            FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination));
+            FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination()));
             FileChannel downloadForgeFileChannel = downloadForgeFileOutputStream.getChannel();
             downloadForgeFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
@@ -1319,15 +1354,15 @@ public class ServerPackHandler {
         } catch (IOException ex) {
             LOG.error("An error occurred downloading Forge.", ex);
 
-            if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
+            if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).exists()) {
 
-                if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination)).delete()) {
+                if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).delete()) {
                     LOG.error("Deleted incomplete Forge-installer...");
                 }
             }
         }
 
-        if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), destination)).exists()) {
+        if (new File(String.format("%s/%s/forge-installer.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).exists()) {
             downloaded = true;
         }
         return downloaded;
@@ -1339,13 +1374,10 @@ public class ServerPackHandler {
      * @param fabricInstaller File. The Fabric installer file which is to be deleted.
      * @param forgeInstaller File. The Forge installer file which is to be deleted.
      * @param modLoader String. Whether Forge or Fabric files are to be deleted.
-     * @param modpackDir String. Cleanup tasks are done inside the server_pack directory inside the modpack directory.
      * @param minecraftVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
      * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
      */
-    void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String modpackDir, String minecraftVersion, String modLoaderVersion) {
-
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
+    void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String minecraftVersion, String modLoaderVersion) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.enter"));
@@ -1366,22 +1398,22 @@ public class ServerPackHandler {
             try {
 
                 Files.copy(
-                        Paths.get(String.format("%s/%s/forge-%s-%s.jar", getSERVER_PACKS_DIR(), destination, minecraftVersion, modLoaderVersion)),
-                        Paths.get(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), destination)),
+                        Paths.get(String.format("%s/%s/forge-%s-%s.jar", getSERVER_PACKS_DIR(), getServerPackDestination(), minecraftVersion, modLoaderVersion)),
+                        Paths.get(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), getServerPackDestination())),
                         REPLACE_EXISTING);
 
                 boolean isOldJarDeleted = (new File(
                         String.format("%s/%s/forge-%s-%s.jar",
                                 getSERVER_PACKS_DIR(),
-                                destination,
+                                getServerPackDestination(),
                                 minecraftVersion,
                                 modLoaderVersion))).delete();
 
                 boolean isInstallerDeleted = forgeInstaller.delete();
 
-                boolean isInstallerLogDeleted = new File(String.format("%s/%s/installer.log", getSERVER_PACKS_DIR(), destination)).delete();
+                boolean isInstallerLogDeleted = new File(String.format("%s/%s/installer.log", getSERVER_PACKS_DIR(), getServerPackDestination())).delete();
 
-                if ((isOldJarDeleted) && (new File(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), destination)).exists())) {
+                if ((isOldJarDeleted) && (new File(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).exists())) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename"));
                 } else {

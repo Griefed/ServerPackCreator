@@ -20,12 +20,12 @@
 package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import com.typesafe.config.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
-import de.griefed.serverpackcreator.curseforge.CurseModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.logging.log4j.LogManager;
@@ -33,8 +33,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -49,34 +47,36 @@ import java.util.*;
  * 9. {@link #checkModloader(String)}<br>
  * 10.{@link #checkModloaderVersion(String, String, String)}<br>
  * 11.{@link #checkModpackDir(String)}<br>
- * 12.{@link #containsFabric(CurseModpack)}<br>
+ * 12.{@link #containsFabric(JsonNode)}<br>
  * 13.{@link #convertToBoolean(String)}<br>
  * 14.{@link #createConfigurationFile()}<br>
  * 15.{@link #encapsulateListElements(List)}<br>
  * 16 {@link #getConfig()}<br>
  * 17 {@link #getConfigFile()}<br>
  * 18.{@link #getConfigurationAsList(ConfigurationModel)}<br>
- * 19 {@link #getFallbackModsList()}<br>
- * 20.{@link #getObjectMapper()}<br>
- * 21.{@link #getOldConfigFile()}<br>
- * 22.{@link #getProjectFileID()}<br>
- * 23.{@link #getProjectID()}<br>
- * 24.{@link #isCurse(ConfigurationModel)}<br>
- * 25.{@link #isDir(ConfigurationModel)}<br>
- * 26.{@link #isDir(String, ConfigurationModel)}<br>
- * 27.{@link #isFabricVersionCorrect(String)}<br>
- * 28.{@link #isForgeVersionCorrect(String, String)}<br>
- * 29.{@link #isMinecraftVersionCorrect(String)}<br>
- * 30.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String)}<br>
- * 31.{@link #readBoolean()}<br>
- * 32.{@link #readStringArray()}<br>
- * 33.{@link #setConfig(File)}<br>
- * 34.{@link #setFALLBACKMODSLIST()}<br>
- * 35.{@link #setModLoaderCase(String)}<br>
- * 36.{@link #setProjectFileID(int)}<br>
- * 37.{@link #setProjectID(int)}<br>
- * 38.{@link #suggestCopyDirs(String)}<br>
- * 39.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<p>
+ * 19.{@link #getDIRECTORIESTOEXCLUDELIST()}<br>
+ * 20.{@link #getFallbackModsList()}<br>
+ * 23.{@link #getObjectMapper()}<br>
+ * 24.{@link #getOldConfigFile()}<br>
+ * 25.{@link #getProjectFileID()}<br>
+ * 26.{@link #getProjectID()}<br>
+ * 27.{@link #isCurse(ConfigurationModel)}<br>
+ * 28.{@link #isDir(ConfigurationModel)}<br>
+ * 29.{@link #isDir(String, ConfigurationModel)}<br>
+ * 30.{@link #isFabricVersionCorrect(String)}<br>
+ * 31.{@link #isForgeVersionCorrect(String, String)}<br>
+ * 32.{@link #isMinecraftVersionCorrect(String)}<br>
+ * 33.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String)}<br>
+ * 34.{@link #readBoolean()}<br>
+ * 35.{@link #readStringArray()}<br>
+ * 36.{@link #setConfig(File)}<br>
+ * 37.{@link #setDIRECTORIESTOEXCLUDELIST()}<br>
+ * 38.{@link #setFALLBACKMODSLIST()}<br>
+ * 39.{@link #setModLoaderCase(String)}<br>
+ * 40.{@link #setProjectFileID(int)}<br>
+ * 41.{@link #setProjectID(int)}<br>
+ * 42.{@link #suggestCopyDirs(String)}<br>
+ * 43.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
@@ -97,7 +97,9 @@ public class ConfigurationHandler {
 
     private Properties serverPackCreatorProperties;
 
-    private List<String> FALLBACKMODSLIST = new ArrayList<>();
+    private List<String> FALLBACKMODSLIST;
+
+    private List<String> DIRECTORIESTOEXCLUDELIST;
 
     private int projectID;
     private int projectFileID;
@@ -150,6 +152,16 @@ public class ConfigurationHandler {
         }
 
         setFALLBACKMODSLIST();
+        setDIRECTORIESTOEXCLUDELIST();
+    }
+
+    /**
+     * Add an entry to the list of directories/files to exclude from the server pack.
+     * @author Griefed
+     * @param entryToAdd String. Entry to the list of directories/files to exclude from the server pack.
+     */
+    private void addToDIRECTORIESTOEXCLUDELIST(String entryToAdd) {
+        this.DIRECTORIESTOEXCLUDELIST.add(entryToAdd);
     }
 
     /**
@@ -167,7 +179,7 @@ public class ConfigurationHandler {
                             "preciseblockplacing","ResourceLoader","SimpleDiscordRichPresence","SpawnerFix","timestamps","TipTheScales",
                             "WorldNameRandomizer"));
 
-            LOG.debug("Fallbackmodslist property null. Using fallback: " + FALLBACKMODSLIST);
+            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.FALLBACKMODSLIST);
 
         } else if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
 
@@ -180,17 +192,21 @@ public class ConfigurationHandler {
                             "preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales," +
                             "WorldNameRandomizer").split(",")));
 
-            LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
+            LOG.debug("Fallbackmodslist set to: " + this.FALLBACKMODSLIST);
 
         } else {
 
             this.FALLBACKMODSLIST = Collections.singletonList((serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
 
-            LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
+            LOG.debug("Fallbackmodslist set to: " + this.FALLBACKMODSLIST);
         }
-
     }
 
+    /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
     public ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -241,6 +257,38 @@ public class ConfigurationHandler {
     }
 
     /**
+     * Setter for the list of directories to exclude from the server pack. Reads <code>de.griefed.serverpackcreator.configuration.copydirs.exclude</code>
+     * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>overrides,packmenu,resourcepacks,server_pack,fancymenu</code>
+     * @author Griefed
+     */
+    private void setDIRECTORIESTOEXCLUDELIST() {
+        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude") == null) {
+
+            this.DIRECTORIESTOEXCLUDELIST = new ArrayList<>(Arrays.asList(
+                    "overrides","packmenu","resourcepacks","server_pack","fancymenu"
+            ));
+
+            LOG.debug("copydirs.exclude property null. Using fallback: " + this.DIRECTORIESTOEXCLUDELIST);
+
+        } else if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude").contains(",")) {
+            this.DIRECTORIESTOEXCLUDELIST = new ArrayList<>(Arrays.asList(serverPackCreatorProperties.getProperty(
+                            "de.griefed.serverpackcreator.configuration.copydirs.exclude",
+                            "overrides,packmenu,resourcepacks,server_pack,fancymenu"
+                    ).split(",")
+            ));
+
+            LOG.debug("Directories to exclude set to: " + this.DIRECTORIESTOEXCLUDELIST);
+
+        } else {
+
+            this.DIRECTORIESTOEXCLUDELIST = Collections.singletonList(serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude"));
+
+            LOG.debug("Directories to exclude set to: " + this.DIRECTORIESTOEXCLUDELIST);
+
+        }
+    }
+
+    /**
      * Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.
      * @author Griefed
      * @return List String. Returns the fallback clientside-only mods-list.
@@ -250,16 +298,16 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * @author Griefed
-     * @return Integer. Returns the CurseForge projectID of a modpack, for use in {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)} and {@link #checkCurseForge(String)}
+     * @return Integer. Returns the CurseForge projectID of a modpack, for use in {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)} and {@link #checkCurseForge(String)}
      */
     int getProjectID() {
         return projectID;
     }
 
     /**
-     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
      * @author Griefed
      * @param newProjectID The new projectID to store.
@@ -269,7 +317,7 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * @author Griefed
      * @return Integer. Returns the CurseForge fileID of a modpack.
      */
@@ -278,7 +326,7 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)}.
+     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
      * For use in {@link #checkCurseForge(String)}
      * @author Griefed
      * @param newProjectFileID The new projectFileID to store.
@@ -576,7 +624,7 @@ public class ConfigurationHandler {
 
     /**
      * If modpackDir in the configuration file is a CurseForge projectID,fileID combination, then the modpack is first
-     * created from said combination, using {@link CurseCreateModpack#curseForgeModpack(String, Integer, Integer)},
+     * created from said combination, using {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)},
      * before proceeding to checking the rest of the configuration. If everything passes and the modpack was created,
      * a new configuration file is created, replacing the one used to create the modpack in the first place, with the
      * modpackDir field pointing to the newly created modpack.
@@ -621,46 +669,25 @@ public class ConfigurationHandler {
 
                 if (displayName != null && projectName != null) {
 
-                    configurationModel.setModpackDir(String.format("./work/modpacks/%s/%s", getProjectID(), getProjectFileID() + "_" + displayName));
+                    CURSECREATEMODPACK.curseForgeModpack(configurationModel, getProjectID(), getProjectFileID());
 
-                    CURSECREATEMODPACK.curseForgeModpack(configurationModel.getModpackDir(), getProjectID(), getProjectFileID());
+                    configurationModel.setMinecraftVersion(CURSECREATEMODPACK.getCurseModpack().get("minecraft").get("version").asText());
 
-                    try {
-                        byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", configurationModel.getModpackDir())));
+                    if (containsFabric(CURSECREATEMODPACK.getCurseModpack())) {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                        LOG.debug("Setting modloader to Fabric.");
 
-                        CurseModpack modpack = getObjectMapper().readValue(jsonData, CurseModpack.class);
+                        configurationModel.setModLoader("Fabric");
+                        configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
 
-                        String[] minecraftLoaderVersions = modpack
-                                .getMinecraft()
-                                .toString()
-                                .split(",");
+                    } else {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
+                        LOG.debug("Setting modloader to Forge.");
 
-                        String[] modLoaderVersion = minecraftLoaderVersions[1]
-                                .replace("[", "")
-                                .replace("]", "")
-                                .split("-");
+                        configurationModel.setModLoader("Forge");
+                        configurationModel.setModLoaderVersion(CURSECREATEMODPACK.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
 
-                        configurationModel.setMinecraftVersion(minecraftLoaderVersions[0]
-                                .replace("[", ""));
-
-                        if (containsFabric(modpack)) {
-                            /* This log is meant to be read by the user, therefore we allow translation. */
-                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-                            LOG.debug("Setting modloader to Fabric.");
-
-                            configurationModel.setModLoader("Fabric");
-                            configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
-
-                        } else {
-                            /* This log is meant to be read by the user, therefore we allow translation. */
-                            LOG.debug("Setting modloader to Forge.");
-
-                            configurationModel.setModLoader("Forge");
-                            configurationModel.setModLoaderVersion(modLoaderVersion[1]);
-
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Error: There was a fault during json parsing.", ex);
                     }
 
                     configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
@@ -711,21 +738,18 @@ public class ConfigurationHandler {
      * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
      * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
      * @author Griefed
-     * @param modpack CurseModpack. Contains information about the CurseForge modpack. Used to get a list of all projects
-     *               required by the modpack.
+     * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
      * @return Boolean. Returns true if Jumploader is found.
      */
-    boolean containsFabric(CurseModpack modpack) {
+    boolean containsFabric(JsonNode modpackJson) {
         boolean hasJumploader = false;
 
-        for (int i = 0; i < modpack.getFiles().size(); i++) {
+        for (int i = 0; i < modpackJson.get("files").size(); i++) {
 
-            String[] mods = modpack.getFiles().get(i).toString().split(",");
+            LOG.debug(String.format("Mod ID: %s", modpackJson.get("files").get(i).get("projectID").asText()));
+            LOG.debug(String.format("File ID: %s", modpackJson.get("files").get(i).get("fileID").asText()));
 
-            LOG.debug(String.format("Mod ID: %s", mods[0]));
-            LOG.debug(String.format("File ID: %s", mods[1]));
-
-            if (mods[0].equalsIgnoreCase("361988") || mods[0].equalsIgnoreCase("306612")) {
+            if (modpackJson.get("files").get(i).get("projectID").asText().equalsIgnoreCase("361988") || modpackJson.get("files").get(i).get("fileID").asText().equalsIgnoreCase("306612")) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
@@ -750,13 +774,6 @@ public class ConfigurationHandler {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
 
-        List<String> dirsNotToCopy = new ArrayList<>(Arrays.asList(
-                "overrides",
-                "packmenu",
-                "resourcepacks",
-                "server_pack"
-        ));
-
         File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
 
         List<String> dirsInModpack = new ArrayList<>();
@@ -772,11 +789,11 @@ public class ConfigurationHandler {
             LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
         }
 
-        for (int idirs = 0; idirs < dirsNotToCopy.size(); idirs++) {
+        for (int idirs = 0; idirs < getDIRECTORIESTOEXCLUDELIST().size(); idirs++) {
 
             int i = idirs;
 
-            dirsInModpack.removeIf(n -> (n.contains(dirsNotToCopy.get(i))));
+            dirsInModpack.removeIf(n -> (n.contains(getDIRECTORIESTOEXCLUDELIST().get(i))));
         }
 
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
@@ -1041,7 +1058,7 @@ public class ConfigurationHandler {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    File sourceFileToCheck = new File (String.format("%s/%s", modpackDir,sourceFileDestinationFileCombination[0]));
+                    File sourceFileToCheck = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
 
                     if (!sourceFileToCheck.exists()) {
 
@@ -1049,6 +1066,11 @@ public class ConfigurationHandler {
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
                         configCorrect = false;
                     }
+
+                // Add an entry to the list of directories/files to exclude if it starts with !
+                } else if (directory.startsWith("!")) {
+
+                    addToDIRECTORIESTOEXCLUDELIST(directory.substring(directory.lastIndexOf("!") + 1));
 
                 // If user did not explicitly specify a file, check for directory.
                 } else {
@@ -1768,6 +1790,15 @@ public class ConfigurationHandler {
         }
 
         return configWritten;
+    }
+
+    /**
+     * Getter for the list of directories to exclude from the server pack.
+     * @author Griefed
+     * @return List String. List of directories to exclude from the server pack.
+     */
+    public List<String> getDIRECTORIESTOEXCLUDELIST() {
+        return DIRECTORIESTOEXCLUDELIST;
     }
 
     /**

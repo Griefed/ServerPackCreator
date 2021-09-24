@@ -1,4 +1,5 @@
 //file:noinspection GroovyAssignabilityCheck
+//file:noinspection GrUnresolvedAccess
 import java.text.SimpleDateFormat
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
@@ -113,11 +114,11 @@ test {
 frontend {
     packageJsonDirectory = file("${projectDir}/frontend")
 
-    nodeVersion = '16.1.0'
+    nodeVersion = '16.9.1'
     nodeInstallDirectory = file("${projectDir}/frontend/node")
 
     yarnEnabled = false
-    yarnVersion = "1.22.10"
+    yarnVersion = "1.22.11"
     yarnInstallDirectory = file("${projectDir}/frontend/yarn")
 
     cleanScript = 'run clean'
