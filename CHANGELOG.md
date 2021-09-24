@@ -1,3 +1,26 @@
+## [3.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.3...3.0.0-alpha.4) (2021-09-24)
+
+
+### :scissors: Refactor
+
+* Gather information from CurseForge modpack from JsonNodes instead of Class-mapping. Makes maintenance and expansion easier. Reduces complexity. ([caa033b](https://git.griefed.de/Griefed/ServerPackCreator/commit/caa033bae0d54a5e7171871ea7023e99fc5c99a0))
+
+
+### 🦊 CI/CD
+
+* Update frontend dependencies ([d953f31](https://git.griefed.de/Griefed/ServerPackCreator/commit/d953f31dbc75f0006b34445a20e074fbc698f9bc))
+
+
+### 🚀 Features
+
+* Allow users to exclude files and directories from the server pack to be generated with ! as the prefix in an entry in copyDirs ([f527d04](https://git.griefed.de/Griefed/ServerPackCreator/commit/f527d04dc67d5c2c186a460068aa84167278cafd))
+* Allow users to set a suffix for the server pack to be generated. Requested in issue [#77](https://git.griefed.de/Griefed/ServerPackCreator/issues/77) ([2d32119](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d321197c6123348558476b20b6f2c9aa93cc54f))
+
+
+### Other
+
+* Add missing space in lang keys for copyDirs help. Closes issue [#78](https://git.griefed.de/Griefed/ServerPackCreator/issues/78) ([3539582](https://git.griefed.de/Griefed/ServerPackCreator/commit/35395827fb5a8e837ccae61925a0557aae544f29))
+
 ## [3.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.2...3.0.0-alpha.3) (2021-09-04)
 
 
