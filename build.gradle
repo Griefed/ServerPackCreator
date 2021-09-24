@@ -1,4 +1,5 @@
 //file:noinspection GroovyAssignabilityCheck
+//file:noinspection GrUnresolvedAccess
 import java.text.SimpleDateFormat
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
 
