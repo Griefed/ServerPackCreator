@@ -82,6 +82,7 @@ Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONT
 5. **Configurable list of directories from your modpack to include in your server pack**
     1. Copying worlds from `saves/world` will result in the world being copied to `server_pack/world`
     2. Specify extra files to include in server pack like follows `source/path/to/file;server_pack/destination_file`
+    3. Exclude files/directories by prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties`
 6. **Generate Forge or Fabric start-scripts in your server pack**
     1. Specify JVM flags / Java Args for your start scripts!
 7. **Include a server-icon.png-file in your server pack**
@@ -89,18 +90,19 @@ Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONT
 8. **Include a server.properties-file in your server pack**
     1. Replace the file in `server-files` with your own!
 9. **Create a ZIP-archive of your server pack**
-10. **GUI to fully configure and run ServerPackCreator**
+11. **GUI to fully configure and run ServerPackCreator**
     1. Load existing config
-    1. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
-    1. Logs from last run in separate tabs
-    1. And much more!
-11. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs.**
+    2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
+    3. Logs from last run in separate tabs
+    4. Set a suffix for the server pack to be generated
+    5. And much more!
+12. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs.**
     1. Upload config files
     2. Upload CurseForge modpack-archives to generate server packs from
     3. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
     4. Logs from last run in separate tab
     5. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
-12. **Addons!**
+13. **Addons!**
     1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
     2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 

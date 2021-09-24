@@ -57,27 +57,28 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 7. {@link #downloadFabricJar()}<br>
  * 8. {@link #downloadForgeJar(String, String)}<br>
  * 9. {@link #excludeClientMods(String, List, String)}<br>
- * 10.{@link #generateDownloadScripts(String, String)}<br>
- * 11.{@link #getFabricLinuxFile()}<br>
- * 12.{@link #getFabricWindowsFile()}<br>
- * 13.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
- * 14.{@link #getForgeLinuxFile()}<br>
- * 15.{@link #getForgeWindowsFile()}<br>
- * 16.{@link #getIconFile()}<br>
- * 17.{@link #getMinecraftServerJarUrl(String)}<br>
- * 18.{@link #getObjectMapper()}<br>
- * 19.{@link #getPropertiesFile()}<br>
- * 20.{@link #getSERVER_PACKS_DIR()}<br>
- * 21.{@link #getSTART_FABRIC_BATCH}<br>
- * 22.{@link #getSTART_FABRIC_SHELL}<br>
- * 23.{@link #getSTART_FORGE_BATCH}<br>
- * 24.{@link #getSTART_FORGE_SHELL}<br>
- * 25.{@link #installServer(String, String, String, String)}<br>
- * 26.{@link #run(ConfigurationModel)}<br>
- * 27.{@link #run(File, ConfigurationModel)}<br>
- * 28.{@link #scanAnnotations(File[])}<br>
- * 29.{@link #scanTomls(File[])}<br>
- * 30.{@link #zipBuilder(String, boolean)}<p>
+ * 10.{@link #excludeFileOrDirectory(String)}<br>
+ * 11.{@link #generateDownloadScripts(String, String)}<br>
+ * 12.{@link #getFabricLinuxFile()}<br>
+ * 13.{@link #getFabricWindowsFile()}<br>
+ * 14.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
+ * 15.{@link #getForgeLinuxFile()}<br>
+ * 16.{@link #getForgeWindowsFile()}<br>
+ * 17.{@link #getIconFile()}<br>
+ * 18.{@link #getMinecraftServerJarUrl(String)}<br>
+ * 19.{@link #getObjectMapper()}<br>
+ * 20.{@link #getPropertiesFile()}<br>
+ * 21.{@link #getSERVER_PACKS_DIR()}<br>
+ * 22.{@link #getSTART_FABRIC_BATCH}<br>
+ * 23.{@link #getSTART_FABRIC_SHELL}<br>
+ * 24.{@link #getSTART_FORGE_BATCH}<br>
+ * 25.{@link #getSTART_FORGE_SHELL}<br>
+ * 26.{@link #installServer(String, String, String, String)}<br>
+ * 27.{@link #run(ConfigurationModel)}<br>
+ * 28.{@link #run(File, ConfigurationModel)}<br>
+ * 29.{@link #scanAnnotations(File[])}<br>
+ * 30.{@link #scanTomls(File[])}<br>
+ * 31.{@link #zipBuilder(String, boolean)}<p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
  * <p>
@@ -806,31 +807,39 @@ public class ServerPackHandler {
 
 
             } else {
-                try {
+                if (!directory.startsWith("!")) {
+                    try {
 
-                    Stream<Path> files = Files.walk(Paths.get(clientDir));
+                        Stream<Path> files = Files.walk(Paths.get(clientDir));
 
-                    files.forEach(file -> {
-                        try {
+                        files.forEach(file -> {
+                            if (excludeFileOrDirectory(file.toString())) {
 
-                            Files.copy(
-                                    file,
-                                    Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
-                                    REPLACE_EXISTING
-                            );
+                                LOG.debug("Excluding " + file + " from server pack");
 
-                            LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
-                        } catch (IOException ex) {
-                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                LOG.error("An error occurred copying files to the serverpack.", ex);
+                            } else {
+                                try {
+
+                                    Files.copy(
+                                            file,
+                                            Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
+                                            REPLACE_EXISTING
+                                    );
+
+                                    LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
+                                } catch (IOException ex) {
+                                    if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                        LOG.error("An error occurred copying files to the serverpack.", ex);
+                                    }
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    files.close();
+                        files.close();
 
-                } catch (IOException ex) {
-                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    } catch (IOException ex) {
+                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    }
                 }
             }
         }
@@ -901,6 +910,23 @@ public class ServerPackHandler {
         }
 
         return modsInModpack;
+    }
+
+    /**
+     * Check whether the given file is present in the list of directories to exclude from the server pack.
+     * @author Griefed
+     * @param fileToCheckFor String. The string to check for.
+     * @return Boolean. Returns true if the file is found in the list of directories to exclude, false if not.
+     */
+    private boolean excludeFileOrDirectory(String fileToCheckFor) {
+        boolean isPresentInList = false;
+        for (String entry : CONFIGURATIONHANDLER.getDIRECTORIESTOEXCLUDELIST()) {
+            if (fileToCheckFor.contains(entry)) {
+                isPresentInList = true;
+                break;
+            }
+        }
+        return isPresentInList;
     }
 
     /**

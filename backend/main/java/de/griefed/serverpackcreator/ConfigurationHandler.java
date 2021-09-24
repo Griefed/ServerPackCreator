@@ -54,27 +54,29 @@ import java.util.*;
  * 16 {@link #getConfig()}<br>
  * 17 {@link #getConfigFile()}<br>
  * 18.{@link #getConfigurationAsList(ConfigurationModel)}<br>
- * 19 {@link #getFallbackModsList()}<br>
- * 20.{@link #getObjectMapper()}<br>
- * 21.{@link #getOldConfigFile()}<br>
- * 22.{@link #getProjectFileID()}<br>
- * 23.{@link #getProjectID()}<br>
- * 24.{@link #isCurse(ConfigurationModel)}<br>
- * 25.{@link #isDir(ConfigurationModel)}<br>
- * 26.{@link #isDir(String, ConfigurationModel)}<br>
- * 27.{@link #isFabricVersionCorrect(String)}<br>
- * 28.{@link #isForgeVersionCorrect(String, String)}<br>
- * 29.{@link #isMinecraftVersionCorrect(String)}<br>
- * 30.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String)}<br>
- * 31.{@link #readBoolean()}<br>
- * 32.{@link #readStringArray()}<br>
- * 33.{@link #setConfig(File)}<br>
- * 34.{@link #setFALLBACKMODSLIST()}<br>
- * 35.{@link #setModLoaderCase(String)}<br>
- * 36.{@link #setProjectFileID(int)}<br>
- * 37.{@link #setProjectID(int)}<br>
- * 38.{@link #suggestCopyDirs(String)}<br>
- * 39.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<p>
+ * 19.{@link #getDIRECTORIESTOEXCLUDELIST()}<br>
+ * 20.{@link #getFallbackModsList()}<br>
+ * 23.{@link #getObjectMapper()}<br>
+ * 24.{@link #getOldConfigFile()}<br>
+ * 25.{@link #getProjectFileID()}<br>
+ * 26.{@link #getProjectID()}<br>
+ * 27.{@link #isCurse(ConfigurationModel)}<br>
+ * 28.{@link #isDir(ConfigurationModel)}<br>
+ * 29.{@link #isDir(String, ConfigurationModel)}<br>
+ * 30.{@link #isFabricVersionCorrect(String)}<br>
+ * 31.{@link #isForgeVersionCorrect(String, String)}<br>
+ * 32.{@link #isMinecraftVersionCorrect(String)}<br>
+ * 33.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String)}<br>
+ * 34.{@link #readBoolean()}<br>
+ * 35.{@link #readStringArray()}<br>
+ * 36.{@link #setConfig(File)}<br>
+ * 37.{@link #setDIRECTORIESTOEXCLUDELIST()}<br>
+ * 38.{@link #setFALLBACKMODSLIST()}<br>
+ * 39.{@link #setModLoaderCase(String)}<br>
+ * 40.{@link #setProjectFileID(int)}<br>
+ * 41.{@link #setProjectID(int)}<br>
+ * 42.{@link #suggestCopyDirs(String)}<br>
+ * 43.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, File, boolean)}<p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
@@ -95,7 +97,9 @@ public class ConfigurationHandler {
 
     private Properties serverPackCreatorProperties;
 
-    private List<String> FALLBACKMODSLIST = new ArrayList<>();
+    private List<String> FALLBACKMODSLIST;
+
+    private List<String> DIRECTORIESTOEXCLUDELIST;
 
     private int projectID;
     private int projectFileID;
@@ -148,6 +152,16 @@ public class ConfigurationHandler {
         }
 
         setFALLBACKMODSLIST();
+        setDIRECTORIESTOEXCLUDELIST();
+    }
+
+    /**
+     * Add an entry to the list of directories/files to exclude from the server pack.
+     * @author Griefed
+     * @param entryToAdd String. Entry to the list of directories/files to exclude from the server pack.
+     */
+    private void addToDIRECTORIESTOEXCLUDELIST(String entryToAdd) {
+        this.DIRECTORIESTOEXCLUDELIST.add(entryToAdd);
     }
 
     /**
@@ -165,7 +179,7 @@ public class ConfigurationHandler {
                             "preciseblockplacing","ResourceLoader","SimpleDiscordRichPresence","SpawnerFix","timestamps","TipTheScales",
                             "WorldNameRandomizer"));
 
-            LOG.debug("Fallbackmodslist property null. Using fallback: " + FALLBACKMODSLIST);
+            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.FALLBACKMODSLIST);
 
         } else if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
 
@@ -178,17 +192,21 @@ public class ConfigurationHandler {
                             "preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales," +
                             "WorldNameRandomizer").split(",")));
 
-            LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
+            LOG.debug("Fallbackmodslist set to: " + this.FALLBACKMODSLIST);
 
         } else {
 
             this.FALLBACKMODSLIST = Collections.singletonList((serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
 
-            LOG.debug("Fallbackmodslist set to: " + FALLBACKMODSLIST);
+            LOG.debug("Fallbackmodslist set to: " + this.FALLBACKMODSLIST);
         }
-
     }
 
+    /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
     public ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -235,6 +253,38 @@ public class ConfigurationHandler {
         } catch (ConfigException ex) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
+        }
+    }
+
+    /**
+     * Setter for the list of directories to exclude from the server pack. Reads <code>de.griefed.serverpackcreator.configuration.copydirs.exclude</code>
+     * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>overrides,packmenu,resourcepacks,server_pack,fancymenu</code>
+     * @author Griefed
+     */
+    private void setDIRECTORIESTOEXCLUDELIST() {
+        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude") == null) {
+
+            this.DIRECTORIESTOEXCLUDELIST = new ArrayList<>(Arrays.asList(
+                    "overrides","packmenu","resourcepacks","server_pack","fancymenu"
+            ));
+
+            LOG.debug("copydirs.exclude property null. Using fallback: " + this.DIRECTORIESTOEXCLUDELIST);
+
+        } else if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude").contains(",")) {
+            this.DIRECTORIESTOEXCLUDELIST = new ArrayList<>(Arrays.asList(serverPackCreatorProperties.getProperty(
+                            "de.griefed.serverpackcreator.configuration.copydirs.exclude",
+                            "overrides,packmenu,resourcepacks,server_pack,fancymenu"
+                    ).split(",")
+            ));
+
+            LOG.debug("Directories to exclude set to: " + this.DIRECTORIESTOEXCLUDELIST);
+
+        } else {
+
+            this.DIRECTORIESTOEXCLUDELIST = Collections.singletonList(serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude"));
+
+            LOG.debug("Directories to exclude set to: " + this.DIRECTORIESTOEXCLUDELIST);
+
         }
     }
 
@@ -724,13 +774,6 @@ public class ConfigurationHandler {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
 
-        List<String> dirsNotToCopy = new ArrayList<>(Arrays.asList(
-                "overrides",
-                "packmenu",
-                "resourcepacks",
-                "server_pack"
-        ));
-
         File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
 
         List<String> dirsInModpack = new ArrayList<>();
@@ -746,11 +789,11 @@ public class ConfigurationHandler {
             LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
         }
 
-        for (int idirs = 0; idirs < dirsNotToCopy.size(); idirs++) {
+        for (int idirs = 0; idirs < getDIRECTORIESTOEXCLUDELIST().size(); idirs++) {
 
             int i = idirs;
 
-            dirsInModpack.removeIf(n -> (n.contains(dirsNotToCopy.get(i))));
+            dirsInModpack.removeIf(n -> (n.contains(getDIRECTORIESTOEXCLUDELIST().get(i))));
         }
 
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
@@ -1015,7 +1058,7 @@ public class ConfigurationHandler {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    File sourceFileToCheck = new File (String.format("%s/%s", modpackDir,sourceFileDestinationFileCombination[0]));
+                    File sourceFileToCheck = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
 
                     if (!sourceFileToCheck.exists()) {
 
@@ -1023,6 +1066,11 @@ public class ConfigurationHandler {
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
                         configCorrect = false;
                     }
+
+                // Add an entry to the list of directories/files to exclude if it starts with !
+                } else if (directory.startsWith("!")) {
+
+                    addToDIRECTORIESTOEXCLUDELIST(directory.substring(directory.lastIndexOf("!") + 1));
 
                 // If user did not explicitly specify a file, check for directory.
                 } else {
@@ -1742,6 +1790,15 @@ public class ConfigurationHandler {
         }
 
         return configWritten;
+    }
+
+    /**
+     * Getter for the list of directories to exclude from the server pack.
+     * @author Griefed
+     * @return List String. List of directories to exclude from the server pack.
+     */
+    public List<String> getDIRECTORIESTOEXCLUDELIST() {
+        return DIRECTORIESTOEXCLUDELIST;
     }
 
     /**
