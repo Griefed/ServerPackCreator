@@ -1,3 +1,10 @@
+## [3.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.4...3.0.0-alpha.5) (2021-09-24)
+
+
+### 🛠 Fixes
+
+* Fix missing serverpackcreator.properties for tests and do not run tests on GitHub releases. ([8895be8](https://git.griefed.de/Griefed/ServerPackCreator/commit/8895be80bfc76165d0347ee97e750301d6870afe))
+
 ## [3.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.3...3.0.0-alpha.4) (2021-09-24)
 
 
