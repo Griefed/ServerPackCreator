@@ -1456,6 +1456,11 @@ public class ServerPackHandler {
      */
     private List<String> scanTomls(File[] filesInModsDir) {
 
+        /*
+         * Can I just say:
+         * WHAT THE EVERLOVING FUCK IS THIS METHOD? try catch if try catch if else try catch what the actual fucking fuck?
+         */
+
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scantoml"));
 
         List<String> serverMods = new ArrayList<>();
@@ -1486,73 +1491,119 @@ public class ServerPackHandler {
                     } catch (NullPointerException ignored) {
                     }
 
-                    if (modToml.getList("dependencies." + modId) != null) {
-                        for (int i = 0; i < modToml.getList("dependencies." + modId).size(); i++) {
+                    try {
+                        if (modToml.getList("dependencies." + modId) != null) {
+                            for (int i = 0; i < modToml.getList("dependencies." + modId).size(); i++) {
 
-                            // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
-                            try {
-                                if (modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
+                                // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
+                                try {
+                                    if (modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
 
-                                    /*
-                                     * If Forge|Minecraft are listed as dependencies, but no sideness is specified, we need to add this mod just in case,
-                                     * so we do not exclude any mods which MAY need to be on the server.
-                                     */
-                                    if (modToml.getString("dependencies." + modId + "[" + i + "].side") == null) {
+                                        /*
+                                         * If Forge|Minecraft are listed as dependencies, but no sideness is specified, we need to add this mod just in case,
+                                         * so we do not exclude any mods which MAY need to be on the server.
+                                         */
+                                        if (modToml.getString("dependencies." + modId + "[" + i + "].side") == null) {
 
-                                        if (!serverMods.contains(modId)) {
+                                            if (!serverMods.contains(modId)) {
+
+                                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                                serverMods.add(modId);
+                                            }
+                                        }
+
+                                        /*
+                                         * If Forge|Minecraft sideness is BOTH|SERVER, add the mod to the list.
+                                         */
+                                        if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+
+                                            if (!serverMods.contains(modId)) {
+
+                                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                                serverMods.add(modId);
+                                            }
+                                        }
+
+                                    } else {
+                                        /*
+                                         * I know this looks stupid. If a mod does not specify BOTH|SERVER in either of the Forge or Minecraft dependencies,
+                                         * and NO sideness was detected in [[mods]], we need to add this mod just in case, so we do not exclude any mods
+                                         * which MAY need to be on the server.
+                                         */
+                                        if (!serverMods.contains(modId) && modToml.getString("mods[0].side") == null) {
 
                                             LOG.debug("Adding modId to list of server mods: " + modId);
                                             serverMods.add(modId);
                                         }
                                     }
 
-                                    /*
-                                     * If Forge|Minecraft sideness is BOTH|SERVER, add the mod to the list.
-                                     */
-                                    if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+                                } catch (NullPointerException ignored) {
+                                }
 
-                                        if (!serverMods.contains(modId)) {
+                                /*
+                                 * Add every dependency of the mod we are currently checking, which specifies BOTH|SERVER as their sideness, to the list.
+                                 */
+                                try {
 
-                                            LOG.debug("Adding modId to list of server mods: " + modId);
-                                            serverMods.add(modId);
+                                    if (!modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
+                                        if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+
+                                            if (!serverMods.contains(modToml.getString("dependencies." + modId + "[" + i + "].modId"))) {
+
+                                                LOG.debug("Adding modId to list of server mods: " + modToml.getString("dependencies." + modId + "[" + i + "].modId"));
+                                                serverMods.add(modToml.getString("dependencies." + modId + "[" + i + "].modId"));
+                                            }
                                         }
                                     }
 
-                                } else {
-                                    /*
-                                     * I know this looks stupid. If a mod does not specify BOTH|SERVER in either of the Forge or Minecraft dependencies,
-                                     * and NO sideness was detected in [[mods]], we need to add this mod just in case, so we do not exclude any mods
-                                     * which MAY need to be on the server.
-                                     */
-                                    if (!serverMods.contains(modId) && modToml.getString("mods[0].side") == null) {
+                                } catch (NullPointerException ignored) {
+                                }
 
-                                        LOG.debug("Adding modId to list of server mods: " + modId);
-                                        serverMods.add(modId);
+                            }
+                        }
+                    } catch (NullPointerException | ClassCastException ex) {
+                        try {
+
+                            for (int i = 0; i < modToml.getList("dependencies").size(); i++) {
+
+                                String subDependencyId = null;
+                                String subDependencySide = null;
+
+                                for (String element : modToml.getList("dependencies").get(i).toString().replace("{", "").replace("}", "").split(",")) {
+                                    // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
+                                    if (element.contains("modId")) {
+                                        subDependencyId = element.substring(element.lastIndexOf("=") + 1);
+                                    } else if (element.contains("side")) {
+                                        subDependencySide = element.substring(element.lastIndexOf("=") + 1);
                                     }
                                 }
 
-                            } catch (NullPointerException ignored) {
-                            }
+                                if (subDependencyId != null && subDependencySide != null) {
 
-                            /*
-                             * Add every dependency of the mod we are currently checking, which specifies BOTH|SERVER as their sideness, to the list.
-                             */
-                            try {
+                                    if (!subDependencyId.equalsIgnoreCase("minecraft") && !subDependencyId.equalsIgnoreCase("forge")) {
 
-                                if (!modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
-                                    if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+                                        if (subDependencySide.equalsIgnoreCase("both") || subDependencySide.equalsIgnoreCase("server")) {
+                                            if (!serverMods.contains(subDependencyId)) {
 
-                                        if (!serverMods.contains(modToml.getString("dependencies." + modId + "[" + i + "].modId"))) {
+                                                LOG.debug("Adding modId to list of server mods: " + subDependencyId);
+                                                serverMods.add(subDependencyId);
+                                            }
+                                        }
 
-                                            LOG.debug("Adding modId to list of server mods: " + modToml.getString("dependencies." + modId + "[" + i + "].modId"));
-                                            serverMods.add(modToml.getString("dependencies." + modId + "[" + i + "].modId"));
+                                    } else {
+
+                                        if (subDependencySide.equalsIgnoreCase("both") || subDependencySide.equalsIgnoreCase("server")) {
+                                            if (!serverMods.contains(modId)) {
+
+                                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                                serverMods.add(modId);
+                                            }
                                         }
                                     }
                                 }
-
-                            } catch (NullPointerException ignored) {
                             }
 
+                        } catch (ClassCastException | NullPointerException ignored) {
                         }
                     }
 
@@ -1560,16 +1611,51 @@ public class ServerPackHandler {
                      * If sideness is neither specified in [[mods]] and no dependencies exist, we need to add this mod just in case, so we do
                      * not exclude any mods which MAY need to be on the server.
                      */
-                    if (modToml.getString("mods[0].side") == null) {
-                        if (modToml.getList("dependencies." + modId) == null) {
+                    try {
+                        if (modToml.getString("mods[0].side") == null) {
 
-                            if (!serverMods.contains(modId)) {
+                            try {
 
-                                LOG.debug("Adding modId to list of server mods: " + modId);
-                                serverMods.add(modId);
+                                if (modToml.getList("dependencies." + modId) == null) {
+
+                                    try {
+
+                                        if (modToml.getList("dependencies") == null) {
+
+                                            if (!serverMods.contains(modId)) {
+
+                                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                                serverMods.add(modId);
+                                            }
+                                        }
+
+                                    } catch (ClassCastException ex) {
+
+                                        if (!serverMods.contains(modId)) {
+
+                                            LOG.debug("Adding modId to list of server mods: " + modId);
+                                            serverMods.add(modId);
+                                        }
+                                    }
+
+                                    if (!serverMods.contains(modId)) {
+
+                                        LOG.debug("Adding modId to list of server mods: " + modId);
+                                        serverMods.add(modId);
+                                    }
+
+                                }
+
+                            } catch (NullPointerException ex) {
+
+                                if (!serverMods.contains(modId)) {
+
+                                    LOG.debug("Adding modId to list of server mods: " + modId);
+                                    serverMods.add(modId);
+                                }
                             }
                         }
-
+                    } catch (ClassCastException | NullPointerException ignored) {
                     }
 
                     inputStream.close();
