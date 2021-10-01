@@ -725,6 +725,8 @@ public class ServerPackHandler {
             LOG.error(String.format("Failed to create directory %s", serverPath));
         }
 
+        directoriesToCopy.removeIf(n -> n.startsWith("!"));
+
         for (String directory : directoriesToCopy) {
 
             String clientDir = String.format("%s/%s", modpackDir, directory);
@@ -805,43 +807,42 @@ public class ServerPackHandler {
                     }
                 }
 
-
             } else {
-                if (!directory.startsWith("!")) {
-                    try {
 
-                        Stream<Path> files = Files.walk(Paths.get(clientDir));
+                try {
 
-                        files.forEach(file -> {
-                            if (excludeFileOrDirectory(file.toString())) {
+                    Stream<Path> files = Files.walk(Paths.get(clientDir));
 
-                                LOG.debug("Excluding " + file + " from server pack");
+                    files.forEach(file -> {
+                        if (excludeFileOrDirectory(file.toString())) {
 
-                            } else {
-                                try {
+                            LOG.debug("Excluding " + file + " from server pack");
 
-                                    Files.copy(
-                                            file,
-                                            Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
-                                            REPLACE_EXISTING
-                                    );
+                        } else {
+                            try {
 
-                                    LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
-                                } catch (IOException ex) {
-                                    if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                        LOG.error("An error occurred copying files to the serverpack.", ex);
-                                    }
+                                Files.copy(
+                                        file,
+                                        Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
+                                        REPLACE_EXISTING
+                                );
+
+                                LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
+                            } catch (IOException ex) {
+                                if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                    LOG.error("An error occurred copying files to the serverpack.", ex);
                                 }
                             }
-                        });
+                        }
+                    });
 
-                        files.close();
+                    files.close();
 
-                    } catch (IOException ex) {
-                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                    }
+                } catch (IOException ex) {
+                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                 }
             }
+
         }
     }
 
