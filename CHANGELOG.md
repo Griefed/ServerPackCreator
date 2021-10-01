@@ -1,3 +1,27 @@
+## [3.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.5...3.0.0-alpha.6) (2021-10-01)
+
+
+### :scissors: Refactor
+
+* Remove elements starting with ! from list instead of avoiding them with an ugly if-statement ([b8c84e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8c84e1294d7e8feebd34a0da202f8dc60d02d78))
+
+
+### 🦊 CI/CD
+
+* Replace Typesafe with Nightconfig, allowing for more safety measures ([b9939b1](https://git.griefed.de/Griefed/ServerPackCreator/commit/b9939b101e906b7a578794cf79659c5035e9c692))
+
+
+### 🚀 Features
+
+* Store server pack suffix in serverpackcreator.conf.l Closes [#77](https://git.griefed.de/Griefed/ServerPackCreator/issues/77) again. ([d6c74e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6c74e0f62f395ea171266daca6194e39f0f634a))
+
+
+### 🛠 Fixes
+
+* Fix some mods broken dependency definitions breaking SPC funcitonality. Closes issue [#80](https://git.griefed.de/Griefed/ServerPackCreator/issues/80). ([a1c8a7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a1c8a7ef419ba7dcf90b74694c5f04480edfe807))
+* Fix status message in GUI being displayed incorrectly on some Linux distros. Closes issue [#79](https://git.griefed.de/Griefed/ServerPackCreator/issues/79) ([5e7c08d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e7c08d886c9b1b7ef0640fe9cfe6f54e0d1fdc9))
+* Print correct string for server pack suffix ([08c69e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/08c69e1be591421138d88429bc007091a13837ab))
+
 ## [3.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.4...3.0.0-alpha.5) (2021-09-24)
 
 
