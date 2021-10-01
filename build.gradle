@@ -73,7 +73,7 @@ configurations {
 
 dependencies {
     // Backend
-    embed 'com.typesafe:config:1.4.1'
+    embed 'com.electronwill.night-config:hocon:3.6.4'
     embed 'commons-io:commons-io:2.11.0'
     embed 'net.lingala.zip4j:zip4j:2.9.0'
     embed 'com.moandjiezana.toml:toml4j:0.7.2'
