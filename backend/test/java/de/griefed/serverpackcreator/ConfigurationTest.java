@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.electronwill.nightconfig.core.file.FileConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -581,8 +582,7 @@ class ConfigurationTest {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
-        boolean result = CONFIGURATIONHANDLER.checkConfiguration(CONFIGURATIONHANDLER.getConfigFile(), true, configurationModel);
-        Assertions.assertFalse(result);
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(CONFIGURATIONHANDLER.getConfigFile(), true, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -593,7 +593,8 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
+        FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -604,7 +605,9 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
+        configurationModel.setMinecraftVersion(VERSIONLISTER.getMinecraftReleaseVersion());
+        FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -615,7 +618,8 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
+        FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -626,7 +630,8 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
+        FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
         new File("./serverpackcreator.conf").delete();
 
     }
@@ -638,7 +643,8 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
+        FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -649,7 +655,8 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
+        FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -660,7 +667,9 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir("./backend/test/resources/forge_tests", configurationModel));
+        configurationModel.setMinecraftVersion("1.16.5");
+        FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -851,7 +860,8 @@ class ConfigurationTest {
                 includeServerProperties,
                 includeStartScripts,
                 includeZipCreation,
-                javaArgs);
+                javaArgs,
+                "");
     }
 
     @Test
@@ -968,22 +978,22 @@ class ConfigurationTest {
 
     @Test
     void setModLoaderCaseTestForge() {
-        Assertions.assertEquals("Forge", CONFIGURATIONHANDLER.setModLoaderCase("fOrGe"));
+        Assertions.assertEquals("Forge", CONFIGURATIONHANDLER.getModLoaderCase("fOrGe"));
     }
 
     @Test
     void setModLoaderCaseTestFabric() {
-        Assertions.assertEquals("Fabric", CONFIGURATIONHANDLER.setModLoaderCase("fAbRiC"));
+        Assertions.assertEquals("Fabric", CONFIGURATIONHANDLER.getModLoaderCase("fAbRiC"));
     }
 
     @Test
     void setModLoaderCaseTestForgeCorrected() {
-        Assertions.assertEquals("Forge", CONFIGURATIONHANDLER.setModLoaderCase("eeeeefOrGeeeeee"));
+        Assertions.assertEquals("Forge", CONFIGURATIONHANDLER.getModLoaderCase("eeeeefOrGeeeeee"));
     }
 
     @Test
     void setModLoaderCaseTestFabricCorrected() {
-        Assertions.assertEquals("Fabric", CONFIGURATIONHANDLER.setModLoaderCase("hufwhafasfabricfagrsg"));
+        Assertions.assertEquals("Fabric", CONFIGURATIONHANDLER.getModLoaderCase("hufwhafasfabricfagrsg"));
     }
 
     @Test
@@ -1107,6 +1117,7 @@ class ConfigurationTest {
                 true,
                 true,
                 javaArgs,
+                "",
                 new File("./serverpackcreatorforge.conf"),
                 false
         ));
@@ -1172,6 +1183,7 @@ class ConfigurationTest {
                 true,
                 true,
                 javaArgs,
+                "",
                 new File("./serverpackcreatorfabric.conf"),
                 false
         ));
