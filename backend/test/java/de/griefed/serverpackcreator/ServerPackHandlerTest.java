@@ -331,7 +331,9 @@ class ServerPackHandlerTest {
                 "mods",
                 "scripts",
                 "seeds",
-                "defaultconfigs"
+                "defaultconfigs",
+                "!bla",
+                "!fancymenu"
         ));
         SERVERPACKHANDLER.setServerPackDestination(modpackDir, "");
         SERVERPACKHANDLER.copyFiles(modpackDir, copyDirs, clientMods, "1.16.5");

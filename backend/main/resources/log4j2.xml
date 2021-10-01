@@ -7,6 +7,7 @@
         <Property name="console-pattern">%style{%d{ISO8601}}{dim,white} %highlight{%5p} [%style{%t}{bright,blue}] %style{(%F:%L)}{bright,yellow} - %m%n</Property>
         <Property name="log-level">INFO</Property>
         <Property name="log-level-spc">DEBUG</Property>
+        <Property name="charset">UTF-8</Property>
     </Properties>
 
     <Appenders>
@@ -20,6 +21,9 @@
 
         <RollingFile name="ApplicationLogger" fileName="${log-path}/serverpackcreator.log" filePattern="${archive}/serverpackcreator.log.%i">
             <PatternLayout>
+                <Charset>
+                    ${charset}
+                </Charset>
                 <Pattern>
                     ${pattern}
                 </Pattern>
@@ -33,6 +37,9 @@
 
         <RollingFile name="InstallerLogger" fileName="${log-path}/modloader_installer.log" filePattern="${archive}/modloader_installer.log.%i">
             <PatternLayout>
+                <Charset>
+                    ${charset}
+                </Charset>
                 <Pattern>
                     ${pattern}
                 </Pattern>
@@ -46,6 +53,9 @@
 
         <RollingFile name="AddonsLogger" fileName="${log-path}/addons.log" filePattern="${archive}/addons.log.%i">
             <PatternLayout>
+                <Charset>
+                    ${charset}
+                </Charset>
                 <Pattern>
                     ${pattern}
                 </Pattern>

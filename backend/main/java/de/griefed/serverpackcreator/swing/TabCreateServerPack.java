@@ -19,9 +19,7 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
-import com.typesafe.config.ConfigFactory;
+import com.electronwill.nightconfig.core.file.FileConfig;
 import de.griefed.serverpackcreator.AddonsHandler;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ConfigurationModel;
@@ -1060,7 +1058,9 @@ public class TabCreateServerPack extends JComponent {
         Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
             public void handle(String line) {
                 synchronized (this) {
-                    labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
+                    if (!line.contains("DEBUG")) {
+                        labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
+                    }
                 }
             }
         }, 100, false);
@@ -1069,19 +1069,19 @@ public class TabCreateServerPack extends JComponent {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
         labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
 
-        saveConfig(new File("serverpackcreator.tmp"),true);
+        saveConfig(new File("./work/temporaryConfig.conf"),true);
 
         ConfigurationModel configurationModel = new ConfigurationModel();
 
         configurationModel.setServerPackSuffix(TEXTFIELD_SERVERPACKSUFFIX.getText());
 
-        if (!CONFIGURATIONHANDLER.checkConfiguration(new File("serverpackcreator.tmp"), false, configurationModel)) {
+        if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), false, configurationModel)) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
-            if (new File("serverpackcreator.tmp").exists()) {
-                boolean delTmp = new File("serverpackcreator.tmp").delete();
+            if (new File("./work/temporaryConfig.conf").exists()) {
+                boolean delTmp = new File("./work/temporaryConfig.conf").delete();
                 if (delTmp) {
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
                     /* This log is meant to be read by the user, therefore we allow translation. */
@@ -1197,6 +1197,7 @@ public class TabCreateServerPack extends JComponent {
                 checkBoxScripts.isSelected(),
                 checkBoxZIP.isSelected(),
                 getJavaArgs(),
+                TEXTFIELD_SERVERPACKSUFFIX.getText(),
                 configFile,
                 temporary
         );
@@ -1211,37 +1212,36 @@ public class TabCreateServerPack extends JComponent {
 
         try {
 
-            Config config = ConfigFactory.parseFile(configFile);
+            FileConfig config = FileConfig.of(configFile);
+            config.load();
 
             try {
-                TEXTFIELD_MODPACKDIRECTORY.setText(config.getString("modpackDir").replace("\\", "/"));
+                TEXTFIELD_MODPACKDIRECTORY.setText(config.getOrElse("modpackDir","").replace("\\", "/"));
             } catch (NullPointerException ex) {
                 LOG.error("Error parsing modpackdir from configfile: " + configFile, ex);
             }
 
-            if (config.getStringList("clientMods").isEmpty()) {
-
+            if (config.getOrElse("clientMods",CONFIGURATIONHANDLER.getFallbackModsList()).isEmpty()) {
                 TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(CONFIGURATIONHANDLER.getFallbackModsList().toString()));
                 LOG.debug("Set clientMods with fallback list.");
-
             } else {
-                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("clientMods").toString()));
+                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.get("clientMods").toString()));
             }
 
-            TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(config.getStringList("copyDirs").toString().replace("\\","/")));
+            if (config.getOrElse("copyDirs", Arrays.asList("config","mods")).isEmpty()) {
+                TEXTFIELD_COPYDIRECTORIES.setText("config, mods");
+            } else {
+                TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(config.get("copyDirs").toString().replace("\\", "/")));
+            }
 
-            TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getString("javaPath").replace("\\", "/")));
+            TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getOrElse("javaPath","").replace("\\", "/")));
 
             try {
                 String minecraftVersion;
-                try {
-                    minecraftVersion = config.getString("minecraftVersion");
-                } catch (NullPointerException npe) {
-                    minecraftVersion = "1.17.1";
-                }
-
-                if (minecraftVersion.equals("")) {
-                    minecraftVersion = "1.17.1";
+                if (CONFIGURATIONHANDLER.isMinecraftVersionCorrect(config.getOrElse("minecraftVersion",VERSIONLISTER.getMinecraftReleaseVersion()))) {
+                    minecraftVersion = config.getOrElse("minecraftVersion", VERSIONLISTER.getMinecraftReleaseVersion());
+                } else {
+                    minecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
                 }
 
                 String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
@@ -1257,33 +1257,18 @@ public class TabCreateServerPack extends JComponent {
             }
 
             try {
-
-                String modloader;
-                try {
-                    if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Fabric")) {
-                        modloader = "Fabric";
-                    } else if (CONFIGURATIONHANDLER.setModLoaderCase(config.getString("modLoader")).equals("Forge")) {
-                        modloader = "Forge";
-                    } else {
-                        modloader = "Forge";
-                    }
-                } catch (NullPointerException | ConfigException ex) {
-                    modloader = "Forge";
-                }
-
-                String modloaderver = config.getString("modLoaderVersion");
                 
-                if (modloader.equals("Fabric")) {
+                if (CONFIGURATIONHANDLER.getModLoaderCase(config.getOrElse("modLoader","Forge")).equals("Fabric")) {
 
                     String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
 
                     updateModloaderGuiComponents(true, false, "Fabric");
 
-                    if (!config.getString("modLoaderVersion").equals("")) {
+                    if (!config.getOrElse("modLoaderVersion","").equals("")) {
                         for (int i = 0; i < fabricver.length; i++) {
-                            if (fabricver[i].equals(config.getString("modLoaderVersion"))) {
+                            if (fabricver[i].equals(config.get("modLoaderVersion").toString())) {
                                 COMBOBOX_FABRICVERSIONS.setSelectedIndex(i);
-                                chosenFabricVersion = config.getString("modLoaderVersion");
+                                chosenFabricVersion = config.get("modLoaderVersion").toString();
                             }
                         }
                     }
@@ -1294,11 +1279,11 @@ public class TabCreateServerPack extends JComponent {
 
                     updateModloaderGuiComponents(false, true, "Forge");
 
-                    if (!config.getString("modLoaderVersion").equals("")) {
+                    if (!config.getOrElse("modLoaderVersion","").equals("")) {
                         for (int i = 0; i < forgever.length; i++) {
-                            if (forgever[i].equals(modloaderver)) {
+                            if (forgever[i].equals(config.get("modLoaderVersion").toString())) {
                                 COMBOBOX_FORGEVERSIONS.setSelectedIndex(i);
-                                chosenForgeVersion = config.getString("modLoaderVersion");
+                                chosenForgeVersion = config.get("modLoaderVersion").toString();
                             }
                         }
                     }
@@ -1311,22 +1296,19 @@ public class TabCreateServerPack extends JComponent {
                 changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
             }
 
-            checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerInstallation")));
+            checkBoxServer.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
 
-            checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerIcon")));
+            checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
 
-            checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeServerProperties")));
+            checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
 
-            checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeStartScripts")));
+            checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeStartScripts","False"))));
 
-            checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(config.getString("includeZipCreation")));
+            checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
 
-            try {
-                setJavaArgs(config.getString("javaArgs"));
-            } catch (ConfigException | NullPointerException ex) {
-                LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.javaargs"));
-                setJavaArgs("empty");
-            }
+            setJavaArgs(config.getOrElse("javaArgs","empty"));
+
+            TEXTFIELD_SERVERPACKSUFFIX.setText(config.getOrElse("serverPackSuffix",""));
 
         } catch (NullPointerException ex) {
 
