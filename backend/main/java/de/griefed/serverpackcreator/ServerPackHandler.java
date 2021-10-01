@@ -1566,6 +1566,8 @@ public class ServerPackHandler {
 
                             for (int i = 0; i < modToml.getList("dependencies").size(); i++) {
 
+                                LOG.warn(modId + " does not contain valid dependency definitions. Please contact the mod maker and ask them to fix their shit. :D");
+
                                 String subDependencyId = null;
                                 String subDependencySide = null;
 
