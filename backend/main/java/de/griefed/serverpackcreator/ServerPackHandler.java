@@ -53,32 +53,34 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 3. {@link #cleanUpServerPack(File, File, String, String, String)}<br>
  * 4. {@link #copyFiles(String, List, List, String)}<br>
  * 5. {@link #copyIcon()}<br>
- * 6. {@link #createStartScripts(String, boolean, String)}<br>
- * 7. {@link #downloadFabricJar()}<br>
- * 8. {@link #downloadForgeJar(String, String)}<br>
- * 9. {@link #excludeClientMods(String, List, String)}<br>
- * 10.{@link #excludeFileOrDirectory(String)}<br>
- * 11.{@link #generateDownloadScripts(String, String)}<br>
- * 12.{@link #getFabricLinuxFile()}<br>
- * 13.{@link #getFabricWindowsFile()}<br>
- * 14.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
- * 15.{@link #getForgeLinuxFile()}<br>
- * 16.{@link #getForgeWindowsFile()}<br>
- * 17.{@link #getIconFile()}<br>
- * 18.{@link #getMinecraftServerJarUrl(String)}<br>
- * 19.{@link #getObjectMapper()}<br>
- * 20.{@link #getPropertiesFile()}<br>
- * 21.{@link #getSERVER_PACKS_DIR()}<br>
- * 22.{@link #getSTART_FABRIC_BATCH}<br>
- * 23.{@link #getSTART_FABRIC_SHELL}<br>
- * 24.{@link #getSTART_FORGE_BATCH}<br>
- * 25.{@link #getSTART_FORGE_SHELL}<br>
- * 26.{@link #installServer(String, String, String, String)}<br>
- * 27.{@link #run(ConfigurationModel)}<br>
- * 28.{@link #run(File, ConfigurationModel)}<br>
- * 29.{@link #scanAnnotations(File[])}<br>
- * 30.{@link #scanTomls(File[])}<br>
- * 31.{@link #zipBuilder(String, boolean)}<p>
+ * 6. {@link #copyProperties()}<br>
+ * 7. {@link #createEula()}<br>
+ * 8. {@link #createStartScripts(String, boolean, String)}<br>
+ * 9. {@link #downloadFabricJar()}<br>
+ * 10.{@link #downloadForgeJar(String, String)}<br>
+ * 11.{@link #excludeClientMods(String, List, String)}<br>
+ * 12.{@link #excludeFileOrDirectory(String)}<br>
+ * 13.{@link #generateDownloadScripts(String, String)}<br>
+ * 14.{@link #getFabricLinuxFile()}<br>
+ * 15.{@link #getFabricWindowsFile()}<br>
+ * 16.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
+ * 17.{@link #getForgeLinuxFile()}<br>
+ * 18.{@link #getForgeWindowsFile()}<br>
+ * 19.{@link #getIconFile()}<br>
+ * 20.{@link #getMinecraftServerJarUrl(String)}<br>
+ * 21.{@link #getObjectMapper()}<br>
+ * 22.{@link #getPropertiesFile()}<br>
+ * 23.{@link #getSERVER_PACKS_DIR()}<br>
+ * 24.{@link #getSTART_FABRIC_BATCH}<br>
+ * 25.{@link #getSTART_FABRIC_SHELL}<br>
+ * 26.{@link #getSTART_FORGE_BATCH}<br>
+ * 27.{@link #getSTART_FORGE_SHELL}<br>
+ * 28.{@link #installServer(String, String, String, String)}<br>
+ * 29.{@link #run(ConfigurationModel)}<br>
+ * 30.{@link #run(File, ConfigurationModel)}<br>
+ * 31.{@link #scanAnnotations(File[])}<br>
+ * 32.{@link #scanTomls(File[])}<br>
+ * 33.{@link #zipBuilder(String, boolean)}<p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
  * <p>
@@ -114,6 +116,7 @@ public class ServerPackHandler {
     private final String START_FABRIC_BATCH = "java %s -jar fabric-server-launch.jar\npause";
     private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
     private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
+    private final String EULA = "#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\neula=true";
     private final String SERVER_PACKS_DIR;
 
     private Properties serverPackCreatorProperties;
@@ -403,6 +406,8 @@ public class ServerPackHandler {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
                 }
+
+                createEula();
 
                 // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
                 if (configurationModel.getIncludeZipCreation()) {
@@ -971,6 +976,30 @@ public class ServerPackHandler {
 
         } catch (IOException ex) {
             LOG.error("An error occurred trying to copy the server.properties-file.", ex);
+        }
+    }
+
+    /**
+     * Create the <code>eula.txt</code> containing <code>eula=true</code> so the generated server pack can be used immediately.
+     * @author Griefed
+     */
+    private void createEula() {
+        try {
+            BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(
+                            String.valueOf(
+                                    Paths.get(
+                                            String.format("%s/%s/eula.txt", getSERVER_PACKS_DIR(), getServerPackDestination())
+                                    )
+                            )
+                    )
+            );
+
+            writer.write(EULA);
+            writer.close();
+
+        } catch (IOException ex) {
+            LOG.error("Error writing eula.txt.", ex);
         }
     }
 
