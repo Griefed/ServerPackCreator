@@ -74,63 +74,61 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 32.{@link #getsetIncludeServerIconTestFalse()}<br>
  * 33.{@link #getsetIncludeServerPropertiesTest()}<br>
  * 34.{@link #getsetIncludeServerPropertiesTestFalse()}<br>
- * 35.{@link #getsetIncludeStartScriptsTest()}<br>
- * 36.{@link #getsetIncludeStartScriptsTestFalse()}<br>
- * 37.{@link #getsetIncludeZipCreationTest()}<br>
- * 38.{@link #getsetIncludeZipCreationTestFalse()}<br>
- * 39.{@link #getsetProjectIDTest()}<br>
- * 40.{@link #getsetProjectFileIDTest()}<br>
- * 41.{@link #checkConfigFileTest()}<br>
- * 42.{@link #isDirTest()}<br>
- * 43.{@link #isDirTestCopyDirs()}<br>
- * 44.{@link #isDirTestJavaPath()}<br>
- * 45.{@link #isDirTestMinecraftVersion()}<br>
- * 46.{@link #isDirTestModLoader()}<br>
- * 47.{@link #isDirTestModLoaderFalse()}<br>
- * 48.{@link #isDirTestModLoaderVersion()}<br>
- * 49.{@link #isCurseTest()}<br>
- * 50.{@link #isCurseTestProjectIDFalse()}<br>
- * 51.{@link #isCurseTestProjectFileIDFalse()}<br>
- * 52.{@link #containsFabricTest()}<br>
- * 53.{@link #containsFabricTestFalse()}<br>
- * 54.{@link #suggestCopyDirsTest()}<br>
- * 55.{@link #suggestCopyDirsTestFalse()}<br>
- * 56.{@link #checkCurseForgeTest()}<br>
- * 57.{@link #checkCurseForgeTestFalse()}<br>
- * 58.{@link #convertToBooleanTestTrue()}<br>
- * 59.{@link #convertToBooleanTestFalse()}<br>
- * 60.{@link #printConfigTest()}<br>
- * 61.{@link #checkModpackDirTest()}<br>
- * 62.{@link #checkModpackDirTestFalse()}<br>
- * 63.{@link #checkCopyDirsTest()}<br>
- * 64.{@link #checkCopyDirsTestFalse()}<br>
- * 65.{@link #checkCopyDirsTestFiles()}<br>
- * 66.{@link #checkCopyDirsTestFilesFalse()}<br>
- * 67.{@link #checkJavaPathTest()}<br>
- * 68.{@link #checkModloaderTestForge()}<br>
- * 69.{@link #checkModloaderTestForgeCase()}<br>
- * 70.{@link #checkModloaderTestFabric()}<br>
- * 71.{@link #checkModloaderTestFabricCase()}<br>
- * 72.{@link #checkModLoaderTestFalse()}<br>
- * 73.{@link #setModLoaderCaseTestForge()}<br>
- * 74.{@link #setModLoaderCaseTestFabric()}<br>
- * 75.{@link #setModLoaderCaseTestForgeCorrected()}<br>
- * 76.{@link #setModLoaderCaseTestFabricCorrected()}<br>
- * 77.{@link #checkModloaderVersionTestForge()}<br>
- * 78.{@link #checkModloaderVersionTestForgeFalse()}<br>
- * 79.{@link #checkModloaderVersionTestFabric()}<br>
- * 80.{@link #checkModloaderVersionTestFabricFalse()}<br>
- * 81.{@link #isMinecraftVersionCorrectTest()}<br>
- * 82.{@link #isMinecraftVersionCorrectTestFalse()}<br>
- * 83.{@link #isFabricVersionCorrectTest()}<br>
- * 84.{@link #isFabricVersionCorrectTestFalse()}<br>
- * 85.{@link #isForgeVersionCorrectTest()}<br>
- * 86.{@link #isForgeVersionCorrectTestFalse()}<br>
- * 87.{@link #buildStringTest()}<br>
- * 88.{@link #writeConfigToFileTestForge()}<br>
- * 89.{@link #writeConfigToFileTestFabric()}<br>
- * 90.{@link #checkConfigModelTest()}<br>
- * 91.{@link #encapsulateListElementsTest()}
+ * 35.{@link #getsetIncludeZipCreationTest()}<br>
+ * 36.{@link #getsetIncludeZipCreationTestFalse()}<br>
+ * 37.{@link #getsetProjectIDTest()}<br>
+ * 38.{@link #getsetProjectFileIDTest()}<br>
+ * 39.{@link #checkConfigFileTest()}<br>
+ * 40.{@link #isDirTest()}<br>
+ * 41.{@link #isDirTestCopyDirs()}<br>
+ * 42.{@link #isDirTestJavaPath()}<br>
+ * 43.{@link #isDirTestMinecraftVersion()}<br>
+ * 44.{@link #isDirTestModLoader()}<br>
+ * 45.{@link #isDirTestModLoaderFalse()}<br>
+ * 46.{@link #isDirTestModLoaderVersion()}<br>
+ * 47.{@link #isCurseTest()}<br>
+ * 48.{@link #isCurseTestProjectIDFalse()}<br>
+ * 49.{@link #isCurseTestProjectFileIDFalse()}<br>
+ * 50.{@link #containsFabricTest()}<br>
+ * 51.{@link #containsFabricTestFalse()}<br>
+ * 52.{@link #suggestCopyDirsTest()}<br>
+ * 53.{@link #suggestCopyDirsTestFalse()}<br>
+ * 54.{@link #checkCurseForgeTest()}<br>
+ * 55.{@link #checkCurseForgeTestFalse()}<br>
+ * 56.{@link #convertToBooleanTestTrue()}<br>
+ * 57.{@link #convertToBooleanTestFalse()}<br>
+ * 58.{@link #printConfigTest()}<br>
+ * 59.{@link #checkModpackDirTest()}<br>
+ * 60.{@link #checkModpackDirTestFalse()}<br>
+ * 61.{@link #checkCopyDirsTest()}<br>
+ * 62.{@link #checkCopyDirsTestFalse()}<br>
+ * 63.{@link #checkCopyDirsTestFiles()}<br>
+ * 64.{@link #checkCopyDirsTestFilesFalse()}<br>
+ * 65.{@link #checkJavaPathTest()}<br>
+ * 66.{@link #checkModloaderTestForge()}<br>
+ * 67.{@link #checkModloaderTestForgeCase()}<br>
+ * 68.{@link #checkModloaderTestFabric()}<br>
+ * 69.{@link #checkModloaderTestFabricCase()}<br>
+ * 70.{@link #checkModLoaderTestFalse()}<br>
+ * 71.{@link #setModLoaderCaseTestForge()}<br>
+ * 72.{@link #setModLoaderCaseTestFabric()}<br>
+ * 73.{@link #setModLoaderCaseTestForgeCorrected()}<br>
+ * 74.{@link #setModLoaderCaseTestFabricCorrected()}<br>
+ * 75.{@link #checkModloaderVersionTestForge()}<br>
+ * 76.{@link #checkModloaderVersionTestForgeFalse()}<br>
+ * 77.{@link #checkModloaderVersionTestFabric()}<br>
+ * 78.{@link #checkModloaderVersionTestFabricFalse()}<br>
+ * 79.{@link #isMinecraftVersionCorrectTest()}<br>
+ * 80.{@link #isMinecraftVersionCorrectTestFalse()}<br>
+ * 81.{@link #isFabricVersionCorrectTest()}<br>
+ * 82.{@link #isFabricVersionCorrectTestFalse()}<br>
+ * 83.{@link #isForgeVersionCorrectTest()}<br>
+ * 84.{@link #isForgeVersionCorrectTestFalse()}<br>
+ * 85.{@link #buildStringTest()}<br>
+ * 86.{@link #writeConfigToFileTestForge()}<br>
+ * 87.{@link #writeConfigToFileTestFabric()}<br>
+ * 98.{@link #checkConfigModelTest()}<br>
+ * 99.{@link #encapsulateListElementsTest()}
  */
 class ConfigurationTest {
 
@@ -535,20 +533,6 @@ class ConfigurationTest {
     }
 
     @Test
-    void getsetIncludeStartScriptsTest() {
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        configurationModel.setIncludeStartScripts(true);
-        Assertions.assertTrue(configurationModel.getIncludeStartScripts());
-    }
-
-    @Test
-    void getsetIncludeStartScriptsTestFalse() {
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        configurationModel.setIncludeStartScripts(false);
-        Assertions.assertFalse(configurationModel.getIncludeStartScripts());
-    }
-
-    @Test
     void getsetIncludeZipCreationTest() {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeZipCreation(true);
@@ -683,7 +667,6 @@ class ConfigurationTest {
         configurationModel.setIncludeServerInstallation(true);
         configurationModel.setIncludeServerIcon(true);
         configurationModel.setIncludeServerProperties(true);
-        configurationModel.setIncludeStartScripts(true);
         configurationModel.setIncludeZipCreation(true);
         configurationModel.setJavaArgs("empty");
         CONFIGURATIONHANDLER.checkCurseForge("238298,3174854");
@@ -710,7 +693,6 @@ class ConfigurationTest {
         configurationModel.setIncludeServerInstallation(true);
         configurationModel.setIncludeServerIcon(true);
         configurationModel.setIncludeServerProperties(true);
-        configurationModel.setIncludeStartScripts(true);
         configurationModel.setIncludeZipCreation(true);
         CONFIGURATIONHANDLER.checkCurseForge("999999,3174854");
         configurationModel.setClientMods(CONFIGURATIONHANDLER.getFallbackModsList());
@@ -858,7 +840,6 @@ class ConfigurationTest {
                 modLoaderVersion,
                 includeServerIcon,
                 includeServerProperties,
-                includeStartScripts,
                 includeZipCreation,
                 javaArgs,
                 "");
@@ -1115,7 +1096,6 @@ class ConfigurationTest {
                 true,
                 true,
                 true,
-                true,
                 javaArgs,
                 "",
                 new File("./serverpackcreatorforge.conf"),
@@ -1181,7 +1161,6 @@ class ConfigurationTest {
                 true,
                 true,
                 true,
-                true,
                 javaArgs,
                 "",
                 new File("./serverpackcreatorfabric.conf"),
@@ -1233,7 +1212,6 @@ class ConfigurationTest {
         configurationModel.setIncludeServerInstallation(true);
         configurationModel.setIncludeServerIcon(true);
         configurationModel.setIncludeServerProperties(true);
-        configurationModel.setIncludeStartScripts(true);
         configurationModel.setIncludeZipCreation(true);
         configurationModel.setModLoader("Forge");
         configurationModel.setModLoaderVersion("36.1.2");

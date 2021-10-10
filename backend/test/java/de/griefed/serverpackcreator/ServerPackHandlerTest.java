@@ -42,35 +42,27 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 1. {@link #ServerPackHandlerTest()}<br>
  * 2. {@link #getPropertiesFileTest()}<br>
  * 3. {@link #getIconFileTest()}<br>
- * 4. {@link #getForgeWindowsFileTest()}<br>
- * 5. {@link #getForgeLinuxFileTest()}<br>
- * 6. {@link #getFabricWindowsFileTest()}<br>
- * 7. {@link #getFabricLinuxFileTest()}<br>
- * 8. {@link #getSTART_FABRIC_SHELLTest()}<br>
- * 9. {@link #getSTART_FABRIC_BATCHTest()}<br>
- * 10.{@link #getSTART_FORGE_SHELLTest()}<br>
- * 11.{@link #getSTART_FORGE_BATCHTest()}<br>
- * 12.{@link #getObjectMapperTest()}<br>
- * 13.{@link #runTest()}<br>
- * 14.{@link #cleanupEnvironmentTest()}<br>
- * 15.{@link #copyStartScriptsFabricTest()}<br>
- * 16.{@link #copyStartScriptsForgeTest()}<br>
- * 17.{@link #copyFilesTest()}<br>
- * 18.{@link #copyFilesEmptyClientsTest()}<br>
- * 19.{@link #excludeClientModsTest()}<br>
- * 20.{@link #copyIconTest()}<br>
- * 21.{@link #copyPropertiesTest()}<br
- * 22.{@link #installServerFabricTest()}<br>
- * 23.{@link #installServerForgeTest()}<br>
- * 24.{@link #zipBuilderFabricTest()}<br>
- * 25.{@link #zipBuilderForgeTest()}<br>
- * 26.{@link #generateDownloadScriptsFabricTest()}<br>
- * 27.{@link #generateDownloadScriptsForgeTest()}<br>
- * 28.{@link #downloadFabricJarTest()}<br>
- * 29.{@link #downloadForgeJarTest()}<br>
- * 30.{@link #cleanUpServerPackForgeTest()}<br>
- * 31.{@link #cleanUpServerPackFabricTest()}<br>
- * 32.{@link #runConfigModelTest()}
+ * 4. {@link #getWindowsFileTest()}<br>
+ * 5. {@link #getLinuxFileTest()}<br>
+ * 6. {@link #getObjectMapperTest()}<br>
+ * 7. {@link #runTest()}<br>
+ * 8. {@link #cleanupEnvironmentTest()}<br>
+ * 9. {@link #createStartScriptsFabricTest()}<br>
+ * 10.{@link #createStartScriptsForgeTest()}<br>
+ * 11.{@link #copyFilesTest()}<br>
+ * 12.{@link #copyFilesEmptyClientsTest()}<br>
+ * 13.{@link #excludeClientModsTest()}<br>
+ * 14.{@link #copyIconTest()}<br>
+ * 15.{@link #copyPropertiesTest()}<br
+ * 16.{@link #installServerFabricTest()}<br>
+ * 17.{@link #installServerForgeTest()}<br>
+ * 18.{@link #zipBuilderFabricTest()}<br>
+ * 19.{@link #zipBuilderForgeTest()}<br>
+ * 20.{@link #downloadFabricJarTest()}<br>
+ * 21.{@link #downloadForgeJarTest()}<br>
+ * 22.{@link #cleanUpServerPackForgeTest()}<br>
+ * 23.{@link #cleanUpServerPackFabricTest()}<br>
+ * 24.{@link #runConfigModelTest()}
  */
 class ServerPackHandlerTest {
 
@@ -121,51 +113,15 @@ class ServerPackHandlerTest {
     }
 
     @Test
-    void getForgeWindowsFileTest() {
-        File file = SERVERPACKHANDLER.getForgeWindowsFile();
+    void getWindowsFileTest() {
+        File file = SERVERPACKHANDLER.getWindowsFile();
         Assertions.assertNotNull(file);
     }
 
     @Test
-    void getForgeLinuxFileTest() {
-        File file = SERVERPACKHANDLER.getForgeLinuxFile();
+    void getLinuxFileTest() {
+        File file = SERVERPACKHANDLER.getLinuxFile();
         Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getFabricWindowsFileTest() {
-        File file = SERVERPACKHANDLER.getFabricWindowsFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getFabricLinuxFileTest() {
-        File file = SERVERPACKHANDLER.getFabricLinuxFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getSTART_FABRIC_SHELLTest() {
-        String START_FABRIC_SHELL = "#!/usr/bin/env bash\njava %s -jar fabric-server-launch.jar";
-        Assertions.assertEquals(START_FABRIC_SHELL, SERVERPACKHANDLER.getSTART_FABRIC_SHELL());
-    }
-
-    @Test
-    void getSTART_FABRIC_BATCHTest() {
-        String START_FABRIC_BATCH = "java %s -jar fabric-server-launch.jar\npause";
-        Assertions.assertEquals(START_FABRIC_BATCH, SERVERPACKHANDLER.getSTART_FABRIC_BATCH());
-    }
-
-    @Test
-    void getSTART_FORGE_SHELLTest() {
-        String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
-        Assertions.assertEquals(START_FORGE_SHELL, SERVERPACKHANDLER.getSTART_FORGE_SHELL());
-    }
-
-    @Test
-    void getSTART_FORGE_BATCHTest() {
-        String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
-        Assertions.assertEquals(START_FORGE_BATCH, SERVERPACKHANDLER.getSTART_FORGE_BATCH());
     }
 
     @Test
@@ -190,13 +146,11 @@ class ServerPackHandlerTest {
 
         Assertions.assertTrue(new File("server-packs/forge_tests/1.16.5.json").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.bat").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.sh").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/start-forge.bat").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/start-forge.sh").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/start.bat").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
 
         if (new File("server-packs/forge_tests/libraries").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/libraries");
@@ -228,13 +182,11 @@ class ServerPackHandlerTest {
         }
         new File("server-packs/forge_tests/1.16.5.json").delete();
         new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").delete();
-        new File("server-packs/forge_tests/download_minecraft-server.jar_forge.bat").delete();
-        new File("server-packs/forge_tests/download_minecraft-server.jar_forge.sh").delete();
         new File("server-packs/forge_tests/forge.jar").delete();
         new File("server-packs/forge_tests/server.properties").delete();
         new File("server-packs/forge_tests/server-icon.png").delete();
-        new File("server-packs/forge_tests/start-forge.bat").delete();
-        new File("server-packs/forge_tests/start-forge.sh").delete();
+        new File("server-packs/forge_tests/start.bat").delete();
+        new File("server-packs/forge_tests/start.sh").delete();
         new File("./serverpackcreator.conf").delete();
         Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("server-packs/forge_tests_server_pack.zip"), REPLACE_EXISTING);
     }
@@ -252,18 +204,18 @@ class ServerPackHandlerTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void copyStartScriptsFabricTest() throws IOException {
+    void createStartScriptsFabricTest() throws IOException {
         DEFAULTFILES.filesSetup();
         String modpackDir = "./backend/test/resources/fabric_tests";
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
         String modLoader = "Fabric";
         DEFAULTFILES.filesSetup();
         SERVERPACKHANDLER.setServerPackDestination(modpackDir, "");
-        SERVERPACKHANDLER.createStartScripts(modLoader, true, "zvh54u89kagsphvz8a45u3g9j");
-        Assertions.assertTrue(new File(String.format("server-packs/%s/start-fabric.bat", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/start-fabric.sh", destination)).exists());
-        new File(String.format("server-packs/%s/start-fabric.bat", SERVERPACKHANDLER.getServerPackDestination())).delete();
-        new File(String.format("server-packs/%s/start-fabric.sh", SERVERPACKHANDLER.getServerPackDestination())).delete();
+        SERVERPACKHANDLER.createStartScripts(modLoader, "empty", "1.16.5",  "0.12.1");
+        Assertions.assertTrue(new File(String.format("server-packs/%s/start.bat", SERVERPACKHANDLER.getServerPackDestination())).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/start.sh", destination)).exists());
+        new File(String.format("server-packs/%s/start.bat", SERVERPACKHANDLER.getServerPackDestination())).delete();
+        new File(String.format("server-packs/%s/start.sh", SERVERPACKHANDLER.getServerPackDestination())).delete();
         String delete = "server_files";
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
@@ -274,17 +226,17 @@ class ServerPackHandlerTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void copyStartScriptsForgeTest() throws IOException {
+    void createStartScriptsForgeTest() throws IOException {
         DEFAULTFILES.filesSetup();
         String modpackDir = "./backend/test/resources/forge_tests";
         String modLoader = "Forge";
         DEFAULTFILES.filesSetup();
         SERVERPACKHANDLER.setServerPackDestination(modpackDir, "");
-        SERVERPACKHANDLER.createStartScripts(modLoader, true, "zvh54u89kagsphvz8a45u3g9j");
-        Assertions.assertTrue(new File(String.format("server-packs/%s/start-forge.bat", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/start-forge.sh", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        new File(String.format("server-packs/%s/start-forge.bat", SERVERPACKHANDLER.getServerPackDestination())).delete();
-        new File(String.format("server-packs/%s/start-forge.sh", SERVERPACKHANDLER.getServerPackDestination())).delete();
+        SERVERPACKHANDLER.createStartScripts(modLoader, "empty", "1.16.5","36.2.4");
+        Assertions.assertTrue(new File(String.format("server-packs/%s/start.bat", SERVERPACKHANDLER.getServerPackDestination())).exists());
+        Assertions.assertTrue(new File(String.format("server-packs/%s/start.sh", SERVERPACKHANDLER.getServerPackDestination())).exists());
+        new File(String.format("server-packs/%s/start.bat", SERVERPACKHANDLER.getServerPackDestination())).delete();
+        new File(String.format("server-packs/%s/start.sh", SERVERPACKHANDLER.getServerPackDestination())).delete();
         String delete = "server_files";
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
@@ -516,15 +468,11 @@ class ServerPackHandlerTest {
         Assertions.assertTrue(new File(String.format("server-packs/%s/1.16.5.json", SERVERPACKHANDLER.getServerPackDestination())).exists());
         Assertions.assertTrue(new File(String.format("server-packs/%s/forge.jar", SERVERPACKHANDLER.getServerPackDestination())).exists());
         Assertions.assertTrue(new File(String.format("server-packs/%s/minecraft_server.1.16.5.jar", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.bat", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.sh", SERVERPACKHANDLER.getServerPackDestination())).exists());
         new File(String.format("server-packs/%s/1.16.5.json", SERVERPACKHANDLER.getServerPackDestination())).delete();
         new File(String.format("server-packs/%s/forge.jar", SERVERPACKHANDLER.getServerPackDestination())).delete();
         new File(String.format("server-packs/%s/forge-installer.jar", SERVERPACKHANDLER.getServerPackDestination())).delete();
         new File(String.format("server-packs/%s/forge-installer.jar.log", SERVERPACKHANDLER.getServerPackDestination())).delete();
         new File(String.format("server-packs/%s/minecraft_server.1.16.5.jar", SERVERPACKHANDLER.getServerPackDestination())).delete();
-        new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.bat", SERVERPACKHANDLER.getServerPackDestination())).delete();
-        new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.sh", SERVERPACKHANDLER.getServerPackDestination())).delete();
         String delete = String.format("server-packs/%s/libraries", SERVERPACKHANDLER.getServerPackDestination());
         if (new File(delete).isDirectory()) {
             Path pathToBeDeleted = Paths.get(delete);
@@ -552,36 +500,6 @@ class ServerPackHandlerTest {
         SERVERPACKHANDLER.zipBuilder(minecraftVersion, Boolean.TRUE);
         Assertions.assertTrue(new File("server-packs/forge_tests_server_pack.zip").exists());
         Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void generateDownloadScriptsFabricTest() throws IOException {
-        Files.createDirectories(Paths.get("server-packs/fabric_tests"));
-        String modLoader = "Fabric";
-        String modpackDir = "./backend/test/resources/fabric_tests";
-        String minecraftVersion = "1.16.5";
-        SERVERPACKHANDLER.setServerPackDestination(modpackDir, "");
-        SERVERPACKHANDLER.generateDownloadScripts(modLoader, minecraftVersion);
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.bat", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.sh", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        new File(String.format("server-packs/%s/download_minecraft-server.jar_fabric.bat", SERVERPACKHANDLER.getServerPackDestination())).delete();
-        new File(String.format("server-packs/%s/download_minecraft-server.jar_fabric.sh", SERVERPACKHANDLER.getServerPackDestination())).delete();
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void generateDownloadScriptsForgeTest() throws IOException {
-        Files.createDirectories(Paths.get("server-packs/forge_tests"));
-        String modLoader = "Forge";
-        String modpackDir = "./backend/test/resources/forge_tests";
-        String minecraftVersion = "1.16.5";
-        SERVERPACKHANDLER.setServerPackDestination(modpackDir, "");
-        SERVERPACKHANDLER.generateDownloadScripts(modLoader, minecraftVersion);
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.bat", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/download_minecraft-server.jar.sh", SERVERPACKHANDLER.getServerPackDestination())).exists());
-        new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.bat", SERVERPACKHANDLER.getServerPackDestination())).delete();
-        new File(String.format("server-packs/%s/download_minecraft-server.jar_forge.sh", SERVERPACKHANDLER.getServerPackDestination())).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -688,7 +606,6 @@ class ServerPackHandlerTest {
         configurationModel.setIncludeServerInstallation(true);
         configurationModel.setIncludeServerIcon(true);
         configurationModel.setIncludeServerProperties(true);
-        configurationModel.setIncludeStartScripts(true);
         configurationModel.setIncludeZipCreation(true);
         configurationModel.setModLoader("Forge");
         configurationModel.setModLoaderVersion("36.1.2");
@@ -706,13 +623,11 @@ class ServerPackHandlerTest {
 
         Assertions.assertTrue(new File("server-packs/forge_tests/1.16.5.json").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.bat").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/download_minecraft-server.jar.sh").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/start-forge.bat").exists());
-        Assertions.assertTrue(new File("server-packs/forge_tests/start-forge.sh").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/start.bat").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
 
         if (new File("server-packs/forge_tests/libraries").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/libraries");
@@ -744,13 +659,11 @@ class ServerPackHandlerTest {
         }
         new File("server-packs/forge_tests/1.16.5.json").delete();
         new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").delete();
-        new File("server-packs/forge_tests/download_minecraft-server.jar_forge.bat").delete();
-        new File("server-packs/forge_tests/download_minecraft-server.jar_forge.sh").delete();
         new File("server-packs/forge_tests/forge.jar").delete();
         new File("server-packs/forge_tests/server.properties").delete();
         new File("server-packs/forge_tests/server-icon.png").delete();
-        new File("server-packs/forge_tests/start-forge.bat").delete();
-        new File("server-packs/forge_tests/start-forge.sh").delete();
+        new File("server-packs/forge_tests/start.bat").delete();
+        new File("server-packs/forge_tests/start.sh").delete();
         new File("./serverpackcreator.conf").delete();
         Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("server-packs/forge_tests_server_pack.zip"), REPLACE_EXISTING);
     }

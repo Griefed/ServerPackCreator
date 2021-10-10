@@ -67,7 +67,7 @@ import java.util.*;
  * 30.{@link #isFabricVersionCorrect(String)}<br>
  * 31.{@link #isForgeVersionCorrect(String, String)}<br>
  * 32.{@link #isMinecraftVersionCorrect(String)}<br>
- * 33.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, String)}<br>
+ * 33.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String)}<br>
  * 34.{@link #readBoolean()}<br>
  * 35.{@link #readStringArray()}<br>
  * 36.{@link #setConfig(File)}<br>
@@ -77,7 +77,7 @@ import java.util.*;
  * 40.{@link #setProjectFileID(int)}<br>
  * 41.{@link #setProjectID(int)}<br>
  * 42.{@link #suggestCopyDirs(String)}<br>
- * 43.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, String, File, boolean)}<p>
+ * 43.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}<p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
@@ -218,7 +218,7 @@ public class ConfigurationHandler {
     /**
      * Getter for creator.conf.
      * @author Griefed
-     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, String, File, boolean)}
+     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}
      */
     public File getOldConfigFile() {
         return FILE_CONFIG_OLD;
@@ -228,7 +228,7 @@ public class ConfigurationHandler {
      * Getter for serverpackcreator.conf.
      * @author Griefed
      * @return File. Returns the serverpackcreator.conf-file.
-     * {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, boolean, String, String, File, boolean)}
+     * {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}
      */
     public File getConfigFile() {
         return FILE_CONFIG;
@@ -375,8 +375,6 @@ public class ConfigurationHandler {
 
         configurationModel.setIncludeServerProperties(convertToBoolean(String.valueOf(getConfig().getOrElse("includeServerProperties", "False"))));
 
-        configurationModel.setIncludeStartScripts(convertToBoolean(String.valueOf(getConfig().getOrElse("includeStartScripts","False"))));
-
         configurationModel.setIncludeZipCreation(convertToBoolean(String.valueOf(getConfig().getOrElse("includeZipCreation","False"))));
 
         configurationModel.setJavaArgs(getConfig().getOrElse("javaArgs","empty"));
@@ -412,7 +410,6 @@ public class ConfigurationHandler {
                 configurationModel.getModLoaderVersion(),
                 configurationModel.getIncludeServerIcon(),
                 configurationModel.getIncludeServerProperties(),
-                configurationModel.getIncludeStartScripts(),
                 configurationModel.getIncludeZipCreation(),
                 configurationModel.getJavaArgs(),
                 configurationModel.getServerPackSuffix());
@@ -482,7 +479,6 @@ public class ConfigurationHandler {
                 configurationModel.getModLoaderVersion(),
                 configurationModel.getIncludeServerIcon(),
                 configurationModel.getIncludeServerProperties(),
-                configurationModel.getIncludeStartScripts(),
                 configurationModel.getIncludeZipCreation(),
                 configurationModel.getJavaArgs(),
                 configurationModel.getServerPackSuffix());
@@ -706,7 +702,6 @@ public class ConfigurationHandler {
                             configurationModel.getModLoaderVersion(),
                             configurationModel.getIncludeServerIcon(),
                             configurationModel.getIncludeServerProperties(),
-                            configurationModel.getIncludeStartScripts(),
                             configurationModel.getIncludeZipCreation(),
                             configurationModel.getJavaArgs(),
                             configurationModel.getServerPackSuffix(),
@@ -930,7 +925,6 @@ public class ConfigurationHandler {
      * @param modloaderVersion String. The version of the modloader the modpack uses.
      * @param includeIcon Boolean. Whether to include the server-icon.png in the server pack.
      * @param includeProperties Boolean. Whether to include the server.properties in the server pack.
-     * @param includeScripts Boolean. Whether to include the start scripts for the specified modloader in the server pack.
      * @param includeZip Boolean. Whether to create a zip-archive of the server pack, excluding the Minecraft server JAR according to Mojang's TOS and EULA.
      * @param javaArgs String. Java arguments to write the start-scripts with.
      * @param serverPackSuffix String. Suffix to append to name of the server pack to be generated.
@@ -945,7 +939,6 @@ public class ConfigurationHandler {
                      String modloaderVersion,
                      boolean includeIcon,
                      boolean includeProperties,
-                     boolean includeScripts,
                      boolean includeZip,
                      String javaArgs,
                      String serverPackSuffix) {
@@ -989,7 +982,6 @@ public class ConfigurationHandler {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modloaderversion"), modloaderVersion));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.icon"), includeIcon));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.properties"), includeProperties));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.scripts"), includeScripts));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"), includeZip));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"), javaArgs));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.serverpacksuffix"), serverPackSuffix));
@@ -1311,7 +1303,6 @@ public class ConfigurationHandler {
         boolean includeServerInstallation,
                 includeServerIcon,
                 includeServerProperties,
-                includeStartScripts,
                 includeZipCreation;
 
         String modpackDir,
@@ -1515,17 +1506,6 @@ public class ConfigurationHandler {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeServerProperties));
             System.out.println();
 
-//--------------------------------------------------------------WHETHER TO INCLUDE START SCRIPTS IN SERVER PACK---------
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.scripts.enter"));
-
-            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.scripts.cli") + " ");
-            includeStartScripts = readBoolean();
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeStartScripts));
-            System.out.println();
-
 //----------------------------------------------------WHETHER TO INCLUDE CREATION OF ZIP-ARCHIVE OF SERVER PACK---------
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.zip.enter"));
@@ -1567,7 +1547,6 @@ public class ConfigurationHandler {
                     modLoaderVersion,
                     includeServerIcon,
                     includeServerProperties,
-                    includeStartScripts,
                     includeZipCreation,
                     javaArgs,
                     serverPackSuffix);
@@ -1592,7 +1571,6 @@ public class ConfigurationHandler {
                 modLoaderVersion,
                 includeServerIcon,
                 includeServerProperties,
-                includeStartScripts,
                 includeZipCreation,
                 javaArgs,
                 serverPackSuffix,
@@ -1709,7 +1687,6 @@ public class ConfigurationHandler {
      * @param modLoaderVersion String. Modloader version used by the modpack and server pack.
      * @param includeIcon Boolean. Whether to include a server-icon in the server pack.
      * @param includeProperties Boolean. Whether to include a properties file in the server pack.
-     * @param includeScripts Boolean. Whether to include start scripts in the server pack.
      * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding Mojang's Minecraft server JAR.
      * @param javaArgs String. Java arguments to write the start-scripts with.
      * @param serverPackSuffix String. Suffix to append to the server pack to be generated.
@@ -1727,7 +1704,6 @@ public class ConfigurationHandler {
                                      String modLoaderVersion,
                                      boolean includeIcon,
                                      boolean includeProperties,
-                                     boolean includeScripts,
                                      boolean includeZip,
                                      String javaArgs,
                                      String serverPackSuffix,
@@ -1752,7 +1728,6 @@ public class ConfigurationHandler {
                         "%s\nmodLoaderVersion = \"%s\"\n\n" +
                         "%s\nincludeServerIcon = %b\n\n" +
                         "%s\nincludeServerProperties = %b\n\n" +
-                        "%s\nincludeStartScripts = %b\n\n" +
                         "%s\nincludeZipCreation = %b\n\n" +
                         "%s\njavaArgs = \"%s\"\n\n" +
                         "%s\nserverPackSuffix = \"%s\"",
@@ -1766,7 +1741,6 @@ public class ConfigurationHandler {
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modloaderversion"), modLoaderVersion,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeservericon"), includeIcon,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverproperties"), includeProperties,
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includestartscripts"), includeScripts,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includezipcreation"), includeZip,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javaargs"), javaArgs,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.serverpacksuffix"), serverPackSuffix
@@ -1852,7 +1826,6 @@ public class ConfigurationHandler {
         configurationAsList.add(String.valueOf(configurationModel.getIncludeServerInstallation()));
         configurationAsList.add(String.valueOf(configurationModel.getIncludeServerIcon()));
         configurationAsList.add(String.valueOf(configurationModel.getIncludeServerProperties()));
-        configurationAsList.add(String.valueOf(configurationModel.getIncludeStartScripts()));
         configurationAsList.add(String.valueOf(configurationModel.getIncludeZipCreation()));
 
         LOG.debug(String.format("Configuration to pass to addons is: %s", configurationAsList));
