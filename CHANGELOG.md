@@ -1,3 +1,21 @@
+## [3.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.6...3.0.0-alpha.7) (2021-10-11)
+
+
+### :scissors: Refactor
+
+* Combine start and download scripts. Add checks for files in scripts. Removes option to generate scripts and generates them always instead. Closes issue [#81](https://git.griefed.de/Griefed/ServerPackCreator/issues/81) ([f037c34](https://git.griefed.de/Griefed/ServerPackCreator/commit/f037c34eb43b4910ea3002eba6362dd3d749261a))
+
+
+### 🚀 Features
+
+* Allow specifying files to add to server pack with simple `foo.bar` connotations. Closes issue [#86](https://git.griefed.de/Griefed/ServerPackCreator/issues/86) ([8a53aa6](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a53aa6b9dbf148d60f4001a47e64055e8975d10))
+* Create eula.txt upon server pack generation. Closes issue [#83](https://git.griefed.de/Griefed/ServerPackCreator/issues/83) ([d48191c](https://git.griefed.de/Griefed/ServerPackCreator/commit/d48191cda634f8bb8cc4db2298a0848b8b14c2cc))
+
+
+### 🛠 Fixes
+
+* Generate Minecraft 1.17+ Forge compatible scripts. Fixes issue [#84](https://git.griefed.de/Griefed/ServerPackCreator/issues/84). ([7d07e1d](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d07e1dad99c175b330f18c4c6cc83b00d43acac))
+
 ## [3.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.5...3.0.0-alpha.6) (2021-10-01)
 
 
