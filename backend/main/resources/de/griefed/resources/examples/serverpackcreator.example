@@ -49,11 +49,6 @@ includeServerIcon = true
 # Default value is true.
 includeServerProperties = true
 
-# Include start scripts for windows and linux systems. Must be true or false.
-# Customize files beginning with "start-" in ./server_files.
-# Default value is true.
-includeStartScripts = true
-
 # Create zip-archive of serverpack. Must be true or false.
 # Default value is true.
 includeZipCreation = true

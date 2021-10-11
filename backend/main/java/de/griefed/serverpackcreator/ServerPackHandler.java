@@ -53,32 +53,27 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * 3. {@link #cleanUpServerPack(File, File, String, String, String)}<br>
  * 4. {@link #copyFiles(String, List, List, String)}<br>
  * 5. {@link #copyIcon()}<br>
- * 6. {@link #createStartScripts(String, boolean, String)}<br>
- * 7. {@link #downloadFabricJar()}<br>
- * 8. {@link #downloadForgeJar(String, String)}<br>
- * 9. {@link #excludeClientMods(String, List, String)}<br>
- * 10.{@link #excludeFileOrDirectory(String)}<br>
- * 11.{@link #generateDownloadScripts(String, String)}<br>
- * 12.{@link #getFabricLinuxFile()}<br>
- * 13.{@link #getFabricWindowsFile()}<br>
- * 14.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
- * 15.{@link #getForgeLinuxFile()}<br>
- * 16.{@link #getForgeWindowsFile()}<br>
- * 17.{@link #getIconFile()}<br>
- * 18.{@link #getMinecraftServerJarUrl(String)}<br>
- * 19.{@link #getObjectMapper()}<br>
- * 20.{@link #getPropertiesFile()}<br>
- * 21.{@link #getSERVER_PACKS_DIR()}<br>
- * 22.{@link #getSTART_FABRIC_BATCH}<br>
- * 23.{@link #getSTART_FABRIC_SHELL}<br>
- * 24.{@link #getSTART_FORGE_BATCH}<br>
- * 25.{@link #getSTART_FORGE_SHELL}<br>
- * 26.{@link #installServer(String, String, String, String)}<br>
- * 27.{@link #run(ConfigurationModel)}<br>
- * 28.{@link #run(File, ConfigurationModel)}<br>
- * 29.{@link #scanAnnotations(File[])}<br>
- * 30.{@link #scanTomls(File[])}<br>
- * 31.{@link #zipBuilder(String, boolean)}<p>
+ * 6. {@link #copyProperties()}<br>
+ * 7. {@link #createEula()}<br>
+ * 8. {@link #createStartScripts(String, String, String, String)}<br>
+ * 9. {@link #downloadFabricJar()}<br>
+ * 10.{@link #downloadForgeJar(String, String)}<br>
+ * 11.{@link #excludeClientMods(String, List, String)}<br>
+ * 12.{@link #excludeFileOrDirectory(String)}<br>
+ * 13.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
+ * 14.{@link #getLinuxFile()}<br>
+ * 15.{@link #getWindowsFile()}<br>
+ * 16.{@link #getIconFile()}<br>
+ * 17.{@link #getMinecraftServerJarUrl(String)}<br>
+ * 18.{@link #getObjectMapper()}<br>
+ * 19.{@link #getPropertiesFile()}<br>
+ * 20.{@link #getSERVER_PACKS_DIR()}<br>
+ * 21.{@link #installServer(String, String, String, String)}<br>
+ * 22.{@link #run(ConfigurationModel)}<br>
+ * 23.{@link #run(File, ConfigurationModel)}<br>
+ * 24.{@link #scanAnnotations(File[])}<br>
+ * 25.{@link #scanTomls(File[])}<br>
+ * 26.{@link #zipBuilder(String, boolean)}<p>
  * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
  * then to be generated server pack.
  * <p>
@@ -105,15 +100,10 @@ public class ServerPackHandler {
     private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
     private final File FILE_PROPERTIES = new File("server.properties");
     private final File FILE_ICON = new File("server-icon.png");
-    private final File FILE_FORGE_WINDOWS = new File("start-forge.bat");
-    private final File FILE_FORGE_LINUX = new File("start-forge.sh");
-    private final File FILE_FABRIC_WINDOWS = new File("start-fabric.bat");
-    private final File FILE_FABRIC_LINUX = new File("start-fabric.sh");
+    private final File FILE_WINDOWS = new File("start.bat");
+    private final File FILE_LINUX = new File("start.sh");
+    private final File FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS = new File("user_jvm_args.txt");
 
-    private final String START_FABRIC_SHELL = "#!/usr/bin/env bash\njava %s -jar fabric-server-launch.jar";
-    private final String START_FABRIC_BATCH = "java %s -jar fabric-server-launch.jar\npause";
-    private final String START_FORGE_SHELL  = "#!/usr/bin/env bash\njava %s -jar forge.jar --nogui";
-    private final String START_FORGE_BATCH  = "java %s -jar forge.jar --nogui\npause";
     private final String SERVER_PACKS_DIR;
 
     private Properties serverPackCreatorProperties;
@@ -221,42 +211,6 @@ public class ServerPackHandler {
     }
 
     /**
-     * Getter for the String which will make up the shell-start-script for Fabric servers.
-     * @author Griefed
-     * @return String. Returns the String which will make up the shell-start-script for Fabric servers.
-     */
-    public String getSTART_FABRIC_SHELL() {
-        return START_FABRIC_SHELL;
-    }
-
-    /**
-     * Getter for the String which will make up the batch-start-script for Fabric servers.
-     * @author Griefed
-     * @return String. Returns the String which will make up the batch-start-script for Fabric servers.
-     */
-    public String getSTART_FABRIC_BATCH() {
-        return START_FABRIC_BATCH;
-    }
-
-    /**
-     * Getter for the String which will make up the shell-start-script for Forge servers.
-     * @author Griefed
-     * @return String. Returns the String which will make up the shell-start-script for Forge servers.
-     */
-    public String getSTART_FORGE_SHELL() {
-        return START_FORGE_SHELL;
-    }
-
-    /**
-     * Getter for the String which will make up the batch-start-script for Forge servers.
-     * @author Griefed
-     * @return String. Returns the String which will make up the batch-start-script for Forge servers.
-     */
-    public String getSTART_FORGE_BATCH() {
-        return START_FORGE_BATCH;
-    }
-
-    /**
      * Getter for server.properties.
      * @author Griefed
      * @return Returns the server.properties-file for use in {@link #copyProperties()}
@@ -275,39 +229,30 @@ public class ServerPackHandler {
     }
 
     /**
-     * Getter for start-forge.bat.
+     * Getter for start.bat.
      * @author Griefed
-     * @return Returns the start-forge.bat-file for use in {@link #createStartScripts(String, boolean, String)}
+     * @return Returns the start.bat-file for use in {@link #createStartScripts(String, String, String, String)}
      */
-    public File getForgeWindowsFile() {
-        return FILE_FORGE_WINDOWS;
+    public File getWindowsFile() {
+        return FILE_WINDOWS;
     }
 
     /**
-     * Getter for start-forge.sh
+     * Getter for start.sh
      * @author Griefed
-     * @return Returns the start-forge.sh-file for use in {@link #createStartScripts(String, boolean, String)}
+     * @return Returns the start.sh-file for use in {@link #createStartScripts(String, String, String, String)}
      */
-    public File getForgeLinuxFile() {
-        return FILE_FORGE_LINUX;
+    public File getLinuxFile() {
+        return FILE_LINUX;
     }
 
     /**
-     * Getter for start-fabric.bat.
+     * Getter for user_jvm_args.txt.
      * @author Griefed
-     * @return Returns the start-fabric.bat-file for use in {@link #createStartScripts(String, boolean, String)}
+     * @return Returns the user_jvm_args.txt-file for use in {@link #createStartScripts(String, String, String, String)}
      */
-    public File getFabricWindowsFile() {
-        return FILE_FABRIC_WINDOWS;
-    }
-
-    /**
-     * Getter for start-fabric.sh.
-     * @author Griefed
-     * @return Returns the start-fabric.sh-file for use in {@link #createStartScripts(String, boolean, String)}
-     */
-    public File getFabricLinuxFile() {
-        return FILE_FABRIC_LINUX;
+    public File getForgeOneSevenUserJvmArgsFile() {
+        return FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS;
     }
 
     /**
@@ -378,7 +323,7 @@ public class ServerPackHandler {
                 copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
 
                 // Copy start scripts for specified modloader from server_files to server pack.
-                createStartScripts(configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
+                createStartScripts(configurationModel.getModLoader(), configurationModel.getJavaArgs(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion());
 
                 // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
                 if (configurationModel.getIncludeServerInstallation()) {
@@ -403,6 +348,8 @@ public class ServerPackHandler {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
                 }
+
+                createEula();
 
                 // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
                 if (configurationModel.getIncludeZipCreation()) {
@@ -472,7 +419,7 @@ public class ServerPackHandler {
                 copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion());
 
                 // Copy start scripts for specified modloader from server_files to server pack.
-                createStartScripts(configurationModel.getModLoader(), configurationModel.getIncludeStartScripts(), configurationModel.getJavaArgs());
+                createStartScripts(configurationModel.getModLoader(), configurationModel.getJavaArgs(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion());
 
                 // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
                 if (configurationModel.getIncludeServerInstallation()) {
@@ -597,95 +544,551 @@ public class ServerPackHandler {
     }
 
     /**
-     * Copies start scripts for the specified modloader into the server pack.
+     * Create start-scripts for the generated server pack.
      * @author Griefed
      * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
-     * @param includeStartScripts Boolean. Whether to copy the start scripts into the server pack.
      * @param javaArguments String. Java arguments to write the start-scripts with.
+     * @param minecraftVersion String. The Minecraft version the modpack uses.
+     * @param modloaderVersion String. The modloader version the modpack uses.
      */
-    void createStartScripts(String modLoader, boolean includeStartScripts, String javaArguments) {
+    void createStartScripts(String modLoader, String javaArguments, String minecraftVersion, String modloaderVersion) {
 
         if (javaArguments.equals("empty")) {
             javaArguments = "";
         }
 
-        if (modLoader.equalsIgnoreCase("Forge") && includeStartScripts) {
+        if (modLoader.equalsIgnoreCase("Forge")) {
+
+            String[] minecraft = minecraftVersion.split("\\.");
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.forge"));
 
-            try {
-                BufferedWriter writer = new BufferedWriter(
+            if (Integer.parseInt(minecraft[1]) < 17) {
+
+                try (BufferedWriter writer = new BufferedWriter(
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getForgeWindowsFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getWindowsFile())
                                         )
                                 )
                         )
-                );
+                )) {
 
-                writer.write(String.format(getSTART_FORGE_BATCH(), javaArguments));
-                writer.close();
+                    /*
+                     * FORGE 1.16 AND OLDER!
+                     * If the specified Minecraft version is older than 1.17.1, then we need to generate scripts which run
+                     * Forge the old way, with the Minecraft server-jar and the Forge server-jar, executing the Forge server-jar
+                     * with the given Java args.
+                     *
+                     * Forge Batch
+                     */
+                    writer.write(
+                            ":: Start script generated by ServerPackCreator.\n" +
+                            ":: This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
+                            ":: If everything is in order, the server is started.\n" +
+                            "@ECHO off\n" +
+                            "\n" +
+                            "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
+                            "SET FORGE=\"" + modloaderVersion + "\"\n" +
+                            "SET ARGS=" + javaArguments + "\n" +
+                            "\n" +
+                            "IF NOT EXIST forge.jar (\n" +
+                            "\n" +
+                            "  ECHO Forge Server JAR-file not found. Downloading installer...\n" +
+                            "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://files.minecraftforge.net/maven/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-installer.jar', 'forge-installer.jar')\"\n" +
+                            "\n" +
+                            "  IF EXIST forge-installer.jar (\n" +
+                            "\n" +
+                            "    ECHO Installer downloaded. Installing...\n" +
+                            "    java -jar forge-installer.jar --installServer\n" +
+                            "    MOVE forge-%MINECRAFT%-%FORGE%.jar forge.jar\n" +
+                            "\n" +
+                            "    IF EXIST forge.jar (\n" +
+                            "      DEL forge-installer.jar\n" +
+                            "      ECHO Installation complete. forge-installer.jar deleted.\n" +
+                            "    )\n" +
+                            "\n" +
+                            "  ) ELSE (\n" +
+                            "    ECHO forge-installer.jar not found. Maybe the Forges servers are having trouble.\n" +
+                            "    ECHO Please try again in a couple of minutes.\n" +
+                            "  )\n" +
+                            ") ELSE (\n" +
+                            "  ECHO forge.jar present. Moving on...\n" +
+                            ")\n" +
+                            "\n" +
+                            "IF NOT EXIST minecraft_server.%MINECRAFT%.jar (\n" +
+                            "  ECHO Minecraft Server JAR-file not found. Downloading...\n" +
+                            "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + getMinecraftServerJarUrl(minecraftVersion) + "', 'minecraft_server.%MINECRAFT%.jar')\"\n" +
+                            ") ELSE (\n" +
+                            "  ECHO minecraft_server.%MINECRAFT%.jar present. Moving on...\n" +
+                            ")\n" +
+                            "\n" +
+                            "IF NOT EXIST eula.txt (\n" +
+                            "  ECHO eula.txt not found. Creating...\n" +
+                            "  ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
+                            "  ECHO eula=true>> eula.txt\n" +
+                            ") ELSE (\n" +
+                            "  ECHO eula.txt present. Moving on...\n" +
+                            ")\n" +
+                            "\n" +
+                            "ECHO Starting server...\n" +
+                            "ECHO Minecraft version: %MINECRAFT%\n" +
+                            "ECHO Forge version: %FORGE%\n" +
+                            "ECHO Java args: %ARGS%\n" +
+                            "\n" +
+                            "java %ARGS% -jar forge.jar --nogui\n" +
+                            "\n" +
+                            "PAUSE"
+                    );
 
-            } catch (IOException ex) {
-                LOG.error("Error generating batch-script for Forge.", ex);
-            }
+                } catch (IOException ex) {
+                    LOG.error("Error generating batch-script for Forge.", ex);
+                }
 
-            try {
-                BufferedWriter writer = new BufferedWriter(
+                try (BufferedWriter writer = new BufferedWriter(
                         new FileWriter(
                                 String.valueOf(
                                         Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getForgeLinuxFile())
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getLinuxFile())
                                         )
                                 )
                         )
-                );
+                )) {
 
-                writer.write(String.format(getSTART_FORGE_SHELL(), javaArguments));
-                writer.close();
+                    /*
+                     * FORGE 1.16 AND OLDER!
+                     * If the specified Minecraft version is older than 1.17.1, then we need to generate scripts which run
+                     * Forge the old way, with the Minecraft server-jar and the Forge server-jar, executing the Forge server-jar
+                     * with the given Java args.
+                     *
+                     * Forge Bash file
+                     */
+                    writer.write(
+                            "#!/usr/bin/env bash\n" +
+                            "# Start script generated by ServerPackCreator.\n" +
+                            "# This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
+                            "# If everything is in order, the server is started.\n" +
+                            "\n" +
+                            "MINECRAFT=\"" + minecraftVersion + "\"\n" +
+                            "FORGE=\"" + modloaderVersion + "\"\n" +
+                            "ARGS=\"" + javaArguments + "\"\n" +
+                            "\n" +
+                            "if [[ ! -s \"forge.jar\" ]];then\n" +
+                            "\n" +
+                            "  echo \"Forge Server JAR-file not found. Downloading installer...\";\n" +
+                            "  wget -O forge-installer.jar https://files.minecraftforge.net/maven/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-installer.jar;\n" +
+                            "\n" +
+                            "  if [[ -s \"forge-installer.jar\" ]]; then\n" +
+                            "\n" +
+                            "    echo \"Installer downloaded. Installing...\";\n" +
+                            "    java -jar forge-installer.jar --installServer;\n" +
+                            "    mv forge-$MINECRAFT-$FORGE.jar forge.jar;\n" +
+                            "\n" +
+                            "    if [[ -s \"forge.jar\" ]];then\n" +
+                            "      rm -f forge-installer.jar;\n" +
+                            "      echo \"Installation complete. forge-installer.jar deleted.\";\n" +
+                            "    fi\n" +
+                            "\n" +
+                            "  else\n" +
+                            "    echo \"forge-installer.jar not found. Maybe the Forges servers are having trouble.\";\n" +
+                            "    echo \"Please try again in a couple of minutes.\";\n" +
+                            "  fi\n" +
+                            "else\n" +
+                            "  echo \"forge.jar present. Moving on...\"\n" +
+                            "fi\n" +
+                            "\n" +
+                            "if [[ ! -s \"minecraft_server.$MINECRAFT.jar\" ]];then\n" +
+                            "  echo \"Minecraft Server JAR-file not found. Downloading...\";\n" +
+                            "  wget -O minecraft_server.$MINECRAFT.jar " + getMinecraftServerJarUrl(minecraftVersion) + ";\n" +
+                            "else\n" +
+                            "  echo \"minecraft_server.$MINECRAFT.jar present. Moving on...\"\n" +
+                            "fi\n" +
+                            "\n" +
+                            "if [[ ! -s \"eula.txt\" ]];then\n" +
+                            "  echo \"eula.txt not found. Creating...\";\n" +
+                            "  echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n" +
+                            "  echo \"eula=true\" >> eula.txt;\n" +
+                            "else\n" +
+                            "  echo \"eula.txt present. Moving on...\";\n" +
+                            "fi\n" +
+                            "\n" +
+                            "echo \"Starting server...\";\n" +
+                            "echo \"Minecraft version: $MINECRAFT\";\n" +
+                            "echo \"Forge version: $FORGE\";\n" +
+                            "echo \"Java args: $ARGS\";\n" +
+                            "\n" +
+                            "java $ARGS -jar forge.jar --nogui"
+                    );
 
-            } catch (IOException ex) {
-                LOG.error("Error generating shell-script for Forge.", ex);
+                } catch (IOException ex) {
+                    LOG.error("Error generating shell-script for Forge.", ex);
+                }
+
+            } else {
+
+                try (BufferedWriter writer = new BufferedWriter(
+                        new FileWriter(
+                                String.valueOf(
+                                        Paths.get(
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getWindowsFile())
+                                        )
+                                )
+                        )
+                )) {
+
+                    /*
+                     * FORGE 1.17 AND NEWER!
+                     * If the specified Minecraft version is newer than or equal to 1.17.1, then we need to generate scripts which run
+                     * Forge the new way, by running @user_jvm_args.txt and @libraries[...] etc.
+                     *
+                     * Forge Batch
+                     */
+                    writer.write(
+                            ":: Start script generated by ServerPackCreator.\n" +
+                            ":: This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
+                            ":: If everything is in order, the server is started.\n" +
+                            "@ECHO off\n" +
+                            "\n" +
+                            "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
+                            "SET FORGE=\"" + modloaderVersion + "\"\n" +
+                            "SET ARGS=" + javaArguments + "\n" +
+                            "\n" +
+                            "IF NOT EXIST libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-server.jar (\n" +
+                            "\n" +
+                            "  ECHO Forge Server JAR-file not found. Downloading installer...\n" +
+                            "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://files.minecraftforge.net/maven/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-installer.jar', 'forge-installer.jar')\"\n" +
+                            "\n" +
+                            "  IF EXIST forge-installer.jar (\n" +
+                            "\n" +
+                            "    ECHO Installer downloaded. Installing...\n" +
+                            "    java -jar forge-installer.jar --installServer\n" +
+                            "\n" +
+                            "    IF EXIST libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-server.jar (\n" +
+                            "      DEL forge-installer.jar\n" +
+                            "      ECHO Installation complete. forge-installer.jar deleted.\n" +
+                            "    )\n" +
+                            "\n" +
+                            "  ) ELSE (\n" +
+                            "    ECHO forge-installer.jar not found. Maybe the Forges servers are having trouble.\n" +
+                            "    ECHO Please try again in a couple of minutes.\n" +
+                            "  )\n" +
+                            ") ELSE (\n" +
+                            "  ECHO Forge server present. Moving on...\n" +
+                            ")\n" +
+                            "\n" +
+                            "IF NOT EXIST libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar (\n" +
+                            "  ECHO Minecraft Server JAR-file not found. Downloading...\n" +
+                            "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + getMinecraftServerJarUrl(minecraftVersion) + "', 'libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar')\"\n" +
+                            ") ELSE (\n" +
+                            "  ECHO Minecraft server present. Moving on...\n" +
+                            ")\n" +
+                            "\n" +
+                            "IF NOT EXIST eula.txt (\n" +
+                            "  ECHO eula.txt not found. Creating...\n" +
+                            "  ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
+                            "  ECHO eula=true>> eula.txt\n" +
+                            ") ELSE (\n" +
+                            "  ECHO eula.txt present. Moving on...\n" +
+                            ")\n" +
+                            "\n" +
+                            "IF EXIST run.bat (\n" +
+                            "  DEL run.bat\n" +
+                            "  ECHO Deleted run.bat as we already have start.bat\n" +
+                            ")\n" +
+                            "IF EXIST run.sh (\n" +
+                            "  DEL run.sh\n" +
+                            "  ECHO Deleted run.sh as we already have start.sh\n" +
+                            ")\n" +
+                            "\n" +
+                            "ECHO Starting server...\n" +
+                            "ECHO Minecraft version: %MINECRAFT%\n" +
+                            "ECHO Forge version: %FORGE%\n" +
+                            "ECHO Java args in user_jvm_args.txt: %ARGS%\n" +
+                            "\n" +
+                            "REM Forge requires a configured set of both JVM and program arguments.\n" +
+                            "REM Add custom JVM arguments to the user_jvm_args.txt\n" +
+                            "REM Add custom program arguments {such as nogui} to this file in the next line before the %* or\n" +
+                            "REM  pass them to this script directly\n" +
+                            "\n" +
+                            "java  @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n" +
+                            "\n" +
+                            "PAUSE"
+                    );
+
+                } catch (IOException ex) {
+                    LOG.error("Error generating batch-script for Forge.", ex);
+                }
+
+                try (BufferedWriter writer = new BufferedWriter(
+                        new FileWriter(
+                                String.valueOf(
+                                        Paths.get(
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getLinuxFile())
+                                        )
+                                )
+                        )
+                )) {
+
+                    /*
+                     * FORGE 1.17 AND NEWER!
+                     * If the specified Minecraft version is newer than or equal to 1.17.1, then we need to generate scripts which run
+                     * Forge the new way, by running @user_jvm_args.txt and @libraries[...] etc.
+                     *
+                     * Forge Bash
+                     */
+                    writer.write(
+                            "#!/usr/bin/env bash\n" +
+                            "# Start script generated by ServerPackCreator.\n" +
+                            "# This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
+                            "# If everything is in order, the server is started.\n" +
+                            "\n" +
+                            "MINECRAFT=\"" + minecraftVersion + "\"\n" +
+                            "FORGE=\"" + modloaderVersion + "\"\n" +
+                            "ARGS=\"" + javaArguments + "\"\n" +
+                            "\n" +
+                            "if [[ ! -s \"libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-server.jar\" ]];then\n" +
+                            "\n" +
+                            "  echo \"Forge Server JAR-file not found. Downloading installer...\";\n" +
+                            "  wget -O forge-installer.jar https://files.minecraftforge.net/maven/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-installer.jar;\n" +
+                            "\n" +
+                            "  if [[ -s \"forge-installer.jar\" ]]; then\n" +
+                            "\n" +
+                            "    echo \"Installer downloaded. Installing...\";\n" +
+                            "    java -jar forge-installer.jar --installServer;\n" +
+                            "\n" +
+                            "    if [[ -s \"libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-server.jar\" ]];then\n" +
+                            "      rm -f forge-installer.jar;\n" +
+                            "      echo \"Installation complete. forge-installer.jar deleted.\";\n" +
+                            "    fi\n" +
+                            "\n" +
+                            "  else\n" +
+                            "    echo \"forge-installer.jar not found. Maybe the Forges servers are having trouble.\";\n" +
+                            "    echo \"Please try again in a couple of minutes.\";\n" +
+                            "  fi\n" +
+                            "else\n" +
+                            "  echo \"Forge server present. Moving on...\"\n" +
+                            "fi\n" +
+                            "\n" +
+                            "if [[ ! -s \"libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar\" ]];then\n" +
+                            "  echo \"Minecraft Server JAR-file not found. Downloading...\";\n" +
+                            "  wget -O libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar " + getMinecraftServerJarUrl(minecraftVersion) + ";\n" +
+                            "else\n" +
+                            "  echo \"Minecraft server present. Moving on...\"\n" +
+                            "fi\n" +
+                            "\n" +
+                            "if [[ ! -s \"eula.txt\" ]];then\n" +
+                            "  echo \"eula.txt not found. Creating...\";\n" +
+                            "  echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n" +
+                            "  echo \"eula=true\" >> eula.txt;\n" +
+                            "else\n" +
+                            "  echo \"eula.txt present. Moving on...\";\n" +
+                            "fi\n" +
+                            "\n" +
+                            "if [[ -s \"run.bat\" ]];then\n" +
+                            "  rm -f run.bat;\n" +
+                            "  echo \"Deleted run.bat as we already have start.bat\";\n" +
+                            "fi\n" +
+                            "if [[ -s \"run.sh\" ]];then\n" +
+                            "  rm -f run.sh;\n" +
+                            "  echo \"Deleted run.sh as we already have start.sh\";\n" +
+                            "fi\n" +
+                            "\n" +
+                            "echo \"Starting server...\";\n" +
+                            "echo \"Minecraft version: $MINECRAFT\";\n" +
+                            "echo \"Forge version: $FORGE\";\n" +
+                            "echo \"Java args in user_jvm_args.txt: $ARGS\";\n" +
+                            "\n" +
+                            "# Forge requires a configured set of both JVM and program arguments.\n" +
+                            "# Add custom JVM arguments to the user_jvm_args.txt\n" +
+                            "# Add custom program arguments {such as nogui} to this file in the next line before the \"$@\" or\n" +
+                            "#  pass them to this script directly\n" +
+                            "\n" +
+                            "java @user_jvm_args.txt @libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/unix_args.txt nogui \"$@\""
+                    );
+
+                } catch (IOException ex) {
+                    LOG.error("Error generating shell-script for Forge.", ex);
+                }
+
+                try (BufferedWriter writer = new BufferedWriter(
+                        new FileWriter(
+                                String.valueOf(
+                                        Paths.get(
+                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getForgeOneSevenUserJvmArgsFile())
+                                        )
+                                )
+                        )
+                )) {
+
+                    // User Java Args file for Minecraft 1.17+ Forge servers
+                    writer.write(
+                                "# Xmx and Xms set the maximum and minimum RAM usage, respectively.\n" +
+                                    "# They can take any number, followed by an M or a G.\n" +
+                                    "# M means Megabyte, G means Gigabyte.\n" +
+                                    "# For example, to set the maximum to 3GB: -Xmx3G\n" +
+                                    "# To set the minimum to 2.5GB: -Xms2500M\n" +
+                                    "\n" +
+                                    "# A good default for a modded server is 4GB.\n" +
+                                    "# Uncomment the next line to set it.\n" +
+                                    "# -Xmx4G\n" +
+                                        javaArguments
+                    );
+
+                } catch (IOException ex) {
+                    LOG.error("Error generating user_jvm_args.txt for Forge.", ex);
+                }
             }
 
-        } else if (modLoader.equalsIgnoreCase("Fabric") && includeStartScripts) {
+        } else if (modLoader.equalsIgnoreCase("Fabric")) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.fabric"));
 
-            try {
-                BufferedWriter writer = new BufferedWriter(
-                        new FileWriter(
-                                String.valueOf(
-                                        Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getFabricWindowsFile())
-                                        )
-                                )
-                        )
-                );
+            try (BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(
+                            String.valueOf(
+                                    Paths.get(
+                                            String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getWindowsFile())
+                                    )
+                            )
+                    )
+            )) {
 
-                writer.write(String.format(getSTART_FABRIC_BATCH(), javaArguments));
-                writer.close();
+                // Fabric Batch file
+                writer.write(
+                        ":: Start script generated by ServerPackCreator.\n" +
+                        ":: This script checks for the Minecraft and Fabric JAR-files, and if they are not found, they are downloaded and installed.\n" +
+                        ":: If everything is in order, the server is started.\n" +
+                        "@ECHO off\n" +
+                        "\n" +
+                        "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
+                        "SET FABRIC=\"" + modloaderVersion + "\"\n" +
+                        "SET INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n" +
+                        "SET ARGS=" + javaArguments + "\n" +
+                        "\n" +
+                        "IF NOT EXIST fabric-server-launch.jar (\n" +
+                        "\n" +
+                        "  ECHO Fabric Server JAR-file not found. Downloading installer...\n" +
+                        "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://maven.fabricmc.net/net/fabricmc/fabric-installer/%INSTALLER%/fabric-installer-%INSTALLER%.jar', 'fabric-installer.jar')\"\n" +
+                        "\n" +
+                        "  IF EXIST fabric-installer.jar (\n" +
+                        "\n" +
+                        "    ECHO Installer downloaded. Installing...\n" +
+                        "    java -jar fabric-installer.jar server -mcversion %MINECRAFT% -loader %FABRIC% -downloadMinecraft\n" +
+                        "\n" +
+                        "    IF EXIST fabric-server-launch.jar (\n" +
+                        "      RMDIR /S /Q .fabric-installer\n" +
+                        "      DEL fabric-installer.jar\n" +
+                        "      ECHO Installation complete. fabric-installer.jar and installation files deleted.\n" +
+                        "    )\n" +
+                        "\n" +
+                        "  ) ELSE (\n" +
+                        "    ECHO fabric-installer.jar not found. Maybe the Fabric servers are having trouble.\n" +
+                        "    ECHO Please try again in a couple of minutes.\n" +
+                        "  )\n" +
+                        ") ELSE (\n" +
+                        "  ECHO fabric-server-launch.jar present. Moving on...\n" +
+                        ")\n" +
+                        "\n" +
+                        "IF NOT EXIST server.jar (\n" +
+                        "  ECHO Minecraft Server JAR-file not found. Downloading...\n" +
+                        "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + getMinecraftServerJarUrl(minecraftVersion) + "', 'server.jar')\"\n" +
+                        ") ELSE (\n" +
+                        "  ECHO server.jar present. Moving on...\n" +
+                        ")\n" +
+                        "\n" +
+                        "IF NOT EXIST eula.txt (\n" +
+                        "  ECHO eula.txt not found. Creating...\n" +
+                        "  ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
+                        "  ECHO eula=true>> eula.txt\n" +
+                        ") ELSE (\n" +
+                        "  ECHO eula.txt present. Moving on...\n" +
+                        ")\n" +
+                        "\n" +
+                        "ECHO Starting server...\n" +
+                        "ECHO Minecraft version: %MINECRAFT%\n" +
+                        "ECHO Fabric version: %FABRIC%\n" +
+                        "ECHO Java args: %ARGS%\n" +
+                        "\n" +
+                        "java %ARGS% -jar fabric-server-launch.jar --nogui\n" +
+                        "\n" +
+                        "PAUSE"
+                );
 
             } catch (IOException ex) {
                 LOG.error("Error generating batch-script for Forge.", ex);
             }
 
-            try {
-                BufferedWriter writer = new BufferedWriter(
-                        new FileWriter(
-                                String.valueOf(
-                                        Paths.get(
-                                                String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getFabricLinuxFile())
-                                        )
-                                )
-                        )
-                );
+            try (BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(
+                            String.valueOf(
+                                    Paths.get(
+                                            String.format("%s/%s/%s", getSERVER_PACKS_DIR(), getServerPackDestination(), getLinuxFile())
+                                    )
+                            )
+                    )
+            )) {
 
-                writer.write(String.format(getSTART_FABRIC_SHELL(), javaArguments));
-                writer.close();
+                // Fabric Bash file
+                writer.write(
+                        "#!/usr/bin/env bash\n" +
+                        "# Start script generated by ServerPackCreator.\n" +
+                        "# This script checks for the Minecraft and Forge JAR-Files, and if they are not found, they are downloaded and installed.\n" +
+                        "# If everything is in order, the server is started.\n" +
+                        "\n" +
+                        "MINECRAFT=\"" + minecraftVersion + "\"\n" +
+                        "FABRIC=\"" + modloaderVersion + "\"\n" +
+                        "INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n" +
+                        "ARGS=\"" + javaArguments + "\"\n" +
+                        "\n" +
+                        "if [[ ! -s \"fabric-server-launch.jar\" ]];then\n" +
+                        "\n" +
+                        "  echo \"Fabric Server JAR-file not found. Downloading installer...\";\n" +
+                        "  wget -O fabric-installer.jar https://maven.fabricmc.net/net/fabricmc/fabric-installer/$INSTALLER/fabric-installer-$INSTALLER.jar;\n" +
+                        "\n" +
+                        "  if [[ -s \"fabric-installer.jar\" ]];then\n" +
+                        "\n" +
+                        "    echo \"Installer downloaded. Installing...\";\n" +
+                        "    java -jar fabric-installer.jar server -mcversion $MINECRAFT -loader $FABRIC -downloadMinecraft;\n" +
+                        "\n" +
+                        "    if [[ -s \"fabric-server-launch.jar\" ]];then\n" +
+                        "      rm -rf .fabric-installer;\n" +
+                        "      rm -f fabric-installer.jar;\n" +
+                        "      echo \"Installation complete. fabric-installer.jar deleted.\";\n" +
+                        "    fi\n" +
+                        "\n" +
+                        "  else\n" +
+                        "    echo \"fabric-installer.jar not found. Maybe the Fabric server are having trouble.\";\n" +
+                        "    echo \"Please try again in a couple of minutes.\";\n" +
+                        "  fi\n" +
+                        "else\n" +
+                        "  echo \"fabric-server-launch.jar present. Moving on...\";\n" +
+                        "fi\n" +
+                        "\n" +
+                        "if [[ ! -s \"server.jar\" ]];then\n" +
+                        "  echo \"Minecraft Server JAR-file not found. Downloading...\";\n" +
+                        "  wget -O server.jar " + getMinecraftServerJarUrl(minecraftVersion) + ";\n" +
+                        "else\n" +
+                        "  echo \"server.jar present. Moving on...\";\n" +
+                        "fi\n" +
+                        "\n" +
+                        "if [[ ! -s \"eula.txt\" ]];then\n" +
+                        "  echo \"eula.txt not found. Creating...\";\n" +
+                        "  echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n" +
+                        "  echo \"eula=true\" >> eula.txt;\n" +
+                        "else\n" +
+                        "  echo \"eula.txt present. Moving on...\";\n" +
+                        "fi\n" +
+                        "\n" +
+                        "echo \"Starting server...\";\n" +
+                        "echo \"Minecraft version: $MINECRAFT\";\n" +
+                        "echo \"Fabric version: $FABRIC\";\n" +
+                        "echo \"Java args: $ARGS\";\n" +
+                        "\n" +
+                        "java $ARGS -jar fabric-server-launch.jar --nogui"
+                );
 
             } catch (IOException ex) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -735,6 +1138,10 @@ public class ServerPackHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), directory));
 
+            /*
+             * Check for semicolon. If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
+             * for a file they specifically want to include in their server pack.
+             */
             if (directory.contains(";")) {
 
                 String[] sourceFileDestinationFileCombination = directory.split(";");
@@ -748,7 +1155,11 @@ public class ServerPackHandler {
                     LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                 }
 
-
+            /*
+             * Check whether the entry starts with saves, and if it does, change the destination path to NOT include
+             * saves in it, so when a world is specified inside the saves-directory, it is copied to the base-directory
+             * of the server pack, instead of a saves-directory inside the modpack.
+             */
             } else if (directory.startsWith("saves/")) {
 
                 String savesDir = String.format("%s/%s", serverPath, directory.substring(6));
@@ -778,7 +1189,10 @@ public class ServerPackHandler {
                     LOG.error("An error occurred copying the specified world.", ex);
                 }
 
-
+            /*
+             * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
+             * user-specified clientside-only mods from the list of mods in the mods-directory.
+             */
             } else if (directory.startsWith("mods") && clientMods.size() > 0) {
 
                 List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
@@ -805,6 +1219,17 @@ public class ServerPackHandler {
                             LOG.error("An error occurred copying files to the serverpack.", ex);
                         }
                     }
+                }
+
+            } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
+
+                File sourceFile = new File(String.format("%s/%s", modpackDir, directory));
+                File destinationFile = new File(String.format("%s/%s", serverPath, directory));
+
+                try {
+                    FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
+                } catch (IOException ex) {
+                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                 }
 
             } else {
@@ -865,10 +1290,12 @@ public class ServerPackHandler {
         List<String> modsInModpack = new ArrayList<>();
         List<String> autodiscoveredClientMods = new ArrayList<>();
 
+        // Check whether scanning mods for sideness is activated.
         if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true")) {
 
             String[] split = minecraftVersion.split("\\.");
 
+            // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
             if (Integer.parseInt(split[1]) > 12) {
                 autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
             } else {
@@ -877,6 +1304,7 @@ public class ServerPackHandler {
 
         }
 
+        // Gather a list of all mod-JAR-files.
         try {
             for (File mod : filesInModsDir) {
                 if (mod.isFile() && mod.toString().endsWith("jar")) {
@@ -887,6 +1315,7 @@ public class ServerPackHandler {
             LOG.error("Error: There was an error during the acquisition of files in mods directory.", ex);
         }
 
+        // Exclude user-specified mods from copying.
         if (!userSpecifiedClientMods.get(0).equals("")) {
             for (int m = 0; m < userSpecifiedClientMods.size(); m++) {
 
@@ -899,6 +1328,7 @@ public class ServerPackHandler {
             }
         }
 
+        // Exclude scanned mods from copying if said functionality is enabled.
         if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true") && autodiscoveredClientMods.size() > 0) {
             for (int m = 0; m < autodiscoveredClientMods.size(); m++) {
 
@@ -975,13 +1405,36 @@ public class ServerPackHandler {
     }
 
     /**
+     * Create the <code>eula.txt</code> containing <code>eula=true</code> so the generated server pack can be used immediately.
+     * @author Griefed
+     */
+    private void createEula() {
+        try {
+            BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(
+                            String.valueOf(
+                                    Paths.get(
+                                            String.format("%s/%s/eula.txt", getSERVER_PACKS_DIR(), getServerPackDestination())
+                                    )
+                            )
+                    )
+            );
+
+            String EULA = "#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\neula=true";
+            writer.write(EULA);
+            writer.close();
+
+        } catch (IOException ex) {
+            LOG.error("Error writing eula.txt.", ex);
+        }
+    }
+
+    /**
      * Installs the modloader server for the specified modloader, modloader version and Minecraft version.
      * Calls<p>
      * {@link #downloadFabricJar()} to download the Fabric installer into the server_pack directory.<p>
      * {@link #downloadForgeJar(String, String)} to download the Forge installer for the specified Forge version
      * and Minecraft version.<p>
-     * {@link #generateDownloadScripts(String, String)} to generate the download scripts of the Minecraft server JAR
-     * for the specified Minecraft version and file-name depending on whether the modloader is Forge or Fabric.<p>
      * {@link #cleanUpServerPack(File, File, String, String, String)} to delete no longer needed files generated
      * by the installation process of the modloader server software.
      * @author Griefed
@@ -1129,8 +1582,6 @@ public class ServerPackHandler {
 
         commandArguments.clear();
 
-        generateDownloadScripts(modLoader, minecraftVersion);
-
         if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled").equalsIgnoreCase("true")) {
             cleanUpServerPack(
                     fabricInstaller,
@@ -1156,7 +1607,8 @@ public class ServerPackHandler {
 
         List<File> filesToExclude = new ArrayList<>(Arrays.asList(
                 new File(String.format("%s/%s/minecraft_server.%s.jar", getSERVER_PACKS_DIR(), getServerPackDestination(), minecraftVersion)),
-                new File(String.format("%s/%s/server.jar", getSERVER_PACKS_DIR(), getServerPackDestination()))
+                new File(String.format("%s/%s/server.jar", getSERVER_PACKS_DIR(), getServerPackDestination())),
+                new File(String.format("%s/%s/libraries/net/minecraft/server/%s/server-%s.jar", getSERVER_PACKS_DIR(), getServerPackDestination(), minecraftVersion, minecraftVersion))
         ));
 
         ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
@@ -1221,62 +1673,6 @@ public class ServerPackHandler {
         }
 
         return minecraftVersionJarUrl;
-    }
-
-    /**
-     * Generates download scripts for the Minecraft server-jar depending on the specified modloader and Minecraft version.
-     * @author Griefed
-     * @param modLoader String. Determines whether the scripts are generated for Forge or Fabric.
-     * @param minecraftVersion String. Determines the Minecraft version for which the scripts are generated.
-     */
-    void generateDownloadScripts(String modLoader, String minecraftVersion) {
-
-        String minecraftServerUrl = getMinecraftServerJarUrl(minecraftVersion);
-
-        Path pathBatch = Paths.get(String.format("%s/%s/download_minecraft-server.jar.bat", getSERVER_PACKS_DIR(), getServerPackDestination()));
-        Path pathShell = Paths.get(String.format("%s/%s/download_minecraft-server.jar.sh", getSERVER_PACKS_DIR(), getServerPackDestination()));
-
-        String batchContent = null;
-        String shellContent = null;
-        String readBatch = null;
-        String readShell = null;
-
-        byte[] stringToBytesBatch;
-        byte[] stringToBytesShell;
-        
-        switch (modLoader) {
-            case "Fabric":
-
-                batchContent = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'server.jar')\"", minecraftServerUrl);
-                shellContent = String.format("#!/bin/bash\n#Download the Minecraft_server.jar for your modpack\n\nwget -O server.jar %s", minecraftServerUrl);
-                break;
-
-            case "Forge":
-
-                batchContent = String.format("powershell -Command \"(New-Object Net.WebClient).DownloadFile('%s', 'minecraft_server.%s.jar')\"", minecraftServerUrl, minecraftVersion);
-                shellContent = String.format("#!/bin/bash\n# Download the Minecraft_server.jar for your modpack\n\nwget -O minecraft_server.%s.jar %s", minecraftVersion, minecraftServerUrl);
-                break;
-
-            default:
-                LOG.error("No valid modloader specified!");
-        }
-
-        try {
-            assert batchContent != null;
-            stringToBytesBatch = batchContent.getBytes();
-            assert shellContent != null;
-            stringToBytesShell = shellContent.getBytes();
-
-            Files.write(pathBatch, stringToBytesBatch);
-            Files.write(pathShell, stringToBytesShell);
-
-            readBatch = Files.readAllLines(pathBatch).get(0);
-            readShell = Files.readAllLines(pathShell).get(0);
-        } catch (NullPointerException | IOException ex) {
-            LOG.error("Error generating download scripts.", ex);
-        }
-        LOG.debug(String.format("Generated batch download script. Content: %s", readBatch));
-        LOG.debug(String.format("Generated shell download script. Content: %s", readShell));
     }
 
     /**
@@ -1396,48 +1792,77 @@ public class ServerPackHandler {
             }
 
         } else if (modLoader.equalsIgnoreCase("Forge")) {
-            try {
 
-                Files.copy(
-                        Paths.get(String.format("%s/%s/forge-%s-%s.jar", getSERVER_PACKS_DIR(), getServerPackDestination(), minecraftVersion, modLoaderVersion)),
-                        Paths.get(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), getServerPackDestination())),
-                        REPLACE_EXISTING);
+            String[] minecraft = minecraftVersion.split("\\.");
 
-                boolean isOldJarDeleted = (new File(
-                        String.format("%s/%s/forge-%s-%s.jar",
-                                getSERVER_PACKS_DIR(),
-                                getServerPackDestination(),
-                                minecraftVersion,
-                                modLoaderVersion))).delete();
+            boolean isInstallerDeleted = forgeInstaller.delete();
 
-                boolean isInstallerDeleted = forgeInstaller.delete();
+            boolean isInstallerLogDeleted = new File(String.format("%s/%s/installer.log", getSERVER_PACKS_DIR(), getServerPackDestination())).delete();
 
-                boolean isInstallerLogDeleted = new File(String.format("%s/%s/installer.log", getSERVER_PACKS_DIR(), getServerPackDestination())).delete();
-
-                if ((isOldJarDeleted) && (new File(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).exists())) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename"));
-                } else {
-                    LOG.error("There was an error during renaming or deletion of the forge server jar.");
-                }
-
-                if (isInstallerDeleted) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), forgeInstaller.getName()));
-                } else {
-                    LOG.error(String.format("Could not delete %s.", forgeInstaller.getName()));
-                }
-
-                if (isInstallerLogDeleted) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.forgelog"));
-                } else {
-                    LOG.error("Error deleting Forge installer log.");
-                }
-
-            } catch (IOException ex) {
-                LOG.error("Error during Forge cleanup.", ex);
+            if (isInstallerDeleted) {
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), forgeInstaller.getName()));
+            } else {
+                LOG.error(String.format("Could not delete %s.", forgeInstaller.getName()));
             }
+
+            if (isInstallerLogDeleted) {
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.forgelog"));
+            } else {
+                LOG.error("Error deleting Forge installer log.");
+            }
+
+            if (Integer.parseInt(minecraft[1]) < 17) {
+
+                try {
+
+                    Files.copy(
+                            Paths.get(String.format("%s/%s/forge-%s-%s.jar", getSERVER_PACKS_DIR(), getServerPackDestination(), minecraftVersion, modLoaderVersion)),
+                            Paths.get(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), getServerPackDestination())),
+                            REPLACE_EXISTING);
+
+                    boolean isOldJarDeleted = (new File(
+                            String.format("%s/%s/forge-%s-%s.jar",
+                                    getSERVER_PACKS_DIR(),
+                                    getServerPackDestination(),
+                                    minecraftVersion,
+                                    modLoaderVersion))).delete();
+
+
+                    if ((isOldJarDeleted) && (new File(String.format("%s/%s/forge.jar", getSERVER_PACKS_DIR(), getServerPackDestination())).exists())) {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename"));
+                    } else {
+                        LOG.error("There was an error during renaming or deletion of the forge server jar.");
+                    }
+
+                } catch (IOException ex) {
+                    LOG.error("Error during Forge cleanup.", ex);
+                }
+
+            } else {
+
+                boolean deleteRunBat = new File(String.format("%s/%s/%s",getSERVER_PACKS_DIR(),getServerPackDestination(),"run.bat")).delete();
+                boolean deleteRunSh = new File(String.format("%s/%s/%s",getSERVER_PACKS_DIR(),getServerPackDestination(),"run.sh")).delete();
+
+                // TODO: Replace with lang keys
+                if (deleteRunBat) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info("Deleted run.bat.");
+                } else {
+                    LOG.error(String.format("Could not delete %s.", "run.bat"));
+                }
+
+                if (deleteRunSh) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info("Deleted run.sh.");
+                } else {
+                    LOG.error(String.format("Could not delete %s.", "run.sh"));
+                }
+
+            }
+
         } else {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));

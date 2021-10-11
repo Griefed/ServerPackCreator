@@ -22,7 +22,6 @@ public class ConfigurationModel {
             includeServerInstallation,
             includeServerIcon,
             includeServerProperties,
-            includeStartScripts,
             includeZipCreation;
 
     /**
@@ -246,24 +245,6 @@ public class ConfigurationModel {
     }
 
     /**
-     * Getter for whether the start scripts should be included in the server pack.
-     * @author Griefed
-     * @return Boolean. Returns the whether the start scripts should be included in the server pack.
-     */
-    public boolean getIncludeStartScripts() {
-        return includeStartScripts;
-    }
-
-    /**
-     * Setter for whether the start scripts should be included in the server pack.
-     * @author Griefed
-     * @param newIncludeStartScripts The new boolean to store.
-     */
-    public void setIncludeStartScripts(boolean newIncludeStartScripts) {
-        this.includeStartScripts = newIncludeStartScripts;
-    }
-
-    /**
      * Getter for whether a ZIP-archive of the server pack should be created.
      * @author Griefed
      * @return Boolean. Returns whether a ZIP-archive of the server pack should be created.
@@ -318,7 +299,6 @@ public class ConfigurationModel {
                 ", includeServerInstallation=" + includeServerInstallation +
                 ", includeServerIcon=" + includeServerIcon +
                 ", includeServerProperties=" + includeServerProperties +
-                ", includeStartScripts=" + includeStartScripts +
                 ", includeZipCreation=" + includeZipCreation +
                 '}';
     }

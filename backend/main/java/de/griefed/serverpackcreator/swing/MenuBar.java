@@ -282,7 +282,7 @@ public class MenuBar extends Component {
         });
 
         HELPWINDOWTEXT = String.format(
-                "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
+                "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir"),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods"),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.directories"),
@@ -292,7 +292,6 @@ public class MenuBar extends Component {
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion"),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver"),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts"),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
         );
@@ -409,10 +408,9 @@ public class MenuBar extends Component {
         HELPTEXTS[6] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion");
         HELPTEXTS[7] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver");
         HELPTEXTS[8] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires");
-        HELPTEXTS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyscripts");
-        HELPTEXTS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon");
-        HELPTEXTS[11] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip");
-        HELPTEXTS[12] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.javaargs");
+        HELPTEXTS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon");
+        HELPTEXTS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip");
+        HELPTEXTS[11] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.javaargs");
 
         HELPSELECTIONS[0] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir");
         HELPSELECTIONS[1] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods");
@@ -423,10 +421,9 @@ public class MenuBar extends Component {
         HELPSELECTIONS[6] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion");
         HELPSELECTIONS[7] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver");
         HELPSELECTIONS[8] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties");
-        HELPSELECTIONS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts");
-        HELPSELECTIONS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon");
-        HELPSELECTIONS[11] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip");
-        HELPSELECTIONS[12] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.javaargs");
+        HELPSELECTIONS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon");
+        HELPSELECTIONS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip");
+        HELPSELECTIONS[11] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.javaargs");
 
         helpTextArea.setEditable(false);
         helpPanel.setLayout(new BoxLayout(helpPanel, BoxLayout.Y_AXIS));

@@ -170,7 +170,6 @@ public class TabCreateServerPack extends JComponent {
     private JCheckBox checkBoxServer;
     private JCheckBox checkBoxIcon;
     private JCheckBox checkBoxProperties;
-    private JCheckBox checkBoxScripts;
     private JCheckBox checkBoxZIP;
 
     private String chosenModloader;
@@ -587,15 +586,6 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridy = 15;
 
         CREATESERVERPACKPANEL.add(checkBoxProperties, GRIDBAGCONSTRAINTS);
-
-        //Checkbox copyScripts
-        checkBoxScripts = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts"),true);
-        checkBoxScripts.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxscripts.tip"));
-
-        GRIDBAGCONSTRAINTS.gridx = 1;
-        GRIDBAGCONSTRAINTS.gridy = 15;
-
-        CREATESERVERPACKPANEL.add(checkBoxScripts, GRIDBAGCONSTRAINTS);
 
         //Checkbox createZIP
         checkBoxZIP = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip"),true);
@@ -1128,7 +1118,7 @@ public class TabCreateServerPack extends JComponent {
                             JOptionPane.INFORMATION_MESSAGE) == 0) {
 
                         try {
-                            Desktop.getDesktop().open(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1))));
+                            Desktop.getDesktop().open(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
                         } catch (IOException ex) {
                             LOG.error("Error opening file explorer for server pack.", ex);
                         }
@@ -1194,7 +1184,6 @@ public class TabCreateServerPack extends JComponent {
                 getSelectedModloaderVersion(),
                 checkBoxIcon.isSelected(),
                 checkBoxProperties.isSelected(),
-                checkBoxScripts.isSelected(),
                 checkBoxZIP.isSelected(),
                 getJavaArgs(),
                 TEXTFIELD_SERVERPACKSUFFIX.getText(),
@@ -1301,8 +1290,6 @@ public class TabCreateServerPack extends JComponent {
             checkBoxIcon.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
 
             checkBoxProperties.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
-
-            checkBoxScripts.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeStartScripts","False"))));
 
             checkBoxZIP.setSelected(CONFIGURATIONHANDLER.convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
 
