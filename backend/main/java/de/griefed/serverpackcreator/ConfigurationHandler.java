@@ -1046,7 +1046,7 @@ public class ConfigurationHandler {
 
             for (String directory : directoriesToCopy) {
 
-                // Check whether the user explicitly specified a file to include in the server pack.
+                // Check whether the user specified a source;destination-combination
                 if (directory.contains(";")) {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
@@ -1065,12 +1065,12 @@ public class ConfigurationHandler {
 
                     addToDIRECTORIESTOEXCLUDELIST(directory.substring(directory.lastIndexOf("!") + 1));
 
-                // If user did not explicitly specify a file, check for directory.
+                // Check if the entry exists
                 } else {
 
                     File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
 
-                    if (!dirToCheck.exists() || !dirToCheck.isDirectory()) {
+                    if (!dirToCheck.exists()) {
 
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));

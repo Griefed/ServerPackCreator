@@ -1138,6 +1138,10 @@ public class ServerPackHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), directory));
 
+            /*
+             * Check for semicolon. If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
+             * for a file they specifically want to include in their server pack.
+             */
             if (directory.contains(";")) {
 
                 String[] sourceFileDestinationFileCombination = directory.split(";");
@@ -1151,7 +1155,11 @@ public class ServerPackHandler {
                     LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                 }
 
-
+            /*
+             * Check whether the entry starts with saves, and if it does, change the destination path to NOT include
+             * saves in it, so when a world is specified inside the saves-directory, it is copied to the base-directory
+             * of the server pack, instead of a saves-directory inside the modpack.
+             */
             } else if (directory.startsWith("saves/")) {
 
                 String savesDir = String.format("%s/%s", serverPath, directory.substring(6));
@@ -1181,7 +1189,10 @@ public class ServerPackHandler {
                     LOG.error("An error occurred copying the specified world.", ex);
                 }
 
-
+            /*
+             * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
+             * user-specified clientside-only mods from the list of mods in the mods-directory.
+             */
             } else if (directory.startsWith("mods") && clientMods.size() > 0) {
 
                 List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
@@ -1208,6 +1219,17 @@ public class ServerPackHandler {
                             LOG.error("An error occurred copying files to the serverpack.", ex);
                         }
                     }
+                }
+
+            } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
+
+                File sourceFile = new File(String.format("%s/%s", modpackDir, directory));
+                File destinationFile = new File(String.format("%s/%s", serverPath, directory));
+
+                try {
+                    FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
+                } catch (IOException ex) {
+                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                 }
 
             } else {
@@ -1268,10 +1290,12 @@ public class ServerPackHandler {
         List<String> modsInModpack = new ArrayList<>();
         List<String> autodiscoveredClientMods = new ArrayList<>();
 
+        // Check whether scanning mods for sideness is activated.
         if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true")) {
 
             String[] split = minecraftVersion.split("\\.");
 
+            // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
             if (Integer.parseInt(split[1]) > 12) {
                 autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
             } else {
@@ -1280,6 +1304,7 @@ public class ServerPackHandler {
 
         }
 
+        // Gather a list of all mod-JAR-files.
         try {
             for (File mod : filesInModsDir) {
                 if (mod.isFile() && mod.toString().endsWith("jar")) {
@@ -1290,6 +1315,7 @@ public class ServerPackHandler {
             LOG.error("Error: There was an error during the acquisition of files in mods directory.", ex);
         }
 
+        // Exclude user-specified mods from copying.
         if (!userSpecifiedClientMods.get(0).equals("")) {
             for (int m = 0; m < userSpecifiedClientMods.size(); m++) {
 
@@ -1302,6 +1328,7 @@ public class ServerPackHandler {
             }
         }
 
+        // Exclude scanned mods from copying if said functionality is enabled.
         if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true") && autodiscoveredClientMods.size() > 0) {
             for (int m = 0; m < autodiscoveredClientMods.size(); m++) {
 
