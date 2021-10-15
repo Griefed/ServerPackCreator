@@ -28,9 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -137,7 +135,7 @@ class ConfigurationTest {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final DefaultFiles DEFAULTFILES;
     private final VersionLister VERSIONLISTER;
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     ConfigurationTest() {
         try {
@@ -146,12 +144,7 @@ class ConfigurationTest {
             e.printStackTrace();
         }
 
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverPackCreatorProperties = new Properties();
-            this.serverPackCreatorProperties.load(inputStream);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        this.serverPackCreatorProperties = new ApplicationProperties();
 
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();

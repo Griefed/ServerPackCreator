@@ -19,8 +19,10 @@
  */
 package de.griefed.serverpackcreator.i18n;
 
+import de.griefed.serverpackcreator.ApplicationProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -80,26 +82,45 @@ public class LocalizationManager {
      */
     private ResourceBundle localeResources;
 
-
-    private Properties serverPackCreatorProperties;
-
+    private ApplicationProperties serverPackCreatorProperties;
 
     /**
-     * Constructor for our LocalizationManager.
+     * Constructor for our LocalizationManager using the locale set in serverpackcreator.properties.
      * @author Griefed
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
-    public LocalizationManager(Properties injectedServerPackCreatorProperties) {
+    @Autowired
+    public LocalizationManager(ApplicationProperties injectedServerPackCreatorProperties) {
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }
+
+        try {
+            init(serverPackCreatorProperties);
+        } catch (IncorrectLanguageException ex) {
+            init();
+        }
+    }
+
+    /**
+     * Constructor for our LocalizationManager with a given locale.
+     * @author Griefed
+     * @throws IncorrectLanguageException Thrown if no language could be set by {@link LocalizationManager}.
+     */
+    public LocalizationManager(String locale) throws IncorrectLanguageException {
+        this.serverPackCreatorProperties = new ApplicationProperties();
+        init(locale);
+    }
+
+    /**
+     * Constructor for our LocalizationManager using the default locale en_us.
+     * @author Griefed
+     */
+    public LocalizationManager() {
+        this.serverPackCreatorProperties = new ApplicationProperties();
+        init();
     }
 
     /**
@@ -127,6 +148,56 @@ public class LocalizationManager {
      */
     public String getLocale() {
         return String.format("%s_%s", CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY));
+    }
+
+    /**
+     * Initializes the LocalizationManager with a provided localePropertiesFile.
+     * @author whitebear60
+     * @param serverPackCreatorProperties Instance of {@link ApplicationProperties} containing the locale to use.
+     * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
+     * ServerPackCreator or specified in the invalid format.
+     */
+    public void init(ApplicationProperties serverPackCreatorProperties) throws IncorrectLanguageException{
+
+        String langProp = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language");
+        LOG.debug(langProp);
+
+        boolean doesLanguageExist = false;
+
+        for (String lang: getSupportedLanguages()) {
+
+            if (lang.equalsIgnoreCase(langProp)) {
+
+                LOG.debug("Lang is correct");
+                doesLanguageExist = true;
+
+                break;
+            }
+        }
+
+        if (Boolean.FALSE.equals(doesLanguageExist)) throw new IncorrectLanguageException();
+
+        String langProperty = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language", "en_us");
+        String[] langCode;
+
+        if (langProperty.contains("_")) {
+
+            langCode = langProperty.split("_");
+
+            CURRENT_LANGUAGE.put(MAP_PATH_LANGUAGE, langCode[0]);
+            CURRENT_LANGUAGE.put(MAP_PATH_COUNTRY, langCode[1]);
+
+        } else {
+            throw new IncorrectLanguageException();
+        }
+
+        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+        LOG.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
+
+        if (!CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).equalsIgnoreCase("en")) {
+
+            LOG.info(String.format("%s %s", getLocalizedString("cli.usingLanguage"), getLocalizedString("localeName")));
+        }
     }
 
     /**
@@ -191,7 +262,7 @@ public class LocalizationManager {
      */
     public void init(File localePropertiesFile) throws IncorrectLanguageException{
 
-        Properties langProperties = new Properties();
+        ApplicationProperties langProperties = new ApplicationProperties();
 
         try (FileInputStream fileInputStream = new FileInputStream(localePropertiesFile)){
 
@@ -204,7 +275,7 @@ public class LocalizationManager {
             LOG.error(ex);
         }
 
-        String langProp = langProperties.getProperty("lang");
+        String langProp = langProperties.getProperty("de.griefed.serverpackcreator.language");
         LOG.debug(langProp);
 
         boolean doesLanguageExist = false;
@@ -223,7 +294,7 @@ public class LocalizationManager {
         if (Boolean.FALSE.equals(doesLanguageExist)) throw new IncorrectLanguageException();
 
         String defaultLocale = "en_us";
-        String langProperty = langProperties.getProperty("lang", defaultLocale);
+        String langProperty = langProperties.getProperty("de.griefed.serverpackcreator.language", defaultLocale);
         String[] langCode;
 
         if (langProperty.contains("_")) {
@@ -237,7 +308,7 @@ public class LocalizationManager {
             throw new IncorrectLanguageException();
         }
 
-        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("lang")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("de.griefed.serverpackcreator.language")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
         LOG.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
 
         if (!CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).equalsIgnoreCase("en")) {
@@ -292,7 +363,7 @@ public class LocalizationManager {
             init();
 
             try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-                serverPackCreatorProperties.setProperty("lang", "en_us");
+                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.language", "en_us");
                 serverPackCreatorProperties.store(outputStream, null);
             } catch (IOException ex) {
                 LOG.error("Couldn't write properties-file.", ex);
@@ -311,7 +382,7 @@ public class LocalizationManager {
      */
     void writeLocaleToFile(String locale) {
         try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-            serverPackCreatorProperties.setProperty("lang", locale);
+            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.language", locale);
             serverPackCreatorProperties.store(outputStream, null);
         } catch (IOException ex) {
             LOG.error("Couldn't write properties-file.", ex);

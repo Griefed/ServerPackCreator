@@ -22,9 +22,12 @@ package de.griefed.serverpackcreator.utilities;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -32,15 +35,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.*;
 
 /**
  * <strong>table of methods</strong><p>
- * 1. {@link #VersionLister(Properties)}<br>
+ * 1. {@link #VersionLister(ApplicationProperties)}<br>
  * 2. {@link #getFabricInstallerManifest()}<br>
  * 3. {@link #getFabricLatestInstallerVersion()}<br>
  * 4. {@link #getFabricLatestVersion()}<br>
@@ -76,6 +77,7 @@ import java.util.*;
  * the <code>latest</code> or <code>release</code> versions of Fabric.
  * @author Griefed
  */
+@Component
 public class VersionLister {
 
     private static final Logger LOG = LogManager.getLogger(VersionLister.class);
@@ -100,21 +102,17 @@ public class VersionLister {
 
     private final HashMap<String, String[]> forgeMeta;
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     /**
      * Creates the Minecraft and Fabric version lists as well as Fabric-Latest and Fabric-Release versions.
      * @author Griefed
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
-    public VersionLister(Properties injectedServerPackCreatorProperties) {
+    @Autowired
+    public VersionLister(ApplicationProperties injectedServerPackCreatorProperties) {
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }

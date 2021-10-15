@@ -26,6 +26,7 @@ import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.input.Tailer;
@@ -49,7 +50,7 @@ import java.util.concurrent.Executors;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #TabCreateServerPack(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, VersionLister, Properties, JFrame)}<br>
+ * 1. {@link #TabCreateServerPack(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, VersionLister, ApplicationProperties, JFrame)}<br>
  * 2. {@link #actionEventCheckBoxServer(ActionEvent)}<br>
  * 3. {@link #actionEventComboBoxFabricVersions(ActionEvent)}<br>
  * 4. {@link #actionEventComboBoxForgeVersions(ActionEvent)}<br>
@@ -148,7 +149,7 @@ public class TabCreateServerPack extends JComponent {
 
     private final String SERVER_PACKS_DIR;
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     private JLabel labelGenerateServerPack;
     private JLabel labelModpackDir;
@@ -203,16 +204,11 @@ public class TabCreateServerPack extends JComponent {
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties,
+                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, ApplicationProperties injectedServerPackCreatorProperties,
                                JFrame injectedServerPackCreatorFrame) {
 
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }

@@ -33,11 +33,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #AddonsHandler(LocalizationManager, Properties)}<br>
+ * 1. {@link #AddonsHandler(LocalizationManager, ApplicationProperties)}<br>
  * 3. {@link #getListOfAddons()}<br>
  * 5. {@link #getListOfServerPackAddons()}<br>
  * 2. {@link #initializeAddons()}<br>
@@ -65,7 +64,7 @@ public class AddonsHandler {
     private List<String> listOfAddons;
     private List<String> listOfServerPackAddons;
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -74,17 +73,12 @@ public class AddonsHandler {
      * one is null. Required for use of localization.<p>
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedServerPackCreatorProperties Instance of {@link ApplicationProperties} required for various different things.
      */
     @Autowired
-    public AddonsHandler(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+    public AddonsHandler(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }

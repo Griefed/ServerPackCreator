@@ -38,7 +38,7 @@ import java.util.*;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, VersionLister, Properties)}<br>
+ * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, VersionLister, ApplicationProperties)}<br>
  * 2. {@link #buildString(String...)}<br>
  * 4. {@link #checkConfiguration(boolean, ConfigurationModel)}<br>
  * 5. {@link #checkConfiguration(File, boolean, ConfigurationModel)}<br>
@@ -96,7 +96,7 @@ public class ConfigurationHandler {
     private final File FILE_CONFIG_OLD = new File("creator.conf");
     private final File FILE_CONFIG = new File("serverpackcreator.conf");
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     private List<String> FALLBACKMODSLIST;
 
@@ -122,14 +122,9 @@ public class ConfigurationHandler {
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version-related.
      */
     @Autowired
-    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, VersionLister injectedVersionLister, Properties injectedServerPackCreatorProperties) {
+    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, VersionLister injectedVersionLister, ApplicationProperties injectedServerPackCreatorProperties) {
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }
