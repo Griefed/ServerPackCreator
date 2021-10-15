@@ -1,3 +1,10 @@
+## [3.0.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.7...3.0.0-alpha.8) (2021-10-15)
+
+
+### 👀 Reverts
+
+* Do not create the eula.txt-file automatically. Reverts feature request issue [#83](https://git.griefed.de/Griefed/ServerPackCreator/issues/83). Lots of other smaller things, too many to list. ([ae66641](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae66641b4e66e4711069289c79427651d10aaf11))
+
 ## [3.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.6...3.0.0-alpha.7) (2021-10-11)
 
 
