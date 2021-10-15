@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
-import de.griefed.serverpackcreator.spring.ServerPackCreatorApplication;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -31,14 +30,12 @@ import org.springframework.boot.system.ApplicationHome;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
@@ -92,33 +89,31 @@ public class Main {
         createFile(log4j2xml);
         createFile(properties);
 
-        Properties serverPackCreatorProperties = null;
-
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            serverPackCreatorProperties = new Properties();
-            serverPackCreatorProperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
-        }
+        ApplicationProperties serverPackCreatorProperties = new ApplicationProperties();
 
         List<String> programArgs = Arrays.asList(args);
 
-        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        LocalizationManager LOCALIZATIONMANAGER;
         if (Arrays.asList(args).contains("-lang")) {
             try {
                 // Init the LocalizationManager with the locale passed by the cli arguments.
-                LOCALIZATIONMANAGER.init(programArgs.get(programArgs.indexOf("-lang") + 1));
-            } catch (IncorrectLanguageException e) {
+
+                LOCALIZATIONMANAGER = new LocalizationManager(programArgs.get(programArgs.indexOf("-lang") + 1));
+
+            } catch (IncorrectLanguageException ex) {
+
                 LOG.info(programArgs.get(programArgs.indexOf("-lang") + 1));
                 // We can not use localized string here, because the localization manager has not yet been initialized.
-                LOG.error("Incorrect language specified, falling back to English (United States)...");
+                LOG.error("Incorrect language specified, falling back to English (United States)...", ex);
 
                 // Init the LocalizationManager with the default locale en_US.
-                LOCALIZATIONMANAGER.init();
+                LOCALIZATIONMANAGER = new LocalizationManager();
             }
         } else {
-            // Check local lang.properties file for locale setting.
-            LOCALIZATIONMANAGER.checkLocaleFile();
+
+                // Check local serverpackcreator.properties file for locale setting.
+                LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+
         }
 
         //Print system information to console and logs.
@@ -239,7 +234,7 @@ public class Main {
         // Start ServerPackCreator as webservice.
         } else if (Arrays.asList(args).contains("-web")) {
 
-            ServerPackCreatorApplication.main(args);
+            MainSpringBoot.main(args);
 
         // If the environment is headless, so no possibility for GUI, start in commandline-mode.
         } else if (GraphicsEnvironment.isHeadless()) {

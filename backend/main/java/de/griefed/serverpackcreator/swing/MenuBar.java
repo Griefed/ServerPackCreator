@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.swing;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import mdlaf.MaterialLookAndFeel;
@@ -50,7 +51,7 @@ import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #MenuBar(LocalizationManager, LightTheme, DarkTheme, JFrame, MaterialLookAndFeel, MaterialLookAndFeel, TabCreateServerPack, JTabbedPane, Properties)} (LocalizationManager, Properties)}<br>
+ * 1. {@link #MenuBar(LocalizationManager, LightTheme, DarkTheme, JFrame, MaterialLookAndFeel, MaterialLookAndFeel, TabCreateServerPack, JTabbedPane, ApplicationProperties)} (LocalizationManager, Properties)}<br>
  * 2. {@link #actionEventChangeJavaArgsMenuItem(ActionEvent)}<br>
  * 3. {@link #actionEventExitMenuItem(ActionEvent)}<br>
  * 4. {@link #actionEventLoadConfigurationFromFileMenuItem(ActionEvent)}<br>
@@ -161,7 +162,7 @@ public class MenuBar extends Component {
 
     private final JPanel helpPanel = new JPanel();
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     private boolean isDarkTheme;
 
@@ -218,15 +219,10 @@ public class MenuBar extends Component {
      */
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
-                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, Properties injectedServerPackCreatorProperties) {
+                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedServerPackCreatorProperties) {
 
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }

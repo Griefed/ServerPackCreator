@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.swing;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.swing.utilities.SmartScroller;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
@@ -28,16 +29,11 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #TabServerPackCreatorLog(LocalizationManager, Properties)}<br>
+ * 1. {@link #TabServerPackCreatorLog(LocalizationManager, ApplicationProperties)}<br>
  * 2. {@link #createTailer()}<br>
  * 3. {@link #serverPackCreatorLogTab()}<p>
  * This class creates the tab which display the latest serverpackcreator.log tailer.
@@ -47,7 +43,7 @@ public class TabServerPackCreatorLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     private JTextArea textArea;
 
@@ -60,14 +56,9 @@ public class TabServerPackCreatorLog extends JComponent {
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
-    public TabServerPackCreatorLog(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+    public TabServerPackCreatorLog(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }

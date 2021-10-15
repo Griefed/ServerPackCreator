@@ -1,28 +1,25 @@
 package de.griefed.serverpackcreator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigurationModel {
 
-    private List<String>
-            clientMods,
-            copyDirs;
+    private List<String> clientMods = new ArrayList<>();
+    private List<String> copyDirs = new ArrayList<>();
 
-    private String
-            modpackDir,
-            javaPath,
-            minecraftVersion,
-            modLoader,
-            modLoaderVersion,
-            javaArgs;
-
+    private String modpackDir = "";
+    private String javaPath = "";
+    private String minecraftVersion = "";
+    private String modLoader = "";
+    private String modLoaderVersion = "";
+    private String javaArgs = "";
     private String serverPackSuffix = "";
 
-    private Boolean
-            includeServerInstallation,
-            includeServerIcon,
-            includeServerProperties,
-            includeZipCreation;
+    private Boolean includeServerInstallation = true;
+    private Boolean includeServerIcon = true;
+    private Boolean includeServerProperties = true;
+    private Boolean includeZipCreation = true;
 
     /**
      * Getter for the suffix of the server pack to be generated.

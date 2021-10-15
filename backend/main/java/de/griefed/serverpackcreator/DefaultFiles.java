@@ -42,7 +42,7 @@ import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #DefaultFiles(LocalizationManager, Properties)}<br>
+ * 1. {@link #DefaultFiles(LocalizationManager, ApplicationProperties)}<br>
  * 2. {@link #checkForConfig()}<br>
  * 3. {@link #checkForFile(File)}<br>
  * 4. {@link #filesSetup()}<br>
@@ -92,7 +92,7 @@ public class DefaultFiles {
     private final File MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
     //private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -103,14 +103,9 @@ public class DefaultFiles {
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public DefaultFiles(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+    public DefaultFiles(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }

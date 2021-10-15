@@ -26,6 +26,7 @@ import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -34,9 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -46,7 +45,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * <strong>Table of methods</strong><p>
- * 1. {@link #CurseCreateModpack(LocalizationManager, Properties)}<br>
+ * 1. {@link #CurseCreateModpack(LocalizationManager, ApplicationProperties)}<br>
  * 2. {@link #checkCurseForgeDir(String)}<br>
  * 3. {@link #cleanupEnvironment(String)}<br>
  * 4. {@link #copyOverride(String)}<br>
@@ -97,7 +96,7 @@ public class CurseCreateModpack {
 
     private JsonNode curseModpack;
 
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -109,14 +108,9 @@ public class CurseCreateModpack {
      * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, Properties injectedServerPackCreatorProperties) {
+    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
         if (injectedServerPackCreatorProperties == null) {
-            try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-                this.serverPackCreatorProperties = new Properties();
-                this.serverPackCreatorProperties.load(inputStream);
-            } catch (IOException ex) {
-                LOG.error("Couldn't read properties file.", ex);
-            }
+            this.serverPackCreatorProperties = new ApplicationProperties();
         } else {
             this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
         }

@@ -2,6 +2,7 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,11 +10,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * <strong>Table of methods</strong><p>
@@ -42,7 +40,7 @@ public class VersionListerTest {
     private final DefaultFiles DEFAULTFILES;
     private final VersionLister VERSIONLISTER;
     private static final Logger LOG = LogManager.getLogger(VersionListerTest.class);
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     public VersionListerTest() {
         try {
@@ -50,12 +48,7 @@ public class VersionListerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverPackCreatorProperties = new Properties();
-            this.serverPackCreatorProperties.load(inputStream);
-        } catch (IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
-        }
+        this.serverPackCreatorProperties = new ApplicationProperties();
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);

@@ -23,14 +23,11 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.Properties;
 
 /**
  * <strong>Table of tests</strong>
@@ -69,7 +66,7 @@ class DefaultFilesTest {
 
     private final DefaultFiles DEFAULTFILES;
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private Properties serverPackCreatorProperties;
+    private ApplicationProperties serverPackCreatorProperties;
 
     DefaultFilesTest() {
         try {
@@ -78,12 +75,7 @@ class DefaultFilesTest {
             e.printStackTrace();
         }
 
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
-            this.serverPackCreatorProperties = new Properties();
-            this.serverPackCreatorProperties.load(inputStream);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        this.serverPackCreatorProperties = new ApplicationProperties();
 
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();

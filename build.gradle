@@ -84,13 +84,13 @@ dependencies {
     embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
 
     // API and Tomcat
-    embed 'org.springframework.boot:spring-boot-starter-validation:2.5.4'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.5.4'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.5.4'
+    embed 'org.springframework.boot:spring-boot-starter-validation:2.5.5'
+    embed 'org.springframework.boot:spring-boot-starter-web:2.5.5'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.5.5'
     embed 'org.apache.logging.log4j:log4j-web:2.14.1'
 
     //Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.5.4'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.5.5'
 
     // Testing
     testImplementation 'org.mockito:mockito-core:3.12.4'
