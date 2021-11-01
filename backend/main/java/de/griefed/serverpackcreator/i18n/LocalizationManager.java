@@ -29,17 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * <strong>Table of methods</strong><br>
- * {@link #getSupportedLanguages()}<br>
- * {@link #getPropertiesFile()}<br>
- * {@link #getLocale()}<br>
- * {@link #init(String)}<br>
- * {@link #init(File)}<br>
- * {@link #init()}<br>
- * {@link #getLocalizedString(String)}<br>
- * {@link #checkLocaleFile()}<br>
- * {@link #writeLocaleToFile(String)}
- * <p>
  * This is the localizationManager for ServerPackCreator.<br>
  * To use it, initialize it by calling {@link #init()}.
  * Then use {@link #getLocalizedString(String)} to use a language key from the resource bundle corresponding to the
