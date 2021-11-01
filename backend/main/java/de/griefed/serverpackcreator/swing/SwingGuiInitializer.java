@@ -43,10 +43,6 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong><p>
- * {@link #SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, ApplicationProperties, VersionLister)}<br>
- * {@link #createAndShowGUI()}<br>
- * {@link #mainGUI()} ()}<p>
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
  * which then calls {@link #createAndShowGUI()} in order to create and show the GUI of ServerPackCreator. Instances of
  * the {@link TabCreateServerPack}, {@link TabServerPackCreatorLog}, {@link TabModloaderInstallerLog}
@@ -261,7 +257,7 @@ public class SwingGuiInitializer extends JPanel {
      */
     private void createAndShowGUI() {
 
-        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
 
