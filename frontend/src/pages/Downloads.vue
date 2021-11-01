@@ -1,27 +1,34 @@
 <template>
-  <q-page>
-    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-      <q-card bordered flat>
-        <q-card-section>
-          <div class="text-h4">Downloads</div>
-        </q-card-section>
+  <q-intersection
+    class="intersection"
+    once
+    transition="scale">
+    <q-page>
+      <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
 
-        <q-separator/>
+        <q-card bordered flat>
+          <q-card-section>
+            <div class="text-h4">Downloads</div>
+          </q-card-section>
 
-        <q-card-section>
-          <div class="q-pa-md">
-            <q-table
-                :rows="rows"
-                :columns="columns"
-                row-key="name"/>
-          </div>
-        </q-card-section>
-      </q-card>
-    </div>
-  </q-page>
+          <q-separator/>
+
+          <q-card-section>
+            <div class="q-pa-md">
+              <q-table
+                  :rows="rows"
+                  :columns="columns"
+                  row-key="name"/>
+            </div>
+          </q-card-section>
+        </q-card>
+
+      </div>
+    </q-page>
+  </q-intersection>
 </template>
 
-<script>
+<script lang="js">
 const columns = [
   { name: 'filename', required: true, label: 'Filename',   align: 'left',   field: row => row.name, format: val => `${val}`,  sortable: false },
   { name: 'created',  required: true, label: 'Created at', align: 'center', field: 'calories',                                sortable: true },
@@ -132,7 +139,7 @@ const rows = [
   }
 ]
 export default {
-  name: "Downloads.vue",
+  name: "Downloads",
   setup() {
     return {
       columns,
