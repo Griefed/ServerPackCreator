@@ -1,9 +1,7 @@
 package de.griefed.serverpackcreator.swing.themes;
 
 import mdlaf.themes.JMarsDarkTheme;
-import mdlaf.themes.MaterialLiteTheme;
 import mdlaf.utils.MaterialColors;
-
 import javax.swing.*;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.ColorUIResource;
