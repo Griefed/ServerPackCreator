@@ -33,32 +33,11 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-/*import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.SQLException;*/
+import java.sql.*;
 import java.util.Objects;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong><p>
- * 1. {@link #DefaultFiles(LocalizationManager, ApplicationProperties)}<br>
- * 2. {@link #checkForConfig()}<br>
- * 3. {@link #checkForFile(File)}<br>
- * 4. {@link #filesSetup()}<br>
- * 5. {@link #getConfigFile()}<br>
- * 6. {@link #getFabricInstallerManifestUrl()}<br>
- * 7. {@link #getFabricManifestUrl()}<br>
- * 8. {@link #getForgeManifestUrl()}<br>
- * 9. {@link #getIconFile()}<br>
- * 10.{@link #getMANIFEST_FABRIC()}<br>
- * 11.{@link #getMANIFEST_FABRIC_INSTALLER()}<br>
- * 12.{@link #getMANIFEST_FORGE()}<br>
- * 13.{@link #getMANIFEST_MINECRAFT()}<br>
- * 14.{@link #getMinecraftManifestUrl()}<br>
- * 15.{@link #getOldConfigFile()}<br>
- * 16.{@link #getPropertiesFile()}<br>
- * 17.{@link #refreshManifestFile(URL, File)}<p>
  * Requires instances of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
  * <p>
  * Ensures all files needed by ServerPackCreator are available. If any one is missing, a new one is generated from the
@@ -81,16 +60,6 @@ public class DefaultFiles {
     private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
-
-    private final File FILE_CONFIG = new File("serverpackcreator.conf");
-    private final File FILE_CONFIG_OLD = new File("creator.conf");
-    private final File FILE_PROPERTIES = new File("server.properties");
-    private final File FILE_ICON = new File("server-icon.png");
-    private final File MANIFEST_MINECRAFT = new File("minecraft-manifest.json");
-    private final File MANIFEST_FORGE = new File("forge-manifest.json");
-    private final File MANIFEST_FABRIC = new File("fabric-manifest.xml");
-    private final File MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
-    //private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
 
     private ApplicationProperties serverPackCreatorProperties;
 
@@ -115,44 +84,6 @@ public class DefaultFiles {
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
-
-        filesSetup();
-    }
-
-    /**
-     * Getter for serverpackcreator.conf.
-     * @author Griefed
-     * @return Returns the serverpackcreator.conf-file for use in {@link #checkForConfig()}
-     */
-    public File getConfigFile() {
-        return FILE_CONFIG;
-    }
-
-    /**
-     * Getter for creator.conf.
-     * @author Griefed
-     * @return Returns the creator.conf-file for use in {@link #checkForConfig()}.
-     */
-    public File getOldConfigFile() {
-        return FILE_CONFIG_OLD;
-    }
-
-    /**
-     * Getter for server.properties.
-     * @author Griefed
-     * @return File. Returns the server.properties-file.
-     */
-    public File getPropertiesFile() {
-        return FILE_PROPERTIES;
-    }
-
-    /**
-     * Getter for server-icon.png
-     * @author Griefed
-     * @return File. Returns the server-icon.png-file.
-     */
-    public File getIconFile() {
-        return FILE_ICON;
     }
 
     /**
@@ -220,50 +151,6 @@ public class DefaultFiles {
     }
 
     /**
-     * Getter for the Minecraft version manifest file.
-     * @author Griefed
-     * @return File. Returns the name of the Minecraft version manifest file.
-     */
-    public File getMANIFEST_MINECRAFT() {
-        return MANIFEST_MINECRAFT;
-    }
-
-    /**
-     * Getter for the Forge version manifest file.
-     * @author Griefed
-     * @return File. Returns the name of the Forge version manifest file.
-     */
-    public File getMANIFEST_FORGE() {
-        return MANIFEST_FORGE;
-    }
-
-    /**
-     * Getter for the Fabric version manifest file.
-     * @author Griefed
-     * @return File. Returns the name of the Fabric version manifest file.
-     */
-    public File getMANIFEST_FABRIC() {
-        return MANIFEST_FABRIC;
-    }
-
-    /**
-     * Getter for the Fabric installer version manifest file.
-     * @author Griefed
-     * @return File. Returns the name of the Fabric installer version manifest file.
-     */
-    public File getMANIFEST_FABRIC_INSTALLER() {
-        return MANIFEST_FABRIC_INSTALLER;
-    }
-
-    /*
-     * Getter for the database containing a list of modIds.
-     * @return File. Returns the database-file.
-     */
-    /*public File getSERVERPACKCREATOR_DATABASE() {
-        return SERVERPACKCREATOR_DATABASE;
-    }*/
-
-    /**
      * Calls individual methods which check for existence of default files. Only this method should be called to check
      * for existence of all default files.<p>
      * If any file was newly generated from its template, a warning is printed informing the user about said newly
@@ -304,17 +191,16 @@ public class DefaultFiles {
             LOG.error("Could not create addons directory.", ex);
         }
 
-        //refreshValidationFiles();
-        refreshManifestFile(getMinecraftManifestUrl(), getMANIFEST_MINECRAFT());
-        refreshManifestFile(getForgeManifestUrl(), getMANIFEST_FORGE());
-        refreshManifestFile(getFabricManifestUrl(), getMANIFEST_FABRIC());
-        refreshManifestFile(getFabricInstallerManifestUrl(), getMANIFEST_FABRIC_INSTALLER());
+        refreshManifestFile(getMinecraftManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT);
+        refreshManifestFile(getForgeManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FORGE);
+        refreshManifestFile(getFabricManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC);
+        refreshManifestFile(getFabricInstallerManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER);
 
-        //checkDatabase();
+        checkDatabase();
 
         boolean doesConfigExist         = checkForConfig();
-        boolean doesPropertiesExist     = checkForFile(getPropertiesFile());
-        boolean doesIconExist           = checkForFile(getIconFile());
+        boolean doesPropertiesExist     = checkForFile(serverPackCreatorProperties.FILE_SERVER_PROPERTIES);
+        boolean doesIconExist           = checkForFile(serverPackCreatorProperties.FILE_SERVER_ICON);
 
         // Inform user about customization of files if any of them were generated from the template.
         if (doesConfigExist            ||
@@ -342,11 +228,11 @@ public class DefaultFiles {
      */
     boolean checkForConfig() {
         boolean firstRun = false;
-        if (getOldConfigFile().exists()) {
+        if (serverPackCreatorProperties.FILE_CONFIG_OLD.exists()) {
             try {
-                Files.copy(getOldConfigFile().getAbsoluteFile().toPath(), getConfigFile().getAbsoluteFile().toPath());
+                Files.copy(serverPackCreatorProperties.FILE_CONFIG_OLD.getAbsoluteFile().toPath(), serverPackCreatorProperties.FILE_CONFIG.getAbsoluteFile().toPath());
 
-                boolean isOldConfigDeleted = getOldConfigFile().delete();
+                boolean isOldConfigDeleted = serverPackCreatorProperties.FILE_CONFIG_OLD.delete();
                 if (isOldConfigDeleted) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
@@ -355,12 +241,13 @@ public class DefaultFiles {
             } catch (IOException ex) {
                 LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
             }
-        } else if (!getConfigFile().exists()) {
+        } else if (!serverPackCreatorProperties.FILE_CONFIG.exists()) {
             try {
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", getConfigFile().getName())));
+                //TODO: Refactor to use commons io
+                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", serverPackCreatorProperties.FILE_CONFIG.getName())));
 
                 if (link != null) {
-                    Files.copy(link, getConfigFile().getAbsoluteFile().toPath());
+                    Files.copy(link, serverPackCreatorProperties.FILE_CONFIG.getAbsoluteFile().toPath());
                     link.close();
                 }
 
@@ -385,7 +272,7 @@ public class DefaultFiles {
      * @return Boolean. Returns true if the file was generated, so {@link #filesSetup()} can inform the user about
      * said newly generated file.
      */
-    boolean checkForFile(File fileToCheckFor) {
+     public boolean checkForFile(File fileToCheckFor) {
         boolean firstRun = false;
         if (!new File(String.format("server_files/%s", fileToCheckFor)).exists()) {
             try {
@@ -466,28 +353,33 @@ public class DefaultFiles {
         }
     }
 
-    /*
-     * Ensures serverpackcreator.db exists and checks whether all tables required are present in the database. If the database
-     * does not exist, it is created.
+    /**
+     * Ensures serverpackcreator.db exists. If the database does not exist, it is created.
      * @author Griefed
      */
-    /*private void checkDatabase() {
-
+    public void checkDatabase() {
+        Connection connection = null;
         try {
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + getSERVERPACKCREATOR_DATABASE());
+            connection = DriverManager.getConnection("jdbc:sqlite:" + serverPackCreatorProperties.FILE_SERVERPACKCREATOR_DATABASE);
 
+            DatabaseMetaData databaseMetaData = connection.getMetaData();
+            LOG.debug("Database driver name: " + databaseMetaData.getDriverName());
+            LOG.debug("Database driver version: " + databaseMetaData.getDriverVersion());
+            LOG.debug("Database product name: " + databaseMetaData.getDatabaseProductName());
+            LOG.debug("Database product version: " + databaseMetaData.getDatabaseProductVersion());
+
+            //Statement statement = connection.createStatement();
+            //statement.executeUpdate("CREATE TABLE serverpacks (id INTEGER, projectID INTEGER, fileID INTEGER, fileName STRING, size DOUBLE, downloads INTEGER, created DATE, confirmedWorking INTEGER)");
+
+        } catch (SQLException ignored) {
+        } finally {
             if (connection != null) {
-                DatabaseMetaData databaseMetaData = connection.getMetaData();
-                LOG.debug("Database driver name: " + databaseMetaData.getDriverName());
-                LOG.debug("Database driver version: " + databaseMetaData.getDriverVersion());
-                LOG.debug("Database product name: " + databaseMetaData.getDatabaseProductName());
-                LOG.debug("Database product version: " + databaseMetaData.getDatabaseProductVersion());
-                connection.close();
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
-
-        } catch (SQLException ex) {
-            LOG.error("Error creating/accessing clientmods-database.", ex);
         }
-
-    }*/
+    }
 }
