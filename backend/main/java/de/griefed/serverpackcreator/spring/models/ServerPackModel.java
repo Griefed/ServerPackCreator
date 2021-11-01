@@ -1,0 +1,325 @@
+/* Copyright (C) 2021  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.spring.models;
+
+import de.griefed.serverpackcreator.ConfigurationModel;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import java.sql.Timestamp;
+
+@Entity
+public class ServerPackModel extends ConfigurationModel {
+
+    public ServerPackModel() {
+
+    }
+
+    public ServerPackModel(int projectID, int fileID) {
+        this.projectID = projectID;
+        this.fileID = fileID;
+        this.projectName = "";
+        this.fileName = "";
+        this.size = 0;
+        this.downloads = 0;
+        this.confirmedWorking = 0;
+        this.filePath = "";
+    }
+
+    public ServerPackModel(int id, int projectID, int fileID, String fileName, double size, int downloads, int confirmedWorking, String filePath, Timestamp dateCreated, Timestamp lastModified) {
+        this.id = id;
+        this.projectID = projectID;
+        this.fileID = fileID;
+        this.fileName = fileName;
+        this.size = size;
+        this.downloads = downloads;
+        this.confirmedWorking = confirmedWorking;
+        this.filePath = filePath;
+        this.dateCreated = dateCreated;
+        this.lastModified = lastModified;
+    }
+
+    @Id
+    @GeneratedValue
+    @Column(updatable = false, nullable = false)
+    int id;
+
+    @Column
+    int projectID;
+
+    @Column
+    int fileID;
+
+    @Column
+    String projectName;
+
+    @Column
+    String fileName;
+
+    @Column
+    double size;
+
+    @Column
+    int downloads;
+
+    @Column
+    int confirmedWorking;
+
+    @Column
+    String filePath;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    Timestamp dateCreated;
+
+    @UpdateTimestamp
+    Timestamp lastModified;
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param id
+     */
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    @Override
+    public int getProjectID() {
+        return projectID;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     */
+    @Override
+    public void setProjectID(int projectID) {
+        this.projectID = projectID;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    @Override
+    public int getFileID() {
+        return fileID;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param fileID
+     */
+    @Override
+    public void setFileID(int fileID) {
+        this.fileID = fileID;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    @Override
+    public String getProjectName() {
+        return this.projectName;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param projectName String. The name of the CurseForge project.
+     */
+    @Override
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    @Override
+    public String getFileName() {
+        return fileName;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param fileName String. The name of the CurseForge project file.
+     */
+    @Override
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public double getSize() {
+        return size;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param size
+     */
+    public void setSize(double size) {
+        this.size = size;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public int getDownloads() {
+        return downloads;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param downloads
+     */
+    public void setDownloads(int downloads) {
+        this.downloads = downloads;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public int getConfirmedWorking() {
+        return confirmedWorking;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param confirmedWorking
+     */
+    public void setConfirmedWorking(int confirmedWorking) {
+        this.confirmedWorking = confirmedWorking;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public String getFilePath() {
+        return filePath;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param downloadUrl
+     */
+    public void setFilePath(String downloadUrl) {
+        this.filePath = downloadUrl;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public Timestamp getDateCreated() {
+        return dateCreated;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param dateCreated
+     */
+    public void setDateCreated(Timestamp dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public Timestamp getLastModified() {
+        return lastModified;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param lastModified
+     */
+    public void setLastModified(Timestamp lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public String repositoryToString() {
+        return "ServerPackModel{" +
+                "id=" + id +
+                ", projectID=" + projectID +
+                ", fileID=" + fileID +
+                ", projectName='" + projectName + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", size=" + size +
+                ", downloads=" + downloads +
+                ", confirmedWorking=" + confirmedWorking +
+                ", filePath='" + filePath + '\'' +
+                ", dateCreated=" + dateCreated +
+                ", lastModified=" + lastModified +
+                '}';
+    }
+}
