@@ -36,33 +36,6 @@ import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-/**
- * <strong>Table of tests</strong><p>
- * 1. {@link #ServerPackHandlerTest()}<br>
- * 2. {@link #getPropertiesFileTest()}<br>
- * 3. {@link #getIconFileTest()}<br>
- * 4. {@link #getWindowsFileTest()}<br>
- * 5. {@link #getLinuxFileTest()}<br>
- * 6. {@link #getObjectMapperTest()}<br>
- * 7. {@link #runTest()}<br>
- * 8. {@link #cleanupEnvironmentTest()}<br>
- * 9. {@link #createStartScriptsFabricTest()}<br>
- * 10.{@link #createStartScriptsForgeTest()}<br>
- * 11.{@link #copyFilesTest()}<br>
- * 12.{@link #copyFilesEmptyClientsTest()}<br>
- * 13.{@link #excludeClientModsTest()}<br>
- * 14.{@link #copyIconTest()}<br>
- * 15.{@link #copyPropertiesTest()}<br
- * 16.{@link #installServerFabricTest()}<br>
- * 17.{@link #installServerForgeTest()}<br>
- * 18.{@link #zipBuilderFabricTest()}<br>
- * 19.{@link #zipBuilderForgeTest()}<br>
- * 20.{@link #downloadFabricJarTest()}<br>
- * 21.{@link #downloadForgeJarTest()}<br>
- * 22.{@link #cleanUpServerPackForgeTest()}<br>
- * 23.{@link #cleanUpServerPackFabricTest()}<br>
- * 24.{@link #runConfigModelTest()}
- */
 class ServerPackHandlerTest {
 
     private final ServerPackHandler SERVERPACKHANDLER;
@@ -86,36 +59,13 @@ class ServerPackHandlerTest {
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES.filesSetup();
         VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
         ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
         SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
 
-    }
-
-    @Test
-    void getPropertiesFileTest() {
-        File file = SERVERPACKHANDLER.getPropertiesFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getIconFileTest() {
-        File file = SERVERPACKHANDLER.getIconFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getWindowsFileTest() {
-        File file = SERVERPACKHANDLER.getWindowsFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getLinuxFileTest() {
-        File file = SERVERPACKHANDLER.getLinuxFile();
-        Assertions.assertNotNull(file);
     }
 
     @Test
@@ -131,7 +81,7 @@ class ServerPackHandlerTest {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("serverpackcreator.conf"), REPLACE_EXISTING);
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setModpackDir("./backend/test/resources/forge_tests");
-        SERVERPACKHANDLER.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel);
+        SERVERPACKHANDLER.run(serverPackCreatorProperties.FILE_CONFIG, configurationModel);
         Assertions.assertTrue(new File("server-packs/forge_tests/libraries").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/config").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
