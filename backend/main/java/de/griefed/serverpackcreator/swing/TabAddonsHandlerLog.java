@@ -32,10 +32,6 @@ import java.io.File;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong><p>
- * 1. {@link #TabAddonsHandlerLog(LocalizationManager, ApplicationProperties)} (LocalizationManager, Properties)}<br>
- * 2. {@link #createTailer()}<br>
- * 3. {@link #addonsHandlerLogTab()} ()}<p>
  * This class creates the tab which display the latest addons.log tailer.
  * @author Griefed
  */
@@ -109,6 +105,10 @@ public class TabAddonsHandlerLog extends JComponent {
         return addonsHandlerLogTab;
     }
 
+    /**
+     *
+     * @author Griefed
+     */
     private void createTailer() {
         class MyTailerListener extends TailerListenerAdapter {
             public void handle(String line) {
