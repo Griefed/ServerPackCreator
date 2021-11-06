@@ -30,9 +30,9 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class CurseResponseModel {
+public class CurseResponse {
 
-    private static final Logger LOG = LogManager.getLogger(CurseResponseModel.class);
+    private static final Logger LOG = LogManager.getLogger(CurseResponse.class);
 
     /**
      *

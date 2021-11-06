@@ -107,7 +107,7 @@
 <script lang="js">
 import { defineComponent, inject, ref } from 'vue';
 import { useQuasar, Cookies } from 'quasar';
-import { axios } from "boot/axios";
+import { api } from "boot/axios";
 
 export default defineComponent({
   name: "Configuration",
@@ -143,7 +143,7 @@ export default defineComponent({
       this.disable = true;
       this.$q.loadingBar.start();
       console.log(project + "," + file);
-      axios.get("/api/curse?modpack=" + project + "," + file)
+      api.get("/curse?modpack=" + project + "," + file)
           .then(response => {
             this.notify(response.data.status, response.data.timeout, response.data.icon, response.data.colour, response.data.message, project, file);
             this.enableButtons();
@@ -187,7 +187,7 @@ export default defineComponent({
     },
     regenerate(project, file) {
       this.$q.loadingBar.start();
-      axios.get("/api/curse/regenerate?modpack=" + project + "," + file)
+      api.get("/curse/regenerate?modpack=" + project + "," + file)
         .then(response => {
           this.notify(response.data.status, response.data.timeout, response.data.icon, response.data.colour, response.data.message, project, file);
         })
@@ -214,7 +214,7 @@ export default defineComponent({
     }
   },
   mounted() {
-    axios.get("/api/curse/regenerate/active")
+    api.get("/curse/regenerate/active")
       .then(response => {this.regenerationActivated = response.data.regenerationActivated});
     if (this.$q.cookies.has('projectID')) {
       this.store.state.projectID = this.$q.cookies.get('projectID');

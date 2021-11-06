@@ -16,9 +16,79 @@
           <q-card-section>
             <div class="q-pa-md">
               <q-table
-                  :rows="rows"
-                  :columns="columns"
-                  row-key="name"/>
+                :rows="this.rows"
+                :columns="this.columns"
+                :filter="filter"
+                row-key="id"
+                :visible-columns="visibleColumns"
+                no-data-label="Couldn't retrieve server packs.... :("
+                no-results-label="The search didn't uncover any results"
+              >
+                <template v-slot:body="props">
+                  <q-tr :props="props">
+                    <q-td
+                      v-for="col in props.cols"
+                      :key="col.name"
+                      :props="props"
+                    >
+                      {{ col.value }}
+                    </q-td>
+                    <q-td auto-width>
+                      <q-btn
+                        v-if="props.row.status!=='Queued'"
+                        size="sm" color="info" round dense @click="download(props.row.id, props.row.fileDiskName)" icon="download" />
+                    </q-td>
+                  </q-tr>
+                </template>
+
+                <template v-slot:top-left>
+                  <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+                    <template v-slot:append>
+                      <q-icon name="search" />
+                      <q-icon v-if="this.filter!==''" name="clear" @click="this.filter=''"/>
+                    </template>
+                  </q-input>
+                </template>
+
+                <template v-slot:top-right>
+                  <div v-if="this.$q.screen.gt.xs" class="col">
+                    <q-toggle v-model="visibleColumns" val="id" label="ID" />
+                    <q-toggle v-model="visibleColumns" val="projectID" label="Project (ID)" />
+                    <q-toggle v-model="visibleColumns" val="fileID" label="File (ID)" />
+                    <q-toggle v-model="visibleColumns" val="size" label="Size" />
+                    <q-toggle v-model="visibleColumns" val="downloads" label="Downloads" />
+                    <q-toggle v-model="visibleColumns" val="fileDiskName" label="File disk name" />
+                    <q-toggle v-model="visibleColumns" val="dateCreated" label="Created at" />
+                    <q-toggle v-model="visibleColumns" val="lastModified" label="Last modified at" />
+                    <q-toggle v-model="visibleColumns" val="confirmedWorking" label="Confirmed working" />
+                  </div>
+                  <q-select
+                    v-else
+                    v-model="visibleColumns"
+                    multiple
+                    borderless
+                    dense
+                    options-dense
+                    :display-value="this.$q.lang.table.columns"
+                    emit-value
+                    map-options
+                    :options="columns"
+                    option-value="name"
+                    style="min-width: 150px"
+                  />
+                </template>
+
+                <template v-slot:no-data="{ icon, message, filter }">
+                  <div class="full-width row flex-center text-negative q-gutter-sm">
+                    <q-icon size="2em" name="search_off" />
+                    <span style="font-weight: bold; font-size: 14px;">
+                      Well this is sad... {{ message }}
+                    </span>
+                    <q-icon size="2em" name='sentiment_very_dissatisfied' />
+                  </div>
+                </template>
+
+              </q-table>
             </div>
           </q-card-section>
         </q-card>
@@ -29,122 +99,67 @@
 </template>
 
 <script lang="js">
-const columns = [
-  { name: 'filename', required: true, label: 'Filename',   align: 'left',   field: row => row.name, format: val => `${val}`,  sortable: false },
-  { name: 'created',  required: true, label: 'Created at', align: 'center', field: 'calories',                                sortable: true },
-  { name: 'size',     required: true, label: 'Size',                        field: 'fat',                                     sortable: false },
-  { name: 'download', required: true, label: 'Download',                    field: 'carbs',                                   sortable: false },
-  { name: 'delete',   required: true, label: 'Delete',                      field: 'protein',                                 sortable: false }
-]
-const rows = [
-  {
-    name: 'Frozen Yogurt',
-    calories: 159,
-    fat: 6.0,
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: '14%',
-    iron: '1%'
-  },
-  {
-    name: 'Ice cream sandwich',
-    calories: 237,
-    fat: 9.0,
-    carbs: 37,
-    protein: 4.3,
-    sodium: 129,
-    calcium: '8%',
-    iron: '1%'
-  },
-  {
-    name: 'Eclair',
-    calories: 262,
-    fat: 16.0,
-    carbs: 23,
-    protein: 6.0,
-    sodium: 337,
-    calcium: '6%',
-    iron: '7%'
-  },
-  {
-    name: 'Cupcake',
-    calories: 305,
-    fat: 3.7,
-    carbs: 67,
-    protein: 4.3,
-    sodium: 413,
-    calcium: '3%',
-    iron: '8%'
-  },
-  {
-    name: 'Gingerbread',
-    calories: 356,
-    fat: 16.0,
-    carbs: 49,
-    protein: 3.9,
-    sodium: 327,
-    calcium: '7%',
-    iron: '16%'
-  },
-  {
-    name: 'Jelly bean',
-    calories: 375,
-    fat: 0.0,
-    carbs: 94,
-    protein: 0.0,
-    sodium: 50,
-    calcium: '0%',
-    iron: '0%'
-  },
-  {
-    name: 'Lollipop',
-    calories: 392,
-    fat: 0.2,
-    carbs: 98,
-    protein: 0,
-    sodium: 38,
-    calcium: '0%',
-    iron: '2%'
-  },
-  {
-    name: 'Honeycomb',
-    calories: 408,
-    fat: 3.2,
-    carbs: 87,
-    protein: 6.5,
-    sodium: 562,
-    calcium: '0%',
-    iron: '45%'
-  },
-  {
-    name: 'Donut',
-    calories: 452,
-    fat: 25.0,
-    carbs: 51,
-    protein: 4.9,
-    sodium: 326,
-    calcium: '2%',
-    iron: '22%'
-  },
-  {
-    name: 'KitKat',
-    calories: 518,
-    fat: 26.0,
-    carbs: 65,
-    protein: 7,
-    sodium: 54,
-    calcium: '12%',
-    iron: '6%'
-  }
-]
+import { api } from "boot/axios";
+import { ref } from 'vue';
+import { saveAs, FileSaver } from 'file-saver';
+import { useQuasar } from 'quasar';
+
 export default {
   name: "Downloads",
   setup() {
+    const columns = [
+      { name: 'id',               required: false, label: 'ID',                align: 'left',  field: 'id',                sortable: true },
+      { name: 'projectID',        required: false, label: 'Project (ID)',      align: 'left',  field: 'projectID',         sortable: true },
+      { name: 'fileID',           required: false, label: 'File (ID)',         align: 'left',  field: 'fileID',            sortable: true },
+      { name: 'projectName',      required: true,  label: 'Project',           align: 'left',  field: 'projectName',       sortable: true },
+      { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',  field: 'fileName',          sortable: true },
+      { name: 'fileDiskName',     required: false, label: 'File disk name',    align: 'left',  field: 'fileDiskName',      sortable: true },
+      { name: 'size',             required: false, label: 'Size',              align: 'left',  field: 'size',              sortable: true },
+      { name: 'downloads',        required: false, label: 'Downloads',         align: 'left',  field: 'downloads',         sortable: true },
+      { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',  field: 'dateCreated',       sortable: true },
+      { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',  field: 'lastModified',      sortable: true },
+      { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'left',  field: 'confirmedWorking',  sortable: true },
+      { name: 'status',           required: true,  label: 'Download',          align: 'left',  field: 'status',            sortable: false }
+    ];
+
+    let rows = ref([]);
+
+    api.get("/packs/all")
+      .then(response => {
+        rows.value = response.data;
+      })
+      .catch(error => {
+        console.log("An error occurred trying to fetch all available server packs.");
+        console.log(error);
+        this.$q.notify({
+          timeout: 5000,
+          progress: true,
+          icon: 'error',
+          color: 'negative',
+          message: 'An error occurred trying to fetch all available server packs: ' + error
+        })
+      });
+
     return {
+      visibleColumns: ref([ 'projectName', 'fileName', 'size', 'downloads', 'lastModified', 'confirmedWorking', 'status' ]),
       columns,
-      rows
+      rows,
+      filter: ref(''),
     }
+  },
+  methods: {
+    download(id, fileDiskName) {
+      api.get('/packs/download/' + id, {responseType: 'blob'})
+      .then((response) => {
+        console.log(response);
+        saveAs(response.data, fileDiskName);
+      })
+      .catch((error) => {
+        console.log("Couldn't download pack with id " + id + ".", error);
+      });
+    }
+  },
+  mounted() {
   }
 }
 </script>

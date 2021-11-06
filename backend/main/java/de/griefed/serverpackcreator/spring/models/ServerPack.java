@@ -23,39 +23,38 @@ import de.griefed.serverpackcreator.ConfigurationModel;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-public class ServerPackModel extends ConfigurationModel {
+public class ServerPack extends ConfigurationModel {
 
-    public ServerPackModel() {
+    public ServerPack() {
 
     }
 
-    public ServerPackModel(int projectID, int fileID) {
+    public ServerPack(int projectID, int fileID) {
         this.projectID = projectID;
         this.fileID = fileID;
         this.projectName = "";
         this.fileName = "";
+        this.fileDiskName = "";
         this.size = 0;
         this.downloads = 0;
         this.confirmedWorking = 0;
-        this.filePath = "";
+        this.status = "";
     }
 
-    public ServerPackModel(int id, int projectID, int fileID, String fileName, double size, int downloads, int confirmedWorking, String filePath, Timestamp dateCreated, Timestamp lastModified) {
+    public ServerPack(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
         this.id = id;
         this.projectID = projectID;
         this.fileID = fileID;
         this.fileName = fileName;
+        this.fileDiskName = displayName;
         this.size = size;
         this.downloads = downloads;
         this.confirmedWorking = confirmedWorking;
-        this.filePath = filePath;
+        this.status = status;
         this.dateCreated = dateCreated;
         this.lastModified = lastModified;
     }
@@ -65,17 +64,24 @@ public class ServerPackModel extends ConfigurationModel {
     @Column(updatable = false, nullable = false)
     int id;
 
+    // TODO: Expand with foreign key pointing towards project_table
     @Column
     int projectID;
 
+    // TODO: Expand with foreign key pointing towards file_table
     @Column
     int fileID;
 
+    // TODO: Move to project_table
     @Column
     String projectName;
 
+    // TODO: Move to file_table
     @Column
     String fileName;
+
+    @Column
+    String fileDiskName;
 
     @Column
     double size;
@@ -87,7 +93,7 @@ public class ServerPackModel extends ConfigurationModel {
     int confirmedWorking;
 
     @Column
-    String filePath;
+    String status;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -199,6 +205,26 @@ public class ServerPackModel extends ConfigurationModel {
      * @author Griefed
      * @return
      */
+    @Override
+    public String getFileDiskName() {
+        return fileDiskName;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param fileDiskName
+     */
+    @Override
+    public void setFileDiskName(String fileDiskName) {
+        this.fileDiskName = fileDiskName;
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
     public double getSize() {
         return size;
     }
@@ -253,8 +279,8 @@ public class ServerPackModel extends ConfigurationModel {
      * @author Griefed
      * @return
      */
-    public String getFilePath() {
-        return filePath;
+    public String getStatus() {
+        return status;
     }
 
     /**
@@ -262,8 +288,8 @@ public class ServerPackModel extends ConfigurationModel {
      * @author Griefed
      * @param downloadUrl
      */
-    public void setFilePath(String downloadUrl) {
-        this.filePath = downloadUrl;
+    public void setStatus(String downloadUrl) {
+        this.status = downloadUrl;
     }
 
     /**
@@ -308,7 +334,7 @@ public class ServerPackModel extends ConfigurationModel {
      * @return
      */
     public String repositoryToString() {
-        return "ServerPackModel{" +
+        return "ServerPack{" +
                 "id=" + id +
                 ", projectID=" + projectID +
                 ", fileID=" + fileID +
@@ -317,7 +343,7 @@ public class ServerPackModel extends ConfigurationModel {
                 ", size=" + size +
                 ", downloads=" + downloads +
                 ", confirmedWorking=" + confirmedWorking +
-                ", filePath='" + filePath + '\'' +
+                ", filePath='" + status + '\'' +
                 ", dateCreated=" + dateCreated +
                 ", lastModified=" + lastModified +
                 '}';
