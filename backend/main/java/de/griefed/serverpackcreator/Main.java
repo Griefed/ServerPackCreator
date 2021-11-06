@@ -150,11 +150,14 @@ public class Main {
 
         // Start ServerPackCreator as webservice.
         if (Arrays.asList(args).contains("-web")) {
+
+            DEFAULTFILES.checkDatabase();
+
             if (osName.contains("windows") || osName.contains("Windows")) {
 
                 Scanner reader = new Scanner(System.in);
 
-                LOG.warn("ServerPackCreator webservice-mode does not support Windows. Unforeseen problems may occur. Are you sure you want to proceed?");
+                LOG.warn("ServerPackCreator webservice-mode does not support Windows. Are you sure you want to proceed? Prepare for unforeseen consequences.");
                 System.out.print("Answer \"Yes\" to proceed, \"No\" to quit: ");
 
                 String answer = "foobar";
@@ -166,7 +169,7 @@ public class Main {
                         LOG.info("Answered no. Existing...");
                         System.exit(0);
                     } else if (answer.equals("Yes")) {
-                        LOG.warn("You have been warned...");
+                        LOG.warn("No regrets, Mr. Freeman...");
                         MainSpringBoot.main(args);
                     }
 

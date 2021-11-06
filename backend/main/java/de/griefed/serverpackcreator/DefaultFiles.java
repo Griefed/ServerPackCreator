@@ -196,8 +196,6 @@ public class DefaultFiles {
         refreshManifestFile(getFabricManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC);
         refreshManifestFile(getFabricInstallerManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER);
 
-        checkDatabase();
-
         boolean doesConfigExist         = checkForConfig();
         boolean doesPropertiesExist     = checkForFile(serverPackCreatorProperties.FILE_SERVER_PROPERTIES);
         boolean doesIconExist           = checkForFile(serverPackCreatorProperties.FILE_SERVER_ICON);
@@ -369,7 +367,7 @@ public class DefaultFiles {
             LOG.debug("Database product version: " + databaseMetaData.getDatabaseProductVersion());
 
             //Statement statement = connection.createStatement();
-            //statement.executeUpdate("CREATE TABLE serverpacks (id INTEGER, projectID INTEGER, fileID INTEGER, fileName STRING, size DOUBLE, downloads INTEGER, created DATE, confirmedWorking INTEGER)");
+            //statement.executeUpdate("CREATE TABLE server_pack_model (id INTEGER, projectID INTEGER, fileID INTEGER, fileName STRING, size DOUBLE, downloads INTEGER, created DATE, confirmedWorking INTEGER)");
 
         } catch (SQLException ignored) {
         } finally {
