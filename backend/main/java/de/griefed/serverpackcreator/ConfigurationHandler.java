@@ -31,6 +31,7 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforge.InvalidFileException;
 import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -629,7 +630,7 @@ public class ConfigurationHandler {
      * then false is returned and the check is considered failed.
      * @author Griefed
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
-     * @param configurationModel or {@link de.griefed.serverpackcreator.spring.models.ServerPackModel}. Instance containing
+     * @param configurationModel or {@link ServerPack}. Instance containing
      *                           all the information about our server pack.
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
