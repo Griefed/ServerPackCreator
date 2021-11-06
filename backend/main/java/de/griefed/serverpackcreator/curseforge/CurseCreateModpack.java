@@ -523,7 +523,7 @@ public class CurseCreateModpack {
      * @param modpackDir String. The directory we want to delete.
      * @return Boolean. Returns false if every file and folder was, recursively and successfully, deleted.
      */
-    boolean cleanupEnvironment(String modpackDir) {
+    public boolean cleanupEnvironment(String modpackDir) {
         boolean cleanedUp = false;
 
         if (new File(modpackDir).exists()) {
