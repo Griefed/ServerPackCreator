@@ -19,15 +19,33 @@
  */
 package de.griefed.serverpackcreator.spring.repositories;
 
-import de.griefed.serverpackcreator.spring.models.ServerPackModel;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
-public interface ServerPackRepository extends CrudRepository<ServerPackModel, Integer> {
-    //TODO: Write custom getByProjectID, getByFileID and getByProjectAndFileID methods
+public interface ServerPackRepository extends CrudRepository<ServerPack, Integer> {
 
-    //TODO: Write custom updateByProjectID, updateByFileID and updateByProjectAndFileID methods
+    List<ServerPack> findAllByProjectID(int projectID);
 
-    //TODO: Write custom deleteByProjectID, deleteByFileID and deleteByProjectAndFileID methods
+    Optional<ServerPack> findByProjectIDAndFileID(int projectID, int fileID);
+
+    List<ServerPack> findAllByProjectName(String projectName);
+
+    Optional<ServerPack> findByFileID(int fileID);
+
+    Optional<ServerPack> findByFileName(String fileName);
+
+    Optional<ServerPack> findByStatus(String status);
+
+    int countAllByProjectID(int projectID);
+
+    int countAllByProjectName(String projectName);
+
+    void deleteAllByProjectID(int projectID);
+
+    void deleteByProjectIDAndFileID(int projectID, int fileID);
 }

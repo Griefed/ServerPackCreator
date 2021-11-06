@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.spring.controllers;
 
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.spring.models.CurseResponseModel;
+import de.griefed.serverpackcreator.spring.models.CurseResponse;
 import de.griefed.serverpackcreator.spring.services.CurseService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,19 +40,19 @@ public class CurseController {
     private static final Logger LOG = LogManager.getLogger(CurseController.class);
 
     private final CurseService CURSESERVICE;
-    private final CurseResponseModel CURSERESPONSEMODEL;
+    private final CurseResponse CURSERESPONSEMODEL;
     private final ApplicationProperties APPLICATIONPROPERTIES;
 
     /**
      *
      * @author Griefed
      * @param injectedCurseService
-     * @param injectedCurseResponseModel
+     * @param injectedCurseResponse
      */
     @Autowired
-    public CurseController(CurseService injectedCurseService, CurseResponseModel injectedCurseResponseModel, ApplicationProperties injectedApplicationProperties) {
+    public CurseController(CurseService injectedCurseService, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties) {
         this.CURSESERVICE = injectedCurseService;
-        this.CURSERESPONSEMODEL = injectedCurseResponseModel;
+        this.CURSERESPONSEMODEL = injectedCurseResponse;
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
@@ -86,8 +86,7 @@ public class CurseController {
     @GetMapping("/regenerate")
     public String regenerate(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
         if (APPLICATIONPROPERTIES.getCURSE_CONTROLLER_REGENERATION_ENABLED()) {
-            CURSESERVICE.regenerateFromCurseModpack(modpack);
-            return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating project", 3000, "done", "positive");
+            return CURSESERVICE.regenerateFromCurseModpack(modpack);
         } else {
             return CURSERESPONSEMODEL.response(modpack, 2, "Regeneration is disabled on this instance!", 4000, "info", "warning");
         }

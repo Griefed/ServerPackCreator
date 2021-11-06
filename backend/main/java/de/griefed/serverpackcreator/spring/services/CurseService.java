@@ -23,19 +23,18 @@ import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforge.InvalidFileException;
 import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
-import de.griefed.serverpackcreator.spring.models.CurseResponseModel;
-import de.griefed.serverpackcreator.spring.models.ServerPackModel;
+import de.griefed.serverpackcreator.spring.models.CurseResponse;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
+import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -53,25 +52,27 @@ public class CurseService {
     private final ServerPackHandler SERVERPACKHANDLER;
     private final RunGeneration RUNGENERATION = new RunGeneration();
     private final ConfigurationHandler CONFIGURATIONHANDLER;
-    private final CurseResponseModel CURSERESPONSEMODEL;
+    private final CurseResponse CURSERESPONSEMODEL;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final ServerPackServiceImpl SERVERPACKSERVICE;
+    private final ServerPackService SERVERPACKSERVICE;
+    private final ServerPackRepository SERVERPACKREPOSITORY;
 
     /**
      *
      * @author Griefed
      * @param injectedServerPackHandler
      * @param injectedConfigurationHandler
-     * @param injectedCurseResponseModel
+     * @param injectedCurseResponse
      * @param injectedApplicationProperties
      */
     @Autowired
-    public CurseService(ServerPackHandler injectedServerPackHandler, ConfigurationHandler injectedConfigurationHandler, CurseResponseModel injectedCurseResponseModel, ApplicationProperties injectedApplicationProperties, ServerPackServiceImpl injectedServerpackServiceImpl) {
+    public CurseService(ServerPackHandler injectedServerPackHandler, ConfigurationHandler injectedConfigurationHandler, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerpackService, ServerPackRepository injectedServerPackRepository) {
         this.SERVERPACKHANDLER = injectedServerPackHandler;
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-        this.CURSERESPONSEMODEL = injectedCurseResponseModel;
+        this.CURSERESPONSEMODEL = injectedCurseResponse;
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        this.SERVERPACKSERVICE = injectedServerpackServiceImpl;
+        this.SERVERPACKSERVICE = injectedServerpackService;
+        this.SERVERPACKREPOSITORY = injectedServerPackRepository;
     }
 
     /**
@@ -83,26 +84,33 @@ public class CurseService {
      * @return String. Statuscode indicating whether the server pack already exists, will be generated or an error occured.
      */
     public String createFromCurseModpack(String modpack) throws CurseException {
+
+        if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).isPresent()) {
+
+            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get().getStatus().equals("Available")) {
+                return CURSERESPONSEMODEL.response(Integer.parseInt(modpack.split(",")[0]), 0, "The modpack you requested a server pack for has already been generated. Check the downloads-section!", 5000, "info", "info");
+            }
+
+            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get().getStatus().equals("Queued")) {
+                return CURSERESPONSEMODEL.response(Integer.parseInt(modpack.split(",")[0]), 1, "The modpack you requested a server pack for has already been queued!", 5000, "info", "info");
+            }
+
+        }
+
         try {
-            ServerPackModel serverPackModel = new ServerPackModel();
 
-            if (CONFIGURATIONHANDLER.checkCurseForge(modpack, serverPackModel)) {
-                // TODO: Replace file check with database check
-                if (new File(String.format("%s/%s", APPLICATIONPROPERTIES.getDIRECTORY_SERVER_PACKS(), modpack)).exists()) {
+            ServerPack serverPack = new ServerPack();
 
-                    return CURSERESPONSEMODEL.response(serverPackModel.getProjectID(), 0, "The modpack you requested a server pack for has already been generated. Check the downloads-section!", 5000, "info", "info");
+            if (CONFIGURATIONHANDLER.checkCurseForge(modpack, serverPack)) {
 
-                } else {
+                serverPack.setModpackDir(modpack);
+                serverPack.setProjectID(Integer.parseInt(modpack.split(",")[0]));
+                serverPack.setFileID(Integer.parseInt(modpack.split(",")[1]));
+                serverPack.setStatus("Queued");
+                SERVERPACKSERVICE.insert(serverPack);
+                RUNGENERATION.run(serverPack);
 
-                    serverPackModel.setModpackDir(modpack);
-                    serverPackModel.setProjectID(Integer.parseInt(modpack.split(",")[0]));
-                    serverPackModel.setFileID(Integer.parseInt(modpack.split(",")[1]));
-                    SERVERPACKSERVICE.insert(serverPackModel);
-                    RUNGENERATION.run(serverPackModel);
-
-                    return CURSERESPONSEMODEL.response(serverPackModel.getProjectID(), 1, "Submitted. Come back later and check the downloads-section to see whether your server pack for " + CurseAPI.project(serverPackModel.getProjectID()).get().name() + " is ready for download!", 7000, "done", "positive");
-
-                }
+                return CURSERESPONSEMODEL.response(serverPack.getProjectID(), 1, "Submitted. Come back later and check the downloads-section to see whether your server pack for " + CurseAPI.project(serverPack.getProjectID()).get().name() + " is ready for download!", 7000, "done", "positive");
 
             } else {
 
@@ -131,13 +139,15 @@ public class CurseService {
      * @author Griefed
      * @param modpack CurseForge projectID and fileID combination.
      */
-    public void regenerateFromCurseModpack(String modpack) {
+    public String regenerateFromCurseModpack(String modpack) {
 
-        ServerPackModel serverPackModel = new ServerPackModel(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1]));
+        ServerPack serverPack = SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
+        serverPack.setModpackDir(modpack);
+        serverPack.setStatus("Queued");
+        SERVERPACKSERVICE.updateServerPackModelByID(serverPack.getId(), serverPack);
+        RUNGENERATION.run(serverPack);
 
-        serverPackModel.setModpackDir(modpack);
-        RUNGENERATION.run(serverPackModel);
-
+        return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating project", 3000, "done", "positive");
     }
 
     /**
@@ -147,19 +157,20 @@ public class CurseService {
     @Async
     private class RunGeneration {
 
+        // TODO: Refactor to use queueing system
+
         /**
          *
          * @author Griefed
-         * @param serverPackModel
+         * @param serverPack
          */
         @Async
-        public void run(ServerPackModel serverPackModel) {
+        public void run(ServerPack serverPack) {
             final ExecutorService executorService = Executors.newSingleThreadExecutor();
             try {
                 executorService.execute(() -> {
-
-                    SERVERPACKHANDLER.run(serverPackModel);
-                    SERVERPACKSERVICE.updateServerPackModel(serverPackModel.getId(), serverPackModel);
+                    ServerPack pack = SERVERPACKHANDLER.run(serverPack);
+                    SERVERPACKSERVICE.updateServerPackModelByID(pack.getId(), pack);
                     System.gc();
                     System.runFinalization();
                     LOG.debug("Done.");

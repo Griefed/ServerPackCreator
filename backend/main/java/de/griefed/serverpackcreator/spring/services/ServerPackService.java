@@ -19,18 +19,86 @@
  */
 package de.griefed.serverpackcreator.spring.services;
 
-import de.griefed.serverpackcreator.spring.models.ServerPackModel;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
+import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-public interface ServerPackService {
-    List<ServerPackModel> getServerPacks();
+@Service
+public class ServerPackService {
 
-    ServerPackModel getServerPackById(int id);
+    private static final Logger LOG = LogManager.getLogger(ServerPackService.class);
 
-    ServerPackModel insert(ServerPackModel serverPackModel);
+    ApplicationProperties APPLICATIONPROPERTIES;
+    ServerPackRepository SERVERPACKREPOSITORY;
 
-    void updateServerPackModel(int id, ServerPackModel serverPackModel);
+    @Autowired
+    public ServerPackService(ApplicationProperties injectedApplicationProperties, ServerPackRepository injectedServerPackRepository) {
+        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+        this.SERVERPACKREPOSITORY = injectedServerPackRepository;
+    }
 
-    void deleteServerPack(int serverPackId);
+    //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than 24h.
+
+    public List<ServerPack> getServerPacks() {
+        List<ServerPack> serverPacks = new ArrayList<>();
+        SERVERPACKREPOSITORY.findAll().forEach(serverPacks::add);
+        return serverPacks;
+    }
+
+    public List<ServerPack> getServerPacksByProjectID(int projectID) {
+        return new ArrayList<>(SERVERPACKREPOSITORY.findAllByProjectID(projectID));
+    }
+
+    public ServerPack insert(ServerPack serverPack) {
+        return SERVERPACKREPOSITORY.save(serverPack);
+    }
+
+    public void updateServerPackModelByID(int id, ServerPack serverPack) {
+        if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
+            LOG.debug("Updating database with: " + serverPack.repositoryToString());
+            serverPackFromDB.setProjectName(serverPack.getProjectName());
+            serverPackFromDB.setFileName(serverPack.getFileName());
+            serverPackFromDB.setFileDiskName(serverPack.getFileDiskName());
+            serverPackFromDB.setSize(serverPack.getSize());
+            serverPackFromDB.setDownloads(serverPack.getDownloads());
+            serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
+            serverPackFromDB.setStatus(serverPack.getStatus());
+            serverPackFromDB.setLastModified(new Timestamp(new Date().getTime()));
+            SERVERPACKREPOSITORY.save(serverPackFromDB);
+        }
+    }
+
+    public void updateServerPackModelByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
+        if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
+            LOG.debug("Updating database with: " + serverPack.repositoryToString());
+            serverPackFromDB.setProjectName(serverPack.getProjectName());
+            serverPackFromDB.setFileName(serverPack.getFileName());
+            serverPackFromDB.setFileDiskName(serverPack.getFileDiskName());
+            serverPackFromDB.setSize(serverPack.getSize());
+            serverPackFromDB.setDownloads(serverPack.getDownloads());
+            serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
+            serverPackFromDB.setStatus(serverPack.getStatus());
+            serverPackFromDB.setLastModified(new Timestamp(new Date().getTime()));
+            SERVERPACKREPOSITORY.save(serverPackFromDB);
+        }
+    }
+
+    public void deleteServerPack(int id) {
+        SERVERPACKREPOSITORY.deleteById(id);
+    }
+
+    public void deleteServerPack(int projectID, int fileID) {
+        SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
+    }
 }

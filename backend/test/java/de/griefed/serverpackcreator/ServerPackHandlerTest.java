@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.commons.io.FileUtils;
@@ -543,22 +544,22 @@ class ServerPackHandlerTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        configurationModel.setModpackDir("./backend/test/resources/forge_tests");
-        configurationModel.setClientMods(clientMods);
-        configurationModel.setCopyDirs(copyDirs);
-        configurationModel.setJavaPath("");
-        configurationModel.setIncludeServerInstallation(true);
-        configurationModel.setIncludeServerIcon(true);
-        configurationModel.setIncludeServerProperties(true);
-        configurationModel.setIncludeZipCreation(true);
-        configurationModel.setModLoader("Forge");
-        configurationModel.setModLoaderVersion("36.1.2");
-        configurationModel.setMinecraftVersion("1.16.5");
-        configurationModel.setJavaArgs("");
+        ServerPack serverPack = new ServerPack();
+        serverPack.setModpackDir("./backend/test/resources/forge_tests");
+        serverPack.setClientMods(clientMods);
+        serverPack.setCopyDirs(copyDirs);
+        serverPack.setJavaPath("");
+        serverPack.setIncludeServerInstallation(true);
+        serverPack.setIncludeServerIcon(true);
+        serverPack.setIncludeServerProperties(true);
+        serverPack.setIncludeZipCreation(true);
+        serverPack.setModLoader("Forge");
+        serverPack.setModLoaderVersion("36.1.2");
+        serverPack.setMinecraftVersion("1.16.5");
+        serverPack.setJavaArgs("");
         DEFAULTFILES.filesSetup();
         ADDONSHANDLER.initializeAddons();
-        SERVERPACKHANDLER.run(configurationModel);
+        SERVERPACKHANDLER.run(serverPack);
         Assertions.assertFalse(new File("server-packs/forge_tests/libraries").isDirectory());
         Assertions.assertFalse(new File("server-packs/forge_tests/config").isDirectory());
         Assertions.assertFalse(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
