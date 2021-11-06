@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
@@ -141,7 +142,7 @@ public class ServerPackHandler {
     }
 
     /**
-     * Create a server pack from a given configuration file either via CLI or GUI. For webUI, see {@link #run(ConfigurationModel)}.
+     * Create a server pack from a given configuration file either via CLI or GUI. For webUI, see {@link #run(ServerPack)}.
      * Create a server pack if the check of the configuration-file was successfull.
      * @author Griefed
      * @param configFileToUse A ServerPackCreator-configuration-file for {@link ConfigurationHandler} to check and  generate a
@@ -241,33 +242,32 @@ public class ServerPackHandler {
      * from a configuration-file, see {@link #run(File, ConfigurationModel)}.
      * Create a server pack if the check of the {@link ConfigurationModel} was successfull.
      * @author Griefed
-     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @param serverPack An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
      */
-    public void run(ConfigurationModel configurationModel) {
-        // TODO: Once API and webUI are implemented, test parallel runs. Parallel runs MUST be possible.
+    public ServerPack run(ServerPack serverPack) {
 
-        String destination = configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1);
+        String destination = serverPack.getModpackDir().substring(serverPack.getModpackDir().lastIndexOf("/") + 1);
 
-        if (!CONFIGURATIONHANDLER.checkConfiguration( true, configurationModel)) {
+        if (!CONFIGURATIONHANDLER.checkConfiguration( true, serverPack)) {
 
             // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(true, destination);
 
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion(), destination);
+            copyFiles(serverPack.getModpackDir(), serverPack.getCopyDirs(), serverPack.getClientMods(), serverPack.getMinecraftVersion(), destination);
 
             // Copy start scripts for specified modloader from server_files to server pack.
-            createStartScripts(configurationModel.getModLoader(), configurationModel.getJavaArgs(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), destination);
+            createStartScripts(serverPack.getModLoader(), serverPack.getJavaArgs(), serverPack.getMinecraftVersion(), serverPack.getModLoaderVersion(), destination);
 
-            if (configurationModel.getIncludeServerInstallation()) {
+            if (serverPack.getIncludeServerInstallation()) {
                 // We are running as a webservice, so we always want to install the server software
-                installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath(), destination);
+                installServer(serverPack.getModLoader(), serverPack.getMinecraftVersion(), serverPack.getModLoaderVersion(), serverPack.getJavaPath(), destination);
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
             }
 
-            if (configurationModel.getIncludeServerIcon()) {
+            if (serverPack.getIncludeServerIcon()) {
                 // We are running as a webservice, so we always want to include the icon
                 copyIcon(destination);
             } else {
@@ -275,7 +275,7 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
             }
 
-            if (configurationModel.getIncludeServerProperties()) {
+            if (serverPack.getIncludeServerProperties()) {
                 // We are running as a webservice, so we always want to include the server.properties-file
                 copyProperties(destination);
             } else {
@@ -284,7 +284,13 @@ public class ServerPackHandler {
             }
 
             // We are running as a webservice, so we always want to create a zip archive
-            zipBuilder(configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation(), destination);
+            zipBuilder(serverPack.getMinecraftVersion(), serverPack.getIncludeServerInstallation(), destination);
+
+            cleanupEnvironment(false, destination);
+            CURSECREATEMODPACK.cleanupEnvironment(serverPack.getModpackDir());
+
+            serverPack.setStatus("Available");
+            serverPack.setSize(FileUtils.sizeOf(new File(serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS() + "/" + destination + "_server_pack.zip")));
 
             // Inform user about location of newly generated server pack.
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -298,11 +304,13 @@ public class ServerPackHandler {
 
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
-                ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
+                ADDONSHANDLER.runServerPackAddons(serverPack, CONFIGURATIONHANDLER);
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
             }
 
         }
+
+        return serverPack;
     }
 
     /**
