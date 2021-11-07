@@ -114,7 +114,7 @@ export default {
       { name: 'projectName',      required: true,  label: 'Project',           align: 'left',  field: 'projectName',       sortable: true },
       { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',  field: 'fileName',          sortable: true },
       { name: 'fileDiskName',     required: false, label: 'File disk name',    align: 'left',  field: 'fileDiskName',      sortable: true },
-      { name: 'size',             required: false, label: 'Size',              align: 'left',  field: 'size',              sortable: true },
+      { name: 'size',             required: false, label: 'Size (MB)',         align: 'left',  field: 'size',              sortable: true },
       { name: 'downloads',        required: false, label: 'Downloads',         align: 'left',  field: 'downloads',         sortable: true },
       { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',  field: 'dateCreated',       sortable: true },
       { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',  field: 'lastModified',      sortable: true },
