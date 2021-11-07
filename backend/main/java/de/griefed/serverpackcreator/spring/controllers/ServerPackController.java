@@ -71,11 +71,10 @@ public class ServerPackController {
      *
      * @author Griefed
      * @param id
-     * @param request
      * @return
      */
     @GetMapping(value = "/download/{id}", produces = "application/zip")
-    public ResponseEntity<Resource> downloadServerPack(@PathVariable int id, HttpServletRequest request) {
+    public ResponseEntity<Resource> downloadServerPack(@PathVariable int id) {
 
         if (SERVERPACKREPOSITORY.findById(id).isPresent() && !SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Queued")) {
             Path path = Paths.get(SERVERPACKREPOSITORY.findById(id).get().getPath());

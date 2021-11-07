@@ -107,6 +107,7 @@ public class ServerPackService {
             serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
             serverPackFromDB.setStatus(serverPack.getStatus());
             serverPackFromDB.setLastModified(new Timestamp(new Date().getTime()));
+            serverPackFromDB.setPath(serverPack.getPath());
             SERVERPACKREPOSITORY.save(serverPackFromDB);
         }
     }
@@ -130,6 +131,7 @@ public class ServerPackService {
             serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
             serverPackFromDB.setStatus(serverPack.getStatus());
             serverPackFromDB.setLastModified(new Timestamp(new Date().getTime()));
+            serverPackFromDB.setPath(serverPack.getPath());
             SERVERPACKREPOSITORY.save(serverPackFromDB);
         }
     }
