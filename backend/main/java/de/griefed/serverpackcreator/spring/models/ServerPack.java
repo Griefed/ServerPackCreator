@@ -124,6 +124,9 @@ public class ServerPack extends ConfigurationModel {
     @Column
     String status;
 
+    @Column
+    String path;
+
     @CreationTimestamp
     @Column(updatable = false)
     Timestamp dateCreated;
@@ -320,6 +323,20 @@ public class ServerPack extends ConfigurationModel {
     public void setStatus(String downloadUrl) {
         this.status = downloadUrl;
     }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    public String getPath() { return path; }
+
+    /**
+     *
+     * @author Griefed
+     * @param path
+     */
+    public void setPath(String path) { this.path = path; }
 
     /**
      *

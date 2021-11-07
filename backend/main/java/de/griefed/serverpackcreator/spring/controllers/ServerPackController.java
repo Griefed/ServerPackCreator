@@ -78,7 +78,7 @@ public class ServerPackController {
     public ResponseEntity<Resource> downloadServerPack(@PathVariable int id, HttpServletRequest request) {
 
         if (SERVERPACKREPOSITORY.findById(id).isPresent() && !SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Queued")) {
-            Path path = Paths.get(SERVERPACKREPOSITORY.findById(id).get().getStatus());
+            Path path = Paths.get(SERVERPACKREPOSITORY.findById(id).get().getPath());
             Resource resource = null;
             String contentType = "application/zip";
             try {

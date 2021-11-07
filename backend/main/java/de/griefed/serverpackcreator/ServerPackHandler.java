@@ -287,6 +287,7 @@ public class ServerPackHandler {
 
             serverPack.setStatus("Available");
             serverPack.setSize(Double.parseDouble(String.valueOf(FileUtils.sizeOfAsBigInteger(new File(serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS() + "/" + destination + "_server_pack.zip")).divide(BigInteger.valueOf(1048576)))));
+            serverPack.setPath(serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS() + "/" + destination + "_server_pack.zip");
 
             // Inform user about location of newly generated server pack.
             /* This log is meant to be read by the user, therefore we allow translation. */
