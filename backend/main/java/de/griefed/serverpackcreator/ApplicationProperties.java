@@ -60,7 +60,7 @@ public class ApplicationProperties extends Properties {
             "ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-," +
             "sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-," +
             "Toast Control-,Toast-Control-,torohealth-,toughnessbar-,TravelersTitles-,WorldNameRandomizer-";
-    private final List<String> LIST_FALLBACK_MODS_DEFAULT = new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
+    public final List<String> LIST_FALLBACK_MODS_DEFAULT = new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
     private String DIRECTORY_SERVER_PACKS;
 
     //DefaultFiles related
@@ -148,14 +148,14 @@ public class ApplicationProperties extends Properties {
 
             this.LIST_FALLBACK_MODS = this.LIST_FALLBACK_MODS_DEFAULT;
 
-            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.LIST_FALLBACK_MODS);
+            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.LIST_FALLBACK_MODS_DEFAULT);
 
         } else if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
 
             this.LIST_FALLBACK_MODS = new ArrayList<>(
                     Arrays.asList(this.getProperty(
                             "de.griefed.serverpackcreator.configuration.fallbackmodslist",
-                            this.FALLBACK_MODS_DEFAULT_ASSTRING)));
+                            this.FALLBACK_MODS_DEFAULT_ASSTRING).split(",")));
 
             LOG.debug("Fallbackmodslist set to: " + this.LIST_FALLBACK_MODS);
 
