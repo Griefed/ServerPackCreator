@@ -50,37 +50,6 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong><p>
- * 1. {@link #MenuBar(LocalizationManager, LightTheme, DarkTheme, JFrame, MaterialLookAndFeel, MaterialLookAndFeel, TabCreateServerPack, JTabbedPane, ApplicationProperties)} (LocalizationManager, Properties)}<br>
- * 2. {@link #actionEventChangeJavaArgsMenuItem(ActionEvent)}<br>
- * 3. {@link #actionEventExitMenuItem(ActionEvent)}<br>
- * 4. {@link #actionEventLoadConfigurationFromFileMenuItem(ActionEvent)}<br>
- * 5. {@link #actionEventOpenAboutSPCMenuItem(ActionEvent)}<br>
- * 6. {@link #actionEventOpenAddonsDirectoryMenuItem(ActionEvent)}<br>
- * 7. {@link #actionEventOpenDiscordLinkMenuItem(ActionEvent)}<br>
- * 8. {@link #actionEventOpenDonateMenuItem(ActionEvent)}<br>
- * 9. {@link #actionEventOpenGitHubMenuItem(ActionEvent)}<br>
- * 10.{@link #actionEventOpenHelpMenuItem(ActionEvent)}<br>
- * 11.{@link #actionEventOpenInEditorServerProperties(ActionEvent)}<br>
- * 12.{@link #actionEventOpenIssuesMenuItem(ActionEvent)}<br>
- * 13.{@link #actionEventOpenReleaseMenuItem(ActionEvent)}<br>
- * 14.{@link #actionEventOpenServerFilesDirectoryMenuItem(ActionEvent)}<br>
- * 15.{@link #actionEventOpenServerIcon(ActionEvent)}<br>
- * 16.{@link #actionEventOpenServerPacksDirectoryMenuItem(ActionEvent)}<br>
- * 17.{@link #actionEventOpenSPCDirectoryMenuItem(ActionEvent)}<br>
- * 18.{@link #actionEventSaveAsConfigToFileMenuItem(ActionEvent)}<br>
- * 19.{@link #actionEventSaveConfigToFileMenuItem(ActionEvent)}<br>
- * 20.{@link #actionEventSetHelpText(ActionEvent)}<br>
- * 21.{@link #actionEventSwitchThemeMenuItem(ActionEvent)}<br>
- * 22.{@link #actionEventUploadConfigurationToHasteBinMenuItem(ActionEvent)}<br>
- * 23.{@link #actionEventUploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent)}<br>
- * 24.{@link #actionEventViewExampleAddonMenuItem(ActionEvent)}<br>
- * 25.{@link #checkFileSize(File)}<br>
- * 26.{@link #createHasteBinFromFile(File)}<br>
- * 27.{@link #createMenuBar()}<br>
- * 28.{@link #fileTooLargeDialog()}
- * 29.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}
- * 30.{@link #getSERVER_PACKS_DIR()}<p>
  * This class creates our menubar which will be displayed at the top of the ServerPackCreator frame. It contains various
  * menus and menuitems to execute, change, open and edit various different aspects of ServerPackCreator.
  * @author Griefed
@@ -120,13 +89,10 @@ public class MenuBar extends Component {
 
     private final JMenuBar MENUBAR = new JMenuBar();
 
-    private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
-
     private final String HELPWINDOWTEXT;
     private final String ABOUTWINDOWTEXT;
     private final String FILETOOLARGETEXT;
     private final String FILETOOLARGETITLE;
-    private final String SERVER_PACKS_DIR;
 
     private final String[] JAVAARGSOPTIONS = new String[4];
     private final String[] JAVAARGSSELECTIONS = new String[2];
@@ -202,7 +168,6 @@ public class MenuBar extends Component {
 
     private DefaultComboBoxModel<String> helpComboBoxModel;
     private JComboBox<String> helpComboBox;
-
 
     /**
      * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
@@ -426,46 +391,6 @@ public class MenuBar extends Component {
         helpPanel.setMinimumSize(HELPDIMENSION);
         helpPanel.setPreferredSize(HELPDIMENSION);
         helpPanel.setMaximumSize(HELPDIMENSION);
-
-        String tempDir = null;
-        try {
-            tempDir = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
-        } catch (NullPointerException npe) {
-            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
-            tempDir = "server-packs";
-        } finally {
-            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
-                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks",tempDir);
-                SERVER_PACKS_DIR = tempDir;
-
-                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
-                    serverPackCreatorProperties.store(outputStream, null);
-                } catch (IOException ex) {
-                    LOG.error("Couldn't write properties-file.", ex);
-                }
-
-            } else {
-                SERVER_PACKS_DIR = "server-packs";
-            }
-        }
-    }
-
-    /**
-     * Getter for the directory in which server-packs will be generated and stored in.
-     * @author Griefed
-     * @return String. Returns the path to the server-packs directory as a string.
-     */
-    public String getSERVER_PACKS_DIR() {
-        return SERVER_PACKS_DIR;
-    }
-
-    /**
-     * Getter for the serverpackcreator.properties file.
-     * @author Griefed
-     * @return File. Returns the serverpackcreator.properties-file.
-     */
-    public File getFILE_SERVERPACKCREATOR_PROPERTIES() {
-        return FILE_SERVERPACKCREATOR_PROPERTIES;
     }
 
     /**
@@ -929,7 +854,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
+                try (OutputStream outputStream = new FileOutputStream(serverPackCreatorProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
                     serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
                     serverPackCreatorProperties.store(outputStream, null);
@@ -952,7 +877,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
+                try (OutputStream outputStream = new FileOutputStream(serverPackCreatorProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
                     serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
                     serverPackCreatorProperties.store(outputStream, null);
@@ -1077,7 +1002,7 @@ public class MenuBar extends Component {
         LOG.debug("Clicked open server packs directory.");
 
         try {
-            Desktop.getDesktop().open(new File(getSERVER_PACKS_DIR()));
+            Desktop.getDesktop().open(new File(serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS()));
         } catch (IOException ex) {
             LOG.error("Error opening file explorer for server-packs.", ex);
         }

@@ -503,15 +503,26 @@ Tags | Description
 Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
 Images are available for linux/amd64,linux/arm/v7,linux/arm64.
 
-When running as a docker container, there are a couple more settings you need to be aware of.
+When running as a docker container, there are a couple more settings you need to be aware of. Beware that any environment setting **after** `STARTUP_PARAMETER` is
+irrelevant when using `STARTUP_PARAMETER=web`.
 
 Variable | Description
 -------- | -----------
 TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
-MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
 STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.
+MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
+MODLOADERVERSION | The version of the modlaoder the modpack uses.
+MODLOADER | Either Forge or Fabric
+MINECRAFTVERSION | The Minecraft version the modpack uses.
+INCLUDEZIPCREATION | true or false
+INCLUDESTARTSCRIPTS | true or false
+INCLUDESERVERPROPERTIES | true or false
+INCLUDESERVERINSTALLATION | true or false
+INCLUDESERVERICON | true or false
+COPYDIRS | Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
+CLIENTMODS | Comma-separated. Client-side mods to delete from server pack.
 
 ### 7.4.1 Using docker-compose:
 
@@ -523,24 +534,12 @@ services:
     container_name: serverpackcreator
     restart: "no" # Set to unless-stopped if you set STARTUP_PARAMETER=web
     environment:
-      - STARTUP_PARAMETER=cli # Must be either cli or web
+      - STARTUP_PARAMETER=web # Must be either cli or web
       - TZ=Europe/Berlin # Your Timezone
       - PUID=1000 # Your user ID
       - PGID=1000 # Your group ID
-      - MODPACKDIR= # Either path to the modpack directory or CurseForge projectID,fileID combination.
-      - MODLOADERVERSION= # The version of the modlaoder the modpack uses.
-      - MODLOADER= # Either Forge or Fabric
-      - MINECRAFTVERSION= # The Minecraft version the modpack uses.
-      - INCLUDEZIPCREATION=true # Or false
-      - INCLUDESTARTSCRIPTS=true # Or false
-      - INCLUDESERVERPROPERTIES=true # Or false
-      - INCLUDESERVERINSTALLATION=true # Or false
-      - INCLUDESERVERICON=true # Or false
-      - COPYDIRS= # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
-      - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
     volumes:
       - /host/path/todata:/data # ServerPackCreator files like configuration files are here
-      - /host/path/todata:/server-packs # Created server packs will be here
     ports:
       - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
 ```

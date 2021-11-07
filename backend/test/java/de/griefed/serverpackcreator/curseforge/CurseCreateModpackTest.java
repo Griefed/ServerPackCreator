@@ -37,19 +37,6 @@ import java.util.Objects;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-/**
- * <strong>Table of methods</strong><br>
- * {@link #CurseCreateModpackTest()}<br>
- * {@link #getsetProjectNameTest}<br>
- * {@link #getsetFileNameAndDiskNameTest}<br>
- * {@link #setModloaderCaseTest()}<br>
- * {@link #curseForgeModpackTest()}<br>
- * {@link #initializeModpackTest()}<br>
- * {@link #downloadModsTest()}<br>
- * {@link #copyOverrideTest()}<br>
- * {@link #checkCurseForgeDirTest()}<br>
- * {@link #unzipArchiveTest()}<br>
- */
 class CurseCreateModpackTest {
 
     private final CurseCreateModpack CURSECREATEMODPACK;
@@ -72,20 +59,16 @@ class CurseCreateModpackTest {
 
     @Test
     void getsetProjectNameTest() {
-        CURSECREATEMODPACK.setProjectName(238298);
-        Assertions.assertEquals("Vanilla Forge", CURSECREATEMODPACK.getProjectName());
-        CURSECREATEMODPACK.setProjectName(999999);
-        Assertions.assertEquals("999999", CURSECREATEMODPACK.getProjectName());
+        Assertions.assertEquals("Vanilla Forge", CURSECREATEMODPACK.retrieveProjectName(238298));
+        Assertions.assertEquals("999999", CURSECREATEMODPACK.retrieveProjectName(999999));
     }
 
     @Test
     void getsetFileNameAndDiskNameTest() {
-        CURSECREATEMODPACK.setFileNameAndDiskName(238298,3174854);
-        Assertions.assertEquals("Vanilla Forge 1.16.5", CURSECREATEMODPACK.getFileName());
-        Assertions.assertEquals("Vanilla Forge 1.16.5-1.0.zip", CURSECREATEMODPACK.getFileDiskName());
-        CURSECREATEMODPACK.setFileNameAndDiskName(999999,9999999);
-        Assertions.assertEquals("9999999", CURSECREATEMODPACK.getFileName());
-        Assertions.assertEquals("9999999", CURSECREATEMODPACK.getFileDiskName());
+        Assertions.assertEquals("Vanilla Forge 1.16.5", CURSECREATEMODPACK.retrieveFileName(238298,3174854));
+        Assertions.assertEquals("Vanilla Forge 1.16.5-1.0.zip", CURSECREATEMODPACK.retrieveFileDiskName(238298,3174854));
+        Assertions.assertEquals("9999999", CURSECREATEMODPACK.retrieveFileName(238298,9999999));
+        Assertions.assertEquals("9999999", CURSECREATEMODPACK.retrieveFileDiskName(238298,9999999));
     }
 
     @Test
@@ -147,10 +130,9 @@ class CurseCreateModpackTest {
                 .files()
                 .fileWithID(fileID))
                 .displayName();
-        CURSECREATEMODPACK.setProjectName(238298);
-        CURSECREATEMODPACK.setFileNameAndDiskName(238298,3174854);
+        ConfigurationModel configurationModel = new ConfigurationModel();
         String modpackDir = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
-        CURSECREATEMODPACK.initializeModpack(modpackDir, projectID, fileID);
+        CURSECREATEMODPACK.initializeModpack(modpackDir, projectID, fileID, configurationModel);
         Assertions.assertTrue(new File(String.format("./backend/test/resources/forge_tests/%s", projectName)).isDirectory());
         Assertions.assertTrue(new File(String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName)).isDirectory());
     }
@@ -160,8 +142,9 @@ class CurseCreateModpackTest {
     void downloadModsTest() throws IOException {
         String modpackDir = "./backend/test/resources/forge_tests";
         Files.copy(Paths.get("./backend/test/resources/testresources/manifest.json"), Paths.get("./backend/test/resources/forge_tests/manifest.json"), REPLACE_EXISTING);
-        CURSECREATEMODPACK.setCurseModpack(CURSECREATEMODPACK.getObjectMapper().readTree(Files.readAllBytes(Paths.get("./backend/test/resources/forge_tests/manifest.json"))));
-        CURSECREATEMODPACK.downloadMods(modpackDir);
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setCurseModpack(CURSECREATEMODPACK.getObjectMapper().readTree(Files.readAllBytes(Paths.get("./backend/test/resources/forge_tests/manifest.json"))));
+        CURSECREATEMODPACK.downloadMods(modpackDir, configurationModel);
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/BetterTitleScreen-1.16.4-1.10.2.jar").exists());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/jei-professions-1.0.0-1.16.4.jar").exists());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/ftb-backups-2.1.1.6.jar").exists());

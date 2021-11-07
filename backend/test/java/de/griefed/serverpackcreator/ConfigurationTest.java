@@ -21,7 +21,10 @@ package de.griefed.serverpackcreator;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
+import de.griefed.serverpackcreator.curseforge.InvalidFileException;
+import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.commons.io.FileUtils;
@@ -36,98 +39,6 @@ import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-/**
- * <strong>Table of tests</strong><p>
- * 1. {@link #ConfigurationTest()}<br>
- * 2. {@link #getOldConfigFileTest()}<br>
- * 3. {@link #getConfigFileTest()}<br>
- * 4. {@link #getsetConfigTest()}<br>
- * 5. {@link #getFallbackModsListTest()}<br>
- * 6. {@link #getFallbackModsListTestEquals()}<br>
- * 7. {@link #getsetClientModsTest()}<br>
- * 8. {@link #getsetClientModsTextNotNull()}<br>
- * 9. {@link #getsetCopyDirsTest()}<br>
- * 10.{@link #getsetCopyDirsTestNotNull()}<br>
- * 11.{@link #getsetCopyDirsTestFalse()}<br>
- * 12.{@link #getsetModpackDirTest()}<br>
- * 13.{@link #getsetModpackDirTestNotNull()}<br>
- * 14.{@link #getsetModpackDirTestBackslash()}<br>
- * 15.{@link #getsetModpackDirTestBackslashFalse()}<br>
- * 16.{@link #getsetModpackDirTestBackslashNotNull()}<br>
- * 17.{@link #getsetJavaPathTest()}<br>
- * 18.{@link #getsetJavaPathTestNotNull()}<br>
- * 19.{@link #getsetJavaPathTestBackslash()}<br>
- * 20.{@link #getsetJavaPathTestBackslashNotNull()}<br>
- * 21.{@link #getsetJavaPathTestBackslashNotEquals()}<br>
- * 22.{@link #getsetJavaPathTestBackslashFalse()}<br>
- * 23.{@link #getsetMinecraftVersionTest()}<br>
- * 24.{@link #getsetModLoaderTest()}<br>
- * 25.{@link #getsetModLoaderTestNotNull()}<br>
- * 26.{@link #getsetModLoaderTestNotEquals()}<br>
- * 27.{@link #getsetModLoaderVersionTest()}<br>
- * 28.{@link #getsetModLoaderVersionTestNotNull()}<br>
- * 29.{@link #getsetIncludeServerInstallationTest()}<br>
- * 30.{@link #getsetIncludeServerInstallationTestFalse()}<br>
- * 31.{@link #getsetIncludeServerIconTest()}<br>
- * 32.{@link #getsetIncludeServerIconTestFalse()}<br>
- * 33.{@link #getsetIncludeServerPropertiesTest()}<br>
- * 34.{@link #getsetIncludeServerPropertiesTestFalse()}<br>
- * 35.{@link #getsetIncludeZipCreationTest()}<br>
- * 36.{@link #getsetIncludeZipCreationTestFalse()}<br>
- * 37.{@link #getsetProjectIDTest()}<br>
- * 38.{@link #getsetProjectFileIDTest()}<br>
- * 39.{@link #checkConfigFileTest()}<br>
- * 40.{@link #isDirTest()}<br>
- * 41.{@link #isDirTestCopyDirs()}<br>
- * 42.{@link #isDirTestJavaPath()}<br>
- * 43.{@link #isDirTestMinecraftVersion()}<br>
- * 44.{@link #isDirTestModLoader()}<br>
- * 45.{@link #isDirTestModLoaderFalse()}<br>
- * 46.{@link #isDirTestModLoaderVersion()}<br>
- * 47.{@link #isCurseTest()}<br>
- * 48.{@link #isCurseTestProjectIDFalse()}<br>
- * 49.{@link #isCurseTestProjectFileIDFalse()}<br>
- * 50.{@link #containsFabricTest()}<br>
- * 51.{@link #containsFabricTestFalse()}<br>
- * 52.{@link #suggestCopyDirsTest()}<br>
- * 53.{@link #suggestCopyDirsTestFalse()}<br>
- * 54.{@link #checkCurseForgeTest()}<br>
- * 55.{@link #checkCurseForgeTestFalse()}<br>
- * 56.{@link #convertToBooleanTestTrue()}<br>
- * 57.{@link #convertToBooleanTestFalse()}<br>
- * 58.{@link #printConfigTest()}<br>
- * 59.{@link #checkModpackDirTest()}<br>
- * 60.{@link #checkModpackDirTestFalse()}<br>
- * 61.{@link #checkCopyDirsTest()}<br>
- * 62.{@link #checkCopyDirsTestFalse()}<br>
- * 63.{@link #checkCopyDirsTestFiles()}<br>
- * 64.{@link #checkCopyDirsTestFilesFalse()}<br>
- * 65.{@link #checkJavaPathTest()}<br>
- * 66.{@link #checkModloaderTestForge()}<br>
- * 67.{@link #checkModloaderTestForgeCase()}<br>
- * 68.{@link #checkModloaderTestFabric()}<br>
- * 69.{@link #checkModloaderTestFabricCase()}<br>
- * 70.{@link #checkModLoaderTestFalse()}<br>
- * 71.{@link #setModLoaderCaseTestForge()}<br>
- * 72.{@link #setModLoaderCaseTestFabric()}<br>
- * 73.{@link #setModLoaderCaseTestForgeCorrected()}<br>
- * 74.{@link #setModLoaderCaseTestFabricCorrected()}<br>
- * 75.{@link #checkModloaderVersionTestForge()}<br>
- * 76.{@link #checkModloaderVersionTestForgeFalse()}<br>
- * 77.{@link #checkModloaderVersionTestFabric()}<br>
- * 78.{@link #checkModloaderVersionTestFabricFalse()}<br>
- * 79.{@link #isMinecraftVersionCorrectTest()}<br>
- * 80.{@link #isMinecraftVersionCorrectTestFalse()}<br>
- * 81.{@link #isFabricVersionCorrectTest()}<br>
- * 82.{@link #isFabricVersionCorrectTestFalse()}<br>
- * 83.{@link #isForgeVersionCorrectTest()}<br>
- * 84.{@link #isForgeVersionCorrectTestFalse()}<br>
- * 85.{@link #buildStringTest()}<br>
- * 86.{@link #writeConfigToFileTestForge()}<br>
- * 87.{@link #writeConfigToFileTestFabric()}<br>
- * 98.{@link #checkConfigModelTest()}<br>
- * 99.{@link #encapsulateListElementsTest()}
- */
 class ConfigurationTest {
 
     private final ConfigurationHandler CONFIGURATIONHANDLER;
@@ -149,6 +60,7 @@ class ConfigurationTest {
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES.filesSetup();
         VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
@@ -156,13 +68,13 @@ class ConfigurationTest {
 
     @Test
     void getOldConfigFileTest() {
-        File file = CONFIGURATIONHANDLER.getOldConfigFile();
+        File file = serverPackCreatorProperties.FILE_CONFIG_OLD;
         Assertions.assertNotNull(file);
     }
 
     @Test
     void getConfigFileTest() {
-        File file = CONFIGURATIONHANDLER.getConfigFile();
+        File file = serverPackCreatorProperties.FILE_CONFIG;
         Assertions.assertNotNull(file);
     }
 
@@ -175,7 +87,7 @@ class ConfigurationTest {
 
     @Test
     void getFallbackModsListTest() {
-        Assertions.assertNotNull(CONFIGURATIONHANDLER.getFallbackModsList());
+        Assertions.assertNotNull(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
     }
 
     @Test
@@ -220,7 +132,7 @@ class ConfigurationTest {
                 "TipTheScales",
                 "WorldNameRandomizer"
         ));
-        Assertions.assertEquals(fallbackMods, CONFIGURATIONHANDLER.getFallbackModsList());
+        Assertions.assertEquals(fallbackMods, serverPackCreatorProperties.getLIST_FALLBACK_MODS());
     }
 
     @Test
@@ -542,15 +454,17 @@ class ConfigurationTest {
     @Test
     void getsetProjectIDTest() {
         int projectID = 123456;
-        CONFIGURATIONHANDLER.setProjectID(projectID);
-        Assertions.assertEquals(projectID, CONFIGURATIONHANDLER.getProjectID());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setProjectID(projectID);
+        Assertions.assertEquals(projectID, configurationModel.getProjectID());
     }
 
     @Test
     void getsetProjectFileIDTest() {
         int fileID = 123456;
-        CONFIGURATIONHANDLER.setProjectFileID(fileID);
-        Assertions.assertEquals(fileID, CONFIGURATIONHANDLER.getProjectFileID());
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setFileID(fileID);
+        Assertions.assertEquals(fileID, configurationModel.getFileID());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -559,7 +473,7 @@ class ConfigurationTest {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(CONFIGURATIONHANDLER.getConfigFile(), true, configurationModel));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(serverPackCreatorProperties.FILE_CONFIG, true, configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -652,7 +566,7 @@ class ConfigurationTest {
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
     @Test
-    void isCurseTest() throws IOException {
+    void isCurseTest() throws IOException, InvalidModpackException, InvalidFileException, CurseException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforge.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         ConfigurationModel configurationModel = new ConfigurationModel();
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
@@ -662,8 +576,8 @@ class ConfigurationTest {
         configurationModel.setIncludeServerProperties(true);
         configurationModel.setIncludeZipCreation(true);
         configurationModel.setJavaArgs("empty");
-        CONFIGURATIONHANDLER.checkCurseForge("238298,3174854");
-        configurationModel.setClientMods(CONFIGURATIONHANDLER.getFallbackModsList());
+        CONFIGURATIONHANDLER.checkCurseForge("238298,3174854", configurationModel);
+        configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
 
         Assertions.assertFalse(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
@@ -679,7 +593,7 @@ class ConfigurationTest {
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
     @Test
-    void isCurseTestProjectIDFalse() throws IOException {
+    void isCurseTestProjectIDFalse() throws IOException, InvalidModpackException, InvalidFileException, CurseException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         ConfigurationModel configurationModel = new ConfigurationModel();
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
@@ -687,8 +601,8 @@ class ConfigurationTest {
         configurationModel.setIncludeServerIcon(true);
         configurationModel.setIncludeServerProperties(true);
         configurationModel.setIncludeZipCreation(true);
-        CONFIGURATIONHANDLER.checkCurseForge("999999,3174854");
-        configurationModel.setClientMods(CONFIGURATIONHANDLER.getFallbackModsList());
+        CONFIGURATIONHANDLER.checkCurseForge("999999,3174854", configurationModel);
+        configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
         Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
@@ -697,10 +611,10 @@ class ConfigurationTest {
     @Test
     void isCurseTestProjectFileIDFalse() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefilefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
-        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
-        CONFIGURATIONHANDLER.setProjectID(238298);
-        CONFIGURATIONHANDLER.setProjectFileID(999999);
         ConfigurationModel configurationModel = new ConfigurationModel();
+        CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
+        configurationModel.setProjectID(238298);
+        configurationModel.setFileID(999999);
         Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
     }
@@ -709,14 +623,14 @@ class ConfigurationTest {
     void containsFabricTest() throws IOException {
         byte[] fabricJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/fabric_manifest.json"));
         JsonNode fabricModpack = CONFIGURATIONHANDLER.getObjectMapper().readTree(fabricJsonData);
-        Assertions.assertTrue(CONFIGURATIONHANDLER.containsFabric(fabricModpack));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModpackForFabric(fabricModpack));
     }
 
     @Test
     void containsFabricTestFalse() throws IOException {
         byte[] forgeJsonData = Files.readAllBytes(Paths.get("backend/test/resources/testresources/manifest.json"));
         JsonNode forgeModpack = CONFIGURATIONHANDLER.getObjectMapper().readTree(forgeJsonData);
-        Assertions.assertFalse(CONFIGURATIONHANDLER.containsFabric(forgeModpack));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModpackForFabric(forgeModpack));
     }
 
     @Test
@@ -743,15 +657,24 @@ class ConfigurationTest {
     }
 
     @Test
-    void checkCurseForgeTest() {
+    void checkCurseForgeTest() throws InvalidModpackException, InvalidFileException, CurseException {
         String valid = "430517,3266321";
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCurseForge(valid));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCurseForge(valid, configurationModel));
     }
 
     @Test
-    void checkCurseForgeTestFalse() {
+    void checkCurseForgeTestFalse() throws InvalidModpackException, InvalidFileException, CurseException {
         String invalid = "1,1234";
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCurseForge(invalid));
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel));
+    }
+
+    @Test
+    void checkCurseForgeTestNotMinecraft() {
+        String invalid = "10,60018";
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        Assertions.assertThrows(InvalidModpackException.class, () -> CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel));
     }
 
     @Test

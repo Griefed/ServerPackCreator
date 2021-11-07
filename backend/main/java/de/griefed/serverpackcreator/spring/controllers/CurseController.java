@@ -20,13 +20,18 @@
 package de.griefed.serverpackcreator.spring.controllers;
 
 import com.therandomlabs.curseapi.CurseException;
-import de.griefed.serverpackcreator.ServerPackHandler;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.spring.models.CurseResponse;
 import de.griefed.serverpackcreator.spring.services.CurseService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ *
+ * @author Griefed
+ */
 @RestController
 @CrossOrigin(origins = {"*"})
 @RequestMapping("/api/curse")
@@ -34,25 +39,68 @@ public class CurseController {
 
     private static final Logger LOG = LogManager.getLogger(CurseController.class);
 
-
-    private final ServerPackHandler SERVERPACKHANDLER;
     private final CurseService CURSESERVICE;
+    private final CurseResponse CURSERESPONSEMODEL;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
+    /**
+     *
+     * @author Griefed
+     * @param injectedCurseService
+     * @param injectedCurseResponse
+     */
     @Autowired
-    public CurseController(ServerPackHandler injectedServerPackHandler, CurseService injectedCurseService) {
-        this.SERVERPACKHANDLER = injectedServerPackHandler;
+    public CurseController(CurseService injectedCurseService, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties) {
         this.CURSESERVICE = injectedCurseService;
+        this.CURSERESPONSEMODEL = injectedCurseResponse;
+        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
+    /**
+     * Status 0: Already exists<br>
+     * Status 1: OK, generating<br>
+     * Status 2: Error occurred
+     * @author Griefed
+     * @param modpack CurseForge projectID and fileID combination.
+     * @return String. Statuscode indicating whether the server pack already exists, will be generated or an error occured.
+     */
     @CrossOrigin(origins = {"*"})
     @GetMapping("")
-    public String generateServerPackFromProjectFile(@RequestParam(value = "project", defaultValue = "0,0") String projectFile) {
+    public String generate(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
         try {
-            return CURSESERVICE.createFromCurseModpack(projectFile);
+            return CURSESERVICE.createFromCurseModpack(modpack);
         } catch (CurseException ex) {
-            LOG.error("An error occured trying to create a server pack from a CurseForge project.", ex);
-            return "Error.";
+            LOG.error("Couldn't generate server pack for project " + modpack, ex);
+            return CURSERESPONSEMODEL.response(modpack, 2, "Project or file could not be found!", 3000, "error", "negative");
         }
+    }
+
+    /**
+     * Status 0: Already exists<br>
+     * Status 1: OK, generating<br>
+     * Status 2: Error occurred
+     * @author Griefed
+     * @param modpack CurseForge projectID and fileID combination.
+     */
+    @CrossOrigin(origins = {"*"})
+    @GetMapping("/regenerate")
+    public String regenerate(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
+        if (APPLICATIONPROPERTIES.getCURSE_CONTROLLER_REGENERATION_ENABLED()) {
+            return CURSESERVICE.regenerateFromCurseModpack(modpack);
+        } else {
+            return CURSERESPONSEMODEL.response(modpack, 2, "Regeneration is disabled on this instance!", 4000, "info", "warning");
+        }
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
+    @CrossOrigin(origins = {"*"})
+    @GetMapping("/regenerate/active")
+    public String regenerateActivated() {
+        return "{\"regenerationActivated\": " + APPLICATIONPROPERTIES.getCURSE_CONTROLLER_REGENERATION_ENABLED() + "}";
     }
 
 }

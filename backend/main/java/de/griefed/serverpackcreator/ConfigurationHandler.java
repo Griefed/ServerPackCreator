@@ -25,9 +25,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
+import com.therandomlabs.curseapi.project.CurseProject;
 import com.typesafe.config.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
+import de.griefed.serverpackcreator.curseforge.InvalidFileException;
+import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,47 +41,6 @@ import java.io.*;
 import java.util.*;
 
 /**
- * <strong>Table of methods</strong><p>
- * 1. {@link #ConfigurationHandler(LocalizationManager, CurseCreateModpack, VersionLister, ApplicationProperties)}<br>
- * 2. {@link #buildString(String...)}<br>
- * 4. {@link #checkConfiguration(boolean, ConfigurationModel)}<br>
- * 5. {@link #checkConfiguration(File, boolean, ConfigurationModel)}<br>
- * 6. {@link #checkCopyDirs(List, String)}<br>
- * 7. {@link #checkCurseForge(String)}<br>
- * 8. {@link #checkJavaPath(String)}<br>
- * 9. {@link #checkModloader(String)}<br>
- * 10.{@link #checkModloaderVersion(String, String, String)}<br>
- * 11.{@link #checkModpackDir(String)}<br>
- * 12.{@link #containsFabric(JsonNode)}<br>
- * 13.{@link #convertToBoolean(String)}<br>
- * 14.{@link #createConfigurationFile()}<br>
- * 15.{@link #encapsulateListElements(List)}<br>
- * 16 {@link #getConfig()}<br>
- * 17 {@link #getConfigFile()}<br>
- * 18.{@link #getConfigurationAsList(ConfigurationModel)}<br>
- * 19.{@link #getDIRECTORIESTOEXCLUDELIST()}<br>
- * 20.{@link #getFallbackModsList()}<br>
- * 23.{@link #getObjectMapper()}<br>
- * 24.{@link #getOldConfigFile()}<br>
- * 25.{@link #getProjectFileID()}<br>
- * 26.{@link #getProjectID()}<br>
- * 27.{@link #isCurse(ConfigurationModel)}<br>
- * 28.{@link #isDir(ConfigurationModel)}<br>
- * 29.{@link #isDir(FileConfig, ConfigurationModel)}<br>
- * 30.{@link #isFabricVersionCorrect(String)}<br>
- * 31.{@link #isForgeVersionCorrect(String, String)}<br>
- * 32.{@link #isMinecraftVersionCorrect(String)}<br>
- * 33.{@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String)}<br>
- * 34.{@link #readBoolean()}<br>
- * 35.{@link #readStringArray()}<br>
- * 36.{@link #setConfig(File)}<br>
- * 37.{@link #setDIRECTORIESTOEXCLUDELIST()}<br>
- * 38.{@link #setFALLBACKMODSLIST()}<br>
- * 39.{@link #getModLoaderCase(String)}<br>
- * 40.{@link #setProjectFileID(int)}<br>
- * 41.{@link #setProjectID(int)}<br>
- * 42.{@link #suggestCopyDirs(String)}<br>
- * 43.{@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}<p>
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
  * be a combination of a CurseForge projectID and fileID.<p>
  * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
@@ -93,17 +56,7 @@ public class ConfigurationHandler {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionLister VERSIONLISTER;
 
-    private final File FILE_CONFIG_OLD = new File("creator.conf");
-    private final File FILE_CONFIG = new File("serverpackcreator.conf");
-
     private ApplicationProperties serverPackCreatorProperties;
-
-    private List<String> FALLBACKMODSLIST;
-
-    private List<String> DIRECTORIESTOEXCLUDELIST;
-
-    private int projectID;
-    private int projectFileID;
 
     private FileConfig config;
 
@@ -146,56 +99,6 @@ public class ConfigurationHandler {
         } else {
             this.VERSIONLISTER = injectedVersionLister;
         }
-
-        setFALLBACKMODSLIST();
-        setDIRECTORIESTOEXCLUDELIST();
-    }
-
-    /**
-     * Add an entry to the list of directories/files to exclude from the server pack.
-     * @author Griefed
-     * @param entryToAdd String. Entry to the list of directories/files to exclude from the server pack.
-     */
-    private void addToDIRECTORIESTOEXCLUDELIST(String entryToAdd) {
-        this.DIRECTORIESTOEXCLUDELIST.add(entryToAdd);
-    }
-
-    /**
-     * Setter for the fallback modslist in case the users did not specify any clientside-only mods. Reads <code>de.griefed.serverpackcreator.configuration.fallbackmodslist</code>
-     * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished,ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings,EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft,JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu,preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales,WorldNameRandomizer</code>
-     */
-    public void setFALLBACKMODSLIST() {
-        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
-
-            this.FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(
-                    "AmbientSounds","BackTools","BetterAdvancement","BetterFoliage","BetterPing","BetterPlacement","Blur","cherished",
-                            "ClientTweaks","Controlling","CTM","customdiscordrpc","CustomMainMenu","DefaultOptions","durability","DynamicSurroundings",
-                            "EiraMoticons","FullscreenWindowed","itemzoom","itlt","jeiintegration","jei-professions","just-enough-harvestcraft",
-                            "JustEnoughResources","keywizard","modnametooltip","MouseTweaks","multihotbar-","Neat","OldJavaWarning","PackMenu",
-                            "preciseblockplacing","ResourceLoader","SimpleDiscordRichPresence","SpawnerFix","timestamps","TipTheScales",
-                            "WorldNameRandomizer"));
-
-            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.FALLBACKMODSLIST);
-
-        } else if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
-
-            this.FALLBACKMODSLIST = new ArrayList<>(Arrays.asList(serverPackCreatorProperties.getProperty(
-                    "de.griefed.serverpackcreator.configuration.fallbackmodslist",
-                    "AmbientSounds,BackTools,BetterAdvancement,BetterFoliage,BetterPing,BetterPlacement,Blur,cherished," +
-                            "ClientTweaks,Controlling,CTM,customdiscordrpc,CustomMainMenu,DefaultOptions,durability,DynamicSurroundings," +
-                            "EiraMoticons,FullscreenWindowed,itemzoom,itlt,jeiintegration,jei-professions,just-enough-harvestcraft," +
-                            "JustEnoughResources,keywizard,modnametooltip,MouseTweaks,multihotbar-,Neat,OldJavaWarning,PackMenu," +
-                            "preciseblockplacing,ResourceLoader,SimpleDiscordRichPresence,SpawnerFix,timestamps,TipTheScales," +
-                            "WorldNameRandomizer").split(",")));
-
-            LOG.debug("Fallbackmodslist set to: " + this.FALLBACKMODSLIST);
-
-        } else {
-
-            this.FALLBACKMODSLIST = Collections.singletonList((serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
-
-            LOG.debug("Fallbackmodslist set to: " + this.FALLBACKMODSLIST);
-        }
     }
 
     /**
@@ -208,25 +111,6 @@ public class ConfigurationHandler {
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         return objectMapper;
-    }
-
-    /**
-     * Getter for creator.conf.
-     * @author Griefed
-     * @return File. Returns the creator.conf-file for use in {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}
-     */
-    public File getOldConfigFile() {
-        return FILE_CONFIG_OLD;
-    }
-
-    /**
-     * Getter for serverpackcreator.conf.
-     * @author Griefed
-     * @return File. Returns the serverpackcreator.conf-file.
-     * {@link #writeConfigToFile(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}
-     */
-    public File getConfigFile() {
-        return FILE_CONFIG;
     }
 
     /**
@@ -250,85 +134,6 @@ public class ConfigurationHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
         }
-    }
-
-    /**
-     * Setter for the list of directories to exclude from the server pack. Reads <code>de.griefed.serverpackcreator.configuration.copydirs.exclude</code>
-     * from the serverpackcreator.properties-file and if it doesn't exist in said properties-file, assigns the default value <code>overrides,packmenu,resourcepacks,server_pack,fancymenu</code>
-     * @author Griefed
-     */
-    private void setDIRECTORIESTOEXCLUDELIST() {
-        if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude") == null) {
-
-            this.DIRECTORIESTOEXCLUDELIST = new ArrayList<>(Arrays.asList(
-                    "overrides","packmenu","resourcepacks","server_pack","fancymenu"
-            ));
-
-            LOG.debug("copydirs.exclude property null. Using fallback: " + this.DIRECTORIESTOEXCLUDELIST);
-
-        } else if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude").contains(",")) {
-            this.DIRECTORIESTOEXCLUDELIST = new ArrayList<>(Arrays.asList(serverPackCreatorProperties.getProperty(
-                            "de.griefed.serverpackcreator.configuration.copydirs.exclude",
-                            "overrides,packmenu,resourcepacks,server_pack,fancymenu"
-                    ).split(",")
-            ));
-
-            LOG.debug("Directories to exclude set to: " + this.DIRECTORIESTOEXCLUDELIST);
-
-        } else {
-
-            this.DIRECTORIESTOEXCLUDELIST = Collections.singletonList(serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.configuration.copydirs.exclude"));
-
-            LOG.debug("Directories to exclude set to: " + this.DIRECTORIESTOEXCLUDELIST);
-
-        }
-    }
-
-    /**
-     * Getter for the fallback clientside-only mods-list, in case no customized one is provided by the user.
-     * @author Griefed
-     * @return List String. Returns the fallback clientside-only mods-list.
-     */
-    public List<String> getFallbackModsList() {
-        return FALLBACKMODSLIST;
-    }
-
-    /**
-     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * @author Griefed
-     * @return Integer. Returns the CurseForge projectID of a modpack, for use in {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)} and {@link #checkCurseForge(String)}
-     */
-    int getProjectID() {
-        return projectID;
-    }
-
-    /**
-     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * For use in {@link #checkCurseForge(String)}
-     * @author Griefed
-     * @param newProjectID The new projectID to store.
-     */
-    void setProjectID(int newProjectID) {
-        this.projectID = newProjectID;
-    }
-
-    /**
-     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * @author Griefed
-     * @return Integer. Returns the CurseForge fileID of a modpack.
-     */
-    int getProjectFileID() {
-        return projectFileID;
-    }
-
-    /**
-     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * For use in {@link #checkCurseForge(String)}
-     * @author Griefed
-     * @param newProjectFileID The new projectFileID to store.
-     */
-    void setProjectFileID(int newProjectFileID) {
-        this.projectFileID = newProjectFileID;
     }
 
     /**
@@ -357,7 +162,7 @@ public class ConfigurationHandler {
         if (getConfig().getOrElse("clientMods", Collections.singletonList("")).isEmpty()) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
-            configurationModel.setClientMods(getFallbackModsList());
+            configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
         } else {
             configurationModel.setClientMods(getConfig().getOrElse("clientMods", Collections.singletonList("")));
         }
@@ -376,23 +181,31 @@ public class ConfigurationHandler {
 
         configurationModel.setServerPackSuffix(getConfig().getOrElse("serverPackSuffix",""));
 
-        if (checkModpackDir(getConfig().getOrElse("modpackDir","").replace("\\","/"))) {
+        try {
+            if (checkModpackDir(getConfig().getOrElse("modpackDir", "").replace("\\", "/"))) {
 
-            configHasError = isDir(getConfig(), configurationModel);
+                configHasError = isDir(getConfig(), configurationModel);
 
-        } else if (checkCurseForge(getConfig().getOrElse("modpackDir",""))) {
+            } else if (checkCurseForge(getConfig().getOrElse("modpackDir", ""), configurationModel)) {
 
-            if (shouldModpackBeCreated) {
+                if (shouldModpackBeCreated) {
 
-                configHasError = isCurse(configurationModel);
+                    configHasError = isCurse(configurationModel);
+
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
+                }
 
             } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
+                configHasError = true;
             }
-
-        } else {
-            configHasError = true;
+        } catch (InvalidModpackException ex) {
+            LOG.error("The specified project is not a valid Minecraft modpack!", ex);
+        } catch (InvalidFileException ex) {
+            LOG.error("The specified file is not a file of this project.", ex);
+        } catch (CurseException ex) {
+            LOG.error("The specified project does not exist.", ex);
         }
 
         printConfig(configurationModel.getModpackDir(),
@@ -438,30 +251,38 @@ public class ConfigurationHandler {
         if (configurationModel.getClientMods().isEmpty()) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
-            configurationModel.setClientMods(getFallbackModsList());
+            configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
         } else {
             configurationModel.setClientMods(configurationModel.getClientMods());
         }
 
         configurationModel.setJavaPath(checkJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
 
-        if (checkModpackDir(configurationModel.getModpackDir().replace("\\","/"))) {
+        try {
+            if (checkModpackDir(configurationModel.getModpackDir().replace("\\", "/"))) {
 
-            configHasError = isDir(configurationModel);
+                configHasError = isDir(configurationModel);
 
-        } else if (checkCurseForge(configurationModel.getModpackDir())) {
+            } else if (checkCurseForge(configurationModel.getModpackDir(), configurationModel)) {
 
-            if (shouldModpackBeCreated) {
+                if (shouldModpackBeCreated) {
 
-                configHasError = isCurse(configurationModel);
+                    configHasError = isCurse(configurationModel);
+
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
+                }
 
             } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
+                configHasError = true;
             }
-
-        } else {
-            configHasError = true;
+        } catch (InvalidModpackException ex) {
+            LOG.error("The specified project is not a valid Minecraft modpack!", ex);
+        } catch (InvalidFileException ex) {
+            LOG.error("The specified file is not a file of this project.", ex);
+        } catch (CurseException ex) {
+            LOG.error("The specified project does not exist.", ex);
         }
 
         printConfig(configurationModel.getModpackDir(),
@@ -627,23 +448,23 @@ public class ConfigurationHandler {
     boolean isCurse(ConfigurationModel configurationModel) {
         boolean configHasError = false;
         try {
-            if (CurseAPI.project(getProjectID()).isPresent()) {
+            if (CurseAPI.project(configurationModel.getProjectID()).isPresent()) {
 
                 String projectName, displayName;
                 projectName = displayName = "";
 
                 try {
-                    projectName = CurseAPI.project(getProjectID()).get().name();
+                    projectName = CurseAPI.project(configurationModel.getProjectID()).get().name();
 
                     try {
-                        displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).displayName();
+                        displayName = Objects.requireNonNull(CurseAPI.project(configurationModel.getProjectID()).get().files().fileWithID(configurationModel.getFileID())).displayName();
 
                     } catch (NullPointerException npe) {
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.display"));
 
                         try {
-                            displayName = Objects.requireNonNull(CurseAPI.project(getProjectID()).get().files().fileWithID(getProjectFileID())).nameOnDisk();
+                            displayName = Objects.requireNonNull(CurseAPI.project(configurationModel.getProjectID()).get().files().fileWithID(configurationModel.getFileID())).nameOnDisk();
 
                         } catch (NullPointerException npe2) {
 
@@ -660,24 +481,31 @@ public class ConfigurationHandler {
 
                 if (displayName != null && projectName != null) {
 
-                    CURSECREATEMODPACK.curseForgeModpack(configurationModel, getProjectID(), getProjectFileID());
+                    CURSECREATEMODPACK.curseForgeModpack(configurationModel, configurationModel.getProjectID(), configurationModel.getFileID());
 
-                    configurationModel.setMinecraftVersion(CURSECREATEMODPACK.getCurseModpack().get("minecraft").get("version").asText());
+                    configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("minecraft").get("version").asText());
 
-                    if (containsFabric(CURSECREATEMODPACK.getCurseModpack())) {
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-                        LOG.debug("Setting modloader to Fabric.");
+                    if (checkModpackForFabric(configurationModel.getCurseModpack())) {
+                        if (configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().contains("fabric")) {
 
-                        configurationModel.setModLoader("Fabric");
-                        configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
+                            configurationModel.setModLoader("Fabric");
+                            configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(7));
+
+                        } else {
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                            LOG.debug("Setting modloader to Fabric.");
+
+                            configurationModel.setModLoader("Fabric");
+                            configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
+                        }
 
                     } else {
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.debug("Setting modloader to Forge.");
 
                         configurationModel.setModLoader("Forge");
-                        configurationModel.setModLoaderVersion(CURSECREATEMODPACK.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
+                        configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
 
                     }
 
@@ -700,7 +528,7 @@ public class ConfigurationHandler {
                             configurationModel.getIncludeZipCreation(),
                             configurationModel.getJavaArgs(),
                             configurationModel.getServerPackSuffix(),
-                            getConfigFile(),
+                            serverPackCreatorProperties.FILE_CONFIG,
                             false
                     );
 
@@ -719,7 +547,7 @@ public class ConfigurationHandler {
 
         } catch (CurseException | IllegalArgumentException ex) {
             /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), getProjectID()), ex);
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), configurationModel.getProjectID()), ex);
             configHasError = true;
         }
         return configHasError;
@@ -728,12 +556,12 @@ public class ConfigurationHandler {
     /**
      * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
      * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
+     * If <code>modLoaders</code> in the manifest specifies Fabric, use that to set the modloader and its version.
      * @author Griefed
      * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
      * @return Boolean. Returns true if Jumploader is found.
      */
-    boolean containsFabric(JsonNode modpackJson) {
-        boolean hasJumploader = false;
+    boolean checkModpackForFabric(JsonNode modpackJson) {
 
         for (int i = 0; i < modpackJson.get("files").size(); i++) {
 
@@ -744,11 +572,13 @@ public class ConfigurationHandler {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
-                hasJumploader = true;
+                return true;
             }
         }
-        
-        return hasJumploader;
+
+        String[] modloaderAndVersion = modpackJson.get("minecraft").get("modLoaders").get(0).get("id").asText().split("-");
+
+        return modloaderAndVersion[0].equalsIgnoreCase("fabric");
     }
 
     /**
@@ -780,11 +610,11 @@ public class ConfigurationHandler {
             LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
         }
 
-        for (int idirs = 0; idirs < getDIRECTORIESTOEXCLUDELIST().size(); idirs++) {
+        for (int idirs = 0; idirs < serverPackCreatorProperties.getLIST_DIRECTORIES_EXCLUDE().size(); idirs++) {
 
             int i = idirs;
 
-            dirsInModpack.removeIf(n -> (n.contains(getDIRECTORIESTOEXCLUDELIST().get(i))));
+            dirsInModpack.removeIf(n -> (n.contains(serverPackCreatorProperties.getLIST_DIRECTORIES_EXCLUDE().get(i))));
         }
 
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
@@ -800,36 +630,59 @@ public class ConfigurationHandler {
      * then false is returned and the check is considered failed.
      * @author Griefed
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
+     * @param configurationModel or {@link ServerPack}. Instance containing
+     *                           all the information about our server pack.
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
-    boolean checkCurseForge(String modpackDir) {
-        String[] curseForgeIDCombination;
+    public boolean checkCurseForge(String modpackDir, ConfigurationModel configurationModel) throws InvalidModpackException, InvalidFileException, CurseException {
+
         boolean configCorrect = false;
 
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
 
+            String[] curseForgeIDCombination;
             curseForgeIDCombination = modpackDir.split(",");
+
             int curseProjectID = Integer.parseInt(curseForgeIDCombination[0]);
-            int curseFileID= Integer.parseInt(curseForgeIDCombination[1]);
+            int curseFileID = Integer.parseInt(curseForgeIDCombination[1]);
+
+            CurseProject curseProject = null;
 
             try {
 
                 if (CurseAPI.project(curseProjectID).isPresent()) {
-                    setProjectID(curseProjectID);
                     configCorrect = true;
+                    curseProject = CurseAPI.project(curseProjectID).get();
+
+                    if (!curseProject.game().name().equalsIgnoreCase("Minecraft")) {
+                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
+                        throw new InvalidModpackException(curseProjectID, curseProject.name());
+                    }
+
+                    if (!curseProject.categorySection().name().equalsIgnoreCase("Modpacks")) {
+                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
+                        throw new InvalidModpackException(curseProjectID, curseProject.name());
+                    }
+
+                    configurationModel.setProjectID(curseProjectID);
                 }
 
-            } catch (CurseException | NoSuchElementException ex) {
+            } catch (NoSuchElementException ex) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID), ex);
                 configCorrect = false;
             }
 
             try {
-
-                if (CurseAPI.project(curseProjectID).get().files().fileWithID(curseFileID) != null) {
-                    setProjectFileID(curseFileID);
-                    configCorrect = true;
+                if (curseProject != null) {
+                    if (curseProject.refreshFiles().fileWithID(curseFileID) != null) {
+                        configurationModel.setFileID(curseFileID);
+                        configCorrect = true;
+                    } else {
+                        throw new InvalidFileException(curseFileID);
+                    }
+                } else {
+                    throw new CurseException("Project was null. Does the specified project " + curseProjectID + " exist?");
                 }
 
             } catch (CurseException | NoSuchElementException ex) {
@@ -840,7 +693,7 @@ public class ConfigurationHandler {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.info"));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.return"), getProjectID(), getProjectFileID()));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.return"), configurationModel.getProjectID(), configurationModel.getFileID()));
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkcurseforge.warn"));
 
 
@@ -1057,8 +910,7 @@ public class ConfigurationHandler {
 
                 // Add an entry to the list of directories/files to exclude if it starts with !
                 } else if (directory.startsWith("!")) {
-
-                    addToDIRECTORIESTOEXCLUDELIST(directory.substring(directory.lastIndexOf("!") + 1));
+                    serverPackCreatorProperties.addLIST_DIRECTORIES_EXCLUDE(directory.substring(directory.lastIndexOf("!") + 1));
 
                 // Check if the entry exists
                 } else {
@@ -1178,7 +1030,6 @@ public class ConfigurationHandler {
 
             return "Forge";
         }
-
     }
 
     /**
@@ -1351,7 +1202,7 @@ public class ConfigurationHandler {
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), clientMods));
 
                 if (clientMods.isEmpty()) {
-                    clientMods = getFallbackModsList();
+                    clientMods = serverPackCreatorProperties.getLIST_FALLBACK_MODS();
 
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
@@ -1569,7 +1420,7 @@ public class ConfigurationHandler {
                 includeZipCreation,
                 javaArgs,
                 serverPackSuffix,
-                getConfigFile(),
+                serverPackCreatorProperties.FILE_CONFIG,
                 false
         )) {
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -1742,8 +1593,8 @@ public class ConfigurationHandler {
         );
 
         if (!isTemporary) {
-            if (getConfigFile().exists()) {
-                boolean delConf = getConfigFile().delete();
+            if (serverPackCreatorProperties.FILE_CONFIG.exists()) {
+                boolean delConf = serverPackCreatorProperties.FILE_CONFIG.delete();
                 if (delConf) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.config"));
@@ -1752,8 +1603,8 @@ public class ConfigurationHandler {
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile.config"));
                 }
             }
-            if (getOldConfigFile().exists()) {
-                boolean delOldConf = getOldConfigFile().delete();
+            if (serverPackCreatorProperties.FILE_CONFIG_OLD.exists()) {
+                boolean delOldConf = serverPackCreatorProperties.FILE_CONFIG_OLD.delete();
                 if (delOldConf) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.old"));
@@ -1777,15 +1628,6 @@ public class ConfigurationHandler {
         }
 
         return configWritten;
-    }
-
-    /**
-     * Getter for the list of directories to exclude from the server pack.
-     * @author Griefed
-     * @return List String. List of directories to exclude from the server pack.
-     */
-    public List<String> getDIRECTORIESTOEXCLUDELIST() {
-        return DIRECTORIESTOEXCLUDELIST;
     }
 
     /**

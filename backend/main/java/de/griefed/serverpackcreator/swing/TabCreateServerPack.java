@@ -49,34 +49,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * <strong>Table of methods</strong><p>
- * 1. {@link #TabCreateServerPack(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, VersionLister, ApplicationProperties, JFrame)}<br>
- * 2. {@link #actionEventCheckBoxServer(ActionEvent)}<br>
- * 3. {@link #actionEventComboBoxFabricVersions(ActionEvent)}<br>
- * 4. {@link #actionEventComboBoxForgeVersions(ActionEvent)}<br>
- * 5. {@link #actionEventComboBoxMinecraftVersion(ActionEvent)}<br>
- * 6. {@link #addMouseListenerContentAreaFilledToButton(JButton)}<br>
- * 7. {@link #changeForgeVersionListDependingOnMinecraftVersion(String)}<br>
- * 8. {@link #chooseJava()}<br>
- * 9. {@link #createServerPackTab()}<br>
- * 10.{@link #generateServerpack(ActionEvent)}<br>
- * 11.{@link #getChosenModloader()}<br>
- * 12.{@link #getFILE_SERVERPACKCREATOR_PROPERTIES()}<br>
- * 13.{@link #getJavaArgs()}<br>
- * 14.{@link #getJavaPath()}<br>
- * 15.{@link #getSelectedModloaderVersion()}<br>
- * 16.{@link #getSERVER_PACKS_DIR()}<br>
- * 17.{@link #itemEventRadioButtonModloaderFabric(ItemEvent)}<br>
- * 18.{@link #itemEventRadioButtonModloaderForge(ItemEvent)}<br>
- * 19.{@link #loadConfig(File)}<br>
- * 20.{@link #saveConfig(File, boolean)}<br>
- * 21.{@link #selectClientMods(ActionEvent)}<br>
- * 22.{@link #selectCopyDirs(ActionEvent)}<br>
- * 23.{@link #selectJavaInstallation(ActionEvent)}<br>
- * 24.{@link #selectModpackDirectory(ActionEvent)}<br>
- * 25.{@link #setChosenModloader(String)}<br>
- * 26.{@link #setJavaArgs(String)}<br>
- * 27.{@link #updateModloaderGuiComponents(boolean, boolean, String)}<p>
  * This class creates the tab which displays the labels, textfields, buttons and functions in order to create a new
  * server pack. Available are:<br>
  * JLabels and JTextFields for modpackDir, clientMods, copyDirs, javaPath, minecraftVersion, modLoader, modLoaderVersion<br>
@@ -144,10 +116,6 @@ public class TabCreateServerPack extends JComponent {
     private final JTextField TEXTFIELD_COPYDIRECTORIES = new JTextField("");
     private final JTextField TEXTFIELD_JAVAPATH = new JTextField("");
     private final JTextField TEXTFIELD_SERVERPACKSUFFIX = new JTextField("");
-
-    private final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
-
-    private final String SERVER_PACKS_DIR;
 
     private ApplicationProperties serverPackCreatorProperties;
 
@@ -250,46 +218,6 @@ public class TabCreateServerPack extends JComponent {
         }
 
         this.FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
-
-        String tempDir = null;
-        try {
-            tempDir = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
-        } catch (NullPointerException npe) {
-            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks","server-packs");
-            tempDir = "server-packs";
-        } finally {
-            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
-                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.dir.serverpacks",tempDir);
-                SERVER_PACKS_DIR = tempDir;
-
-                try (OutputStream outputStream = new FileOutputStream(getFILE_SERVERPACKCREATOR_PROPERTIES())) {
-                    serverPackCreatorProperties.store(outputStream, null);
-                } catch (IOException ex) {
-                    LOG.error("Couldn't write properties-file.", ex);
-                }
-
-            } else {
-                SERVER_PACKS_DIR = "server-packs";
-            }
-        }
-    }
-
-    /**
-     * Getter for the serverpackcreator.properties-file.
-     * @author Griefed
-     * @return File. Returns the serverpackcreator.properties-file.
-     */
-    public File getFILE_SERVERPACKCREATOR_PROPERTIES() {
-        return FILE_SERVERPACKCREATOR_PROPERTIES;
-    }
-
-    /**
-     * Getter for the directory in which server-packs will be generated and stored in.
-     * @author Griefed
-     * @return String. Returns the path to the server-packs directory as a string.
-     */
-    public String getSERVER_PACKS_DIR() {
-        return SERVER_PACKS_DIR;
     }
 
     /**
@@ -1083,7 +1011,7 @@ public class TabCreateServerPack extends JComponent {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
 
-            saveConfig(CONFIGURATIONHANDLER.getConfigFile(), false);
+            saveConfig(serverPackCreatorProperties.FILE_CONFIG, false);
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
@@ -1092,7 +1020,7 @@ public class TabCreateServerPack extends JComponent {
             final ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.execute(() -> {
 
-                if (CREATESERVERPACK.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel)) {
+                if (CREATESERVERPACK.run(serverPackCreatorProperties.FILE_CONFIG, configurationModel)) {
                     tailer.stop();
 
                     System.gc();
@@ -1114,7 +1042,7 @@ public class TabCreateServerPack extends JComponent {
                             JOptionPane.INFORMATION_MESSAGE) == 0) {
 
                         try {
-                            Desktop.getDesktop().open(new File(String.format("%s/%s", getSERVER_PACKS_DIR(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
+                            Desktop.getDesktop().open(new File(String.format("%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
                         } catch (IOException ex) {
                             LOG.error("Error opening file explorer for server pack.", ex);
                         }
@@ -1206,8 +1134,8 @@ public class TabCreateServerPack extends JComponent {
                 LOG.error("Error parsing modpackdir from configfile: " + configFile, ex);
             }
 
-            if (config.getOrElse("clientMods",CONFIGURATIONHANDLER.getFallbackModsList()).isEmpty()) {
-                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(CONFIGURATIONHANDLER.getFallbackModsList().toString()));
+            if (config.getOrElse("clientMods",serverPackCreatorProperties.getLIST_FALLBACK_MODS()).isEmpty()) {
+                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(serverPackCreatorProperties.getLIST_FALLBACK_MODS().toString()));
                 LOG.debug("Set clientMods with fallback list.");
             } else {
                 TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.get("clientMods").toString()));

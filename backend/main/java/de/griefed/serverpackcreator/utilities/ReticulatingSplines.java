@@ -22,10 +22,6 @@ package de.griefed.serverpackcreator.utilities;
 import java.util.Random;
 
 /**
- * <strong>Table of methods</strong><br>
- * {@link #getRandomInt()}<br>
- * {@link #getSpline()}<br>
- * {@link #reticulate()}<p>
  * Just something fun to brighten the mood. This class provides a list of messages which some of you may know from the
  * SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained.
  * Additional thanks to Larsz for providing a list of all these messages <a href=https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135>on GameFAQs </a>

@@ -32,10 +32,6 @@ import java.io.File;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong><p>
- * 1. {@link #TabModloaderInstallerLog(LocalizationManager, ApplicationProperties)}<br>
- * 2. {@link #createTailer()}<br>
- * 3. {@link #modloaderInstallerLogTab()}<p>
  * This class creates the tab which display the latest modloader_installer.log tailer.
  * @author Griefed
  */
@@ -111,6 +107,10 @@ public class TabModloaderInstallerLog extends JComponent {
         return modloaderInstallerLogPanel;
     }
 
+    /**
+     *
+     * @author Griefed
+     */
     private void createTailer() {
         class MyTailerListener extends TailerListenerAdapter {
             public void handle(String line) {

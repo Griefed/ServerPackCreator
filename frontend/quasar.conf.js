@@ -1,12 +1,25 @@
 // Configuration for your app
 // https://quasar.dev/quasar-cli/quasar-conf-js
 
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
+const { configure } = require('quasar/wrappers');
+
 module.exports = function (ctx) {
   return {
+    supportTS: {
+      tsCheckerConfig: {
+        eslint: {
+          enabled: false,
+          files: './src/**/*.{ts,tsx,js,jsx,vue}',
+        },
+      }
+    },
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/cli-documentation/boot-files
     boot: [
+        'axios'
     ],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -48,15 +61,22 @@ module.exports = function (ctx) {
 
       // Quasar plugins
       plugins: [
-          'Notify',
-          'Loading',
-          'AppFullscreen'
+        'Notify',
+        'Loading',
+        'LoadingBar',
+        'AppFullscreen',
+        'Cookies'
       ],
 
       config: {
+        loadingBar: {
+          color: 'secondary',
+          size: '3px',
+          position: 'left'
+        },
         brand: {
           primary:   '#325358',
-          secondary: '#54a896',
+          secondary: '#c0ffee',
           accent:    '#6a1a78',
           dark:      '#1d1d1d',
           positive:  '#21BA45',
@@ -73,10 +93,11 @@ module.exports = function (ctx) {
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
       scopeHoisting: true,
-      vueRouterMode: 'history', // available values: 'hash', 'history'
+      vueRouterMode: 'hash', // available values: 'hash', 'history'
       showProgress: true,
       gzip: false,
       analyze: false,
+      publicPath: '',
       // Options below are automatically set depending on the env, set them if you want to override
       // preloadChunks: false,
       // extractCSS: false,
@@ -90,7 +111,16 @@ module.exports = function (ctx) {
     devServer: {
       https: false,
       port: 3000,
-      open: true // opens browser window automatically
+      proxy: {
+        '/api': {
+          target: {
+            host: 'localhost',
+            protocol: 'http:',
+            port: 8080
+          }
+        }
+      },
+      open: true, // opens browser window automatically
     },
 
     // animations: 'all', // --- includes all animations
@@ -99,7 +129,25 @@ module.exports = function (ctx) {
 
     // https://quasar.dev/quasar-cli/developing-ssr/configuring-ssr
     ssr: {
-      pwa: false
+      pwa: false,
+
+      // manualStoreHydration: true,
+      // manualPostHydrationTrigger: true,
+
+      prodPort: 3000, // The default port that the production server should use
+                      // (gets superseded if process.env.PORT is specified at runtime)
+
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+      // Tell browser when a file from the server should expire from cache (in ms)
+
+      chainWebpackWebserver (/* chain */) {
+        //
+      },
+
+      middlewares: [
+        ctx.prod ? 'compression' : '',
+        'render' // keep this as last one
+      ]
     },
 
     // https://quasar.dev/quasar-cli/developing-pwa/configuring-pwa
@@ -111,7 +159,7 @@ module.exports = function (ctx) {
         short_name: 'SPC',
         description: 'Create server packs from Minecraft Forge or Fabric modpacks.',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'landscape',
         background_color: '#ffffff',
         theme_color: '#325358',
         icons: [
