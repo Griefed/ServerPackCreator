@@ -25,6 +25,8 @@ LABEL description="Webservice branch. Temporary webservice image. Will replace D
 RUN \
   echo "**** Bring system up to date ****" && \
   apt-get update && apt-get upgrade -y && \
+  apt-get install -y \
+    libatomic1 && \
   echo "**** Creating our folder(s) ****" && \
   mkdir -p \
     /app/serverpackcreator && \
