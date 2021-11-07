@@ -52,8 +52,6 @@ Gradle Test:
     paths:
       - build/libs/ServerPackCreator.exe
       - build/libs/ServerPackCreator.jar
-      - build/libs/ServerPackCreator-javadoc.jar
-      - build/libs/ServerPackCreator-sources.jar
       - build/reports/tests/test
     expire_in: 1 week
   only:
@@ -91,8 +89,9 @@ Docker Test:
       --push
       --no-cache
       --platform linux/amd64,linux/arm/v7,linux/arm64
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
-      --tag "$CI_REGISTRY_IMAGE:develop"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop" .
   only:
     - master
@@ -328,8 +327,6 @@ Gradle Test Webservice:
     paths:
       - build/libs/ServerPackCreator-webservice.exe
       - build/libs/ServerPackCreator-webservice.jar
-      - build/libs/ServerPackCreator-webservice-javadoc.jar
-      - build/libs/ServerPackCreator-webservice-sources.jar
       - build/reports/tests/test
     expire_in: 1 week
   only:
@@ -361,8 +358,9 @@ Docker Test Webservice:
       --no-cache
       --platform linux/amd64,linux/arm/v7,linux/arm64
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
-      --tag "$CI_REGISTRY_IMAGE:develop-web"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web-$CI_COMMIT_SHORT_SHA"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web-$CI_COMMIT_SHORT_SHA"
       --file Dockerfile.webservice .
   only:
     - webservice
