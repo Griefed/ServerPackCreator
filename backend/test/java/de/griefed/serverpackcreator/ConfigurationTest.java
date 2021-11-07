@@ -92,46 +92,28 @@ class ConfigurationTest {
 
     @Test
     void getFallbackModsListTestEquals() {
-        List<String> fallbackMods = new ArrayList<>(Arrays.asList(
-                "AmbientSounds",
-                "BackTools",
-                "BetterAdvancement",
-                "BetterFoliage",
-                "BetterPing",
-                "BetterPlacement",
-                "Blur",
-                "cherished",
-                "ClientTweaks",
-                "Controlling",
-                "CTM",
-                "customdiscordrpc",
-                "CustomMainMenu",
-                "DefaultOptions",
-                "durability",
-                "DynamicSurroundings",
-                "EiraMoticons",
-                "FullscreenWindowed",
-                "itemzoom",
-                "itlt",
-                "jeiintegration",
-                "jei-professions",
-                "just-enough-harvestcraft",
-                "JustEnoughResources",
-                "keywizard",
-                "modnametooltip",
-                "MouseTweaks",
-                "multihotbar-",
-                "Neat",
-                "OldJavaWarning",
-                "PackMenu",
-                "preciseblockplacing",
-                "ResourceLoader",
-                "SimpleDiscordRichPresence",
-                "SpawnerFix",
-                "timestamps",
-                "TipTheScales",
-                "WorldNameRandomizer"
-        ));
+        String FALLBACK_MODS_DEFAULT_ASSTRING =
+                "AdvancementPlaques-,AmbientSounds_,backtools-,BetterAdvancements-,BetterAnimationsCollection-," +
+                        "BetterDarkMode-,betterf3-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-," +
+                        "Blur-,catalogue-,cherishedworlds-,classicbar-,clickadv-,ClientTweaks_,configured-," +
+                        "Controlling-,CTM-,customdiscordrpc-,CustomMainMenu-,defaultoptions-,DefaultOptions_," +
+                        "desiredservers-,Ding-,drippyloadingscreen-,drippyloadingscreen_,Durability101-,dynmus-," +
+                        "dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,eiramoticons-,EiraMoticons_," +
+                        "EnchantmentDescriptions-,EquipmentCompare-,extremesoundmuffler-,extremeSoundMuffler-," +
+                        "Fallingleaves-,fallingleaves-,fancymenu_,findme-,flickerfix-,FpsReducer-,FullscreenWindowed-," +
+                        "WindowedFullscreen-,InventoryEssentials_,InventorySpam-,invtweaks-,InventoryTweaks-,ItemBorders-," +
+                        "itemzoom,itlt-,jeed-,jeiintegration_,JustEnoughProfessions-,JEITweaker-,justenoughbeacons-," +
+                        "JustEnoughCalculation-,jehc-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-," +
+                        "keywizard-,konkrete_,lazydfu-,LegendaryTooltips-,LightOverlay-,light-overlay-,LLOverlayReloaded-," +
+                        "loadmyresources_,lootbeams-,mcbindtype-,modnametooltip_,modnametooltip-,MouseTweaks-," +
+                        "multihotbar-,MyServerIsCompatible-,Neat,NotifMod-,OldJavaWarning-,ornaments-,overloadedarmorbar-," +
+                        "PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-," +
+                        "ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-," +
+                        "sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-," +
+                        "Toast Control-,Toast-Control-,torohealth-,toughnessbar-,TravelersTitles-,WorldNameRandomizer-";
+        List<String> fallbackMods = new ArrayList<String>(
+                Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(","))
+        );
         Assertions.assertEquals(fallbackMods, serverPackCreatorProperties.getLIST_FALLBACK_MODS());
     }
 

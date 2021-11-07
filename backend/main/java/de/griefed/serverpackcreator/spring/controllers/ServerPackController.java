@@ -67,6 +67,13 @@ public class ServerPackController {
         this.SERVERPACKREPOSITORY = injectedServerPackRepository;
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param id
+     * @param request
+     * @return
+     */
     @GetMapping(value = "/download/{id}", produces = "application/zip")
     public ResponseEntity<Resource> downloadServerPack(@PathVariable int id, HttpServletRequest request) {
 
@@ -91,11 +98,23 @@ public class ServerPackController {
         }
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @return
+     */
     @GetMapping("project/{projectid}")
     public List<ServerPack> getByProjectID(@PathVariable("projectid") int projectID) {
         return SERVERPACKSERVICE.getServerPacksByProjectID(projectID);
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param fileID
+     * @return
+     */
     @GetMapping("file/{fileid}")
     public ServerPack getByFileID(@PathVariable("fileid") int fileID) {
         if (SERVERPACKREPOSITORY.findByFileID(fileID).isPresent()) {
@@ -105,11 +124,22 @@ public class ServerPackController {
         }
     }
 
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
     @GetMapping("all")
     public List<ServerPack> getAllServerPacks() {
         return SERVERPACKSERVICE.getServerPacks();
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param specific
+     * @return
+     */
     @GetMapping("specific/{specific}")
     public ServerPack getByFileID(@PathVariable("specific") String specific) {
         return SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(specific.split(",")[0]), Integer.parseInt(specific.split(",")[1])).get();

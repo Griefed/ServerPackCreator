@@ -32,6 +32,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ *
+ * @author Griefed
+ */
 @Service
 public class ServerPackService {
 
@@ -40,6 +44,12 @@ public class ServerPackService {
     ApplicationProperties APPLICATIONPROPERTIES;
     ServerPackRepository SERVERPACKREPOSITORY;
 
+    /**
+     *
+     * @author Griefed
+     * @param injectedApplicationProperties
+     * @param injectedServerPackRepository
+     */
     @Autowired
     public ServerPackService(ApplicationProperties injectedApplicationProperties, ServerPackRepository injectedServerPackRepository) {
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
@@ -48,20 +58,43 @@ public class ServerPackService {
 
     //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than 24h.
 
+    /**
+     *
+     * @author Griefed
+     * @return
+     */
     public List<ServerPack> getServerPacks() {
         List<ServerPack> serverPacks = new ArrayList<>();
         SERVERPACKREPOSITORY.findAll().forEach(serverPacks::add);
         return serverPacks;
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @return
+     */
     public List<ServerPack> getServerPacksByProjectID(int projectID) {
         return new ArrayList<>(SERVERPACKREPOSITORY.findAllByProjectID(projectID));
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param serverPack
+     * @return
+     */
     public ServerPack insert(ServerPack serverPack) {
         return SERVERPACKREPOSITORY.save(serverPack);
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param id
+     * @param serverPack
+     */
     public void updateServerPackModelByID(int id, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
@@ -78,6 +111,13 @@ public class ServerPackService {
         }
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @param fileID
+     * @param serverPack
+     */
     public void updateServerPackModelByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
@@ -94,10 +134,21 @@ public class ServerPackService {
         }
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param id
+     */
     public void deleteServerPack(int id) {
         SERVERPACKREPOSITORY.deleteById(id);
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @param fileID
+     */
     public void deleteServerPack(int projectID, int fileID) {
         SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
     }

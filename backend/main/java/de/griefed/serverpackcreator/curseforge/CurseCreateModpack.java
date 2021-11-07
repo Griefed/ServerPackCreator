@@ -103,18 +103,23 @@ public class CurseCreateModpack {
      * @param newProjectID The ID of the new CurseForge project.
      */
     String retrieveProjectName(int newProjectID) {
-        String newProjectName;
         try {
+
             if (CurseAPI.project(newProjectID).isPresent()) {
-                newProjectName = CurseAPI.project(newProjectID).get().name();
+
+                return CurseAPI.project(newProjectID).get().name();
+
             } else {
-                newProjectName = String.valueOf(newProjectID);
+
+                return String.valueOf(newProjectID);
             }
+
         } catch (CurseException cex) {
+
+            // TODO: Improve error message
             LOG.error(cex);
-            newProjectName = String.valueOf(newProjectID);
+            return String.valueOf(newProjectID);
         }
-        return newProjectName;
     }
 
     /**
@@ -124,18 +129,15 @@ public class CurseCreateModpack {
      * @param newFileID The ID of the CurseForge file.
      */
     String retrieveFileDiskName(int newProjectID, int newFileID) {
-        String newFileDiskName;
-
         try {
 
-            newFileDiskName = CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
+            return CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
 
-        } catch (CurseException cex) {
-            LOG.error("Could not retrieve file disk-name.", cex);
-            newFileDiskName = String.valueOf(newFileID);
+        } catch (NullPointerException | CurseException ex) {
+
+            LOG.error("Filediskname for file " + newFileID + " not found. Using fileID.", ex);
+            return String.valueOf(newFileID);
         }
-
-        return newFileDiskName;
     }
 
     /**
@@ -147,31 +149,29 @@ public class CurseCreateModpack {
      * @return String. The name of the file.
      */
     public String retrieveFileName(int projectID, int fileID) {
-        String name;
-
         try {
 
-            name = CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).displayName();
+            return CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).displayName();
 
         } catch (CurseException | NullPointerException ex) {
 
+            // TODO: Replace with lang key
             LOG.warn("Display name for file " + fileID + " not found. Checking filename.");
 
             try {
 
-                name = CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).nameOnDisk();
+                return CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).nameOnDisk();
 
             } catch (CurseException | NullPointerException ex2) {
 
-                LOG.warn("Filename for file " + fileID + " not found. Using fileID.");
+                // TODO: Replace with lang key
+                LOG.warn("Filediskname for file " + fileID + " not found. Using fileID.");
 
-                name = String.valueOf(fileID);
+                return String.valueOf(fileID);
 
             }
 
         }
-
-        return name;
     }
 
     /**
@@ -183,13 +183,18 @@ public class CurseCreateModpack {
      * @return String. Returns a normalized String of the specified modloader.
      */
     String setModloaderCase(String modloader) {
-        String returnLoader = null;
+
         if (modloader.equalsIgnoreCase("Forge")) {
-            returnLoader = "Forge";
+            return "Forge";
+
         } else if (modloader.equalsIgnoreCase("Fabric")) {
-            returnLoader = "Fabric";
+
+            return "Fabric";
+        } else {
+            // TODO: Replace with lang key
+            LOG.warn("Couldn't determine modloader. Returning \"Forge\".");
+            return "Forge";
         }
-        return returnLoader;
     }
 
     /**

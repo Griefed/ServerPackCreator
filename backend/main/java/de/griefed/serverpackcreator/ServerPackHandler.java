@@ -50,11 +50,6 @@ import java.util.stream.Stream;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
- * Requires an instance of {@link ConfigurationHandler} from which to get all required information about the modpack and the
- * then to be generated server pack.
- * <p>
- * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.
- * <p>
  * Create a server pack from a modpack by copying all specified or required files from the modpack to the server pack
  * as well as installing the modloader server for the specified modloader, modloader version and Minecraft version.
  * Create a ZIP-archive of the server pack, excluding the Minecraft server JAR, for immediate upload to CurseForge or

@@ -124,17 +124,15 @@ class CurseCreateModpackTest {
     void initializeModpackTest() throws CurseException {
         int projectID = 238298;
         int fileID = 3174854;
-        String projectName = CurseAPI.project(projectID).get().name();
-        String displayName = Objects.requireNonNull(CurseAPI.project(projectID)
-                .get()
-                .files()
-                .fileWithID(fileID))
-                .displayName();
         ConfigurationModel configurationModel = new ConfigurationModel();
-        String modpackDir = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
+        String modpackDir = "./backend/test/resources/forge_tests/Vanilla Forge/Vanilla Forge 1.16.5";
+        configurationModel.setModpackDir(modpackDir);
+        configurationModel.setProjectName(CurseAPI.project(projectID).get().name());
+        configurationModel.setFileName(CurseAPI.project(projectID).get().files().fileWithID(fileID).displayName());
+        configurationModel.setFileDiskName(CurseAPI.project(projectID).get().files().fileWithID(fileID).nameOnDisk());
         CURSECREATEMODPACK.initializeModpack(modpackDir, projectID, fileID, configurationModel);
-        Assertions.assertTrue(new File(String.format("./backend/test/resources/forge_tests/%s", projectName)).isDirectory());
-        Assertions.assertTrue(new File(String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName)).isDirectory());
+        Assertions.assertTrue(new File("./backend/test/resources/forge_tests/Vanilla Forge").isDirectory());
+        Assertions.assertTrue(new File("./backend/test/resources/forge_tests/Vanilla Forge/Vanilla Forge 1.16.5").isDirectory());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

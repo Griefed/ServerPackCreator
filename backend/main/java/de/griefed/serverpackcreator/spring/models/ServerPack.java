@@ -26,13 +26,27 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
+/**
+ *
+ * @author Griefed
+ */
 @Entity
 public class ServerPack extends ConfigurationModel {
 
+    /**
+     *
+     * @author Griefed
+     */
     public ServerPack() {
 
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @param fileID
+     */
     public ServerPack(int projectID, int fileID) {
         this.projectID = projectID;
         this.fileID = fileID;
@@ -45,6 +59,21 @@ public class ServerPack extends ConfigurationModel {
         this.status = "";
     }
 
+    /**
+     *
+     * @author Griefed
+     * @param id
+     * @param projectID
+     * @param fileID
+     * @param fileName
+     * @param displayName
+     * @param size
+     * @param downloads
+     * @param confirmedWorking
+     * @param status
+     * @param dateCreated
+     * @param lastModified
+     */
     public ServerPack(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
         this.id = id;
         this.projectID = projectID;
@@ -340,10 +369,11 @@ public class ServerPack extends ConfigurationModel {
                 ", fileID=" + fileID +
                 ", projectName='" + projectName + '\'' +
                 ", fileName='" + fileName + '\'' +
+                ", fileDiskName='" + fileDiskName + '\'' +
                 ", size=" + size +
                 ", downloads=" + downloads +
                 ", confirmedWorking=" + confirmedWorking +
-                ", filePath='" + status + '\'' +
+                ", status='" + status + '\'' +
                 ", dateCreated=" + dateCreated +
                 ", lastModified=" + lastModified +
                 '}';

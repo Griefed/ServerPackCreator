@@ -26,26 +26,90 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ *
+ * @author Griefed
+ */
 @Repository
 public interface ServerPackRepository extends CrudRepository<ServerPack, Integer> {
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @return
+     */
     List<ServerPack> findAllByProjectID(int projectID);
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @param fileID
+     * @return
+     */
     Optional<ServerPack> findByProjectIDAndFileID(int projectID, int fileID);
 
+    /**
+     *
+     * @author Griefed
+     * @param projectName
+     * @return
+     */
     List<ServerPack> findAllByProjectName(String projectName);
 
+    /**
+     *
+     * @author Griefed
+     * @param fileID
+     * @return
+     */
     Optional<ServerPack> findByFileID(int fileID);
 
+    /**
+     *
+     * @author Griefed
+     * @param fileName
+     * @return
+     */
     Optional<ServerPack> findByFileName(String fileName);
 
+    /**
+     *
+     * @author Griefed
+     * @param status
+     * @return
+     */
     Optional<ServerPack> findByStatus(String status);
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @return
+     */
     int countAllByProjectID(int projectID);
 
+    /**
+     *
+     * @author Griefed
+     * @param projectName
+     * @return
+     */
     int countAllByProjectName(String projectName);
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     */
     void deleteAllByProjectID(int projectID);
 
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @param fileID
+     */
     void deleteByProjectIDAndFileID(int projectID, int fileID);
 }
