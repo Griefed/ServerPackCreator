@@ -56,7 +56,7 @@ public class ServerPack extends ConfigurationModel {
         this.size = 0;
         this.downloads = 0;
         this.confirmedWorking = 0;
-        this.status = "";
+        this.status = "Queued";
     }
 
     /**
