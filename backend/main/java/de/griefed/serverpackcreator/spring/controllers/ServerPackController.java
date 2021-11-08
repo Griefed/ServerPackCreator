@@ -75,26 +75,7 @@ public class ServerPackController {
      */
     @GetMapping(value = "/download/{id}", produces = "application/zip")
     public ResponseEntity<Resource> downloadServerPack(@PathVariable int id) {
-
-        if (SERVERPACKREPOSITORY.findById(id).isPresent() && !SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Queued")) {
-            Path path = Paths.get(SERVERPACKREPOSITORY.findById(id).get().getPath());
-            Resource resource = null;
-            String contentType = "application/zip";
-            try {
-                resource = new UrlResource(path.toUri());
-            } catch (MalformedURLException ex) {
-                LOG.error("Error generating download for server pack with ID" + id + ".", ex);
-            }
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
-        } else {
-
-            return ResponseEntity.notFound().build();
-
-        }
+        return SERVERPACKSERVICE.downloadServerPackById(id);
     }
 
     /**

@@ -144,7 +144,7 @@ public class CurseService {
         ServerPack serverPack = SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
         serverPack.setModpackDir(modpack);
         serverPack.setStatus("Queued");
-        SERVERPACKSERVICE.updateServerPackModelByID(serverPack.getId(), serverPack);
+        SERVERPACKSERVICE.updateServerPackByID(serverPack.getId(), serverPack);
         RUNGENERATION.run(serverPack);
 
         return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating project", 3000, "done", "positive");
@@ -170,7 +170,7 @@ public class CurseService {
             try {
                 executorService.execute(() -> {
                     ServerPack pack = SERVERPACKHANDLER.run(serverPack);
-                    SERVERPACKSERVICE.updateServerPackModelByID(pack.getId(), pack);
+                    SERVERPACKSERVICE.updateServerPackByID(pack.getId(), pack);
                     System.gc();
                     System.runFinalization();
                     LOG.debug("Done.");

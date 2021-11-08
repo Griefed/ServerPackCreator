@@ -25,8 +25,16 @@ import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,7 +64,37 @@ public class ServerPackService {
         this.SERVERPACKREPOSITORY = injectedServerPackRepository;
     }
 
-    //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than 24h.
+    //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than property and has zero downloads
+
+    public ResponseEntity<Resource> downloadServerPackById(int id) {
+        if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Available")) {
+
+            ServerPack serverPack = SERVERPACKREPOSITORY.findById(id).get();
+
+            Path path = Paths.get(serverPack.getPath());
+            Resource resource = null;
+            String contentType = "application/zip";
+
+            try {
+                resource = new UrlResource(path.toUri());
+            } catch (MalformedURLException ex) {
+                LOG.error("Error generating download for server pack with ID" + id + ".", ex);
+            }
+
+            serverPack.setDownloads(serverPack.getDownloads() + 1);
+
+            updateServerPackByID(id, serverPack);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } else {
+
+            return ResponseEntity.notFound().build();
+
+        }
+    }
 
     /**
      *
@@ -95,7 +133,7 @@ public class ServerPackService {
      * @param id
      * @param serverPack
      */
-    public void updateServerPackModelByID(int id, ServerPack serverPack) {
+    public void updateServerPackByID(int id, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
             LOG.debug("Updating database with: " + serverPack.repositoryToString());
@@ -119,7 +157,7 @@ public class ServerPackService {
      * @param fileID
      * @param serverPack
      */
-    public void updateServerPackModelByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
+    public void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
             LOG.debug("Updating database with: " + serverPack.repositoryToString());
