@@ -31,7 +31,6 @@
     "@quasar/extras": "^1.11.3",
     "axios": "^0.24.0",
     "core-js": "^3.19.0",
-    "file-saver": "^2.0.5",
     "quasar": "^2.2.1",
     "tsparticles": "^1.36.0",
     "vue": "^3.2.20",

@@ -34,9 +34,8 @@
                       {{ col.value }}
                     </q-td>
                     <q-td auto-width>
-                      <q-btn
-                        v-if="props.row.status!=='Queued'"
-                        size="sm" color="info" round dense @click="download(props.row.id, props.row.fileDiskName)" icon="download" />
+                      <q-btn v-if="props.row.status!=='Queued'" size="sm" color="info" round dense type="a" :href="download(props.row.id)" icon="download" />
+                      <!-- opens tab, initiates download, closes new tab <q-btn v-if="props.row.status=='Available'" size="sm" color="info" round dense @click="download(props.row.id)" icon="download" />-->
                     </q-td>
                   </q-tr>
                 </template>
@@ -101,7 +100,6 @@
 <script lang="js">
 import { api } from "boot/axios";
 import { ref } from 'vue';
-import { saveAs, FileSaver } from 'file-saver';
 import { useQuasar } from 'quasar';
 
 export default {
@@ -148,15 +146,8 @@ export default {
     }
   },
   methods: {
-    download(id, fileDiskName) {
-      api.get('/packs/download/' + id, {responseType: 'blob'})
-      .then((response) => {
-        console.log(response);
-        saveAs(response.data, fileDiskName);
-      })
-      .catch((error) => {
-        console.log("Couldn't download pack with id " + id + ".", error);
-      });
+    download(id) {
+      return '/api/packs/download/' + id;
     }
   },
   mounted() {
