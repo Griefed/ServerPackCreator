@@ -3,23 +3,19 @@
     class="intersection"
     once
     transition="scale">
-    <q-page>
-      <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
 
         <q-card bordered flat>
           <q-card-section>
             <div class="text-h4">Downloads</div>
           </q-card-section>
 
-          <q-separator/>
+          <q-card-section >
 
-          <q-card-section>
-            <div class="q-pa-md">
               <q-table
                 :rows="this.rows"
                 :columns="this.columns"
-                :filter="filter"
                 row-key="id"
+                :filter="filter"
                 :visible-columns="visibleColumns"
                 no-data-label="Couldn't retrieve server packs.... :("
                 no-results-label="The search didn't uncover any results"
@@ -30,12 +26,34 @@
                       v-for="col in props.cols"
                       :key="col.name"
                       :props="props"
+
                     >
-                      {{ col.value }}
-                    </q-td>
-                    <q-td auto-width>
-                      <q-btn v-if="props.row.status!=='Queued'" size="sm" color="info" round dense type="a" :href="download(props.row.id)" icon="download" />
-                      <!-- opens tab, initiates download, closes new tab <q-btn v-if="props.row.status=='Available'" size="sm" color="info" round dense @click="download(props.row.id)" icon="download" />-->
+                      <span v-if="col.field==='confirmedWorking' && props.row.confirmedWorking<0" class="text-red text-bold">
+                        {{ col.value }}
+                      </span>
+                      <span v-if="col.field==='confirmedWorking' && props.row.confirmedWorking>0" class="text-green text-bold">
+                        {{ col.value }}
+                      </span>
+                      <span v-if="col.field==='confirmedWorking' && props.row.confirmedWorking===0" class="text-bold">
+                        {{ col.value }}
+                      </span>
+                      <span v-if="col.field!=='confirmedWorking'">
+                        {{ col.value }}
+                      </span>
+
+                      <q-btn v-if="col.field==='confirmedWorking'" style="margin-left: 5px;" :disable="vote" push color="positive" icon="thumb_up"   size="sm" round dense @click="works(props.row.id, 'up')">
+                        <q-tooltip v-if="!vote" :disable="this.$q.platform.is.mobile">
+                          Upvote this pack!
+                        </q-tooltip>
+                      </q-btn>
+                      <q-btn v-if="col.field==='confirmedWorking'" :disable="vote" push color="negative" icon="thumb_down" size="sm" round dense @click="works(props.row.id, 'down')">
+                        <q-tooltip v-if="!vote" :disable="this.$q.platform.is.mobile">
+                          Downvote this pack!
+                        </q-tooltip>
+                      </q-btn>
+
+                      <q-btn v-if="props.row.status!=='Queued' && col.field==='status'" style="margin-left: 5px;" v-model="props.row.status" size="sm" color="info" round dense type="a" :href="download(props.row.id)" icon="download" />
+
                     </q-td>
                   </q-tr>
                 </template>
@@ -88,12 +106,10 @@
                 </template>
 
               </q-table>
-            </div>
+
           </q-card-section>
         </q-card>
 
-      </div>
-    </q-page>
   </q-intersection>
 </template>
 
@@ -112,11 +128,11 @@ export default {
       { name: 'projectName',      required: true,  label: 'Project',           align: 'left',  field: 'projectName',       sortable: true },
       { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',  field: 'fileName',          sortable: true },
       { name: 'fileDiskName',     required: false, label: 'File disk name',    align: 'left',  field: 'fileDiskName',      sortable: true },
-      { name: 'size',             required: false, label: 'Size (MB)',         align: 'left',  field: 'size',              sortable: true },
-      { name: 'downloads',        required: false, label: 'Downloads',         align: 'left',  field: 'downloads',         sortable: true },
+      { name: 'size',             required: false, label: 'Size (MB)',         align: 'center',  field: 'size',              sortable: true },
+      { name: 'downloads',        required: false, label: 'Downloads',         align: 'center',  field: 'downloads',         sortable: true },
       { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',  field: 'dateCreated',       sortable: true },
       { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',  field: 'lastModified',      sortable: true },
-      { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'left',  field: 'confirmedWorking',  sortable: true },
+      { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'center',  field: 'confirmedWorking',  sortable: true },
       { name: 'status',           required: true,  label: 'Download',          align: 'left',  field: 'status',            sortable: false }
     ];
 
@@ -143,11 +159,30 @@ export default {
       columns,
       rows,
       filter: ref(''),
+      vote: ref(false)
     }
   },
   methods: {
     download(id) {
       return '/api/packs/download/' + id;
+    },
+    works(id, doesItWork) {
+      api.get("/packs/vote/" + id + "," + doesItWork)
+      .catch(error => {
+        console.log("An error occurred trying to vote for server pack with id: " + id + ".");
+        console.log(error);
+        this.$q.notify({
+          timeout: 5000,
+          progress: true,
+          icon: 'error',
+          color: 'negative',
+          message: 'An error occurred trying to vote for server pack with id: ' + id + ". " + error
+        })
+      })
+      this.vote=true;
+      setTimeout(() => {
+        this.vote=false;
+      }, 60000)
     }
   },
   mounted() {

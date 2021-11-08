@@ -25,18 +25,11 @@ import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
 import de.griefed.serverpackcreator.spring.services.ServerPackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -123,5 +116,16 @@ public class ServerPackController {
     @GetMapping("specific/{specific}")
     public ServerPack getByFileID(@PathVariable("specific") String specific) {
         return SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(specific.split(",")[0]), Integer.parseInt(specific.split(",")[1])).get();
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param voting
+     * @return
+     */
+    @GetMapping("vote/{voting}")
+    public ResponseEntity<Object> voteForServerPack(@PathVariable("voting") String voting) {
+        return SERVERPACKSERVICE.voteForServerPack(voting);
     }
 }

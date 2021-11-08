@@ -66,6 +66,12 @@ public class ServerPackService {
 
     //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than property and has zero downloads
 
+    /**
+     *
+     * @author Griefed
+     * @param id
+     * @return
+     */
     public ResponseEntity<Resource> downloadServerPackById(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Available")) {
 
@@ -81,9 +87,7 @@ public class ServerPackService {
                 LOG.error("Error generating download for server pack with ID" + id + ".", ex);
             }
 
-            serverPack.setDownloads(serverPack.getDownloads() + 1);
-
-            updateServerPackByID(id, serverPack);
+            updateDownloadCounter(id, serverPack);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
@@ -93,6 +97,40 @@ public class ServerPackService {
 
             return ResponseEntity.notFound().build();
 
+        }
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param voting
+     * @return
+     */
+    public ResponseEntity<Object> voteForServerPack(String voting) {
+        if (SERVERPACKREPOSITORY.findById(Integer.parseInt(voting.split(",")[0])).isPresent() && SERVERPACKREPOSITORY.findById(Integer.parseInt(voting.split(",")[0])).get().getStatus().matches("Available")) {
+
+            ServerPack serverPack = SERVERPACKREPOSITORY.findById(Integer.parseInt(voting.split(",")[0])).get();
+
+            if (voting.split(",")[1].equalsIgnoreCase("up")) {
+
+                serverPack.setConfirmedWorking(serverPack.getConfirmedWorking() + 1);
+                updateConfirmedCounter(Integer.parseInt(voting.split(",")[0]), serverPack);
+                return ResponseEntity.ok().build();
+
+            } else if (voting.split(",")[1].equalsIgnoreCase("down")) {
+
+                serverPack.setConfirmedWorking(serverPack.getConfirmedWorking() - 1);
+                updateConfirmedCounter(Integer.parseInt(voting.split(",")[0]), serverPack);
+                return ResponseEntity.ok().build();
+
+            } else {
+
+                return ResponseEntity.badRequest().build();
+            }
+
+        } else {
+
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -146,6 +184,34 @@ public class ServerPackService {
             serverPackFromDB.setStatus(serverPack.getStatus());
             serverPackFromDB.setLastModified(new Timestamp(new Date().getTime()));
             serverPackFromDB.setPath(serverPack.getPath());
+            SERVERPACKREPOSITORY.save(serverPackFromDB);
+        }
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param id
+     * @param serverPack
+     */
+    private void updateDownloadCounter(int id, ServerPack serverPack) {
+        if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
+            serverPackFromDB.setDownloads(serverPack.getDownloads() + 1);
+            SERVERPACKREPOSITORY.save(serverPackFromDB);
+        }
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param id
+     * @param serverPack
+     */
+    private void updateConfirmedCounter(int id, ServerPack serverPack) {
+        if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
+            serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
             SERVERPACKREPOSITORY.save(serverPackFromDB);
         }
     }
