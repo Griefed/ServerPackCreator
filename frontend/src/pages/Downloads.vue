@@ -37,9 +37,14 @@
                       <span v-if="col.field==='confirmedWorking' && props.row.confirmedWorking===0" class="text-bold">
                         {{ col.value }}
                       </span>
-                      <span v-if="col.field!=='confirmedWorking'">
+                      <span v-if="col.field==='size'">
+                        {{ col.value }} MB
+                      </span>
+                      <span v-if="col.field!=='confirmedWorking' && col.field!=='size'">
                         {{ col.value }}
                       </span>
+
+                      <!-- TODO: when column is size, add MB -->
 
                       <q-btn v-if="col.field==='confirmedWorking'" style="margin-left: 5px;" :disable="vote" push color="positive" icon="thumb_up"   size="sm" round dense @click="works(props.row.id, 'up')">
                         <q-tooltip v-if="!vote" :disable="this.$q.platform.is.mobile">
@@ -128,7 +133,7 @@ export default {
       { name: 'projectName',      required: true,  label: 'Project',           align: 'left',  field: 'projectName',       sortable: true },
       { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',  field: 'fileName',          sortable: true },
       { name: 'fileDiskName',     required: false, label: 'File disk name',    align: 'left',  field: 'fileDiskName',      sortable: true },
-      { name: 'size',             required: false, label: 'Size (MB)',         align: 'center',  field: 'size',              sortable: true },
+      { name: 'size',             required: false, label: 'Size (MB)',         align: 'right',  field: 'size',              sortable: true },
       { name: 'downloads',        required: false, label: 'Downloads',         align: 'center',  field: 'downloads',         sortable: true },
       { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',  field: 'dateCreated',       sortable: true },
       { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',  field: 'lastModified',      sortable: true },
