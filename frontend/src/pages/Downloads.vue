@@ -9,6 +9,8 @@
             <div class="text-h4">Downloads</div>
           </q-card-section>
 
+
+
           <q-card-section >
 
               <q-table
@@ -44,8 +46,6 @@
                         {{ col.value }}
                       </span>
 
-                      <!-- TODO: when column is size, add MB -->
-
                       <q-btn v-if="col.field==='confirmedWorking'" style="margin-left: 5px;" :disable="vote" push color="positive" icon="thumb_up"   size="sm" round dense @click="works(props.row.id, 'up')">
                         <q-tooltip v-if="!vote" :disable="this.$q.platform.is.mobile">
                           Upvote this pack!
@@ -57,7 +57,7 @@
                         </q-tooltip>
                       </q-btn>
 
-                      <q-btn v-if="props.row.status!=='Queued' && col.field==='status'" style="margin-left: 5px;" v-model="props.row.status" size="sm" color="info" round dense type="a" :href="download(props.row.id)" icon="download" />
+                      <q-btn v-if="props.row.status==='Available' && col.field==='status'" style="margin-left: 5px;" v-model="props.row.status" size="sm" color="info" round dense type="a" :href="download(props.row.id)" icon="download" />
 
                     </q-td>
                   </q-tr>
@@ -127,18 +127,18 @@ export default {
   name: "Downloads",
   setup() {
     const columns = [
-      { name: 'id',               required: false, label: 'ID',                align: 'left',  field: 'id',                sortable: true },
-      { name: 'projectID',        required: false, label: 'Project (ID)',      align: 'left',  field: 'projectID',         sortable: true },
-      { name: 'fileID',           required: false, label: 'File (ID)',         align: 'left',  field: 'fileID',            sortable: true },
-      { name: 'projectName',      required: true,  label: 'Project',           align: 'left',  field: 'projectName',       sortable: true },
-      { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',  field: 'fileName',          sortable: true },
-      { name: 'fileDiskName',     required: false, label: 'File disk name',    align: 'left',  field: 'fileDiskName',      sortable: true },
+      { name: 'id',               required: false, label: 'ID',                align: 'left',   field: 'id',                sortable: true },
+      { name: 'projectID',        required: false, label: 'Project (ID)',      align: 'left',   field: 'projectID',         sortable: true },
+      { name: 'fileID',           required: false, label: 'File (ID)',         align: 'left',   field: 'fileID',            sortable: true },
+      { name: 'projectName',      required: true,  label: 'Project',           align: 'left',   field: 'projectName',       sortable: true },
+      { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',   field: 'fileName',          sortable: true },
+      { name: 'fileDiskName',     required: false, label: 'File disk name',    align: 'left',   field: 'fileDiskName',      sortable: true },
       { name: 'size',             required: false, label: 'Size (MB)',         align: 'right',  field: 'size',              sortable: true },
-      { name: 'downloads',        required: false, label: 'Downloads',         align: 'center',  field: 'downloads',         sortable: true },
-      { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',  field: 'dateCreated',       sortable: true },
-      { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',  field: 'lastModified',      sortable: true },
-      { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'center',  field: 'confirmedWorking',  sortable: true },
-      { name: 'status',           required: true,  label: 'Download',          align: 'left',  field: 'status',            sortable: false }
+      { name: 'downloads',        required: false, label: 'Downloads',         align: 'center', field: 'downloads',         sortable: true },
+      { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',   field: 'dateCreated',       sortable: true },
+      { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',   field: 'lastModified',      sortable: true },
+      { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'center', field: 'confirmedWorking',  sortable: true },
+      { name: 'status',           required: true,  label: 'Download',          align: 'left',   field: 'status',            sortable: false }
     ];
 
     let rows = ref([]);
