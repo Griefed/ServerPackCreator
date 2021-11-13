@@ -294,8 +294,13 @@ public class CurseCreateModpack {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.infoheader"));
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackname"), configurationModel.getCurseModpack().get("name").asText()));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackversion"), configurationModel.getCurseModpack().get("version").asText()));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackauthor"), configurationModel.getCurseModpack().get("author").asText()));
+                try {
+                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackversion"), configurationModel.getCurseModpack().get("version").asText()));
+                } catch (NullPointerException ignored) {}
+
+                try {
+                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackauthor"), configurationModel.getCurseModpack().get("author").asText()));
+                } catch (NullPointerException ignored) {}
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackminecraftversion"), configurationModel.getCurseModpack().get("minecraft").get("version").asText()));
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloader"), modloaderAndVersion[0]));
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloaderversion"), modloaderAndVersion[1]));
