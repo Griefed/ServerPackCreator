@@ -49,8 +49,8 @@ public class ServerPackService {
 
     private static final Logger LOG = LogManager.getLogger(ServerPackService.class);
 
-    ApplicationProperties APPLICATIONPROPERTIES;
-    ServerPackRepository SERVERPACKREPOSITORY;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final ServerPackRepository SERVERPACKREPOSITORY;
 
     /**
      *
@@ -91,7 +91,7 @@ public class ServerPackService {
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + serverPack.getFileDiskName().replace(".zip","") + "_server_pack.zip" + "\"")
                     .body(resource);
         } else {
 
