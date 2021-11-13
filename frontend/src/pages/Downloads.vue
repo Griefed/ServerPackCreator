@@ -19,6 +19,7 @@
                 row-key="id"
                 :filter="filter"
                 :visible-columns="visibleColumns"
+                :pagination="initialPagination"
                 no-data-label="Couldn't retrieve server packs.... :("
                 no-results-label="The search didn't uncover any results"
               >
@@ -138,7 +139,7 @@ export default {
       { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',   field: 'dateCreated',       sortable: true },
       { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',   field: 'lastModified',      sortable: true },
       { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'center', field: 'confirmedWorking',  sortable: true },
-      { name: 'status',           required: true,  label: 'Download',          align: 'left',   field: 'status',            sortable: false }
+      { name: 'status',           required: true,  label: 'Download',          align: 'left',   field: 'status',            sortable: true }
     ];
 
     let rows = ref([]);
@@ -164,7 +165,14 @@ export default {
       columns,
       rows,
       filter: ref(''),
-      vote: ref(false)
+      vote: ref(false),
+      initialPagination: {
+        sortBy: 'download',
+        descending: false,
+        page: 1,
+        rowsPerPage: 13
+        // rowsNumber: xx if getting data from a server
+      },
     }
   },
   methods: {
