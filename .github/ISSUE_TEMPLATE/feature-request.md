@@ -3,6 +3,8 @@ name: Feature Request
 about: Request a feature for ServerPackCreator
 ---
 
+<!-- Failure to use this template will result in the new issue being immediately closed without comment. -->
+
 * **What is the current behavior?**
 <!-- Issues like "doesn't work" and then not providing information as to WHAT isn't working, may be closed without further comment.-->
 
