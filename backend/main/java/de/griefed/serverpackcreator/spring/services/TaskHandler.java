@@ -129,6 +129,10 @@ public class TaskHandler {
 
                 ServerPack serverPack = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
 
+                serverPack.setStatus("Generating");
+
+                SERVERPACKSERVICE.updateServerPackByID(serverPack.getId(), serverPack);
+
                 serverPack.setModpackDir(projectID + "," + fileID);
 
                 ServerPack pack = SERVERPACKHANDLER.run(serverPack);

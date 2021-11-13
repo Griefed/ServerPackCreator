@@ -97,6 +97,10 @@ public class CurseService {
                 return CURSERESPONSEMODEL.response(projectID, 1, "The modpack you requested a server pack for has already been queued!", 5000, "info", "info");
             }
 
+            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get().getStatus().equals("Generating")) {
+                return CURSERESPONSEMODEL.response(projectID, 1, "The modpack you requested a server pack for is currently being generated!", 5000, "info", "info");
+            }
+
         }
 
         try {
@@ -142,9 +146,9 @@ public class CurseService {
         serverPack.setModpackDir(modpack);
         serverPack.setStatus("Queued");
         SERVERPACKSERVICE.updateServerPackByID(serverPack.getId(), serverPack);
-        RUNGENERATION.run(serverPack);
+        TASKRECEIVER.generateCurseProject(modpack);
 
-        return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating project", 3000, "done", "positive");
+        return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating server pack.", 3000, "done", "positive");
     }
 
     /**
