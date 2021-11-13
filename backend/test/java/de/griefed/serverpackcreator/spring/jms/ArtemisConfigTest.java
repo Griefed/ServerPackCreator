@@ -46,6 +46,7 @@ public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
 
+    @Autowired
     private JmsTemplate jmsTemplate;
 
     private final String QUEUE_UNIQUE_ID = "unique_id";
@@ -57,8 +58,7 @@ public class ArtemisConfigTest {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private ApplicationProperties serverPackCreatorProperties;
 
-    @Autowired
-    ArtemisConfigTest(JmsTemplate injectedJmsTemplate) {
+    ArtemisConfigTest() {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {
@@ -71,8 +71,6 @@ public class ArtemisConfigTest {
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         DEFAULTFILES.filesSetup();
-
-        this.jmsTemplate = injectedJmsTemplate;
 
         jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);
     }
