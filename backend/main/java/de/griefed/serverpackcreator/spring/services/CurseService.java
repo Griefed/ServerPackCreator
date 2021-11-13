@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.spring.services;
 
-import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
@@ -56,6 +55,7 @@ public class CurseService {
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackService SERVERPACKSERVICE;
     private final ServerPackRepository SERVERPACKREPOSITORY;
+    private final TaskReceiver TASKRECEIVER;
 
     /**
      *
@@ -66,13 +66,14 @@ public class CurseService {
      * @param injectedApplicationProperties
      */
     @Autowired
-    public CurseService(ServerPackHandler injectedServerPackHandler, ConfigurationHandler injectedConfigurationHandler, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerpackService, ServerPackRepository injectedServerPackRepository) {
+    public CurseService(ServerPackHandler injectedServerPackHandler, ConfigurationHandler injectedConfigurationHandler, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerpackService, ServerPackRepository injectedServerPackRepository, TaskReceiver injectedTaskReceiver) {
         this.SERVERPACKHANDLER = injectedServerPackHandler;
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.CURSERESPONSEMODEL = injectedCurseResponse;
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         this.SERVERPACKSERVICE = injectedServerpackService;
         this.SERVERPACKREPOSITORY = injectedServerPackRepository;
+        this.TASKRECEIVER = injectedTaskReceiver;
     }
 
     /**
@@ -80,19 +81,20 @@ public class CurseService {
      * Status 1: OK, generating<br>
      * Status 2: Error occurred
      * @author Griefed
-     * @param modpack CurseForge projectID and fileID combination.
+     * @param projectID CurseForge projectID.
+     * @param fileID CurseForge fileID.
      * @return String. Statuscode indicating whether the server pack already exists, will be generated or an error occured.
      */
-    public String createFromCurseModpack(String modpack) throws CurseException {
+    public String createFromCurseModpack(int projectID, int fileID) throws CurseException {
 
-        if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).isPresent()) {
+        if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
 
-            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get().getStatus().equals("Available")) {
-                return CURSERESPONSEMODEL.response(Integer.parseInt(modpack.split(",")[0]), 0, "The modpack you requested a server pack for has already been generated. Check the downloads-section!", 5000, "info", "info");
+            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get().getStatus().equals("Available")) {
+                return CURSERESPONSEMODEL.response(projectID, 0, "The modpack you requested a server pack for has already been generated. Check the downloads-section!", 5000, "info", "info");
             }
 
-            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get().getStatus().equals("Queued")) {
-                return CURSERESPONSEMODEL.response(Integer.parseInt(modpack.split(",")[0]), 1, "The modpack you requested a server pack for has already been queued!", 5000, "info", "info");
+            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get().getStatus().equals("Queued")) {
+                return CURSERESPONSEMODEL.response(projectID, 1, "The modpack you requested a server pack for has already been queued!", 5000, "info", "info");
             }
 
         }
@@ -101,34 +103,29 @@ public class CurseService {
 
             ServerPack serverPack = new ServerPack();
 
-            if (CONFIGURATIONHANDLER.checkCurseForge(modpack, serverPack)) {
+            if (CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
 
-                serverPack.setModpackDir(modpack);
-                serverPack.setProjectID(Integer.parseInt(modpack.split(",")[0]));
-                serverPack.setFileID(Integer.parseInt(modpack.split(",")[1]));
-                serverPack.setStatus("Queued");
-                SERVERPACKSERVICE.insert(serverPack);
-                RUNGENERATION.run(serverPack);
+                TASKRECEIVER.scanCurseProject(projectID + "," + fileID);
 
-                return CURSERESPONSEMODEL.response(serverPack.getProjectID(), 1, "Submitted. Come back later and check the downloads-section to see whether your server pack for " + CurseAPI.project(serverPack.getProjectID()).get().name() + " is ready for download!", 7000, "done", "positive");
+                return CURSERESPONSEMODEL.response(serverPack.getProjectID(), 1, "Queued! Come back later and check the downloads-section to see whether your server pack for " + serverPack.getProjectName() + " is ready for download!", 7000, "done", "positive");
 
             } else {
 
-                return CURSERESPONSEMODEL.response(modpack, 2, "Project or file could not be found!", 3000, "error", "negative");
+                return CURSERESPONSEMODEL.response(projectID + "," + fileID, 2, "Project or file could not be found!", 3000, "error", "negative");
 
             }
 
         } catch (InvalidModpackException ex) {
-            LOG.error("Couldn't generate server pack for project: " + modpack, ex);
-            return CURSERESPONSEMODEL.response(modpack.split(",")[0], 2, "The specified project is not a Minecraft modpack!", 3000, "error", "negative");
+            LOG.error("Couldn't generate server pack for project: " + projectID + "," + fileID, ex);
+            return CURSERESPONSEMODEL.response(projectID, 2, "The specified project is not a Minecraft modpack!", 3000, "error", "negative");
 
         } catch (InvalidFileException ex) {
-            LOG.error("The specified file is not a file of project: " + modpack, ex);
-            return CURSERESPONSEMODEL.response(modpack.split(",")[0], 2, "The specified file could not be found for this project!", 3000, "error", "negative");
+            LOG.error("The specified file is not a file of project: " + projectID + "," + fileID, ex);
+            return CURSERESPONSEMODEL.response(projectID, 2, "The specified file could not be found for this project!", 3000, "error", "negative");
 
         } catch (CurseException ex) {
-            LOG.error("The specified project does not exist: " + modpack, ex);
-            return CURSERESPONSEMODEL.response(modpack.split(",")[0], 2, "The specified project does not exist!", 3000, "error", "negative");
+            LOG.error("The specified project does not exist: " + projectID + "," + fileID, ex);
+            return CURSERESPONSEMODEL.response(projectID, 2, "The specified project does not exist!", 3000, "error", "negative");
         }
     }
 

@@ -143,7 +143,8 @@ export default defineComponent({
       this.disable = true;
       this.$q.loadingBar.start();
       console.log(project + "," + file);
-      api.get("/curse?modpack=" + project + "," + file)
+      //api.get("/curse?modpack=" + project + "," + file)
+      api.get("/curse/task?modpack=" + project + "," + file)
           .then(response => {
             this.notify(response.data.status, response.data.timeout, response.data.icon, response.data.colour, response.data.message, project, file);
             this.enableButtons();

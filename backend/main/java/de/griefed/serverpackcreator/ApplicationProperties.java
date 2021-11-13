@@ -107,6 +107,11 @@ public class ApplicationProperties extends Properties {
             )
     );
 
+    //JMS related
+    public final int QUEUE_MAX_DISK_USAGE;
+
+    public final String SCHEDULE_DATABASE_CLEANUP;
+
     /**
      *
      * @author Griefed
@@ -192,6 +197,10 @@ public class ApplicationProperties extends Properties {
         }
 
         this.CURSE_CONTROLLER_REGENERATION_ENABLED = Boolean.parseBoolean(this.getProperty("de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled", "false"));
+
+        this.QUEUE_MAX_DISK_USAGE = Integer.parseInt(getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
+
+        this.SCHEDULE_DATABASE_CLEANUP = getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", "* * 24 * *");
     }
 
     /**

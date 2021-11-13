@@ -1,0 +1,4 @@
+spring:
+  artemis:
+    embedded:
+      persistent: false

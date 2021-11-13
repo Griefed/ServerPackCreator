@@ -102,7 +102,7 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param newProjectID The ID of the new CurseForge project.
      */
-    String retrieveProjectName(int newProjectID) {
+    public String retrieveProjectName(int newProjectID) {
         try {
 
             if (CurseAPI.project(newProjectID).isPresent()) {
@@ -128,7 +128,7 @@ public class CurseCreateModpack {
      * @param newProjectID The ID of the CurseForge project.
      * @param newFileID The ID of the CurseForge file.
      */
-    String retrieveFileDiskName(int newProjectID, int newFileID) {
+    public String retrieveFileDiskName(int newProjectID, int newFileID) {
         try {
 
             return CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();

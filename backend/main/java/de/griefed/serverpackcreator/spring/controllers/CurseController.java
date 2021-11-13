@@ -23,6 +23,7 @@ import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.spring.models.CurseResponse;
 import de.griefed.serverpackcreator.spring.services.CurseService;
+import de.griefed.serverpackcreator.spring.services.TaskReceiver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ public class CurseController {
     private final CurseService CURSESERVICE;
     private final CurseResponse CURSERESPONSEMODEL;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final TaskReceiver TASKRECEIVER;
 
     /**
      *
@@ -50,10 +52,11 @@ public class CurseController {
      * @param injectedCurseResponse
      */
     @Autowired
-    public CurseController(CurseService injectedCurseService, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties) {
+    public CurseController(CurseService injectedCurseService, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, TaskReceiver injectedTaskReceiver) {
         this.CURSESERVICE = injectedCurseService;
         this.CURSERESPONSEMODEL = injectedCurseResponse;
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+        this.TASKRECEIVER = injectedTaskReceiver;
     }
 
     /**
@@ -65,10 +68,13 @@ public class CurseController {
      * @return String. Statuscode indicating whether the server pack already exists, will be generated or an error occured.
      */
     @CrossOrigin(origins = {"*"})
-    @GetMapping("")
-    public String generate(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
+    @GetMapping("task")
+    public String task(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
+        String[] project = modpack.split(",");
+        int projectID = Integer.parseInt(project[0]);
+        int fileID = Integer.parseInt(project[1]);
         try {
-            return CURSESERVICE.createFromCurseModpack(modpack);
+            return CURSESERVICE.createFromCurseModpack(projectID, fileID);
         } catch (CurseException ex) {
             LOG.error("Couldn't generate server pack for project " + modpack, ex);
             return CURSERESPONSEMODEL.response(modpack, 2, "Project or file could not be found!", 3000, "error", "negative");

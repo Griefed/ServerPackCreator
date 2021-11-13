@@ -665,6 +665,7 @@ public class ConfigurationHandler {
                     }
 
                     configurationModel.setProjectID(curseProjectID);
+                    configurationModel.setProjectName(CURSECREATEMODPACK.retrieveProjectName(curseProjectID));
                 }
 
             } catch (NoSuchElementException ex) {
@@ -676,8 +677,13 @@ public class ConfigurationHandler {
             try {
                 if (curseProject != null) {
                     if (curseProject.refreshFiles().fileWithID(curseFileID) != null) {
+
                         configurationModel.setFileID(curseFileID);
+                        configurationModel.setFileName(CURSECREATEMODPACK.retrieveFileName(curseProjectID, curseFileID));
+                        configurationModel.setFileDiskName(CURSECREATEMODPACK.retrieveFileDiskName(curseProjectID,curseFileID));
+
                         configCorrect = true;
+
                     } else {
                         throw new InvalidFileException(curseFileID);
                     }
