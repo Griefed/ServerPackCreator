@@ -77,8 +77,6 @@ class DefaultFilesTest {
         oldConfigFile.createNewFile();
         Assertions.assertFalse(DEFAULTFILES.checkForConfig());
         Assertions.assertTrue(new File("serverpackcreator.conf").exists());
-        new File("serverpackcreator.conf").delete();
-        new File("creator.conf").delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -87,7 +85,6 @@ class DefaultFilesTest {
         File configFile = new File("serverpackcreator.conf");
         configFile.createNewFile();
         Assertions.assertFalse(DEFAULTFILES.checkForConfig());
-        configFile.delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -96,7 +93,6 @@ class DefaultFilesTest {
         File configFile = new File("./serverpackcreator.conf");
         configFile.delete();
         Assertions.assertTrue(DEFAULTFILES.checkForConfig());
-        configFile.delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -105,7 +101,6 @@ class DefaultFilesTest {
         FileUtils.createParentDirectories(new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)));
         new File(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)).createNewFile();
         Assertions.assertFalse(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_PROPERTIES));
-        new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -113,7 +108,6 @@ class DefaultFilesTest {
     void checkForPropertiesTestNew() {
         new File(String.format("./server_files/%s",serverPackCreatorProperties.FILE_SERVER_PROPERTIES)).delete();
         Assertions.assertTrue(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_PROPERTIES));
-        new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -122,7 +116,6 @@ class DefaultFilesTest {
         FileUtils.createParentDirectories(new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)));
         new File(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)).createNewFile();
         Assertions.assertFalse(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_ICON));
-        new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -130,7 +123,6 @@ class DefaultFilesTest {
     void checkForIconTestNew() {
         new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)).delete();
         Assertions.assertTrue(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_ICON));
-        new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -147,31 +139,6 @@ class DefaultFilesTest {
         Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
         Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
         Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
-        String delete = "./server_files";
-        if (new File(delete).isDirectory()) {
-            Path pathToBeDeleted = Paths.get(delete);
-            Files.walk(pathToBeDeleted)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-        String deleteWork = "./work";
-        if (new File(deleteWork).isDirectory()) {
-            Path pathToBeDeleted = Paths.get(deleteWork);
-            Files.walk(pathToBeDeleted)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-        String deleteServerPacks = "./server-packs";
-        if (new File(deleteServerPacks).isDirectory()) {
-            Path pathToBeDeleted = Paths.get(deleteServerPacks);
-            Files.walk(pathToBeDeleted)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-        new File("./serverpackcreator.conf").delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -181,7 +148,6 @@ class DefaultFilesTest {
         FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT)));
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getMinecraftManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT);
         Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT)).exists());
-        new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT)).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -191,7 +157,6 @@ class DefaultFilesTest {
         FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC)));
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC);
         Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC)).exists());
-        new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC)).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -201,7 +166,6 @@ class DefaultFilesTest {
         FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FORGE)));
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getForgeManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FORGE);
         Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FORGE)).exists());
-        new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FORGE)).delete();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -211,6 +175,5 @@ class DefaultFilesTest {
         FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER)));
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricInstallerManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER);
         Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER)).exists());
-        new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER)).delete();
     }
 }
