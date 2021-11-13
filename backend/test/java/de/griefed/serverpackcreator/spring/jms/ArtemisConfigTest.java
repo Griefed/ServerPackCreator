@@ -31,9 +31,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessagePostProcessor;
+import org.springframework.jms.support.destination.JmsDestinationAccessor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.QueueBrowser;
+import javax.jms.Session;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -45,7 +52,6 @@ public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
 
-    @Autowired
     private JmsTemplate jmsTemplate;
 
     private final String QUEUE_UNIQUE_ID = "unique_id";
@@ -57,7 +63,8 @@ public class ArtemisConfigTest {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private ApplicationProperties serverPackCreatorProperties;
 
-    ArtemisConfigTest() {
+    @Autowired
+    ArtemisConfigTest(JmsTemplate injectedJmsTemplate) {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {
@@ -65,6 +72,10 @@ public class ArtemisConfigTest {
         }
 
         this.serverPackCreatorProperties = new ApplicationProperties();
+
+        this.jmsTemplate = injectedJmsTemplate;
+
+        this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);
 
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
@@ -86,8 +97,12 @@ public class ArtemisConfigTest {
             jmsTemplate.convertAndSend(QUEUE_TASKS, "message " + i);
         }
 
-        @SuppressWarnings("ConstantConditions")
-        int size = jmsTemplate.browse(QUEUE_TASKS, (session, browser) -> Collections.list(Objects.requireNonNull(browser).getEnumeration()).size());
+        int size = jmsTemplate.browse(QUEUE_TASKS, new BrowserCallback<Integer>() {
+            @Override
+            public Integer doInJms(Session session, QueueBrowser browser) throws JMSException {
+                return Collections.list(browser.getEnumeration()).size();
+            }
+        });
 
         String message = Objects.requireNonNull(jmsTemplate.receiveAndConvert(QUEUE_TASKS)).toString();
 
@@ -100,14 +115,21 @@ public class ArtemisConfigTest {
         for (int i = 1; i < 6; i++) {
             LOG.info("Sending message " + i);
 
-            jmsTemplate.convertAndSend(QUEUE_TASKS, "message " + i, message -> {
-                message.setStringProperty(QUEUE_UNIQUE_ID, "1");
-                return message;
+            jmsTemplate.convertAndSend(QUEUE_TASKS, "message " + i, new MessagePostProcessor() {
+                @Override
+                public Message postProcessMessage(Message message) throws JMSException {
+                    message.setStringProperty(QUEUE_UNIQUE_ID, "1");
+                    return message;
+                }
             });
         }
 
-        @SuppressWarnings("ConstantConditions")
-        int size = jmsTemplate.browse(QUEUE_TASKS, (session, browser) -> Collections.list(Objects.requireNonNull(browser).getEnumeration()).size());
+        int size = jmsTemplate.browse(QUEUE_TASKS, new BrowserCallback<Integer>() {
+            @Override
+            public Integer doInJms(Session session, QueueBrowser browser) throws JMSException {
+                return Collections.list(browser.getEnumeration()).size();
+            }
+        });
 
         String message = Objects.requireNonNull(jmsTemplate.receiveAndConvert(QUEUE_TASKS)).toString();
 
