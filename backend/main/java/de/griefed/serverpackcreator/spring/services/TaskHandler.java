@@ -23,12 +23,15 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.spring.models.Task;
-import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  *
@@ -42,8 +45,8 @@ public class TaskHandler {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final ServerPackHandler SERVERPACKHANDLER;
     private final ServerPackService SERVERPACKSERVICE;
-    private final ServerPackRepository SERVERPACKREPOSITORY;
     private final TaskReceiver TASKRECEIVER;
+    private final StopWatch STOPWATCH;
 
     /**
      *
@@ -53,12 +56,12 @@ public class TaskHandler {
      * @param injectedServerPackService
      */
     @Autowired
-    public TaskHandler(ConfigurationHandler injectedConfigurationHandler, ServerPackHandler injectedServerPackHandler, ServerPackService injectedServerPackService, ServerPackRepository injectedServerPackRepository, TaskReceiver injectedTaskReceiver) {
+    public TaskHandler(ConfigurationHandler injectedConfigurationHandler, ServerPackHandler injectedServerPackHandler, ServerPackService injectedServerPackService, TaskReceiver injectedTaskReceiver) {
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.SERVERPACKHANDLER = injectedServerPackHandler;
         this.SERVERPACKSERVICE = injectedServerPackService;
-        this.SERVERPACKREPOSITORY = injectedServerPackRepository;
         this.TASKRECEIVER = injectedTaskReceiver;
+        this.STOPWATCH = new StopWatch();
     }
 
     /**
@@ -81,26 +84,40 @@ public class TaskHandler {
 
                 ServerPack serverPack = new ServerPack();
 
-                if (!SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent() && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
+                try {
+                    if (!SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent() && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
 
-                    serverPack.setModpackDir(projectID + "," + fileID);
-                    serverPack.setStatus("Queued");
-                    SERVERPACKSERVICE.insert(serverPack);
-                    TASKRECEIVER.generateCurseProject(projectID + "," + fileID);
+                        serverPack.setModpackDir(projectID + "," + fileID);
+                        serverPack.setStatus("Queued");
+                        SERVERPACKSERVICE.insert(serverPack);
+                        TASKRECEIVER.generateCurseProject(projectID + "," + fileID);
 
+                    } else if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+
+                        serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
+
+                        if (serverPack.getStatus().equals("Generating") && (new Timestamp(new Date().getTime()).getTime() - serverPack.getLastModified().getTime()) >= 1800000  && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
+                            serverPack.setModpackDir(projectID + "," + fileID);
+                            serverPack.setStatus("Queued");
+                            SERVERPACKSERVICE.updateServerPackByProjectIDAndFileID(projectID, fileID, serverPack);
+                            TASKRECEIVER.generateCurseProject(projectID + "," + fileID);
+                        }
+
+                    }
+                } catch (Exception ex) {
+                    LOG.error("An error occurred submitting the task for generation for " + projectID + ", " + fileID, ex);
+                    if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+                        SERVERPACKSERVICE.deleteByProjectIDAndFileID(projectID, fileID);
+                    }
                 }
-
-            } else if (task instanceof Task.GenerateCurseProject) {
-
-                LOG.info("GenerateCurseProject should not be in this handler. " + task.uniqueId());
 
             } else {
 
-                LOG.info("Not an instance of any known tasks: " + task.toString());
+                LOG.info("This is not the queue you are looking for: " + task.uniqueId());
             }
 
         } catch (Exception ex) {
-            LOG.error("Error generating server pack", ex);
+            LOG.error("Error submitting generationTask", ex);
         }
 
     }
@@ -115,11 +132,7 @@ public class TaskHandler {
         LOG.info("Executing task: " + task);
         try {
 
-            if (task instanceof Task.ScanCurseProject) {
-
-                LOG.info("ScanCurseProject should not be in this handler. " + task.uniqueId());
-
-            } else if (task instanceof Task.GenerateCurseProject) {
+            if (task instanceof Task.GenerateCurseProject) {
 
                 LOG.info("Instance of GenerateCurseProject " + task.uniqueId());
 
@@ -127,7 +140,7 @@ public class TaskHandler {
                 int projectID = Integer.parseInt(project[0]);
                 int fileID = Integer.parseInt(project[1]);
 
-                ServerPack serverPack = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
+                ServerPack serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
 
                 serverPack.setStatus("Generating");
 
@@ -135,15 +148,35 @@ public class TaskHandler {
 
                 serverPack.setModpackDir(projectID + "," + fileID);
 
-                ServerPack pack = SERVERPACKHANDLER.run(serverPack);
+                ServerPack pack = null;
 
-                SERVERPACKSERVICE.updateServerPackByID(pack.getId(), pack);
+                STOPWATCH.reset();
+                STOPWATCH.start();
 
+                try {
 
+                    pack = SERVERPACKHANDLER.run(serverPack);
+
+                } catch (Exception ex) {
+
+                    LOG.error("An error occurred submitting the task for generation for " + projectID + ", " + fileID, ex);
+                    if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+                        SERVERPACKSERVICE.deleteByProjectIDAndFileID(projectID, fileID);
+                    }
+
+                } finally {
+                    STOPWATCH.stop();
+                    LOG.info("Generation took " + STOPWATCH);
+                    STOPWATCH.reset();
+
+                    if (pack!=null) {
+                        SERVERPACKSERVICE.updateServerPackByID(pack.getId(), pack);
+                    }
+                }
 
             } else {
 
-                LOG.info("Not an instance of any known tasks: " + task.toString());
+                LOG.info("This is not the queue you are looking for: " + task.uniqueId());
             }
 
         } catch (Exception ex) {
