@@ -104,6 +104,7 @@ dist
 
 # Repo specific
 Survive*
+backend/main/resources/static
 
 # eclipse
 bin
