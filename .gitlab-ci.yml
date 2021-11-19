@@ -10,7 +10,7 @@ Gradle Test:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Gradle Test
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -71,9 +71,9 @@ Docker Test:
     - job: 'Gradle Test'
       artifacts: false
   stage: Docker Test
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/gitlab-ci-cd:1.0.4
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -88,7 +88,7 @@ Docker Test:
     - docker buildx build
       --push
       --no-cache
-      --platform linux/amd64,linux/arm/v7,linux/arm64
+      --platform linux/amd64,linux/arm64
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
@@ -112,9 +112,9 @@ Release:
     - job: 'Docker Test'
       artifacts: false
   stage: Release
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/gitlab-ci-cd:1.0.4
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -134,7 +134,7 @@ Build Release:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Build Release
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -259,7 +259,7 @@ pages:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Documentation
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -285,7 +285,7 @@ Gradle Test Webservice:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Gradle Test
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -339,9 +339,9 @@ Docker Test Webservice:
     - job: 'Gradle Test Webservice'
       artifacts: false
   stage: Docker Test
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/gitlab-ci-cd:1.0.4
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -356,7 +356,7 @@ Docker Test Webservice:
     - docker buildx build
       --push
       --no-cache
-      --platform linux/amd64,linux/arm/v7,linux/arm64
+      --platform linux/amd64,linux/arm64
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web-$CI_COMMIT_SHORT_SHA"
@@ -374,9 +374,9 @@ PreRelease:
     - job: 'Docker Test Webservice'
       artifacts: false
   stage: Release
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/gitlab-ci-cd:1.0.4
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -396,7 +396,7 @@ Build PreRelease:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Build Release
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -491,9 +491,9 @@ Build PreRelease:
 
 Build Docker PreRelease:
   stage: Build Release
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/gitlab-ci-cd:1.0.4
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -508,7 +508,7 @@ Build Docker PreRelease:
     - docker buildx build
       --push
       --no-cache
-      --platform linux/amd64,linux/arm/v7,linux/arm64
+      --platform linux/amd64,linux/arm64
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --file Dockerfile.webservice .
