@@ -90,8 +90,8 @@ public class ServerPackController {
      */
     @GetMapping("file/{fileid}")
     public ServerPack getByFileID(@PathVariable("fileid") int fileID) {
-        if (SERVERPACKREPOSITORY.findByFileID(fileID).isPresent()) {
-            return SERVERPACKREPOSITORY.findByFileID(fileID).get();
+        if (SERVERPACKSERVICE.findByFileID(fileID).isPresent()) {
+            return SERVERPACKSERVICE.findByFileID(fileID).get();
         } else {
             return null;
         }
@@ -115,7 +115,7 @@ public class ServerPackController {
      */
     @GetMapping("specific/{specific}")
     public ServerPack getByFileID(@PathVariable("specific") String specific) {
-        return SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(specific.split(",")[0]), Integer.parseInt(specific.split(",")[1])).get();
+        return SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(specific.split(",")[0]), Integer.parseInt(specific.split(",")[1])).get();
     }
 
     /**

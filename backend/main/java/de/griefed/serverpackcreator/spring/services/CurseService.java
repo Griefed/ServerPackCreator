@@ -31,13 +31,10 @@ import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  *
@@ -49,12 +46,10 @@ public class CurseService {
     private static final Logger LOG = LogManager.getLogger(CurseService.class);
 
     private final ServerPackHandler SERVERPACKHANDLER;
-    private final RunGeneration RUNGENERATION = new RunGeneration();
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final CurseResponse CURSERESPONSEMODEL;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackService SERVERPACKSERVICE;
-    private final ServerPackRepository SERVERPACKREPOSITORY;
     private final TaskReceiver TASKRECEIVER;
 
     /**
@@ -64,15 +59,16 @@ public class CurseService {
      * @param injectedConfigurationHandler
      * @param injectedCurseResponse
      * @param injectedApplicationProperties
+     * @param injectedServerpackService
+     * @param injectedTaskReceiver
      */
     @Autowired
-    public CurseService(ServerPackHandler injectedServerPackHandler, ConfigurationHandler injectedConfigurationHandler, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerpackService, ServerPackRepository injectedServerPackRepository, TaskReceiver injectedTaskReceiver) {
+    public CurseService(ServerPackHandler injectedServerPackHandler, ConfigurationHandler injectedConfigurationHandler, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerpackService, TaskReceiver injectedTaskReceiver) {
         this.SERVERPACKHANDLER = injectedServerPackHandler;
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.CURSERESPONSEMODEL = injectedCurseResponse;
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         this.SERVERPACKSERVICE = injectedServerpackService;
-        this.SERVERPACKREPOSITORY = injectedServerPackRepository;
         this.TASKRECEIVER = injectedTaskReceiver;
     }
 
@@ -87,31 +83,33 @@ public class CurseService {
      */
     public String createFromCurseModpack(int projectID, int fileID) throws CurseException {
 
-        if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+        if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
 
-            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get().getStatus().equals("Available")) {
-                return CURSERESPONSEMODEL.response(projectID, 0, "The modpack you requested a server pack for has already been generated. Check the downloads-section!", 5000, "info", "info");
+            ServerPack pack = SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
+
+            if (pack.getStatus().equals("Available")) {
+                return CURSERESPONSEMODEL.response(pack.getProjectName(), 0, "The modpack you requested a server pack for has already been generated. Check the downloads-section!", 5000, "info", "info");
             }
 
-            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get().getStatus().equals("Queued")) {
-                return CURSERESPONSEMODEL.response(projectID, 1, "The modpack you requested a server pack for has already been queued!", 5000, "info", "info");
+            if (pack.getStatus().equals("Queued")) {
+                return CURSERESPONSEMODEL.response(pack.getProjectName(), 1, "The modpack you requested a server pack for has already been queued!", 5000, "info", "info");
             }
 
-            if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get().getStatus().equals("Generating")) {
-                return CURSERESPONSEMODEL.response(projectID, 1, "The modpack you requested a server pack for is currently being generated!", 5000, "info", "info");
+            if (pack.getStatus().equals("Generating") && (new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime()) < 1800000) {
+                return CURSERESPONSEMODEL.response(pack.getProjectName(), 1, "The modpack you requested a server pack for is currently being generated!", 5000, "info", "info");
             }
 
         }
 
         try {
 
-            ServerPack serverPack = new ServerPack();
+            ServerPack serverPack = new ServerPack();;
 
             if (CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
 
                 TASKRECEIVER.scanCurseProject(projectID + "," + fileID);
 
-                return CURSERESPONSEMODEL.response(serverPack.getProjectID(), 1, "Queued! Come back later and check the downloads-section to see whether your server pack for " + serverPack.getProjectName() + " is ready for download!", 7000, "done", "positive");
+                return CURSERESPONSEMODEL.response(serverPack.getProjectName(), 1, "Queued! Come back later and check the downloads-section to see whether your server pack for " + serverPack.getProjectName() + " is ready for download!", 7000, "done", "positive");
 
             } else {
 
@@ -142,51 +140,12 @@ public class CurseService {
      */
     public String regenerateFromCurseModpack(String modpack) {
 
-        ServerPack serverPack = SERVERPACKREPOSITORY.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
+        ServerPack serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
         serverPack.setModpackDir(modpack);
         serverPack.setStatus("Queued");
         SERVERPACKSERVICE.updateServerPackByID(serverPack.getId(), serverPack);
         TASKRECEIVER.generateCurseProject(modpack);
 
         return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating server pack.", 3000, "done", "positive");
-    }
-
-    /**
-     *
-     * @author Griefed
-     */
-    @Async
-    private class RunGeneration {
-
-        // TODO: Refactor to use queueing system
-
-        /**
-         *
-         * @author Griefed
-         * @param serverPack
-         */
-        @Async
-        public void run(ServerPack serverPack) {
-            final ExecutorService executorService = Executors.newSingleThreadExecutor();
-            try {
-                executorService.execute(() -> {
-                    ServerPack pack = SERVERPACKHANDLER.run(serverPack);
-                    SERVERPACKSERVICE.updateServerPackByID(pack.getId(), pack);
-                    System.gc();
-                    System.runFinalization();
-                    LOG.debug("Done.");
-                    executorService.shutdown();
-                    try {
-                        //noinspection ResultOfMethodCallIgnored
-                        executorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException ex) {
-                        LOG.error("Couldn't terminate executor.", ex);
-                    }
-
-                });
-            } catch (RejectedExecutionException ex) {
-                LOG.error("Couldn't accept task.", ex);
-            }
-        }
     }
 }

@@ -39,6 +39,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -65,6 +66,37 @@ public class ServerPackService {
     }
 
     //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than property and has zero downloads
+
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @param fileID
+     * @return
+     */
+    public Optional<ServerPack> findByProjectIDAndFileID(int projectID, int fileID) {
+        return SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID);
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param projectID
+     * @param fileID
+     */
+    protected void deleteByProjectIDAndFileID(int projectID, int fileID) {
+        SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
+    }
+
+    /**
+     *
+     * @author Griefed
+     * @param fileID
+     * @return
+     */
+    public Optional<ServerPack> findByFileID(int fileID) {
+        return SERVERPACKREPOSITORY.findByFileID(fileID);
+    }
 
     /**
      *
@@ -161,7 +193,7 @@ public class ServerPackService {
      * @param serverPack
      * @return
      */
-    public ServerPack insert(ServerPack serverPack) {
+    protected ServerPack insert(ServerPack serverPack) {
         return SERVERPACKREPOSITORY.save(serverPack);
     }
 
@@ -171,7 +203,7 @@ public class ServerPackService {
      * @param id
      * @param serverPack
      */
-    public void updateServerPackByID(int id, ServerPack serverPack) {
+    protected void updateServerPackByID(int id, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
             LOG.debug("Updating database with: " + serverPack.repositoryToString());
@@ -194,7 +226,7 @@ public class ServerPackService {
      * @param id
      * @param serverPack
      */
-    private void updateDownloadCounter(int id, ServerPack serverPack) {
+    protected void updateDownloadCounter(int id, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
             serverPackFromDB.setDownloads(serverPack.getDownloads() + 1);
@@ -208,7 +240,7 @@ public class ServerPackService {
      * @param id
      * @param serverPack
      */
-    private void updateConfirmedCounter(int id, ServerPack serverPack) {
+    protected void updateConfirmedCounter(int id, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
             serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
@@ -223,7 +255,7 @@ public class ServerPackService {
      * @param fileID
      * @param serverPack
      */
-    public void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
+    protected void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
             LOG.debug("Updating database with: " + serverPack.repositoryToString());
@@ -245,7 +277,7 @@ public class ServerPackService {
      * @author Griefed
      * @param id
      */
-    public void deleteServerPack(int id) {
+    protected void deleteServerPack(int id) {
         SERVERPACKREPOSITORY.deleteById(id);
     }
 
@@ -255,7 +287,9 @@ public class ServerPackService {
      * @param projectID
      * @param fileID
      */
-    public void deleteServerPack(int projectID, int fileID) {
+    protected void deleteServerPack(int projectID, int fileID) {
         SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
     }
+
+
 }
