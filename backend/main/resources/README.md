@@ -41,6 +41,64 @@ Use at your own risk! Be aware that data loss is possible.
 
 [[_TOC_]]
 
+# Screenshots
+
+## Commandline Interface (CLI)
+
+| Windows | Linux | Mac
+| ------- | ----- | ----
+| ![CLI Win](https://i.griefed.de/images/2021/11/20/cli_windows.png) | ![CLI Linux](https://i.griefed.de/images/2021/11/20/cli_linux.png) | ![CLI Mac](https://i.griefed.de/images/2021/11/20/cli_mac.png)
+
+## Graphical User Interface (GUI)
+
+| Windows | Linux | Mac
+| ------- | ----- | ----
+| ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_windows_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_linux_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_mac_light.png)
+| ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_windows_dark.png) | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_linux_dark.png) | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_mac_dark.png)
+
+## Webservice
+
+| Light mode | Dark mode 
+| ---------- | ---------
+| ![Light Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_light.png) | ![Dark Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_dark.png)
+| ![Light Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_light.png) | ![Dark Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_dark.png)
+
+# Advantages/Disadvantages of CLI, GUI and Webservice:
+
+Each way of using ServerPackCreator has its advantages and disadvantages. Depending on your environment, it may be better to use one way over the other. This section highlights some of the
+advantages and disadvantages of each version to help you decide which way you are going to use.
+Note: All three ways are supported by the **.jar**-file. Which one is started depends on the CLI arguments used and your environment.
+
+## CLI:
+
+| Advantages | Disadvantages |
+| :--------- | :------------ |
+| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use. | Gathering of information for a configuration file is tedious. |
+| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards. | No convenience features file folder-browsing or jumping to the generated server pack after generation. |
+|  | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. 
+|  | Manual editing of the configuration-file in case you want to change it. |
+
+## GUI:
+
+| Advantages | Disadvantages |
+| :--------- | :------------ |
+| Browse the filesystem for folders and file required by the configuration. | Requires a graphical environment. |
+| Setting up a configuration by browsing the filesystem and selecting your Minecraft and modloader versions from a list. |  |
+| Browsing the generated server pack after generation has finished. |  |
+| Loading and saving different configurations for quick generation of multiple server packs in short succession. |  |
+| Edit the configuration in the GUI. No manual file-editing required. |  |
+
+## Webservice:
+
+| Advantages | Disadvantages |
+| :--------- | :------------ |
+| No installation/setup required if a public instance is available somewhere. | Requires someone to setup a publicly accessible instance. |
+| Punch in your projectID and fileID and get a download for a server pack after it has been generated. | Requires somewhat modern browser versions. |
+| Voting system to let users indicate whether a generated server pack works. | Not all browers may be supported. |
+| Mostly open REST API. Interaction with the webservice does not *require* a browser. You can request a server pack generation and/or download from the CLI. | Currently only allows server pack generation for modpacks and files already on CurseForge. |
+
+---
+
 # JetBrains
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
@@ -48,42 +106,6 @@ Use at your own risk! Be aware that data loss is possible.
 [JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/)
 --------- | ---------  | ------
 [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/)
-
-# Screenshots
-
-GUI, CLI and webservice
-
-![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
-
-
-CLI
-
-| Windows | Linux | Mac
-| ------- | ----- | ----
-| CLI Win | CLI Linux | CLI Mac
-
-GUI
-
-| Windows | Linux | Mac
-| ------- | ----- | ----
-| GUI Light | GUI Light | GUI Light
-| GUI Dark | GUI Dark | GUI Dark
-
-Web
-
-| Light mode | Dark mode 
-| ---------- | ---------
-| Light Configuration | Dark Configuration
-| Light Downloads | Dark Downloads
-
-Comparisons:
-Advantages/Disadvantages CLI vs. GUI vs. Webservice:
-CLI:
-
-GUI:
-
-Webservice:
-
 
 ---
 
@@ -127,11 +149,10 @@ Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONT
     4. Set a suffix for the server pack to be generated
     5. And much more!
 12. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs.**
-    1. Upload config files
-    2. Upload CurseForge modpack-archives to generate server packs from
-    3. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
-    4. Logs from last run in separate tab
-    5. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
+    1. Generate a server pack from a projectID and fileID combination.
+    2. All generated server packs available for download by everyone.
+    3. Admin-area to edit some configurations, like the list of clientside-only mods, whether regeneration of server packs is allowed, reading the log file(s), enabling/disabling installed addons, etc.
+    4. Upload an Overwolf modpack export to generate a server pack from it. (Must contain a valid `manifest.json`-file like [this one](https://haste.zneix.eu/cinadiwubi.json))
 13. **Addons!**
     1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
     2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
