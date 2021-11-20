@@ -36,19 +36,19 @@
 
         <q-btn v-if="!this.$q.platform.is.mobile" label="GitHub" style="color: #C0FFEE" type="a" target="_blank" href="https://github.com/Griefed/ServerPackCreator">
           <q-tooltip>
-            Visit my blog!
+            Visit the project on GitHub!
           </q-tooltip>
         </q-btn>
 
         <q-btn v-if="!this.$q.platform.is.mobile" label="Support" style="color: #C0FFEE" type="a" target="_blank" href="https://github.com/Griefed/ServerPackCreator/issues">
           <q-tooltip>
-            Visit my blog!
+            Report an issue!
           </q-tooltip>
         </q-btn>
 
         <q-btn v-if="!this.$q.platform.is.mobile" label="Discord" style="color: #C0FFEE" type="a" target="_blank" href="https://discord.griefed.de">
           <q-tooltip>
-            Visit my blog!
+            Chat and support on Discord!
           </q-tooltip>
         </q-btn>
 
