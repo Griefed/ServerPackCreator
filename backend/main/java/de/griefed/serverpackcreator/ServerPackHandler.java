@@ -148,9 +148,9 @@ public class ServerPackHandler {
      */
     public boolean run(File configFileToUse, ConfigurationModel configurationModel) {
 
-        String destination = configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + configurationModel.getServerPackSuffix();
-
         if (!CONFIGURATIONHANDLER.checkConfiguration(configFileToUse, true, configurationModel)) {
+
+            String destination = configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + configurationModel.getServerPackSuffix();
 
             /*
              * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
