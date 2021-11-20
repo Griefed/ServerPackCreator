@@ -448,95 +448,58 @@ public class ConfigurationHandler {
     boolean isCurse(ConfigurationModel configurationModel) {
         boolean configHasError = false;
         try {
-            if (CurseAPI.project(configurationModel.getProjectID()).isPresent()) {
+            if (CurseAPI.project(configurationModel.getProjectID()).isPresent() && CurseAPI.file(configurationModel.getProjectID(), configurationModel.getFileID()).isPresent()) {
 
-                String projectName, displayName;
-                projectName = displayName = "";
+                CURSECREATEMODPACK.curseForgeModpack(configurationModel, configurationModel.getProjectID(), configurationModel.getFileID());
 
-                try {
-                    projectName = CurseAPI.project(configurationModel.getProjectID()).get().name();
+                configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("minecraft").get("version").asText());
 
-                    try {
-                        displayName = Objects.requireNonNull(CurseAPI.project(configurationModel.getProjectID()).get().files().fileWithID(configurationModel.getFileID())).displayName();
+                if (checkModpackForFabric(configurationModel.getCurseModpack())) {
+                    if (configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().contains("fabric")) {
 
-                    } catch (NullPointerException npe) {
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.display"));
-
-                        try {
-                            displayName = Objects.requireNonNull(CurseAPI.project(configurationModel.getProjectID()).get().files().fileWithID(configurationModel.getFileID())).nameOnDisk();
-
-                        } catch (NullPointerException npe2) {
-
-                            /* This log is meant to be read by the user, therefore we allow translation. */
-                            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), npe2);
-                            displayName = null;
-                        }
-                    }
-
-                } catch (CurseException ex) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.curseforge"), ex);
-                }
-
-                if (displayName != null && projectName != null) {
-
-                    CURSECREATEMODPACK.curseForgeModpack(configurationModel, configurationModel.getProjectID(), configurationModel.getFileID());
-
-                    configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("minecraft").get("version").asText());
-
-                    if (checkModpackForFabric(configurationModel.getCurseModpack())) {
-                        if (configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().contains("fabric")) {
-
-                            configurationModel.setModLoader("Fabric");
-                            configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(7));
-
-                        } else {
-                            /* This log is meant to be read by the user, therefore we allow translation. */
-                            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-                            LOG.debug("Setting modloader to Fabric.");
-
-                            configurationModel.setModLoader("Fabric");
-                            configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
-                        }
+                        configurationModel.setModLoader("Fabric");
+                        configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(7));
 
                     } else {
                         /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.debug("Setting modloader to Forge.");
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                        LOG.debug("Setting modloader to Fabric.");
 
-                        configurationModel.setModLoader("Forge");
-                        configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
-
+                        configurationModel.setModLoader("Fabric");
+                        configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
                     }
-
-                    configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
-
-                    writeConfigToFile(
-                            configurationModel.getModpackDir(),
-                            configurationModel.getClientMods(),
-                            configurationModel.getCopyDirs(),
-                            configurationModel.getIncludeServerInstallation(),
-                            configurationModel.getJavaPath(),
-                            configurationModel.getMinecraftVersion(),
-                            configurationModel.getModLoader(),
-                            configurationModel.getModLoaderVersion(),
-                            configurationModel.getIncludeServerIcon(),
-                            configurationModel.getIncludeServerProperties(),
-                            configurationModel.getIncludeZipCreation(),
-                            configurationModel.getJavaArgs(),
-                            configurationModel.getServerPackSuffix(),
-                            serverPackCreatorProperties.FILE_CONFIG,
-                            false
-                    );
 
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.ids"));
-                    configHasError = true;
+                    LOG.debug("Setting modloader to Forge.");
+
+                    configurationModel.setModLoader("Forge");
+                    configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
+
                 }
+
+                configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
+
+                writeConfigToFile(
+                        configurationModel.getModpackDir(),
+                        configurationModel.getClientMods(),
+                        configurationModel.getCopyDirs(),
+                        configurationModel.getIncludeServerInstallation(),
+                        configurationModel.getJavaPath(),
+                        configurationModel.getMinecraftVersion(),
+                        configurationModel.getModLoader(),
+                        configurationModel.getModLoaderVersion(),
+                        configurationModel.getIncludeServerIcon(),
+                        configurationModel.getIncludeServerProperties(),
+                        configurationModel.getIncludeZipCreation(),
+                        configurationModel.getJavaArgs(),
+                        configurationModel.getServerPackSuffix(),
+                        serverPackCreatorProperties.FILE_CONFIG,
+                        false
+                );
 
 
             } else {
