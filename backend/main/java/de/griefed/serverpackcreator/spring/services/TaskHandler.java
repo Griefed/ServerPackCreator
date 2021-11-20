@@ -157,21 +157,21 @@ public class TaskHandler {
 
                     pack = SERVERPACKHANDLER.run(serverPack);
 
+                    if (pack!=null) {
+                        SERVERPACKSERVICE.updateServerPackByID(pack.getId(), pack);
+                    }
+
                 } catch (Exception ex) {
 
-                    LOG.error("An error occurred submitting the task for generation for " + projectID + ", " + fileID, ex);
+                    LOG.error("An error occurred generating the server pack for " + projectID + ", " + fileID, ex);
                     if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
-                        SERVERPACKSERVICE.deleteByProjectIDAndFileID(projectID, fileID);
+                        SERVERPACKSERVICE.deleteServerPack(serverPack.getId());
                     }
 
                 } finally {
                     STOPWATCH.stop();
                     LOG.info("Generation took " + STOPWATCH);
                     STOPWATCH.reset();
-
-                    if (pack!=null) {
-                        SERVERPACKSERVICE.updateServerPackByID(pack.getId(), pack);
-                    }
                 }
 
             } else {
