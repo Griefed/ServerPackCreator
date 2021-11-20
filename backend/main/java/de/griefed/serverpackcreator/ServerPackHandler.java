@@ -322,32 +322,12 @@ public class ServerPackHandler {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.folder.enter"));
-            Path serverPack = Paths.get(String.format("%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination));
 
             try {
-                //TODO: Refactor to use commons-io
-                Files.walkFileTree(serverPack,
 
-                        new SimpleFileVisitor<Path>() {
+                FileUtils.deleteDirectory(new File(String.format("%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)));
 
-                            @Override
-                            public FileVisitResult postVisitDirectory(
-                                    Path dir, IOException exc) throws IOException {
-                                Files.delete(dir);
-                                return FileVisitResult.CONTINUE;
-                            }
-
-                            @Override
-                            public FileVisitResult visitFile(
-                                    Path file, BasicFileAttributes attrs)
-                                    throws IOException {
-                                Files.delete(file);
-                                return FileVisitResult.CONTINUE;
-                            }
-
-                        });
-
-            } catch (IOException ex) {
+            } catch (IOException | IllegalArgumentException ex) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupenvironment.folder.delete"), destination));
@@ -364,15 +344,20 @@ public class ServerPackHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.zip.enter"));
 
-            boolean isZipDeleted = new File(String.format("%s/%s_server_pack.zip", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)).delete();
+            try {
 
-            if (isZipDeleted) {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.zip.complete"));
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupenvironment.zip.delete"));
+                if (Files.deleteIfExists(Paths.get(String.format("%s/%s_server_pack.zip", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)))) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupenvironment.zip.complete"));
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupenvironment.zip.delete"));
+                }
+
+            } catch (SecurityException | IOException ex) {
+                ex.printStackTrace();
             }
+
         }
     }
 
@@ -949,30 +934,9 @@ public class ServerPackHandler {
              */
             } else if (directory.startsWith("saves/")) {
 
-                String savesDir = String.format("%s/%s", serverPath, directory.substring(6));
                 try {
-                    //TODO: Refactor to use apache commons
-                    Stream<Path> files = Files.walk(Paths.get(clientDir));
 
-                    files.forEach(file -> {
-                        try {
-
-                            Files.copy(
-                                    file,
-                                    Paths.get(savesDir).resolve(Paths.get(clientDir).relativize(file)),
-                                    REPLACE_EXISTING
-                            );
-
-                            LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
-
-                        } catch (IOException ex) {
-                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                LOG.error("An error occurred during copy operation.", ex);
-                            }
-                        }
-                    });
-
-                    files.close();
+                    FileUtils.copyDirectory(new File(clientDir), new File(String.format("%s/%s", serverPath, directory.substring(6))));
 
                 } catch (IOException ex) {
                     LOG.error("An error occurred copying the specified world.", ex);
@@ -1023,9 +987,7 @@ public class ServerPackHandler {
 
             } else {
 
-                try {
-                    //TODO: Refactor to use apache commons
-                    Stream<Path> files = Files.walk(Paths.get(clientDir));
+                try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
 
                     files.forEach(file -> {
                         if (excludeFileOrDirectory(file.toString())) {
@@ -1049,8 +1011,6 @@ public class ServerPackHandler {
                             }
                         }
                     });
-
-                    files.close();
 
                 } catch (IOException ex) {
                     LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
@@ -1475,13 +1435,10 @@ public class ServerPackHandler {
         } catch (IOException ex) {
             LOG.error("An error occurred downloading Fabric.", ex);
 
-            if (new File(String.format("%s/%s/fabric-installer.jar", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)).exists()) {
-                try {
-                    Files.delete(Paths.get(String.format("%s/%s/fabric-installer.jar", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)));
-
-                } catch (IOException exc) {
-                    LOG.error("Couldn't delete corrupted Fabric installer.", exc);
-                }
+            try {
+                Files.deleteIfExists(Paths.get(String.format("%s/%s/fabric-installer.jar", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)));
+            } catch (IOException ex2) {
+                LOG.error("Couldn't delete Fabric installer.");
             }
         }
 
@@ -1553,36 +1510,43 @@ public class ServerPackHandler {
 
         if (modLoader.equalsIgnoreCase("Fabric")) {
 
-            boolean isInstallerDeleted = fabricInstaller.delete();
-
-            if (isInstallerDeleted) {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), fabricInstaller.getName()));
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupserverpack.delete"), fabricInstaller.getName()));
+            try {
+                if (Files.deleteIfExists(fabricInstaller.toPath())) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), fabricInstaller.getName()));
+                } else {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupserverpack.delete"), fabricInstaller.getName()));
+                }
+            } catch (IOException ex) {
+                LOG.error("Couldn't delete Fabric installer.");
             }
 
         } else if (modLoader.equalsIgnoreCase("Forge")) {
 
             String[] minecraft = minecraftVersion.split("\\.");
 
-            boolean isInstallerDeleted = forgeInstaller.delete();
-
-            boolean isInstallerLogDeleted = new File(String.format("%s/%s/installer.log", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)).delete();
-
-            if (isInstallerDeleted) {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), forgeInstaller.getName()));
-            } else {
-                LOG.error(String.format("Could not delete %s.", forgeInstaller.getName()));
+            try {
+                if (Files.deleteIfExists(forgeInstaller.toPath())) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), forgeInstaller.getName()));
+                } else {
+                    LOG.error(String.format("Could not delete %s.", forgeInstaller.getName()));
+                }
+            } catch (IOException ex) {
+                LOG.error("Couldn't delete Forge installer.");
             }
 
-            if (isInstallerLogDeleted) {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.forgelog"));
-            } else {
-                LOG.error("Error deleting Forge installer log.");
+            try {
+                if (Files.deleteIfExists(Paths.get(String.format("%s/%s/installer.log", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)))) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.forgelog"));
+                } else if (Files.deleteIfExists(Paths.get(String.format("%s/%s/forge-installer.jar.log", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)))) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.forgelog"));
+                }
+            } catch (IOException ex) {
+                LOG.error("Couldn't delete Forge server installation log.");
             }
 
             if (Integer.parseInt(minecraft[1]) < 17) {
@@ -1594,43 +1558,43 @@ public class ServerPackHandler {
                             Paths.get(String.format("%s/%s/forge.jar", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)),
                             REPLACE_EXISTING);
 
-                    boolean isOldJarDeleted = (new File(
-                            String.format("%s/%s/forge-%s-%s.jar",
-                                    serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(),
-                                    destination,
-                                    minecraftVersion,
-                                    modLoaderVersion))).delete();
+                } catch (IOException ex) {
+                    LOG.error("Error during Forge cleanup.", ex);
+                }
 
-
-                    if ((isOldJarDeleted) && (new File(String.format("%s/%s/forge.jar", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)).exists())) {
+                try {
+                    if (Files.deleteIfExists(Paths.get(String.format("%s/%s/forge-%s-%s.jar",serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(),destination,minecraftVersion,modLoaderVersion))) && (new File(String.format("%s/%s/forge.jar", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)).exists())) {
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename"));
                     } else {
                         LOG.error("There was an error during renaming or deletion of the forge server jar.");
                     }
-
-                } catch (IOException ex) {
-                    LOG.error("Error during Forge cleanup.", ex);
+                } catch(IOException ex) {
+                    LOG.error("Couldn't delete old Forge jar.");
                 }
 
             } else {
 
-                boolean deleteRunBat = new File(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination,"run.bat")).delete();
-                boolean deleteRunSh = new File(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination,"run.sh")).delete();
-
-                // TODO: Replace with lang keys
-                if (deleteRunBat) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info("Deleted run.bat.");
-                } else {
-                    LOG.error(String.format("Could not delete %s.", "run.bat"));
+                try {
+                    if (Files.deleteIfExists(Paths.get(String.format("%s/%s/run.bat", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)))) {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.bat.delete"));
+                    } else {
+                        LOG.error("Could not delete run.bat.");
+                    }
+                } catch (IOException ex) {
+                    LOG.error("An error occurred during the deletion of run.bat.", ex);
                 }
 
-                if (deleteRunSh) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info("Deleted run.sh.");
-                } else {
-                    LOG.error(String.format("Could not delete %s.", "run.sh"));
+                try {
+                    if (Files.deleteIfExists(Paths.get(String.format("%s/%s/run.sh", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination)))) {
+                        /* This log is meant to be read by the user, therefore we allow translation. */
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.sh.delete"));
+                    } else {
+                        LOG.error("Could not delete run.sh.");
+                    }
+                } catch (IOException ex) {
+                    LOG.error("An error occurred during the deletion of run.sh.", ex);
                 }
 
             }
