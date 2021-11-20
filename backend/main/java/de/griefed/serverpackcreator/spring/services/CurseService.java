@@ -103,7 +103,7 @@ public class CurseService {
 
         try {
 
-            ServerPack serverPack = new ServerPack();;
+            ServerPack serverPack = new ServerPack();
 
             if (CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
 
