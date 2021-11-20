@@ -241,13 +241,10 @@ public class DefaultFiles {
             }
         } else if (!serverPackCreatorProperties.FILE_CONFIG.exists()) {
             try {
-                //TODO: Refactor to use commons io
-                InputStream link = (DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", serverPackCreatorProperties.FILE_CONFIG.getName())));
 
-                if (link != null) {
-                    Files.copy(link, serverPackCreatorProperties.FILE_CONFIG.getAbsoluteFile().toPath());
-                    link.close();
-                }
+                FileUtils.copyInputStreamToFile(
+                        Objects.requireNonNull(DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", serverPackCreatorProperties.FILE_CONFIG.getName()))),
+                        serverPackCreatorProperties.FILE_CONFIG);
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
