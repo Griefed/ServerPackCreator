@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +37,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.stream.Stream;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
@@ -105,20 +102,10 @@ public class CurseCreateModpack {
     public String retrieveProjectName(int newProjectID) {
         try {
 
-            /*if (CurseAPI.project(newProjectID).isPresent()) {
-
-                return CurseAPI.project(newProjectID).get().name();
-
-            } else {
-
-                return String.valueOf(newProjectID);
-            }*/
-
             return CurseAPI.project(newProjectID).orElseThrow(NullPointerException::new).name();
 
         } catch (NullPointerException | CurseException cex) {
 
-            // TODO: Improve error message
             LOG.error("Name for project " + newProjectID + " not found. Using projectID instead.", cex);
             return String.valueOf(newProjectID);
         }
@@ -159,8 +146,7 @@ public class CurseCreateModpack {
 
         } catch (CurseException | NullPointerException ex) {
 
-            // TODO: Replace with lang key
-            LOG.warn("Display name for file " + fileID + " not found. Checking filename.");
+            LOG.warn(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.warn.filename.notfound.displayname"), fileID));
 
             try {
 
@@ -169,8 +155,7 @@ public class CurseCreateModpack {
 
             } catch (CurseException | NullPointerException ex2) {
 
-                // TODO: Replace with lang key
-                LOG.warn("Filediskname for file " + fileID + " not found. Using fileID.");
+                LOG.warn(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.warn.filename.notfound.filename"), fileID));
 
                 return String.valueOf(fileID);
 
@@ -190,14 +175,14 @@ public class CurseCreateModpack {
     String setModloaderCase(String modloader) {
 
         if (modloader.equalsIgnoreCase("Forge")) {
-            return "Forge";
 
+            return "Forge";
         } else if (modloader.equalsIgnoreCase("Fabric")) {
 
             return "Fabric";
         } else {
-            // TODO: Replace with lang key
-            LOG.warn("Couldn't determine modloader. Returning \"Forge\".");
+
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.warn.modloader.fallback"));
             return "Forge";
         }
     }
@@ -276,18 +261,21 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.download"), configurationModel.getProjectName(), configurationModel.getFileName()));
 
-            CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
-        } catch (CurseException cex) {
+            //CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
+
+            unzipArchive(CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir)).orElseThrow(NullPointerException::new).toString(), modpackDir);
+
+        } catch (NullPointerException | CurseException cex) {
             LOG.error(String.format("Error: Could not download file %s for project %s to directory %s.", configurationModel.getFileName(), configurationModel.getProjectName(), modpackDir));
         }
 
-        unzipArchive(String.format("%s/%s", modpackDir, configurationModel.getFileDiskName()), modpackDir);
-        //TODO: Refactor to use apache commons
-        boolean isFileDeleted = new File(String.format("%s/%s", modpackDir, configurationModel.getFileDiskName())).delete();
-        if (isFileDeleted) {
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.deletezip"));
-        }
+        try {
+            if (Files.deleteIfExists(Paths.get(String.format("%s/%s", modpackDir, configurationModel.getFileDiskName())))) {
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.deletezip"));
+            }
+        } catch (IOException ignored) {}
+
 
         if (new File(String.format("%s/manifest.json", modpackDir)).exists()) {
             try {
@@ -315,14 +303,12 @@ public class CurseCreateModpack {
             }
 
             copyOverride(modpackDir);
+
             if (new File(String.format("%s/overrides", modpackDir)).isDirectory()) {
                 try {
-                    //TODO: Refactor to use apache commons
-                    Path pathToBeDeleted = Paths.get(String.format("%s/overrides", modpackDir));
-                    //noinspection ResultOfMethodCallIgnored
-                    Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-                } catch (IOException ex) {
-                    LOG.debug("Directory \"overrides\" not found. Skipping delete action...");
+                    FileUtils.deleteDirectory(new File(String.format("%s/overrides", modpackDir)));
+                } catch (IOException | IllegalArgumentException ex) {
+                    LOG.debug("Couldn't delete overrides directory.", ex);
                 }
             }
 
@@ -458,20 +444,9 @@ public class CurseCreateModpack {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.copyoverrides.info"));
         try {
 
-            //TODO: Refactor to use apache commons
-            Stream<Path> files = Files.walk(Paths.get(String.format("%s/overrides", modpackDir)));
-            files.forEach(file -> {
-                try {
-                    Files.copy(file, Paths.get(modpackDir).resolve(Paths.get(String.format("%s/overrides", modpackDir)).relativize(file)), REPLACE_EXISTING);
-                    LOG.debug("Copying: " + file.toAbsolutePath());
-                } catch (IOException ex) {
-                    if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                        LOG.error("An error occurred copying files from overrides to parent directory.", ex);
-                    }
-                }
-            });
-            files.close();
-        } catch (IOException ex) {
+            FileUtils.copyDirectory(new File(String.format("%s/overrides", modpackDir)), new File(modpackDir));
+
+        } catch (IOException | NullPointerException | IllegalArgumentException ex) {
             LOG.error("An error occurred copying files from overrides to parent directory.", ex);
         }
     }
@@ -536,28 +511,10 @@ public class CurseCreateModpack {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanupenvironment.enter"));
-            Path modpackPath = Paths.get(modpackDir);
 
             try {
-                //TODO: Refactor to use commons io
-                Files.walkFileTree(modpackPath,
 
-                        new SimpleFileVisitor<Path>() {
-
-                            @Override
-                            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                                Files.delete(dir);
-                                return FileVisitResult.CONTINUE;
-                            }
-
-                            @Override
-                            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                                Files.delete(file);
-                                return FileVisitResult.CONTINUE;
-                            }
-
-                        });
-
+                FileUtils.deleteDirectory(new File(modpackDir));
 
             } catch (FileSystemException ex) {
 
