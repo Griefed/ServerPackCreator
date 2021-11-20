@@ -55,6 +55,36 @@ GUI, CLI and webservice
 
 ![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
 
+
+CLI
+
+| Windows | Linux | Mac
+| ------- | ----- | ----
+| CLI Win | CLI Linux | CLI Mac
+
+GUI
+
+| Windows | Linux | Mac
+| ------- | ----- | ----
+| GUI Light | GUI Light | GUI Light
+| GUI Dark | GUI Dark | GUI Dark
+
+Web
+
+| Light mode | Dark mode 
+| ---------- | ---------
+| Light Configuration | Dark Configuration
+| Light Downloads | Dark Downloads
+
+Comparisons:
+Advantages/Disadvantages CLI vs. GUI vs. Webservice:
+CLI:
+
+GUI:
+
+Webservice:
+
+
 ---
 
 # ✨ Thanks to all of my Supporters and Sponsors ✨
