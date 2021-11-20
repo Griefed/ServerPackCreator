@@ -105,19 +105,21 @@ public class CurseCreateModpack {
     public String retrieveProjectName(int newProjectID) {
         try {
 
-            if (CurseAPI.project(newProjectID).isPresent()) {
+            /*if (CurseAPI.project(newProjectID).isPresent()) {
 
                 return CurseAPI.project(newProjectID).get().name();
 
             } else {
 
                 return String.valueOf(newProjectID);
-            }
+            }*/
 
-        } catch (CurseException cex) {
+            return CurseAPI.project(newProjectID).orElseThrow(NullPointerException::new).name();
+
+        } catch (NullPointerException | CurseException cex) {
 
             // TODO: Improve error message
-            LOG.error(cex);
+            LOG.error("Name for project " + newProjectID + " not found. Using projectID instead.", cex);
             return String.valueOf(newProjectID);
         }
     }
@@ -131,7 +133,8 @@ public class CurseCreateModpack {
     public String retrieveFileDiskName(int newProjectID, int newFileID) {
         try {
 
-            return CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
+            //return CurseAPI.project(newProjectID).get().files().fileWithID(newFileID).nameOnDisk();
+            return CurseAPI.file(newProjectID, newFileID).orElseThrow(NullPointerException::new).nameOnDisk();
 
         } catch (NullPointerException | CurseException ex) {
 
@@ -151,7 +154,8 @@ public class CurseCreateModpack {
     public String retrieveFileName(int projectID, int fileID) {
         try {
 
-            return CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).displayName();
+            //return CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).displayName();
+            return CurseAPI.file(projectID, fileID).orElseThrow(NullPointerException::new).displayName();
 
         } catch (CurseException | NullPointerException ex) {
 
@@ -160,7 +164,8 @@ public class CurseCreateModpack {
 
             try {
 
-                return CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).nameOnDisk();
+                //return CurseAPI.project(projectID).orElseThrow(NullPointerException::new).files().fileWithID(fileID).nameOnDisk();
+                return CurseAPI.file(projectID, fileID).orElseThrow(NullPointerException::new).nameOnDisk();
 
             } catch (CurseException | NullPointerException ex2) {
 
@@ -348,22 +353,13 @@ public class CurseCreateModpack {
                 LOG.info(reticulatingSplines.reticulate());
             }
 
-            String modName, modFileName;
-            modName = modFileName = "";
+            //modName = CurseAPI.project(configurationModel.getCurseModpack().get("files").get(i).get("projectID").asInt()).get().name();
+            String modName = retrieveProjectName(configurationModel.getCurseModpack().get("files").get(i).get("projectID").asInt());
 
-            try {
-
-                //noinspection OptionalGetWithoutIsPresent
-                modName = CurseAPI.project(configurationModel.getCurseModpack().get("files").get(i).get("projectID").asInt()).get().name();
-
-                modFileName = retrieveFileName(
-                        configurationModel.getCurseModpack().get("files").get(i).get("projectID").asInt(),
-                        configurationModel.getCurseModpack().get("files").get(i).get("fileID").asInt()
-                );
-
-            } catch (CurseException cex) {
-                LOG.error("Error: Couldn't retrieve CurseForge project name and file name.", cex);
-            }
+            String modFileName = retrieveFileName(
+                    configurationModel.getCurseModpack().get("files").get(i).get("projectID").asInt(),
+                    configurationModel.getCurseModpack().get("files").get(i).get("fileID").asInt()
+            );
 
             try {
 

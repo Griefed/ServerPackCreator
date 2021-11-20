@@ -70,14 +70,14 @@ public class CurseResponse {
     public String response(int projectID, int status, String message, int timeout, String icon, String colour) {
         try {
             return "{" +
-                    "\"project\": \"" + CurseAPI.project(projectID).get().name() + "\"," +
+                    "\"project\": \"" + CurseAPI.project(projectID).orElseThrow(NullPointerException::new).name() + "\"," +
                     "\"status\": " + status + "," +
                     "\"message\": \"" + message + "\"," +
                     "\"timeout\": " + timeout + "," +
                     "\"icon\": \"" + icon + "\"," +
                     "\"colour\": \"" + colour + "\"" +
                     "}";
-        } catch (CurseException ex) {
+        } catch (NullPointerException | CurseException ex) {
             LOG.error("Project name could not be acquired", ex);
             return "{" +
                     "\"project\": \"" + projectID + "\"," +
