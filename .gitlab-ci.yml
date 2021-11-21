@@ -329,10 +329,9 @@ Gradle Test Webservice:
       - build/libs/ServerPackCreator-webservice.jar
       - build/reports/tests/test
     expire_in: 1 week
-  only:
-    - webservice
-    - alpha
-    - beta
+  except:
+    - master
+    - main
 
 Docker Test Webservice:
   needs:
@@ -362,10 +361,9 @@ Docker Test Webservice:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web-$CI_COMMIT_SHORT_SHA"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web-$CI_COMMIT_SHORT_SHA"
       --file Dockerfile.webservice .
-  only:
-    - webservice
-    - alpha
-    - beta
+  except:
+    - master
+    - main
 
 PreRelease:
   needs:
