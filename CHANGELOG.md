@@ -1,3 +1,252 @@
+## [3.0.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.7...3.0.0-alpha.8) (2021-10-15)
+
+
+### 👀 Reverts
+
+* Do not create the eula.txt-file automatically. Reverts feature request issue [#83](https://git.griefed.de/Griefed/ServerPackCreator/issues/83). Lots of other smaller things, too many to list. ([ae66641](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae66641b4e66e4711069289c79427651d10aaf11))
+
+## [3.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.6...3.0.0-alpha.7) (2021-10-11)
+
+
+### :scissors: Refactor
+
+* Combine start and download scripts. Add checks for files in scripts. Removes option to generate scripts and generates them always instead. Closes issue [#81](https://git.griefed.de/Griefed/ServerPackCreator/issues/81) ([f037c34](https://git.griefed.de/Griefed/ServerPackCreator/commit/f037c34eb43b4910ea3002eba6362dd3d749261a))
+
+
+### 🚀 Features
+
+* Allow specifying files to add to server pack with simple `foo.bar` connotations. Closes issue [#86](https://git.griefed.de/Griefed/ServerPackCreator/issues/86) ([8a53aa6](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a53aa6b9dbf148d60f4001a47e64055e8975d10))
+* Create eula.txt upon server pack generation. Closes issue [#83](https://git.griefed.de/Griefed/ServerPackCreator/issues/83) ([d48191c](https://git.griefed.de/Griefed/ServerPackCreator/commit/d48191cda634f8bb8cc4db2298a0848b8b14c2cc))
+
+
+### 🛠 Fixes
+
+* Generate Minecraft 1.17+ Forge compatible scripts. Fixes issue [#84](https://git.griefed.de/Griefed/ServerPackCreator/issues/84). ([7d07e1d](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d07e1dad99c175b330f18c4c6cc83b00d43acac))
+
+## [3.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.5...3.0.0-alpha.6) (2021-10-01)
+
+
+### :scissors: Refactor
+
+* Remove elements starting with ! from list instead of avoiding them with an ugly if-statement ([b8c84e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8c84e1294d7e8feebd34a0da202f8dc60d02d78))
+
+
+### 🦊 CI/CD
+
+* Replace Typesafe with Nightconfig, allowing for more safety measures ([b9939b1](https://git.griefed.de/Griefed/ServerPackCreator/commit/b9939b101e906b7a578794cf79659c5035e9c692))
+
+
+### 🚀 Features
+
+* Store server pack suffix in serverpackcreator.conf.l Closes [#77](https://git.griefed.de/Griefed/ServerPackCreator/issues/77) again. ([d6c74e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6c74e0f62f395ea171266daca6194e39f0f634a))
+
+
+### 🛠 Fixes
+
+* Fix some mods broken dependency definitions breaking SPC funcitonality. Closes issue [#80](https://git.griefed.de/Griefed/ServerPackCreator/issues/80). ([a1c8a7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a1c8a7ef419ba7dcf90b74694c5f04480edfe807))
+* Fix status message in GUI being displayed incorrectly on some Linux distros. Closes issue [#79](https://git.griefed.de/Griefed/ServerPackCreator/issues/79) ([5e7c08d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e7c08d886c9b1b7ef0640fe9cfe6f54e0d1fdc9))
+* Print correct string for server pack suffix ([08c69e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/08c69e1be591421138d88429bc007091a13837ab))
+
+## [3.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.4...3.0.0-alpha.5) (2021-09-24)
+
+
+### 🛠 Fixes
+
+* Fix missing serverpackcreator.properties for tests and do not run tests on GitHub releases. ([8895be8](https://git.griefed.de/Griefed/ServerPackCreator/commit/8895be80bfc76165d0347ee97e750301d6870afe))
+
+## [3.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.3...3.0.0-alpha.4) (2021-09-24)
+
+
+### :scissors: Refactor
+
+* Gather information from CurseForge modpack from JsonNodes instead of Class-mapping. Makes maintenance and expansion easier. Reduces complexity. ([caa033b](https://git.griefed.de/Griefed/ServerPackCreator/commit/caa033bae0d54a5e7171871ea7023e99fc5c99a0))
+
+
+### 🦊 CI/CD
+
+* Update frontend dependencies ([d953f31](https://git.griefed.de/Griefed/ServerPackCreator/commit/d953f31dbc75f0006b34445a20e074fbc698f9bc))
+
+
+### 🚀 Features
+
+* Allow users to exclude files and directories from the server pack to be generated with ! as the prefix in an entry in copyDirs ([f527d04](https://git.griefed.de/Griefed/ServerPackCreator/commit/f527d04dc67d5c2c186a460068aa84167278cafd))
+* Allow users to set a suffix for the server pack to be generated. Requested in issue [#77](https://git.griefed.de/Griefed/ServerPackCreator/issues/77) ([2d32119](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d321197c6123348558476b20b6f2c9aa93cc54f))
+
+
+### Other
+
+* Add missing space in lang keys for copyDirs help. Closes issue [#78](https://git.griefed.de/Griefed/ServerPackCreator/issues/78) ([3539582](https://git.griefed.de/Griefed/ServerPackCreator/commit/35395827fb5a8e837ccae61925a0557aae544f29))
+
+## [3.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.2...3.0.0-alpha.3) (2021-09-04)
+
+
+### :scissors: Refactor
+
+* Create modpacks downloaded from CurseForge in the work/modpacks-directory. ([3178326](https://git.griefed.de/Griefed/ServerPackCreator/commit/3178326cc960bde4482e847c5464ef4f50ed856c))
+* DI serverpackcreator.properties everywhere! ([4b01d4a](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b01d4a809a08e420d399af9b9e58dca2c526002))
+* Initialize addons and check/create files when creating our DefaultFiles and AddonsHandler instances. ([864f10c](https://git.griefed.de/Griefed/ServerPackCreator/commit/864f10cd33e7f06693e47791ceeb7ac9a9e16974))
+* Refactor tailers to run in threads. ServerPackCreator can still become unresponsive if you resize during zip-creation, after a Forge server was installed, though..... ([d4c986e](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4c986eaa2451989420fa9785fab6f86523c8755))
+* Set server-packs directory to /server-packs. Add new configuration to config. Add volume to Dockerfile. Update documentation in README ([267e3e9](https://git.griefed.de/Griefed/ServerPackCreator/commit/267e3e9f168803209e26f8038a4c14d16d30b920))
+* Switch options to YES_NO to ensure users is always warned about empty javapath setting if they did not choose to select it now. ([c6f4ef8](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6f4ef8cfc5e138191079acbf773ab91cef0d091))
+
+
+### ⏩ Performance
+
+* Perform version checks with lists gathered by VersionLister. ([d440e5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/d440e5e2c079ac44bc040d87cacb1f29951160d9))
+* Retrieve Forge versions from HashMap with Minecraft version as key instead of re-reading list and lists and arrays of data again and again and again, ([0018abc](https://git.griefed.de/Griefed/ServerPackCreator/commit/0018abc4772b7e062fc5bd131a62edcceae4aac6))
+
+
+### 💈 Style
+
+* Declare fields above constructor. Only have methods under constructor. ([76c6b58](https://git.griefed.de/Griefed/ServerPackCreator/commit/76c6b584b05d48adf0714f4ad066c6cf0f5d775a))
+* Reorder calls in Main.main to reflect importance. Makes it slightly more readable as well. ([576cbae](https://git.griefed.de/Griefed/ServerPackCreator/commit/576cbae9938563ef50dd27f174b3f340c4998f60))
+
+
+### 📔 Docs
+
+* Add missing parameter to setJavaArgs ([761e2fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/761e2fdcc110e96db825527471c60cc427078552))
+* List server-packs directory for volumes ([82b13e4](https://git.griefed.de/Griefed/ServerPackCreator/commit/82b13e43771a2964d1d6339994dd431e94701a67))
+* Update table of methods for classes ([eeb6887](https://git.griefed.de/Griefed/ServerPackCreator/commit/eeb6887e3b52f67dd431adfe997ce1c144ab28fc))
+* Write missing documentation for getters and setters for javaargs and javapath settings ([f29924b](https://git.griefed.de/Griefed/ServerPackCreator/commit/f29924bd00724b53669c51829b1497810b8596fb))
+
+
+### 🦊 CI/CD
+
+* Update dependencies. Cleanup & readability. ([fe583aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe583aa0f73326b328f2c672859053fe6c6b8b67))
+* Disable Docker pipelines for the time being. Docker is acting up and building Docker images of the webservice-branch is not necessary as I have yet to start actual work on the webservice itself. ([f45e25f](https://git.griefed.de/Griefed/ServerPackCreator/commit/f45e25f681102dd991ff179a59df7c9fb85af227))
+
+
+### 🚀 Features
+
+* Allow users to disable cleanups of server packs and downloaded CurseForge modpacks. Can save bandwidth, time and disk operations, if the user is interested in that. ([3155af4](https://git.griefed.de/Griefed/ServerPackCreator/commit/3155af499006eba64751cca01e53e45480e8e936))
+* Allow users to disabled server pack overwriting. If de.griefed.serverpackcreator.serverpack.overwrite.enabled=false AND the server pack for the specified modpack ALREADY EXISTS, then a new server pack will NOT be generated. Saves a LOT of time! ([00dd7aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/00dd7aa15b8cdbdce91f6d510fc2505f2f6e9d1a))
+* Allow users to specify a custom directory in which server-packs will be generated and stored in. ([4a36e76](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a36e76bfab5a66ce52c51e57bb16af79dddb752))
+* Check setting for Javapath upon selecting "Install modloader-server?". If it is empty, the user is asked whether they would like to select their Java executable now. If not, the user is warned about the danger of not setting the Javapath ([5d474f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/5d474f1cf2763c010b6c02f969e2843de96d339f))
+* Provide HashMap of Key-Value pairs in MinecraftVersion-ForgeVersions format. Use a given Minecraft version as key and receive a string array for available Forge versions for said MInecraft versions. ([0a0d3b5](https://git.griefed.de/Griefed/ServerPackCreator/commit/0a0d3b50c7d7e955c41ce148bb82d4fc9abe6ac1))
+
+
+### 🛠 Fixes
+
+* Clear text every 1000 lines. Help with issue [#76](https://git.griefed.de/Griefed/ServerPackCreator/issues/76). ([132a3dd](https://git.griefed.de/Griefed/ServerPackCreator/commit/132a3ddd903f8693e08d9252c1f3e9c6004aad3f))
+* Hopefully fix ServerPackCreator becoming unresponsive after generating a few server packs. Hopefully closes issue [#76](https://git.griefed.de/Griefed/ServerPackCreator/issues/76). ([aa92d9b](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa92d9b5afb3ceec2345c311ae90062aa45ce6c5))
+* Improve configuration loading. Prevent NullPointers when reading Minecraft version, modloader, modloader version. ([0507ab7](https://git.griefed.de/Griefed/ServerPackCreator/commit/0507ab736d852415f2666937b1174429e7bac109))
+* Open dialog whether the user wants to browse the generated server pack with our JFrame as parent, instead of JTabbedPane ([aa647f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa647f77429e6207927e5b1a743cb5b8f0be4887))
+* Prevent dialog after server pack generation from becoming longer with each run. Removes the path to the server pack, though. Meh ([2260693](https://git.griefed.de/Griefed/ServerPackCreator/commit/226069366091155e11d9a1b7da9521f9802f168d))
+* Prevent resizing of window during generation of server pack, to prevent freezes due to Forge installer log spamming. Seriously, that thing spams more than any bot I know of. ([89edc6f](https://git.griefed.de/Griefed/ServerPackCreator/commit/89edc6f61fbd40e1b1ed46871d70f103139200a5))
+* Read correct log in modloader-installer log tab ([095d05e](https://git.griefed.de/Griefed/ServerPackCreator/commit/095d05edd1235957e13b98122deba8c54c9efa12))
+
+
+### Other
+
+* Remove unused language keys ([43fdba7](https://git.griefed.de/Griefed/ServerPackCreator/commit/43fdba70b1dfc52139c9fb2f255a065bdd92ef12))
+
+## [3.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.1...3.0.0-alpha.2) (2021-08-29)
+
+
+### :scissors: Refactor
+
+* Add additional catch for NPE. Fix typo in docs. Remove unused field. ([b5f9042](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5f90421002124b7a1e53f2c11581ead7fab00a2))
+* Just some renamings...nothing important. ([2c65582](https://git.griefed.de/Griefed/ServerPackCreator/commit/2c65582691abf06558deaf4461c90265770bb6d1))
+* Only provide translations for messages which actually have a need for translation. Error/debug messages mainly do not need to be translated, as those will be reported in issues, therefore I need to be able to read them. ([2132baa](https://git.griefed.de/Griefed/ServerPackCreator/commit/2132baa6a19000ffdabec555a3e3bca5c8fc0708))
+* Reverse lists of modloader versions to display in order of newest to oldest versions. Closes issue [#74](https://git.griefed.de/Griefed/ServerPackCreator/issues/74). ([4534d87](https://git.griefed.de/Griefed/ServerPackCreator/commit/4534d8774056f9de3d2063ea130c7bd85a4a6137))
+
+
+### 📔 Docs
+
+* Update table of methods ([dabf028](https://git.griefed.de/Griefed/ServerPackCreator/commit/dabf02866d58a72159642452c46b3ca6f109791a))
+
+
+### 🦊 CI/CD
+
+* Add Breaking section to changelog ([7165659](https://git.griefed.de/Griefed/ServerPackCreator/commit/7165659d8ccb507be63047c3b0f37d2fca2ac859))
+
+
+### 🚀 Features
+
+* Add methods to reverse the order of a String List or String Array. Allows setting of lists in GUI with newest to oldest versions. ([11d565e](https://git.griefed.de/Griefed/ServerPackCreator/commit/11d565ef61ed9ea2d324b82b4cb49ec529ffe624))
+* **gui:** Open server-icon.png in users default picture-viewer. From there on, users can open their favourite editing software. ([d960dd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/d960dd28f7e796b8d7f84dfbcfe55273e60cfec8))
+* **gui:** Open server.properties in users default text editor via Edit->Open server.properties in Editor ([1bf7533](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bf75338e60b4fe0ff85eca6a55308eb4538fe7f))
+* **gui:** Redesign help window. Users can choose what they need help with from a list, which then displays the help-text for the chosen item. ([7c490a3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c490a3d2a205181c61148ad4ff9b8872ff5961b))
+* **gui:** Set LAF for Java Args correctly. If javaArgs is "empty", display textField as "" to not confuse users. ([462e7a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/462e7a1cef59715b08ff5f20ac03ae760a45132c))
+
+
+### 🛠 Fixes
+
+* Allow translating for full GUI as well as missing parts in backend. ([366cb10](https://git.griefed.de/Griefed/ServerPackCreator/commit/366cb106fddbebb1411105d466017c2f36e19a63))
+* Prevent encapsulateListElements from writing duplicate entries ([1e64cd6](https://git.griefed.de/Griefed/ServerPackCreator/commit/1e64cd67dcbfcf95ccb544f84b70ee39e5123e75))
+* When writing configfiles, encapsulate every element of String Lists in `"` in order to avoid problems described in issue [#71](https://git.griefed.de/Griefed/ServerPackCreator/issues/71). Fixes and closes issue [#71](https://git.griefed.de/Griefed/ServerPackCreator/issues/71). ([0e029ec](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e029ec477864ea765e8ad446ac2b9b93186b952))
+
+
+### Other
+
+* Fix minor typo in language key ([9177763](https://git.griefed.de/Griefed/ServerPackCreator/commit/91777632c7ef1715f45af28ddb4f0848d5abb432))
+
+## [3.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.5...3.0.0-alpha.1) (2021-08-27)
+
+
+### :scissors: Refactor
+
+* Upgrade to Gradle 7.2. Remove Fabric-Installer dependecy by retrieving the Minecraft server url ourselves. ([e297f63](https://git.griefed.de/Griefed/ServerPackCreator/commit/e297f6347e393359ac71b0a70c388afd759355a8))
+
+
+### 📔 Docs
+
+* Update README with new feature information and reflect changes made to file-structure ([04ffed5](https://git.griefed.de/Griefed/ServerPackCreator/commit/04ffed5e30c450520132d984e0c2974cafc777d1))
+* Update README with new feature information and reflect changes made to file-structure ([b3f211c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b3f211cf51abd589672fe3005f0cfc9ef76cec76))
+
+
+### 🚀 Features
+
+* **gui:** Various changes. Too many to list. MenuBar entries, Theme changes. MenuItem funcitionality etc. etc. ([28c088c](https://git.griefed.de/Griefed/ServerPackCreator/commit/28c088cc5395a432ac6cbd83f2b31643922bf858))
+
+
+### Other
+
+* Fix tests, docs and add TODOs regarding lang keys ([2dac4e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/2dac4e1f0a7e53f7b04cfce982c1a6d2c99c5747))
+* Remove no longer relevant license ([64fbeeb](https://git.griefed.de/Griefed/ServerPackCreator/commit/64fbeeb9593a3696b9a53f1f436bbdf6d00e22e9))
+
+## [2.2.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.4...2.2.0-alpha.5) (2021-08-25)
+
+
+### :scissors: Refactor
+
+* Change labels for Minecraft, modloader and modloader version to better reflect new feature of selection from lists. ([84755a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/84755a185c02948050d0e534b2a5771898f13aff))
+* Extract actions and events into separate methods. Improves maintainability. ([7a335da](https://git.griefed.de/Griefed/ServerPackCreator/commit/7a335dab87acbd4f136e520fb6c1af012659606d))
+* Extract actions and events into separate methods. Improves maintainability. ([9268245](https://git.griefed.de/Griefed/ServerPackCreator/commit/9268245df88d96fbe358b68de488992e102d448c))
+* Improve debug logging for VersionLister ([29be15f](https://git.griefed.de/Griefed/ServerPackCreator/commit/29be15fa5ba18ce8bdb0f4345e989ef843a63e75))
+* Move assignemts to field declaration where applicable. Extract method for adding MouseListeners to buttons. ([b37ad30](https://git.griefed.de/Griefed/ServerPackCreator/commit/b37ad30ce88e570e4b8632760dee5cebab28f8da))
+* Prevent going through a list of clientside-only mods automatically gathered from modpack is property is false. ([51a3e42](https://git.griefed.de/Griefed/ServerPackCreator/commit/51a3e42ea18e37453734c5cc6c4e2e63fea8bfee))
+
+
+### 📔 Docs
+
+* Name correct filename for properties according to merge of lang.properties with serverpackcreator.properties ([ed42dcd](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed42dcd14479013e979f9793aae884b0c0cf1836))
+
+
+### 🧪 Tests
+
+* Remove addon execution from tests, as parallel running tests caused problems because the addon can only be accessed by one thread at a time. ([b963b10](https://git.griefed.de/Griefed/ServerPackCreator/commit/b963b1094e3a470213fc737f9effa305960ad31f))
+
+
+### 🚀 Features
+
+* Allow check of configuration from an instance of ConfigurationModel, without any file involved. ([17529fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/17529fa958fbb386dfe7bdc91eaec2f9ceff39f5))
+* Allow generation of a server pack from an instance of ConfigurationModel ([5b54a1c](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b54a1ca9b3be3cc7d72e3c1851a636ee81a482e))
+* New theme and cleaned up GUI. MenuBar for various things (wip). Lists for version selection. Switch between darkmode and lightmode and remember last mode used. More things, check commit. ([949fb6a](https://git.griefed.de/Griefed/ServerPackCreator/commit/949fb6aecd47518e0b91ca3a8be0516a9f2cb540))
+* Read Minecraft, Forge and Fabric versions from their manifests into lists which can then be used in GUIs. ([c9ce1ff](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9ce1ff41f12b6eeef9dc00827d3e6a129ee8a5f))
+* Select Minecraft and modloader versions from lists instead of entering text into a textfield. ([5b56f18](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b56f18a90e7d3f1bfda98d5ae509a9cda29e959))
+
+
+### 🛠 Fixes
+
+* Correctlry get property which decides whether autodiscovery of clientside-only mods should be enabled ([3c5deff](https://git.griefed.de/Griefed/ServerPackCreator/commit/3c5deff79acf70d5d6ea6d578cc4e73faf85d4d3))
+
+
+### Other
+
+* Remove no longer needed lang keys ([6435fbc](https://git.griefed.de/Griefed/ServerPackCreator/commit/6435fbc73be7405290a48a16c2b053a0fa09e1ed))
+* Remove unneeded imports ([8482d29](https://git.griefed.de/Griefed/ServerPackCreator/commit/8482d295eb1d731d1c02c654363dafe235ba9910))
+
 ## [2.2.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.2.0-alpha.3...2.2.0-alpha.4) (2021-08-20)
 
 
