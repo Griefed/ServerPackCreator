@@ -13,4 +13,4 @@ jobs:
     steps:
       - uses: JasonEtco/is-sponsor-label-action@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
