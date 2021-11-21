@@ -302,7 +302,7 @@ Gradle Test Webservice:
     - ./gradlew about
   script:
     - echo "**** Building ServerPackCreator ****"
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build
@@ -413,7 +413,7 @@ Build PreRelease:
     - ./gradlew about
   script:
     - echo "**** Building ServerPackCreator ****"
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon -x test
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build
