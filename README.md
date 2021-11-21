@@ -552,7 +552,7 @@ Tags | Description
 `develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk!
 
 Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
-Images are available for linux/amd64,linux/arm/v7,linux/arm64.
+Images are available for linux/amd64 and linux/arm64.
 
 When running as a docker container, there are a couple more settings you need to be aware of. Beware that any environment setting **after** `STARTUP_PARAMETER` is
 irrelevant when using `STARTUP_PARAMETER=web`.
