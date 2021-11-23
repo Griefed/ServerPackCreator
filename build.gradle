@@ -75,7 +75,7 @@ configurations {
 
 dependencies {
     //Backend
-    embed 'com.electronwill.night-config:hocon:3.6.4'
+    embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
     embed 'net.lingala.zip4j:zip4j:2.9.1'
     embed 'com.moandjiezana.toml:toml4j:0.7.2'
