@@ -1,7 +1,7 @@
 //file:noinspection GroovyAssignabilityCheck
 //file:noinspection GrUnresolvedAccess
 import java.text.SimpleDateFormat
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
 
 plugins {
     id 'java'
@@ -10,7 +10,7 @@ plugins {
     id 'maven-publish'
 
     id 'edu.sc.seis.launch4j' version '2.5.1'
-    id 'org.siouan.frontend-jdk8' version '5.3.0'
+    id 'org.siouan.frontend-jdk8' version '6.0.0'
 
     id 'org.springframework.boot' version '2.5.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -128,8 +128,8 @@ frontend {
     nodeInstallDirectory = file("${projectDir}/frontend/node")
 
     yarnEnabled = false
-    yarnVersion = "1.22.11"
-    yarnInstallDirectory = file("${projectDir}/frontend/yarn")
+    //yarnVersion = "1.22.11"
+    //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
 
     cleanScript = 'run clean'
     assembleScript = 'run build'
@@ -157,7 +157,7 @@ tasks.register('about', Copy) {
 }
 
 
-tasks.register('installQuasar', RunNpmYarn) {
+tasks.register('installQuasar', RunNpm) {
     dependsOn tasks.named('installNode')
     script = 'install -g @quasar/cli'
 }
