@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.spring.services;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.spring.models.GenerateCurseProject;
+import de.griefed.serverpackcreator.spring.models.ScanCurseProject;
 import de.griefed.serverpackcreator.spring.models.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,7 +58,7 @@ public class TaskReceiver {
      * @param projectIDAndFileID
      */
     public void scanCurseProject(String projectIDAndFileID) {
-        submitScan(new Task.ScanCurseProject(projectIDAndFileID));
+        submitScan(new ScanCurseProject(projectIDAndFileID));
     }
 
     /**
@@ -65,7 +67,7 @@ public class TaskReceiver {
      * @param projectIDAndFileID
      */
     public void generateCurseProject(String projectIDAndFileID) {
-        submitGeneration(new Task.GenerateCurseProject(projectIDAndFileID));
+        submitGeneration(new GenerateCurseProject(projectIDAndFileID));
     }
 
     /**

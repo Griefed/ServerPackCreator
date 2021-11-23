@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.spring.services;
 
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
+import de.griefed.serverpackcreator.spring.models.GenerateCurseProject;
+import de.griefed.serverpackcreator.spring.models.ScanCurseProject;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.spring.models.Task;
 import org.apache.commons.lang.time.StopWatch;
@@ -74,11 +76,11 @@ public class TaskHandler {
         LOG.info("Executing task: " + task);
         try {
 
-            if (task instanceof Task.ScanCurseProject) {
+            if (task instanceof ScanCurseProject) {
 
                 LOG.info("Instance of ScanCurseProject " + task.uniqueId());
 
-                String[] project = ((Task.ScanCurseProject) task).getProjectIDAndFileID().split(",");
+                String[] project = ((ScanCurseProject) task).getProjectIDAndFileID().split(",");
                 int projectID = Integer.parseInt(project[0]);
                 int fileID = Integer.parseInt(project[1]);
 
@@ -132,11 +134,11 @@ public class TaskHandler {
         LOG.info("Executing task: " + task);
         try {
 
-            if (task instanceof Task.GenerateCurseProject) {
+            if (task instanceof GenerateCurseProject) {
 
                 LOG.info("Instance of GenerateCurseProject " + task.uniqueId());
 
-                String[] project = ((Task.GenerateCurseProject) task).getProjectIDAndFileID().split(",");
+                String[] project = ((GenerateCurseProject) task).getProjectIDAndFileID().split(",");
                 int projectID = Integer.parseInt(project[0]);
                 int fileID = Integer.parseInt(project[1]);
 
