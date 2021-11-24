@@ -99,13 +99,15 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 ---
 
-# JetBrains
+# Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
+**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
+Huge shoutout and thank you!**
 
-[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/)
---------- | ---------  | ------
-[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/)
+[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/) | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)
+--------- | ---------  | ------ | ----
+[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
 ---
 
