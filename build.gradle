@@ -74,7 +74,7 @@ configurations {
 }
 
 dependencies {
-    //Backend
+    // Backend
     embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
     embed 'net.lingala.zip4j:zip4j:2.9.1'
@@ -83,10 +83,10 @@ dependencies {
     embed 'org.xerial:sqlite-jdbc:3.36.0.3'
     embed 'org.pf4j:pf4j-update:2.3.0'
 
-    //GUI
+    // GUI
     embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
 
-    //WEB
+    // WEB
     //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
     embed 'org.springframework.boot:spring-boot-starter-validation:2.5.6'
     embed 'org.springframework.boot:spring-boot-starter-web:2.5.6'
@@ -99,7 +99,7 @@ dependencies {
     embed 'org.apache.logging.log4j:log4j-web:2.14.1'
     embed 'org.pf4j:pf4j-spring:0.7.0'
 
-    //Dev tools
+    // Dev tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.0'
 
     // Testing
