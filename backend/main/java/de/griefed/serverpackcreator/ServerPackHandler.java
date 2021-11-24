@@ -449,7 +449,7 @@ public class ServerPackHandler {
                             "ECHO Forge version: %FORGE%\n" +
                             "ECHO Java args: %ARGS%\n" +
                             "\n" +
-                            "java %ARGS% -jar forge.jar --nogui\n" +
+                            "java %ARGS% -jar forge.jar nogui\n" +
                             "\n" +
                             "PAUSE"
                     );
@@ -522,7 +522,7 @@ public class ServerPackHandler {
                             "echo \"Forge version: $FORGE\";\n" +
                             "echo \"Java args: $ARGS\";\n" +
                             "\n" +
-                            "java $ARGS -jar forge.jar --nogui"
+                            "java $ARGS -jar forge.jar nogui"
                     );
 
                 } catch (IOException ex) {
@@ -791,7 +791,7 @@ public class ServerPackHandler {
                         "ECHO Fabric version: %FABRIC%\n" +
                         "ECHO Java args: %ARGS%\n" +
                         "\n" +
-                        "java %ARGS% -jar fabric-server-launch.jar --nogui\n" +
+                        "java %ARGS% -jar fabric-server-launch.jar nogui\n" +
                         "\n" +
                         "PAUSE"
                 );
@@ -858,7 +858,7 @@ public class ServerPackHandler {
                         "echo \"Fabric version: $FABRIC\";\n" +
                         "echo \"Java args: $ARGS\";\n" +
                         "\n" +
-                        "java $ARGS -jar fabric-server-launch.jar --nogui"
+                        "java $ARGS -jar fabric-server-launch.jar nogui"
                 );
 
             } catch (IOException ex) {
