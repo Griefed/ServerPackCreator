@@ -408,6 +408,7 @@ public class ServerPackHandler {
                             ":: This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
                             ":: If everything is in order, the server is started.\n" +
                             "@ECHO off\n" +
+                            "SetLocal EnableDelayedExpansion\n" +
                             "\n" +
                             "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
                             "SET FORGE=\"" + modloaderVersion + "\"\n" +
@@ -442,6 +443,24 @@ public class ServerPackHandler {
                             "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + getMinecraftServerJarUrl(minecraftVersion) + "', 'minecraft_server.%MINECRAFT%.jar')\"\n" +
                             ") ELSE (\n" +
                             "  ECHO minecraft_server.%MINECRAFT%.jar present. Moving on...\n" +
+                            ")\n" +
+                            "\n" +
+                            "IF NOT EXIST eula.txt (\n" +
+                            "  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n" +
+                            "  ECHO Type \"I agree\" to indicate that you agree to Mojang's EULA.\n" +
+                            "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
+                            "  ECHO Do you agree to Mojang's EULA?\n" +
+                            "  set /P \"Response=\"\n" +
+                            "  set agree=I agree\n" +
+                            "  IF !Response! == !agree! (\n" +
+                            "    ECHO User agreed to Mojang's EULA.\n" +
+                            "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
+                            "    ECHO eula=true>> eula.txt\n" +
+                            "  ) else (\n" +
+                            "    ECHO User did not agree to Mojang's EULA. \n" +
+                            "  )\n" +
+                            ") ELSE (\n" +
+                            "  ECHO eula.txt present. Moving on...\n" +
                             ")\n" +
                             "\n" +
                             "ECHO Starting server...\n" +
@@ -517,6 +536,23 @@ public class ServerPackHandler {
                             "  echo \"minecraft_server.$MINECRAFT.jar present. Moving on...\"\n" +
                             "fi\n" +
                             "\n" +
+                            "if [[ ! -s \"eula.txt\" ]];then\n" +
+                            "  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n" +
+                            "  echo \"Type 'I agree' to indicate that you agree to Mojang's EULA.\"\n" +
+                            "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n" +
+                            "  echo \"Do you agree to Mojang's EULA?\"\n" +
+                            "  read ANSWER\n" +
+                            "  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n" +
+                            "    echo \"User agreed to Mojang's EULA.\"\n" +
+                            "    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n" +
+                            "    echo \"eula=true\" >> eula.txt;\n" +
+                            "  else\n" +
+                            "    echo \"User did not agree to Mojang's EULA.\"\n" +
+                            "  fi\n" +
+                            "else\n" +
+                            "  echo \"eula.txt present. Moving on...\";\n" +
+                            "fi\n" +
+                            "\n" +
                             "echo \"Starting server...\";\n" +
                             "echo \"Minecraft version: $MINECRAFT\";\n" +
                             "echo \"Forge version: $FORGE\";\n" +
@@ -553,6 +589,7 @@ public class ServerPackHandler {
                             ":: This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
                             ":: If everything is in order, the server is started.\n" +
                             "@ECHO off\n" +
+                            "SetLocal EnableDelayedExpansion\n" +
                             "\n" +
                             "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
                             "SET FORGE=\"" + modloaderVersion + "\"\n" +
@@ -595,6 +632,24 @@ public class ServerPackHandler {
                             "IF EXIST run.sh (\n" +
                             "  DEL run.sh\n" +
                             "  ECHO Deleted run.sh as we already have start.sh\n" +
+                            ")\n" +
+                            "\n" +
+                            "IF NOT EXIST eula.txt (\n" +
+                            "  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n" +
+                            "  ECHO Type \"I agree\" to indicate that you agree to Mojang's EULA.\n" +
+                            "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
+                            "  ECHO Do you agree to Mojang's EULA?\n" +
+                            "  set /P \"Response=\"\n" +
+                            "  set agree=I agree\n" +
+                            "  IF !Response! == !agree! (\n" +
+                            "    ECHO User agreed to Mojang's EULA.\n" +
+                            "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
+                            "    ECHO eula=true>> eula.txt\n" +
+                            "  ) else (\n" +
+                            "    ECHO User did not agree to Mojang's EULA. \n" +
+                            "  )\n" +
+                            ") ELSE (\n" +
+                            "  ECHO eula.txt present. Moving on...\n" +
                             ")\n" +
                             "\n" +
                             "ECHO Starting server...\n" +
@@ -680,6 +735,23 @@ public class ServerPackHandler {
                             "if [[ -s \"run.sh\" ]];then\n" +
                             "  rm -f run.sh;\n" +
                             "  echo \"Deleted run.sh as we already have start.sh\";\n" +
+                            "fi\n" +
+                            "\n" +
+                            "if [[ ! -s \"eula.txt\" ]];then\n" +
+                            "  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n" +
+                            "  echo \"Type 'I agree' to indicate that you agree to Mojang's EULA.\"\n" +
+                            "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n" +
+                            "  echo \"Do you agree to Mojang's EULA?\"\n" +
+                            "  read ANSWER\n" +
+                            "  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n" +
+                            "    echo \"User agreed to Mojang's EULA.\"\n" +
+                            "    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n" +
+                            "    echo \"eula=true\" >> eula.txt;\n" +
+                            "  else\n" +
+                            "    echo \"User did not agree to Mojang's EULA.\"\n" +
+                            "  fi\n" +
+                            "else\n" +
+                            "  echo \"eula.txt present. Moving on...\";\n" +
                             "fi\n" +
                             "\n" +
                             "echo \"Starting server...\";\n" +
@@ -786,6 +858,24 @@ public class ServerPackHandler {
                         "  ECHO server.jar present. Moving on...\n" +
                         ")\n" +
                         "\n" +
+                        "IF NOT EXIST eula.txt (\n" +
+                        "  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n" +
+                        "  ECHO Type \"I agree\" to indicate that you agree to Mojang's EULA.\n" +
+                        "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
+                        "  ECHO Do you agree to Mojang's EULA?\n" +
+                        "  set /P \"Response=\"\n" +
+                        "  set agree=I agree\n" +
+                        "  IF !Response! == !agree! (\n" +
+                        "    ECHO User agreed to Mojang's EULA.\n" +
+                        "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
+                        "    ECHO eula=true>> eula.txt\n" +
+                        "  ) else (\n" +
+                        "    ECHO User did not agree to Mojang's EULA. \n" +
+                        "  )\n" +
+                        ") ELSE (\n" +
+                        "  ECHO eula.txt present. Moving on...\n" +
+                        ")\n" +
+                        "\n" +
                         "ECHO Starting server...\n" +
                         "ECHO Minecraft version: %MINECRAFT%\n" +
                         "ECHO Fabric version: %FABRIC%\n" +
@@ -851,6 +941,23 @@ public class ServerPackHandler {
                         "  wget -O server.jar " + getMinecraftServerJarUrl(minecraftVersion) + ";\n" +
                         "else\n" +
                         "  echo \"server.jar present. Moving on...\";\n" +
+                        "fi\n" +
+                        "\n" +
+                        "if [[ ! -s \"eula.txt\" ]];then\n" +
+                        "  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n" +
+                        "  echo \"Type 'I agree' to indicate that you agree to Mojang's EULA.\"\n" +
+                        "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n" +
+                        "  echo \"Do you agree to Mojang's EULA?\"\n" +
+                        "  read ANSWER\n" +
+                        "  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n" +
+                        "    echo \"User agreed to Mojang's EULA.\"\n" +
+                        "    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n" +
+                        "    echo \"eula=true\" >> eula.txt;\n" +
+                        "  else\n" +
+                        "    echo \"User did not agree to Mojang's EULA.\"\n" +
+                        "  fi\n" +
+                        "else\n" +
+                        "  echo \"eula.txt present. Moving on...\";\n" +
                         "fi\n" +
                         "\n" +
                         "echo \"Starting server...\";\n" +
