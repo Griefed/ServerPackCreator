@@ -181,6 +181,22 @@ public class ConfigurationHandler {
 
         configurationModel.setServerPackSuffix(getConfig().getOrElse("serverPackSuffix",""));
 
+        if (!checkIconAndProperties(getConfig().getOrElse("serverIconPath",""))) {
+
+            configHasError = true;
+        } else {
+
+            configurationModel.setServerIconPath(getConfig().getOrElse("serverIconPath",""));
+        }
+
+        if (!checkIconAndProperties(getConfig().getOrElse("serverPropertiesPath",""))) {
+
+            configHasError = true;
+        } else {
+
+            configurationModel.setServerPropertiesPath(getConfig().getOrElse("serverPropertiesPath",""));
+        }
+
         try {
             if (checkModpackDir(getConfig().getOrElse("modpackDir", "").replace("\\", "/"))) {
 
@@ -257,6 +273,14 @@ public class ConfigurationHandler {
         }
 
         configurationModel.setJavaPath(checkJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
+
+        if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
+            configHasError = true;
+        }
+
+        if (!checkIconAndProperties(configurationModel.getServerPropertiesPath())) {
+            configHasError = true;
+        }
 
         try {
             if (checkModpackDir(configurationModel.getModpackDir().replace("\\", "/"))) {
@@ -487,6 +511,8 @@ public class ConfigurationHandler {
                         configurationModel.getModpackDir(),
                         configurationModel.getClientMods(),
                         configurationModel.getCopyDirs(),
+                        configurationModel.getServerIconPath(),
+                        configurationModel.getServerPropertiesPath(),
                         configurationModel.getIncludeServerInstallation(),
                         configurationModel.getJavaPath(),
                         configurationModel.getMinecraftVersion(),
@@ -1125,7 +1151,11 @@ public class ConfigurationHandler {
                 minecraftVersion,
                 modLoader,
                 modLoaderVersion,
+                serverIconPath,
+                serverPropertiesPath,
                 tmpModpackDir,
+                tmpServerIcon,
+                tmpServerProperties,
                 javaArgs,
                 serverPackSuffix;
 
@@ -1227,6 +1257,57 @@ public class ConfigurationHandler {
             tmpCopyDirs = new String[copyDirs.size()];
             copyDirs.toArray(tmpCopyDirs);
 
+            System.out.println();
+
+//---------------------------------------------------------------------------PATH TO THE CUSTOM SERVER-ICON.PNG---------
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.icon.enter"));
+
+            do {
+
+                do {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.icon.path"));
+                    tmpServerIcon = reader.nextLine();
+
+                } while (!checkIconAndProperties(tmpServerIcon));
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), tmpServerIcon));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.icon.end"));
+
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+
+            } while (!readBoolean());
+
+            serverIconPath = tmpServerIcon.replace("\\", "/");
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), serverIconPath));
+            System.out.println();
+
+//-------------------------------------------------------------------------PATH TO THE CUSTOM SERVER.PROPERTIES---------
+
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.properties.enter"));
+
+            do {
+
+                do {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.properties.path"));
+                    tmpServerProperties = reader.nextLine();
+                } while (!checkIconAndProperties(tmpServerProperties));
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), tmpServerProperties));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.properties.end"));
+
+                System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+
+            } while (!readBoolean());
+
+            serverPropertiesPath = tmpServerProperties.replace("\\", "/");
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), serverPropertiesPath));
             System.out.println();
 
 //-------------------------------------------------------------WHETHER TO INCLUDE MODLOADER SERVER INSTALLATION---------
@@ -1379,6 +1460,8 @@ public class ConfigurationHandler {
                 modpackDir,
                 Arrays.asList(tmpClientMods),
                 Arrays.asList(tmpCopyDirs),
+                serverIconPath,
+                serverPropertiesPath,
                 includeServerInstallation,
                 javaPath,
                 minecraftVersion,
@@ -1394,6 +1477,29 @@ public class ConfigurationHandler {
         )) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.written"));
+        }
+    }
+
+    /**
+     * Checks the passed String whether it is an existing file. If the passed String is empty, then ServerPackCreator will
+     * treat it as the user being fine with the default files and return the corresponding boolean.
+     * @author Griefed
+     * @param tmpServerProperties String. The path to the custom server-icon.png or server.properties file to check.
+     * @return Boolean. True if the file exists or an empty String was passed, false if a file was specified, but the file was not found.
+     */
+    private boolean checkIconAndProperties(String tmpServerProperties) {
+        if (tmpServerProperties.equals("")) {
+
+            return true;
+
+        } else if (new File(tmpServerProperties).exists()) {
+
+            return true;
+
+        } else {
+
+            LOG.error("The specified file does not exist: " + tmpServerProperties);
+            return false;
         }
     }
 
@@ -1495,6 +1601,8 @@ public class ConfigurationHandler {
      * @param modpackDir String. The path to the modpack.
      * @param clientMods List, String. List of clientside-only mods.
      * @param copyDirs List, String. List of directories to include in server pack.
+     * @param serverIconPath String. The path to the custom server-icon.png to include in the server pack.
+     * @param serverPropertiesPath String. The path to the custom server.properties to include in the server pack.
      * @param includeServer Boolean. Whether the modloader server software should be installed.
      * @param javaPath String. Path to the java executable/binary.
      * @param minecraftVersion String. Minecraft version used by the modpack and server pack.
@@ -1512,6 +1620,8 @@ public class ConfigurationHandler {
     public boolean writeConfigToFile(String modpackDir,
                                      List<String> clientMods,
                                      List<String> copyDirs,
+                                     String serverIconPath,
+                                     String serverPropertiesPath,
                                      boolean includeServer,
                                      String javaPath,
                                      String minecraftVersion,
@@ -1536,6 +1646,8 @@ public class ConfigurationHandler {
                         "%s\nmodpackDir = \"%s\"\n\n" +
                         "%s\nclientMods = %s\n\n" +
                         "%s\ncopyDirs = %s\n\n" +
+                        "%s\nserverIconPath = \"%s\"\n\n" +
+                        "%s\nserverPropertiesPath = \"%s\"\n\n" +
                         "%s\nincludeServerInstallation = %b\n\n" +
                         "%s\njavaPath = \"%s\"\n\n" +
                         "%s\nminecraftVersion = \"%s\"\n\n" +
@@ -1549,6 +1661,8 @@ public class ConfigurationHandler {
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), encapsulateListElements(clientMods),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), encapsulateListElements(copyDirs),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.icon"), serverIconPath,
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.properties"), serverPropertiesPath,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverinstallation"), includeServer,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javapath"), javaPath.replace("\\","/"),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.minecraftversion"), minecraftVersion,

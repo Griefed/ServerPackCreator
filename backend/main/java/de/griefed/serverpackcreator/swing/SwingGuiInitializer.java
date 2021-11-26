@@ -55,7 +55,7 @@ public class SwingGuiInitializer extends JPanel {
 
     private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/banner.png")));
     private final Image ICON_SERVERPACKCREATOR = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/app.png")));
-    private final Dimension DIMENSION_WINDOW = new Dimension(925,750);
+    private final Dimension DIMENSION_WINDOW = new Dimension(1050,800);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
@@ -272,7 +272,7 @@ public class SwingGuiInitializer extends JPanel {
 
         FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
-        FRAME_SERVERPACKCREATOR.setMaximumSize(DIMENSION_WINDOW);
+        FRAME_SERVERPACKCREATOR.setMinimumSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setResizable(true);
 
         FRAME_SERVERPACKCREATOR.pack();
