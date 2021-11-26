@@ -1390,4 +1390,38 @@ public class TabCreateServerPack extends JComponent {
 
         setChosenModloader(chosenModloader);
     }
+
+    /**
+     * Load default values for textfields so the user can start with a new configuration. Just as if ServerPackCreator
+     * was started without a serverpackcreator.conf being present.
+     * @author Griefed
+     */
+    protected void clearInterface() {
+        TEXTFIELD_MODPACKDIRECTORY.setText("");
+        TEXTFIELD_SERVERPACKSUFFIX.setText("");
+        TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(serverPackCreatorProperties.getLIST_FALLBACK_MODS().toString()));
+        TEXTFIELD_COPYDIRECTORIES.setText("");
+        TEXTFIELD_SERVERICONPATH.setText("");
+        TEXTFIELD_SERVERPROPERTIESPATH.setText("");
+        TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(""));
+
+        String minecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
+        String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
+        for (int i = 0; i < mcver.length; i++) {
+            if (mcver[i].equals(minecraftVersion)) {
+                COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
+                chosenMinecraftVersion = minecraftVersion;
+            }
+        }
+
+        String[] forgever = VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion);
+        changeForgeVersionListDependingOnMinecraftVersion(chosenMinecraftVersion);
+        updateModloaderGuiComponents(false, true, "Forge");
+
+        checkBoxServer.setSelected(false);
+        checkBoxIcon.setSelected(false);
+        checkBoxProperties.setSelected(false);
+        checkBoxZIP.setSelected(false);
+        setJavaArgs("empty");
+    }
 }

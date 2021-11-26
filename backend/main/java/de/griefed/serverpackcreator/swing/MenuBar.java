@@ -137,6 +137,7 @@ public class MenuBar extends Component {
     private JMenu viewMenu;
     private JMenu aboutMenu;
 
+    private JMenuItem file_NewConfigurationMenuItem;
     private JMenuItem file_LoadConfigMenuItem;
     private JMenuItem file_SaveConfigMenuItem;
     private JMenuItem file_SaveAsConfigMenuItem;
@@ -408,6 +409,7 @@ public class MenuBar extends Component {
         help_OpenHelpWindowMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.help"));
 
         // create menu items
+        file_NewConfigurationMenuItem = new JMenuItem("New configuration");
         file_LoadConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.loadconfig"));
         file_SaveConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveconfig"));
         file_SaveAsConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveas"));
@@ -434,6 +436,7 @@ public class MenuBar extends Component {
         about_OpenDonationsPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.donate"));
 
         // create action listeners for items
+        file_NewConfigurationMenuItem.addActionListener(this::actionEventNewConfiguration);
         file_LoadConfigMenuItem.addActionListener(this::actionEventLoadConfigurationFromFileMenuItem);
         file_SaveConfigMenuItem.addActionListener(this::actionEventSaveConfigToFileMenuItem);
         file_SaveAsConfigMenuItem.addActionListener(this::actionEventSaveAsConfigToFileMenuItem);
@@ -473,6 +476,7 @@ public class MenuBar extends Component {
         helpComboBox.addActionListener(this::actionEventSetHelpText);
 
         // add items to menus
+        fileMenu.add(file_NewConfigurationMenuItem);
         fileMenu.add(file_LoadConfigMenuItem);
         fileMenu.add(new JSeparator());
         fileMenu.add(file_SaveConfigMenuItem);
@@ -515,6 +519,18 @@ public class MenuBar extends Component {
         MENUBAR.add(help_OpenHelpWindowMenuItem);
 
         return MENUBAR;
+    }
+
+    /**
+     * Upon button-press, load default values for textfields so the user can start with a new configuration. Just as if ServerPackCreator
+     * was started without a serverpackcreator.conf being present.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventNewConfiguration(ActionEvent actionEvent) {
+        LOG.debug("Clearing GUI...");
+        TAB_CREATESERVERPACK.clearInterface();
+
     }
 
     /**
