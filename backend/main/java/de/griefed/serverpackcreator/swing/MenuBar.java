@@ -170,6 +170,8 @@ public class MenuBar extends Component {
     private DefaultComboBoxModel<String> helpComboBoxModel;
     private JComboBox<String> helpComboBox;
 
+    private File lastLoadedConfigurationFile = null;
+
     /**
      * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
      * @author Griefed
@@ -530,7 +532,7 @@ public class MenuBar extends Component {
     private void actionEventNewConfiguration(ActionEvent actionEvent) {
         LOG.debug("Clearing GUI...");
         TAB_CREATESERVERPACK.clearInterface();
-
+        lastLoadedConfigurationFile = null;
     }
 
     /**
@@ -703,6 +705,7 @@ public class MenuBar extends Component {
     private void actionEventOpenInEditorServerProperties(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server.properties in Editor.");
 
+        //TODO: If textfield server icon contains valid file, open that instead
         try {
             if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
                 Desktop.getDesktop().open(
@@ -728,6 +731,7 @@ public class MenuBar extends Component {
     private void actionEventOpenServerIcon(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server-icon.png in Editor.");
 
+        //TODO: If textfield server properties contains valid file, open that instead
         try {
             if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
                 Desktop.getDesktop().open(
@@ -848,7 +852,14 @@ public class MenuBar extends Component {
      */
     private void actionEventSaveConfigToFileMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Save.");
+        LOG.debug("Saving serverpackcreator.conf");
         TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"), false);
+
+        if (lastLoadedConfigurationFile != null && serverPackCreatorProperties.getSaveLoadedConfiguration()) {
+            LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
+            TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile, true);
+        }
+
     }
 
     /**
@@ -935,7 +946,8 @@ public class MenuBar extends Component {
                         configChooser.getSelectedFile().getCanonicalPath()
                 ));
 
-                TAB_CREATESERVERPACK.loadConfig(new File(configChooser.getSelectedFile().getCanonicalPath()));
+                TAB_CREATESERVERPACK.loadConfig(new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
+                lastLoadedConfigurationFile = new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
 
             } catch (IOException ex) {
                 LOG.error("Error loading configuration from selected file.", ex);

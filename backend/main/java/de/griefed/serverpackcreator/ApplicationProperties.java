@@ -110,7 +110,11 @@ public class ApplicationProperties extends Properties {
     //JMS related
     public final int QUEUE_MAX_DISK_USAGE;
 
+    // Scheduling related
     public final String SCHEDULE_DATABASE_CLEANUP;
+
+    // GUI related
+    private boolean saveLoadedConfiguration = false;
 
     /**
      *
@@ -118,8 +122,7 @@ public class ApplicationProperties extends Properties {
      */
     @Autowired
     public ApplicationProperties() {
-        try (
-        InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
             new Properties();
             load(inputStream);
         } catch (
@@ -201,6 +204,8 @@ public class ApplicationProperties extends Properties {
         this.QUEUE_MAX_DISK_USAGE = Integer.parseInt(getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
 
         this.SCHEDULE_DATABASE_CLEANUP = getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", "* * 24 * *");
+
+        setSaveLoadedConfiguration();
     }
 
     /**
@@ -208,8 +213,7 @@ public class ApplicationProperties extends Properties {
      * @author Griefed
      */
     public void reload() {
-        try (
-                InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
             new Properties();
             load(inputStream);
         } catch (
@@ -287,6 +291,8 @@ public class ApplicationProperties extends Properties {
         }
 
         this.CURSE_CONTROLLER_REGENERATION_ENABLED = Boolean.parseBoolean(this.getProperty("de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled", "false"));
+
+        setSaveLoadedConfiguration();
     }
 
     /**
@@ -329,5 +335,13 @@ public class ApplicationProperties extends Properties {
 
     public boolean getCURSE_CONTROLLER_REGENERATION_ENABLED() {
         return this.CURSE_CONTROLLER_REGENERATION_ENABLED;
+    }
+
+    public boolean getSaveLoadedConfiguration() {
+        return saveLoadedConfiguration;
+    }
+
+    public void setSaveLoadedConfiguration() {
+        this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
     }
 }
