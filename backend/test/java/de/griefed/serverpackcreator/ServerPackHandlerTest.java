@@ -327,7 +327,7 @@ class ServerPackHandlerTest {
         DEFAULTFILES.filesSetup();
         String modpackDir = "./backend/test/resources/forge_tests";
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-        SERVERPACKHANDLER.copyIcon(destination);
+        SERVERPACKHANDLER.copyIcon(destination, "");
         Assertions.assertTrue(new File(String.format("server-packs/%s/server-icon.png", destination)).exists());
         new File(String.format("server-packs/%s/server-icon.png", destination)).delete();
         String delete = "server_files";
@@ -347,7 +347,7 @@ class ServerPackHandlerTest {
         DEFAULTFILES.filesSetup();
         String modpackDir = "./backend/test/resources/forge_tests";
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-        SERVERPACKHANDLER.copyProperties(destination);
+        SERVERPACKHANDLER.copyProperties(destination, "");
         Assertions.assertTrue(new File(String.format("server-packs/%s/server.properties", destination)).exists());
         new File(String.format("server-packs/%s/server.properties", destination)).delete();
         String delete = "server_files";

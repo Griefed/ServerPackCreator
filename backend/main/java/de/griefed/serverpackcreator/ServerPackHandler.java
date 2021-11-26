@@ -36,6 +36,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
@@ -45,6 +49,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -186,7 +191,7 @@ public class ServerPackHandler {
 
                 // If true, copy the server-icon.png from server_files to the server pack.
                 if (configurationModel.getIncludeServerIcon()) {
-                    copyIcon(destination);
+                    copyIcon(destination, configurationModel.getServerIconPath());
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
@@ -194,7 +199,7 @@ public class ServerPackHandler {
 
                 // If true, copy the server.properties from server_files to the server pack.
                 if (configurationModel.getIncludeServerProperties()) {
-                    copyProperties(destination);
+                    copyProperties(destination, configurationModel.getServerPropertiesPath());
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
@@ -265,7 +270,7 @@ public class ServerPackHandler {
 
             if (serverPack.getIncludeServerIcon()) {
                 // We are running as a webservice, so we always want to include the icon
-                copyIcon(destination);
+                copyIcon(destination, serverPack.getServerIconPath());
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.icon"));
@@ -273,7 +278,7 @@ public class ServerPackHandler {
 
             if (serverPack.getIncludeServerProperties()) {
                 // We are running as a webservice, so we always want to include the server.properties-file
-                copyProperties(destination);
+                copyProperties(destination, serverPack.getServerPropertiesPath());
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
@@ -1221,22 +1226,61 @@ public class ServerPackHandler {
      * @author Griefed
      * @param destination String. The destination where the icon should be copied to.
      */
-    void copyIcon(String destination) {
+    void copyIcon(String destination, String pathToServerIcon) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyicon"));
 
-        try {
+        if (new File(pathToServerIcon).exists()) {
 
-            Files.copy(
-                    Paths.get(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)),
-                    Paths.get(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination, serverPackCreatorProperties.FILE_SERVER_ICON)),
-                    REPLACE_EXISTING
-            );
+            BufferedImage originalImage = null;
+            Image scaledImage = null;
 
-        } catch (IOException ex) {
-            LOG.error("An error occurred trying to copy the server-icon.", ex);
+            try {
+                originalImage = ImageIO.read(new File(pathToServerIcon));
+            } catch (IOException ex) {
+                LOG.error("Error reading server-icon image.", ex);
+            }
+
+            if (originalImage != null) {
+                scaledImage = originalImage.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                BufferedImage outputImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+                outputImage.getGraphics().drawImage(scaledImage, 0, 0, null);
+
+                try {
+                    ImageIO.write(outputImage, "png", new File(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination, serverPackCreatorProperties.FILE_SERVER_ICON)));
+                } catch (IOException ex) {
+                    LOG.error("Error scaling image.", ex);
+                    LOG.error("Using default icon as fallback.");
+
+                    try {
+
+                        FileUtils.copyFile(
+                                new File(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)),
+                                new File(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination, serverPackCreatorProperties.FILE_SERVER_ICON)));
+
+                    } catch (IOException e) {
+                        LOG.error("An error occurred trying to copy the server-icon.", e);
+                    }
+                }
+            }
+
+        } else {
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.icon"));
+
+            try {
+
+                FileUtils.copyFile(
+                        new File(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)),
+                        new File(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), destination, serverPackCreatorProperties.FILE_SERVER_ICON)));
+
+            } catch (IOException ex) {
+                LOG.error("An error occurred trying to copy the server-icon.", ex);
+            }
         }
+
+
     }
 
     /**
@@ -1244,21 +1288,36 @@ public class ServerPackHandler {
      * @author Griefed
      * @param destination String. The destination where the properties should be copied to.
      */
-    void copyProperties(String destination) {
+    void copyProperties(String destination, String pathToServerProperties) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyproperties"));
 
-        try {
+        if (new File(pathToServerProperties).exists()) {
+            try {
 
-            Files.copy(
-                    Paths.get(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)),
-                    Paths.get(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(),destination, serverPackCreatorProperties.FILE_SERVER_PROPERTIES)),
-                    REPLACE_EXISTING
-            );
+                FileUtils.copyFile(
+                        new File(pathToServerProperties),
+                        new File(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(),destination, serverPackCreatorProperties.FILE_SERVER_PROPERTIES))
+                );
 
-        } catch (IOException ex) {
-            LOG.error("An error occurred trying to copy the server.properties-file.", ex);
+            } catch (IOException ex) {
+                LOG.error("An error occurred trying to copy the server.properties-file.", ex);
+            }
+        } else {
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.properties"));
+
+            try {
+
+                FileUtils.copyFile(
+                        new File(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)),
+                        new File(String.format("%s/%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(),destination, serverPackCreatorProperties.FILE_SERVER_PROPERTIES))
+                );
+
+            } catch (IOException ex) {
+                LOG.error("An error occurred trying to copy the server.properties-file.", ex);
+            }
         }
     }
 
