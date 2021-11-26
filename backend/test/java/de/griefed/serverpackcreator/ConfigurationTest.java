@@ -87,7 +87,7 @@ class ConfigurationTest {
 
     @Test
     void getFallbackModsListTest() {
-        Assertions.assertNotNull(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+        Assertions.assertNotNull(serverPackCreatorProperties.getListFallbackMods());
     }
 
     @Test
@@ -114,7 +114,7 @@ class ConfigurationTest {
         List<String> fallbackMods = new ArrayList<String>(
                 Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(","))
         );
-        Assertions.assertEquals(fallbackMods, serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+        Assertions.assertEquals(fallbackMods, serverPackCreatorProperties.getListFallbackMods());
     }
 
     @Test
@@ -559,7 +559,7 @@ class ConfigurationTest {
         configurationModel.setIncludeZipCreation(true);
         configurationModel.setJavaArgs("empty");
         CONFIGURATIONHANDLER.checkCurseForge("238298,3174854", configurationModel);
-        configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+        configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
 
         Assertions.assertFalse(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
@@ -584,7 +584,7 @@ class ConfigurationTest {
         configurationModel.setIncludeServerProperties(true);
         configurationModel.setIncludeZipCreation(true);
         CONFIGURATIONHANDLER.checkCurseForge("999999,3174854", configurationModel);
-        configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+        configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
         Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel));
         new File("./serverpackcreator.conf").delete();
     }

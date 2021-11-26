@@ -1182,7 +1182,7 @@ public class TabCreateServerPack extends JComponent {
                             JOptionPane.INFORMATION_MESSAGE) == 0) {
 
                         try {
-                            Desktop.getDesktop().open(new File(String.format("%s/%s", serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
+                            Desktop.getDesktop().open(new File(String.format("%s/%s", serverPackCreatorProperties.getDirectoryServerPacks(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
                         } catch (IOException ex) {
                             LOG.error("Error opening file explorer for server pack.", ex);
                         }
@@ -1276,8 +1276,8 @@ public class TabCreateServerPack extends JComponent {
                 LOG.error("Error parsing modpackdir from configfile: " + configFile, ex);
             }
 
-            if (config.getOrElse("clientMods",serverPackCreatorProperties.getLIST_FALLBACK_MODS()).isEmpty()) {
-                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(serverPackCreatorProperties.getLIST_FALLBACK_MODS().toString()));
+            if (config.getOrElse("clientMods",serverPackCreatorProperties.getListFallbackMods()).isEmpty()) {
+                TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(serverPackCreatorProperties.getListFallbackMods().toString()));
                 LOG.debug("Set clientMods with fallback list.");
             } else {
                 TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.get("clientMods").toString()));
@@ -1399,7 +1399,7 @@ public class TabCreateServerPack extends JComponent {
     protected void clearInterface() {
         TEXTFIELD_MODPACKDIRECTORY.setText("");
         TEXTFIELD_SERVERPACKSUFFIX.setText("");
-        TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(serverPackCreatorProperties.getLIST_FALLBACK_MODS().toString()));
+        TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(serverPackCreatorProperties.getListFallbackMods().toString()));
         TEXTFIELD_COPYDIRECTORIES.setText("");
         TEXTFIELD_SERVERICONPATH.setText("");
         TEXTFIELD_SERVERPROPERTIESPATH.setText("");

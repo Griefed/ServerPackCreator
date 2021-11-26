@@ -51,7 +51,7 @@ public class ArtemisConfig implements ArtemisConfigurationCustomizer {
 
         if (configuration != null) {
 
-            configuration.setMaxDiskUsage(APPLICATIONPROPERTIES.QUEUE_MAX_DISK_USAGE);
+            configuration.setMaxDiskUsage(APPLICATIONPROPERTIES.getQueueMaxDiskUsage());
 
             AddressSettings addressSettings = new AddressSettings();
             addressSettings.setDefaultConsumerWindowSize(0);

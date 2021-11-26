@@ -1030,7 +1030,7 @@ public class MenuBar extends Component {
         LOG.debug("Clicked open server packs directory.");
 
         try {
-            Desktop.getDesktop().open(new File(serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS()));
+            Desktop.getDesktop().open(new File(serverPackCreatorProperties.getDirectoryServerPacks()));
         } catch (IOException ex) {
             LOG.error("Error opening file explorer for server-packs.", ex);
         }

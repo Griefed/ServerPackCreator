@@ -91,7 +91,7 @@ public class CurseController {
     @CrossOrigin(origins = {"*"})
     @GetMapping("/regenerate")
     public String regenerate(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
-        if (APPLICATIONPROPERTIES.getCURSE_CONTROLLER_REGENERATION_ENABLED()) {
+        if (APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled()) {
             return CURSESERVICE.regenerateFromCurseModpack(modpack);
         } else {
             return CURSERESPONSEMODEL.response(modpack, 2, "Regeneration is disabled on this instance!", 4000, "info", "warning");
@@ -106,7 +106,7 @@ public class CurseController {
     @CrossOrigin(origins = {"*"})
     @GetMapping("/regenerate/active")
     public String regenerateActivated() {
-        return "{\"regenerationActivated\": " + APPLICATIONPROPERTIES.getCURSE_CONTROLLER_REGENERATION_ENABLED() + "}";
+        return "{\"regenerationActivated\": " + APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled() + "}";
     }
 
 }

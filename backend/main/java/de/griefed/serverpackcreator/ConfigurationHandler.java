@@ -162,7 +162,7 @@ public class ConfigurationHandler {
         if (getConfig().getOrElse("clientMods", Collections.singletonList("")).isEmpty()) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
-            configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+            configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
         } else {
             configurationModel.setClientMods(getConfig().getOrElse("clientMods", Collections.singletonList("")));
         }
@@ -267,7 +267,7 @@ public class ConfigurationHandler {
         if (configurationModel.getClientMods().isEmpty()) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
-            configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+            configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
         } else {
             configurationModel.setClientMods(configurationModel.getClientMods());
         }
@@ -599,11 +599,11 @@ public class ConfigurationHandler {
             LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
         }
 
-        for (int idirs = 0; idirs < serverPackCreatorProperties.getLIST_DIRECTORIES_EXCLUDE().size(); idirs++) {
+        for (int idirs = 0; idirs < serverPackCreatorProperties.getListOfDirectoriesToExclude().size(); idirs++) {
 
             int i = idirs;
 
-            dirsInModpack.removeIf(n -> (n.contains(serverPackCreatorProperties.getLIST_DIRECTORIES_EXCLUDE().get(i))));
+            dirsInModpack.removeIf(n -> (n.contains(serverPackCreatorProperties.getListOfDirectoriesToExclude().get(i))));
         }
 
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
@@ -905,7 +905,7 @@ public class ConfigurationHandler {
 
                 // Add an entry to the list of directories/files to exclude if it starts with !
                 } else if (directory.startsWith("!")) {
-                    serverPackCreatorProperties.addLIST_DIRECTORIES_EXCLUDE(directory.substring(directory.lastIndexOf("!") + 1));
+                    serverPackCreatorProperties.addToListOfDirectoriesToExclude(directory.substring(directory.lastIndexOf("!") + 1));
 
                 // Check if the entry exists
                 } else {
@@ -1201,7 +1201,7 @@ public class ConfigurationHandler {
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), clientMods));
 
                 if (clientMods.isEmpty()) {
-                    clientMods = serverPackCreatorProperties.getLIST_FALLBACK_MODS();
+                    clientMods = serverPackCreatorProperties.getListFallbackMods();
 
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
