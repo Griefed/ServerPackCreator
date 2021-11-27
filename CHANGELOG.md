@@ -1,3 +1,15 @@
+## [3.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.9...3.0.0-alpha.10) (2021-11-27)
+
+
+### 🦊 CI/CD
+
+* Remove changelog generation of GitHub releases as I copy and paste the changelog from GitLab anyway ([25cdb26](https://git.griefed.de/Griefed/ServerPackCreator/commit/25cdb26d97fd5427e152615a9d10749d6039765f))
+
+
+### 🛠 Fixes
+
+* Instead of using an external applications.properties for customizing, use our serverpackcreator.properties...which exists anyway! ([3794896](https://git.griefed.de/Griefed/ServerPackCreator/commit/3794896971e775d4f4d37aee7d340cc0510d8024))
+
 ## [3.0.0-alpha.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.8...3.0.0-alpha.9) (2021-11-27)
 
 
