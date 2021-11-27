@@ -136,6 +136,7 @@ public class CurseService {
      * @param modpack CurseForge projectID and fileID combination.
      */
     public String regenerateFromCurseModpack(String modpack) {
+        // TODO: When regeneration is triggered, set downloads and votes to 0
         if (APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled()) {
 
             ServerPack serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
