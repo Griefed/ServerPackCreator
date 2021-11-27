@@ -130,7 +130,7 @@ public class TabModloaderInstallerLog extends JComponent {
             }
         }
         TailerListener tailerListener = new MyTailerListener();
-        Tailer tailer = new Tailer(new File("./logs/modloader_installer.log"), tailerListener, 2000);
+        Tailer tailer = new Tailer(new File("./logs/modloader_installer.log"), tailerListener, 100);
         Thread thread = new Thread(tailer);
         thread.setDaemon(true);
         thread.start();
