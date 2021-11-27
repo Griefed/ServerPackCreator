@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- *
+ * Class revolving around with server packs, like downloading, retrieving, deleting, voting etc.
  * @author Griefed
  */
 @Service
@@ -54,10 +54,10 @@ public class ServerPackService {
     private final ServerPackRepository SERVERPACKREPOSITORY;
 
     /**
-     *
+     * Constructor responsible for our DI.
      * @author Griefed
-     * @param injectedApplicationProperties
-     * @param injectedServerPackRepository
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @param injectedServerPackRepository Instance of {@link ServerPackRepository}.
      */
     @Autowired
     public ServerPackService(ApplicationProperties injectedApplicationProperties, ServerPackRepository injectedServerPackRepository) {
@@ -68,41 +68,41 @@ public class ServerPackService {
     //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than property and has zero downloads
 
     /**
-     *
+     * Find a specific server pack by searching with a CurseForge project and file ID.
      * @author Griefed
-     * @param projectID
-     * @param fileID
-     * @return
+     * @param projectID Integer. The CurseForge project ID.
+     * @param fileID Integer. The CurseForge project file ID.
+     * @return Returns the server pack for the passed project and file ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
     public Optional<ServerPack> findByProjectIDAndFileID(int projectID, int fileID) {
         return SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID);
     }
 
     /**
-     *
+     * Delete a server pack with a given CurseForge project and file ID.
      * @author Griefed
-     * @param projectID
-     * @param fileID
+     * @param projectID Integer. The CurseForge project ID.
+     * @param fileID Integer. The CurseForge file ID.
      */
     protected void deleteByProjectIDAndFileID(int projectID, int fileID) {
         SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
     }
 
     /**
-     *
+     * Find a server pack by its database id.
      * @author Griefed
-     * @param fileID
-     * @return
+     * @param fileID Integer. The database id with which to search for a server pack.
+     * @return Returns a server pack for the passed database id wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
     public Optional<ServerPack> findByFileID(int fileID) {
         return SERVERPACKREPOSITORY.findByFileID(fileID);
     }
 
     /**
-     *
+     * Download a server pack with the given database id.
      * @author Griefed
-     * @param id
-     * @return
+     * @param id Integer. The database id of the server pack to download.
+     * @return Returns a response entity with either the server pack as a downloadable file, or a response entity with a not found body.
      */
     public ResponseEntity<Resource> downloadServerPackById(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Available")) {
@@ -119,7 +119,7 @@ public class ServerPackService {
                 LOG.error("Error generating download for server pack with ID" + id + ".", ex);
             }
 
-            updateDownloadCounter(id, serverPack);
+            updateDownloadCounter(id);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
@@ -133,26 +133,24 @@ public class ServerPackService {
     }
 
     /**
-     *
+     * Either upvote or downvote a given server pack.
      * @author Griefed
-     * @param voting
-     * @return
+     * @param voting String. The database id of the server pack and whether it should be up- or downvoted.
+     * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or not found if the server pack could not be found.
      */
     public ResponseEntity<Object> voteForServerPack(String voting) {
-        if (SERVERPACKREPOSITORY.findById(Integer.parseInt(voting.split(",")[0])).isPresent() && SERVERPACKREPOSITORY.findById(Integer.parseInt(voting.split(",")[0])).get().getStatus().matches("Available")) {
+        String[] vote = voting.split(",");
+        int id = Integer.parseInt(vote[0]);
+        if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().equals("Available")) {
 
-            ServerPack serverPack = SERVERPACKREPOSITORY.findById(Integer.parseInt(voting.split(",")[0])).get();
+            if (vote[1].equalsIgnoreCase("up")) {
 
-            if (voting.split(",")[1].equalsIgnoreCase("up")) {
-
-                serverPack.setConfirmedWorking(serverPack.getConfirmedWorking() + 1);
-                updateConfirmedCounter(Integer.parseInt(voting.split(",")[0]), serverPack);
+                updateConfirmedCounter(id, +1);
                 return ResponseEntity.ok().build();
 
-            } else if (voting.split(",")[1].equalsIgnoreCase("down")) {
+            } else if (vote[1].equalsIgnoreCase("down")) {
 
-                serverPack.setConfirmedWorking(serverPack.getConfirmedWorking() - 1);
-                updateConfirmedCounter(Integer.parseInt(voting.split(",")[0]), serverPack);
+                updateConfirmedCounter(id, -1);
                 return ResponseEntity.ok().build();
 
             } else {
@@ -167,9 +165,9 @@ public class ServerPackService {
     }
 
     /**
-     *
+     * Get a list of all available server packs.
      * @author Griefed
-     * @return
+     * @return List ServerPack. Returns a list of all available server packs.
      */
     public List<ServerPack> getServerPacks() {
         List<ServerPack> serverPacks = new ArrayList<>();
@@ -178,30 +176,34 @@ public class ServerPackService {
     }
 
     /**
-     *
+     * Get a list of all server packs using a CurseForge project ID.
      * @author Griefed
-     * @param projectID
-     * @return
+     * @param projectID Integer. The CurseForge project ID with which to search for server pack.
+     * @return Returns a list of all server packs for the passed CurseForge project ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
     public List<ServerPack> getServerPacksByProjectID(int projectID) {
-        return new ArrayList<>(SERVERPACKREPOSITORY.findAllByProjectID(projectID));
+        if (SERVERPACKREPOSITORY.findAllByProjectID(projectID).isPresent()) {
+            return new ArrayList<ServerPack>(SERVERPACKREPOSITORY.findAllByProjectID(projectID).get());
+        } else {
+            return new ArrayList<ServerPack>();
+        }
+
     }
 
     /**
-     *
+     * Store a server pack in the database.
      * @author Griefed
-     * @param serverPack
-     * @return
+     * @param serverPack Instance of {@link ServerPack} to store in the database.
      */
-    protected ServerPack insert(ServerPack serverPack) {
-        return SERVERPACKREPOSITORY.save(serverPack);
+    protected void insert(ServerPack serverPack) {
+        SERVERPACKREPOSITORY.save(serverPack);
     }
 
     /**
-     *
+     * Update a server pack database entry with the given database id.
      * @author Griefed
-     * @param id
-     * @param serverPack
+     * @param id Integer. The database id of the server pack to update.
+     * @param serverPack Instance of {@link ServerPack} with which to update the entry in the database.
      */
     protected void updateServerPackByID(int id, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
@@ -221,39 +223,39 @@ public class ServerPackService {
     }
 
     /**
-     *
+     * Increment the download counter for a given server pack entry in the database identified by the database id.
      * @author Griefed
-     * @param id
-     * @param serverPack
+     * @param id Integer. The database id of the server pack.
      */
-    protected void updateDownloadCounter(int id, ServerPack serverPack) {
+    protected void updateDownloadCounter(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            serverPackFromDB.setDownloads(serverPack.getDownloads() + 1);
+            serverPackFromDB.setDownloads(serverPackFromDB.getDownloads() + 1);
             SERVERPACKREPOSITORY.save(serverPackFromDB);
         }
     }
 
     /**
-     *
+     * Either increment or decrement the confirmed working value of a given server pack entry in the database, identified by the
+     * database id.
      * @author Griefed
-     * @param id
-     * @param serverPack
+     * @param id Integer. The database id of the server pack.
      */
-    protected void updateConfirmedCounter(int id, ServerPack serverPack) {
+    protected void updateConfirmedCounter(int id, int vote) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
+            serverPackFromDB.setConfirmedWorking(serverPackFromDB.getConfirmedWorking() + vote);
             SERVERPACKREPOSITORY.save(serverPackFromDB);
         }
     }
 
     /**
-     *
+     * Update a server pack entry in the database identified by a CurseForge project and file ID combination, using a passed
+     * server pack.
      * @author Griefed
-     * @param projectID
-     * @param fileID
-     * @param serverPack
+     * @param projectID The CurseForge project ID.
+     * @param fileID The CurseForge file ID.
+     * @param serverPack The server pack with which to update the entry in the database.
      */
     protected void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
@@ -273,19 +275,19 @@ public class ServerPackService {
     }
 
     /**
-     *
+     * Deletes a server pack with the given id.
      * @author Griefed
-     * @param id
+     * @param id Integer. The database id of the server pack to delete.
      */
     protected void deleteServerPack(int id) {
         SERVERPACKREPOSITORY.deleteById(id);
     }
 
     /**
-     *
+     * Delete a server pack with a given CurseForge project and file ID.
      * @author Griefed
-     * @param projectID
-     * @param fileID
+     * @param projectID Integer. The CurseForge project ID.
+     * @param fileID Integer. The CurseForge file ID.
      */
     protected void deleteServerPack(int projectID, int fileID) {
         SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);

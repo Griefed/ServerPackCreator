@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 /**
- *
+ * CurseResponse to be passed back to the requester.
  * @author Griefed
  */
 @Component
@@ -35,15 +35,15 @@ public class CurseResponse {
     private static final Logger LOG = LogManager.getLogger(CurseResponse.class);
 
     /**
-     *
+     * Construct a response with all values manually set.
      * @author Griefed
-     * @param projectName
-     * @param status
-     * @param message
-     * @param timeout
-     * @param icon
-     * @param colour
-     * @return
+     * @param projectName The name of the CurseForge project.
+     * @param status The statuscode. Status 0: Already exists. Status 1: OK, generating. Status 2: Error occurred.
+     * @param message The message the requester should care about.
+     * @param timeout Timeout in milliseconds after which the notification in our Quasar frontend should disappear.
+     * @param icon The icon to be displayed in the notification.
+     * @param colour The colour of the notification.
+     * @return String. Returns the aforementioned parameters wrapped in JSON.
      */
     public String response(String projectName, int status, String message, int timeout, String icon, String colour) {
         return "{" +
@@ -57,15 +57,15 @@ public class CurseResponse {
     }
 
     /**
-     *
+     * Construct a response with values acquired from the CurseForge API.
      * @author Griefed
-     * @param projectID
-     * @param status
-     * @param message
-     * @param timeout
-     * @param icon
-     * @param colour
-     * @return
+     * @param projectID The id with which to gather the name of the project.
+     * @param status The statuscode. Status 0: Already exists. Status 1: OK, generating. Status 2: Error occurred.
+     * @param message The message the requester should care about.
+     * @param timeout Timeout in milliseconds after which the notification in our Quasar frontend should disappear.
+     * @param icon The icon to be displayed in the notification.
+     * @param colour The colour of the notification.
+     * @return String. Returns the aforementioned parameters wrapped in JSON.
      */
     public String response(int projectID, int status, String message, int timeout, String icon, String colour) {
         try {
@@ -86,7 +86,8 @@ public class CurseResponse {
                     "\"timeout\": " + timeout + "," +
                     "\"icon\": \"" + icon + "\"," +
                     "\"colour\": \"" + colour + "\"" +
-                    "}";        }
+                    "}";
+        }
     }
 
 }

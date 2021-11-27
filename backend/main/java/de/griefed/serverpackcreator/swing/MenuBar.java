@@ -846,7 +846,8 @@ public class MenuBar extends Component {
 
     /**
      * Upon button-press, save the current configuration in the GUI to the serverpackcreator.conf-file in ServerPackCreators
-     * base directory.
+     * base directory. if <code>de.griefed.serverpackcreator.configuration.saveloadedconfig</code> is set to <code>true</code> and
+     * the field <code>lastLoadedConfigurationFile</code> is not null, the last loaded configuration-file is also saved to.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
      */

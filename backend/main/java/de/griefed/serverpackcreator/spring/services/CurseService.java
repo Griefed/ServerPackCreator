@@ -22,12 +22,10 @@ package de.griefed.serverpackcreator.spring.services;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforge.InvalidFileException;
 import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.spring.models.CurseResponse;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
-import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +35,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 /**
- *
+ * CurseForge service for working with, retrieving, sending, generating, handling everything related to server packs/modpacks
+ * which make use of CurseForge or are made using CurseForge and their API.
  * @author Griefed
  */
 @Service
@@ -45,41 +44,39 @@ public class CurseService {
 
     private static final Logger LOG = LogManager.getLogger(CurseService.class);
 
-    private final ServerPackHandler SERVERPACKHANDLER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final CurseResponse CURSERESPONSEMODEL;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackService SERVERPACKSERVICE;
-    private final TaskReceiver TASKRECEIVER;
+    private final TaskSubmitter TASKSUBMITTER;
 
     /**
-     *
+     * Constructor responsible for our DI.
      * @author Griefed
-     * @param injectedServerPackHandler
-     * @param injectedConfigurationHandler
-     * @param injectedCurseResponse
-     * @param injectedApplicationProperties
-     * @param injectedServerpackService
-     * @param injectedTaskReceiver
+     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
+     * @param injectedCurseResponse Instance of {@link CurseResponse}.
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @param injectedServerPackService Instance of {@link ServerPackService}.
+     * @param injectedTaskSubmitter Instance of {@link TaskSubmitter}.
      */
     @Autowired
-    public CurseService(ServerPackHandler injectedServerPackHandler, ConfigurationHandler injectedConfigurationHandler, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerpackService, TaskReceiver injectedTaskReceiver) {
-        this.SERVERPACKHANDLER = injectedServerPackHandler;
+    public CurseService(ConfigurationHandler injectedConfigurationHandler, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerPackService, TaskSubmitter injectedTaskSubmitter) {
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.CURSERESPONSEMODEL = injectedCurseResponse;
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        this.SERVERPACKSERVICE = injectedServerpackService;
-        this.TASKRECEIVER = injectedTaskReceiver;
+        this.SERVERPACKSERVICE = injectedServerPackService;
+        this.TASKSUBMITTER = injectedTaskSubmitter;
     }
 
     /**
-     * Status 0: Already exists<br>
-     * Status 1: OK, generating<br>
-     * Status 2: Error occurred
+     * Check a passed CurseForge project and file ID combination. Checks whether a server pack is already for the given
+     * combination and then checks their status and returns it wrapped in a {@link CurseResponse}. If a server pack is not
+     * available for the given combination, a scan task is sent to {@link TaskSubmitter#scanCurseProject(String)} with the
+     * given CurseForge project and file ID combination.
      * @author Griefed
-     * @param projectID CurseForge projectID.
-     * @param fileID CurseForge fileID.
-     * @return String. Statuscode indicating whether the server pack already exists, will be generated or an error occured.
+     * @param projectID Integer. CurseForge projectID.
+     * @param fileID Integer. CurseForge fileID.
+     * @return String. Returns a {@link CurseResponse} with some information about the requested project and file, as well as the status, which is either of <code>Status 0: Already exists</code>, <code>Status 1: OK, generating</code> or <code>Status 2: Error occurred</code>.
      */
     public String createFromCurseModpack(int projectID, int fileID) throws CurseException {
 
@@ -107,7 +104,7 @@ public class CurseService {
 
             if (CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
 
-                TASKRECEIVER.scanCurseProject(projectID + "," + fileID);
+                TASKSUBMITTER.scanCurseProject(projectID + "," + fileID);
 
                 return CURSERESPONSEMODEL.response(serverPack.getProjectName(), 1, "Queued! Come back later and check the downloads-section to see whether your server pack for " + serverPack.getProjectName() + " is ready for download!", 7000, "done", "positive");
 
@@ -132,20 +129,27 @@ public class CurseService {
     }
 
     /**
-     * Status 0: Already exists<br>
-     * Status 1: OK, generating<br>
-     * Status 2: Error occurred
+     * Regenerates server pack for the given CurseForge project and file ID.<br>
+     * Requires <code>de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled=true</code>, otherwise a message is returned
+     * telling the requester that regeneration is disabled on this instance of ServerPackCreator.
      * @author Griefed
      * @param modpack CurseForge projectID and fileID combination.
      */
     public String regenerateFromCurseModpack(String modpack) {
+        if (APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled()) {
 
-        ServerPack serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
-        serverPack.setModpackDir(modpack);
-        serverPack.setStatus("Queued");
-        SERVERPACKSERVICE.updateServerPackByID(serverPack.getId(), serverPack);
-        TASKRECEIVER.generateCurseProject(modpack);
+            ServerPack serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
+            serverPack.setModpackDir(modpack);
+            serverPack.setStatus("Queued");
+            SERVERPACKSERVICE.updateServerPackByID(serverPack.getId(), serverPack);
+            TASKSUBMITTER.generateCurseProject(modpack);
 
-        return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating server pack.", 3000, "done", "positive");
+            return CURSERESPONSEMODEL.response(modpack, 1, "Regenerating server pack.", 3000, "done", "positive");
+
+        } else {
+
+            return CURSERESPONSEMODEL.response(modpack, 2, "Regeneration is disabled on this instance!", 4000, "info", "warning");
+        }
+
     }
 }

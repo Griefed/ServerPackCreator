@@ -36,7 +36,12 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 /**
- *
+ * <a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
+ * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
+ * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
+ * the necessary changes to fully implement it in ServerPackCreator.<br>
+ * TaskHandler class which determines what to do with all message in our JMS, depending on their task type and content of
+ * the message.
  * @author Griefed
  */
 @Service
@@ -47,29 +52,36 @@ public class TaskHandler {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final ServerPackHandler SERVERPACKHANDLER;
     private final ServerPackService SERVERPACKSERVICE;
-    private final TaskReceiver TASKRECEIVER;
+    private final TaskSubmitter TASKSUBMITTER;
     private final StopWatch STOPWATCH;
 
     /**
-     *
+     * Constructor responsible for our DI.
      * @author Griefed
-     * @param injectedConfigurationHandler
-     * @param injectedServerPackHandler
-     * @param injectedServerPackService
+     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
+     * @param injectedServerPackHandler Instance of {@link ServerPackHandler}.
+     * @param injectedServerPackService Instance of {@link ServerPackService}.
+     * @param injectedTaskSubmitter Instance of {@link TaskSubmitter}.
      */
     @Autowired
-    public TaskHandler(ConfigurationHandler injectedConfigurationHandler, ServerPackHandler injectedServerPackHandler, ServerPackService injectedServerPackService, TaskReceiver injectedTaskReceiver) {
+    public TaskHandler(ConfigurationHandler injectedConfigurationHandler, ServerPackHandler injectedServerPackHandler, ServerPackService injectedServerPackService, TaskSubmitter injectedTaskSubmitter) {
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.SERVERPACKHANDLER = injectedServerPackHandler;
         this.SERVERPACKSERVICE = injectedServerPackService;
-        this.TASKRECEIVER = injectedTaskReceiver;
+        this.TASKSUBMITTER = injectedTaskSubmitter;
         this.STOPWATCH = new StopWatch();
     }
 
     /**
-     *
+     * {@link JmsListener} listening to the destination <code>tasks.background</code> and selector <code>type = 'scan'</code>, so only task
+     * that match the <code>scan</code>-type are worked with in this method.<br>
+     * If a task is received that matches this type, the CurseForge project and file ID of said task is checked for validity.
+     * If the combination is found valid, either a new entry is saved to the database or an already existing one updated,
+     * if the existing one has the status <code>Generating</code> and <code>lastModified</code> is bigger than 30 minutes.
+     * In either case, a {@link GenerateCurseProject}-task is sent which will then generate a server pack from the CurseForge project
+     * and file ID combination.
      * @author Griefed
-     * @param task
+     * @param task The task for which to check the CurseForge project and file ID, as well as status.
      */
     @JmsListener(destination = "tasks.background", selector = "type = 'scan'")
     public void handleScan(Task task) {
@@ -92,7 +104,7 @@ public class TaskHandler {
                         serverPack.setModpackDir(projectID + "," + fileID);
                         serverPack.setStatus("Queued");
                         SERVERPACKSERVICE.insert(serverPack);
-                        TASKRECEIVER.generateCurseProject(projectID + "," + fileID);
+                        TASKSUBMITTER.generateCurseProject(projectID + "," + fileID);
 
                     } else if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
 
@@ -102,7 +114,7 @@ public class TaskHandler {
                             serverPack.setModpackDir(projectID + "," + fileID);
                             serverPack.setStatus("Queued");
                             SERVERPACKSERVICE.updateServerPackByProjectIDAndFileID(projectID, fileID, serverPack);
-                            TASKRECEIVER.generateCurseProject(projectID + "," + fileID);
+                            TASKSUBMITTER.generateCurseProject(projectID + "," + fileID);
                         }
 
                     }
@@ -125,9 +137,15 @@ public class TaskHandler {
     }
 
     /**
-     *
+     * {@link JmsListener} listening to the destination <code>tasks.background</code> and selector <code>type = 'generation'</code>, so only task
+     * that match the <code>generation</code>-type are worked with in this method.<br>
+     * If a task is received that matches this type, the CurseForge project and file ID of said task is used to retrieve the
+     * relevant entry in the database. Said entry in the database is then used to generate our server pack with and subsequently updated
+     * with new values gathered in {@link ServerPackHandler#run(ServerPack)}. If at any point an error occurs during the creation of a server pack,
+     * the database entry is deleted completely, so we prevent dead entries in the database. Downside being that the request must
+     * check whether the server pack is available for download and resubmit, if it isn't.
      * @author Griefed
-     * @param task
+     * @param task The task with which to generate a server pack from a CurseForge project and file ID.
      */
     @JmsListener(destination = "tasks.background", selector = "type = 'generation'")
     public void handleGeneration(Task task) {

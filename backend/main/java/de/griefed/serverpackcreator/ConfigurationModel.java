@@ -26,10 +26,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Class containing all fields and therefore all information either gathered from a configuration file, stored by the creation
+ * of a modpack from CurseForge or passed otherwise.
  * @author Griefed
  */
 public class ConfigurationModel {
+
+    /**
+     * Constructor for our ConfigurationModel.
+     * @author Griefed
+     */
+    public ConfigurationModel() {
+
+    }
 
     private List<String> clientMods = new ArrayList<>();
     private List<String> copyDirs = new ArrayList<>();
