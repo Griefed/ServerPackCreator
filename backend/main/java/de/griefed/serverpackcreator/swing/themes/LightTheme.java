@@ -4,7 +4,6 @@ import mdlaf.shadows.DropShadowBorder;
 import mdlaf.themes.MaterialLiteTheme;
 import mdlaf.utils.MaterialBorders;
 import mdlaf.utils.MaterialColors;
-
 import javax.swing.*;
 import javax.swing.plaf.BorderUIResource;
 import java.awt.*;

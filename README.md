@@ -41,19 +41,73 @@ Use at your own risk! Be aware that data loss is possible.
 
 [[_TOC_]]
 
-# JetBrains
-
-**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
-
-[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/)
---------- | ---------  | ------
-[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/)
-
 # Screenshots
 
-GUI, CLI and webservice
+## Commandline Interface (CLI)
 
-![ServerPackCreator](https://i.griefed.de/images/2021/05/08/screenshot.png)
+| Windows | Linux | Mac
+| ------- | ----- | ----
+| ![CLI Win](https://i.griefed.de/images/2021/11/20/cli_windows.png) | ![CLI Linux](https://i.griefed.de/images/2021/11/20/cli_linux.png) | ![CLI Mac](https://i.griefed.de/images/2021/11/20/cli_mac.png)
+
+## Graphical User Interface (GUI)
+
+| Windows | Linux | Mac
+| ------- | ----- | ----
+| ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_windows_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_linux_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_mac_light.png)
+| ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_windows_dark.png) | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_linux_dark.png) | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_mac_dark.png)
+
+## Webservice
+
+| Light mode | Dark mode 
+| ---------- | ---------
+| ![Light Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_light.png) | ![Dark Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_dark.png)
+| ![Light Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_light.png) | ![Dark Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_dark.png)
+
+# Advantages/Disadvantages of CLI, GUI and Webservice:
+
+Each way of using ServerPackCreator has its advantages and disadvantages. Depending on your environment, it may be better to use one way over the other. This section highlights some of the
+advantages and disadvantages of each version to help you decide which way you are going to use.
+Note: All three ways are supported by the **.jar**-file. Which one is started depends on the CLI arguments used and your environment.
+
+## CLI:
+
+| Advantages | Disadvantages |
+| :--------- | :------------ |
+| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use. | Gathering of information for a configuration file is tedious. |
+| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards. | No convenience features file folder-browsing or jumping to the generated server pack after generation. |
+|  | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. 
+|  | Manual editing of the configuration-file in case you want to change it. |
+
+## GUI:
+
+| Advantages | Disadvantages |
+| :--------- | :------------ |
+| Browse the filesystem for folders and file required by the configuration. | Requires a graphical environment. |
+| Setting up a configuration by browsing the filesystem and selecting your Minecraft and modloader versions from a list. |  |
+| Browsing the generated server pack after generation has finished. |  |
+| Loading and saving different configurations for quick generation of multiple server packs in short succession. |  |
+| Edit the configuration in the GUI. No manual file-editing required. |  |
+
+## Webservice:
+
+| Advantages | Disadvantages |
+| :--------- | :------------ |
+| No installation/setup required if a public instance is available somewhere. | Requires someone to setup a publicly accessible instance. |
+| Punch in your projectID and fileID and get a download for a server pack after it has been generated. | Requires somewhat modern browser versions. |
+| Voting system to let users indicate whether a generated server pack works. | Not all browers may be supported. |
+| Mostly open REST API. Interaction with the webservice does not *require* a browser. You can request a server pack generation and/or download from the CLI. | Currently only allows server pack generation for modpacks and files already on CurseForge. |
+
+---
+
+# Awesomesauce!
+
+**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
+**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
+Huge shoutout and thank you!**
+
+[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/) | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)
+--------- | ---------  | ------ | ----
+[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
 ---
 
@@ -68,8 +122,50 @@ A list of known issues can be found in [Known Issues](https://github.com/Griefed
 
 # 2. Contributing
 
-Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.
+**Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.**
 
+A short excerpt:
+
+> If you want to contribute to ServerPackCreator, then the following procedure **must** be adhered to:
+>
+> 1. Fork ServerPackCreator
+> 2. Create a new branch in your fork, following one of the following naming schemes:
+>     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
+>         - griefed_chore_readme
+>         - griefed_perf_curseforgemodpack
+>         - griefed_feat_ziparchive
+>     2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
+>     3. Schemes:
+>         1. your_username_breaking_
+>         2. your_username_build_
+>         3. your_username_chore_
+>         4. your_username_ci_
+>         5. your_username_docs_
+>         6. your_username_feat_
+>         7. your_username_fix_
+>         8. your_username_perf_
+>         9. your_username_refactor_
+>         10. your_username_revert_
+>         11. your_username_style_
+>         12. your_username_test_
+>         13. your_username_other_
+> 3. Make your changes to your new branch:
+>     1. Try to keep the changes atomic, so they best fit the name of the branch.
+>     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
+>         - feat: Allow upload of modpack-export zip-archive to web-frontend
+>         - refactor: Use apache commons-io for copying, instead of Files
+> 4. Open an issue on the main repository, using the **Pull Request** template:
+>     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
+>         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
+>     2. Issue description: Fill in the sections the template provide.
+>     3. Submit the new issue
+> 5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
+> 6. If checks and tests pass, or any changes necessary have been made, the pull request is ready to be merged etc., I will merge it to your main repository branch.
+> 7. I can then merge your main repository branch into main/master/whatever locally, push these changes to my GitLab instance, which will in turn push these changes to GitHub.
+> 8. Done!
+> 
+> This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
+> Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
 
 # 3. Features
 
@@ -97,11 +193,10 @@ Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONT
     4. Set a suffix for the server pack to be generated
     5. And much more!
 12. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs.**
-    1. Upload config files
-    2. Upload CurseForge modpack-archives to generate server packs from
-    3. Browse uploaded modpacks to configure clientside-only mods, directories to include in server pack, Java executable/binary etc.
-    4. Logs from last run in separate tab
-    5. About ServerPackCreator-tab with links to GitHub issues, HasteBin, Discord
+    1. Generate a server pack from a projectID and fileID combination.
+    2. All generated server packs available for download by everyone.
+    3. Admin-area to edit some configurations, like the list of clientside-only mods, whether regeneration of server packs is allowed, reading the log file(s), enabling/disabling installed addons, etc.
+    4. Upload an Overwolf modpack export to generate a server pack from it. (Must contain a valid `manifest.json`-file like [this one](https://haste.zneix.eu/cinadiwubi.json))
 13. **Addons!**
     1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
     2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
@@ -501,17 +596,28 @@ Tags | Description
 `develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk!
 
 Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
-Images are available for linux/amd64,linux/arm/v7,linux/arm64.
+Images are available for linux/amd64 and linux/arm64.
 
-When running as a docker container, there are a couple more settings you need to be aware of.
+When running as a docker container, there are a couple more settings you need to be aware of. Beware that any environment setting **after** `STARTUP_PARAMETER` is
+irrelevant when using `STARTUP_PARAMETER=web`.
 
 Variable | Description
 -------- | -----------
 TZ | The timezone your system operates in. Default "Europe/Berlin"
 PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
 PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
-MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
 STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.
+MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
+MODLOADERVERSION | The version of the modlaoder the modpack uses.
+MODLOADER | Either Forge or Fabric
+MINECRAFTVERSION | The Minecraft version the modpack uses.
+INCLUDEZIPCREATION | true or false
+INCLUDESTARTSCRIPTS | true or false
+INCLUDESERVERPROPERTIES | true or false
+INCLUDESERVERINSTALLATION | true or false
+INCLUDESERVERICON | true or false
+COPYDIRS | Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
+CLIENTMODS | Comma-separated. Client-side mods to delete from server pack.
 
 ### 7.4.1 Using docker-compose:
 
@@ -523,24 +629,12 @@ services:
     container_name: serverpackcreator
     restart: "no" # Set to unless-stopped if you set STARTUP_PARAMETER=web
     environment:
-      - STARTUP_PARAMETER=cli # Must be either cli or web
+      - STARTUP_PARAMETER=web # Must be either cli or web
       - TZ=Europe/Berlin # Your Timezone
       - PUID=1000 # Your user ID
       - PGID=1000 # Your group ID
-      - MODPACKDIR= # Either path to the modpack directory or CurseForge projectID,fileID combination.
-      - MODLOADERVERSION= # The version of the modlaoder the modpack uses.
-      - MODLOADER= # Either Forge or Fabric
-      - MINECRAFTVERSION= # The Minecraft version the modpack uses.
-      - INCLUDEZIPCREATION=true # Or false
-      - INCLUDESTARTSCRIPTS=true # Or false
-      - INCLUDESERVERPROPERTIES=true # Or false
-      - INCLUDESERVERINSTALLATION=true # Or false
-      - INCLUDESERVERICON=true # Or false
-      - COPYDIRS= # Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
-      - CLIENTMODS= # Comma-separated. Client-side mods to delete from server pack.
     volumes:
       - /host/path/todata:/data # ServerPackCreator files like configuration files are here
-      - /host/path/todata:/server-packs # Created server packs will be here
     ports:
       - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
 ```

@@ -60,7 +60,7 @@ if [ ! -f /data/server_files/server-icon.png ]; then
 fi
 
 chown -R \
-  abc:abc \
+  grfd:grfd \
     /app/serverpackcreator \
     /data \
     /server-packs

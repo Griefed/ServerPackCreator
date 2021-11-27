@@ -1,7 +1,7 @@
 //file:noinspection GroovyAssignabilityCheck
 //file:noinspection GrUnresolvedAccess
 import java.text.SimpleDateFormat
-import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpmYarn
+import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
 
 plugins {
     id 'java'
@@ -9,8 +9,8 @@ plugins {
 
     id 'maven-publish'
 
-    id 'edu.sc.seis.launch4j' version '2.5.0'
-    id 'org.siouan.frontend-jdk8' version '5.3.0'
+    id 'edu.sc.seis.launch4j' version '2.5.1'
+    id 'org.siouan.frontend-jdk8' version '6.0.0'
 
     id 'org.springframework.boot' version '2.5.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -63,8 +63,10 @@ launch4j {
 
 configurations {
     all {
-        // We only want slf4j and log4j.
+        // Exclude logging from dependencies because we already have logging set up
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+
     }
 
     embed
@@ -73,30 +75,38 @@ configurations {
 
 dependencies {
     // Backend
-    embed 'com.electronwill.night-config:hocon:3.6.4'
+    embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
-    embed 'net.lingala.zip4j:zip4j:2.9.0'
+    embed 'net.lingala.zip4j:zip4j:2.9.1'
     embed 'com.moandjiezana.toml:toml4j:0.7.2'
     embed 'com.github.TheRandomLabs:CurseAPI:cdc5d48'
-    embed 'org.xerial:sqlite-jdbc:3.36.0.2'
+    embed 'org.xerial:sqlite-jdbc:3.36.0.3'
+    embed 'org.pf4j:pf4j-update:2.3.0'
 
-    //Swing GUI
+    // GUI
     embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
 
-    // API and Tomcat
-    embed 'org.springframework.boot:spring-boot-starter-validation:2.5.5'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.5.5'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.5.5'
+    // WEB
+    //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
+    embed 'org.springframework.boot:spring-boot-starter-validation:2.5.6'
+    embed 'org.springframework.boot:spring-boot-starter-web:2.5.6'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.0'
+    embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.0'
+    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.0'
+    embed 'org.springframework.boot:spring-boot-starter-artemis:2.5.6'
+    embed 'org.apache.activemq:artemis-jms-server:2.19.0'
+    embed 'com.github.gwenn:sqlite-dialect:0.1.2'
     embed 'org.apache.logging.log4j:log4j-web:2.14.1'
+    embed 'org.pf4j:pf4j-spring:0.7.0'
 
-    //Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.5.5'
+    // Dev tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.0'
 
     // Testing
-    testImplementation 'org.mockito:mockito-core:3.12.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.6'
+    testImplementation 'org.junit.platform:junit-platform-commons:1.8.1'
 }
 
 test {
@@ -118,8 +128,8 @@ frontend {
     nodeInstallDirectory = file("${projectDir}/frontend/node")
 
     yarnEnabled = false
-    yarnVersion = "1.22.11"
-    yarnInstallDirectory = file("${projectDir}/frontend/yarn")
+    //yarnVersion = "1.22.11"
+    //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
 
     cleanScript = 'run clean'
     assembleScript = 'run build'
@@ -147,7 +157,7 @@ tasks.register('about', Copy) {
 }
 
 
-tasks.register('installQuasar', RunNpmYarn) {
+tasks.register('installQuasar', RunNpm) {
     dependsOn tasks.named('installNode')
     script = 'install -g @quasar/cli'
 }

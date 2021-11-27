@@ -12,7 +12,7 @@ RUN \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
   rm -Rf /tmp/serverpackcreator/src/test && \
-  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info -x test && \
+  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon -x test && \
   ls -ahl ./build/libs/
 
 FROM griefed/baseimage-ubuntu-jdk-8:1.0.5
@@ -25,6 +25,8 @@ LABEL description="Webservice branch. Temporary webservice image. Will replace D
 RUN \
   echo "**** Bring system up to date ****" && \
   apt-get update && apt-get upgrade -y && \
+  apt-get install -y \
+    libatomic1 && \
   echo "**** Creating our folder(s) ****" && \
   mkdir -p \
     /app/serverpackcreator && \

@@ -43,10 +43,6 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * <strong>Table of methods</strong><p>
- * {@link #SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, AddonsHandler, ApplicationProperties, VersionLister)}<br>
- * {@link #createAndShowGUI()}<br>
- * {@link #mainGUI()} ()}<p>
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
  * which then calls {@link #createAndShowGUI()} in order to create and show the GUI of ServerPackCreator. Instances of
  * the {@link TabCreateServerPack}, {@link TabServerPackCreatorLog}, {@link TabModloaderInstallerLog}
@@ -59,7 +55,7 @@ public class SwingGuiInitializer extends JPanel {
 
     private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/banner.png")));
     private final Image ICON_SERVERPACKCREATOR = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/app.png")));
-    private final Dimension DIMENSION_WINDOW = new Dimension(925,750);
+    private final Dimension DIMENSION_WINDOW = new Dimension(1050,800);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
@@ -261,7 +257,7 @@ public class SwingGuiInitializer extends JPanel {
      */
     private void createAndShowGUI() {
 
-        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
 
@@ -276,7 +272,7 @@ public class SwingGuiInitializer extends JPanel {
 
         FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
-        FRAME_SERVERPACKCREATOR.setMaximumSize(DIMENSION_WINDOW);
+        FRAME_SERVERPACKCREATOR.setMinimumSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setResizable(true);
 
         FRAME_SERVERPACKCREATOR.pack();

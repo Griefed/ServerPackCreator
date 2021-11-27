@@ -1,3 +1,22 @@
+/* Copyright (C) 2021  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.DefaultFiles;
@@ -13,27 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * <strong>Table of methods</strong><p>
- * 1. {@link #getMinecraftManifestTest()}<br>
- * 2. {@link #getForgeManifestTest()}<br>
- * 3. {@link #getFabricManifestTest()}<br>
- * 4. {@link #getObjectMapperTest()}<br>
- * 5. {@link #getMinecraftReleaseVersionTest()}<br>
- * 6. {@link #getMinecraftReleaseVersionsTest()}<br>
- * 7. {@link #getMinecraftSnapshotVersionTest()}<br>
- * 8. {@link #getMinecraftReleaseVersionsTest()}<br>
- * 9. {@link #getFabricVersionsTest()}<br>
- * 10.{@link #getFabricLatestVersionTest()}<br>
- * 11.{@link #getFabricReleaseVersionTest()}<br>
- * 12.{@link #getForgeVersionTest()}<br>
- * 13.{@link #getMinecraftReleaseVersionsAsArrayTest()}<br>
- * 14.{@link #getFabricVersionsAsArrayTest()}<br>
- * 15.{@link #getForgeVersionsAsArrayTest()}<br>
- * 16.{@link #getForgeMetaTest()}
- * 17.{@link #getFabricLatestInstallerVersionTest()}<br>
- * 18.{@link #getFabricReleaseInstallerVersionTest()}
- */
 public class VersionListerTest {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
@@ -52,25 +50,8 @@ public class VersionListerTest {
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES.filesSetup();
         this.VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
-    }
-
-    @Test
-    void getMinecraftManifestTest() {
-        Assertions.assertNotNull(VERSIONLISTER.getMinecraftManifest());
-        Assertions.assertEquals("./work/minecraft-manifest.json",VERSIONLISTER.getMinecraftManifest().toString().replace("\\","/"));
-    }
-
-    @Test
-    void getForgeManifestTest() {
-        Assertions.assertNotNull(VERSIONLISTER.getForgeManifest());
-        Assertions.assertEquals("./work/forge-manifest.json",VERSIONLISTER.getForgeManifest().toString().replace("\\","/"));
-    }
-
-    @Test
-    void getFabricManifestTest() {
-        Assertions.assertNotNull(VERSIONLISTER.getFabricManifest());
-        Assertions.assertEquals("./work/fabric-manifest.xml",VERSIONLISTER.getFabricManifest().toString().replace("\\","/"));
     }
 
     @Test

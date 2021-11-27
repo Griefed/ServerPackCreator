@@ -40,36 +40,6 @@ import java.nio.file.Files;
 import java.util.*;
 
 /**
- * <strong>table of methods</strong><p>
- * 1. {@link #VersionLister(ApplicationProperties)}<br>
- * 2. {@link #getFabricInstallerManifest()}<br>
- * 3. {@link #getFabricLatestInstallerVersion()}<br>
- * 4. {@link #getFabricLatestVersion()}<br>
- * 5. {@link #getFabricManifest()}<br>
- * 6. {@link #getFabricReleaseInstallerVersion()}<br>
- * 7. {@link #getFabricReleaseVersion()}<br>
- * 8. {@link #getFabricVersions()}<br>
- * 9. {@link #getFabricVersionsAsArray()}<br>
- * 10.{@link #getForgeManifest()}<br>
- * 11.{@link #getForgeMeta()}<br>
- * 12.{@link #getForgeVersionsAsArray(String)}<br>
- * 13.{@link #getForgeVersionsList(String)}<br>
- * 14.{@link #getJson(File)}<br>
- * 15.{@link #getMinecraftManifest()}<br>
- * 16.{@link #getMinecraftReleaseVersion()}<br>
- * 17.{@link #getMinecraftReleaseVersions()}<br>
- * 18.{@link #getMinecraftReleaseVersionsAsArray()}<br>
- * 19.{@link #getMinecraftSnapshotVersion()}<br>
- * 20.{@link #getMinecraftSnapshotVersions()}<br>
- * 21.{@link #getMinecraftVersionsList(String)}<br>
- * 22.{@link #getObjectMapper()}<br>
- * 23.{@link #getXml(File)}<br>
- * 24.{@link #reverseOrderArray(String[])}<br>
- * 25.{@link #reverseOrderList(List)}<br>
- * 26.{@link #setFabricSpecificVersion(String, Document)}<br>
- * 27.{@link #setFabricVersionList()}<br>
- * 28.{@link #setForgeMeta()}<br>
- * 29.{@link #setMinecraftSpecificVersion(String)}<p>
  * Create lists of versions for Minecraft, Fabric and Forge. Provides getters for retrieving Minecraft and Fabric version
  * lists and {@link #getForgeVersionsList(String)} to retrieve a list of available Forge versions for a given Minecraft
  * version. Instantiating this class automatically creates the Minecraft and Fabric lists, for immediate access through
@@ -82,25 +52,20 @@ public class VersionLister {
 
     private static final Logger LOG = LogManager.getLogger(VersionLister.class);
 
-    private final File minecraftManifest = new File("./work/minecraft-manifest.json");
-    private final File forgeManifest = new File("./work/forge-manifest.json");
-    private final File fabricManifest = new File("./work/fabric-manifest.xml");
-    private final File fabricInstallerManifest = new File("./work/fabric-installer-manifest.xml");
+    private String minecraftReleaseVersion;
+    private List<String> minecraftReleaseVersions;
 
-    private final String minecraftReleaseVersion;
-    private final List<String> minecraftReleaseVersions;
+    private String minecraftSnapshotVersion;
+    private List<String> minecraftSnapshotVersions;
 
-    private final String minecraftSnapshotVersion;
-    private final List<String> minecraftSnapshotVersions;
+    private List<String> fabricVersions;
+    private String fabricLatestVersion;
+    private String fabricReleaseVersion;
 
-    private final List<String> fabricVersions;
-    private final String fabricLatestVersion;
-    private final String fabricReleaseVersion;
+    private String fabricLatestInstallerVersion;
+    private String fabricReleaseInstallerVersion;
 
-    private final String fabricLatestInstallerVersion;
-    private final String fabricReleaseInstallerVersion;
-
-    private final HashMap<String, String[]> forgeMeta;
+    private HashMap<String, String[]> forgeMeta;
 
     private ApplicationProperties serverPackCreatorProperties;
 
@@ -124,49 +89,34 @@ public class VersionLister {
         this.minecraftSnapshotVersions = getMinecraftVersionsList("snapshot");
 
         this.fabricVersions = setFabricVersionList();
-        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(getFabricManifest()));
-        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(getFabricManifest()));
+        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC));
+        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC));
 
-        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(getFabricInstallerManifest()));
-        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(getFabricInstallerManifest()));
+        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
+        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
 
         this.forgeMeta = setForgeMeta();
     }
 
     /**
-     * Getter for the Minecraft manifest-file.
+     *
      * @author Griefed
-     * @return File. Returns the location to the Minecraft manifest-file.
      */
-    public File getMinecraftManifest() {
-        return minecraftManifest;
-    }
+    public void refreshVersions() {
+        this.minecraftReleaseVersion = setMinecraftSpecificVersion("release");
+        this.minecraftReleaseVersions = getMinecraftVersionsList("release");
 
-    /**
-     * Getter for the Forge manifest-file.
-     * @author Griefed
-     * @return File. Returns the location to the Forge manifest-file.
-     */
-    public File getForgeManifest() {
-        return forgeManifest;
-    }
+        this.minecraftSnapshotVersion = setMinecraftSpecificVersion("snapshot");
+        this.minecraftSnapshotVersions = getMinecraftVersionsList("snapshot");
 
-    /**
-     * Getter for the Fabric manifest-file.
-     * @author Griefed
-     * @return File. Returns the location to the Fabric manifest-file.
-     */
-    public File getFabricManifest() {
-        return fabricManifest;
-    }
+        this.fabricVersions = setFabricVersionList();
+        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC));
+        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC));
 
-    /**
-     * Getter for the Fabric installer manifest-file.
-     * @author Griefed
-     * @return File. Returns the location to the Fabric installer manifest-file.
-     */
-    public File getFabricInstallerManifest() {
-        return fabricInstallerManifest;
+        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
+        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
+
+        this.forgeMeta = setForgeMeta();
     }
 
     /**
@@ -375,7 +325,7 @@ public class VersionLister {
         List<String> minecraftReleases = new ArrayList<>();
 
         try {
-            JsonNode minecraftJson = getJson(getMinecraftManifest());
+            JsonNode minecraftJson = getJson(serverPackCreatorProperties.PATH_FILE_MANIFEST_MINECRAFT);
 
             JsonNode versions = minecraftJson.get("versions");
 
@@ -405,7 +355,7 @@ public class VersionLister {
         String minecraftVersion = null;
 
         try {
-            JsonNode minecraftJson = getJson(getMinecraftManifest());
+            JsonNode minecraftJson = getJson(serverPackCreatorProperties.PATH_FILE_MANIFEST_MINECRAFT);
 
             minecraftVersion = minecraftJson.get("latest").get(type).asText();
 
@@ -428,7 +378,7 @@ public class VersionLister {
         List<String> forgeReleases = new ArrayList<>();
 
         try {
-            JsonNode forgeJson = getJson(getForgeManifest());
+            JsonNode forgeJson = getJson(serverPackCreatorProperties.PATH_FILE_MANIFEST_FORGE);
 
             try {
                 JsonNode versions = forgeJson.get(selectedMinecraftVersion);
@@ -484,7 +434,7 @@ public class VersionLister {
 
         List<String> fabricReleases = new ArrayList<>();
 
-        Document fabricXml = getXml(getFabricManifest());
+        Document fabricXml = getXml(serverPackCreatorProperties.PATH_FILE_MANIFEST_FABRIC);
 
         NodeList versions = fabricXml.getElementsByTagName("version");
 

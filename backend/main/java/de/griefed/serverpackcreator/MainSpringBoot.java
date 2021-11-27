@@ -21,11 +21,17 @@ package de.griefed.serverpackcreator;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 
 /**
  * @author Griefed
  */
 @SpringBootApplication
+@PropertySources({
+        @PropertySource("classpath:application.properties"),
+        @PropertySource(value = "file:./application.properties", ignoreResourceNotFound = true)
+})
 public class MainSpringBoot {
 
     /**

@@ -1,6 +1,6 @@
 stages:
   - Gradle Test
-#  - Docker Test
+  - Docker Test
   - Documentation
   - Release
   - Build Release
@@ -10,7 +10,7 @@ Gradle Test:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Gradle Test
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -52,8 +52,6 @@ Gradle Test:
     paths:
       - build/libs/ServerPackCreator.exe
       - build/libs/ServerPackCreator.jar
-      - build/libs/ServerPackCreator-javadoc.jar
-      - build/libs/ServerPackCreator-sources.jar
       - build/reports/tests/test
     expire_in: 1 week
   only:
@@ -68,54 +66,54 @@ Gradle Test:
     variables:
       - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
-#Docker Test:
-#  needs:
-#    - job: 'Gradle Test'
-#      artifacts: false
-#  stage: Docker Test
-#  image: griefed/gitlab-ci-cd:1.0.1
-#  services:
-#    - name: griefed/gitlab-ci-cd:1.0.1
-#      alias: docker
-#  variables:
-#    project_name: $CI_PROJECT_NAME
-#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-#  before_script:
-#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-#    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#    - docker buildx create --use --name grfdbuilder
-#  script:
-#    - docker buildx build
-#      --push
-#      --no-cache
-#      --platform linux/amd64,linux/arm/v7,linux/arm64
-#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
-#      --tag "$CI_REGISTRY_IMAGE:develop"
-#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop" .
-#  only:
-#    - master
-#    - main
-#  except:
-#    refs:
-#      - tags
-#      - webservice
-#      - alpha
-#      - beta
-#    variables:
-#      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
+Docker Test:
+  needs:
+    - job: 'Gradle Test'
+      artifacts: false
+  stage: Docker Test
+  image: griefed/gitlab-ci-cd:1.0.4
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.4
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build
+      --push
+      --no-cache
+      --platform linux/amd64,linux/arm64
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-$CI_COMMIT_SHORT_SHA"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop" .
+  only:
+    - master
+    - main
+  except:
+    refs:
+      - tags
+      - webservice
+      - alpha
+      - beta
+    variables:
+      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
 
 Release:
   needs:
     - job: 'Gradle Test'
       artifacts: false
-#    - job: 'Docker Test'
-#      artifacts: false
+    - job: 'Docker Test'
+      artifacts: false
   stage: Release
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/gitlab-ci-cd:1.0.4
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -135,7 +133,7 @@ Build Release:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Build Release
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -260,7 +258,7 @@ pages:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Documentation
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -286,7 +284,7 @@ Gradle Test Webservice:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Gradle Test
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -303,7 +301,7 @@ Gradle Test Webservice:
     - ./gradlew about
   script:
     - echo "**** Building ServerPackCreator ****"
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build
@@ -328,57 +326,53 @@ Gradle Test Webservice:
     paths:
       - build/libs/ServerPackCreator-webservice.exe
       - build/libs/ServerPackCreator-webservice.jar
-      - build/libs/ServerPackCreator-webservice-javadoc.jar
-      - build/libs/ServerPackCreator-webservice-sources.jar
       - build/reports/tests/test
     expire_in: 1 week
-  only:
-    - webservice
-    - alpha
-    - beta
+  except:
+    - master
+    - main
 
-#Docker Test Webservice:
-#  needs:
-#    - job: 'Gradle Test Webservice'
-#      artifacts: false
-#  stage: Docker Test
-#  image: griefed/gitlab-ci-cd:1.0.1
-#  services:
-#    - name: griefed/gitlab-ci-cd:1.0.1
-#      alias: docker
-#  variables:
-#    project_name: $CI_PROJECT_NAME
-#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-#  before_script:
-#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-#    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#    - docker buildx create --use --name grfdbuilder
-#  script:
-#    - docker buildx build
-#      --push
-#      --no-cache
-#      --platform linux/amd64,linux/arm/v7,linux/arm64
-#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
-#      --tag "$CI_REGISTRY_IMAGE:develop-web"
-#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
-#      --file Dockerfile.webservice .
-#  only:
-#    - webservice
-#    - alpha
-#    - beta
+Docker Test Webservice:
+  needs:
+    - job: 'Gradle Test Webservice'
+      artifacts: false
+  stage: Docker Test
+  image: griefed/gitlab-ci-cd:1.0.4
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.4
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build
+      --push
+      --no-cache
+      --platform linux/amd64,linux/arm64
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web-$CI_COMMIT_SHORT_SHA"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:develop-web-$CI_COMMIT_SHORT_SHA"
+      --file Dockerfile.webservice .
+  except:
+    - master
+    - main
 
 PreRelease:
   needs:
     - job: 'Gradle Test Webservice'
       artifacts: false
-#    - job: 'Docker Test Webservice'
-#      artifacts: false
+    - job: 'Docker Test Webservice'
+      artifacts: false
   stage: Release
-  image: griefed/gitlab-ci-cd:1.0.1
+  image: griefed/gitlab-ci-cd:1.0.4
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -398,7 +392,7 @@ Build PreRelease:
   image: griefed/baseimage-ubuntu-jdk-8:1.0.5
   stage: Build Release
   services:
-    - name: griefed/gitlab-ci-cd:1.0.1
+    - name: griefed/gitlab-ci-cd:1.0.4
       alias: docker
   variables:
     project_name: $CI_PROJECT_NAME
@@ -415,7 +409,7 @@ Build PreRelease:
     - ./gradlew about
   script:
     - echo "**** Building ServerPackCreator ****"
-    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
+    - ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon -x test
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto
       build
@@ -491,31 +485,30 @@ Build PreRelease:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
 
-#Build Docker PreRelease:
-#  stage: Build Release
-#  image: griefed/gitlab-ci-cd:1.0.1
-#  services:
-#    - name: griefed/gitlab-ci-cd:1.0.1
-#      alias: docker
-#  variables:
-#    project_name: $CI_PROJECT_NAME
-#    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
-#  before_script:
-#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-#    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#    - docker buildx create --use --name grfdbuilder
-#  script:
-#    - docker buildx build
-#      --push
-#      --no-cache
-#      --platform linux/amd64,linux/arm/v7,linux/arm64
-#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-#      --file Dockerfile.webservice .
-#  rules:
-#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
+Build Docker PreRelease:
+  stage: Build Release
+  image: griefed/gitlab-ci-cd:1.0.4
+  services:
+    - name: griefed/gitlab-ci-cd:1.0.4
+      alias: docker
+  variables:
+    project_name: $CI_PROJECT_NAME
+    SEMANTIC_RELEASE_PACKAGE: $CI_PROJECT_NAME
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build
+      --push
+      --no-cache
+      --platform linux/amd64,linux/arm64
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --file Dockerfile.webservice .
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+(-beta|-alpha)\.\d+$/'
 
 #Update Sponsors:
 #  image: griefed/gitlab-ci-cd:1.0.1

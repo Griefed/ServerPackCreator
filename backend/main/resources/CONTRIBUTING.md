@@ -1,22 +1,49 @@
 # Contributing
 
-## Important info regarding pull requests and GitHub!
+## Important info regarding pull requests, my GitLab instance, and GitHub!
 
-I currently do not accept contributions due to the fact that I moved my repositories over to my own GitLab instance.
-The GitHub repository is a mirror from my GitLab server to GitHub. Meaning, any changes I make, I push to my GitLab repository,
-which then mirrors these changes to GitHub. If I were to accept a PR on GitHub, my GitLab could then no longer mirror from itself
-to GitHub, as the destination repository has changes which the source doesn't have.
+If you want to contribute to ServerPackCreator, then the following procedure **must** be adhered to:
 
-If you want to contribute anyway, talk to me on my Discord server at https://discord.griefed.de. If you manage to convince
-me that your contribution is valuable, that you can be trusted and that you are generally a nice person to deal with, I
-*may* give you limited access to an external account to my GitLab server, which would *then* allow you to fork ServerPackCreator
-on my GitLab server, where you can *then* push your changes to, create merge request and get your changes into
-ServerPackCreator. I don't see that happening though. It is tough to convince a total stranger that you are completely
-trustworthy. It's just the nature of the internet.
+1. Fork ServerPackCreator
+2. Create a new branch in your fork, following one of the following naming schemes:
+   1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
+      - griefed_chore_readme
+      - griefed_perf_curseforgemodpack
+      - griefed_feat_ziparchive
+   2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
+   3. Schemes:
+       1. your_username_breaking_
+       2. your_username_build_
+       3. your_username_chore_
+       4. your_username_ci_
+       5. your_username_docs_
+       6. your_username_feat_
+       7. your_username_fix_
+       8. your_username_perf_
+       9. your_username_refactor_
+       10. your_username_revert_
+       11. your_username_style_
+       12. your_username_test_
+       13. your_username_other_
+3. Make your changes to your new branch:
+    1. Try to keep the changes atomic, so they best fit the name of the branch.
+    2. Follow conventional commit messages. See **Commits**-section for more details. Example:
+        - feat: Allow upload of modpack-export zip-archive to web-frontend
+        - refactor: Use apache commons-io for copying, instead of Files
+4. Open an issue on the main repository, using the **Pull Request** template:
+    1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
+        - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
+    2. Issue description: Fill in the sections the template provide.
+    3. Submit the new issue
+5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
+6. If checks and tests pass, or any changes necessary have been made, the pull request is ready to be merged etc., I will merge it to your main repository branch.
+7. I can then merge your main repository branch into main/master/whatever locally, push these changes to my GitLab instance, which will in turn push these changes to GitHub.
+8. Done!
+
+This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
+Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
 
 # Code
-
-- **The Main-class:** The Main-class of ServerPackCreator only passes the arguments from execution to the Handler-class.
 
 - **Config file:** If you want to contribute to SPC, please make sure you do not change the `serverpackcreator.conf`-file. Ideally, any version of SPC will work with any config file, as they all have the same content. Changing what's inside the `serverpackcreator.conf`-file would make versions incompatible to each other, but I want users to be able to simply download the newest version **without** having to migrate their config file or even worrying about such a thing.
 Therefore, I ask that you do not touch the `serverpackcreator.conf`-file.
@@ -39,26 +66,26 @@ type(category): description [flag]
 
 The `type` must be one of the followings:
 
-* `breaking` (Breaking Changes)
-* `build` (Build System / Dependencies)
-* `ci` (Continuous Integration)
-* `chore` (Chores)
-* `docs` (Documentation Changes)
-* `feat` (New Features)
-* `fix` (Bug Fixes)
-* `other` (Other Changes)
-* `perf` (Performance Improvements)
-* `refactor` (Refactors)
-* `revert` (Reverts)
-* `style` (Code Style Changes)
-* `test` (Tests)
+* `breaking` (Changes that break something makes something incompatible to earlier version)
+* `build` (Changes that affect the build system or external dependencies)
+* `ci` (Changes to our CI configuration files and scripts)
+* `chore` (Other changes that don't modify src or test files)
+* `docs` (Documentation only changes)
+* `feat` (A new feature)
+* `fix` (A bug fix)
+* `other` (Other changes which don't fit the descriptions of the other commit types)
+* `perf` (A code change that improves performance)
+* `refactor` (A code change that neither fixes a bug nor adds a feature)
+* `revert` (Reverts a previous commit)
+* `style` (Changes that do not affect the meaning of the code)
+* `test` (Adding missing tests or correcting existing tests)
 
 > If the `type` is not found in the list, it'll be considered as `other`.
 
-The `category` is optional and can be anything of your choice.
+> The `category` is optional and can be anything of your choice.
 
-The `flag` is optional (if provided, it must be surrounded in square brackets) and can be one of the followings:
+> The `flag` is optional (if provided, it must be surrounded in square brackets) and can be one of the followings:
 
-* `ignore` (Omits the commit from the changelog)
+> `ignore` (Omits the commit from the changelog)
 
 > If `flag` is not found in the list, it'll be ignored.

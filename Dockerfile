@@ -7,7 +7,7 @@ RUN \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
   rm -Rf /tmp/serverpackcreator/src/test && \
-  ./gradlew build && \
+  ./gradlew build --info -x test && \
   ls -ahl ./build/libs/
 
 FROM griefed/baseimage-ubuntu-jdk-8:1.0.5

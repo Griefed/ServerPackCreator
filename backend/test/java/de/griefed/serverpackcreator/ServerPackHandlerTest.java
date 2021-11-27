@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.commons.io.FileUtils;
@@ -36,33 +37,6 @@ import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-/**
- * <strong>Table of tests</strong><p>
- * 1. {@link #ServerPackHandlerTest()}<br>
- * 2. {@link #getPropertiesFileTest()}<br>
- * 3. {@link #getIconFileTest()}<br>
- * 4. {@link #getWindowsFileTest()}<br>
- * 5. {@link #getLinuxFileTest()}<br>
- * 6. {@link #getObjectMapperTest()}<br>
- * 7. {@link #runTest()}<br>
- * 8. {@link #cleanupEnvironmentTest()}<br>
- * 9. {@link #createStartScriptsFabricTest()}<br>
- * 10.{@link #createStartScriptsForgeTest()}<br>
- * 11.{@link #copyFilesTest()}<br>
- * 12.{@link #copyFilesEmptyClientsTest()}<br>
- * 13.{@link #excludeClientModsTest()}<br>
- * 14.{@link #copyIconTest()}<br>
- * 15.{@link #copyPropertiesTest()}<br
- * 16.{@link #installServerFabricTest()}<br>
- * 17.{@link #installServerForgeTest()}<br>
- * 18.{@link #zipBuilderFabricTest()}<br>
- * 19.{@link #zipBuilderForgeTest()}<br>
- * 20.{@link #downloadFabricJarTest()}<br>
- * 21.{@link #downloadForgeJarTest()}<br>
- * 22.{@link #cleanUpServerPackForgeTest()}<br>
- * 23.{@link #cleanUpServerPackFabricTest()}<br>
- * 24.{@link #runConfigModelTest()}
- */
 class ServerPackHandlerTest {
 
     private final ServerPackHandler SERVERPACKHANDLER;
@@ -86,36 +60,13 @@ class ServerPackHandlerTest {
         LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES.filesSetup();
         VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
         ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
         SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
 
-    }
-
-    @Test
-    void getPropertiesFileTest() {
-        File file = SERVERPACKHANDLER.getPropertiesFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getIconFileTest() {
-        File file = SERVERPACKHANDLER.getIconFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getWindowsFileTest() {
-        File file = SERVERPACKHANDLER.getWindowsFile();
-        Assertions.assertNotNull(file);
-    }
-
-    @Test
-    void getLinuxFileTest() {
-        File file = SERVERPACKHANDLER.getLinuxFile();
-        Assertions.assertNotNull(file);
     }
 
     @Test
@@ -131,15 +82,13 @@ class ServerPackHandlerTest {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("serverpackcreator.conf"), REPLACE_EXISTING);
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setModpackDir("./backend/test/resources/forge_tests");
-        SERVERPACKHANDLER.run(CONFIGURATIONHANDLER.getConfigFile(), configurationModel);
+        SERVERPACKHANDLER.run(serverPackCreatorProperties.FILE_CONFIG, configurationModel);
         Assertions.assertTrue(new File("server-packs/forge_tests/libraries").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/config").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/mods").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/scripts").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/seeds").isDirectory());
-
-        Assertions.assertTrue(new File("server-packs/forge_tests/1.16.5.json").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
@@ -378,7 +327,7 @@ class ServerPackHandlerTest {
         DEFAULTFILES.filesSetup();
         String modpackDir = "./backend/test/resources/forge_tests";
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-        SERVERPACKHANDLER.copyIcon(destination);
+        SERVERPACKHANDLER.copyIcon(destination, "");
         Assertions.assertTrue(new File(String.format("server-packs/%s/server-icon.png", destination)).exists());
         new File(String.format("server-packs/%s/server-icon.png", destination)).delete();
         String delete = "server_files";
@@ -398,7 +347,7 @@ class ServerPackHandlerTest {
         DEFAULTFILES.filesSetup();
         String modpackDir = "./backend/test/resources/forge_tests";
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-        SERVERPACKHANDLER.copyProperties(destination);
+        SERVERPACKHANDLER.copyProperties(destination, "");
         Assertions.assertTrue(new File(String.format("server-packs/%s/server.properties", destination)).exists());
         new File(String.format("server-packs/%s/server.properties", destination)).delete();
         String delete = "server_files";
@@ -458,19 +407,8 @@ class ServerPackHandlerTest {
         }
         String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
         SERVERPACKHANDLER.installServer(modLoader, minecraftVersion, modLoaderVersion, javaPath, destination);
-        Assertions.assertTrue(new File(String.format("server-packs/%s/1.16.5.json", destination)).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/forge.jar", destination)).exists());
-        Assertions.assertTrue(new File(String.format("server-packs/%s/minecraft_server.1.16.5.jar", destination)).exists());
-        new File(String.format("server-packs/%s/1.16.5.json", destination)).delete();
-        new File(String.format("server-packs/%s/forge.jar", destination)).delete();
-        new File(String.format("server-packs/%s/forge-installer.jar", destination)).delete();
-        new File(String.format("server-packs/%s/forge-installer.jar.log", destination)).delete();
-        new File(String.format("server-packs/%s/minecraft_server.1.16.5.jar", destination)).delete();
-        String delete = String.format("server-packs/%s/libraries", destination);
-        if (new File(delete).isDirectory()) {
-            Path pathToBeDeleted = Paths.get(delete);
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
+        Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
+        Assertions.assertTrue(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
     }
 
     @Test
@@ -560,7 +498,7 @@ class ServerPackHandlerTest {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Ignore
     @Test
-    void runConfigModelTest() throws IOException {
+    void runServerPackTest() throws IOException {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
@@ -593,72 +531,69 @@ class ServerPackHandlerTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        configurationModel.setModpackDir("./backend/test/resources/forge_tests");
-        configurationModel.setClientMods(clientMods);
-        configurationModel.setCopyDirs(copyDirs);
-        configurationModel.setJavaPath("");
-        configurationModel.setIncludeServerInstallation(true);
-        configurationModel.setIncludeServerIcon(true);
-        configurationModel.setIncludeServerProperties(true);
-        configurationModel.setIncludeZipCreation(true);
-        configurationModel.setModLoader("Forge");
-        configurationModel.setModLoaderVersion("36.1.2");
-        configurationModel.setMinecraftVersion("1.16.5");
-        configurationModel.setJavaArgs("");
+        ServerPack serverPack = new ServerPack();
+        FileUtils.copyDirectory(new File("./backend/test/resources/forge_tests"), new File("./backend/test/resources/forge_tests_copy"));
+        serverPack.setModpackDir("./backend/test/resources/forge_tests_copy");
+        serverPack.setClientMods(clientMods);
+        serverPack.setCopyDirs(copyDirs);
+        serverPack.setJavaPath("");
+        serverPack.setIncludeServerInstallation(true);
+        serverPack.setIncludeServerIcon(true);
+        serverPack.setIncludeServerProperties(true);
+        serverPack.setIncludeZipCreation(true);
+        serverPack.setModLoader("Forge");
+        serverPack.setModLoaderVersion("36.1.2");
+        serverPack.setMinecraftVersion("1.16.5");
+        serverPack.setJavaArgs("");
         DEFAULTFILES.filesSetup();
         ADDONSHANDLER.initializeAddons();
-        SERVERPACKHANDLER.run(configurationModel);
-        Assertions.assertFalse(new File("server-packs/forge_tests/libraries").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests/config").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests/mods").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests/scripts").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests/seeds").isDirectory());
+        SERVERPACKHANDLER.run(serverPack);
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/libraries").isDirectory());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/config").isDirectory());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/defaultconfigs").isDirectory());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/mods").isDirectory());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/scripts").isDirectory());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/seeds").isDirectory());
 
-        Assertions.assertFalse(new File("server-packs/forge_tests/1.16.5.json").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests/forge.jar").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests/server.properties").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests/server-icon.png").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests/start.bat").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests/start.sh").exists());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/1.16.5.json").exists());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/minecraft_server.1.16.5.jar").exists());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/forge.jar").exists());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/server.properties").exists());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/server-icon.png").exists());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/start.bat").exists());
+        Assertions.assertFalse(new File("server-packs/forge_tests_copy/start.sh").exists());
 
-        if (new File("server-packs/forge_tests/libraries").isDirectory()) {
+        if (new File("server-packs/forge_tests_copy/libraries").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/libraries");
             Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
-        if (new File("server-packs/forge_tests/config").isDirectory()) {
+        if (new File("server-packs/forge_tests_copy/config").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/config");
             Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
-        if (new File("server-packs/forge_tests/defaultconfigs").isDirectory()) {
+        if (new File("server-packs/forge_tests_copy/defaultconfigs").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/defaultconfigs");
             Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
-        if (new File("server-packs/forge_tests/mods").isDirectory()) {
+        if (new File("server-packs/forge_tests_copy/mods").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/mods");
             Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
-        if (new File("server-packs/forge_tests/scripts").isDirectory()) {
+        if (new File("server-packs/forge_tests_copy/scripts").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/scripts");
             Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
-        if (new File("server-packs/forge_tests/seeds").isDirectory()) {
+        if (new File("server-packs/forge_tests_copy/seeds").isDirectory()) {
             Path pathToBeDeleted = Paths.get("server-packs/forge_tests/seeds");
             Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
-        if (new File("server_files").isDirectory()) {
-            Path pathToBeDeleted = Paths.get("server_files");
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-        }
-        new File("server-packs/forge_tests/1.16.5.json").delete();
-        new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").delete();
-        new File("server-packs/forge_tests/forge.jar").delete();
-        new File("server-packs/forge_tests/server.properties").delete();
-        new File("server-packs/forge_tests/server-icon.png").delete();
-        new File("server-packs/forge_tests/start.bat").delete();
-        new File("server-packs/forge_tests/start.sh").delete();
+        new File("server-packs/forge_tests_copy/1.16.5.json").delete();
+        new File("server-packs/forge_tests_copy/minecraft_server.1.16.5.jar").delete();
+        new File("server-packs/forge_tests_copy/forge.jar").delete();
+        new File("server-packs/forge_tests_copy/server.properties").delete();
+        new File("server-packs/forge_tests_copy/server-icon.png").delete();
+        new File("server-packs/forge_tests_copy/start.bat").delete();
+        new File("server-packs/forge_tests_copy/start.sh").delete();
         new File("./serverpackcreator.conf").delete();
         Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("server-packs/forge_tests_server_pack.zip"), REPLACE_EXISTING);
     }

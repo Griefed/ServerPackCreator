@@ -1,9 +1,44 @@
+/* Copyright (C) 2021  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class containing all fields and therefore all information either gathered from a configuration file, stored by the creation
+ * of a modpack from CurseForge or passed otherwise.
+ * @author Griefed
+ */
 public class ConfigurationModel {
+
+    /**
+     * Constructor for our ConfigurationModel.
+     * @author Griefed
+     */
+    public ConfigurationModel() {
+
+    }
 
     private List<String> clientMods = new ArrayList<>();
     private List<String> copyDirs = new ArrayList<>();
@@ -15,11 +50,22 @@ public class ConfigurationModel {
     private String modLoaderVersion = "";
     private String javaArgs = "";
     private String serverPackSuffix = "";
+    private String serverIconPath = "";
+    private String serverPropertiesPath = "";
+
+    private JsonNode curseModpack;
 
     private Boolean includeServerInstallation = true;
     private Boolean includeServerIcon = true;
     private Boolean includeServerProperties = true;
     private Boolean includeZipCreation = true;
+
+    private String projectName;
+    private String fileName;
+    private String fileDiskName;
+
+    private int projectID;
+    private int fileID;
 
     /**
      * Getter for the suffix of the server pack to be generated.
@@ -278,6 +324,150 @@ public class ConfigurationModel {
     }
 
     /**
+     * Getter for the JsonNode containing all information about the CurseForge modpack.
+     * @author Griefed
+     * @return JsonNode. The JsonNode containing all information about the CurseForge modpack.
+     */
+    public JsonNode getCurseModpack() {
+        return curseModpack;
+    }
+
+    /**
+     * Setter for the JsonNode containing all information about the CurseForge modpack.
+     * @author Griefed
+     * @param curseModpack JsonNode. The JsonNode containing all information about the CurseForge modpack.
+     */
+    public void setCurseModpack(JsonNode curseModpack) {
+        this.curseModpack = curseModpack;
+    }
+
+    /**
+     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
+     * @author Griefed
+     * @return Integer. Returns the CurseForge projectID of a modpack.
+     */
+    public int getProjectID() {
+        return projectID;
+    }
+
+    /**
+     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
+     * @author Griefed
+     * @param newProjectID The new projectID to store.
+     */
+    public void setProjectID(int newProjectID) {
+        this.projectID = newProjectID;
+    }
+
+    /**
+     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
+     * @author Griefed
+     * @return Integer. Returns the CurseForge fileID of a modpack.
+     */
+    public int getFileID() {
+        return fileID;
+    }
+
+    /**
+     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
+     * @author Griefed
+     * @param newFileID The new projectFileID to store.
+     */
+    public void setFileID(int newFileID) {
+        this.fileID = newFileID;
+    }
+
+    /**
+     * Getter for the name of the CurseForge project.
+     * @author Griefed
+     * @return String. The name of the CurseForge project.
+     */
+    public String getProjectName() {
+        return projectName;
+    }
+
+    /**
+     * Setter for the name of the CurseForge project.
+     * @author Griefed
+     * @param projectName String. The name of the CurseForge project.
+     */
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    /**
+     * Getter for the name of the CurseForge project file.
+     * @author Griefed
+     * @return String. The name of the CurseForge project file.
+     */
+    public String getFileName() {
+        return fileName;
+    }
+
+    /**
+     * Setter for the name of the CurseForge project file.
+     * @author Griefed
+     * @param fileName String. The name of the CurseForge project file.
+     */
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    /**
+     * Getter for the disk-name of the CurseForge project file.
+     * @author Griefed
+     * @return String. The disk-name of the CurseForge project file.
+     */
+    public String getFileDiskName() {
+        return fileDiskName;
+    }
+
+    /**
+     * Setter for the disk-name of the CurseForge project file.
+     * @author Griefed
+     * @param fileName String. The disk-name of the CurseForge project file.
+     */
+    public void setFileDiskName(String fileName) {
+        this.fileDiskName = fileName;
+    }
+
+    /**
+     * Getter for the path to the server-icon.png to include in the server pack.
+     * @author Griefed
+     * @return String. Returns the path to the server-icon.png.
+     */
+    public String getServerIconPath() {
+        return serverIconPath;
+    }
+
+    /**
+     * Setter for the path of the server-icon.png to include in the server pack.
+     * @author Griefed
+     * @param serverIconPath String. The path to the server-icon.png to include in the server pack.
+     */
+    public void setServerIconPath(String serverIconPath) {
+        this.serverIconPath = serverIconPath.replace("\\","/");
+    }
+
+    /**
+     * Getter for the path of the server.properties to include in the server pack.
+     * @author Griefed
+     * @return String. Returns the path to the server.properties to include in the server pack.
+     */
+    public String getServerPropertiesPath() {
+        return serverPropertiesPath;
+    }
+
+    /**
+     * Setter for the path of the server.properties to include in the server pack.
+     * @author Griefed
+     * @param serverPropertiesPath String. The path to the server.properties to include in the server pack.
+     */
+    public void setServerPropertiesPath(String serverPropertiesPath) {
+        this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
+    }
+
+    /**
      * Concatenates all configuration parameters into a String. Overrides the default toString() method.
      * @author Griefed
      * @return String. A concatenated string of the whole configuration.
@@ -293,10 +483,19 @@ public class ConfigurationModel {
                 ", modLoader='" + modLoader + '\'' +
                 ", modLoaderVersion='" + modLoaderVersion + '\'' +
                 ", javaArgs='" + javaArgs + '\'' +
+                ", serverPackSuffix='" + serverPackSuffix + '\'' +
+                ", serverIconPath='" + serverIconPath + '\'' +
+                ", serverProperties='" + serverPropertiesPath + '\'' +
+                ", curseModpack=" + curseModpack +
                 ", includeServerInstallation=" + includeServerInstallation +
                 ", includeServerIcon=" + includeServerIcon +
                 ", includeServerProperties=" + includeServerProperties +
                 ", includeZipCreation=" + includeZipCreation +
+                ", projectName='" + projectName + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", fileDiskName='" + fileDiskName + '\'' +
+                ", projectID=" + projectID +
+                ", fileID=" + fileID +
                 '}';
     }
 }

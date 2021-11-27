@@ -5,8 +5,20 @@
   "productName": "ServerPackCreator",
   "cordovaId": "org.cordova.quasar.app",
   "capacitorId": "",
-  "author": "Griefed <griefed@griefed.de>",
+  "author": {
+    "name": "Griefed",
+    "email": "griefed@griefed.de",
+    "url": "https://griefed.de/"
+  },
   "private": true,
+  "bugs": {
+    "url": "https://github.com/Griefed/ServerPackCreator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Griefed/ServerPackCreator.git"
+  },
+  "license": " LGPL-2.1",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "test": "echo \"No test specified\" && exit 0",
@@ -15,19 +27,25 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/cli": "^1.2.1",
-    "@quasar/extras": "^1.11.1",
-    "axios": "^0.21.4",
-    "core-js": "^3.18.0",
-    "quasar": "^2.1.0"
+    "@quasar/cli": "1.2.2",
+    "@quasar/extras": "1.12.1",
+    "axios": "0.24.0",
+    "core-js": "3.19.1",
+    "quasar": "2.3.3",
+    "tsparticles": "1.37.4",
+    "vue": "3.2.22",
+    "vue-class-component": "8.0.0-rc.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.15.7",
-    "@quasar/app": "^3.1.0",
-    "eslint": "^7.32.0",
+    "@babel/eslint-parser": "^7.16.3",
+    "@quasar/app": "^3.2.3",
+    "@types/node": "16.11.10",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "~8.2.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-vue": "^7.18.0",
-    "eslint-webpack-plugin": "^3.0.1"
+    "eslint-plugin-vue": "^8.1.1",
+    "eslint-webpack-plugin": "^3.1.1"
   },
   "browserslist": [
     "last 10 Chrome versions",
@@ -42,7 +60,7 @@
   ],
   "engines": {
     "node": "^16.9.1",
-    "npm": "^7.21.1",
+    "npm": "^7.23.0",
     "yarn": "^1.22.11"
   }
 }

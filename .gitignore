@@ -104,6 +104,7 @@ dist
 
 # Repo specific
 Survive*
+backend/main/resources/static
 
 # eclipse
 bin
@@ -180,3 +181,4 @@ backend/test/resources/forge_tests/server_pack.zip
 /serverpackcreator.properties
 /serverpackcreator.db
 /server.properties
+/creator.conf
