@@ -24,10 +24,6 @@ jobs:
         run: echo ${{steps.tag.outputs.tag}}
 
       # GENERATE CHANGELOG, RELEASE
-      - id: conventional_changelog
-        uses: ardalanamini/auto-changelog@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@latest
@@ -39,7 +35,7 @@ jobs:
           body: |
             Automatic pre-release of version: **${{steps.tag.outputs.tag}}**
             **Changes in this pre-release:**
-            ${{ steps.conventional_changelog.outputs.changelog }}
+            TO BE COPY'N'PASTED BY GRIEFED FROM GITLAB
           draft: false
           prerelease: true
 
