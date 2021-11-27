@@ -296,7 +296,7 @@ public class TabCreateServerPack extends JComponent {
     public JComponent createServerPackTab() {
 
         CREATESERVERPACKPANEL.setLayout(new GridBagLayout());
-
+        // TODO: Move components to separate classes. Only pass localizationManager, return full component. End result CREATESERVERPACKPANEL.add(new ModpackDirLabel(LOCALIZATIONMANAGER), GRIDBAGCONSTRAINTS) and so on
 // ----------------------------------------------------------------------------------------LABELS AND TEXTFIELDS--------
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
         GRIDBAGCONSTRAINTS.gridwidth = 3;
@@ -921,7 +921,7 @@ public class TabCreateServerPack extends JComponent {
         serverIconChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
         serverIconChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.chooser.icon.title"));
         serverIconChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        serverIconChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.chooser.icon.filter"), "png"));
+        serverIconChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.chooser.icon.filter"), "png","jpg","jpeg","bmp"));
         serverIconChooser.setAcceptAllFileFilterUsed(false);
         serverIconChooser.setMultiSelectionEnabled(false);
         serverIconChooser.setPreferredSize(CHOOSERDIMENSION);

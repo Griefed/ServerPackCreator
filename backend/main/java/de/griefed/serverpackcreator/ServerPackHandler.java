@@ -1261,6 +1261,8 @@ public class ServerPackHandler {
                         LOG.error("An error occurred trying to copy the server-icon.", e);
                     }
                 }
+            } else {
+                LOG.error("originalImage is null. Check the source file. Was it wrongly converted to it's current file-format? Is it malformed? Corrupted?");
             }
 
         } else {
