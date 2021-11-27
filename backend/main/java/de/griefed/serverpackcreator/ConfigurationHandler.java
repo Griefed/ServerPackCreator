@@ -56,7 +56,7 @@ public class ConfigurationHandler {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionLister VERSIONLISTER;
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     private FileConfig config;
 
@@ -71,31 +71,31 @@ public class ConfigurationHandler {
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version-related.
      */
     @Autowired
-    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, VersionLister injectedVersionLister, ApplicationProperties injectedServerPackCreatorProperties) {
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack, VersionLister injectedVersionLister, ApplicationProperties injectedApplicationProperties) {
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, applicationProperties);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+            this.VERSIONLISTER = new VersionLister(applicationProperties);
         } else {
             this.VERSIONLISTER = injectedVersionLister;
         }
@@ -162,7 +162,7 @@ public class ConfigurationHandler {
         if (getConfig().getOrElse("clientMods", Collections.singletonList("")).isEmpty()) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
-            configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
+            configurationModel.setClientMods(applicationProperties.getListFallbackMods());
         } else {
             configurationModel.setClientMods(getConfig().getOrElse("clientMods", Collections.singletonList("")));
         }
@@ -267,7 +267,7 @@ public class ConfigurationHandler {
         if (configurationModel.getClientMods().isEmpty()) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
-            configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
+            configurationModel.setClientMods(applicationProperties.getListFallbackMods());
         } else {
             configurationModel.setClientMods(configurationModel.getClientMods());
         }
@@ -523,7 +523,7 @@ public class ConfigurationHandler {
                         configurationModel.getIncludeZipCreation(),
                         configurationModel.getJavaArgs(),
                         configurationModel.getServerPackSuffix(),
-                        serverPackCreatorProperties.FILE_CONFIG,
+                        applicationProperties.FILE_CONFIG,
                         false
                 );
 
@@ -599,11 +599,11 @@ public class ConfigurationHandler {
             LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
         }
 
-        for (int idirs = 0; idirs < serverPackCreatorProperties.getListOfDirectoriesToExclude().size(); idirs++) {
+        for (int idirs = 0; idirs < applicationProperties.getListOfDirectoriesToExclude().size(); idirs++) {
 
             int i = idirs;
 
-            dirsInModpack.removeIf(n -> (n.contains(serverPackCreatorProperties.getListOfDirectoriesToExclude().get(i))));
+            dirsInModpack.removeIf(n -> (n.contains(applicationProperties.getListOfDirectoriesToExclude().get(i))));
         }
 
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
@@ -905,7 +905,7 @@ public class ConfigurationHandler {
 
                 // Add an entry to the list of directories/files to exclude if it starts with !
                 } else if (directory.startsWith("!")) {
-                    serverPackCreatorProperties.addToListOfDirectoriesToExclude(directory.substring(directory.lastIndexOf("!") + 1));
+                    applicationProperties.addToListOfDirectoriesToExclude(directory.substring(directory.lastIndexOf("!") + 1));
 
                 // Check if the entry exists
                 } else {
@@ -1201,7 +1201,7 @@ public class ConfigurationHandler {
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), clientMods));
 
                 if (clientMods.isEmpty()) {
-                    clientMods = serverPackCreatorProperties.getListFallbackMods();
+                    clientMods = applicationProperties.getListFallbackMods();
 
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
@@ -1472,7 +1472,7 @@ public class ConfigurationHandler {
                 includeZipCreation,
                 javaArgs,
                 serverPackSuffix,
-                serverPackCreatorProperties.FILE_CONFIG,
+                applicationProperties.FILE_CONFIG,
                 false
         )) {
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -1676,8 +1676,8 @@ public class ConfigurationHandler {
         );
 
         if (!isTemporary) {
-            if (serverPackCreatorProperties.FILE_CONFIG.exists()) {
-                boolean delConf = serverPackCreatorProperties.FILE_CONFIG.delete();
+            if (applicationProperties.FILE_CONFIG.exists()) {
+                boolean delConf = applicationProperties.FILE_CONFIG.delete();
                 if (delConf) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.config"));
@@ -1686,8 +1686,8 @@ public class ConfigurationHandler {
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile.config"));
                 }
             }
-            if (serverPackCreatorProperties.FILE_CONFIG_OLD.exists()) {
-                boolean delOldConf = serverPackCreatorProperties.FILE_CONFIG_OLD.delete();
+            if (applicationProperties.FILE_CONFIG_OLD.exists()) {
+                boolean delOldConf = applicationProperties.FILE_CONFIG_OLD.delete();
                 if (delOldConf) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.old"));

@@ -68,7 +68,7 @@ public class CurseCreateModpack {
 
     private final Random randInt = new Random();
 
-    private ApplicationProperties APPLICATIONPROPERTIES;
+    private ApplicationProperties applicationProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -77,18 +77,18 @@ public class CurseCreateModpack {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
-        if (injectedServerPackCreatorProperties == null) {
-            this.APPLICATIONPROPERTIES = new ApplicationProperties();
+    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.APPLICATIONPROPERTIES = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -467,7 +467,7 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir.create"));
         } else {
-            if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.curseforge.cleanup.enabled").equalsIgnoreCase("true")) {
+            if (applicationProperties.getProperty("de.griefed.serverpackcreator.curseforge.cleanup.enabled").equalsIgnoreCase("true")) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));

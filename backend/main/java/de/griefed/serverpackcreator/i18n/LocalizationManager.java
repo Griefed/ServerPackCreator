@@ -71,23 +71,23 @@ public class LocalizationManager {
      */
     private ResourceBundle localeResources;
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     /**
      * Constructor for our LocalizationManager using the locale set in serverpackcreator.properties.
      * @author Griefed
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public LocalizationManager(ApplicationProperties injectedServerPackCreatorProperties) {
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+    public LocalizationManager(ApplicationProperties injectedApplicationProperties) {
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         try {
-            init(serverPackCreatorProperties);
+            init(applicationProperties);
         } catch (IncorrectLanguageException ex) {
             init();
         }
@@ -99,7 +99,7 @@ public class LocalizationManager {
      * @throws IncorrectLanguageException Thrown if no language could be set by {@link LocalizationManager}.
      */
     public LocalizationManager(String locale) throws IncorrectLanguageException {
-        this.serverPackCreatorProperties = new ApplicationProperties();
+        this.applicationProperties = new ApplicationProperties();
         init(locale);
     }
 
@@ -108,7 +108,7 @@ public class LocalizationManager {
      * @author Griefed
      */
     public LocalizationManager() {
-        this.serverPackCreatorProperties = new ApplicationProperties();
+        this.applicationProperties = new ApplicationProperties();
         init();
     }
 
@@ -352,8 +352,8 @@ public class LocalizationManager {
             init();
 
             try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-                serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.language", "en_us");
-                serverPackCreatorProperties.store(outputStream, null);
+                applicationProperties.setProperty("de.griefed.serverpackcreator.language", "en_us");
+                applicationProperties.store(outputStream, null);
             } catch (IOException ex) {
                 LOG.error("Couldn't write properties-file.", ex);
             }
@@ -371,8 +371,8 @@ public class LocalizationManager {
      */
     void writeLocaleToFile(String locale) {
         try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-            serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.language", locale);
-            serverPackCreatorProperties.store(outputStream, null);
+            applicationProperties.setProperty("de.griefed.serverpackcreator.language", locale);
+            applicationProperties.store(outputStream, null);
         } catch (IOException ex) {
             LOG.error("Couldn't write properties-file.", ex);
         }

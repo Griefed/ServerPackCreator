@@ -56,7 +56,7 @@ public class AddonsHandler {
     private List<String> listOfAddons;
     private List<String> listOfServerPackAddons;
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -65,18 +65,18 @@ public class AddonsHandler {
      * one is null. Required for use of localization.<p>
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedServerPackCreatorProperties Instance of {@link ApplicationProperties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for various different things.
      */
     @Autowired
-    public AddonsHandler(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+    public AddonsHandler(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }

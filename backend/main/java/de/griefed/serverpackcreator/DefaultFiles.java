@@ -61,7 +61,7 @@ public class DefaultFiles {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -69,18 +69,18 @@ public class DefaultFiles {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public DefaultFiles(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+    public DefaultFiles(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -191,14 +191,14 @@ public class DefaultFiles {
             LOG.error("Could not create addons directory.", ex);
         }
 
-        refreshManifestFile(getMinecraftManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT);
-        refreshManifestFile(getForgeManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FORGE);
-        refreshManifestFile(getFabricManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC);
-        refreshManifestFile(getFabricInstallerManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER);
+        refreshManifestFile(getMinecraftManifestUrl(), applicationProperties.FILE_MANIFEST_MINECRAFT);
+        refreshManifestFile(getForgeManifestUrl(), applicationProperties.FILE_MANIFEST_FORGE);
+        refreshManifestFile(getFabricManifestUrl(), applicationProperties.FILE_MANIFEST_FABRIC);
+        refreshManifestFile(getFabricInstallerManifestUrl(), applicationProperties.FILE_MANIFEST_FABRIC_INSTALLER);
 
         boolean doesConfigExist         = checkForConfig();
-        boolean doesPropertiesExist     = checkForFile(serverPackCreatorProperties.FILE_SERVER_PROPERTIES);
-        boolean doesIconExist           = checkForFile(serverPackCreatorProperties.FILE_SERVER_ICON);
+        boolean doesPropertiesExist     = checkForFile(applicationProperties.FILE_SERVER_PROPERTIES);
+        boolean doesIconExist           = checkForFile(applicationProperties.FILE_SERVER_ICON);
 
         // Inform user about customization of files if any of them were generated from the template.
         if (doesConfigExist            ||
@@ -226,11 +226,11 @@ public class DefaultFiles {
      */
     boolean checkForConfig() {
         boolean firstRun = false;
-        if (serverPackCreatorProperties.FILE_CONFIG_OLD.exists()) {
+        if (applicationProperties.FILE_CONFIG_OLD.exists()) {
             try {
-                Files.copy(serverPackCreatorProperties.FILE_CONFIG_OLD.getAbsoluteFile().toPath(), serverPackCreatorProperties.FILE_CONFIG.getAbsoluteFile().toPath());
+                Files.copy(applicationProperties.FILE_CONFIG_OLD.getAbsoluteFile().toPath(), applicationProperties.FILE_CONFIG.getAbsoluteFile().toPath());
 
-                boolean isOldConfigDeleted = serverPackCreatorProperties.FILE_CONFIG_OLD.delete();
+                boolean isOldConfigDeleted = applicationProperties.FILE_CONFIG_OLD.delete();
                 if (isOldConfigDeleted) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
@@ -239,12 +239,12 @@ public class DefaultFiles {
             } catch (IOException ex) {
                 LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
             }
-        } else if (!serverPackCreatorProperties.FILE_CONFIG.exists()) {
+        } else if (!applicationProperties.FILE_CONFIG.exists()) {
             try {
 
                 FileUtils.copyInputStreamToFile(
-                        Objects.requireNonNull(DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", serverPackCreatorProperties.FILE_CONFIG.getName()))),
-                        serverPackCreatorProperties.FILE_CONFIG);
+                        Objects.requireNonNull(DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", applicationProperties.FILE_CONFIG.getName()))),
+                        applicationProperties.FILE_CONFIG);
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
@@ -355,7 +355,7 @@ public class DefaultFiles {
     public void checkDatabase() {
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:" + serverPackCreatorProperties.FILE_SERVERPACKCREATOR_DATABASE);
+            connection = DriverManager.getConnection("jdbc:sqlite:" + applicationProperties.FILE_SERVERPACKCREATOR_DATABASE);
 
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             LOG.debug("Database driver name: " + databaseMetaData.getDriverName());

@@ -128,7 +128,7 @@ public class MenuBar extends Component {
 
     private final JPanel helpPanel = new JPanel();
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     private boolean isDarkTheme;
 
@@ -183,20 +183,20 @@ public class MenuBar extends Component {
      * @param injectedLAF_Dark Instance of {@link MaterialLookAndFeel} with our {@link DarkTheme}.
      * @param injectedTabCreateServerPack Our tab for configuring ServerPackCreator.
      * @param injectedTabbedPane The tabbed pane which holds all our tabs.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      */
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
-                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedServerPackCreatorProperties) {
+                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties) {
 
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -210,11 +210,11 @@ public class MenuBar extends Component {
         this.TABBEDPANE = injectedTabbedPane;
 
         try {
-            isDarkTheme = Boolean.parseBoolean(serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+            isDarkTheme = Boolean.parseBoolean(applicationProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
         } catch (NullPointerException ex) {
             LOG.error("No setting for darkmode found in properties-file. Using true.");
             isDarkTheme = true;
-            serverPackCreatorProperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
+            applicationProperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
         }
 
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
@@ -856,7 +856,7 @@ public class MenuBar extends Component {
         LOG.debug("Saving serverpackcreator.conf");
         TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"), false);
 
-        if (lastLoadedConfigurationFile != null && serverPackCreatorProperties.getSaveLoadedConfiguration()) {
+        if (lastLoadedConfigurationFile != null && applicationProperties.getSaveLoadedConfiguration()) {
             LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
             TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile, true);
         }
@@ -882,10 +882,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(serverPackCreatorProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = new FileOutputStream(applicationProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
-                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
-                    serverPackCreatorProperties.store(outputStream, null);
+                    applicationProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
+                    applicationProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -905,10 +905,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(serverPackCreatorProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = new FileOutputStream(applicationProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
-                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
-                    serverPackCreatorProperties.store(outputStream, null);
+                    applicationProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
+                    applicationProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -1031,7 +1031,7 @@ public class MenuBar extends Component {
         LOG.debug("Clicked open server packs directory.");
 
         try {
-            Desktop.getDesktop().open(new File(serverPackCreatorProperties.getDirectoryServerPacks()));
+            Desktop.getDesktop().open(new File(applicationProperties.getDirectoryServerPacks()));
         } catch (IOException ex) {
             LOG.error("Error opening file explorer for server-packs.", ex);
         }
@@ -1189,7 +1189,7 @@ public class MenuBar extends Component {
      */
     private String createHasteBinFromFile(File textFile) {
         String text = null;
-        String requestURL = serverPackCreatorProperties.getProperty(
+        String requestURL = applicationProperties.getProperty(
                 "de.griefed.serverpackcreator.configuration.hastebinserver",
                 "https://haste.zneix.eu/documents"
         );
