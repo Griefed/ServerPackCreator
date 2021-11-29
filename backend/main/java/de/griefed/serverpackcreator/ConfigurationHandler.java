@@ -144,10 +144,15 @@ public class ConfigurationHandler {
      * @param configFile File. The configuration file to check. Must be a valid configuration file for serverpackcreator to work.
      * @param shouldModpackBeCreated Boolean. Whether the CurseForge modpack should be downloaded and created.
      * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack.
+     * @param encounteredErrors String List. A list to which all encountered errors are saved. Used to display a message in the Swing GUI.
      * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
-    public boolean checkConfiguration(File configFile, boolean shouldModpackBeCreated, ConfigurationModel configurationModel) {
+    public boolean checkConfiguration(File configFile, boolean shouldModpackBeCreated, ConfigurationModel configurationModel, List<String> encounteredErrors) {
         boolean configHasError = false;
+
+        if (encounteredErrors == null) {
+            encounteredErrors = new ArrayList<>(100);
+        }
 
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
 
@@ -157,6 +162,7 @@ public class ConfigurationHandler {
         } catch (ConfigException ex) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
         }
 
         if (getConfig().getOrElse("clientMods", Collections.singletonList("")).isEmpty()) {
@@ -181,32 +187,35 @@ public class ConfigurationHandler {
 
         configurationModel.setServerPackSuffix(getConfig().getOrElse("serverPackSuffix",""));
 
-        if (!checkIconAndProperties(getConfig().getOrElse("serverIconPath",""))) {
+        if (!checkIconAndProperties(getConfig().getOrElse("serverIconPath",""), encounteredErrors)) {
 
             configHasError = true;
+            // TODO: Replace with lang key
+
         } else {
 
             configurationModel.setServerIconPath(getConfig().getOrElse("serverIconPath",""));
         }
 
-        if (!checkIconAndProperties(getConfig().getOrElse("serverPropertiesPath",""))) {
+        if (!checkIconAndProperties(getConfig().getOrElse("serverPropertiesPath",""), encounteredErrors)) {
 
             configHasError = true;
+
         } else {
 
             configurationModel.setServerPropertiesPath(getConfig().getOrElse("serverPropertiesPath",""));
         }
 
         try {
-            if (checkModpackDir(getConfig().getOrElse("modpackDir", "").replace("\\", "/"))) {
+            if (checkModpackDir(getConfig().getOrElse("modpackDir", "").replace("\\", "/"), encounteredErrors)) {
 
-                configHasError = isDir(getConfig(), configurationModel);
+                configHasError = isDir(getConfig(), configurationModel, encounteredErrors);
 
-            } else if (checkCurseForge(getConfig().getOrElse("modpackDir", ""), configurationModel)) {
+            } else if (checkCurseForge(getConfig().getOrElse("modpackDir", ""), configurationModel, encounteredErrors)) {
 
                 if (shouldModpackBeCreated) {
 
-                    configHasError = isCurse(configurationModel);
+                    configHasError = isCurse(configurationModel, encounteredErrors);
 
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
@@ -232,6 +241,8 @@ public class ConfigurationHandler {
         } else {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.failure"));
+
+            printEncounteredErrors(encounteredErrors);
         }
 
         return configHasError;
@@ -248,6 +259,7 @@ public class ConfigurationHandler {
      */
     public boolean checkConfiguration(boolean shouldModpackBeCreated, ConfigurationModel configurationModel) {
         boolean configHasError = false;
+        List<String> encounteredErrors = new ArrayList<>(100);
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
@@ -262,24 +274,32 @@ public class ConfigurationHandler {
 
         configurationModel.setJavaPath(checkJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
 
-        if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
+        if (!checkIconAndProperties(configurationModel.getServerIconPath(), encounteredErrors)) {
+
             configHasError = true;
+            // TODO: Replace with lang key
+            encounteredErrors.add("The specified server-icon does not exist");
+
         }
 
-        if (!checkIconAndProperties(configurationModel.getServerPropertiesPath())) {
+        if (!checkIconAndProperties(configurationModel.getServerPropertiesPath(), encounteredErrors)) {
             configHasError = true;
+
+            // TODO: Replace with lang key
+            encounteredErrors.add("The specified server.properties does not exist");
+
         }
 
         try {
-            if (checkModpackDir(configurationModel.getModpackDir().replace("\\", "/"))) {
+            if (checkModpackDir(configurationModel.getModpackDir().replace("\\", "/"), encounteredErrors)) {
 
-                configHasError = isDir(configurationModel);
+                configHasError = isDir(configurationModel, encounteredErrors);
 
-            } else if (checkCurseForge(configurationModel.getModpackDir(), configurationModel)) {
+            } else if (checkCurseForge(configurationModel.getModpackDir(), configurationModel, encounteredErrors)) {
 
                 if (shouldModpackBeCreated) {
 
-                    configHasError = isCurse(configurationModel);
+                    configHasError = isCurse(configurationModel, encounteredErrors);
 
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
@@ -300,11 +320,17 @@ public class ConfigurationHandler {
         printConfig(configurationModel);
 
         if (!configHasError) {
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
+
         } else {
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.failure"));
+
+            printEncounteredErrors(encounteredErrors);
+
         }
 
         return configHasError;
@@ -317,60 +343,68 @@ public class ConfigurationHandler {
      * @author Griefed
      * @param config FileConfig. An instance of a {@link FileConfig} from which to gather information about the modpack.
      * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns true if an error is found during configuration check.
      */
-    boolean isDir(FileConfig config, ConfigurationModel configurationModel) {
+    boolean isDir(FileConfig config, ConfigurationModel configurationModel, List<String> encounteredErrors) {
         boolean configHasError = false;
         config.load();
 
         configurationModel.setModpackDir(config.getOrElse("modpackDir","").replace("\\","/"));
 
-        if (checkCopyDirs(config.getOrElse("copyDirs",Arrays.asList("config","mods")), configurationModel.getModpackDir())) {
+        if (checkCopyDirs(config.getOrElse("copyDirs",Arrays.asList("config","mods")), configurationModel.getModpackDir(), encounteredErrors)) {
 
             configurationModel.setCopyDirs(getConfig().getOrElse("copyDirs",Arrays.asList("config","mods")));
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
 
         } else {
+
             configHasError = true;
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
+
         }
 
-        if (isMinecraftVersionCorrect(config.getOrElse("minecraftVersion",VERSIONLISTER.getMinecraftReleaseVersion()))) {
+        if (isMinecraftVersionCorrect(config.getOrElse("minecraftVersion",VERSIONLISTER.getMinecraftReleaseVersion()), encounteredErrors)) {
 
             configurationModel.setMinecraftVersion(config.getOrElse("minecraftVersion",VERSIONLISTER.getMinecraftReleaseVersion()));
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
 
-            if (checkModloader(config.getOrElse("modLoader","Forge"))) {
+            if (checkModloader(config.getOrElse("modLoader","Forge"), encounteredErrors)) {
 
                 configurationModel.setModLoader(getModLoaderCase(config.getOrElse("modLoader","Forge")));
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
-                if (checkModloaderVersion(configurationModel.getModLoader(), config.getOrElse("modLoaderVersion",Arrays.asList(VERSIONLISTER.getForgeMeta().get(configurationModel.getMinecraftVersion())).get(0)), configurationModel.getMinecraftVersion())) {
+                if (checkModloaderVersion(configurationModel.getModLoader(), config.getOrElse("modLoaderVersion",Arrays.asList(VERSIONLISTER.getForgeMeta().get(configurationModel.getMinecraftVersion())).get(0)), configurationModel.getMinecraftVersion(), encounteredErrors)) {
 
                     configurationModel.setModLoaderVersion(config.getOrElse("modLoaderVersion",Arrays.asList(VERSIONLISTER.getForgeMeta().get(configurationModel.getMinecraftVersion())).get(0)));
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
 
                 } else {
+
                     configHasError = true;
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
                 }
 
             } else {
+
                 configHasError = true;
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
+
             }
 
         } else {
+
             configHasError = true;
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
+
         }
 
         return configHasError;
@@ -382,53 +416,63 @@ public class ConfigurationHandler {
      * if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.
      * @author Griefed
      * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns true if an error is found during configuration check.
      */
-    boolean isDir(ConfigurationModel configurationModel) {
+    boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
         boolean configHasError = false;
 
-        if (checkCopyDirs(configurationModel.getCopyDirs(), configurationModel.getModpackDir())) {
+        if (checkCopyDirs(configurationModel.getCopyDirs(), configurationModel.getModpackDir(), encounteredErrors)) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
 
         } else {
+
             configHasError = true;
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
+
         }
 
-        if (isMinecraftVersionCorrect(configurationModel.getMinecraftVersion())) {
+        if (isMinecraftVersionCorrect(configurationModel.getMinecraftVersion(), encounteredErrors)) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
 
         } else {
+
             configHasError = true;
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
+
         }
 
-        if (checkModloader(configurationModel.getModLoader())) {
+        if (checkModloader(configurationModel.getModLoader(), encounteredErrors)) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
 
-            if (checkModloaderVersion(configurationModel.getModLoader(), configurationModel.getModLoaderVersion(), configurationModel.getMinecraftVersion())) {
+            if (checkModloaderVersion(configurationModel.getModLoader(), configurationModel.getModLoaderVersion(), configurationModel.getMinecraftVersion(), encounteredErrors)) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloaderversion"));
 
             } else {
+
                 configHasError = true;
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloaderversion"));
+
             }
 
         } else {
+
             configHasError = true;
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
+
         }
 
         return configHasError;
@@ -442,10 +486,11 @@ public class ConfigurationHandler {
      * modpackDir field pointing to the newly created modpack.
      * @author Griefed
      * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
      * project name and displayname, or when the creation of the modpack fails.
      */
-    boolean isCurse(ConfigurationModel configurationModel) {
+    boolean isCurse(ConfigurationModel configurationModel, List<String> encounteredErrors) {
         boolean configHasError = false;
         try {
             if (CurseAPI.project(configurationModel.getProjectID()).isPresent() && CurseAPI.file(configurationModel.getProjectID(), configurationModel.getFileID()).isPresent()) {
@@ -455,21 +500,26 @@ public class ConfigurationHandler {
                 configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("minecraft").get("version").asText());
 
                 if (checkModpackForFabric(configurationModel.getCurseModpack())) {
+
                     if (configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().contains("fabric")) {
 
                         configurationModel.setModLoader("Fabric");
                         configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(7));
 
                     } else {
+
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
                         LOG.debug("Setting modloader to Fabric.");
 
                         configurationModel.setModLoader("Fabric");
                         configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
+
                     }
 
                 } else {
+
+                    // TODO: Replace with lang key
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.debug("Setting modloader to Forge.");
 
@@ -483,24 +533,28 @@ public class ConfigurationHandler {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
 
-                writeConfigToFile(
-                        configurationModel,
-                        applicationProperties.FILE_CONFIG,
-                        false
-                );
-
+                writeConfigToFile(configurationModel,applicationProperties.FILE_CONFIG,false);
 
             } else {
+
+                configHasError = true;
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.notfound"));
-                configHasError = true;
+
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.notfound"));
+
             }
 
         } catch (CurseException | IllegalArgumentException ex) {
+
+            configHasError = true;
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), configurationModel.getProjectID()), ex);
-            configHasError = true;
+
+            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), configurationModel.getProjectID()));
+
         }
+
         return configHasError;
     }
 
@@ -548,7 +602,7 @@ public class ConfigurationHandler {
 
         File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
 
-        List<String> dirsInModpack = new ArrayList<>();
+        List<String> dirsInModpack = new ArrayList<>(100);
 
         try {
             assert listDirectoriesInModpack != null;
@@ -583,9 +637,13 @@ public class ConfigurationHandler {
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
      * @param configurationModel or {@link ServerPack}. Instance containing
      *                           all the information about our server pack.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
+     * @throws InvalidModpackException Thrown if the specified IDs do not match a CurseForge modpack.
+     * @throws InvalidFileException Thrown if the specified fileID does not match a file for the projectID.
+     * @throws CurseException Thrown if an error occurs working with the CurseForgeAPI.
      * @return Boolean. Returns true if the combination is deemed valid, false if not.
      */
-    public boolean checkCurseForge(String modpackDir, ConfigurationModel configurationModel) throws InvalidModpackException, InvalidFileException, CurseException {
+    public boolean checkCurseForge(String modpackDir, ConfigurationModel configurationModel, List<String> encounteredErrors) throws InvalidModpackException, InvalidFileException, CurseException {
 
         boolean configCorrect = false;
 
@@ -620,9 +678,13 @@ public class ConfigurationHandler {
                 }
 
             } catch (NoSuchElementException ex) {
+
+                configCorrect = false;
+
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID), ex);
-                configCorrect = false;
+                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID));
+
             }
 
             try {
@@ -643,9 +705,13 @@ public class ConfigurationHandler {
                 }
 
             } catch (CurseException | NoSuchElementException ex) {
+
+                configCorrect = false;
+
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID), ex);
-                configCorrect = false;
+                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
+
             }
 
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -713,6 +779,30 @@ public class ConfigurationHandler {
         }
     }
 
+    /**
+     * Print all encountered errors to logs.
+     * @author Griefed
+     * @param encounteredErrors List String. A list of all errors which were encountered during a configuration check.
+     */
+    private void printEncounteredErrors(List<String> encounteredErrors) {
+        // TODO: Replace with lang key
+        LOG.error("Encountered " + encounteredErrors.size() + " errors during the configuration check.");
+
+        int count = 0;
+
+        for (int i = 0; i < encounteredErrors.size(); i++) {
+
+            count = i + 1;
+
+            LOG.error("Error " + count + ": " + encounteredErrors.get(i));
+        }
+    }
+
+    /**
+     * Convenience method which passes the important fields from an instance of {@link ConfigurationModel} to {@link #printConfig(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, String, String)}
+     * @author Griefed
+     * @param configurationModel Instance of {@link ConfigurationModel} to print to console and logs.
+     */
     void printConfig(ConfigurationModel configurationModel) {
         printConfig(
                 configurationModel.getModpackDir(),
@@ -826,20 +916,25 @@ public class ConfigurationHandler {
      * and serverpackcreator.log so the user knows what went wrong.
      * @author Griefed
      * @param modpackDir String. The path to the modpack directory to check whether it is empty and whether it is a directory.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns true if the directory exists.
      */
-    boolean checkModpackDir(String modpackDir) {
+    boolean checkModpackDir(String modpackDir, List<String> encounteredErrors) {
         boolean configCorrect = false;
 
         if (modpackDir.equals("")) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
 
         } else if (!(new File(modpackDir).isDirectory())) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkmodpackdir"), modpackDir));
+
+            // TODO: Replace with lang key
+            encounteredErrors.add(String.format("Modpack directory %s could not be found.", modpackDir));
 
         } else {
 
@@ -862,17 +957,21 @@ public class ConfigurationHandler {
      *                          absolute paths to the source-file.
      * @param modpackDir String. The path to the modpack directory in which to check for existence of the passed list of
      *                  directories.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns true if every directory was found in the modpack directory. If any single one was not found,
      * false is returned.
      */
-    boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir) {
+    boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir, List<String> encounteredErrors) {
         boolean configCorrect = true;
 
         if (directoriesToCopy.isEmpty()) {
 
+            configCorrect = false;
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
-            configCorrect = false;
+
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
 
         } else {
 
@@ -887,13 +986,18 @@ public class ConfigurationHandler {
 
                     if (!sourceFileToCheck.exists()) {
 
+                        configCorrect = false;
+
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
-                        configCorrect = false;
+
+                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
+
                     }
 
                 // Add an entry to the list of directories/files to exclude if it starts with !
                 } else if (directory.startsWith("!")) {
+
                     applicationProperties.addToListOfDirectoriesToExclude(directory.substring(directory.lastIndexOf("!") + 1));
 
                 // Check if the entry exists
@@ -903,15 +1007,43 @@ public class ConfigurationHandler {
 
                     if (!dirToCheck.exists()) {
 
+                        configCorrect = false;
+
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
-                        configCorrect = false;
-                    }
 
+                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
+
+                    }
                 }
             }
         }
         return configCorrect;
+    }
+
+    /**
+     * Checks the passed String whether it is an existing file. If the passed String is empty, then ServerPackCreator will
+     * treat it as the user being fine with the default files and return the corresponding boolean.
+     * @author Griefed
+     * @param iconOrPropertiesPath String. The path to the custom server-icon.png or server.properties file to check.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
+     * @return Boolean. True if the file exists or an empty String was passed, false if a file was specified, but the file was not found.
+     */
+    private boolean checkIconAndProperties(String iconOrPropertiesPath, List<String> encounteredErrors) {
+        if (iconOrPropertiesPath.equals("")) {
+
+            return true;
+
+        } else if (new File(iconOrPropertiesPath).exists()) {
+
+            return true;
+
+        } else {
+
+            // TODO: Replace with lang key
+            encounteredErrors.add("The specified server-icon or server.properties does not exist: " + iconOrPropertiesPath);
+            return false;
+        }
     }
 
     /**
@@ -939,6 +1071,7 @@ public class ConfigurationHandler {
                 LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkjavapath.windows"));
 
             } else {
+
                 LOG.debug("Acquiring path to Java installation from system properties...");
                 checkedJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
 
@@ -950,7 +1083,9 @@ public class ConfigurationHandler {
 
                 LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
             }
+
         } catch (NullPointerException ignored) {
+
             checkedJavaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
 
             if (checkedJavaPath.startsWith("C:")) {
@@ -958,30 +1093,34 @@ public class ConfigurationHandler {
                 LOG.debug("We're running on Windows. Ensuring javaPath ends with .exe.");
                 checkedJavaPath = String.format("%s.exe", checkedJavaPath);
             }
-        } finally {
-            return checkedJavaPath;
+
         }
+
+        return checkedJavaPath;
     }
 
     /**
      * Checks whether either Forge or Fabric were specified as the modloader.
      * @author Griefed
      * @param modloader String. Check as case-insensitive for Forge or Fabric.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if neither.
      */
-    boolean checkModloader(String modloader) {
-        boolean configCorrect = false;
-
+    boolean checkModloader(String modloader, List<String> encounteredErrors) {
         if (modloader.toLowerCase().contains("forge") || modloader.toLowerCase().contains("fabric")) {
 
-            configCorrect = true;
+            return true;
 
         } else {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
+
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
+
+            return false;
         }
-        return configCorrect;
+
     }
 
     /**
@@ -1027,24 +1166,28 @@ public class ConfigurationHandler {
      * @param modloader String. The passed modloader which determines whether the check for Forge or Fabric is called.
      * @param modloaderVersion String. The version of the modloader which is checked against the corresponding modloaders manifest.
      * @param minecraftVersion String. The version of Minecraft used for checking the Forge version.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns true if the specified modloader version was found in the corresponding manifest.
      */
-    boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
-        boolean isVersionCorrect = false;
-
+    boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion, List<String> encounteredErrors) {
         if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion, minecraftVersion)) {
 
-            isVersionCorrect = true;
+            return true;
 
         } else if (modloader.equalsIgnoreCase("Fabric") && isFabricVersionCorrect(modloaderVersion)) {
 
-            isVersionCorrect = true;
+            return true;
 
         } else {
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloaderversion"));
+
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloaderversion"));
+
+            return false;
+
         }
-        return isVersionCorrect;
     }
 
     /**
@@ -1052,14 +1195,32 @@ public class ConfigurationHandler {
      * for the specified version.
      * @author Griefed
      * @param minecraftVersion String. The version to check for in Minecraft's version manifest.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.
      */
-    public boolean isMinecraftVersionCorrect(String minecraftVersion) {
+    public boolean isMinecraftVersionCorrect(String minecraftVersion, List<String> encounteredErrors) {
         if (!minecraftVersion.equals("")) {
-            return VERSIONLISTER.getMinecraftReleaseVersions().contains(minecraftVersion);
+
+            if (VERSIONLISTER.getMinecraftReleaseVersions().contains(minecraftVersion)) {
+
+                return true;
+
+            } else {
+
+                // TODO: Replace with lang key
+                encounteredErrors.add("Incorrect Minecraft version specified.");
+
+                return false;
+
+            }
+
         } else {
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isminecraftversioncorrect.empty"));
+
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isminecraftversioncorrect.empty"));
+
             return false;
         }
     }
@@ -1123,10 +1284,11 @@ public class ConfigurationHandler {
      * @author Griefed
      */
     void createConfigurationFile() {
-        List<String> clientMods, copyDirs;
+        List<String> clientMods, copyDirs, encounteredErrors;
 
-        clientMods = new ArrayList<>(0);
-        copyDirs = new ArrayList<>(0);
+        clientMods = new ArrayList<>(100);
+        copyDirs = new ArrayList<>(100);
+        encounteredErrors = new ArrayList<>(100);
 
         String[] tmpClientMods, tmpCopyDirs;
 
@@ -1163,7 +1325,7 @@ public class ConfigurationHandler {
                 do {
                     System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.cli") + " ");
                     tmpModpackDir = reader.nextLine();
-                } while (!checkModpackDir(tmpModpackDir));
+                } while (!checkModpackDir(tmpModpackDir, encounteredErrors));
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), tmpModpackDir));
@@ -1230,7 +1392,7 @@ public class ConfigurationHandler {
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.specify"));
                     copyDirs.addAll(readStringArray());
 
-                } while (!checkCopyDirs(copyDirs, modpackDir));
+                } while (!checkCopyDirs(copyDirs, modpackDir, encounteredErrors));
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), copyDirs));
@@ -1259,7 +1421,7 @@ public class ConfigurationHandler {
                     System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.icon.path"));
                     tmpServerIcon = reader.nextLine();
 
-                } while (!checkIconAndProperties(tmpServerIcon));
+                } while (!checkIconAndProperties(tmpServerIcon, encounteredErrors));
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), tmpServerIcon));
@@ -1284,7 +1446,7 @@ public class ConfigurationHandler {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.properties.path"));
                     tmpServerProperties = reader.nextLine();
-                } while (!checkIconAndProperties(tmpServerProperties));
+                } while (!checkIconAndProperties(tmpServerProperties, encounteredErrors));
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), tmpServerProperties));
@@ -1317,7 +1479,7 @@ public class ConfigurationHandler {
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.minecraft.specify") + " ");
                 minecraftVersion = reader.nextLine();
 
-            } while (!isMinecraftVersionCorrect(minecraftVersion));
+            } while (!isMinecraftVersionCorrect(minecraftVersion, encounteredErrors));
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), minecraftVersion));
@@ -1331,7 +1493,7 @@ public class ConfigurationHandler {
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloader.cli") + " ");
                 modLoader = reader.nextLine();
 
-            } while (!checkModloader(modLoader));
+            } while (!checkModloader(modLoader, encounteredErrors));
 
             modLoader = getModLoaderCase(modLoader);
 
@@ -1347,7 +1509,7 @@ public class ConfigurationHandler {
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloaderversion.cli") + " ");
                 modLoaderVersion = reader.nextLine();
 
-            } while (!checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion));
+            } while (!checkModloaderVersion(modLoader, modLoaderVersion, minecraftVersion, encounteredErrors));
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), modLoaderVersion));
@@ -1444,6 +1606,7 @@ public class ConfigurationHandler {
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
         } while (!readBoolean());
+
         reader.close();
 
 //-----------------------------------------------------------------------------------------WRITE CONFIG TO FILE---------
@@ -1472,29 +1635,6 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Checks the passed String whether it is an existing file. If the passed String is empty, then ServerPackCreator will
-     * treat it as the user being fine with the default files and return the corresponding boolean.
-     * @author Griefed
-     * @param tmpServerProperties String. The path to the custom server-icon.png or server.properties file to check.
-     * @return Boolean. True if the file exists or an empty String was passed, false if a file was specified, but the file was not found.
-     */
-    private boolean checkIconAndProperties(String tmpServerProperties) {
-        if (tmpServerProperties.equals("")) {
-
-            return true;
-
-        } else if (new File(tmpServerProperties).exists()) {
-
-            return true;
-
-        } else {
-
-            LOG.error("The specified file does not exist: " + tmpServerProperties);
-            return false;
-        }
-    }
-
-    /**
      * A helper method for {@link #createConfigurationFile()}. Prompts the user to enter the values which will make up
      * a String List in the new configuration file. If the user enters an empty line, the method is exited and the
      * String List returned.
@@ -1502,14 +1642,23 @@ public class ConfigurationHandler {
      * @return String List. Returns the list of values entered by the user.
      */
     private List<String> readStringArray() {
+
         Scanner readerArray = new Scanner(System.in);
-        ArrayList<String> result = new ArrayList<>(1);
+
+        ArrayList<String> result = new ArrayList<>(100);
+
         String stringArray;
+
         while (true) {
+
             stringArray = readerArray.nextLine();
+
             if (stringArray.isEmpty()) {
+
                 return result;
+
             } else {
+
                 result.add(stringArray);
             }
         }
@@ -1587,7 +1736,8 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Write a new configuration file with the {@link ConfigurationModel} passed to it.
+     * Convenience method to write a new configuration file with the {@link ConfigurationModel} passed to it. Passes all
+     * important fields from an instance of {@link ConfigurationModel} to {@link #writeConfigToFile(String, List, List, String, String, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}.
      * @author Griefed
      * @param configurationModel Instance of {@link ConfigurationModel} to write to a file.
      * @param fileName The file to write to.
@@ -1755,7 +1905,7 @@ public class ConfigurationHandler {
      * @return String List. A list of all configurations as strings.
      */
     public List<String> getConfigurationAsList(ConfigurationModel configurationModel) {
-        List<String> configurationAsList = new ArrayList<>();
+        List<String> configurationAsList = new ArrayList<>(100);
 
         configurationAsList.add(configurationModel.getModpackDir());
         configurationAsList.add(buildString(configurationModel.getClientMods().toString()));

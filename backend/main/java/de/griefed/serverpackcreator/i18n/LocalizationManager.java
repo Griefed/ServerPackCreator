@@ -96,6 +96,7 @@ public class LocalizationManager {
     /**
      * Constructor for our LocalizationManager with a given locale.
      * @author Griefed
+     * @param locale String. The locale to init with.
      * @throws IncorrectLanguageException Thrown if no language could be set by {@link LocalizationManager}.
      */
     public LocalizationManager(String locale) throws IncorrectLanguageException {

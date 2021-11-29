@@ -32,7 +32,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * CurseForge service for working with, retrieving, sending, generating, handling everything related to server packs/modpacks
@@ -76,6 +78,7 @@ public class CurseService {
      * @author Griefed
      * @param projectID Integer. CurseForge projectID.
      * @param fileID Integer. CurseForge fileID.
+     * @throws CurseException Exception thrown if an error occurs during the acquisition of information from CurseForge.
      * @return String. Returns a {@link CurseResponse} with some information about the requested project and file, as well as the status, which is either of <code>Status 0: Already exists</code>, <code>Status 1: OK, generating</code> or <code>Status 2: Error occurred</code>.
      */
     public String createFromCurseModpack(int projectID, int fileID) throws CurseException {
@@ -101,14 +104,17 @@ public class CurseService {
         try {
 
             ServerPack serverPack = new ServerPack();
+            List<String> encounteredErrors = new ArrayList<>(100);
 
-            if (CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
+            if (CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack, encounteredErrors)) {
 
                 TASKSUBMITTER.scanCurseProject(projectID + "," + fileID);
 
                 return CURSERESPONSEMODEL.response(serverPack.getProjectName(), 1, "Queued! Come back later and check the downloads-section to see whether your server pack for " + serverPack.getProjectName() + " is ready for download!", 7000, "done", "positive");
 
             } else {
+
+
 
                 return CURSERESPONSEMODEL.response(projectID + "," + fileID, 2, "Project or file could not be found!", 3000, "error", "negative");
 
@@ -134,6 +140,7 @@ public class CurseService {
      * telling the requester that regeneration is disabled on this instance of ServerPackCreator.
      * @author Griefed
      * @param modpack CurseForge projectID and fileID combination.
+     * @return String. Returns a {@link CurseResponse#response(String, int, String, int, String, String)} telling the requester the status of their request.
      */
     public String regenerateFromCurseModpack(String modpack) {
         // TODO: When regeneration is triggered, set downloads and votes to 0

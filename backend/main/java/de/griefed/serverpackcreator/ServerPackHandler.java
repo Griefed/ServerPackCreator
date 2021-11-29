@@ -151,7 +151,7 @@ public class ServerPackHandler {
      */
     public boolean run(File configFileToUse, ConfigurationModel configurationModel) {
 
-        if (!CONFIGURATIONHANDLER.checkConfiguration(configFileToUse, true, configurationModel)) {
+        if (!CONFIGURATIONHANDLER.checkConfiguration(configFileToUse, true, configurationModel, null)) {
 
             String destination = configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + configurationModel.getServerPackSuffix();
 
@@ -242,6 +242,7 @@ public class ServerPackHandler {
      * Create a server pack if the check of the {@link ConfigurationModel} was successfull.
      * @author Griefed
      * @param serverPack An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @return Returns the passed {@link ServerPack} which got altered during the creation of said server pack.
      */
     public ServerPack run(ServerPack serverPack) {
 
@@ -1223,6 +1224,7 @@ public class ServerPackHandler {
      * Copies the server-icon.png into server_pack.
      * @author Griefed
      * @param destination String. The destination where the icon should be copied to.
+     * @param pathToServerIcon String. The path to the custom server-icon.
      */
     void copyIcon(String destination, String pathToServerIcon) {
 
@@ -1287,6 +1289,7 @@ public class ServerPackHandler {
      * Copies the server.properties into server_pack.
      * @author Griefed
      * @param destination String. The destination where the properties should be copied to.
+     * @param pathToServerProperties String. The path to the custom server.properties.
      */
     void copyProperties(String destination, String pathToServerProperties) {
 

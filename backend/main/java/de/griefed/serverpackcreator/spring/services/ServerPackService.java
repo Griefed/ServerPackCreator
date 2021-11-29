@@ -240,6 +240,7 @@ public class ServerPackService {
      * database id.
      * @author Griefed
      * @param id Integer. The database id of the server pack.
+     * @param vote Integer. Positive for upvote, negative for downvote
      */
     protected void updateConfirmedCounter(int id, int vote) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {

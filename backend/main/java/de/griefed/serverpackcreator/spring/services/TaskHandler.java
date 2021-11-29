@@ -33,7 +33,9 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
@@ -99,7 +101,10 @@ public class TaskHandler {
                 ServerPack serverPack = new ServerPack();
 
                 try {
-                    if (!SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent() && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
+
+                    List<String> encounteredErrors = new ArrayList<>(100);
+
+                    if (!SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent() && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack, encounteredErrors)) {
 
                         serverPack.setModpackDir(projectID + "," + fileID);
                         serverPack.setStatus("Queued");
@@ -110,7 +115,7 @@ public class TaskHandler {
 
                         serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
 
-                        if (serverPack.getStatus().equals("Generating") && (new Timestamp(new Date().getTime()).getTime() - serverPack.getLastModified().getTime()) >= 1800000  && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack)) {
+                        if (serverPack.getStatus().equals("Generating") && (new Timestamp(new Date().getTime()).getTime() - serverPack.getLastModified().getTime()) >= 1800000  && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPack, encounteredErrors)) {
                             serverPack.setModpackDir(projectID + "," + fileID);
                             serverPack.setStatus("Queued");
                             SERVERPACKSERVICE.updateServerPackByProjectIDAndFileID(projectID, fileID, serverPack);

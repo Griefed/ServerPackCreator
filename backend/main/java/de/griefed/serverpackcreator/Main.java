@@ -185,7 +185,7 @@ public class Main {
             CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, applicationProperties);
             ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, applicationProperties);
             ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER);
-            FileWatcher FILEWATCHER = new FileWatcher(applicationProperties, DEFAULTFILES, VERSIONLISTER, ADDONSHANDLER, LOCALIZATIONMANAGER);
+            FileWatcher FILEWATCHER = new FileWatcher(applicationProperties, DEFAULTFILES);
 
             // Print help and information about ServerPackCreator which could help the user figure out what to do.
             if (Arrays.asList(args).contains("-help")) {
@@ -292,9 +292,9 @@ public class Main {
     }
 
     /**
-     *
+     * Copy a file from inside our JAR to the host filesystem.
      * @author Griefed
-     * @param fileToCreate
+     * @param fileToCreate File. The file in the JAR to create on the host filesystem.
      */
     private static void createFile(File fileToCreate) {
         if (!fileToCreate.exists()) {

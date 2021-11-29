@@ -36,6 +36,7 @@ public class RouteController {
     /**
      * Redirect all unknown paths to our 404-page.
      * @author Griefed
+     * @return Redirects the requester to our error page.
      */
     @RequestMapping("/**/{path:[^.]*}")
     public ModelAndView redirectError() {
@@ -45,6 +46,7 @@ public class RouteController {
     /**
      * Redirect /downloads to /#/downloads.
      * @author Griefed
+     * @return Redirects requests for /downloads to /#/downloads
      */
     @RequestMapping("/downloads")
     public ModelAndView redirectDownloads() {
@@ -54,6 +56,7 @@ public class RouteController {
     /**
      * Redirect /logs to /#/logs.
      * @author Griefed
+     * @return Redirects requests for /logs to /#/logs
      */
     @RequestMapping("/logs")
     public ModelAndView redirectLogs() {
@@ -63,6 +66,7 @@ public class RouteController {
     /**
      * Redirect /about to /#/about.
      * @author Griefed
+     * @return Redirects requests for /about to /#/about
      */
     @RequestMapping("/about")
     public ModelAndView redirectAbout() {

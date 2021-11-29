@@ -160,6 +160,16 @@ public class TabCreateServerPack extends JComponent {
     private JRadioButton forgeRadioButton;
     private JRadioButton fabricRadioButton;
 
+    private final Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
+        public void handle(String line) {
+            synchronized (this) {
+                if (!line.contains("DEBUG")) {
+                    labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
+                }
+            }
+        }
+    }, 100, false);
+
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -998,8 +1008,9 @@ public class TabCreateServerPack extends JComponent {
         clientModsChooser.setPreferredSize(CHOOSERDIMENSION);
 
         if (clientModsChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
+
             File[] clientMods = clientModsChooser.getSelectedFiles();
-            ArrayList<String> clientModsFilenames = new ArrayList<>();
+            ArrayList<String> clientModsFilenames = new ArrayList<>(100);
 
             for (File mod : clientMods) {
                 clientModsFilenames.add(mod.getName());
@@ -1041,7 +1052,7 @@ public class TabCreateServerPack extends JComponent {
 
         if (copyDirsChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
             File[] directoriesToCopy = copyDirsChooser.getSelectedFiles();
-            ArrayList<String> copyDirsNames = new ArrayList<>();
+            ArrayList<String> copyDirsNames = new ArrayList<>(100);
 
             for (File directory : directoriesToCopy) {
                 copyDirsNames.add(directory.getName());
@@ -1109,15 +1120,7 @@ public class TabCreateServerPack extends JComponent {
 
         BUTTON_GENERATESERVERPACK.setEnabled(false);
 
-        Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
-            public void handle(String line) {
-                synchronized (this) {
-                    if (!line.contains("DEBUG")) {
-                        labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
-                    }
-                }
-            }
-        }, 100, false);
+        tailer.run();
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
@@ -1129,7 +1132,9 @@ public class TabCreateServerPack extends JComponent {
 
         configurationModel.setServerPackSuffix(TEXTFIELD_SERVERPACKSUFFIX.getText());
 
-        if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), false, configurationModel)) {
+        List<String> encounteredErrors = new ArrayList<>(100);
+
+        if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), false, configurationModel, encounteredErrors)) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
@@ -1197,23 +1202,51 @@ public class TabCreateServerPack extends JComponent {
 
                 } finally {
 
-                    tailer.stop();
-                    executorService.shutdown();
-
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+
+                    tailer.stop();
 
                     BUTTON_GENERATESERVERPACK.setEnabled(true);
                     FRAME_SERVERPACKCREATOR.setResizable(true);
 
                     System.gc();
                     System.runFinalization();
+
+                    executorService.shutdown();
                 }
             });
 
         } else {
+
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
+
+            tailer.stop();
+
+            if (encounteredErrors.size() > 0) {
+
+                StringBuilder errors = new StringBuilder();
+
+                encounteredErrors.forEach(n -> errors.append(n).append("\n"));
+
+                /*
+                for (String error : encounteredErrors) {
+                    errors.append(error).append("\n");
+                }*/
+
+                JOptionPane.showMessageDialog(
+                        FRAME_SERVERPACKCREATOR,
+                        errors,
+                        "Error(s) encountered",
+                        JOptionPane.ERROR_MESSAGE,
+                        UIManager.getIcon("OptionPane.errorIcon")
+                        );
+            }
+
             BUTTON_GENERATESERVERPACK.setEnabled(true);
             FRAME_SERVERPACKCREATOR.setResizable(true);
+
+            System.gc();
+            System.runFinalization();
         }
     }
 
@@ -1265,22 +1298,34 @@ public class TabCreateServerPack extends JComponent {
             config.load();
 
             try {
+
                 TEXTFIELD_MODPACKDIRECTORY.setText(config.getOrElse("modpackDir","").replace("\\", "/"));
+
             } catch (NullPointerException ex) {
+
                 LOG.error("Error parsing modpackdir from configfile: " + configFile, ex);
+
             }
 
             if (config.getOrElse("clientMods", applicationProperties.getListFallbackMods()).isEmpty()) {
+
                 TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(applicationProperties.getListFallbackMods().toString()));
                 LOG.debug("Set clientMods with fallback list.");
+
             } else {
+
                 TEXTFIELD_CLIENTSIDEMODS.setText(CONFIGURATIONHANDLER.buildString(config.get("clientMods").toString()));
+
             }
 
             if (config.getOrElse("copyDirs", Arrays.asList("config","mods")).isEmpty()) {
+
                 TEXTFIELD_COPYDIRECTORIES.setText("config, mods");
+
             } else {
+
                 TEXTFIELD_COPYDIRECTORIES.setText(CONFIGURATIONHANDLER.buildString(config.get("copyDirs").toString().replace("\\", "/")));
+
             }
 
             TEXTFIELD_SERVERICONPATH.setText(config.getOrElse("serverIconPath","").replace("\\","/"));
@@ -1290,18 +1335,30 @@ public class TabCreateServerPack extends JComponent {
             TEXTFIELD_JAVAPATH.setText(CONFIGURATIONHANDLER.checkJavaPath(config.getOrElse("javaPath","").replace("\\", "/")));
 
             try {
+
+                List<String> encounteredErrors = new ArrayList<>(100);
+
                 String minecraftVersion;
-                if (CONFIGURATIONHANDLER.isMinecraftVersionCorrect(config.getOrElse("minecraftVersion",VERSIONLISTER.getMinecraftReleaseVersion()))) {
+
+                if (CONFIGURATIONHANDLER.isMinecraftVersionCorrect(config.getOrElse("minecraftVersion",VERSIONLISTER.getMinecraftReleaseVersion()), encounteredErrors)) {
+
                     minecraftVersion = config.getOrElse("minecraftVersion", VERSIONLISTER.getMinecraftReleaseVersion());
+
                 } else {
+
                     minecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
+
                 }
 
                 String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
+
                 for (int i = 0; i < mcver.length; i++) {
+
                     if (mcver[i].equals(minecraftVersion)) {
+
                         COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
                         chosenMinecraftVersion = minecraftVersion;
+
                     }
                 }
 
@@ -1318,29 +1375,44 @@ public class TabCreateServerPack extends JComponent {
                     updateModloaderGuiComponents(true, false, "Fabric");
 
                     if (!config.getOrElse("modLoaderVersion","").equals("")) {
+
                         for (int i = 0; i < fabricver.length; i++) {
+
                             if (fabricver[i].equals(config.get("modLoaderVersion").toString())) {
+
                                 COMBOBOX_FABRICVERSIONS.setSelectedIndex(i);
                                 chosenFabricVersion = config.get("modLoaderVersion").toString();
+
                             }
+
                         }
+
                     }
 
                 } else {
+
                     String[] forgever = VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion);
+
                     changeForgeVersionListDependingOnMinecraftVersion(chosenMinecraftVersion);
 
                     updateModloaderGuiComponents(false, true, "Forge");
 
                     if (!config.getOrElse("modLoaderVersion","").equals("")) {
+
                         for (int i = 0; i < forgever.length; i++) {
+
                             if (forgever[i].equals(config.get("modLoaderVersion").toString())) {
+
                                 COMBOBOX_FORGEVERSIONS.setSelectedIndex(i);
                                 chosenForgeVersion = config.get("modLoaderVersion").toString();
                             }
+
                         }
+
                     }
+
                 }
+
             } catch (NullPointerException ex) {
 
                 LOG.error("Error parsing modloader-version from configfile: " + configFile, ex);

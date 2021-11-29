@@ -98,6 +98,7 @@ public class CurseCreateModpack {
      * Retrieve the name of a given CurseForge project.
      * @author Griefed
      * @param newProjectID The ID of the new CurseForge project.
+     * @return String. Returns the name of the specified CurseForge project, or the ID if the project could not be found.
      */
     public String retrieveProjectName(int newProjectID) {
         try {
@@ -116,6 +117,7 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param newProjectID The ID of the CurseForge project.
      * @param newFileID The ID of the CurseForge file.
+     * @return String. Returns the name of the CurseForge file on disk, or the ID if said name can not be found.
      */
     public String retrieveFileDiskName(int newProjectID, int newFileID) {
         try {

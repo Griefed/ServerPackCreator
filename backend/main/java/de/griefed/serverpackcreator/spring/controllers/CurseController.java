@@ -86,6 +86,7 @@ public class CurseController {
      * on the decision made in {@link CurseService}.<br>
      * @author Griefed
      * @param modpack CurseForge projectID and fileID combination.
+     * @return String. Returns a {@link CurseResponse} depending on the outcome of {@link CurseService#regenerateFromCurseModpack(String)}.
      */
     @CrossOrigin(origins = {"*"})
     @GetMapping("/regenerate")
