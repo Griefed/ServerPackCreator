@@ -224,19 +224,7 @@ public class ConfigurationHandler {
             LOG.error("The specified project does not exist.", ex);
         }
 
-        printConfig(configurationModel.getModpackDir(),
-                configurationModel.getClientMods(),
-                configurationModel.getCopyDirs(),
-                configurationModel.getIncludeServerInstallation(),
-                configurationModel.getJavaPath(),
-                configurationModel.getMinecraftVersion(),
-                configurationModel.getModLoader(),
-                configurationModel.getModLoaderVersion(),
-                configurationModel.getIncludeServerIcon(),
-                configurationModel.getIncludeServerProperties(),
-                configurationModel.getIncludeZipCreation(),
-                configurationModel.getJavaArgs(),
-                configurationModel.getServerPackSuffix());
+        printConfig(configurationModel);
 
         if (!configHasError) {
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -309,19 +297,7 @@ public class ConfigurationHandler {
             LOG.error("The specified project does not exist.", ex);
         }
 
-        printConfig(configurationModel.getModpackDir(),
-                configurationModel.getClientMods(),
-                configurationModel.getCopyDirs(),
-                configurationModel.getIncludeServerInstallation(),
-                configurationModel.getJavaPath(),
-                configurationModel.getMinecraftVersion(),
-                configurationModel.getModLoader(),
-                configurationModel.getModLoaderVersion(),
-                configurationModel.getIncludeServerIcon(),
-                configurationModel.getIncludeServerProperties(),
-                configurationModel.getIncludeZipCreation(),
-                configurationModel.getJavaArgs(),
-                configurationModel.getServerPackSuffix());
+        printConfig(configurationModel);
 
         if (!configHasError) {
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -508,21 +484,7 @@ public class ConfigurationHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
 
                 writeConfigToFile(
-                        configurationModel.getModpackDir(),
-                        configurationModel.getClientMods(),
-                        configurationModel.getCopyDirs(),
-                        configurationModel.getServerIconPath(),
-                        configurationModel.getServerPropertiesPath(),
-                        configurationModel.getIncludeServerInstallation(),
-                        configurationModel.getJavaPath(),
-                        configurationModel.getMinecraftVersion(),
-                        configurationModel.getModLoader(),
-                        configurationModel.getModLoaderVersion(),
-                        configurationModel.getIncludeServerIcon(),
-                        configurationModel.getIncludeServerProperties(),
-                        configurationModel.getIncludeZipCreation(),
-                        configurationModel.getJavaArgs(),
-                        configurationModel.getServerPackSuffix(),
+                        configurationModel,
                         applicationProperties.FILE_CONFIG,
                         false
                 );
@@ -751,6 +713,26 @@ public class ConfigurationHandler {
         }
     }
 
+    void printConfig(ConfigurationModel configurationModel) {
+        printConfig(
+                configurationModel.getModpackDir(),
+                configurationModel.getClientMods(),
+                configurationModel.getCopyDirs(),
+                configurationModel.getIncludeServerInstallation(),
+                configurationModel.getJavaPath(),
+                configurationModel.getMinecraftVersion(),
+                configurationModel.getModLoader(),
+                configurationModel.getModLoaderVersion(),
+                configurationModel.getIncludeServerIcon(),
+                configurationModel.getIncludeServerProperties(),
+                configurationModel.getIncludeZipCreation(),
+                configurationModel.getJavaArgs(),
+                configurationModel.getServerPackSuffix(),
+                configurationModel.getServerIconPath(),
+                configurationModel.getServerPropertiesPath()
+        );
+    }
+
     /**
      * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the configuration before
      * ServerPackCreator starts the generation of the server pack or, if checks failed, to show the user their last
@@ -771,6 +753,8 @@ public class ConfigurationHandler {
      * @param includeZip Boolean. Whether to create a zip-archive of the server pack, excluding the Minecraft server JAR according to Mojang's TOS and EULA.
      * @param javaArgs String. Java arguments to write the start-scripts with.
      * @param serverPackSuffix String. Suffix to append to name of the server pack to be generated.
+     * @param serverIconPath String. The path to the custom server-icon.png to be used in the server pack.
+     * @param serverPropertiesPath String. The path to the custom server.properties to be used in the server pack.
      */
     void printConfig(String modpackDirectory,
                      List<String> clientsideMods,
@@ -784,7 +768,9 @@ public class ConfigurationHandler {
                      boolean includeProperties,
                      boolean includeZip,
                      String javaArgs,
-                     String serverPackSuffix) {
+                     String serverPackSuffix,
+                     String serverIconPath,
+                     String serverPropertiesPath) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.start"));
@@ -828,6 +814,9 @@ public class ConfigurationHandler {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"), includeZip));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"), javaArgs));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.serverpacksuffix"), serverPackSuffix));
+        // TODO: Replace with lang keys
+        LOG.info("Path to custom server-icon:       " + serverIconPath);
+        LOG.info("Path to custom server.properties: " + serverPropertiesPath);
     }
 
     /**
@@ -1445,7 +1434,9 @@ public class ConfigurationHandler {
                     includeServerProperties,
                     includeZipCreation,
                     javaArgs,
-                    serverPackSuffix);
+                    serverPackSuffix,
+                    serverIconPath,
+                    serverPropertiesPath);
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.enter"));
@@ -1593,6 +1584,36 @@ public class ConfigurationHandler {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.answer"));
             }
         }
+    }
+
+    /**
+     * Write a new configuration file with the {@link ConfigurationModel} passed to it.
+     * @author Griefed
+     * @param configurationModel Instance of {@link ConfigurationModel} to write to a file.
+     * @param fileName The file to write to.
+     * @param isTemporary Whether the file is temporary.
+     * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
+     */
+    public boolean writeConfigToFile(ConfigurationModel configurationModel, File fileName, boolean isTemporary) {
+        return writeConfigToFile(
+                configurationModel.getModpackDir(),
+                configurationModel.getClientMods(),
+                configurationModel.getCopyDirs(),
+                configurationModel.getServerIconPath(),
+                configurationModel.getServerPropertiesPath(),
+                configurationModel.getIncludeServerInstallation(),
+                configurationModel.getJavaPath(),
+                configurationModel.getMinecraftVersion(),
+                configurationModel.getModLoader(),
+                configurationModel.getModLoaderVersion(),
+                configurationModel.getIncludeServerIcon(),
+                configurationModel.getIncludeServerProperties(),
+                configurationModel.getIncludeZipCreation(),
+                configurationModel.getJavaArgs(),
+                configurationModel.getServerPackSuffix(),
+                fileName,
+                isTemporary
+        );
     }
 
     /** Writes a new configuration file with the parameters passed to it.

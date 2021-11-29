@@ -740,7 +740,7 @@ class ConfigurationTest {
                 includeServerProperties,
                 includeZipCreation,
                 javaArgs,
-                "");
+                "","","");
     }
 
     @Test

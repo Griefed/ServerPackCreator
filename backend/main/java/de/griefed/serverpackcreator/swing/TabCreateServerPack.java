@@ -1130,20 +1130,27 @@ public class TabCreateServerPack extends JComponent {
         configurationModel.setServerPackSuffix(TEXTFIELD_SERVERPACKSUFFIX.getText());
 
         if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), false, configurationModel)) {
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
             if (new File("./work/temporaryConfig.conf").exists()) {
+
                 boolean delTmp = new File("./work/temporaryConfig.conf").delete();
+
                 if (delTmp) {
+
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+
                 } else {
+
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
+
                 }
             }
 
@@ -1160,59 +1167,46 @@ public class TabCreateServerPack extends JComponent {
             final ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.execute(() -> {
 
-                if (CREATESERVERPACK.run(applicationProperties.FILE_CONFIG, configurationModel)) {
-                    tailer.stop();
+                try {
+                    if (CREATESERVERPACK.run(applicationProperties.FILE_CONFIG, configurationModel)) {
 
-                    System.gc();
-                    System.runFinalization();
+                        loadConfig(new File("serverpackcreator.conf"));
 
-                    BUTTON_GENERATESERVERPACK.setEnabled(true);
-                    labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
+                        serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
+                        MATERIALTEXTPANEUI.installUI(serverPackGeneratedTextPane);
 
-                    loadConfig(new File("serverpackcreator.conf"));
+                        if (JOptionPane.showConfirmDialog(
+                                FRAME_SERVERPACKCREATOR,
+                                serverPackGeneratedTextPane,
+                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.INFORMATION_MESSAGE) == 0) {
 
-                    serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
-                    MATERIALTEXTPANEUI.installUI(serverPackGeneratedTextPane);
+                            try {
+                                Desktop.getDesktop().open(new File(String.format("%s/%s", applicationProperties.getDirectoryServerPacks(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
+                            } catch (IOException ex) {
+                                LOG.error("Error opening file explorer for server pack.", ex);
+                            }
 
-                    if (JOptionPane.showConfirmDialog(
-                            FRAME_SERVERPACKCREATOR,
-                            serverPackGeneratedTextPane,
-                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.INFORMATION_MESSAGE) == 0) {
-
-                        try {
-                            Desktop.getDesktop().open(new File(String.format("%s/%s", applicationProperties.getDirectoryServerPacks(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
-                        } catch (IOException ex) {
-                            LOG.error("Error opening file explorer for server pack.", ex);
                         }
-
                     }
 
-                    BUTTON_GENERATESERVERPACK.setEnabled(true);
+                } catch (Exception ex) {
 
-                    System.gc();
-                    System.runFinalization();
+                    LOG.error("An error occurred when generating the server pack.");
+
+                } finally {
 
                     tailer.stop();
                     executorService.shutdown();
 
-                    FRAME_SERVERPACKCREATOR.setResizable(true);
-
-                } else {
-
-                    tailer.stop();
-
-                    System.gc();
-                    System.runFinalization();
-
-                    BUTTON_GENERATESERVERPACK.setEnabled(true);
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
-                    executorService.shutdown();
-
+                    BUTTON_GENERATESERVERPACK.setEnabled(true);
                     FRAME_SERVERPACKCREATOR.setResizable(true);
 
+                    System.gc();
+                    System.runFinalization();
                 }
             });
 
