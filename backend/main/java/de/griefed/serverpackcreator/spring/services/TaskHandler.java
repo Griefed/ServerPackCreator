@@ -168,6 +168,8 @@ public class TaskHandler {
                 ServerPack serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
 
                 serverPack.setStatus("Generating");
+                serverPack.setDownloads(0);
+                serverPack.setConfirmedWorking(0);
 
                 SERVERPACKSERVICE.updateServerPackByID(serverPack.getId(), serverPack);
 
@@ -183,20 +185,29 @@ public class TaskHandler {
                     pack = SERVERPACKHANDLER.run(serverPack);
 
                     if (pack!=null) {
+
                         SERVERPACKSERVICE.updateServerPackByID(pack.getId(), pack);
+
                     }
 
                 } catch (Exception ex) {
 
                     LOG.error("An error occurred generating the server pack for " + projectID + ", " + fileID, ex);
+
                     if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+
                         SERVERPACKSERVICE.deleteServerPack(serverPack.getId());
+
                     }
 
                 } finally {
+
                     STOPWATCH.stop();
+
                     LOG.info("Generation took " + STOPWATCH);
+
                     STOPWATCH.reset();
+
                 }
 
             } else {
