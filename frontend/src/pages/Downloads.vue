@@ -168,7 +168,7 @@ export default {
       vote: ref(false),
       initialPagination: {
         sortBy: 'download',
-        descending: false,
+        descending: true,
         page: 1,
         rowsPerPage: 13
         // rowsNumber: xx if getting data from a server
