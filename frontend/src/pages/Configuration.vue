@@ -200,6 +200,9 @@ export default defineComponent({
               label: 'Download', color: 'dark', handler: () => {
                 this.download(project, file);
               }
+            },
+            {
+              label: 'OK', color: 'dark'
             }
           ]
         })
@@ -207,6 +210,7 @@ export default defineComponent({
       } else if (status === 0 && !this.regenerationActivated) {
 
         this.$q.notify({
+          position: "center",
           timeout: timeout,
           progress: true,
           multiLine: true,
@@ -218,6 +222,9 @@ export default defineComponent({
               label: 'Download', color: 'white', handler: () => {
                 this.download(project, file);
               }
+            },
+            {
+              label: 'OK', color: 'dark'
             }
           ]
         })
