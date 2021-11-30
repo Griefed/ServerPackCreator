@@ -1,3 +1,32 @@
+## [3.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.10...3.0.0-alpha.11) (2021-11-30)
+
+
+### :scissors: Refactor
+
+* Improve error handling and reporting ([77985b6](https://git.griefed.de/Griefed/ServerPackCreator/commit/77985b6f23fa95d388b349a016d090a480a869aa))
+* Print server-icon and server.properties paths. Re-organize method in CreateServerPackTab to ensure GUI becomes responsible again if the generation of a server pack fails. ([e42b3b1](https://git.griefed.de/Griefed/ServerPackCreator/commit/e42b3b1aaac9845bbf053d49705b8cb044eb3c07))
+* Rename fields still referencing old serverPackCreatorProperties to applicationProperties ([e1b7c62](https://git.griefed.de/Griefed/ServerPackCreator/commit/e1b7c6254a710f5f2a3436090782f079d1f433e4))
+* Rework error redirect. ([85543ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/85543ac9f6fc7385c0e634fa60c78cec4e289c01))
+* Set rate at which tailers tail to 100ms, instead of 2000ms. ([ba4624f](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba4624f9116f248ac5953e90c1209b50990c4155))
+* Sort by downloads, descending ([2f6f6d4](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f6f6d4578b2bf5429fd2b85291850b292766e50))
+* When a requested server pack already exists, offer a download to the user. ([39dc626](https://git.griefed.de/Griefed/ServerPackCreator/commit/39dc6268e8ebd1048c0e19c0a479bd731c8d1e98))
+
+
+### 🚀 Features
+
+* Write errors encountered during config check to logs/console. When using GUI, show a message with the encountered Errors. Helps with figuring out whats wrong with a given configuration. ([e1b0c62](https://git.griefed.de/Griefed/ServerPackCreator/commit/e1b0c6269cbd545993854786a07a949f4a379c45))
+
+
+### 🛠 Fixes
+
+* Allow selection of bmp, jpg and jpeg as server-icons. Java correctly converts them to png for use as server-icons. If the image could not be loaded, print an error message. ([d2c1ac7](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2c1ac78fbf97c003e10f49af281437b95891865))
+* Set downloads and votes to zero upon generation of server pack ([be84232](https://git.griefed.de/Griefed/ServerPackCreator/commit/be8423251d82aea1a7639cd30bbaf9d0f06397df))
+
+
+### Other
+
+* Udpate versions ([eecc90a](https://git.griefed.de/Griefed/ServerPackCreator/commit/eecc90a88dfa2d787a256e341dc422a124a22cab))
+
 ## [3.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.9...3.0.0-alpha.10) (2021-11-27)
 
 
