@@ -106,7 +106,7 @@
 
 <script lang="js">
 import { defineComponent, inject, ref } from 'vue';
-import { useQuasar, Cookies } from 'quasar';
+import { useQuasar, Cookies, openURL  } from 'quasar';
 import { api } from "boot/axios";
 
 export default defineComponent({
@@ -138,12 +138,20 @@ export default defineComponent({
     }
   },
   methods: {
+    /**
+     * Submit a CurseForge project and fileID combination for generation. If the combination is invalid, a notification is
+     * shown to the user, telling them what went wrong. If the requested combination already exists, a notification is shown
+     * prompting the user to either regenerate the server pack (if regeneration is enabled on the affected instance), or
+     * download the server pack.
+     * @author Griefed
+     * @param project The CurseForge projectID
+     * @param file The CurseForge fileID
+     */
     submit(project, file) {
       this.loading = true;
       this.disable = true;
       this.$q.loadingBar.start();
       console.log(project + "," + file);
-      //api.get("/curse?modpack=" + project + "," + file)
       api.get("/curse/task?modpack=" + project + "," + file)
           .then(response => {
             this.notify(response.data.status, response.data.timeout, response.data.icon, response.data.colour, response.data.message, project, file);
@@ -159,8 +167,45 @@ export default defineComponent({
             this.enableButtons();
       });
     },
+
+    /**
+     * Shows a notification using the input for formatting and information shown.
+     * @author Griefed
+     * @param status
+     * @param timeout
+     * @param icon
+     * @param color
+     * @param message
+     * @param project
+     * @param file
+     */
     notify(status, timeout, icon, color, message, project, file) {
       if (status === 0 && this.regenerationActivated) {
+
+        this.$q.notify({
+          position: "center",
+          timeout: timeout,
+          progress: true,
+          multiLine: true,
+          icon: icon,
+          color: color,
+          message: message,
+          actions: [
+            {
+              label: 'Regenerate', color: 'warning', handler: () => {
+                this.regenerate(project, file);
+              }
+            },
+            {
+              label: 'Download', color: 'dark', handler: () => {
+                this.download(project, file);
+              }
+            }
+          ]
+        })
+
+      } else if (status === 0 && !this.regenerationActivated) {
+
         this.$q.notify({
           timeout: timeout,
           progress: true,
@@ -168,9 +213,17 @@ export default defineComponent({
           icon: icon,
           color: color,
           message: message,
-          actions: [ { label: 'Regenerate', color: 'white', handler: () => { this.regenerate(project, file)} } ]
+          actions: [
+            {
+              label: 'Download', color: 'white', handler: () => {
+                this.download(project, file);
+              }
+            }
+          ]
         })
+
       } else {
+
         this.$q.notify({
           timeout: timeout,
           progress: true,
@@ -179,13 +232,24 @@ export default defineComponent({
           color: color,
           message: message,
         })
+
       }
       this.$q.loadingBar.stop();
     },
+    /**
+     * Disable buttons for submitting a new request.
+     * @author Griefed
+     */
     enableButtons() {
       this.loading = false;
       this.disable = false;
     },
+    /**
+     * Submit a request for regenerating a given CurseForge project and fileID combination.
+     * @author Griefed
+     * @param project The CurseForge projectID
+     * @param file The CurseForge fileID
+     */
     regenerate(project, file) {
       this.$q.loadingBar.start();
       api.get("/curse/regenerate?modpack=" + project + "," + file)
@@ -193,8 +257,10 @@ export default defineComponent({
           this.notify(response.data.status, response.data.timeout, response.data.icon, response.data.colour, response.data.message, project, file);
         })
         .catch(error =>{
+
           console.log("An error occurred trying to contact the backend with the requested project.");
           console.log(error);
+
           this.$q.notify({
             timeout: 5000,
             progress: true,
@@ -202,18 +268,71 @@ export default defineComponent({
             color: 'negative',
             message: 'An error occurred trying to contact the backend with the requested project: ' + error
           })
+
           this.$q.loadingBar.stop();
+
         });
     },
+    /**
+     * Downloads a server pack with a given CurseForge project and fileID combination.
+     * @author Griefed
+     * @param project The CurseForge projectID
+     * @param file The CurseForge fileID
+     */
+    download(project, file) {
+      api.get("/packs/specific/" + project + ',' + file)
+      .then(response => {
+        openURL(
+          '/api/packs/download/' + response.data.id,
+          null,
+          {
+            windowName: window.name,
+            noopener: true,
+            menubar: false,
+            toolbar: false,
+            noreferrer: true,
+          }
+        )
+      })
+      .catch(error => {
+
+        console.log('An error occurred trying to download the server pack for: ' + project + ".");
+        console.log(error);
+
+        this.$q.notify({
+          timeout: 5000,
+          progress: true,
+          icon: 'error',
+          color: 'negative',
+          message: 'An error occurred trying to download the server pack for: ' + project + ". " + error
+        })
+
+      })
+    },
+    /**
+     * Sets cookies for a CurseForge project and fileID if the submitted request was valid.
+     * @author Griefed
+     * @param project The CurseForge projectID
+     * @param file The CurseForge fileID
+     */
     setProjectCookies(project, file) {
       this.$q.cookies.set('projectID', project);
       this.$q.cookies.set('fileID', file);
     },
+    /**
+     * Reset the submission form.
+     * @author Griefed
+     */
     reset() {
       this.store.state.projectID = 10;
       this.store.state.fileID = 60018;
     }
   },
+  /**
+   * Check whether regeneration is active on our instance.
+   * Check and get CurseForge project and fileID cookies, if they exist.
+   * @author Griefed
+   */
   mounted() {
     api.get("/curse/regenerate/active")
       .then(response => {this.regenerationActivated = response.data.regenerationActivated});

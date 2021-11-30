@@ -113,7 +113,22 @@ public class ServerPackController {
      */
     @GetMapping("specific/{specific}")
     public ServerPack getByFileID(@PathVariable("specific") String specific) {
-        return SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(specific.split(",")[0]), Integer.parseInt(specific.split(",")[1])).get();
+
+        String[] project = specific.split(",");
+
+        int projectID = Integer.parseInt(project[0]);
+        int fileID = Integer.parseInt(project[1]);
+
+        if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+
+            return SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
+
+        } else {
+
+            return null;
+
+        }
+
     }
 
     /**
