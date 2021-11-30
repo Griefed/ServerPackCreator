@@ -277,16 +277,12 @@ public class ConfigurationHandler {
         if (!checkIconAndProperties(configurationModel.getServerIconPath(), encounteredErrors)) {
 
             configHasError = true;
-            // TODO: Replace with lang key
-            encounteredErrors.add("The specified server-icon does not exist");
 
         }
 
         if (!checkIconAndProperties(configurationModel.getServerPropertiesPath(), encounteredErrors)) {
-            configHasError = true;
 
-            // TODO: Replace with lang key
-            encounteredErrors.add("The specified server.properties does not exist");
+            configHasError = true;
 
         }
 
@@ -689,6 +685,7 @@ public class ConfigurationHandler {
 
             try {
                 if (curseProject != null) {
+
                     if (curseProject.refreshFiles().fileWithID(curseFileID) != null) {
 
                         configurationModel.setFileID(curseFileID);
@@ -698,9 +695,13 @@ public class ConfigurationHandler {
                         configCorrect = true;
 
                     } else {
+
+                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
                         throw new InvalidFileException(curseFileID);
                     }
                 } else {
+
+                    encounteredErrors.add("Specified CurseForge project " + curseProjectID + " could not be found.");
                     throw new CurseException("Project was null. Does the specified project " + curseProjectID + " exist?");
                 }
 

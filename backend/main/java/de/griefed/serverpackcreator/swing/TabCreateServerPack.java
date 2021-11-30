@@ -1225,18 +1225,21 @@ public class TabCreateServerPack extends JComponent {
             if (encounteredErrors.size() > 0) {
 
                 StringBuilder errors = new StringBuilder();
+                int count = 0;
 
-                encounteredErrors.forEach(n -> errors.append(n).append("\n"));
+                for (int i = 0; i < encounteredErrors.size(); i++) {
 
-                /*
-                for (String error : encounteredErrors) {
-                    errors.append(error).append("\n");
-                }*/
+                    count = i + 1;
+                    // TODO: Replace with lang key
+                    errors.append(count).append(": ").append(encounteredErrors.get(i)).append("\n");
 
+                }
+
+                // TODO: Replace with lang key
                 JOptionPane.showMessageDialog(
                         FRAME_SERVERPACKCREATOR,
                         errors,
-                        "Error(s) encountered",
+                        "Encountered " + encounteredErrors.size() + " error(s).",
                         JOptionPane.ERROR_MESSAGE,
                         UIManager.getIcon("OptionPane.errorIcon")
                         );
