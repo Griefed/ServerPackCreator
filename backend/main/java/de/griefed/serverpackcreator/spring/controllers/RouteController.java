@@ -24,25 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- *
+ * Simple route controller to ensure some destinations let the user arrive where we want them to, otherwise, we redirect.
+ * Because our router mode in VueJS is set to hash, we receive a 404 when we try to access, say, /downloads directly.
+ * So we need to redirect to /#/downloads instead, for example.
  * @author Griefed
  */
-@SuppressWarnings("SpringMVCViewInspection")
 @RestController
 public class RouteController {
 
     /**
-     *
+     * Redirect /downloads to /#/downloads.
      * @author Griefed
-     */
-    @RequestMapping("/**/{path:[^.]*}")
-    public ModelAndView redirectError() {
-        return new ModelAndView("redirect:/#/error");
-    }
-
-    /**
-     *
-     * @author Griefed
+     * @return Redirects requests for /downloads to /#/downloads
      */
     @RequestMapping("/downloads")
     public ModelAndView redirectDownloads() {
@@ -50,8 +43,9 @@ public class RouteController {
     }
 
     /**
-     *
+     * Redirect /logs to /#/logs.
      * @author Griefed
+     * @return Redirects requests for /logs to /#/logs
      */
     @RequestMapping("/logs")
     public ModelAndView redirectLogs() {
@@ -59,8 +53,9 @@ public class RouteController {
     }
 
     /**
-     *
+     * Redirect /about to /#/about.
      * @author Griefed
+     * @return Redirects requests for /about to /#/about
      */
     @RequestMapping("/about")
     public ModelAndView redirectAbout() {

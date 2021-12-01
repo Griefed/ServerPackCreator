@@ -27,14 +27,17 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
- *
+ * Class containing all fields and therefore all information gathered from a submitted CurseForge project and fileID, or
+ * modpack export. By extending {@link ConfigurationModel} we inherit all basic fields required for the generation of a
+ * server pack and can add only those we require in the REST API portion of ServerPackCreator.<br>
+ * We mark this class with {@link Entity} because we also use this class for storing information in our database.
  * @author Griefed
  */
 @Entity
 public class ServerPack extends ConfigurationModel {
 
     /**
-     *
+     * Constructor for our ServerPack.
      * @author Griefed
      */
     public ServerPack() {
@@ -42,10 +45,10 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Constructor for our ServerPack using a project and file ID from a CurseForge project.
      * @author Griefed
-     * @param projectID
-     * @param fileID
+     * @param projectID Integer. The project ID of the CurseForge project.
+     * @param fileID Integer. The file ID of the CurseForge project file.
      */
     public ServerPack(int projectID, int fileID) {
         this.projectID = projectID;
@@ -60,19 +63,19 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Constructor for our ServerPack, setting id, projectID, fileID, fileName, displayName, size, downloads, confirmedWorking, status, dateCreated, lastModified manually.
      * @author Griefed
-     * @param id
-     * @param projectID
-     * @param fileID
-     * @param fileName
-     * @param displayName
-     * @param size
-     * @param downloads
-     * @param confirmedWorking
-     * @param status
-     * @param dateCreated
-     * @param lastModified
+     * @param id The ID of the server pack in our database.
+     * @param projectID The project ID of the CurseForge project.
+     * @param fileID The file ID of the CurseForge project file.
+     * @param fileName The disk name of the CurseForge project file.
+     * @param displayName The display name of the CurseForge project file.
+     * @param size The size of the generated server pack, in MB.
+     * @param downloads The amount of times this server pack was downloaded.
+     * @param confirmedWorking The amount of votes indicating whether this server pack works.
+     * @param status The status of this server pack. Either <code>Queued</code>, <code>Generating</code>, <code>Available</code>.
+     * @param dateCreated The date and time at which this server pack was requested for generation.
+     * @param lastModified The date and time this server pack was last modified. Be it either due to regeneration or something else.
      */
     public ServerPack(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
         this.id = id;
@@ -135,27 +138,27 @@ public class ServerPack extends ConfigurationModel {
     Timestamp lastModified;
 
     /**
-     *
+     * Getter for the database id of a server pack.
      * @author Griefed
-     * @return
+     * @return Integer. Returns the database of a server pack.
      */
     public int getId() {
         return id;
     }
 
     /**
-     *
+     * Setter for the database id of a server pack.
      * @author Griefed
-     * @param id
+     * @param id Integer. The database id of the server pack.
      */
     public void setId(int id) {
         this.id = id;
     }
 
     /**
-     *
+     * Getter for the project id of the server pack.
      * @author Griefed
-     * @return
+     * @return Integer. Returns the project id with which the server pack was generated.
      */
     @Override
     public int getProjectID() {
@@ -163,9 +166,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Setter for the project id of the server pack.
      * @author Griefed
-     * @param projectID
+     * @param projectID Integer. The project id with which the server pack was generated.
      */
     @Override
     public void setProjectID(int projectID) {
@@ -173,9 +176,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Getter for the file id of the server pack.
      * @author Griefed
-     * @return
+     * @return Integer. Returns the file id with which the server pack was generated.
      */
     @Override
     public int getFileID() {
@@ -183,9 +186,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Setter for the file id of the server pack.
      * @author Griefed
-     * @param fileID
+     * @param fileID Integer. The file id with which the server pack was generated.
      */
     @Override
     public void setFileID(int fileID) {
@@ -193,9 +196,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Getter for the name of the project of the server pack.
      * @author Griefed
-     * @return
+     * @return String. The project name of the server pack.
      */
     @Override
     public String getProjectName() {
@@ -203,9 +206,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Setter for the project name of the project of the server pack.
      * @author Griefed
-     * @param projectName String. The name of the CurseForge project.
+     * @param projectName String. The project name of the server pack.
      */
     @Override
     public void setProjectName(String projectName) {
@@ -213,9 +216,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Getter for the file display name of the project file from which the server pack was generated.
      * @author Griefed
-     * @return
+     * @return String. Returns the file display name of the project file from which the server pack was generated.
      */
     @Override
     public String getFileName() {
@@ -223,9 +226,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Setter for the file display name of the project file from which the server pack was generated.
      * @author Griefed
-     * @param fileName String. The name of the CurseForge project file.
+     * @param fileName String. The file display name of the project file from which the server pack was generated.
      */
     @Override
     public void setFileName(String fileName) {
@@ -233,9 +236,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Getter for the file disk name of the project file from which the server pack was generated.
      * @author Griefed
-     * @return
+     * @return String. The file disk name of the project file from which the server pack was generated.
      */
     @Override
     public String getFileDiskName() {
@@ -243,9 +246,9 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Setter for the file disk name of the project file from which the server pack was generated.
      * @author Griefed
-     * @param fileDiskName
+     * @param fileDiskName String. The file disk name of the project file from which the server pack was generated.
      */
     @Override
     public void setFileDiskName(String fileDiskName) {
@@ -253,131 +256,133 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     *
+     * Getter for the size of the generated server pack in MB.
      * @author Griefed
-     * @return
+     * @return Double. Returns the size of the generated server pack in MB.
      */
     public double getSize() {
         return size;
     }
 
     /**
-     *
+     * Setter for the size of the generated server pack in MB.
      * @author Griefed
-     * @param size
+     * @param size Double. The size of the generated server pack in MB.
      */
     public void setSize(double size) {
         this.size = size;
     }
 
     /**
-     *
+     * Getter for the amount of downloads this server pack has received.
      * @author Griefed
-     * @return
+     * @return Integer. Returns the amount of downloads this server pack has received.
      */
     public int getDownloads() {
         return downloads;
     }
 
     /**
-     *
+     * Setter for the amount of downloads this server pack has received.
      * @author Griefed
-     * @param downloads
+     * @param downloads Integer. The amount of downloads this server pack has received.
      */
     public void setDownloads(int downloads) {
         this.downloads = downloads;
     }
 
     /**
-     *
+     * Getter for the amount of votes indicating whether this server pack works. Positive values indicate a working server pack.
+     * Negative values indicate the server pack is not working.
      * @author Griefed
-     * @return
+     * @return Integer. Returns the amount of votes indicating whether this server pack works.
      */
     public int getConfirmedWorking() {
         return confirmedWorking;
     }
 
     /**
-     *
+     * Setter for the amount of votes indicating whether this server pack works. Positive values indicate a working server pack.
+     * Negative values indicate the server pack is not working.
      * @author Griefed
-     * @param confirmedWorking
+     * @param confirmedWorking Integer. The amount of votes indicating whether this server pack works.
      */
     public void setConfirmedWorking(int confirmedWorking) {
         this.confirmedWorking = confirmedWorking;
     }
 
     /**
-     *
+     * Getter for the status of the server pack. Either <code>Queued</code>, <code>Generating</code>, <code>Available</code>.
      * @author Griefed
-     * @return
+     * @return String. Returns the status of a server pack.
      */
     public String getStatus() {
         return status;
     }
 
     /**
-     *
+     * Setter for the status of a server pack. Either <code>Queued</code>, <code>Generating</code>, <code>Available</code>.
      * @author Griefed
-     * @param downloadUrl
+     * @param status String. The status of a server pack.
      */
-    public void setStatus(String downloadUrl) {
-        this.status = downloadUrl;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     /**
-     *
+     * Getter for the path to the generated server pack.
      * @author Griefed
-     * @return
+     * @return String. Returns the path to the generated server pack.
      */
     public String getPath() { return path; }
 
     /**
-     *
+     * Setter for the path to the generated server pack.
      * @author Griefed
-     * @param path
+     * @param path String. The path to the generated server pack.
      */
     public void setPath(String path) { this.path = path; }
 
     /**
-     *
+     * Getter for the date and time at which this server pack entry was created as a {@link Timestamp}.
      * @author Griefed
-     * @return
+     * @return {@link Timestamp}. Returns the date and time at which this server pack entry was created as a {@link Timestamp}.
      */
     public Timestamp getDateCreated() {
         return dateCreated;
     }
 
     /**
-     *
+     * Setter for the date and time at which this server pack entry was created as a {@link Timestamp}.
      * @author Griefed
-     * @param dateCreated
+     * @param dateCreated {@link Timestamp}. The date and time at which this server pack was created as a {@link Timestamp}.
      */
     public void setDateCreated(Timestamp dateCreated) {
         this.dateCreated = dateCreated;
     }
 
     /**
-     *
+     * Getter for the date and time at which this server pack entry was last modified as a {@link Timestamp}.
      * @author Griefed
-     * @return
+     * @return {@link Timestamp}. Returns the date and time at which this server pack entry was last modified as a {@link Timestamp}.
      */
     public Timestamp getLastModified() {
         return lastModified;
     }
 
     /**
-     *
+     * Setter for the date and time at which this server pack entry was last modified as a {@link Timestamp}.
      * @author Griefed
-     * @param lastModified
+     * @param lastModified {@link Timestamp}. The date and time at which this server pack entry was last modified as a {@link Timestamp}.
      */
     public void setLastModified(Timestamp lastModified) {
         this.lastModified = lastModified;
     }
 
     /**
-     *
+     * String concatenation of all important values of our server pack entry.
      * @author Griefed
-     * @return
+     * @return String. Returns all important information of a server pack entry as a concatenated string.
      */
     public String repositoryToString() {
         return "ServerPack{" +

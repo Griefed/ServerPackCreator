@@ -87,7 +87,7 @@ public class Main {
         createFile(log4j2xml);
         createFile(properties);
 
-        ApplicationProperties serverPackCreatorProperties = new ApplicationProperties();
+        ApplicationProperties applicationProperties = new ApplicationProperties();
 
         List<String> programArgs = Arrays.asList(args);
 
@@ -110,7 +110,7 @@ public class Main {
         } else {
 
                 // Check local serverpackcreator.properties file for locale setting.
-                LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+                LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
 
         }
 
@@ -124,7 +124,7 @@ public class Main {
         String osName = System.getProperty("os.name");
         String osVersion = System.getProperty("os.version");
 
-        serverPackCreatorProperties.setProperty("homeDir", jarPath.substring(0, jarPath.lastIndexOf("/")).replace("\\", "/"));
+        applicationProperties.setProperty("homeDir", jarPath.substring(0, jarPath.lastIndexOf("/")).replace("\\", "/"));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
@@ -145,7 +145,7 @@ public class Main {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), osVersion));
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, applicationProperties);
         DEFAULTFILES.filesSetup();
 
         // Start ServerPackCreator as webservice.
@@ -180,12 +180,12 @@ public class Main {
             }
         } else {
             // Prepare instances for dependency injection
-            VersionLister VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
-            AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, serverPackCreatorProperties);
-            CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
-            ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, serverPackCreatorProperties);
-            ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, serverPackCreatorProperties, VERSIONLISTER);
-            FileWatcher FILEWATCHER = new FileWatcher(serverPackCreatorProperties, DEFAULTFILES, VERSIONLISTER, ADDONSHANDLER, LOCALIZATIONMANAGER);
+            VersionLister VERSIONLISTER = new VersionLister(applicationProperties);
+            AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, applicationProperties);
+            CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, applicationProperties);
+            ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, applicationProperties);
+            ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER);
+            FileWatcher FILEWATCHER = new FileWatcher(applicationProperties, DEFAULTFILES);
 
             // Print help and information about ServerPackCreator which could help the user figure out what to do.
             if (Arrays.asList(args).contains("-help")) {
@@ -241,7 +241,7 @@ public class Main {
 
                 ConfigurationModel configurationModel = new ConfigurationModel();
 
-                if (SERVERPACKHANDLER.run(serverPackCreatorProperties.FILE_CONFIG, configurationModel)) {
+                if (SERVERPACKHANDLER.run(applicationProperties.FILE_CONFIG, configurationModel)) {
                     System.exit(0);
                 } else {
                     System.exit(1);
@@ -258,7 +258,7 @@ public class Main {
 
                 ConfigurationModel configurationModel = new ConfigurationModel();
 
-                if (SERVERPACKHANDLER.run(serverPackCreatorProperties.FILE_CONFIG, configurationModel)) {
+                if (SERVERPACKHANDLER.run(applicationProperties.FILE_CONFIG, configurationModel)) {
                     System.exit(0);
                 } else {
                     System.exit(1);
@@ -275,7 +275,7 @@ public class Main {
 
                 ConfigurationModel configurationModel = new ConfigurationModel();
 
-                if (SERVERPACKHANDLER.run(serverPackCreatorProperties.FILE_CONFIG, configurationModel)) {
+                if (SERVERPACKHANDLER.run(applicationProperties.FILE_CONFIG, configurationModel)) {
                     System.exit(0);
                 } else {
                     System.exit(1);
@@ -284,7 +284,7 @@ public class Main {
                 // If no mode is specified, and we have a graphical environment, start in GUI mode.
             } else {
 
-                SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, serverPackCreatorProperties, VERSIONLISTER);
+                SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, applicationProperties, VERSIONLISTER);
 
                 swingGuiInitializer.mainGUI();
             }
@@ -292,9 +292,9 @@ public class Main {
     }
 
     /**
-     *
+     * Copy a file from inside our JAR to the host filesystem.
      * @author Griefed
-     * @param fileToCreate
+     * @param fileToCreate File. The file in the JAR to create on the host filesystem.
      */
     private static void createFile(File fileToCreate) {
         if (!fileToCreate.exists()) {

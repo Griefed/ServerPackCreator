@@ -39,7 +39,7 @@ public class TabAddonsHandlerLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     private JTextArea textArea;
 
@@ -50,17 +50,17 @@ public class TabAddonsHandlerLog extends JComponent {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      */
-    public TabAddonsHandlerLog(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+    public TabAddonsHandlerLog(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -118,7 +118,7 @@ public class TabAddonsHandlerLog extends JComponent {
             }
         }
         TailerListener tailerListener = new MyTailerListener();
-        Tailer tailer = new Tailer(new File("./logs/addons.log"), tailerListener, 2000);
+        Tailer tailer = new Tailer(new File("./logs/addons.log"), tailerListener, 100);
         Thread thread = new Thread(tailer);
         thread.setDaemon(true);
         thread.start();

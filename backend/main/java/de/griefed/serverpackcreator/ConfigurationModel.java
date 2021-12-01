@@ -26,10 +26,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Class containing all fields and therefore all information either gathered from a configuration file, stored by the creation
+ * of a modpack from CurseForge or passed otherwise.
  * @author Griefed
  */
 public class ConfigurationModel {
+
+    /**
+     * Constructor for our ConfigurationModel.
+     * @author Griefed
+     */
+    public ConfigurationModel() {
+
+    }
 
     private List<String> clientMods = new ArrayList<>();
     private List<String> copyDirs = new ArrayList<>();
@@ -41,6 +50,8 @@ public class ConfigurationModel {
     private String modLoaderVersion = "";
     private String javaArgs = "";
     private String serverPackSuffix = "";
+    private String serverIconPath = "";
+    private String serverPropertiesPath = "";
 
     private JsonNode curseModpack;
 
@@ -421,6 +432,42 @@ public class ConfigurationModel {
     }
 
     /**
+     * Getter for the path to the server-icon.png to include in the server pack.
+     * @author Griefed
+     * @return String. Returns the path to the server-icon.png.
+     */
+    public String getServerIconPath() {
+        return serverIconPath;
+    }
+
+    /**
+     * Setter for the path of the server-icon.png to include in the server pack.
+     * @author Griefed
+     * @param serverIconPath String. The path to the server-icon.png to include in the server pack.
+     */
+    public void setServerIconPath(String serverIconPath) {
+        this.serverIconPath = serverIconPath.replace("\\","/");
+    }
+
+    /**
+     * Getter for the path of the server.properties to include in the server pack.
+     * @author Griefed
+     * @return String. Returns the path to the server.properties to include in the server pack.
+     */
+    public String getServerPropertiesPath() {
+        return serverPropertiesPath;
+    }
+
+    /**
+     * Setter for the path of the server.properties to include in the server pack.
+     * @author Griefed
+     * @param serverPropertiesPath String. The path to the server.properties to include in the server pack.
+     */
+    public void setServerPropertiesPath(String serverPropertiesPath) {
+        this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
+    }
+
+    /**
      * Concatenates all configuration parameters into a String. Overrides the default toString() method.
      * @author Griefed
      * @return String. A concatenated string of the whole configuration.
@@ -436,10 +483,19 @@ public class ConfigurationModel {
                 ", modLoader='" + modLoader + '\'' +
                 ", modLoaderVersion='" + modLoaderVersion + '\'' +
                 ", javaArgs='" + javaArgs + '\'' +
+                ", serverPackSuffix='" + serverPackSuffix + '\'' +
+                ", serverIconPath='" + serverIconPath + '\'' +
+                ", serverProperties='" + serverPropertiesPath + '\'' +
+                ", curseModpack=" + curseModpack +
                 ", includeServerInstallation=" + includeServerInstallation +
                 ", includeServerIcon=" + includeServerIcon +
                 ", includeServerProperties=" + includeServerProperties +
                 ", includeZipCreation=" + includeZipCreation +
+                ", projectName='" + projectName + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", fileDiskName='" + fileDiskName + '\'' +
+                ", projectID=" + projectID +
+                ", fileID=" + fileID +
                 '}';
     }
 }

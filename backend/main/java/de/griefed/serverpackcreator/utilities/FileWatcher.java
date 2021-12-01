@@ -19,11 +19,9 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import de.griefed.serverpackcreator.AddonsHandler;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.Main;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
@@ -50,22 +48,18 @@ public class FileWatcher {
 
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final DefaultFiles DEFAULTFILES;
-    private final VersionLister VERSIONLISTER;
-    private final AddonsHandler ADDONSHANDLER;
-    private final LocalizationManager LOCALIZATIONMANAGER;
 
     /**
-     * Constructor creating our FileWatcher.
+     * Constructor for our FileWatcher ensuring DI and creating our filewatcher.
      * @author Griefed
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @param injectedDefaultFiles Instance of {@link DefaultFiles}.
      */
     @Autowired
-    public FileWatcher(ApplicationProperties injectedApplicationProperties, DefaultFiles injectedDefaultFiles, VersionLister injectedVersionLister, AddonsHandler injectedAddonsHandler, LocalizationManager injectedLocalitationManager) {
+    public FileWatcher(ApplicationProperties injectedApplicationProperties, DefaultFiles injectedDefaultFiles) {
 
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         this.DEFAULTFILES = injectedDefaultFiles;
-        this.VERSIONLISTER = injectedVersionLister;
-        this.ADDONSHANDLER = injectedAddonsHandler;
-        this.LOCALIZATIONMANAGER = injectedLocalitationManager;
 
         FileAlterationObserver FILEALTERATIONOBSERVER = new FileAlterationObserver(new File("."));
 

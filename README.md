@@ -99,13 +99,15 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 ---
 
-# JetBrains
+# Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
+**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
+Huge shoutout and thank you!**
 
-[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/)
---------- | ---------  | ------
-[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/)
+[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/) | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)
+--------- | ---------  | ------ | ----
+[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
 ---
 
@@ -120,8 +122,50 @@ A list of known issues can be found in [Known Issues](https://github.com/Griefed
 
 # 2. Contributing
 
-Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.
+**Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.**
 
+A short excerpt:
+
+> If you want to contribute to ServerPackCreator, then the following procedure **must** be adhered to:
+>
+> 1. Fork ServerPackCreator
+> 2. Create a new branch in your fork, following one of the following naming schemes:
+>     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
+>         - griefed_chore_readme
+>         - griefed_perf_curseforgemodpack
+>         - griefed_feat_ziparchive
+>     2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
+>     3. Schemes:
+>         1. your_username_breaking_
+>         2. your_username_build_
+>         3. your_username_chore_
+>         4. your_username_ci_
+>         5. your_username_docs_
+>         6. your_username_feat_
+>         7. your_username_fix_
+>         8. your_username_perf_
+>         9. your_username_refactor_
+>         10. your_username_revert_
+>         11. your_username_style_
+>         12. your_username_test_
+>         13. your_username_other_
+> 3. Make your changes to your new branch:
+>     1. Try to keep the changes atomic, so they best fit the name of the branch.
+>     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
+>         - feat: Allow upload of modpack-export zip-archive to web-frontend
+>         - refactor: Use apache commons-io for copying, instead of Files
+> 4. Open an issue on the main repository, using the **Pull Request** template:
+>     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
+>         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
+>     2. Issue description: Fill in the sections the template provide.
+>     3. Submit the new issue
+> 5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
+> 6. If checks and tests pass, or any changes necessary have been made, the pull request is ready to be merged etc., I will merge it to your main repository branch.
+> 7. I can then merge your main repository branch into main/master/whatever locally, push these changes to my GitLab instance, which will in turn push these changes to GitHub.
+> 8. Done!
+> 
+> This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
+> Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
 
 # 3. Features
 

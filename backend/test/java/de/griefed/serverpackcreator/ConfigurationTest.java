@@ -87,7 +87,7 @@ class ConfigurationTest {
 
     @Test
     void getFallbackModsListTest() {
-        Assertions.assertNotNull(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+        Assertions.assertNotNull(serverPackCreatorProperties.getListFallbackMods());
     }
 
     @Test
@@ -114,7 +114,7 @@ class ConfigurationTest {
         List<String> fallbackMods = new ArrayList<String>(
                 Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(","))
         );
-        Assertions.assertEquals(fallbackMods, serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+        Assertions.assertEquals(fallbackMods, serverPackCreatorProperties.getListFallbackMods());
     }
 
     @Test
@@ -455,7 +455,7 @@ class ConfigurationTest {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(serverPackCreatorProperties.FILE_CONFIG, true, configurationModel));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(serverPackCreatorProperties.FILE_CONFIG, true, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -467,7 +467,7 @@ class ConfigurationTest {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
         FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -480,7 +480,7 @@ class ConfigurationTest {
         configurationModel.setIncludeServerInstallation(true);
         configurationModel.setMinecraftVersion(VERSIONLISTER.getMinecraftReleaseVersion());
         FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -492,7 +492,7 @@ class ConfigurationTest {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
         FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -504,7 +504,7 @@ class ConfigurationTest {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
         FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
 
     }
@@ -517,7 +517,7 @@ class ConfigurationTest {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
         FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isDir(config, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -529,7 +529,7 @@ class ConfigurationTest {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setIncludeServerInstallation(true);
         FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -542,7 +542,7 @@ class ConfigurationTest {
         configurationModel.setIncludeServerInstallation(true);
         configurationModel.setMinecraftVersion("1.16.5");
         FileConfig config = FileConfig.of(new File("./serverpackcreator.conf"));
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isDir(config, configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -558,10 +558,10 @@ class ConfigurationTest {
         configurationModel.setIncludeServerProperties(true);
         configurationModel.setIncludeZipCreation(true);
         configurationModel.setJavaArgs("empty");
-        CONFIGURATIONHANDLER.checkCurseForge("238298,3174854", configurationModel);
-        configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
+        CONFIGURATIONHANDLER.checkCurseForge("238298,3174854", configurationModel, new ArrayList<>(100));
+        configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
 
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isCurse(configurationModel));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isCurse(configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
         String deleteFolder = "Vanilla Forge";
         if (new File(deleteFolder).isDirectory()) {
@@ -583,9 +583,9 @@ class ConfigurationTest {
         configurationModel.setIncludeServerIcon(true);
         configurationModel.setIncludeServerProperties(true);
         configurationModel.setIncludeZipCreation(true);
-        CONFIGURATIONHANDLER.checkCurseForge("999999,3174854", configurationModel);
-        configurationModel.setClientMods(serverPackCreatorProperties.getLIST_FALLBACK_MODS());
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel));
+        CONFIGURATIONHANDLER.checkCurseForge("999999,3174854", configurationModel, new ArrayList<>(100));
+        configurationModel.setClientMods(serverPackCreatorProperties.getListFallbackMods());
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -597,7 +597,7 @@ class ConfigurationTest {
         CONFIGURATIONHANDLER.setConfig(new File("./serverpackcreator.conf"));
         configurationModel.setProjectID(238298);
         configurationModel.setFileID(999999);
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isCurse(configurationModel, new ArrayList<>(100)));
         new File("./serverpackcreator.conf").delete();
     }
 
@@ -642,21 +642,21 @@ class ConfigurationTest {
     void checkCurseForgeTest() throws InvalidModpackException, InvalidFileException, CurseException {
         String valid = "430517,3266321";
         ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCurseForge(valid, configurationModel));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCurseForge(valid, configurationModel, new ArrayList<>(100)));
     }
 
     @Test
     void checkCurseForgeTestFalse() throws InvalidModpackException, InvalidFileException, CurseException {
         String invalid = "1,1234";
         ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel, new ArrayList<>(100)));
     }
 
     @Test
     void checkCurseForgeTestNotMinecraft() {
         String invalid = "10,60018";
         ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertThrows(InvalidModpackException.class, () -> CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel));
+        Assertions.assertThrows(InvalidModpackException.class, () -> CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel, new ArrayList<>(100)));
     }
 
     @Test
@@ -740,18 +740,18 @@ class ConfigurationTest {
                 includeServerProperties,
                 includeZipCreation,
                 javaArgs,
-                "");
+                "","","");
     }
 
     @Test
     void checkModpackDirTest() {
         String modpackDirCorrect = "./backend/test/resources/forge_tests";
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModpackDir(modpackDirCorrect));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModpackDir(modpackDirCorrect, new ArrayList<>(100)));
     }
 
     @Test
     void checkModpackDirTestFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModpackDir("modpackDir"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModpackDir("modpackDir", new ArrayList<>(100)));
     }
 
     @Test
@@ -764,7 +764,7 @@ class ConfigurationTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCopyDirs(copyDirs, modpackDir));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCopyDirs(copyDirs, modpackDir, new ArrayList<>(100)));
     }
 
     @Test
@@ -777,7 +777,7 @@ class ConfigurationTest {
                 "seedss",
                 "defaultconfigss"
         ));
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsInvalid, modpackDir));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsInvalid, modpackDir, new ArrayList<>(100)));
     }
 
     @Test
@@ -792,7 +792,7 @@ class ConfigurationTest {
                 "test.txt;test.txt",
                 "test2.txt;test2.txt"
         ));
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsAndFiles, modpackDir));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsAndFiles, modpackDir, new ArrayList<>(100)));
     }
 
     @Test
@@ -809,7 +809,7 @@ class ConfigurationTest {
                 "LICENSEee;test/LICENSE",
                 "LICENSEee;test/license.md"
         ));
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsAndFilesFalse, modpackDir));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCopyDirs(copyDirsAndFilesFalse, modpackDir, new ArrayList<>(100)));
     }
 
     @Test
@@ -832,27 +832,27 @@ class ConfigurationTest {
 
     @Test
     void checkModloaderTestForge() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Forge"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Forge", new ArrayList<>(100)));
     }
 
     @Test
     void checkModloaderTestForgeCase() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fOrGe"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fOrGe", new ArrayList<>(100)));
     }
 
     @Test
     void checkModloaderTestFabric() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Fabric"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Fabric", new ArrayList<>(100)));
     }
 
     @Test
     void checkModloaderTestFabricCase() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fAbRiC"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fAbRiC", new ArrayList<>(100)));
     }
 
     @Test
     void checkModLoaderTestFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloader("modloader"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloader("modloader", new ArrayList<>(100)));
     }
 
     @Test
@@ -877,32 +877,32 @@ class ConfigurationTest {
 
     @Test
     void checkModloaderVersionTestForge() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "36.1.2", "1.16.5"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "36.1.2", "1.16.5", new ArrayList<>(100)));
     }
 
     @Test
     void checkModloaderVersionTestForgeFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "90.0.0", "1.16.5"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "90.0.0", "1.16.5", new ArrayList<>(100)));
     }
 
     @Test
     void checkModloaderVersionTestFabric() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.11.3", "1.16.5"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.11.3", "1.16.5", new ArrayList<>(100)));
     }
 
     @Test
     void checkModloaderVersionTestFabricFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.90.3", "1.16.5", new ArrayList<>(100)));
     }
 
     @Test
     void isMinecraftVersionCorrectTest() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.16.5"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.16.5", new ArrayList<>(100)));
     }
 
     @Test
     void isMinecraftVersionCorrectTestFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.99.5"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.99.5", new ArrayList<>(100)));
     }
 
     @Test
@@ -986,6 +986,8 @@ class ConfigurationTest {
                 "./backend/test/resources/forge_tests",
                 clientMods,
                 copyDirs,
+                "",
+                "",
                 true,
                 javaPath,
                 "1.16.5",
@@ -1051,6 +1053,8 @@ class ConfigurationTest {
                 "./backend/test/resources/fabric_tests",
                 clientMods,
                 copyDirs,
+                "",
+                "",
                 true,
                 javaPath,
                 "1.16.5",

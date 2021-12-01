@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.spring.controllers;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
-import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
 import de.griefed.serverpackcreator.spring.services.ServerPackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -33,7 +32,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 /**
- *
+ * RestController for everything server pack related, like downloads.<br>
+ * All requests are in <code>/api/packs</code>.
  * @author Griefed
  */
 @RestController
@@ -45,26 +45,24 @@ public class ServerPackController {
 
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackService SERVERPACKSERVICE;
-    private final ServerPackRepository SERVERPACKREPOSITORY;
 
     /**
-     *
+     * Constructor responsible for our DI.
      * @author Griefed
-     * @param injectedApplicationProperties
-     * @param injectedServerPackService
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}
+     * @param injectedServerPackService Instance of {@link ServerPackService}
      */
     @Autowired
-    public ServerPackController(ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerPackService, ServerPackRepository injectedServerPackRepository) {
+    public ServerPackController(ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerPackService) {
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         this.SERVERPACKSERVICE = injectedServerPackService;
-        this.SERVERPACKREPOSITORY = injectedServerPackRepository;
     }
 
     /**
-     *
+     * GET request for downloading a server pack by the id in the database.
      * @author Griefed
-     * @param id
-     * @return
+     * @param id Integer. The id of the server pack in the database.
+     * @return ResponseEntity Resource. Gives the requester the requested file as a download, if it was found.
      */
     @GetMapping(value = "/download/{id}", produces = "application/zip")
     public ResponseEntity<Resource> downloadServerPack(@PathVariable int id) {
@@ -72,10 +70,10 @@ public class ServerPackController {
     }
 
     /**
-     *
+     * GET request for retrieving a list of server packs by CurseForge projectID.
      * @author Griefed
-     * @param projectID
-     * @return
+     * @param projectID Integer. The id of the CurseForge project.
+     * @return List {@link ServerPack}. A list of all server packs, if any, with the given CurseForge projectID.
      */
     @GetMapping("project/{projectid}")
     public List<ServerPack> getByProjectID(@PathVariable("projectid") int projectID) {
@@ -83,10 +81,10 @@ public class ServerPackController {
     }
 
     /**
-     *
+     * GET request for a server pack matching the given CurseForge fileID.
      * @author Griefed
-     * @param fileID
-     * @return
+     * @param fileID Integer. The fileID of the CurseForge project for which to retrieve the server pack.
+     * @return {@link ServerPack}. The server pack for the corresponding CurseForge fileID, if it was found.
      */
     @GetMapping("file/{fileid}")
     public ServerPack getByFileID(@PathVariable("fileid") int fileID) {
@@ -98,9 +96,9 @@ public class ServerPackController {
     }
 
     /**
-     *
+     * GET request for retrieving a list of all available server packs.
      * @author Griefed
-     * @return
+     * @return List {@link ServerPack}. A list of all available server packs on this instance.
      */
     @GetMapping("all")
     public List<ServerPack> getAllServerPacks() {
@@ -108,23 +106,39 @@ public class ServerPackController {
     }
 
     /**
-     *
+     * GET request for retrieving a server pack for a specific CurseForge projectID and fileID.
      * @author Griefed
-     * @param specific
-     * @return
+     * @param specific String. Comma seperated combination of CurseForge projectID and fileID.
+     * @return {@link ServerPack}. The server pack for the specified CurseForge projectID and fileID, if it was found.
      */
     @GetMapping("specific/{specific}")
     public ServerPack getByFileID(@PathVariable("specific") String specific) {
-        return SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(specific.split(",")[0]), Integer.parseInt(specific.split(",")[1])).get();
+
+        String[] project = specific.split(",");
+
+        int projectID = Integer.parseInt(project[0]);
+        int fileID = Integer.parseInt(project[1]);
+
+        if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
+
+            return SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
+
+        } else {
+
+            return null;
+
+        }
+
     }
 
     /**
-     *
+     * GET request for voting whether a server pack works or not.
      * @author Griefed
-     * @param voting
-     * @return
+     * @param voting String. The vote, consisting of the id of the server pack and whether the vote should be incremented or decremented. Example <code>42,up</code> or <code>23,down</code>.
+     * @return ResponseEntity OK/BadRequest/NotFound
      */
     @GetMapping("vote/{voting}")
+    // TODO: Secure with Captcha so vote spamming is somewhat prevented
     public ResponseEntity<Object> voteForServerPack(@PathVariable("voting") String voting) {
         return SERVERPACKSERVICE.voteForServerPack(voting);
     }

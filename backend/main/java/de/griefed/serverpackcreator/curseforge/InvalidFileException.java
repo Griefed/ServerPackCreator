@@ -20,15 +20,15 @@
 package de.griefed.serverpackcreator.curseforge;
 
 /**
- *
+ * Exceptions thrown if the specified fileID does not match the specified project, or if it doesn't exist.
  * @author Griefed
  */
 public class InvalidFileException extends Exception {
 
     /**
-     *
+     * Exception thrown when the specified file does not exist for the specified project.
      * @author Griefed
-     * @param fileID
+     * @param fileID Integer. The id of the CurseForge file.
      */
     public InvalidFileException(int fileID) {
         super("The specified file with id " + fileID + " does not exist for the specified project");

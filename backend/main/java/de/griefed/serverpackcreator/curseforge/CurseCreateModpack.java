@@ -68,7 +68,7 @@ public class CurseCreateModpack {
 
     private final Random randInt = new Random();
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -77,18 +77,18 @@ public class CurseCreateModpack {
      * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      */
     @Autowired
-    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedServerPackCreatorProperties) {
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -98,6 +98,7 @@ public class CurseCreateModpack {
      * Retrieve the name of a given CurseForge project.
      * @author Griefed
      * @param newProjectID The ID of the new CurseForge project.
+     * @return String. Returns the name of the specified CurseForge project, or the ID if the project could not be found.
      */
     public String retrieveProjectName(int newProjectID) {
         try {
@@ -116,6 +117,7 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param newProjectID The ID of the CurseForge project.
      * @param newFileID The ID of the CurseForge file.
+     * @return String. Returns the name of the CurseForge file on disk, or the ID if said name can not be found.
      */
     public String retrieveFileDiskName(int newProjectID, int newFileID) {
         try {
@@ -467,7 +469,7 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir.create"));
         } else {
-            if (serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.curseforge.cleanup.enabled").equalsIgnoreCase("true")) {
+            if (applicationProperties.getProperty("de.griefed.serverpackcreator.curseforge.cleanup.enabled").equalsIgnoreCase("true")) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));

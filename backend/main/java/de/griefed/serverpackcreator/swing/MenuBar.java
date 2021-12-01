@@ -128,7 +128,7 @@ public class MenuBar extends Component {
 
     private final JPanel helpPanel = new JPanel();
 
-    private ApplicationProperties serverPackCreatorProperties;
+    private ApplicationProperties applicationProperties;
 
     private boolean isDarkTheme;
 
@@ -137,6 +137,7 @@ public class MenuBar extends Component {
     private JMenu viewMenu;
     private JMenu aboutMenu;
 
+    private JMenuItem file_NewConfigurationMenuItem;
     private JMenuItem file_LoadConfigMenuItem;
     private JMenuItem file_SaveConfigMenuItem;
     private JMenuItem file_SaveAsConfigMenuItem;
@@ -169,6 +170,8 @@ public class MenuBar extends Component {
     private DefaultComboBoxModel<String> helpComboBoxModel;
     private JComboBox<String> helpComboBox;
 
+    private File lastLoadedConfigurationFile = null;
+
     /**
      * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
      * @author Griefed
@@ -180,20 +183,20 @@ public class MenuBar extends Component {
      * @param injectedLAF_Dark Instance of {@link MaterialLookAndFeel} with our {@link DarkTheme}.
      * @param injectedTabCreateServerPack Our tab for configuring ServerPackCreator.
      * @param injectedTabbedPane The tabbed pane which holds all our tabs.
-     * @param injectedServerPackCreatorProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      */
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
-                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedServerPackCreatorProperties) {
+                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties) {
 
-        if (injectedServerPackCreatorProperties == null) {
-            this.serverPackCreatorProperties = new ApplicationProperties();
+        if (injectedApplicationProperties == null) {
+            this.applicationProperties = new ApplicationProperties();
         } else {
-            this.serverPackCreatorProperties = injectedServerPackCreatorProperties;
+            this.applicationProperties = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -207,11 +210,11 @@ public class MenuBar extends Component {
         this.TABBEDPANE = injectedTabbedPane;
 
         try {
-            isDarkTheme = Boolean.parseBoolean(serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+            isDarkTheme = Boolean.parseBoolean(applicationProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
         } catch (NullPointerException ex) {
             LOG.error("No setting for darkmode found in properties-file. Using true.");
             isDarkTheme = true;
-            serverPackCreatorProperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
+            applicationProperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
         }
 
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
@@ -408,6 +411,7 @@ public class MenuBar extends Component {
         help_OpenHelpWindowMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.help"));
 
         // create menu items
+        file_NewConfigurationMenuItem = new JMenuItem("New configuration");
         file_LoadConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.loadconfig"));
         file_SaveConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveconfig"));
         file_SaveAsConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveas"));
@@ -434,6 +438,7 @@ public class MenuBar extends Component {
         about_OpenDonationsPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.donate"));
 
         // create action listeners for items
+        file_NewConfigurationMenuItem.addActionListener(this::actionEventNewConfiguration);
         file_LoadConfigMenuItem.addActionListener(this::actionEventLoadConfigurationFromFileMenuItem);
         file_SaveConfigMenuItem.addActionListener(this::actionEventSaveConfigToFileMenuItem);
         file_SaveAsConfigMenuItem.addActionListener(this::actionEventSaveAsConfigToFileMenuItem);
@@ -473,6 +478,7 @@ public class MenuBar extends Component {
         helpComboBox.addActionListener(this::actionEventSetHelpText);
 
         // add items to menus
+        fileMenu.add(file_NewConfigurationMenuItem);
         fileMenu.add(file_LoadConfigMenuItem);
         fileMenu.add(new JSeparator());
         fileMenu.add(file_SaveConfigMenuItem);
@@ -515,6 +521,18 @@ public class MenuBar extends Component {
         MENUBAR.add(help_OpenHelpWindowMenuItem);
 
         return MENUBAR;
+    }
+
+    /**
+     * Upon button-press, load default values for textfields so the user can start with a new configuration. Just as if ServerPackCreator
+     * was started without a serverpackcreator.conf being present.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventNewConfiguration(ActionEvent actionEvent) {
+        LOG.debug("Clearing GUI...");
+        TAB_CREATESERVERPACK.clearInterface();
+        lastLoadedConfigurationFile = null;
     }
 
     /**
@@ -687,6 +705,7 @@ public class MenuBar extends Component {
     private void actionEventOpenInEditorServerProperties(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server.properties in Editor.");
 
+        //TODO: If textfield server icon contains valid file, open that instead
         try {
             if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
                 Desktop.getDesktop().open(
@@ -712,6 +731,7 @@ public class MenuBar extends Component {
     private void actionEventOpenServerIcon(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server-icon.png in Editor.");
 
+        //TODO: If textfield server properties contains valid file, open that instead
         try {
             if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
                 Desktop.getDesktop().open(
@@ -826,13 +846,21 @@ public class MenuBar extends Component {
 
     /**
      * Upon button-press, save the current configuration in the GUI to the serverpackcreator.conf-file in ServerPackCreators
-     * base directory.
+     * base directory. if <code>de.griefed.serverpackcreator.configuration.saveloadedconfig</code> is set to <code>true</code> and
+     * the field <code>lastLoadedConfigurationFile</code> is not null, the last loaded configuration-file is also saved to.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
      */
     private void actionEventSaveConfigToFileMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Save.");
+        LOG.debug("Saving serverpackcreator.conf");
         TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"), false);
+
+        if (lastLoadedConfigurationFile != null && applicationProperties.getSaveLoadedConfiguration()) {
+            LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
+            TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile, true);
+        }
+
     }
 
     /**
@@ -854,10 +882,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(serverPackCreatorProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = new FileOutputStream(applicationProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
-                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
-                    serverPackCreatorProperties.store(outputStream, null);
+                    applicationProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
+                    applicationProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -877,10 +905,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(serverPackCreatorProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = new FileOutputStream(applicationProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
-                    serverPackCreatorProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
-                    serverPackCreatorProperties.store(outputStream, null);
+                    applicationProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
+                    applicationProperties.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -919,7 +947,8 @@ public class MenuBar extends Component {
                         configChooser.getSelectedFile().getCanonicalPath()
                 ));
 
-                TAB_CREATESERVERPACK.loadConfig(new File(configChooser.getSelectedFile().getCanonicalPath()));
+                TAB_CREATESERVERPACK.loadConfig(new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
+                lastLoadedConfigurationFile = new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
 
             } catch (IOException ex) {
                 LOG.error("Error loading configuration from selected file.", ex);
@@ -1002,7 +1031,7 @@ public class MenuBar extends Component {
         LOG.debug("Clicked open server packs directory.");
 
         try {
-            Desktop.getDesktop().open(new File(serverPackCreatorProperties.getDIRECTORY_SERVER_PACKS()));
+            Desktop.getDesktop().open(new File(applicationProperties.getDirectoryServerPacks()));
         } catch (IOException ex) {
             LOG.error("Error opening file explorer for server-packs.", ex);
         }
@@ -1160,7 +1189,7 @@ public class MenuBar extends Component {
      */
     private String createHasteBinFromFile(File textFile) {
         String text = null;
-        String requestURL = serverPackCreatorProperties.getProperty(
+        String requestURL = applicationProperties.getProperty(
                 "de.griefed.serverpackcreator.configuration.hastebinserver",
                 "https://haste.zneix.eu/documents"
         );

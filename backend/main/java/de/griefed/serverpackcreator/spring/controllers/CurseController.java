@@ -23,14 +23,14 @@ import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.spring.models.CurseResponse;
 import de.griefed.serverpackcreator.spring.services.CurseService;
-import de.griefed.serverpackcreator.spring.services.TaskReceiver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- *
+ * RestController for everything CurseForge related.<br>
+ * All requests are in <code>/api/curse</code>.
  * @author Griefed
  */
 @RestController
@@ -43,26 +43,25 @@ public class CurseController {
     private final CurseService CURSESERVICE;
     private final CurseResponse CURSERESPONSEMODEL;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final TaskReceiver TASKRECEIVER;
 
     /**
-     *
+     * Constructor responsible for our DI.
      * @author Griefed
-     * @param injectedCurseService
-     * @param injectedCurseResponse
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}
+     * @param injectedCurseService Instance of {@link CurseService}
+     * @param injectedCurseResponse Instance of {@link CurseResponse}
      */
     @Autowired
-    public CurseController(CurseService injectedCurseService, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties, TaskReceiver injectedTaskReceiver) {
+    public CurseController(CurseService injectedCurseService, CurseResponse injectedCurseResponse, ApplicationProperties injectedApplicationProperties) {
         this.CURSESERVICE = injectedCurseService;
         this.CURSERESPONSEMODEL = injectedCurseResponse;
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        this.TASKRECEIVER = injectedTaskReceiver;
     }
 
     /**
-     * Status 0: Already exists<br>
-     * Status 1: OK, generating<br>
-     * Status 2: Error occurred
+     * GET request for requesting the generation of a server pack. RequestParam is modpack=projectID,fileID<br>
+     * Returns a {@link CurseResponse#response(int, int, String, int, String, String)} or {@link CurseResponse#response(String, int, String, int, String, String)} depending
+     * on the decision made in {@link CurseService}.<br>
      * @author Griefed
      * @param modpack CurseForge projectID and fileID combination.
      * @return String. Statuscode indicating whether the server pack already exists, will be generated or an error occured.
@@ -82,31 +81,28 @@ public class CurseController {
     }
 
     /**
-     * Status 0: Already exists<br>
-     * Status 1: OK, generating<br>
-     * Status 2: Error occurred
+     * GET request for requesting the regeneration of a server pack. RequestParam is modpack=projectID,fileID<br>
+     * Returns a {@link CurseResponse#response(int, int, String, int, String, String)} or {@link CurseResponse#response(String, int, String, int, String, String)} depending
+     * on the decision made in {@link CurseService}.<br>
      * @author Griefed
      * @param modpack CurseForge projectID and fileID combination.
+     * @return String. Returns a {@link CurseResponse} depending on the outcome of {@link CurseService#regenerateFromCurseModpack(String)}.
      */
     @CrossOrigin(origins = {"*"})
     @GetMapping("/regenerate")
     public String regenerate(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
-        if (APPLICATIONPROPERTIES.getCURSE_CONTROLLER_REGENERATION_ENABLED()) {
-            return CURSESERVICE.regenerateFromCurseModpack(modpack);
-        } else {
-            return CURSERESPONSEMODEL.response(modpack, 2, "Regeneration is disabled on this instance!", 4000, "info", "warning");
-        }
+        return CURSESERVICE.regenerateFromCurseModpack(modpack);
     }
 
     /**
-     *
+     * GET request to check whether regeneration of server packs is available on this instance of ServerPackCreator.
      * @author Griefed
-     * @return
+     * @return JSON. Returns <code>{"regenerationActivated": true/false}</code>
      */
     @CrossOrigin(origins = {"*"})
     @GetMapping("/regenerate/active")
     public String regenerateActivated() {
-        return "{\"regenerationActivated\": " + APPLICATIONPROPERTIES.getCURSE_CONTROLLER_REGENERATION_ENABLED() + "}";
+        return "{\"regenerationActivated\": " + APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled() + "}";
     }
 
 }

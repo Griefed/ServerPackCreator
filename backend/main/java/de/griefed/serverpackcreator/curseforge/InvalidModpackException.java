@@ -20,23 +20,23 @@
 package de.griefed.serverpackcreator.curseforge;
 
 /**
- *
+ * Exceptions thrown if the specified project isn't a valid Minecraft modpack.
  * @author Griefed
  */
 public class InvalidModpackException extends Exception {
 
     /**
-     *
+     * Thrown if the specified project is not a valid Minecraft modpack.
      * @author Griefed
-     * @param projectID
-     * @param projectName
+     * @param projectID Integer. The id of the CurseForge project.
+     * @param projectName String. The name of the CurseForge project.
      */
     public InvalidModpackException(int projectID, String projectName) {
         super("The specified project " + projectName + "(" + projectID + ") is not a Minecraft modpack!");
     }
 
     /**
-     *
+     * Thrown if the specified project is not a valid Minecraft modpack.
      * @author Griefed
      */
     public InvalidModpackException() {
