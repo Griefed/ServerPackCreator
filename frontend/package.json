@@ -40,7 +40,7 @@
     "@babel/eslint-parser": "^7.16.3",
     "@quasar/app": "^3.2.3",
     "@types/node": "16.11.10",
-    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint": "~8.2.0",
     "eslint-config-prettier": "^8.3.0",
