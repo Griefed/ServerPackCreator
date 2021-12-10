@@ -1,4 +1,4 @@
-FROM griefed/baseimage-ubuntu-jdk-8:1.0.5 AS builder
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.0 AS builder
 
 RUN \
   git clone \
@@ -10,7 +10,7 @@ RUN \
   ./gradlew build --info -x test && \
   ls -ahl ./build/libs/
 
-FROM griefed/baseimage-ubuntu-jdk-8:1.0.5
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.0
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
