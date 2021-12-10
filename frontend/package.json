@@ -30,7 +30,7 @@
     "@quasar/cli": "1.2.2",
     "@quasar/extras": "1.12.1",
     "axios": "0.24.0",
-    "core-js": "3.19.1",
+    "core-js": "3.19.3",
     "quasar": "2.3.3",
     "tsparticles": "1.37.5",
     "vue": "3.2.22",
