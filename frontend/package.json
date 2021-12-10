@@ -33,7 +33,7 @@
     "core-js": "3.19.3",
     "quasar": "2.3.3",
     "tsparticles": "1.37.5",
-    "vue": "3.2.22",
+    "vue": "3.2.24",
     "vue-class-component": "8.0.0-rc.1"
   },
   "devDependencies": {
