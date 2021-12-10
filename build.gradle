@@ -88,7 +88,7 @@ dependencies {
 
     // WEB
     //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
-    embed 'org.springframework.boot:spring-boot-starter-validation:2.5.6'
+    embed 'org.springframework.boot:spring-boot-starter-validation:2.6.1'
     embed 'org.springframework.boot:spring-boot-starter-web:2.5.6'
     embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.0'
     embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.1'
