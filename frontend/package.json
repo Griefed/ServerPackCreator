@@ -38,11 +38,11 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.16.3",
+    "eslint": "8.4.1",
     "@typescript-eslint/eslint-plugin": "5.6.0",
     "@typescript-eslint/parser": "5.6.0",
     "@quasar/app": "3.2.5",
     "@types/node": "16.11.12",
-    "eslint": "8.2.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-vue": "8.1.1",
     "eslint-webpack-plugin": "3.1.1"
