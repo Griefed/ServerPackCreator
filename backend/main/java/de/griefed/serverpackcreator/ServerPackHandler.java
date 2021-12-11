@@ -418,6 +418,8 @@ public class ServerPackHandler {
                             "SET FORGE=\"" + modloaderVersion + "\"\n" +
                             "SET ARGS=" + javaArguments + "\n" +
                             "\n" +
+                            "SET AGREE=\"I agree\"\n" +
+                            "\n" +
                             "IF NOT EXIST forge.jar (\n" +
                             "\n" +
                             "  ECHO Forge Server JAR-file not found. Downloading installer...\n" +
@@ -455,8 +457,7 @@ public class ServerPackHandler {
                             "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
                             "  ECHO Do you agree to Mojang's EULA?\n" +
                             "  set /P \"Response=\"\n" +
-                            "  set agree=I agree\n" +
-                            "  IF !Response! == !agree! (\n" +
+                            "  IF \"%Response%\" == \"%AGREE%\" (\n" +
                             "    ECHO User agreed to Mojang's EULA.\n" +
                             "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
                             "    ECHO eula=true>> eula.txt\n" +
@@ -599,6 +600,8 @@ public class ServerPackHandler {
                             "SET FORGE=\"" + modloaderVersion + "\"\n" +
                             "SET ARGS=" + javaArguments + "\n" +
                             "\n" +
+                            "SET AGREE=\"I agree\"\n" +
+                            "\n" +
                             "IF NOT EXIST libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-server.jar (\n" +
                             "\n" +
                             "  ECHO Forge Server JAR-file not found. Downloading installer...\n" +
@@ -644,8 +647,7 @@ public class ServerPackHandler {
                             "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
                             "  ECHO Do you agree to Mojang's EULA?\n" +
                             "  set /P \"Response=\"\n" +
-                            "  set agree=I agree\n" +
-                            "  IF !Response! == !agree! (\n" +
+                            "  IF \"%Response%\" == \"%AGREE%\" (\n" +
                             "    ECHO User agreed to Mojang's EULA.\n" +
                             "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
                             "    ECHO eula=true>> eula.txt\n" +
@@ -831,6 +833,8 @@ public class ServerPackHandler {
                         "SET INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n" +
                         "SET ARGS=" + javaArguments + "\n" +
                         "\n" +
+                        "SET AGREE=\"I agree\"\n" +
+                        "\n" +
                         "IF NOT EXIST fabric-server-launch.jar (\n" +
                         "\n" +
                         "  ECHO Fabric Server JAR-file not found. Downloading installer...\n" +
@@ -868,8 +872,7 @@ public class ServerPackHandler {
                         "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
                         "  ECHO Do you agree to Mojang's EULA?\n" +
                         "  set /P \"Response=\"\n" +
-                        "  set agree=I agree\n" +
-                        "  IF !Response! == !agree! (\n" +
+                        "  IF \"%Response%\" == \"%AGREE%\" (\n" +
                         "    ECHO User agreed to Mojang's EULA.\n" +
                         "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
                         "    ECHO eula=true>> eula.txt\n" +
