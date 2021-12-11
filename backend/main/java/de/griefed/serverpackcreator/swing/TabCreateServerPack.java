@@ -160,16 +160,6 @@ public class TabCreateServerPack extends JComponent {
     private JRadioButton forgeRadioButton;
     private JRadioButton fabricRadioButton;
 
-    private final Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
-        public void handle(String line) {
-            synchronized (this) {
-                if (!line.contains("DEBUG")) {
-                    labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
-                }
-            }
-        }
-    }, 100, false);
-
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -1120,7 +1110,15 @@ public class TabCreateServerPack extends JComponent {
 
         BUTTON_GENERATESERVERPACK.setEnabled(false);
 
-        tailer.run();
+        Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
+            public void handle(String line) {
+                synchronized (this) {
+                    if (!line.contains("DEBUG")) {
+                        labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
+                    }
+                }
+            }
+        }, 100, false);
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
@@ -1369,18 +1367,22 @@ public class TabCreateServerPack extends JComponent {
                 LOG.error("Error parsing minecraft-version from configfile: " + configFile, ex);
             }
 
+            // Set modloader and modloader version
             try {
-                
+
+                // Check for Fabric
                 if (CONFIGURATIONHANDLER.getModLoaderCase(config.getOrElse("modLoader","Forge")).equals("Fabric")) {
 
-                    String[] fabricver = VERSIONLISTER.getFabricVersionsAsArray();
+                    String[] fabricver = VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getFabricVersionsAsArray());
 
                     updateModloaderGuiComponents(true, false, "Fabric");
 
                     if (!config.getOrElse("modLoaderVersion","").equals("")) {
 
+                        // Go through all Fabric versions and check if specified version matches official version list
                         for (int i = 0; i < fabricver.length; i++) {
 
+                            // If match is found, set selected version
                             if (fabricver[i].equals(config.get("modLoaderVersion").toString())) {
 
                                 COMBOBOX_FABRICVERSIONS.setSelectedIndex(i);
@@ -1392,6 +1394,7 @@ public class TabCreateServerPack extends JComponent {
 
                     }
 
+                // If not Fabric, then assume Forge
                 } else {
 
                     String[] forgever = VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion);
