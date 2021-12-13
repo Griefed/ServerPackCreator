@@ -414,9 +414,13 @@ public class ServerPackHandler {
                             "@ECHO off\n" +
                             "SetLocal EnableDelayedExpansion\n" +
                             "\n" +
+                            "SET JAVA=\"java\"\n" +
                             "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
                             "SET FORGE=\"" + modloaderVersion + "\"\n" +
                             "SET ARGS=" + javaArguments + "\n" +
+                            "SET OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n" +
+                            "\n" +
+                            "SET AGREE=\"I agree\"\n" +
                             "\n" +
                             "IF NOT EXIST forge.jar (\n" +
                             "\n" +
@@ -455,8 +459,7 @@ public class ServerPackHandler {
                             "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
                             "  ECHO Do you agree to Mojang's EULA?\n" +
                             "  set /P \"Response=\"\n" +
-                            "  set agree=I agree\n" +
-                            "  IF !Response! == !agree! (\n" +
+                            "  IF \"%Response%\" == \"%AGREE%\" (\n" +
                             "    ECHO User agreed to Mojang's EULA.\n" +
                             "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
                             "    ECHO eula=true>> eula.txt\n" +
@@ -472,7 +475,7 @@ public class ServerPackHandler {
                             "ECHO Forge version: %FORGE%\n" +
                             "ECHO Java args: %ARGS%\n" +
                             "\n" +
-                            "java %ARGS% -jar forge.jar nogui\n" +
+                            "%JAVA% %OTHERARGS% %ARGS% -jar forge.jar nogui\n" +
                             "\n" +
                             "PAUSE"
                     );
@@ -505,9 +508,11 @@ public class ServerPackHandler {
                             "# This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
                             "# If everything is in order, the server is started.\n" +
                             "\n" +
+                            "JAVA=\"java\"\n" +
                             "MINECRAFT=\"" + minecraftVersion + "\"\n" +
                             "FORGE=\"" + modloaderVersion + "\"\n" +
                             "ARGS=\"" + javaArguments + "\"\n" +
+                            "OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n" +
                             "\n" +
                             "if [[ ! -s \"forge.jar\" ]];then\n" +
                             "\n" +
@@ -562,7 +567,7 @@ public class ServerPackHandler {
                             "echo \"Forge version: $FORGE\";\n" +
                             "echo \"Java args: $ARGS\";\n" +
                             "\n" +
-                            "java $ARGS -jar forge.jar nogui"
+                            "$JAVA $OTHERARGS $ARGS -jar forge.jar nogui"
                     );
 
                 } catch (IOException ex) {
@@ -595,9 +600,13 @@ public class ServerPackHandler {
                             "@ECHO off\n" +
                             "SetLocal EnableDelayedExpansion\n" +
                             "\n" +
+                            "SET JAVA=\"java\"\n" +
                             "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
                             "SET FORGE=\"" + modloaderVersion + "\"\n" +
                             "SET ARGS=" + javaArguments + "\n" +
+                            "SET OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n" +
+                            "\n" +
+                            "SET AGREE=\"I agree\"\n" +
                             "\n" +
                             "IF NOT EXIST libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-server.jar (\n" +
                             "\n" +
@@ -644,8 +653,7 @@ public class ServerPackHandler {
                             "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
                             "  ECHO Do you agree to Mojang's EULA?\n" +
                             "  set /P \"Response=\"\n" +
-                            "  set agree=I agree\n" +
-                            "  IF !Response! == !agree! (\n" +
+                            "  IF \"%Response%\" == \"%AGREE%\" (\n" +
                             "    ECHO User agreed to Mojang's EULA.\n" +
                             "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
                             "    ECHO eula=true>> eula.txt\n" +
@@ -666,7 +674,7 @@ public class ServerPackHandler {
                             "REM Add custom program arguments {such as nogui} to this file in the next line before the %* or\n" +
                             "REM  pass them to this script directly\n" +
                             "\n" +
-                            "java  @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n" +
+                            "%JAVA% %OTHERARGS% @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n" +
                             "\n" +
                             "PAUSE"
                     );
@@ -698,9 +706,11 @@ public class ServerPackHandler {
                             "# This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n" +
                             "# If everything is in order, the server is started.\n" +
                             "\n" +
+                            "JAVA=\"java\"\n" +
                             "MINECRAFT=\"" + minecraftVersion + "\"\n" +
                             "FORGE=\"" + modloaderVersion + "\"\n" +
                             "ARGS=\"" + javaArguments + "\"\n" +
+                            "OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n" +
                             "\n" +
                             "if [[ ! -s \"libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-server.jar\" ]];then\n" +
                             "\n" +
@@ -768,7 +778,7 @@ public class ServerPackHandler {
                             "# Add custom program arguments {such as nogui} to this file in the next line before the \"$@\" or\n" +
                             "#  pass them to this script directly\n" +
                             "\n" +
-                            "java @user_jvm_args.txt @libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/unix_args.txt nogui \"$@\""
+                            "$JAVA $OTHERARGS @user_jvm_args.txt @libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/unix_args.txt nogui \"$@\""
                     );
 
                 } catch (IOException ex) {
@@ -826,10 +836,14 @@ public class ServerPackHandler {
                         ":: If everything is in order, the server is started.\n" +
                         "@ECHO off\n" +
                         "\n" +
+                        "SET JAVA=\"java\"\n" +
                         "SET MINECRAFT=\"" + minecraftVersion + "\"\n" +
                         "SET FABRIC=\"" + modloaderVersion + "\"\n" +
                         "SET INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n" +
                         "SET ARGS=" + javaArguments + "\n" +
+                        "SET OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n" +
+                        "\n" +
+                        "SET AGREE=\"I agree\"\n" +
                         "\n" +
                         "IF NOT EXIST fabric-server-launch.jar (\n" +
                         "\n" +
@@ -868,8 +882,7 @@ public class ServerPackHandler {
                         "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n" +
                         "  ECHO Do you agree to Mojang's EULA?\n" +
                         "  set /P \"Response=\"\n" +
-                        "  set agree=I agree\n" +
-                        "  IF !Response! == !agree! (\n" +
+                        "  IF \"%Response%\" == \"%AGREE%\" (\n" +
                         "    ECHO User agreed to Mojang's EULA.\n" +
                         "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n" +
                         "    ECHO eula=true>> eula.txt\n" +
@@ -885,7 +898,7 @@ public class ServerPackHandler {
                         "ECHO Fabric version: %FABRIC%\n" +
                         "ECHO Java args: %ARGS%\n" +
                         "\n" +
-                        "java %ARGS% -jar fabric-server-launch.jar nogui\n" +
+                        "%JAVA% %OTHERARGS% %ARGS% -jar fabric-server-launch.jar nogui\n" +
                         "\n" +
                         "PAUSE"
                 );
@@ -911,10 +924,12 @@ public class ServerPackHandler {
                         "# This script checks for the Minecraft and Forge JAR-Files, and if they are not found, they are downloaded and installed.\n" +
                         "# If everything is in order, the server is started.\n" +
                         "\n" +
+                        "SET JAVA=\"java\"\n" +
                         "MINECRAFT=\"" + minecraftVersion + "\"\n" +
                         "FABRIC=\"" + modloaderVersion + "\"\n" +
                         "INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n" +
                         "ARGS=\"" + javaArguments + "\"\n" +
+                        "OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n" +
                         "\n" +
                         "if [[ ! -s \"fabric-server-launch.jar\" ]];then\n" +
                         "\n" +
@@ -969,7 +984,7 @@ public class ServerPackHandler {
                         "echo \"Fabric version: $FABRIC\";\n" +
                         "echo \"Java args: $ARGS\";\n" +
                         "\n" +
-                        "java $ARGS -jar fabric-server-launch.jar nogui"
+                        "$JAVA $OTHERARGS $ARGS -jar fabric-server-launch.jar nogui"
                 );
 
             } catch (IOException ex) {
