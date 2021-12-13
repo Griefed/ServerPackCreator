@@ -47,6 +47,7 @@ public class MainSpringBootTest {
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         DEFAULTFILES.filesSetup();
+        DEFAULTFILES.checkDatabase();
     }
 
     @Test
