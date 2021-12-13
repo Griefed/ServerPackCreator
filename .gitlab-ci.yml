@@ -11,6 +11,7 @@ stages:
 - Release
 - Build Release
 - test
+
 Gradle Test:
   image: griefed/baseimage-ubuntu-jdk-8:2.0.0
   stage: Gradle Test
@@ -59,6 +60,7 @@ Gradle Test:
     - beta
     variables:
     - "$CI_COMMIT_TITLE =~ /^RELEASE:.+$/"
+
 Docker Test:
   needs:
   - job: Gradle Test
@@ -93,6 +95,7 @@ Docker Test:
     - beta
     variables:
     - "$CI_COMMIT_TITLE =~ /^RELEASE:.+$/"
+
 Release:
   needs:
   - job: Gradle Test
@@ -117,6 +120,7 @@ Release:
     - tags
     variables:
     - "$CI_COMMIT_TITLE =~ /^RELEASE:.+$/"
+
 Build Release:
   image: griefed/baseimage-ubuntu-jdk-8:2.0.0
   stage: Build Release
@@ -173,6 +177,7 @@ Build Release:
     --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
   rules:
   - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
+
 pages:
   image: griefed/baseimage-ubuntu-jdk-8:2.0.0
   stage: Documentation
@@ -197,6 +202,7 @@ pages:
     paths:
     - public
     expire_in: 1 week
+
 Gradle Test Webservice:
   image: griefed/baseimage-ubuntu-jdk-8:2.0.0
   stage: Gradle Test
@@ -238,6 +244,7 @@ Gradle Test Webservice:
   except:
   - master
   - main
+
 Docker Test Webservice:
   needs:
   - job: Gradle Test Webservice
@@ -264,6 +271,7 @@ Docker Test Webservice:
   except:
   - master
   - main
+
 PreRelease:
   needs:
   - job: Gradle Test Webservice
@@ -288,6 +296,7 @@ PreRelease:
     - tags
     variables:
     - "$CI_COMMIT_TITLE =~ /^RELEASE:.+$/"
+
 Build PreRelease:
   image: griefed/baseimage-ubuntu-jdk-8:2.0.0
   stage: Build Release
@@ -345,6 +354,7 @@ Build PreRelease:
     --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
   rules:
   - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+
 Build Docker PreRelease:
   stage: Build Release
   image: griefed/gitlab-ci-cd:1.0.4
@@ -365,8 +375,11 @@ Build Docker PreRelease:
     --file Dockerfile.webservice .
   rules:
   - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+
 sast:
   stage: test
 include:
 - template: Security/SAST.gitlab-ci.yml
 - template: Security/Secret-Detection.gitlab-ci.yml
+variables:
+  SECURE_LOG_LEVEL: debug
