@@ -18,6 +18,7 @@ RUN \
 FROM griefed/baseimage-ubuntu-jdk-8:2.0.0
 # Note: This image is temporary and will replace Dockerfile once this branch is merged into main
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
 LABEL description="Webservice branch. Temporary webservice image. Will replace Dockerfile once webservice branch is merged into main."

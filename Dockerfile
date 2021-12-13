@@ -13,6 +13,7 @@ RUN \
 FROM griefed/baseimage-ubuntu-jdk-8:2.0.0
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
 
