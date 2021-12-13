@@ -1,3 +1,66 @@
+## [3.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.11...3.0.0-alpha.12) (2021-12-13)
+
+
+### :scissors: Refactor
+
+* Allow closing of notification if status is already exists ([a25e6f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/a25e6f7b191a08e35f8b83d5911e9ac8bc9c11c8))
+* Change banner being displayed when running as webservice ([75899d4](https://git.griefed.de/Griefed/ServerPackCreator/commit/75899d4d211647acf9de589007bfeaa88664cf23))
+
+
+### 🦊 CI/CD
+
+* Update gradle to 7.3.1 ([88c1330](https://git.griefed.de/Griefed/ServerPackCreator/commit/88c133060f88303a6e734275c01704bb8ec4f782))
+* **deps-dev:** bump @quasar/app from 3.2.3 to 3.2.5 in /frontend ([4d2092b](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d2092bb73fe18589b5e150deebf7844c01c2198))
+* **deps-dev:** bump @types/node from 16.11.10 to 16.11.11 in /frontend ([043414e](https://git.griefed.de/Griefed/ServerPackCreator/commit/043414ebed40dadf28ddb888276c1d8ca47835e5))
+* **deps-dev:** bump @types/node from 16.11.10 to 16.11.12 in /frontend ([ddd4424](https://git.griefed.de/Griefed/ServerPackCreator/commit/ddd44242048537fe22b3c2c3344a82884507c5c7))
+* **deps-dev:** bump @typescript-eslint/eslint-plugin in /frontend ([55b5ba5](https://git.griefed.de/Griefed/ServerPackCreator/commit/55b5ba52f6b9c9377e730fd8d3ff0b25be52eca6))
+* **deps-dev:** bump @typescript-eslint/parser in /frontend ([d06b4cd](https://git.griefed.de/Griefed/ServerPackCreator/commit/d06b4cd7559dea9eefd686a189ceb22ece256320))
+* **deps:** bump @quasar/extras from 1.12.1 to 1.12.2 in /frontend ([bf9f871](https://git.griefed.de/Griefed/ServerPackCreator/commit/bf9f871eb39c3a18e8f4c67bd44d5a1c4dfd68a5))
+* **deps:** bump core-js from 3.19.1 to 3.19.3 in /frontend ([4864c13](https://git.griefed.de/Griefed/ServerPackCreator/commit/4864c13d9b2b7a7ffc979c54483803b54d445c44))
+* **deps:** bump junit-platform-commons from 1.8.1 to 1.8.2 ([d8483f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/d8483f1d5767c0ec62d7bb12cfa4d4f476d3d62f))
+* **deps:** bump quasar from 2.3.3 to 2.3.4 in /frontend ([373fdb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/373fdb340ca949d61f51374f7e03685e18708f82))
+* **deps:** bump spring-boot-devtools from 2.6.0 to 2.6.1 ([a51e28e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a51e28e646c115cce8f784458e08a4d95197edb4))
+* **deps:** bump spring-boot-starter-test from 2.5.6 to 2.6.1 ([0f39852](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f398524acfbb7c01b9a404430ee35eba351ee84))
+* **deps:** bump spring-boot-starter-validation from 2.5.6 to 2.6.1 ([1473032](https://git.griefed.de/Griefed/ServerPackCreator/commit/14730327dae5a9d81df7caf3ce0e4d1a5f4fda88))
+* **deps:** bump spring-boot-starter-web from 2.5.6 to 2.6.1 ([9d7ab8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/9d7ab8b0f024d1cc0f6f88ea5aa68ecbffbb545f))
+* **deps:** bump vue from 3.2.22 to 3.2.24 in /frontend ([62d687a](https://git.griefed.de/Griefed/ServerPackCreator/commit/62d687a0ffccc248c4ae0f89168ce18e3e47fabf))
+* Set loglevel in SAST to debug ([fc5341f](https://git.griefed.de/Griefed/ServerPackCreator/commit/fc5341fea92bba0e2f650644e543c53a1d8c48c4))
+* Try and fix Renovate warning ([893a581](https://git.griefed.de/Griefed/ServerPackCreator/commit/893a581c9d6a2935cdd80aa9df03f1717b3a425c))
+
+
+### 🧪 Tests
+
+* Set ddl-auto to create ([8e00f7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/8e00f7e4990ad42ceb2e7a23bbdcaf075e26a261))
+* Try and fix error because of missing database ([81d4f80](https://git.griefed.de/Griefed/ServerPackCreator/commit/81d4f8045ed06bd83525edbb4980dde8afa2881e))
+
+
+### 🛠 Fixes
+
+* -Dlog4j2.formatMsgNoLookups=true to prevent log4j2 vulnerability, added via customziable OTHERARGS in scripts. Move java path to JAVA for customizability (is that a word?) ([ff7dc52](https://git.griefed.de/Griefed/ServerPackCreator/commit/ff7dc52f23ed5e1e2abc92f33c9964225c083dcb))
+* Correctly compare user input with variable in start.bat, resulting in creation of eula.txt if user enters "I agree" ([224cbb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/224cbb3874830c7ff2cce83e403eb27470244aa8))
+* Implement log4j exploit protection ([971fc4f](https://git.griefed.de/Griefed/ServerPackCreator/commit/971fc4fe7cfa362b48197d0222373a884c517f92))
+* More hardening against CVE-2021-44228 ([eaa4668](https://git.griefed.de/Griefed/ServerPackCreator/commit/eaa4668731ded0145f47d810d65dbf703306009c))
+* Use inverted order array for Fabric version when checking for Fabric version upon config load and therefore set correct Fabric version. ([de5cdcf](https://git.griefed.de/Griefed/ServerPackCreator/commit/de5cdcf0b1bf1f81c812bd685dc41a5ef74b7f09))
+* **deps:** update dependency core-js to v3.19.3 ([f7a3140](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7a314067fae89105aed95cae95188c827812c2f))
+* **deps:** update dependency vue to v3.2.24 ([4b44938](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b4493876f4476c6ecc90497bbc621e1aa1b545a))
+* **deps:** update dependency vue to v3.2.26 ([be664e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/be664e84c506155157e879f42b50426b0f8e7800))
+
+
+### Other
+
+* Update git index for gradlew so execution is always allowed ([057b6c2](https://git.griefed.de/Griefed/ServerPackCreator/commit/057b6c2e1514f5287596e4004cbbb790f34c1d12))
+* **deps:** pin dependencies ([f6d8822](https://git.griefed.de/Griefed/ServerPackCreator/commit/f6d88221cb966c739365f352b2a9c6bb660eeb17))
+* **deps:** update dependency @quasar/app to v3.2.4 ([e33df47](https://git.griefed.de/Griefed/ServerPackCreator/commit/e33df47cb0182788a995f55a7a1852f3d75919d4))
+* **deps:** update dependency eslint to v8.4.1 ([2db3a36](https://git.griefed.de/Griefed/ServerPackCreator/commit/2db3a36ae3f5f12e1263fbb91d5a7984804c58a8))
+* **deps:** update dependency eslint-plugin-vue to v8.2.0 ([e2df4dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/e2df4dc25fae418fdf495d7c2d4acbf1cae68567))
+* **deps:** update dependency gradle to v7.3.1 ([6964401](https://git.griefed.de/Griefed/ServerPackCreator/commit/6964401eddbfadb265bb15fbd8a1aacfc5e6ea50))
+* **deps:** update dependency org.apache.logging.log4j:log4j-web to v2.15.0 ([1018e10](https://git.griefed.de/Griefed/ServerPackCreator/commit/1018e106aeffa8439e0f5dd2aeaa2d1e6bf68639))
+* **deps:** update dependency org.apache.logging.log4j:log4j-web to v2.16.0 ([5632772](https://git.griefed.de/Griefed/ServerPackCreator/commit/5632772a0785567f1ed0142c845120aac98a30bb))
+* **deps:** update griefed/baseimage-ubuntu-jdk-8 docker tag to v2 ([e3d9f7c](https://git.griefed.de/Griefed/ServerPackCreator/commit/e3d9f7c907c39619fe0c36504472722140a03cec))
+* **deps:** update npm to v8 ([f446f11](https://git.griefed.de/Griefed/ServerPackCreator/commit/f446f1167dc950ea509c4117743a380957c0502e))
+* **deps:** update spring boot to v2.6.1 ([d0d9f03](https://git.griefed.de/Griefed/ServerPackCreator/commit/d0d9f03b447443fb08da3b4ee517ee85cf08e29d))
+* **deps:** update typescript-eslint monorepo to v5.6.0 ([c27b3b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/c27b3b04ddb8219fd0c80f5e850c243bcb540634))
+
 ## [3.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.10...3.0.0-alpha.11) (2021-11-30)
 
 
