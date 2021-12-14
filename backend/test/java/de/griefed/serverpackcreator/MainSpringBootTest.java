@@ -32,7 +32,7 @@ import java.io.IOException;
 
 @SpringBootTest(classes = MainSpringBoot.class)
 @TestPropertySource(
-        value = "file:backend/test/resources/application.properties")
+        value = "file:./backend/test/resources/application.properties")
 public class MainSpringBootTest {
 
     private final DefaultFiles DEFAULTFILES;

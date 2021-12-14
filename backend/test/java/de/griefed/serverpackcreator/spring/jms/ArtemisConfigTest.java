@@ -37,6 +37,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessagePostProcessor;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -47,10 +48,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
 
-//@ExtendWith(SpringExtension.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MainSpringBoot.class)
 @TestPropertySource(
-        value = "file:backend/test/resources/application.properties")
+        value = "file:./backend/test/resources/application.properties")
 public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
