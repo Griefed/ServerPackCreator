@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
+import de.griefed.serverpackcreator.MainSpringBoot;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +36,7 @@ import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessagePostProcessor;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.TestPropertySource;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -46,8 +47,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+//@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = MainSpringBoot.class)
+@TestPropertySource(
+        value = "file:backend/test/resources/application.properties")
 public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
@@ -86,6 +89,7 @@ public class ArtemisConfigTest {
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         DEFAULTFILES.filesSetup();
+        DEFAULTFILES.checkDatabase();
     }
 
     @AfterEach

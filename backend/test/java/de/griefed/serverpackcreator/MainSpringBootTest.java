@@ -25,14 +25,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
+import org.springframework.test.context.TestPropertySource;
 
 import java.io.File;
 import java.io.IOException;
 
-@SpringBootTest(classes = MainSpringBootTest.class)
-@PropertySources({
-        @PropertySource("classpath:application.properties")
-})
+@SpringBootTest(classes = MainSpringBoot.class)
+@TestPropertySource(
+        value = "file:backend/test/resources/application.properties")
 public class MainSpringBootTest {
 
     private final DefaultFiles DEFAULTFILES;
