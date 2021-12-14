@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = MainSpringBoot.class)
+@SpringBootTest
 @TestPropertySource(
         value = "file:./backend/test/resources/application.properties")
 public class ArtemisConfigTest {
