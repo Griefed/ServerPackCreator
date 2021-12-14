@@ -29,7 +29,7 @@ import org.springframework.context.annotation.PropertySources;
 import java.io.File;
 import java.io.IOException;
 
-@SpringBootTest(classes = MainSpringBoot.class)
+@SpringBootTest
 @PropertySources({
         @PropertySource("classpath:application.properties")
 })

@@ -51,7 +51,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = MainSpringBoot.class)
+@SpringBootTest
 @PropertySources({
         @PropertySource("classpath:application.properties")
 })
