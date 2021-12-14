@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
-import de.griefed.serverpackcreator.MainSpringBoot;
+import de.griefed.serverpackcreator.MainSpringBootTest;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -32,11 +32,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessagePostProcessor;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.jms.JMSException;
@@ -49,9 +50,10 @@ import java.util.Collections;
 import java.util.Objects;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest
-@TestPropertySource(
-        value = "file:./backend/test/resources/application.properties")
+@SpringBootTest(classes = MainSpringBootTest.class)
+@PropertySources({
+        @PropertySource("classpath:application.properties")
+})
 public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
@@ -71,11 +73,6 @@ public class ArtemisConfigTest {
     ArtemisConfigTest(JmsTemplate injectedJmsTemplate) {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            FileUtils.copyFile(new File("backend/test/resources/serverpackcreator.db"),new File("serverpackcreator.db"));
         } catch (IOException e) {
             e.printStackTrace();
         }
