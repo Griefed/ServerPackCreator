@@ -52,9 +52,6 @@ import java.util.Objects;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-@PropertySources({
-        @PropertySource("classpath:application.properties")
-})
 public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
