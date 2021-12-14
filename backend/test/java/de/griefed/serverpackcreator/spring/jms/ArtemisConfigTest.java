@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
+import de.griefed.serverpackcreator.MainSpringBoot;
 import de.griefed.serverpackcreator.MainSpringBootTest;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
@@ -50,7 +51,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = MainSpringBootTest.class)
+@SpringBootTest(classes = MainSpringBoot.class)
 @PropertySources({
         @PropertySource("classpath:application.properties")
 })
@@ -58,7 +59,7 @@ public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
 
-    private JmsTemplate jmsTemplate;
+    private final JmsTemplate jmsTemplate;
 
     private final String QUEUE_UNIQUE_ID = "unique_id";
     private final String QUEUE_TYPE = "type";
