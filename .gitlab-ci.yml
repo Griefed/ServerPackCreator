@@ -375,11 +375,3 @@ Build Docker PreRelease:
     --file Dockerfile.webservice .
   rules:
   - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
-
-sast:
-  stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
-- template: Security/Secret-Detection.gitlab-ci.yml
-variables:
-  SECURE_LOG_LEVEL: debug
