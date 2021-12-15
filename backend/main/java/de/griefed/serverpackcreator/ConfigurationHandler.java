@@ -148,6 +148,9 @@ public class ConfigurationHandler {
      * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
     public boolean checkConfiguration(File configFile, boolean shouldModpackBeCreated, ConfigurationModel configurationModel, List<String> encounteredErrors) {
+        /*
+         * TODO: Rewrite so configs from file are passed to checkConfiguration(boolean shouldModpackBeCreated, ConfigurationModel configurationModel) Makes future refactorings easier
+         */
         boolean configHasError = false;
 
         if (encounteredErrors == null) {
@@ -343,6 +346,9 @@ public class ConfigurationHandler {
      * @return Boolean. Returns true if an error is found during configuration check.
      */
     boolean isDir(FileConfig config, ConfigurationModel configurationModel, List<String> encounteredErrors) {
+        /*
+         * TODO: Rewrite so configs from file are passed to isDir(ConfigurationModel configurationModel, List<String> encounteredErrors). Makes future refactorings easier
+         */
         boolean configHasError = false;
         config.load();
 
