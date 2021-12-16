@@ -15,7 +15,6 @@
           <option value="cleanFrontend" />
           <option value="assembleFrontend" />
           <option value="copyDist" />
-          <option value="check" />
           <option value="build" />
           <option value="createExe" />
         </list>
