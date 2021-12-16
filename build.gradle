@@ -9,8 +9,6 @@ plugins {
 
     id 'maven-publish'
 
-    id "com.github.spotbugs" version "5.0.2"
-
     id 'edu.sc.seis.launch4j' version '2.5.1'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
 
@@ -45,20 +43,6 @@ sourceSets {
             srcDirs = ['backend/test/resources']
         }
     }
-}
-
-spotbugs {
-    ignoreFailures = false
-    showStackTraces = true
-    showProgress = true
-    effort = 'MAX'
-    reportLevel = 'high'
-    visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
-    omitVisitors = [ 'FindNonShortCircuit' ]
-    reportsDir = file("$buildDir/spotbugs")
-    maxHeapSize = '2g'
-    extraArgs = [ '-nested:false' ]
-    jvmArgs = [ '-Duser.language=en','-Dlog4j2.formatMsgNoLookups=true' ]
 }
 
 // Launch4j builds our ServerPackCreator.exe.
