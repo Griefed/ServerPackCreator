@@ -73,12 +73,668 @@
 <div class="serializedFormContainer">
 <ul class="blockList">
 <li class="blockList">
-<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.gui</h2>
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator</h2>
 <ul class="blockList">
-<li class="blockList"><a name="de.griefed.serverpackcreator.gui.AboutTab">
+<li class="blockList"><a name="de.griefed.serverpackcreator.ApplicationProperties">
 <!--   -->
 </a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/AboutTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.AboutTab</a> extends java.awt.Component implements Serializable</h3>
+<h3>Class <a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">de.griefed.serverpackcreator.ApplicationProperties</a> extends java.util.Properties implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockList">
+<h4>LOG</h4>
+<pre>org.apache.logging.log4j.Logger LOG</pre>
+</li>
+<li class="blockList">
+<h4>FILE_SERVERPACKCREATOR_PROPERTIES</h4>
+<pre>java.io.File FILE_SERVERPACKCREATOR_PROPERTIES</pre>
+</li>
+<li class="blockList">
+<h4>FILE_WINDOWS</h4>
+<pre>java.io.File FILE_WINDOWS</pre>
+</li>
+<li class="blockList">
+<h4>FILE_LINUX</h4>
+<pre>java.io.File FILE_LINUX</pre>
+</li>
+<li class="blockList">
+<h4>FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS</h4>
+<pre>java.io.File FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS</pre>
+</li>
+<li class="blockList">
+<h4>FALLBACK_MODS_DEFAULT_ASSTRING</h4>
+<pre>java.lang.String FALLBACK_MODS_DEFAULT_ASSTRING</pre>
+</li>
+<li class="blockList">
+<h4>LIST_FALLBACK_MODS_DEFAULT</h4>
+<pre>java.util.List&lt;E&gt; LIST_FALLBACK_MODS_DEFAULT</pre>
+</li>
+<li class="blockList">
+<h4>FILE_CONFIG</h4>
+<pre>java.io.File FILE_CONFIG</pre>
+</li>
+<li class="blockList">
+<h4>FILE_CONFIG_OLD</h4>
+<pre>java.io.File FILE_CONFIG_OLD</pre>
+</li>
+<li class="blockList">
+<h4>FILE_SERVER_PROPERTIES</h4>
+<pre>java.io.File FILE_SERVER_PROPERTIES</pre>
+</li>
+<li class="blockList">
+<h4>FILE_SERVER_ICON</h4>
+<pre>java.io.File FILE_SERVER_ICON</pre>
+</li>
+<li class="blockList">
+<h4>FILE_MANIFEST_MINECRAFT</h4>
+<pre>java.io.File FILE_MANIFEST_MINECRAFT</pre>
+</li>
+<li class="blockList">
+<h4>FILE_MANIFEST_FORGE</h4>
+<pre>java.io.File FILE_MANIFEST_FORGE</pre>
+</li>
+<li class="blockList">
+<h4>FILE_MANIFEST_FABRIC</h4>
+<pre>java.io.File FILE_MANIFEST_FABRIC</pre>
+</li>
+<li class="blockList">
+<h4>FILE_MANIFEST_FABRIC_INSTALLER</h4>
+<pre>java.io.File FILE_MANIFEST_FABRIC_INSTALLER</pre>
+</li>
+<li class="blockList">
+<h4>FILE_SERVERPACKCREATOR_DATABASE</h4>
+<pre>java.io.File FILE_SERVERPACKCREATOR_DATABASE</pre>
+</li>
+<li class="blockList">
+<h4>PATH_FILE_MANIFEST_MINECRAFT</h4>
+<pre>java.io.File PATH_FILE_MANIFEST_MINECRAFT</pre>
+</li>
+<li class="blockList">
+<h4>PATH_FILE_MANIFEST_FORGE</h4>
+<pre>java.io.File PATH_FILE_MANIFEST_FORGE</pre>
+</li>
+<li class="blockList">
+<h4>PATH_FILE_MANIFEST_FABRIC</h4>
+<pre>java.io.File PATH_FILE_MANIFEST_FABRIC</pre>
+</li>
+<li class="blockList">
+<h4>PATH_FILE_MANIFEST_FABRIC_INSTALLER</h4>
+<pre>java.io.File PATH_FILE_MANIFEST_FABRIC_INSTALLER</pre>
+</li>
+<li class="blockList">
+<h4>directoryServerPacks</h4>
+<pre>java.lang.String directoryServerPacks</pre>
+<div class="block">The directory in which server packs will be generated and stored in, as well as server pack ZIP-archives.
+ Default is ./server-packs</div>
+</li>
+<li class="blockList">
+<h4>listFallbackMods</h4>
+<pre>java.util.List&lt;E&gt; listFallbackMods</pre>
+<div class="block">List of mods which should be excluded from server packs.
+ Default is AdvancementPlaques-,AmbientSounds_,backtools-,BetterAdvancements-,BetterAnimationsCollection-,BetterDarkMode-,betterf3-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,Blur-,catalogue-,cherishedworlds-,classicbar-,clickadv-,ClientTweaks_,configured-,Controlling-,CTM-,customdiscordrpc-,CustomMainMenu-,defaultoptions-,DefaultOptions_,desiredservers-,Ding-,drippyloadingscreen-,drippyloadingscreen_,Durability101-,dynmus-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,eiramoticons-,EiraMoticons_,EnchantmentDescriptions-,EquipmentCompare-,extremesoundmuffler-,extremeSoundMuffler-,Fallingleaves-,fallingleaves-,fancymenu_,findme-,flickerfix-,FpsReducer-,FullscreenWindowed-,WindowedFullscreen-,InventoryEssentials_,InventorySpam-,invtweaks-,InventoryTweaks-,ItemBorders-,itemzoom,itlt-,jeed-,jeiintegration_,JustEnoughProfessions-,JEITweaker-,justenoughbeacons-,JustEnoughCalculation-,jehc-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-,keywizard-,konkrete_,lazydfu-,LegendaryTooltips-,LightOverlay-,light-overlay-,LLOverlayReloaded-,loadmyresources_,lootbeams-,mcbindtype-,modnametooltip_,modnametooltip-,MouseTweaks-,multihotbar-,MyServerIsCompatible-,Neat,NotifMod-,OldJavaWarning-,ornaments-,overloadedarmorbar-,PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-,ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-,sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-,Toast Control-,Toast-Control-,torohealth-,toughnessbar-,TravelersTitles-,WorldNameRandomizer-</div>
+</li>
+<li class="blockList">
+<h4>listDirectoriesExclude</h4>
+<pre>java.util.List&lt;E&gt; listDirectoriesExclude</pre>
+<div class="block">List of directories which should be excluded from server packs.
+ Default is overrides, packmenu, resourcepacks, server_pack, fancymenu.</div>
+</li>
+<li class="blockList">
+<h4>curseControllerRegenerationEnabled</h4>
+<pre>boolean curseControllerRegenerationEnabled</pre>
+<div class="block">When running as a webservice: Whether regeneration of server packs, that have already been generated, is enabled.
+ Default is false.</div>
+</li>
+<li class="blockList">
+<h4>listCheckAgainstNewEntry</h4>
+<pre>java.util.List&lt;E&gt; listCheckAgainstNewEntry</pre>
+<div class="block">List of directories which must not be excluded from server packs.
+ Default is mods, config, defaultconfigs, scripts, saves, seeds, libraries.</div>
+</li>
+<li class="blockList">
+<h4>queueMaxDiskUsage</h4>
+<pre>int queueMaxDiskUsage</pre>
+<div class="block">When running as a webservice: Maximum disk usage in % at which JMS/Artemis will stop storing message in the queue saved on disk.
+ Default is 90%.</div>
+</li>
+<li class="blockList">
+<h4>scheduleDatabaseCleanup</h4>
+<pre>java.lang.String scheduleDatabaseCleanup</pre>
+<div class="block">When running as a webservice: Cron-schedule for when ServerPackCreator should run a database-cleanup. Set to <code>-</code> to disable.
+ Default is 0 0 24 * *.</div>
+</li>
+<li class="blockListLast">
+<h4>saveLoadedConfiguration</h4>
+<pre>boolean saveLoadedConfiguration</pre>
+<div class="block">Whether the manually loaded configuration file should be saved as well as the default serverpackcreator.conf. Setting this to true will make ServerPackCreator save serverpackcreator.conf as well as the last loaded configuration-file.
+ Default is false.</div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList">
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.curseforge</h2>
+<ul class="blockList">
+<li class="blockList"><a name="de.griefed.serverpackcreator.curseforge.InvalidFileException">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/curseforge/InvalidFileException.html" title="class in de.griefed.serverpackcreator.curseforge">de.griefed.serverpackcreator.curseforge.InvalidFileException</a> extends java.lang.Exception implements Serializable</h3>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.curseforge.InvalidModpackException">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/curseforge/InvalidModpackException.html" title="class in de.griefed.serverpackcreator.curseforge">de.griefed.serverpackcreator.curseforge.InvalidModpackException</a> extends java.lang.Exception implements Serializable</h3>
+</li>
+</ul>
+</li>
+<li class="blockList">
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.i18n</h2>
+<ul class="blockList">
+<li class="blockList"><a name="de.griefed.serverpackcreator.i18n.IncorrectLanguageException">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/i18n/IncorrectLanguageException.html" title="class in de.griefed.serverpackcreator.i18n">de.griefed.serverpackcreator.i18n.IncorrectLanguageException</a> extends java.lang.Exception implements Serializable</h3>
+</li>
+</ul>
+</li>
+<li class="blockList">
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.spring.models</h2>
+<ul class="blockList">
+<li class="blockList"><a name="de.griefed.serverpackcreator.spring.models.GenerateCurseProject">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/spring/models/GenerateCurseProject.html" title="class in de.griefed.serverpackcreator.spring.models">de.griefed.serverpackcreator.spring.models.GenerateCurseProject</a> extends <a href="de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">Task</a> implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockListLast">
+<h4>projectIDAndFileID</h4>
+<pre>java.lang.String projectIDAndFileID</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.spring.models.ScanCurseProject">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/spring/models/ScanCurseProject.html" title="class in de.griefed.serverpackcreator.spring.models">de.griefed.serverpackcreator.spring.models.ScanCurseProject</a> extends <a href="de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">Task</a> implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockListLast">
+<h4>projectIDAndFileID</h4>
+<pre>java.lang.String projectIDAndFileID</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.spring.models.Task">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">de.griefed.serverpackcreator.spring.models.Task</a> extends java.lang.Object implements Serializable</h3>
+</li>
+</ul>
+</li>
+<li class="blockList">
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.swing</h2>
+<ul class="blockList">
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.MenuBar">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/MenuBar.html" title="class in de.griefed.serverpackcreator.swing">de.griefed.serverpackcreator.swing.MenuBar</a> extends java.awt.Component implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockList">
+<h4>applicationHome</h4>
+<pre>org.springframework.boot.system.ApplicationHome applicationHome</pre>
+</li>
+<li class="blockList">
+<h4>CLIPBOARD</h4>
+<pre>java.awt.datatransfer.Clipboard CLIPBOARD</pre>
+</li>
+<li class="blockList">
+<h4>LOCALIZATIONMANAGER</h4>
+<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
+</li>
+<li class="blockList">
+<h4>LIGHTTHEME</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/themes/LightTheme.html" title="class in de.griefed.serverpackcreator.swing.themes">LightTheme</a> LIGHTTHEME</pre>
+</li>
+<li class="blockList">
+<h4>DARKTHEME</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/themes/DarkTheme.html" title="class in de.griefed.serverpackcreator.swing.themes">DarkTheme</a> DARKTHEME</pre>
+</li>
+<li class="blockList">
+<h4>FRAME_SERVERPACKCREATOR</h4>
+<pre>javax.swing.JFrame FRAME_SERVERPACKCREATOR</pre>
+</li>
+<li class="blockList">
+<h4>TAB_CREATESERVERPACK</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a> TAB_CREATESERVERPACK</pre>
+</li>
+<li class="blockList">
+<h4>TABBEDPANE</h4>
+<pre>javax.swing.JTabbedPane TABBEDPANE</pre>
+</li>
+<li class="blockList">
+<h4>CLOSEEVENT</h4>
+<pre>java.awt.event.WindowEvent CLOSEEVENT</pre>
+</li>
+<li class="blockList">
+<h4>LAF_DARK</h4>
+<pre>mdlaf.MaterialLookAndFeel LAF_DARK</pre>
+</li>
+<li class="blockList">
+<h4>LAF_LIGHT</h4>
+<pre>mdlaf.MaterialLookAndFeel LAF_LIGHT</pre>
+</li>
+<li class="blockList">
+<h4>CHOOSERDIMENSION</h4>
+<pre>java.awt.Dimension CHOOSERDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>JAVAARGSDIMENSION</h4>
+<pre>java.awt.Dimension JAVAARGSDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>ABOUTDIMENSION</h4>
+<pre>java.awt.Dimension ABOUTDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>FILETOOLARGEDIMENSION</h4>
+<pre>java.awt.Dimension FILETOOLARGEDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>HELPDIMENSION</h4>
+<pre>java.awt.Dimension HELPDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>HELPICON</h4>
+<pre>javax.swing.ImageIcon HELPICON</pre>
+</li>
+<li class="blockList">
+<h4>ICON_HASTEBIN</h4>
+<pre>javax.swing.ImageIcon ICON_HASTEBIN</pre>
+</li>
+<li class="blockList">
+<h4>MENUBAR</h4>
+<pre>javax.swing.JMenuBar MENUBAR</pre>
+</li>
+<li class="blockList">
+<h4>HELPWINDOWTEXT</h4>
+<pre>java.lang.String HELPWINDOWTEXT</pre>
+</li>
+<li class="blockList">
+<h4>ABOUTWINDOWTEXT</h4>
+<pre>java.lang.String ABOUTWINDOWTEXT</pre>
+</li>
+<li class="blockList">
+<h4>FILETOOLARGETEXT</h4>
+<pre>java.lang.String FILETOOLARGETEXT</pre>
+</li>
+<li class="blockList">
+<h4>FILETOOLARGETITLE</h4>
+<pre>java.lang.String FILETOOLARGETITLE</pre>
+</li>
+<li class="blockList">
+<h4>JAVAARGSOPTIONS</h4>
+<pre>java.lang.String[] JAVAARGSOPTIONS</pre>
+</li>
+<li class="blockList">
+<h4>JAVAARGSSELECTIONS</h4>
+<pre>java.lang.String[] JAVAARGSSELECTIONS</pre>
+</li>
+<li class="blockList">
+<h4>HASTEOPTIONS</h4>
+<pre>java.lang.String[] HASTEOPTIONS</pre>
+</li>
+<li class="blockList">
+<h4>HELPTEXTS</h4>
+<pre>java.lang.String[] HELPTEXTS</pre>
+</li>
+<li class="blockList">
+<h4>HELPSELECTIONS</h4>
+<pre>java.lang.String[] HELPSELECTIONS</pre>
+</li>
+<li class="blockList">
+<h4>JAVAARGS</h4>
+<pre>javax.swing.JTextField JAVAARGS</pre>
+</li>
+<li class="blockList">
+<h4>helpWindowDocument</h4>
+<pre>javax.swing.text.StyledDocument helpWindowDocument</pre>
+</li>
+<li class="blockList">
+<h4>aboutWindowDocument</h4>
+<pre>javax.swing.text.StyledDocument aboutWindowDocument</pre>
+</li>
+<li class="blockList">
+<h4>configWindowDocument</h4>
+<pre>javax.swing.text.StyledDocument configWindowDocument</pre>
+</li>
+<li class="blockList">
+<h4>spcLogWindowDocument</h4>
+<pre>javax.swing.text.StyledDocument spcLogWindowDocument</pre>
+</li>
+<li class="blockList">
+<h4>fileTooLargeWindowDocument</h4>
+<pre>javax.swing.text.StyledDocument fileTooLargeWindowDocument</pre>
+</li>
+<li class="blockList">
+<h4>aboutAttributeSet</h4>
+<pre>javax.swing.text.SimpleAttributeSet aboutAttributeSet</pre>
+</li>
+<li class="blockList">
+<h4>helpAttributeSet</h4>
+<pre>javax.swing.text.SimpleAttributeSet helpAttributeSet</pre>
+</li>
+<li class="blockList">
+<h4>configAttributeSet</h4>
+<pre>javax.swing.text.SimpleAttributeSet configAttributeSet</pre>
+</li>
+<li class="blockList">
+<h4>spcLogAttributeSet</h4>
+<pre>javax.swing.text.SimpleAttributeSet spcLogAttributeSet</pre>
+</li>
+<li class="blockList">
+<h4>fileTooLargeAttributeSet</h4>
+<pre>javax.swing.text.SimpleAttributeSet fileTooLargeAttributeSet</pre>
+</li>
+<li class="blockList">
+<h4>helpWindowTextPane</h4>
+<pre>javax.swing.JTextPane helpWindowTextPane</pre>
+</li>
+<li class="blockList">
+<h4>aboutWindowTextPane</h4>
+<pre>javax.swing.JTextPane aboutWindowTextPane</pre>
+</li>
+<li class="blockList">
+<h4>configWindowTextPane</h4>
+<pre>javax.swing.JTextPane configWindowTextPane</pre>
+</li>
+<li class="blockList">
+<h4>spcLogWindowTextPane</h4>
+<pre>javax.swing.JTextPane spcLogWindowTextPane</pre>
+</li>
+<li class="blockList">
+<h4>fileTooLargeWindowTextPane</h4>
+<pre>javax.swing.JTextPane fileTooLargeWindowTextPane</pre>
+</li>
+<li class="blockList">
+<h4>materialTextPaneUI</h4>
+<pre>mdlaf.components.textpane.MaterialTextPaneUI materialTextPaneUI</pre>
+</li>
+<li class="blockList">
+<h4>materialTextFieldUI</h4>
+<pre>mdlaf.components.textfield.MaterialTextFieldUI materialTextFieldUI</pre>
+</li>
+<li class="blockList">
+<h4>materialComboBoxUI</h4>
+<pre>mdlaf.components.combobox.MaterialComboBoxUI materialComboBoxUI</pre>
+</li>
+<li class="blockList">
+<h4>helpTextArea</h4>
+<pre>javax.swing.JTextArea helpTextArea</pre>
+</li>
+<li class="blockList">
+<h4>helpPanel</h4>
+<pre>javax.swing.JPanel helpPanel</pre>
+</li>
+<li class="blockList">
+<h4>applicationProperties</h4>
+<pre><a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
+</li>
+<li class="blockList">
+<h4>isDarkTheme</h4>
+<pre>boolean isDarkTheme</pre>
+</li>
+<li class="blockList">
+<h4>fileMenu</h4>
+<pre>javax.swing.JMenu fileMenu</pre>
+</li>
+<li class="blockList">
+<h4>editMenu</h4>
+<pre>javax.swing.JMenu editMenu</pre>
+</li>
+<li class="blockList">
+<h4>viewMenu</h4>
+<pre>javax.swing.JMenu viewMenu</pre>
+</li>
+<li class="blockList">
+<h4>aboutMenu</h4>
+<pre>javax.swing.JMenu aboutMenu</pre>
+</li>
+<li class="blockList">
+<h4>file_NewConfigurationMenuItem</h4>
+<pre>javax.swing.JMenuItem file_NewConfigurationMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>file_LoadConfigMenuItem</h4>
+<pre>javax.swing.JMenuItem file_LoadConfigMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>file_SaveConfigMenuItem</h4>
+<pre>javax.swing.JMenuItem file_SaveConfigMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>file_SaveAsConfigMenuItem</h4>
+<pre>javax.swing.JMenuItem file_SaveAsConfigMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>file_UploadConfigurationToHasteBin</h4>
+<pre>javax.swing.JMenuItem file_UploadConfigurationToHasteBin</pre>
+</li>
+<li class="blockList">
+<h4>file_UploadServerPackCreatorLogToHasteBin</h4>
+<pre>javax.swing.JMenuItem file_UploadServerPackCreatorLogToHasteBin</pre>
+</li>
+<li class="blockList">
+<h4>file_ExitConfigMenuItem</h4>
+<pre>javax.swing.JMenuItem file_ExitConfigMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>edit_SwitchTheme</h4>
+<pre>javax.swing.JMenuItem edit_SwitchTheme</pre>
+</li>
+<li class="blockList">
+<h4>edit_ChangeJavaArgs</h4>
+<pre>javax.swing.JMenuItem edit_ChangeJavaArgs</pre>
+</li>
+<li class="blockList">
+<h4>edit_OpenInEditorServerProperties</h4>
+<pre>javax.swing.JMenuItem edit_OpenInEditorServerProperties</pre>
+</li>
+<li class="blockList">
+<h4>edit_OpenInEditorServerIcon</h4>
+<pre>javax.swing.JMenuItem edit_OpenInEditorServerIcon</pre>
+</li>
+<li class="blockList">
+<h4>view_OpenServerPackCreatorDirectoryMenuItem</h4>
+<pre>javax.swing.JMenuItem view_OpenServerPackCreatorDirectoryMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>view_OpenServerPacksDirectoryMenuItem</h4>
+<pre>javax.swing.JMenuItem view_OpenServerPacksDirectoryMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>view_OpenServerFilesDirectoryMenuItem</h4>
+<pre>javax.swing.JMenuItem view_OpenServerFilesDirectoryMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>view_OpenAddonsDirectoryMenuItem</h4>
+<pre>javax.swing.JMenuItem view_OpenAddonsDirectoryMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>view_ExampleAddonRepositoryMenuItem</h4>
+<pre>javax.swing.JMenuItem view_ExampleAddonRepositoryMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>about_OpenAboutWindowMenuItem</h4>
+<pre>javax.swing.JMenuItem about_OpenAboutWindowMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>about_OpenGitHubPageMenuItem</h4>
+<pre>javax.swing.JMenuItem about_OpenGitHubPageMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>about_OpenGitHubIssuesPageMenuItem</h4>
+<pre>javax.swing.JMenuItem about_OpenGitHubIssuesPageMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>about_OpenDonationsPageMenuItem</h4>
+<pre>javax.swing.JMenuItem about_OpenDonationsPageMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>about_OpenReleasesPageMenuItem</h4>
+<pre>javax.swing.JMenuItem about_OpenReleasesPageMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>about_OpenDiscordLinkMenuItem</h4>
+<pre>javax.swing.JMenuItem about_OpenDiscordLinkMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>help_OpenHelpWindowMenuItem</h4>
+<pre>javax.swing.JMenuItem help_OpenHelpWindowMenuItem</pre>
+</li>
+<li class="blockList">
+<h4>configChooser</h4>
+<pre>javax.swing.JFileChooser configChooser</pre>
+</li>
+<li class="blockList">
+<h4>helpComboBoxModel</h4>
+<pre>javax.swing.DefaultComboBoxModel&lt;E&gt; helpComboBoxModel</pre>
+</li>
+<li class="blockList">
+<h4>helpComboBox</h4>
+<pre>javax.swing.JComboBox&lt;E&gt; helpComboBox</pre>
+</li>
+<li class="blockListLast">
+<h4>lastLoadedConfigurationFile</h4>
+<pre>java.io.File lastLoadedConfigurationFile</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.SwingGuiInitializer">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html" title="class in de.griefed.serverpackcreator.swing">de.griefed.serverpackcreator.swing.SwingGuiInitializer</a> extends javax.swing.JPanel implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockList">
+<h4>ICON_SERVERPACKCREATOR_BANNER</h4>
+<pre>javax.swing.ImageIcon ICON_SERVERPACKCREATOR_BANNER</pre>
+</li>
+<li class="blockList">
+<h4>ICON_SERVERPACKCREATOR</h4>
+<pre>java.awt.Image ICON_SERVERPACKCREATOR</pre>
+</li>
+<li class="blockList">
+<h4>DIMENSION_WINDOW</h4>
+<pre>java.awt.Dimension DIMENSION_WINDOW</pre>
+</li>
+<li class="blockList">
+<h4>LOCALIZATIONMANAGER</h4>
+<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
+</li>
+<li class="blockList">
+<h4>CONFIGURATIONHANDLER</h4>
+<pre><a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a> CONFIGURATIONHANDLER</pre>
+</li>
+<li class="blockList">
+<h4>CURSECREATEMODPACK</h4>
+<pre><a href="de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a> CURSECREATEMODPACK</pre>
+</li>
+<li class="blockList">
+<h4>CREATESERVERPACK</h4>
+<pre><a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a> CREATESERVERPACK</pre>
+</li>
+<li class="blockList">
+<h4>ADDONSHANDLER</h4>
+<pre><a href="de/griefed/serverpackcreator/AddonsHandler.html" title="class in de.griefed.serverpackcreator">AddonsHandler</a> ADDONSHANDLER</pre>
+</li>
+<li class="blockList">
+<h4>VERSIONLISTER</h4>
+<pre><a href="de/griefed/serverpackcreator/utilities/VersionLister.html" title="class in de.griefed.serverpackcreator.utilities">VersionLister</a> VERSIONLISTER</pre>
+</li>
+<li class="blockList">
+<h4>LIGHTTHEME</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/themes/LightTheme.html" title="class in de.griefed.serverpackcreator.swing.themes">LightTheme</a> LIGHTTHEME</pre>
+</li>
+<li class="blockList">
+<h4>DARKTHEME</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/themes/DarkTheme.html" title="class in de.griefed.serverpackcreator.swing.themes">DarkTheme</a> DARKTHEME</pre>
+</li>
+<li class="blockList">
+<h4>LAF_LIGHT</h4>
+<pre>mdlaf.MaterialLookAndFeel LAF_LIGHT</pre>
+</li>
+<li class="blockList">
+<h4>LAF_DARK</h4>
+<pre>mdlaf.MaterialLookAndFeel LAF_DARK</pre>
+</li>
+<li class="blockList">
+<h4>BACKGROUNDPANEL</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.swing.utilities">BackgroundPanel</a> BACKGROUNDPANEL</pre>
+</li>
+<li class="blockList">
+<h4>FRAME_SERVERPACKCREATOR</h4>
+<pre>javax.swing.JFrame FRAME_SERVERPACKCREATOR</pre>
+</li>
+<li class="blockList">
+<h4>TAB_CREATESERVERPACK</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a> TAB_CREATESERVERPACK</pre>
+</li>
+<li class="blockList">
+<h4>TAB_LOG_SERVERPACKCREATOR</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/TabServerPackCreatorLog.html" title="class in de.griefed.serverpackcreator.swing">TabServerPackCreatorLog</a> TAB_LOG_SERVERPACKCREATOR</pre>
+</li>
+<li class="blockList">
+<h4>TAB_LOG_MODLOADERINSTALLER</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/TabModloaderInstallerLog.html" title="class in de.griefed.serverpackcreator.swing">TabModloaderInstallerLog</a> TAB_LOG_MODLOADERINSTALLER</pre>
+</li>
+<li class="blockList">
+<h4>TAB_LOG_ADDONSHANDLER</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/TabAddonsHandlerLog.html" title="class in de.griefed.serverpackcreator.swing">TabAddonsHandlerLog</a> TAB_LOG_ADDONSHANDLER</pre>
+</li>
+<li class="blockList">
+<h4>TABBEDPANE</h4>
+<pre>javax.swing.JTabbedPane TABBEDPANE</pre>
+</li>
+<li class="blockList">
+<h4>MENUBAR</h4>
+<pre><a href="de/griefed/serverpackcreator/swing/MenuBar.html" title="class in de.griefed.serverpackcreator.swing">MenuBar</a> MENUBAR</pre>
+</li>
+<li class="blockList">
+<h4>bufferedImage</h4>
+<pre>java.awt.image.BufferedImage bufferedImage</pre>
+</li>
+<li class="blockListLast">
+<h4>applicationProperties</h4>
+<pre><a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.TabAddonsHandlerLog">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/TabAddonsHandlerLog.html" title="class in de.griefed.serverpackcreator.swing">de.griefed.serverpackcreator.swing.TabAddonsHandlerLog</a> extends javax.swing.JComponent implements Serializable</h3>
 <ul class="blockList">
 <li class="blockList">
 <h3>Serialized Fields</h3>
@@ -88,73 +744,413 @@
 <pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
 </li>
 <li class="blockList">
-<h4>DIMENSION_MISC_BUTTON</h4>
-<pre>java.awt.Dimension DIMENSION_MISC_BUTTON</pre>
+<h4>applicationProperties</h4>
+<pre><a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
+</li>
+<li class="blockListLast">
+<h4>textArea</h4>
+<pre>javax.swing.JTextArea textArea</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.TabCreateServerPack">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">de.griefed.serverpackcreator.swing.TabCreateServerPack</a> extends javax.swing.JComponent implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockList">
+<h4>FRAME_SERVERPACKCREATOR</h4>
+<pre>javax.swing.JFrame FRAME_SERVERPACKCREATOR</pre>
 </li>
 <li class="blockList">
-<h4>ICON_ISSUE</h4>
-<pre>javax.swing.ImageIcon ICON_ISSUE</pre>
+<h4>CONFIGURATIONHANDLER</h4>
+<pre><a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a> CONFIGURATIONHANDLER</pre>
 </li>
 <li class="blockList">
-<h4>ICON_HASTEBIN</h4>
-<pre>javax.swing.ImageIcon ICON_HASTEBIN</pre>
+<h4>LOCALIZATIONMANAGER</h4>
+<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
 </li>
 <li class="blockList">
-<h4>ICON_PROSPER</h4>
-<pre>javax.swing.ImageIcon ICON_PROSPER</pre>
+<h4>CREATESERVERPACK</h4>
+<pre><a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a> CREATESERVERPACK</pre>
 </li>
 <li class="blockList">
-<h4>CLIPBOARD</h4>
-<pre>java.awt.datatransfer.Clipboard CLIPBOARD</pre>
+<h4>CURSECREATEMODPACK</h4>
+<pre><a href="de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a> CURSECREATEMODPACK</pre>
 </li>
 <li class="blockList">
-<h4>FILE_CONFIG</h4>
-<pre>java.io.File FILE_CONFIG</pre>
+<h4>ADDONSHANDLER</h4>
+<pre><a href="de/griefed/serverpackcreator/AddonsHandler.html" title="class in de.griefed.serverpackcreator">AddonsHandler</a> ADDONSHANDLER</pre>
 </li>
 <li class="blockList">
-<h4>LOG_SERVERPACKCREATOR</h4>
-<pre>java.io.File LOG_SERVERPACKCREATOR</pre>
+<h4>VERSIONLISTER</h4>
+<pre><a href="de/griefed/serverpackcreator/utilities/VersionLister.html" title="class in de.griefed.serverpackcreator.utilities">VersionLister</a> VERSIONLISTER</pre>
 </li>
 <li class="blockList">
-<h4>aboutPanel</h4>
-<pre>javax.swing.JComponent aboutPanel</pre>
+<h4>serverPackGeneratedDocument</h4>
+<pre>javax.swing.text.StyledDocument serverPackGeneratedDocument</pre>
+</li>
+<li class="blockList">
+<h4>serverPackGeneratedAttributeSet</h4>
+<pre>javax.swing.text.SimpleAttributeSet serverPackGeneratedAttributeSet</pre>
+</li>
+<li class="blockList">
+<h4>serverPackGeneratedTextPane</h4>
+<pre>javax.swing.JTextPane serverPackGeneratedTextPane</pre>
+</li>
+<li class="blockList">
+<h4>FOLDERICON</h4>
+<pre>javax.swing.ImageIcon FOLDERICON</pre>
+</li>
+<li class="blockList">
+<h4>STARTGENERATIONICON</h4>
+<pre>javax.swing.ImageIcon STARTGENERATIONICON</pre>
+</li>
+<li class="blockList">
+<h4>FOLDERBUTTONDIMENSION</h4>
+<pre>java.awt.Dimension FOLDERBUTTONDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>STARTDIMENSION</h4>
+<pre>java.awt.Dimension STARTDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>CHOOSERDIMENSION</h4>
+<pre>java.awt.Dimension CHOOSERDIMENSION</pre>
+</li>
+<li class="blockList">
+<h4>BUTTON_MODPACKDIRECTORY</h4>
+<pre>javax.swing.JButton BUTTON_MODPACKDIRECTORY</pre>
+</li>
+<li class="blockList">
+<h4>BUTTON_CLIENTSIDEMODS</h4>
+<pre>javax.swing.JButton BUTTON_CLIENTSIDEMODS</pre>
+</li>
+<li class="blockList">
+<h4>BUTTON_COPYDIRECTORIES</h4>
+<pre>javax.swing.JButton BUTTON_COPYDIRECTORIES</pre>
+</li>
+<li class="blockList">
+<h4>BUTTON_JAVAPATH</h4>
+<pre>javax.swing.JButton BUTTON_JAVAPATH</pre>
+</li>
+<li class="blockList">
+<h4>BUTTON_GENERATESERVERPACK</h4>
+<pre>javax.swing.JButton BUTTON_GENERATESERVERPACK</pre>
+</li>
+<li class="blockList">
+<h4>BUTTON_SERVERICON</h4>
+<pre>javax.swing.JButton BUTTON_SERVERICON</pre>
+</li>
+<li class="blockList">
+<h4>BUTTON_SERVERPROPERTIES</h4>
+<pre>javax.swing.JButton BUTTON_SERVERPROPERTIES</pre>
+</li>
+<li class="blockList">
+<h4>BUTTONGROUP_MODLOADERRADIOBUTTONS</h4>
+<pre>javax.swing.ButtonGroup BUTTONGROUP_MODLOADERRADIOBUTTONS</pre>
+</li>
+<li class="blockList">
+<h4>TWENTY_TEN_ZERO_ZERO</h4>
+<pre>java.awt.Insets TWENTY_TEN_ZERO_ZERO</pre>
+</li>
+<li class="blockList">
+<h4>ZERO_TEN_ZERO_ZERO</h4>
+<pre>java.awt.Insets ZERO_TEN_ZERO_ZERO</pre>
+</li>
+<li class="blockList">
+<h4>ZERO_ONEHUNDRET_ZERO_ZERO</h4>
+<pre>java.awt.Insets ZERO_ONEHUNDRET_ZERO_ZERO</pre>
+</li>
+<li class="blockList">
+<h4>TEN_TEN_ZERO_ZERO</h4>
+<pre>java.awt.Insets TEN_TEN_ZERO_ZERO</pre>
+</li>
+<li class="blockList">
+<h4>ZERO_TEN_ZERO_TEN</h4>
+<pre>java.awt.Insets ZERO_TEN_ZERO_TEN</pre>
+</li>
+<li class="blockList">
+<h4>FIVE_ZERO_FIVE_ZERO</h4>
+<pre>java.awt.Insets FIVE_ZERO_FIVE_ZERO</pre>
+</li>
+<li class="blockList">
+<h4>GRIDBAGCONSTRAINTS</h4>
+<pre>java.awt.GridBagConstraints GRIDBAGCONSTRAINTS</pre>
+</li>
+<li class="blockList">
+<h4>CREATESERVERPACKPANEL</h4>
+<pre>javax.swing.JComponent CREATESERVERPACKPANEL</pre>
+</li>
+<li class="blockList">
+<h4>MATERIALTEXTPANEUI</h4>
+<pre>mdlaf.components.textpane.MaterialTextPaneUI MATERIALTEXTPANEUI</pre>
+</li>
+<li class="blockList">
+<h4>COMBOBOX_MINECRAFTVERSIONS</h4>
+<pre>javax.swing.JComboBox&lt;E&gt; COMBOBOX_MINECRAFTVERSIONS</pre>
+</li>
+<li class="blockList">
+<h4>COMBOBOX_FORGEVERSIONS</h4>
+<pre>javax.swing.JComboBox&lt;E&gt; COMBOBOX_FORGEVERSIONS</pre>
+</li>
+<li class="blockList">
+<h4>COMBOBOX_FABRICVERSIONS</h4>
+<pre>javax.swing.JComboBox&lt;E&gt; COMBOBOX_FABRICVERSIONS</pre>
+</li>
+<li class="blockList">
+<h4>TEXTFIELD_MODPACKDIRECTORY</h4>
+<pre>javax.swing.JTextField TEXTFIELD_MODPACKDIRECTORY</pre>
+</li>
+<li class="blockList">
+<h4>TEXTFIELD_CLIENTSIDEMODS</h4>
+<pre>javax.swing.JTextField TEXTFIELD_CLIENTSIDEMODS</pre>
+</li>
+<li class="blockList">
+<h4>TEXTFIELD_COPYDIRECTORIES</h4>
+<pre>javax.swing.JTextField TEXTFIELD_COPYDIRECTORIES</pre>
+</li>
+<li class="blockList">
+<h4>TEXTFIELD_JAVAPATH</h4>
+<pre>javax.swing.JTextField TEXTFIELD_JAVAPATH</pre>
+</li>
+<li class="blockList">
+<h4>TEXTFIELD_SERVERPACKSUFFIX</h4>
+<pre>javax.swing.JTextField TEXTFIELD_SERVERPACKSUFFIX</pre>
+</li>
+<li class="blockList">
+<h4>TEXTFIELD_SERVERICONPATH</h4>
+<pre>javax.swing.JTextField TEXTFIELD_SERVERICONPATH</pre>
+</li>
+<li class="blockList">
+<h4>TEXTFIELD_SERVERPROPERTIESPATH</h4>
+<pre>javax.swing.JTextField TEXTFIELD_SERVERPROPERTIESPATH</pre>
+</li>
+<li class="blockList">
+<h4>DIRECTORY_CHOOSER</h4>
+<pre>java.io.File DIRECTORY_CHOOSER</pre>
+</li>
+<li class="blockList">
+<h4>applicationProperties</h4>
+<pre><a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
+</li>
+<li class="blockList">
+<h4>labelGenerateServerPack</h4>
+<pre>javax.swing.JLabel labelGenerateServerPack</pre>
+</li>
+<li class="blockList">
+<h4>labelModpackDir</h4>
+<pre>javax.swing.JLabel labelModpackDir</pre>
+</li>
+<li class="blockList">
+<h4>labelClientMods</h4>
+<pre>javax.swing.JLabel labelClientMods</pre>
+</li>
+<li class="blockList">
+<h4>labelCopyDirs</h4>
+<pre>javax.swing.JLabel labelCopyDirs</pre>
+</li>
+<li class="blockList">
+<h4>labelJavaPath</h4>
+<pre>javax.swing.JLabel labelJavaPath</pre>
+</li>
+<li class="blockList">
+<h4>labelMinecraftVersion</h4>
+<pre>javax.swing.JLabel labelMinecraftVersion</pre>
+</li>
+<li class="blockList">
+<h4>labelModloader</h4>
+<pre>javax.swing.JLabel labelModloader</pre>
+</li>
+<li class="blockList">
+<h4>labelModloaderVersion</h4>
+<pre>javax.swing.JLabel labelModloaderVersion</pre>
+</li>
+<li class="blockList">
+<h4>labelServerPackSuffix</h4>
+<pre>javax.swing.JLabel labelServerPackSuffix</pre>
+</li>
+<li class="blockList">
+<h4>labelServerIconPath</h4>
+<pre>javax.swing.JLabel labelServerIconPath</pre>
+</li>
+<li class="blockList">
+<h4>labelServerPropertiesPath</h4>
+<pre>javax.swing.JLabel labelServerPropertiesPath</pre>
+</li>
+<li class="blockList">
+<h4>forgeComboBoxModel</h4>
+<pre>javax.swing.DefaultComboBoxModel&lt;E&gt; forgeComboBoxModel</pre>
+</li>
+<li class="blockList">
+<h4>modpackDirChooser</h4>
+<pre>javax.swing.JFileChooser modpackDirChooser</pre>
+</li>
+<li class="blockList">
+<h4>clientModsChooser</h4>
+<pre>javax.swing.JFileChooser clientModsChooser</pre>
+</li>
+<li class="blockList">
+<h4>copyDirsChooser</h4>
+<pre>javax.swing.JFileChooser copyDirsChooser</pre>
+</li>
+<li class="blockList">
+<h4>javaChooser</h4>
+<pre>javax.swing.JFileChooser javaChooser</pre>
+</li>
+<li class="blockList">
+<h4>serverIconChooser</h4>
+<pre>javax.swing.JFileChooser serverIconChooser</pre>
+</li>
+<li class="blockList">
+<h4>serverPropertiesChooser</h4>
+<pre>javax.swing.JFileChooser serverPropertiesChooser</pre>
+</li>
+<li class="blockList">
+<h4>checkBoxServer</h4>
+<pre>javax.swing.JCheckBox checkBoxServer</pre>
+</li>
+<li class="blockList">
+<h4>checkBoxIcon</h4>
+<pre>javax.swing.JCheckBox checkBoxIcon</pre>
+</li>
+<li class="blockList">
+<h4>checkBoxProperties</h4>
+<pre>javax.swing.JCheckBox checkBoxProperties</pre>
+</li>
+<li class="blockList">
+<h4>checkBoxZIP</h4>
+<pre>javax.swing.JCheckBox checkBoxZIP</pre>
+</li>
+<li class="blockList">
+<h4>chosenModloader</h4>
+<pre>java.lang.String chosenModloader</pre>
+</li>
+<li class="blockList">
+<h4>chosenMinecraftVersion</h4>
+<pre>java.lang.String chosenMinecraftVersion</pre>
+</li>
+<li class="blockList">
+<h4>chosenFabricVersion</h4>
+<pre>java.lang.String chosenFabricVersion</pre>
+</li>
+<li class="blockList">
+<h4>chosenForgeVersion</h4>
+<pre>java.lang.String chosenForgeVersion</pre>
+</li>
+<li class="blockList">
+<h4>javaArgs</h4>
+<pre>java.lang.String javaArgs</pre>
+</li>
+<li class="blockList">
+<h4>forgeRadioButton</h4>
+<pre>javax.swing.JRadioButton forgeRadioButton</pre>
+</li>
+<li class="blockListLast">
+<h4>fabricRadioButton</h4>
+<pre>javax.swing.JRadioButton fabricRadioButton</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.TabModloaderInstallerLog">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/TabModloaderInstallerLog.html" title="class in de.griefed.serverpackcreator.swing">de.griefed.serverpackcreator.swing.TabModloaderInstallerLog</a> extends javax.swing.JComponent implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockList">
+<h4>LOCALIZATIONMANAGER</h4>
+<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
+</li>
+<li class="blockList">
+<h4>applicationProperties</h4>
+<pre><a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
 </li>
 <li class="blockList">
 <h4>textArea</h4>
 <pre>javax.swing.JTextArea textArea</pre>
 </li>
-<li class="blockList">
-<h4>configURL</h4>
-<pre>java.lang.String configURL</pre>
-</li>
-<li class="blockList">
-<h4>spclogURL</h4>
-<pre>java.lang.String spclogURL</pre>
-</li>
-<li class="blockList">
-<h4>textAreaContent</h4>
-<pre>java.lang.String textAreaContent</pre>
-</li>
-<li class="blockList">
-<h4>stringSelection</h4>
-<pre>java.awt.datatransfer.StringSelection stringSelection</pre>
-</li>
-<li class="blockList">
-<h4>options</h4>
-<pre>java.lang.String[] options</pre>
-</li>
 <li class="blockListLast">
-<h4>userResponse</h4>
-<pre>int userResponse</pre>
+<h4>i</h4>
+<pre>int i</pre>
 </li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="blockList"><a name="de.griefed.serverpackcreator.gui.BackgroundPanel">
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.TabServerPackCreatorLog">
 <!--   -->
 </a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.BackgroundPanel</a> extends javax.swing.JPanel implements Serializable</h3>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/TabServerPackCreatorLog.html" title="class in de.griefed.serverpackcreator.swing">de.griefed.serverpackcreator.swing.TabServerPackCreatorLog</a> extends javax.swing.JComponent implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockList">
+<h4>LOCALIZATIONMANAGER</h4>
+<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
+</li>
+<li class="blockList">
+<h4>applicationProperties</h4>
+<pre><a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
+</li>
+<li class="blockListLast">
+<h4>textArea</h4>
+<pre>javax.swing.JTextArea textArea</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList">
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.swing.components.buttons</h2>
+<ul class="blockList">
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.components.buttons.ClientsideModsButton">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/components/buttons/ClientsideModsButton.html" title="class in de.griefed.serverpackcreator.swing.components.buttons">de.griefed.serverpackcreator.swing.components.buttons.ClientsideModsButton</a> extends javax.swing.JButton implements Serializable</h3>
+</li>
+</ul>
+</li>
+<li class="blockList">
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.swing.components.filechoosers</h2>
+<ul class="blockList">
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.components.filechoosers.ClientsideModsFileChooser">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/components/filechoosers/ClientsideModsFileChooser.html" title="class in de.griefed.serverpackcreator.swing.components.filechoosers">de.griefed.serverpackcreator.swing.components.filechoosers.ClientsideModsFileChooser</a> extends javax.swing.JFileChooser implements Serializable</h3>
+<ul class="blockList">
+<li class="blockList">
+<h3>Serialized Fields</h3>
+<ul class="blockList">
+<li class="blockListLast">
+<h4>LOCALIZATIONMANAGER</h4>
+<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="blockList">
+<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.swing.utilities</h2>
+<ul class="blockList">
+<li class="blockList"><a name="de.griefed.serverpackcreator.swing.utilities.BackgroundPanel">
+<!--   -->
+</a>
+<h3>Class <a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.swing.utilities">de.griefed.serverpackcreator.swing.utilities.BackgroundPanel</a> extends javax.swing.JPanel implements Serializable</h3>
 <ul class="blockList">
 <li class="blockList">
 <h3>Serialized Fields</h3>
@@ -186,284 +1182,6 @@
 </ul>
 </li>
 </ul>
-</li>
-<li class="blockList"><a name="de.griefed.serverpackcreator.gui.CreateGui">
-<!--   -->
-</a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/CreateGui.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.CreateGui</a> extends javax.swing.JPanel implements Serializable</h3>
-<ul class="blockList">
-<li class="blockList">
-<h3>Serialized Fields</h3>
-<ul class="blockList">
-<li class="blockList">
-<h4>ICON_SERVERPACKCREATOR_BANNER</h4>
-<pre>javax.swing.ImageIcon ICON_SERVERPACKCREATOR_BANNER</pre>
-</li>
-<li class="blockList">
-<h4>ICON_SERVERPACKCREATOR</h4>
-<pre>java.awt.Image ICON_SERVERPACKCREATOR</pre>
-</li>
-<li class="blockList">
-<h4>DIMENSION_WINDOW</h4>
-<pre>java.awt.Dimension DIMENSION_WINDOW</pre>
-</li>
-<li class="blockList">
-<h4>LOCALIZATIONMANAGER</h4>
-<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
-</li>
-<li class="blockList">
-<h4>CONFIGURATION</h4>
-<pre><a href="de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a> CONFIGURATION</pre>
-</li>
-<li class="blockList">
-<h4>CURSECREATEMODPACK</h4>
-<pre><a href="de/griefed/serverpackcreator/curseforgemodpack/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforgemodpack">CurseCreateModpack</a> CURSECREATEMODPACK</pre>
-</li>
-<li class="blockList">
-<h4>CREATESERVERPACK</h4>
-<pre><a href="de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a> CREATESERVERPACK</pre>
-</li>
-<li class="blockList">
-<h4>BACKGROUNDPANEL</h4>
-<pre><a href="de/griefed/serverpackcreator/gui/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.gui">BackgroundPanel</a> BACKGROUNDPANEL</pre>
-</li>
-<li class="blockList">
-<h4>FRAME_SERVERPACKCREATOR</h4>
-<pre>javax.swing.JFrame FRAME_SERVERPACKCREATOR</pre>
-</li>
-<li class="blockList">
-<h4>secretFile</h4>
-<pre>java.io.File secretFile</pre>
-</li>
-<li class="blockList">
-<h4>secret</h4>
-<pre>com.typesafe.config.Config secret</pre>
-</li>
-<li class="blockListLast">
-<h4>bufferedImage</h4>
-<pre>java.awt.image.BufferedImage bufferedImage</pre>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="blockList"><a name="de.griefed.serverpackcreator.gui.CreateServerPackTab">
-<!--   -->
-</a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/CreateServerPackTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.CreateServerPackTab</a> extends javax.swing.JComponent implements Serializable</h3>
-<ul class="blockList">
-<li class="blockList">
-<h3>Serialized Fields</h3>
-<ul class="blockList">
-<li class="blockList">
-<h4>CONFIGURATION</h4>
-<pre><a href="de/griefed/serverpackcreator/Configuration.html" title="class in de.griefed.serverpackcreator">Configuration</a> CONFIGURATION</pre>
-</li>
-<li class="blockList">
-<h4>LOCALIZATIONMANAGER</h4>
-<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
-</li>
-<li class="blockList">
-<h4>CREATESERVERPACK</h4>
-<pre><a href="de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator">CreateServerPack</a> CREATESERVERPACK</pre>
-</li>
-<li class="blockList">
-<h4>loadIcon</h4>
-<pre>javax.swing.ImageIcon loadIcon</pre>
-</li>
-<li class="blockList">
-<h4>folderIcon</h4>
-<pre>javax.swing.ImageIcon folderIcon</pre>
-</li>
-<li class="blockList">
-<h4>startGeneration</h4>
-<pre>javax.swing.ImageIcon startGeneration</pre>
-</li>
-<li class="blockList">
-<h4>helpIcon</h4>
-<pre>javax.swing.ImageIcon helpIcon</pre>
-</li>
-<li class="blockList">
-<h4>folderButtonDimension</h4>
-<pre>java.awt.Dimension folderButtonDimension</pre>
-</li>
-<li class="blockList">
-<h4>miscButtonDimension</h4>
-<pre>java.awt.Dimension miscButtonDimension</pre>
-</li>
-<li class="blockList">
-<h4>startDimension</h4>
-<pre>java.awt.Dimension startDimension</pre>
-</li>
-<li class="blockList">
-<h4>chooserDimension</h4>
-<pre>java.awt.Dimension chooserDimension</pre>
-</li>
-<li class="blockList">
-<h4>createServerPackPanel</h4>
-<pre>javax.swing.JComponent createServerPackPanel</pre>
-</li>
-<li class="blockList">
-<h4>helpScrollPane</h4>
-<pre>javax.swing.JScrollPane helpScrollPane</pre>
-</li>
-<li class="blockList">
-<h4>labelGenerateServerPack</h4>
-<pre>javax.swing.JLabel labelGenerateServerPack</pre>
-</li>
-<li class="blockList">
-<h4>textModpackDir</h4>
-<pre>javax.swing.JTextField textModpackDir</pre>
-</li>
-<li class="blockList">
-<h4>textClientMods</h4>
-<pre>javax.swing.JTextField textClientMods</pre>
-</li>
-<li class="blockList">
-<h4>textCopyDirs</h4>
-<pre>javax.swing.JTextField textCopyDirs</pre>
-</li>
-<li class="blockList">
-<h4>textJavaPath</h4>
-<pre>javax.swing.JTextField textJavaPath</pre>
-</li>
-<li class="blockList">
-<h4>textMinecraftVersion</h4>
-<pre>javax.swing.JTextField textMinecraftVersion</pre>
-</li>
-<li class="blockList">
-<h4>textModloader</h4>
-<pre>javax.swing.JTextField textModloader</pre>
-</li>
-<li class="blockList">
-<h4>textModloaderVersion</h4>
-<pre>javax.swing.JTextField textModloaderVersion</pre>
-</li>
-<li class="blockList">
-<h4>helpTextArea</h4>
-<pre>javax.swing.JTextArea helpTextArea</pre>
-</li>
-<li class="blockList">
-<h4>checkBoxServer</h4>
-<pre>javax.swing.JCheckBox checkBoxServer</pre>
-</li>
-<li class="blockList">
-<h4>checkBoxIcon</h4>
-<pre>javax.swing.JCheckBox checkBoxIcon</pre>
-</li>
-<li class="blockList">
-<h4>checkBoxProperties</h4>
-<pre>javax.swing.JCheckBox checkBoxProperties</pre>
-</li>
-<li class="blockList">
-<h4>checkBoxScripts</h4>
-<pre>javax.swing.JCheckBox checkBoxScripts</pre>
-</li>
-<li class="blockList">
-<h4>checkBoxZIP</h4>
-<pre>javax.swing.JCheckBox checkBoxZIP</pre>
-</li>
-<li class="blockList">
-<h4>buttonModpackDir</h4>
-<pre>javax.swing.JButton buttonModpackDir</pre>
-</li>
-<li class="blockList">
-<h4>buttonClientMods</h4>
-<pre>javax.swing.JButton buttonClientMods</pre>
-</li>
-<li class="blockList">
-<h4>buttonCopyDirs</h4>
-<pre>javax.swing.JButton buttonCopyDirs</pre>
-</li>
-<li class="blockList">
-<h4>buttonJavaPath</h4>
-<pre>javax.swing.JButton buttonJavaPath</pre>
-</li>
-<li class="blockList">
-<h4>buttonLoadConfigFromFile</h4>
-<pre>javax.swing.JButton buttonLoadConfigFromFile</pre>
-</li>
-<li class="blockList">
-<h4>buttonInfoWindow</h4>
-<pre>javax.swing.JButton buttonInfoWindow</pre>
-</li>
-<li class="blockList">
-<h4>buttonGenerateServerPack</h4>
-<pre>javax.swing.JButton buttonGenerateServerPack</pre>
-</li>
-<li class="blockList">
-<h4>modpackDirChooser</h4>
-<pre>javax.swing.JFileChooser modpackDirChooser</pre>
-</li>
-<li class="blockList">
-<h4>clientModsChooser</h4>
-<pre>javax.swing.JFileChooser clientModsChooser</pre>
-</li>
-<li class="blockList">
-<h4>copyDirsChooser</h4>
-<pre>javax.swing.JFileChooser copyDirsChooser</pre>
-</li>
-<li class="blockList">
-<h4>javaChooser</h4>
-<pre>javax.swing.JFileChooser javaChooser</pre>
-</li>
-<li class="blockListLast">
-<h4>configChooser</h4>
-<pre>javax.swing.JFileChooser configChooser</pre>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="blockList"><a name="de.griefed.serverpackcreator.gui.ModloaderInstallerLogTab">
-<!--   -->
-</a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/ModloaderInstallerLogTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.ModloaderInstallerLogTab</a> extends javax.swing.JComponent implements Serializable</h3>
-<ul class="blockList">
-<li class="blockList">
-<h3>Serialized Fields</h3>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOCALIZATIONMANAGER</h4>
-<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
-</li>
-<li class="blockListLast">
-<h4>textArea</h4>
-<pre>javax.swing.JTextArea textArea</pre>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="blockList"><a name="de.griefed.serverpackcreator.gui.ServerPackCreatorLogTab">
-<!--   -->
-</a>
-<h3>Class <a href="de/griefed/serverpackcreator/gui/ServerPackCreatorLogTab.html" title="class in de.griefed.serverpackcreator.gui">de.griefed.serverpackcreator.gui.ServerPackCreatorLogTab</a> extends javax.swing.JComponent implements Serializable</h3>
-<ul class="blockList">
-<li class="blockList">
-<h3>Serialized Fields</h3>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOCALIZATIONMANAGER</h4>
-<pre><a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
-</li>
-<li class="blockListLast">
-<h4>textArea</h4>
-<pre>javax.swing.JTextArea textArea</pre>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="blockList">
-<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.i18n</h2>
-<ul class="blockList">
-<li class="blockList"><a name="de.griefed.serverpackcreator.i18n.IncorrectLanguageException">
-<!--   -->
-</a>
-<h3>Class <a href="de/griefed/serverpackcreator/i18n/IncorrectLanguageException.html" title="class in de.griefed.serverpackcreator.i18n">de.griefed.serverpackcreator.i18n.IncorrectLanguageException</a> extends java.lang.Exception implements Serializable</h3>
 </li>
 </ul>
 </li>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -107,20 +107,10 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">LocalizationManager</span>
+<pre>@Component
+public class <span class="typeNameLabel">LocalizationManager</span>
 extends java.lang.Object</pre>
-<div class="block"><strong>Table of methods</strong><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getSupportedLanguages--"><code>getSupportedLanguages()</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getLangPropertiesFile--"><code>getLangPropertiesFile()</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getLocale--"><code>getLocale()</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init-java.lang.String-"><code>init(String)</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init-java.io.File-"><code>init(File)</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init--"><code>init()</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getLocalizedString-java.lang.String-"><code>getLocalizedString(String)</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#checkLocaleFile--"><code>checkLocaleFile()</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#writeLocaleToFile-java.lang.String-"><code>writeLocaleToFile(String)</code></a>
- <p>
- This is the localizationManager for ServerPackCreator.<br>
+<div class="block">This is the localizationManager for ServerPackCreator.<br>
  To use it, initialize it by calling <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init--"><code>init()</code></a>.
  Then use <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getLocalizedString-java.lang.String-"><code>getLocalizedString(String)</code></a> to use a language key from the resource bundle corresponding to the
  specified locale. If no locale is provided during the launch of ServerPackCreator, en_US is used by default.<br>
@@ -147,14 +137,14 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#applicationProperties">applicationProperties</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>private java.util.Map&lt;java.lang.String,java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#CURRENT_LANGUAGE">CURRENT_LANGUAGE</a></span></code>
 <div class="block">Current language of ServerPackCreator, mapped for easier further reference.</div>
 </td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#FILE_LANGPROPERTIES">FILE_LANGPROPERTIES</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private java.util.ResourceBundle</code></td>
@@ -177,6 +167,10 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>private java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#PROPERTIESFILE">PROPERTIESFILE</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>private java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#SUPPORTED_LANGUAGES">SUPPORTED_LANGUAGES</a></span></code>
 <div class="block">Languages supported by ServerPackCreator.</div>
@@ -197,7 +191,19 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LocalizationManager--">LocalizationManager</a></span>()</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LocalizationManager--">LocalizationManager</a></span>()</code>
+<div class="block">Constructor for our LocalizationManager using the default locale en_us.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">LocalizationManager</a></span>(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+<div class="block">Constructor for our LocalizationManager using the locale set in serverpackcreator.properties.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LocalizationManager-java.lang.String-">LocalizationManager</a></span>(java.lang.String&nbsp;locale)</code>
+<div class="block">Constructor for our LocalizationManager with a given locale.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -221,21 +227,21 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>(package private) java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getLangPropertiesFile--">getLangPropertiesFile</a></span>()</code>
-<div class="block">Getter for the lang.properties file which will set the locale for ServerPackCreator.</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getLocale--">getLocale</a></span>()</code>
 <div class="block">Getter for a String containing the currently used language.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getLocalizedString-java.lang.String-">getLocalizedString</a></span>(java.lang.String&nbsp;languageKey)</code>
 <div class="block">Acquires a localized String for the provided language key from the initialized locale resource.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>(package private) java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#getPropertiesFile--">getPropertiesFile</a></span>()</code>
+<div class="block">Getter for the serverpackcreator.properties file which contains the locale for ServerPackCreator.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
@@ -252,17 +258,23 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init-java.io.File-">init</a></span>(java.io.File&nbsp;localePropertiesFile)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init-de.griefed.serverpackcreator.ApplicationProperties-">init</a></span>(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;serverPackCreatorProperties)</code>
 <div class="block">Initializes the LocalizationManager with a provided localePropertiesFile.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init-java.io.File-">init</a></span>(java.io.File&nbsp;localePropertiesFile)</code>
+<div class="block">Initializes the LocalizationManager with a provided localePropertiesFile.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#init-java.lang.String-">init</a></span>(java.lang.String&nbsp;locale)</code>
 <div class="block">Initializes the LocalizationManager with a provided locale.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#writeLocaleToFile-java.lang.String-">writeLocaleToFile</a></span>(java.lang.String&nbsp;locale)</code>
 <div class="block">Writes the specified locale from -lang your_locale to a lang.properties file to ensure every subsequent start
@@ -300,13 +312,13 @@ extends java.lang.Object</pre>
 <pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
 </li>
 </ul>
-<a name="FILE_LANGPROPERTIES">
+<a name="PROPERTIESFILE">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>FILE_LANGPROPERTIES</h4>
-<pre>private final&nbsp;java.io.File FILE_LANGPROPERTIES</pre>
+<h4>PROPERTIESFILE</h4>
+<pre>private final&nbsp;java.io.File PROPERTIESFILE</pre>
 </li>
 </ul>
 <a name="CURRENT_LANGUAGE">
@@ -317,16 +329,6 @@ extends java.lang.Object</pre>
 <h4>CURRENT_LANGUAGE</h4>
 <pre>private final&nbsp;java.util.Map&lt;java.lang.String,java.lang.String&gt; CURRENT_LANGUAGE</pre>
 <div class="block">Current language of ServerPackCreator, mapped for easier further reference.</div>
-</li>
-</ul>
-<a name="localeResources">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>localeResources</h4>
-<pre>private&nbsp;java.util.ResourceBundle localeResources</pre>
-<div class="block">Localized strings which ServerPackCreator uses.</div>
 </li>
 </ul>
 <a name="MAP_PATH_LANGUAGE">
@@ -359,11 +361,30 @@ extends java.lang.Object</pre>
 <a name="SUPPORTED_LANGUAGES">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>SUPPORTED_LANGUAGES</h4>
 <pre>private final&nbsp;java.lang.String[] SUPPORTED_LANGUAGES</pre>
 <div class="block">Languages supported by ServerPackCreator.</div>
+</li>
+</ul>
+<a name="localeResources">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>localeResources</h4>
+<pre>private&nbsp;java.util.ResourceBundle localeResources</pre>
+<div class="block">Localized strings which ServerPackCreator uses.</div>
+</li>
+</ul>
+<a name="applicationProperties">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>applicationProperties</h4>
+<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
 </li>
 </ul>
 </li>
@@ -374,6 +395,38 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
+<a name="LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>LocalizationManager</h4>
+<pre>@Autowired
+public&nbsp;LocalizationManager(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+<div class="block">Constructor for our LocalizationManager using the locale set in serverpackcreator.properties.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various different things.</dd>
+</dl>
+</li>
+</ul>
+<a name="LocalizationManager-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>LocalizationManager</h4>
+<pre>public&nbsp;LocalizationManager(java.lang.String&nbsp;locale)
+                    throws <a href="../../../../de/griefed/serverpackcreator/i18n/IncorrectLanguageException.html" title="class in de.griefed.serverpackcreator.i18n">IncorrectLanguageException</a></pre>
+<div class="block">Constructor for our LocalizationManager with a given locale.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>locale</code> - String. The locale to init with.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../../../../de/griefed/serverpackcreator/i18n/IncorrectLanguageException.html" title="class in de.griefed.serverpackcreator.i18n">IncorrectLanguageException</a></code> - Thrown if no language could be set by <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a>.</dd>
+</dl>
+</li>
+</ul>
 <a name="LocalizationManager--">
 <!--   -->
 </a>
@@ -381,6 +434,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>LocalizationManager</h4>
 <pre>public&nbsp;LocalizationManager()</pre>
+<div class="block">Constructor for our LocalizationManager using the default locale en_us.</div>
 </li>
 </ul>
 </li>
@@ -405,14 +459,14 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getLangPropertiesFile--">
+<a name="getPropertiesFile--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getLangPropertiesFile</h4>
-<pre>java.io.File&nbsp;getLangPropertiesFile()</pre>
-<div class="block">Getter for the lang.properties file which will set the locale for ServerPackCreator.</div>
+<h4>getPropertiesFile</h4>
+<pre>java.io.File&nbsp;getPropertiesFile()</pre>
+<div class="block">Getter for the serverpackcreator.properties file which contains the locale for ServerPackCreator.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>File. Returns the file which will set the locale for ServerPackCreator.</dd>
@@ -430,6 +484,24 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns a String containing the currently used language.</dd>
+</dl>
+</li>
+</ul>
+<a name="init-de.griefed.serverpackcreator.ApplicationProperties-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>init</h4>
+<pre>public&nbsp;void&nbsp;init(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;serverPackCreatorProperties)
+          throws <a href="../../../../de/griefed/serverpackcreator/i18n/IncorrectLanguageException.html" title="class in de.griefed.serverpackcreator.i18n">IncorrectLanguageException</a></pre>
+<div class="block">Initializes the LocalizationManager with a provided localePropertiesFile.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>serverPackCreatorProperties</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> containing the locale to use.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../../../../de/griefed/serverpackcreator/i18n/IncorrectLanguageException.html" title="class in de.griefed.serverpackcreator.i18n">IncorrectLanguageException</a></code> - Thrown if the language specified in the properties file is not supported by
+ ServerPackCreator or specified in the invalid format.</dd>
 </dl>
 </li>
 </ul>

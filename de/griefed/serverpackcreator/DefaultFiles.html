@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -107,29 +107,10 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">DefaultFiles</span>
+<pre>@Component
+public class <span class="typeNameLabel">DefaultFiles</span>
 extends java.lang.Object</pre>
-<div class="block"><strong>Table of methods</strong>
- <p>
- 1. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#DefaultFiles-de.griefed.serverpackcreator.i18n.LocalizationManager-"><code>DefaultFiles(LocalizationManager)</code></a><br>
- 2. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getConfigFile--"><code>getConfigFile()</code></a><br>
- 3. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getOldConfigFile--"><code>getOldConfigFile()</code></a><br>
- 4. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getPropertiesFile--"><code>getPropertiesFile()</code></a><br>
- 5. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getIconFile--"><code>getIconFile()</code></a><br>
- 6. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getForgeWindowsFile--"><code>getForgeWindowsFile()</code></a><br>
- 7. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getForgeLinuxFile--"><code>getForgeLinuxFile()</code></a><br>
- 8. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricWindowsFile--"><code>getFabricWindowsFile()</code></a><br>
- 9. <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricLinuxFile--"><code>getFabricLinuxFile()</code></a><br>
- 10.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a><br>
- 11.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForConfig--"><code>checkForConfig()</code></a><br>
- 12.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForFabricLinux--"><code>checkForFabricLinux()</code></a><br>
- 13.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForFabricWindows--"><code>checkForFabricWindows()</code></a><br>
- 14.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForForgeLinux--"><code>checkForForgeLinux()</code></a><br>
- 15.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForForgeWindows--"><code>checkForForgeWindows()</code></a><br>
- 16.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForProperties--"><code>checkForProperties()</code></a><br>
- 17.<a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForIcon--"><code>checkForIcon()</code></a>
- <p>
- Requires instances of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> for use of localization, but creates one if injected one is null.
+<div class="block">Requires instances of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> for use of localization, but creates one if injected one is null.
  <p>
  Ensures all files needed by ServerPackCreator are available. If any one is missing, a new one is generated from the
  template. Among the default files are:<p>
@@ -162,42 +143,14 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_CONFIG">FILE_CONFIG</a></span></code>&nbsp;</td>
+<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#applicationProperties">applicationProperties</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_CONFIG_OLD">FILE_CONFIG_OLD</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_FABRIC_LINUX">FILE_FABRIC_LINUX</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_FABRIC_WINDOWS">FILE_FABRIC_WINDOWS</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_FORGE_LINUX">FILE_FORGE_LINUX</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_FORGE_WINDOWS">FILE_FORGE_WINDOWS</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_ICON">FILE_ICON</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#FILE_PROPERTIES">FILE_PROPERTIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#LOCALIZATIONMANAGER">LOCALIZATIONMANAGER</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#LOG">LOG</a></span></code>&nbsp;</td>
 </tr>
@@ -216,7 +169,8 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#DefaultFiles-de.griefed.serverpackcreator.i18n.LocalizationManager-">DefaultFiles</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#DefaultFiles-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">DefaultFiles</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+            <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
 <div class="block"><strong>Constructor</strong></div>
 </td>
 </tr>
@@ -236,99 +190,58 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkDatabase--">checkDatabase</a></span>()</code>
+<div class="block">Ensures serverpackcreator.db exists.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>(package private) boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForConfig--">checkForConfig</a></span>()</code>
 <div class="block">Check for old config file, if found rename to new name.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForFabricLinux--">checkForFabricLinux</a></span>()</code>
-<div class="block">Checks for existence of Fabric start script for Linux.</div>
-</td>
-</tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForFabricWindows--">checkForFabricWindows</a></span>()</code>
-<div class="block">Checks for existence of Fabric start script for Windows.</div>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForFile-java.io.File-">checkForFile</a></span>(java.io.File&nbsp;fileToCheckFor)</code>
+<div class="block">Checks for existence of defaults files.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForForgeLinux--">checkForForgeLinux</a></span>()</code>
-<div class="block">Checks for existence of Forge start script for Linux.</div>
-</td>
-</tr>
-<tr id="i4" class="altColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForForgeWindows--">checkForForgeWindows</a></span>()</code>
-<div class="block">Checks for existence of Forge start script for Windows.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForIcon--">checkForIcon</a></span>()</code>
-<div class="block">Checks for existence of server-icon.png file.</div>
-</td>
-</tr>
-<tr id="i6" class="altColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForProperties--">checkForProperties</a></span>()</code>
-<div class="block">Checks for existence of server.properties file.</div>
-</td>
-</tr>
-<tr id="i7" class="rowColor">
-<td class="colFirst"><code>(package private) void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--">filesSetup</a></span>()</code>
 <div class="block">Calls individual methods which check for existence of default files.</div>
 </td>
 </tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricInstallerManifestUrl--">getFabricInstallerManifestUrl</a></span>()</code>
+<div class="block">Getter for the URL to the Fabric Installer Manifest.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricManifestUrl--">getFabricManifestUrl</a></span>()</code>
+<div class="block">Getter for Fabric's version-manifest.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getForgeManifestUrl--">getForgeManifestUrl</a></span>()</code>
+<div class="block">Getter for Forge's version-manifest.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getMinecraftManifestUrl--">getMinecraftManifestUrl</a></span>()</code>
+<div class="block">Getter for Mojang's Minecraft version-manifest.</div>
+</td>
+</tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getConfigFile--">getConfigFile</a></span>()</code>
-<div class="block">Getter for serverpackcreator.conf.</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricLinuxFile--">getFabricLinuxFile</a></span>()</code>
-<div class="block">Getter for start-fabric.sh.</div>
-</td>
-</tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricWindowsFile--">getFabricWindowsFile</a></span>()</code>
-<div class="block">Getter for start-fabric.bat.</div>
-</td>
-</tr>
-<tr id="i11" class="rowColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getForgeLinuxFile--">getForgeLinuxFile</a></span>()</code>
-<div class="block">Getter for start-forge.sh.</div>
-</td>
-</tr>
-<tr id="i12" class="altColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getForgeWindowsFile--">getForgeWindowsFile</a></span>()</code>
-<div class="block">Getter for start-forge.bat.</div>
-</td>
-</tr>
-<tr id="i13" class="rowColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getIconFile--">getIconFile</a></span>()</code>
-<div class="block">Getter for server-icon.png</div>
-</td>
-</tr>
-<tr id="i14" class="altColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getOldConfigFile--">getOldConfigFile</a></span>()</code>
-<div class="block">Getter for creator.conf.</div>
-</td>
-</tr>
-<tr id="i15" class="rowColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getPropertiesFile--">getPropertiesFile</a></span>()</code>
-<div class="block">Getter for server.properties.</div>
+<td class="colFirst"><code>(package private) void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#refreshManifestFile-java.net.URL-java.io.File-">refreshManifestFile</a></span>(java.net.URL&nbsp;manifestUrl,
+                   java.io.File&nbsp;manifestToRefresh)</code>
+<div class="block">Deletes the specified manifest if it is found, then downloads the specified manifest file again.</div>
 </td>
 </tr>
 </table>
@@ -371,76 +284,13 @@ extends java.lang.Object</pre>
 <pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
 </li>
 </ul>
-<a name="FILE_CONFIG">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_CONFIG</h4>
-<pre>private final&nbsp;java.io.File FILE_CONFIG</pre>
-</li>
-</ul>
-<a name="FILE_CONFIG_OLD">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_CONFIG_OLD</h4>
-<pre>private final&nbsp;java.io.File FILE_CONFIG_OLD</pre>
-</li>
-</ul>
-<a name="FILE_PROPERTIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_PROPERTIES</h4>
-<pre>private final&nbsp;java.io.File FILE_PROPERTIES</pre>
-</li>
-</ul>
-<a name="FILE_ICON">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_ICON</h4>
-<pre>private final&nbsp;java.io.File FILE_ICON</pre>
-</li>
-</ul>
-<a name="FILE_FORGE_WINDOWS">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_FORGE_WINDOWS</h4>
-<pre>private final&nbsp;java.io.File FILE_FORGE_WINDOWS</pre>
-</li>
-</ul>
-<a name="FILE_FORGE_LINUX">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_FORGE_LINUX</h4>
-<pre>private final&nbsp;java.io.File FILE_FORGE_LINUX</pre>
-</li>
-</ul>
-<a name="FILE_FABRIC_WINDOWS">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_FABRIC_WINDOWS</h4>
-<pre>private final&nbsp;java.io.File FILE_FABRIC_WINDOWS</pre>
-</li>
-</ul>
-<a name="FILE_FABRIC_LINUX">
+<a name="applicationProperties">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>FILE_FABRIC_LINUX</h4>
-<pre>private final&nbsp;java.io.File FILE_FABRIC_LINUX</pre>
+<h4>applicationProperties</h4>
+<pre>private&nbsp;<a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
 </li>
 </ul>
 </li>
@@ -451,19 +301,22 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="DefaultFiles-de.griefed.serverpackcreator.i18n.LocalizationManager-">
+<a name="DefaultFiles-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>DefaultFiles</h4>
-<pre>public&nbsp;DefaultFiles(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</pre>
+<pre>@Autowired
+public&nbsp;DefaultFiles(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+                               <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
 <div class="block"><strong>Constructor</strong><p>
  Used for Dependency Injection. Receives an instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
  one is null. Required for use of localization.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
+<dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various different things.</dd>
 </dl>
 </li>
 </ul>
@@ -475,115 +328,59 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getConfigFile--">
+<a name="getMinecraftManifestUrl--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getConfigFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getConfigFile()</pre>
-<div class="block">Getter for serverpackcreator.conf.</div>
+<h4>getMinecraftManifestUrl</h4>
+<pre>public&nbsp;java.net.URL&nbsp;getMinecraftManifestUrl()</pre>
+<div class="block">Getter for Mojang's Minecraft version-manifest.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the serverpackcreator.conf-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForConfig--"><code>checkForConfig()</code></a></dd>
+<dd>URL. Returns the URL to the JSON-file.</dd>
 </dl>
 </li>
 </ul>
-<a name="getOldConfigFile--">
+<a name="getForgeManifestUrl--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getOldConfigFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getOldConfigFile()</pre>
-<div class="block">Getter for creator.conf.</div>
+<h4>getForgeManifestUrl</h4>
+<pre>public&nbsp;java.net.URL&nbsp;getForgeManifestUrl()</pre>
+<div class="block">Getter for Forge's version-manifest.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the creator.conf-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForConfig--"><code>checkForConfig()</code></a>.</dd>
+<dd>URL. Returns the URL to the JSON-file.</dd>
 </dl>
 </li>
 </ul>
-<a name="getPropertiesFile--">
+<a name="getFabricManifestUrl--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getPropertiesFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getPropertiesFile()</pre>
-<div class="block">Getter for server.properties.</div>
+<h4>getFabricManifestUrl</h4>
+<pre>public&nbsp;java.net.URL&nbsp;getFabricManifestUrl()</pre>
+<div class="block">Getter for Fabric's version-manifest.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the server.properties-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForProperties--"><code>checkForProperties()</code></a></dd>
+<dd>URL. Returns the URL to the XML-file.</dd>
 </dl>
 </li>
 </ul>
-<a name="getIconFile--">
+<a name="getFabricInstallerManifestUrl--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getIconFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getIconFile()</pre>
-<div class="block">Getter for server-icon.png</div>
+<h4>getFabricInstallerManifestUrl</h4>
+<pre>public&nbsp;java.net.URL&nbsp;getFabricInstallerManifestUrl()</pre>
+<div class="block">Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the server-icon.png-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForIcon--"><code>checkForIcon()</code></a></dd>
-</dl>
-</li>
-</ul>
-<a name="getForgeWindowsFile--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getForgeWindowsFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getForgeWindowsFile()</pre>
-<div class="block">Getter for start-forge.bat.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the start-forge.bat-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForForgeWindows--"><code>checkForForgeWindows()</code></a></dd>
-</dl>
-</li>
-</ul>
-<a name="getForgeLinuxFile--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getForgeLinuxFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getForgeLinuxFile()</pre>
-<div class="block">Getter for start-forge.sh.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the start-forge.sh-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForForgeLinux--"><code>checkForForgeLinux()</code></a></dd>
-</dl>
-</li>
-</ul>
-<a name="getFabricWindowsFile--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getFabricWindowsFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getFabricWindowsFile()</pre>
-<div class="block">Getter for start-fabric.bat.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the start-fabric.bat-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForFabricWindows--"><code>checkForFabricWindows()</code></a></dd>
-</dl>
-</li>
-</ul>
-<a name="getFabricLinuxFile--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getFabricLinuxFile</h4>
-<pre>public&nbsp;java.io.File&nbsp;getFabricLinuxFile()</pre>
-<div class="block">Getter for start-fabric.sh.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the start-fabric.sh-file for use in <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#checkForFabricLinux--"><code>checkForFabricLinux()</code></a></dd>
+<dd>URL. Returns the URL to the XML-file.</dd>
 </dl>
 </li>
 </ul>
@@ -593,10 +390,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>filesSetup</h4>
-<pre>void&nbsp;filesSetup()</pre>
+<pre>public&nbsp;void&nbsp;filesSetup()</pre>
 <div class="block">Calls individual methods which check for existence of default files. Only this method should be called to check
  for existence of all default files.<p>
- If any file was newly generated from it's template, a warning is printed informing the user about said newly
+ If any file was newly generated from its template, a warning is printed informing the user about said newly
  generated file. If every file was present and none was generated, "Setup completed." is printed to the console
  and log.</div>
 </li>
@@ -617,94 +414,48 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="checkForFabricLinux--">
+<a name="checkForFile-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkForFabricLinux</h4>
-<pre>boolean&nbsp;checkForFabricLinux()</pre>
-<div class="block">Checks for existence of Fabric start script for Linux. If it is not found, it is generated.</div>
+<h4>checkForFile</h4>
+<pre>public&nbsp;boolean&nbsp;checkForFile(java.io.File&nbsp;fileToCheckFor)</pre>
+<div class="block">Checks for existence of defaults files. If it is not found, it is generated.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToCheckFor</code> - The file which is to be checked for whether it exists and if it doesn't, should be created.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
  said newly generated file.</dd>
 </dl>
 </li>
 </ul>
-<a name="checkForFabricWindows--">
+<a name="refreshManifestFile-java.net.URL-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkForFabricWindows</h4>
-<pre>boolean&nbsp;checkForFabricWindows()</pre>
-<div class="block">Checks for existence of Fabric start script for Windows. If it is not found, it is generated.</div>
+<h4>refreshManifestFile</h4>
+<pre>void&nbsp;refreshManifestFile(java.net.URL&nbsp;manifestUrl,
+                         java.io.File&nbsp;manifestToRefresh)</pre>
+<div class="block">Deletes the specified manifest if it is found, then downloads the specified manifest file again. Ensures we always
+ have the latest manifest for version validation available.</div>
 <dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
- said newly generated file.</dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>manifestUrl</code> - The URL to the file which is to be downloaded.</dd>
+<dd><code>manifestToRefresh</code> - The manifest file to delete and then download, "refreshing" it</dd>
 </dl>
 </li>
 </ul>
-<a name="checkForForgeLinux--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkForForgeLinux</h4>
-<pre>boolean&nbsp;checkForForgeLinux()</pre>
-<div class="block">Checks for existence of Forge start script for Linux. If it is not found, it is generated.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
- said newly generated file.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkForForgeWindows--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkForForgeWindows</h4>
-<pre>boolean&nbsp;checkForForgeWindows()</pre>
-<div class="block">Checks for existence of Forge start script for Windows. If it is not found, it is generated.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
- said newly generated file.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkForProperties--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkForProperties</h4>
-<pre>boolean&nbsp;checkForProperties()</pre>
-<div class="block">Checks for existence of server.properties file. If it is not found, it is generated.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
- said newly generated file.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkForIcon--">
+<a name="checkDatabase--">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>checkForIcon</h4>
-<pre>boolean&nbsp;checkForIcon()</pre>
-<div class="block">Checks for existence of server-icon.png file. If it is not found, it is generated.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
- said newly generated file.</dd>
-</dl>
+<h4>checkDatabase</h4>
+<pre>public&nbsp;void&nbsp;checkDatabase()</pre>
+<div class="block">Ensures serverpackcreator.db exists. If the database does not exist, it is created.</div>
 </li>
 </ul>
 </li>
@@ -734,7 +485,7 @@ extends java.lang.Object</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/CreateServerPack.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

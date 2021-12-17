@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9};
+var methods = {"i0":9,"i1":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li>Next&nbsp;Class</li>
+<li><a href="../../../de/griefed/serverpackcreator/MainSpringBoot.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/Main.html" target="_top">Frames</a></li>
@@ -109,11 +109,7 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">Main</span>
 extends java.lang.Object</pre>
-<div class="block"><strong>Table of methods</strong>
- <p>
- <a href="../../../de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-"><code>main(String[])</code></a>
- <p>
- Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
+<div class="block">Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
  one of the following modes will be entered:<p>
  <strong>-cgen</strong><p>
  When ServerPackCreator is run with the <code>-cgen</code>-argument, you will be guided through a step-by-step
@@ -159,6 +155,14 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#LOG">LOG</a></span></code>&nbsp;</td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private static java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#log4j2xml">log4j2xml</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private static java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#properties">properties</a></span></code>&nbsp;</td>
+</tr>
 </table>
 </li>
 </ul>
@@ -192,9 +196,16 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>private static void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#createFile-java.io.File-">createFile</a></span>(java.io.File&nbsp;fileToCreate)</code>
+<div class="block">Copy a file from inside our JAR to the host filesystem.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;args)</code>
-<div class="block">Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.</div>
+<div class="block">Runs dependency injection and decides which mode to enter depending on the arguments with which ServerPackCreator
+ is executed.</div>
 </td>
 </tr>
 </table>
@@ -222,10 +233,28 @@ extends java.lang.Object</pre>
 <a name="LOG">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>LOG</h4>
 <pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
+</li>
+</ul>
+<a name="log4j2xml">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>log4j2xml</h4>
+<pre>private static final&nbsp;java.io.File log4j2xml</pre>
+</li>
+</ul>
+<a name="properties">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>properties</h4>
+<pre>private static final&nbsp;java.io.File properties</pre>
 </li>
 </ul>
 </li>
@@ -256,18 +285,31 @@ extends java.lang.Object</pre>
 <a name="main-java.lang.String:A-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>main</h4>
 <pre>public static&nbsp;void&nbsp;main(java.lang.String[]&nbsp;args)</pre>
-<div class="block">Initializes all objects needed for running ServerPackCreator and ensures Dependency Injection.
- Calls <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator"><code>DefaultFiles</code></a> so all default files are available.
- Checks arguments to determine which mode to enter.
+<div class="block">Runs dependency injection and decides which mode to enter depending on the arguments with which ServerPackCreator
+ is executed. Valid arguments are "-lang", "-cli", "-cgen", "-weh" and "-help".<br>
  Lists a couple of environment variables important for reporting issues.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
  will enter and which locale is used.</dd>
+</dl>
+</li>
+</ul>
+<a name="createFile-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>createFile</h4>
+<pre>private static&nbsp;void&nbsp;createFile(java.io.File&nbsp;fileToCreate)</pre>
+<div class="block">Copy a file from inside our JAR to the host filesystem.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToCreate</code> - File. The file in the JAR to create on the host filesystem.</dd>
 </dl>
 </li>
 </ul>
@@ -299,7 +341,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li>Next&nbsp;Class</li>
+<li><a href="../../../de/griefed/serverpackcreator/MainSpringBoot.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/Main.html" target="_top">Frames</a></li>
