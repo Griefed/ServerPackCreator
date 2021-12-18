@@ -3,6 +3,7 @@ stages:
   - Documentation
   - Release
   - Build Release
+  - Visualize
 
 variables:
   project_name: "$CI_PROJECT_NAME"
@@ -151,6 +152,7 @@ Gradle Test:
     paths:
       - build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
       - build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
+      - build/jacoco/test/jacocoTestReport.xml
       - build/reports/tests/test
     expire_in: 1 week
 
@@ -313,6 +315,16 @@ Build Docker PreRelease:
       --file Dockerfile .
   rules:
     - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+
+coverage:
+  stage: Visualize
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  script:
+    - python /opt/cover2cover.py build/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/backend/main/java/ > build/cobertura.xml
+  needs: ["Gradle Test"]
+  artifacts:
+    reports:
+      cobertura: build/cobertura.xml
 
 pages:
   stage: Documentation

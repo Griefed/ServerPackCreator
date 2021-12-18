@@ -7,6 +7,8 @@ plugins {
     id 'java'
     id 'idea'
 
+    id 'jacoco'
+
     id 'maven-publish'
 
     id 'edu.sc.seis.launch4j' version '2.5.1'
@@ -118,6 +120,23 @@ test {
                "skipped",
                "failed"
     }
+
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.required = true
+        //csv.required = false
+        //html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+    reportsDirectory = layout.buildDirectory.dir('jacoco')
 }
 
 // Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
