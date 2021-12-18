@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.16.5",
-    "eslint": "8.4.1",
+    "eslint": "8.5.0",
     "@typescript-eslint/eslint-plugin": "5.7.0",
     "@typescript-eslint/parser": "5.7.0",
     "@quasar/app": "3.2.5",
