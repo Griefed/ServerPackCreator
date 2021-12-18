@@ -23,6 +23,19 @@ jobs:
         run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe --no-daemon --info
       - name: List files in libs
         run: ls -ahl build/libs
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts-gradle
+          path: |
+            build/libs/
+            frontend/dist/spa
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: report
+          path: build/reports/tests/test/
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   docker:
     runs-on: ubuntu-latest

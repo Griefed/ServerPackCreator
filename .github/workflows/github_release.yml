@@ -68,6 +68,20 @@ jobs:
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts-gradle
+          path: |
+            build/libs/
+            frontend/dist/spa
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: report
+          path: build/reports/tests/test/
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
       # UPLOAD ASSETS TO RELEASE
       - name: Upload Release Asset Main Jar
         id: upload-release-asset
