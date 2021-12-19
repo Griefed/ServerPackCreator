@@ -141,6 +141,7 @@ Gradle Test:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe
     --info --no-daemon"
+    - cat build/jacoco/test/index.html | grep -o 'Total[^%]*%'
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
@@ -148,6 +149,7 @@ Gradle Test:
     - echo "**** Renaming files to please the eye ****"
     - mv build/libs/serverpackcreator.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
     - mv build/libs/serverpackcreator.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
+  coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
     paths:
       - build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
