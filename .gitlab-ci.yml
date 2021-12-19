@@ -321,6 +321,7 @@ coverage:
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
   script:
     - python /opt/cover2cover.py build/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/backend/main/java/ > build/cobertura.xml
+    - python /opt/source2filename.py build/cobertura.xml
   needs: ["Gradle Test"]
   artifacts:
     reports:
