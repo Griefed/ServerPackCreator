@@ -141,11 +141,10 @@ Gradle Test:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe
     --info --no-daemon"
-    - cat build/jacoco/test/index.html | grep -o 'Total[^%]*%'
     - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/jacoco/test
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
-    - LC_COLLATE=C ls -ah --group-directories-first --color=auto build/libs/libraries
+    - cat build/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
     - echo "**** Renaming files to please the eye ****"
     - mv build/libs/serverpackcreator.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
     - mv build/libs/serverpackcreator.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
