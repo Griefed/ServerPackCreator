@@ -42,6 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5
       # DOCKER RELATED
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -52,6 +55,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          build-args: BRANCH_OR_TAG=${{ github.ref_name }}
+          build-args: BRANCH_OR_TAG=${{ steps.branch-name.outputs.current_branch }}
           platforms: linux/amd64,linux/arm64
           push: false
