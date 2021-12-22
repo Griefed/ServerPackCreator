@@ -108,7 +108,7 @@ dependencies {
     embed 'org.pf4j:pf4j-spring:0.7.0'
 
     // Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.1'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.2'
 
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
