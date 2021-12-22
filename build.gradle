@@ -9,6 +9,8 @@ plugins {
 
     id 'jacoco'
 
+    id "com.github.ben-manes.versions" version '0.39.0'
+
     id 'maven-publish'
 
     id 'edu.sc.seis.launch4j' version '2.5.1'
@@ -61,6 +63,12 @@ launch4j {
     libraryDir = 'libraries'
     outputDir = 'libs'
     icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
+}
+
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
+    }
 }
 
 configurations {
