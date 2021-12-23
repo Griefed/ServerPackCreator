@@ -341,8 +341,6 @@ Gradle Dependency-Checks:
     - java -version
     - echo "**** Allowing execution of gradlew ****"
     - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - ./gradlew clean
   script:
     - echo "**** Checking for dependency updates ****"
     - ./gradlew dependencyUpdates --info || true
