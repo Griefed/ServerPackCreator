@@ -65,9 +65,25 @@ launch4j {
     icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
+def isNonStable = { String version ->
+  def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+  def regex = /^[0-9,.v-]+(-r)?$/
+  return !stableKeyword && !(version ==~ regex)
+}
+
 tasks.named("dependencyUpdates").configure {
-    rejectVersionIf {
-        isNonStable(it.candidate.version)
+
+    checkForGradleUpdate = true
+    outputFormatter = "json"
+
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
+                    reject('Release candidate')
+                }
+            }
+        }
     }
 }
 
@@ -189,7 +205,7 @@ tasks.register('about', Copy) {
     from layout.projectDirectory.file("CODE_OF_CONDUCT.md") into layout.projectDirectory.dir("backend/main/resources")
 }
 
-
+// Make sure quasar is installed
 tasks.register('installQuasar', RunNpm) {
     dependsOn tasks.named('installNode')
     script = 'install -g @quasar/cli'
@@ -215,6 +231,7 @@ tasks.register('copyDist', Copy) {
 tasks.withType(Javadoc) {
     options.addStringOption('encoding', 'UTF-8')
 }
+
 javadoc {
     options.memberLevel = JavadocMemberLevel.PRIVATE
     classpath = sourceSets.main.runtimeClasspath

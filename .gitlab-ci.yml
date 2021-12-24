@@ -346,7 +346,7 @@ Gradle Dependency-Checks:
     - ./gradlew dependencyUpdates --info || true
   artifacts:
     paths:
-      - build/dependencyUpdates/report.txt
+      - build/dependencyUpdates/report.json
     expire_in: 1 week
 
 pages:
