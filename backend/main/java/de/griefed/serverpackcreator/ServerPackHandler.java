@@ -475,7 +475,7 @@ public class ServerPackHandler {
                             "ECHO Forge version: %FORGE%\n" +
                             "ECHO Java args: %ARGS%\n" +
                             "\n" +
-                            "%JAVA% %OTHERARGS% %ARGS% -jar forge.jar nogui\n" +
+                            "%JAVA% \"%OTHERARGS%\" %ARGS% -jar forge.jar nogui\n" +
                             "\n" +
                             "PAUSE"
                     );
@@ -674,7 +674,7 @@ public class ServerPackHandler {
                             "REM Add custom program arguments {such as nogui} to this file in the next line before the %* or\n" +
                             "REM  pass them to this script directly\n" +
                             "\n" +
-                            "%JAVA% %OTHERARGS% @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n" +
+                            "%JAVA% \"%OTHERARGS%\" @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n" +
                             "\n" +
                             "PAUSE"
                     );
@@ -898,7 +898,7 @@ public class ServerPackHandler {
                         "ECHO Fabric version: %FABRIC%\n" +
                         "ECHO Java args: %ARGS%\n" +
                         "\n" +
-                        "%JAVA% %OTHERARGS% %ARGS% -jar fabric-server-launch.jar nogui\n" +
+                        "%JAVA% \"%OTHERARGS%\" %ARGS% -jar fabric-server-launch.jar\n" +
                         "\n" +
                         "PAUSE"
                 );
@@ -924,7 +924,7 @@ public class ServerPackHandler {
                         "# This script checks for the Minecraft and Forge JAR-Files, and if they are not found, they are downloaded and installed.\n" +
                         "# If everything is in order, the server is started.\n" +
                         "\n" +
-                        "SET JAVA=\"java\"\n" +
+                        "JAVA=\"java\"\n" +
                         "MINECRAFT=\"" + minecraftVersion + "\"\n" +
                         "FABRIC=\"" + modloaderVersion + "\"\n" +
                         "INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n" +
@@ -984,7 +984,7 @@ public class ServerPackHandler {
                         "echo \"Fabric version: $FABRIC\";\n" +
                         "echo \"Java args: $ARGS\";\n" +
                         "\n" +
-                        "$JAVA $OTHERARGS $ARGS -jar fabric-server-launch.jar nogui"
+                        "$JAVA $OTHERARGS $ARGS -jar fabric-server-launch.jar"
                 );
 
             } catch (IOException ex) {
