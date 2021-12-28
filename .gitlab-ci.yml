@@ -320,9 +320,10 @@ Build Docker PreRelease:
 coverage:
   stage: Other
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  allow_failure: true
   script:
-    - python /opt/cover2cover.py build/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/backend/main/java/ > build/cobertura.xml
-    - python /opt/source2filename.py build/cobertura.xml
+    - python /opt/cover2cover.py build/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/backend/main/java/ > build/cobertura.xml || true
+    - python /opt/source2filename.py build/cobertura.xml || true
   needs: ["Gradle Test"]
   artifacts:
     reports:
@@ -330,6 +331,7 @@ coverage:
 
 Gradle Dependency-Checks:
   image: griefed/baseimage-ubuntu-jdk-8:2.0.0
+  allow_failure: true
   stage: Other
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
@@ -339,14 +341,12 @@ Gradle Dependency-Checks:
     - java -version
     - echo "**** Allowing execution of gradlew ****"
     - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - ./gradlew clean
   script:
     - echo "**** Checking for dependency updates ****"
-    - ./gradlew dependencyUpdates --info
+    - ./gradlew dependencyUpdates --info || true
   artifacts:
     paths:
-      - build/dependencyUpdates/report.txt
+      - build/dependencyUpdates/report.json
     expire_in: 1 week
 
 pages:
