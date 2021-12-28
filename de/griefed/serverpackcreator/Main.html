@@ -196,17 +196,17 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>private static void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#createFile-java.io.File-">createFile</a></span>(java.io.File&nbsp;fileToCreate)</code>
-<div class="block">Copy a file from inside our JAR to the host filesystem.</div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;args)</code>
 <div class="block">Runs dependency injection and decides which mode to enter depending on the arguments with which ServerPackCreator
  is executed.</div>
 </td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>private static void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#runHeadless-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-">runHeadless</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;CONFIGURATIONHANDLER,
+           <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;SERVERPACKHANDLER,
+           <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;APPLICATIONPROPERTIES)</code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -299,18 +299,15 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="createFile-java.io.File-">
+<a name="runHeadless-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>createFile</h4>
-<pre>private static&nbsp;void&nbsp;createFile(java.io.File&nbsp;fileToCreate)</pre>
-<div class="block">Copy a file from inside our JAR to the host filesystem.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileToCreate</code> - File. The file in the JAR to create on the host filesystem.</dd>
-</dl>
+<h4>runHeadless</h4>
+<pre>private static&nbsp;void&nbsp;runHeadless(<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;CONFIGURATIONHANDLER,
+                                <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;SERVERPACKHANDLER,
+                                <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;APPLICATIONPROPERTIES)</pre>
 </li>
 </ul>
 </li>

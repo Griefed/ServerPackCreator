@@ -7,13 +7,6 @@ de.griefed.serverpackcreator.spring.models
 de.griefed.serverpackcreator.spring.repositories
 de.griefed.serverpackcreator.spring.services
 de.griefed.serverpackcreator.swing
-de.griefed.serverpackcreator.swing.components.buttons
-de.griefed.serverpackcreator.swing.components.checkboxes
-de.griefed.serverpackcreator.swing.components.comboboxes
-de.griefed.serverpackcreator.swing.components.filechoosers
-de.griefed.serverpackcreator.swing.components.labels
-de.griefed.serverpackcreator.swing.components.radiobuttons
-de.griefed.serverpackcreator.swing.components.textfields
 de.griefed.serverpackcreator.swing.themes
 de.griefed.serverpackcreator.swing.utilities
 de.griefed.serverpackcreator.utilities
