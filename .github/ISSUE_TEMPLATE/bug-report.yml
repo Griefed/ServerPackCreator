@@ -37,19 +37,6 @@ body:
         - 3.0.0-alpha.12 (Alpha)
     validations:
       required: true
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: If you are using the webservice, in which browers did you encounter this bug?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Opera
-        - Microsoft Edge
-    validations:
-      required: false
   - type: textarea
     id: logs
     attributes:
@@ -63,6 +50,19 @@ body:
       description: Any additional info you would like to add?
       placeholder: Tell me!
       value: "Tell me!"
+    validations:
+      required: false
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: If you are using the webservice, in which browers did you encounter this bug?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Opera
+        - Microsoft Edge
     validations:
       required: false
   - type: checkboxes
