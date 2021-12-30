@@ -1,3 +1,78 @@
+## [3.0.0-alpha.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.12...3.0.0-alpha.13) (2021-12-30)
+
+
+### 🦊 CI/CD
+
+* Update Gradle to 7.3.3 ([541122b](https://git.griefed.de/Griefed/ServerPackCreator/commit/541122b0dded68e62878065bea3ea47aee55d1f5))
+* **deps-dev:** bump @quasar/app from 3.2.5 to 3.2.6 in /frontend ([c53aeac](https://git.griefed.de/Griefed/ServerPackCreator/commit/c53aeac47f2b3fe0621e4abce2b89b3daf58e4d8))
+* **deps-dev:** bump @types/node from 16.11.14 to 17.0.2 in /frontend ([d8109a5](https://git.griefed.de/Griefed/ServerPackCreator/commit/d8109a55fd012cc8e376d47e46ee768040174b28))
+* **deps-dev:** bump @types/node from 17.0.2 to 17.0.5 in /frontend ([0ae1140](https://git.griefed.de/Griefed/ServerPackCreator/commit/0ae11401030687941c00f0bf5f4696c6af4ec036))
+* **deps-dev:** bump @typescript-eslint/eslint-plugin in /frontend ([579714d](https://git.griefed.de/Griefed/ServerPackCreator/commit/579714df6f96a30796293f37dec76bc04273d647))
+* **deps-dev:** bump @typescript-eslint/parser in /frontend ([94c6af4](https://git.griefed.de/Griefed/ServerPackCreator/commit/94c6af47d56f3606fdd142697ecd05527fa9adaf))
+* **deps:** bump core-js from 3.20.0 to 3.20.1 in /frontend ([bbad029](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbad02947f1ad5462c46b418bb7d2d6c55bb3038))
+* **deps:** bump quasar from 2.3.4 to 2.4.2 in /frontend ([bd3051c](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd3051c18690a09609b10ece95bf0500f73036c1))
+* **deps:** bump tsparticles from 1.37.5 to 1.37.6 in /frontend ([7ab7a69](https://git.griefed.de/Griefed/ServerPackCreator/commit/7ab7a69446f71d8dd827a3b152cc54987946a88d))
+* Allow failure of dependency check and coverage jobs ([f8bb3d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8bb3d1e82989d5639152d204c18aae642f6ff19))
+* Allow running of Gradle and Docker test in parallel, to speed up pipeline completion. Move variables and services into global variable ([187a966](https://git.griefed.de/Griefed/ServerPackCreator/commit/187a9668d91fcc2ed8b809c86e6c8edc54db6f97))
+* Change branch separator in dependabot config ([3b08ff8](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b08ff8e9169990d4c502a5cc1ecd86c3ca96a8d))
+* Cleanup GitLab CI and Dockerfile. Remove spotbug. ([017ebed](https://git.griefed.de/Griefed/ServerPackCreator/commit/017ebed289b10b88e473ef18651c01cc7acee13b))
+* Create jacoco coverage report for coverage visualization in GitLab ([5da842f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5da842f5415fbc16e43d51dd6195a4bd53ad22f3))
+* Exclude libraries folder from test workflow artifacts ([c796115](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7961153fdb212f68360e06b4a9d04a50222b518))
+* Fix branch acquisition for GitHub Docker test ([063215f](https://git.griefed.de/Griefed/ServerPackCreator/commit/063215f65b7dbe9cd55b10ccac65de59b67c5cf4))
+* Remove unnecessary environment cleaning ([67e1029](https://git.griefed.de/Griefed/ServerPackCreator/commit/67e1029e1cb12632d9cbe70c37466be84385721d))
+* Split tests in GitHub workflow into separate jobs ([58fd4b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/58fd4b3758aea9fc029bf70929fef9f5d2f9cddd))
+* Upload artifacts of GitHub actions ([b4e41e4](https://git.griefed.de/Griefed/ServerPackCreator/commit/b4e41e458435b591a3fee54f7d38fbe2bb66feb4))
+
+
+### 🧪 Tests
+
+* Disable CurseForge related tests ([b28c97c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b28c97c9ccd3602fa266def9df1ff010cae4e68b))
+* Fix test failing due to missing, recently added, clientside-only mod ([1eaa966](https://git.griefed.de/Griefed/ServerPackCreator/commit/1eaa966468cc74f0ed2aab63cdc3dc006df082e0))
+* Try and fix ArtemisConfigTest and SpringBootTests for spotbugs job ([67817a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/67817a1e1b24742f9cac1930f44a8908272330e2))
+* Try and fix ArtemisConfigTest and SpringBootTests for spotbugs job ([29c870f](https://git.griefed.de/Griefed/ServerPackCreator/commit/29c870fec68e75df7da3d8dba978a6f6688642b2))
+* Try and fix ArtemisConfigTest for spotbugs job ([c665bf5](https://git.griefed.de/Griefed/ServerPackCreator/commit/c665bf5fd23d4fe56c249c3d4b3f1a22ebd5c3b5))
+
+
+### 🚀 Features
+
+* Allow users to edit language-definitions in the lang-directory. ([e2b5cca](https://git.griefed.de/Griefed/ServerPackCreator/commit/e2b5ccaef8834ab3a9154d7208a5e6ff90a2b14b))
+
+
+### 🛠 Fixes
+
+* Always load classpath serverpackcreator.properties first, then loac local filesystem serverpackcreator.properties. Ensures defaults are always present and available to be overwritten and never empty. ([f91c8da](https://git.griefed.de/Griefed/ServerPackCreator/commit/f91c8da02116c5271eda0d02b4a394d2ed267ae2))
+* Correctly initialize variable in start-scripts. Correctly pass OTHERARGS in batch-scripts. ([26f6dfd](https://git.griefed.de/Griefed/ServerPackCreator/commit/26f6dfdd24fb24c27755699edaa3b79bf89ae698))
+* Explicitly define log4j and force any dependency using it to use the secure version ([f0c1946](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0c19465ba0daf6c6d8ce090913a24e3ab8d820c))
+* Re-add nogui parameter for fabric scripts. Apparently that is needed. Local tests proved it is not. My Little Fabric: Servers Are Magic ([6381c3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/6381c3b1fc741ee684740db6d9fb5d7ccfb8f4d1))
+
+
+### Other
+
+* Add CraftPresence to fallbacklist of clientside-only mods (Reported by Law on Discord) ([88150ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/88150ab82f654eba1d5be27566f3b74fea5d2b66))
+* Change order of input so users don't confuse the log-section to be related to the webservice. ([e352d12](https://git.griefed.de/Griefed/ServerPackCreator/commit/e352d120603e6810a3a3ed0b3e46b021db4ca5a0))
+* **deps:** update dependency @babel/eslint-parser to v7.16.5 ([d90ef33](https://git.griefed.de/Griefed/ServerPackCreator/commit/d90ef333df1d80fde46189faebe288f53f211427))
+* **deps:** update dependency @quasar/app to v3.2.6 ([292d4f5](https://git.griefed.de/Griefed/ServerPackCreator/commit/292d4f5d8b2c048aa6ed28b18e0bdf0eaa4de79c))
+* **deps:** update dependency @types/node to v16.11.14 ([76baa87](https://git.griefed.de/Griefed/ServerPackCreator/commit/76baa87cb160827729922b4cd11a407cf523fb9c))
+* **deps:** update dependency @types/node to v16.11.15 ([7b8dd46](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b8dd46df3819ab64778b033403ee30b59ee0a7b))
+* **deps:** update dependency core-js to v3.20.0 ([809855a](https://git.griefed.de/Griefed/ServerPackCreator/commit/809855a1defa480ee9869c3bf3124474e0a8c34f))
+* **deps:** update dependency core-js to v3.20.1 ([cde9246](https://git.griefed.de/Griefed/ServerPackCreator/commit/cde9246b792470bfc4e9308bb32bea2ae3bb8ada))
+* **deps:** update dependency eslint to v8.5.0 ([6f7c5c2](https://git.griefed.de/Griefed/ServerPackCreator/commit/6f7c5c24b8cb8a68427836331b1b2e758fdfeaa8))
+* **deps:** update dependency gradle to v7.3.2 ([69019b9](https://git.griefed.de/Griefed/ServerPackCreator/commit/69019b97c3e2f4c38ae1a6eb4b8913a095986714))
+* **deps:** update dependency org.apache.logging.log4j:log4j-api to v2.17.1 ([01c8a80](https://git.griefed.de/Griefed/ServerPackCreator/commit/01c8a80de9499ea377bf03eff6eaac1b73f8efb9))
+* **deps:** update dependency org.apache.logging.log4j:log4j-core to v2.17.1 ([7cbd208](https://git.griefed.de/Griefed/ServerPackCreator/commit/7cbd208142e559d57c37f12ccc5a738a2f682bc1))
+* **deps:** update dependency org.apache.logging.log4j:log4j-jul to v2.17.1 ([48cf50d](https://git.griefed.de/Griefed/ServerPackCreator/commit/48cf50df5230f399c93f8abf25d7aff5f3500697))
+* **deps:** update dependency org.apache.logging.log4j:log4j-slf4j-impl to v2.17.1 ([de850ff](https://git.griefed.de/Griefed/ServerPackCreator/commit/de850ff6bb2c9600be0a06b06f84fe594c190427))
+* **deps:** update dependency org.apache.logging.log4j:log4j-web to v2.17.0 ([9ab5fc7](https://git.griefed.de/Griefed/ServerPackCreator/commit/9ab5fc7e189765d9a42dabb66274870e06ecd409))
+* **deps:** update dependency org.apache.logging.log4j:log4j-web to v2.17.1 ([32af395](https://git.griefed.de/Griefed/ServerPackCreator/commit/32af395878dfe45ebfed0e0dbbcd77f104418558))
+* **deps:** update dependency quasar to v2.4.2 ([28ec385](https://git.griefed.de/Griefed/ServerPackCreator/commit/28ec3853f08d5e16110a1d95e1a2f95add7fc164))
+* **deps:** update dependency tsparticles to v1.37.6 ([e69e81a](https://git.griefed.de/Griefed/ServerPackCreator/commit/e69e81a4263706ed969f4f7f1454dc550ee6659c))
+* **deps:** update dependency tsparticles to v1.38.0 ([fa498bc](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa498bc7fd1df3067a2d12e6c227c35635848a46))
+* **deps:** update jamesives/github-pages-deploy-action action to v4.1.8 ([1d4a7f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d4a7f7e3c389abdc1513050327b6018848441ff))
+* **deps:** update spring boot to v2.6.2 ([b6e4850](https://git.griefed.de/Griefed/ServerPackCreator/commit/b6e4850ff8ebe5f18e5472563bb3782cfd1ea0a9))
+* **deps:** update typescript-eslint monorepo to v5.7.0 ([e6b01d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/e6b01d858d2b9e25656fdbe07904b840242d2003))
+* **deps:** update typescript-eslint monorepo to v5.8.0 ([1f29f23](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f29f236d19653487b791576c76cfee8c58e1e88))
+* **deps:** update typescript-eslint monorepo to v5.8.1 ([ded0c7b](https://git.griefed.de/Griefed/ServerPackCreator/commit/ded0c7b39e9d48a06b7b6fc87537670e0a430f69))
+
 ## [3.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.11...3.0.0-alpha.12) (2021-12-13)
 
 
