@@ -898,7 +898,7 @@ public class ServerPackHandler {
                         "ECHO Fabric version: %FABRIC%\n" +
                         "ECHO Java args: %ARGS%\n" +
                         "\n" +
-                        "%JAVA% \"%OTHERARGS%\" %ARGS% -jar fabric-server-launch.jar\n" +
+                        "%JAVA% \"%OTHERARGS%\" %ARGS% -jar fabric-server-launch.jar nogui\n" +
                         "\n" +
                         "PAUSE"
                 );
@@ -984,7 +984,7 @@ public class ServerPackHandler {
                         "echo \"Fabric version: $FABRIC\";\n" +
                         "echo \"Java args: $ARGS\";\n" +
                         "\n" +
-                        "$JAVA $OTHERARGS $ARGS -jar fabric-server-launch.jar"
+                        "$JAVA $OTHERARGS $ARGS -jar fabric-server-launch.jar nogui"
                 );
 
             } catch (IOException ex) {
