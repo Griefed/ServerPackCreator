@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.VersionLister;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
@@ -547,6 +548,7 @@ class ConfigurationTest {
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
+    @Disabled
     @Test
     void isCurseTest() throws IOException, InvalidModpackException, InvalidFileException, CurseException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforge.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
@@ -574,6 +576,7 @@ class ConfigurationTest {
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
+    @Disabled
     @Test
     void isCurseTestProjectIDFalse() throws IOException, InvalidModpackException, InvalidFileException, CurseException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
@@ -590,6 +593,7 @@ class ConfigurationTest {
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
+    @Disabled
     @Test
     void isCurseTestProjectFileIDFalse() throws IOException {
         Files.copy(Paths.get("./backend/test/resources/testresources/serverpackcreator_curseforgefilefalse.conf"), Paths.get("./serverpackcreator.conf"), REPLACE_EXISTING);
@@ -638,6 +642,7 @@ class ConfigurationTest {
         Assertions.assertTrue(CONFIGURATIONHANDLER.suggestCopyDirs(modpackDir).contains("seeds"));
     }
 
+    @Disabled
     @Test
     void checkCurseForgeTest() throws InvalidModpackException, InvalidFileException, CurseException {
         String valid = "430517,3266321";
@@ -645,6 +650,7 @@ class ConfigurationTest {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkCurseForge(valid, configurationModel, new ArrayList<>(100)));
     }
 
+    @Disabled
     @Test
     void checkCurseForgeTestFalse() throws InvalidModpackException, InvalidFileException, CurseException {
         String invalid = "1,1234";
@@ -652,6 +658,7 @@ class ConfigurationTest {
         Assertions.assertFalse(CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel, new ArrayList<>(100)));
     }
 
+    @Disabled
     @Test
     void checkCurseForgeTestNotMinecraft() {
         String invalid = "10,60018";
