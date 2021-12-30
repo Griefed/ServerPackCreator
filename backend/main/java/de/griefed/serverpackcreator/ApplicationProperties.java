@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -46,7 +47,7 @@ public class ApplicationProperties extends Properties {
             "AdvancementPlaques-,AmbientSounds_,backtools-,BetterAdvancements-,BetterAnimationsCollection-," +
             "BetterDarkMode-,betterf3-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-," +
             "Blur-,catalogue-,cherishedworlds-,classicbar-,clickadv-,ClientTweaks_,configured-," +
-            "Controlling-,CTM-,customdiscordrpc-,CustomMainMenu-,defaultoptions-,DefaultOptions_," +
+            "Controlling-,CraftPresence-,CTM-,customdiscordrpc-,CustomMainMenu-,defaultoptions-,DefaultOptions_," +
             "desiredservers-,Ding-,drippyloadingscreen-,drippyloadingscreen_,Durability101-,dynmus-," +
             "dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,eiramoticons-,EiraMoticons_," +
             "EnchantmentDescriptions-,EquipmentCompare-,extremesoundmuffler-,extremeSoundMuffler-," +
@@ -135,6 +136,17 @@ public class ApplicationProperties extends Properties {
     @Autowired
     public ApplicationProperties() {
 
+        // Load the properties file from the classpath, providing default values.
+        try (InputStream inputStream = new ClassPathResource("serverpackcreator.properties").getInputStream()) {
+            load(inputStream);
+        } catch (IOException ex) {
+            LOG.error("Couldn't read properties file.", ex);
+        }
+        /*
+         * Now load the properties file from the local filesystem. This overwrites previously loaded properties
+         * but has the advantage of always providing default values if any property in the applications.properties
+         * on the filesystem should be commented out.
+         */
         try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
             new Properties();
             load(inputStream);

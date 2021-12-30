@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
+import de.griefed.serverpackcreator.MainSpringBoot;
+import de.griefed.serverpackcreator.MainSpringBootTest;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +33,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessagePostProcessor;
@@ -52,7 +56,7 @@ public class ArtemisConfigTest {
 
     private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
 
-    private JmsTemplate jmsTemplate;
+    private final JmsTemplate jmsTemplate;
 
     private final String QUEUE_UNIQUE_ID = "unique_id";
     private final String QUEUE_TYPE = "type";
@@ -70,11 +74,6 @@ public class ArtemisConfigTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            FileUtils.copyFile(new File("backend/test/resources/serverpackcreator.db"),new File("serverpackcreator.db"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         this.serverPackCreatorProperties = new ApplicationProperties();
 
@@ -86,6 +85,7 @@ public class ArtemisConfigTest {
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
         DEFAULTFILES.filesSetup();
+        DEFAULTFILES.checkDatabase();
     }
 
     @AfterEach

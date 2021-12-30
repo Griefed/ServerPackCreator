@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  gradle:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -23,7 +23,28 @@ jobs:
         run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe --no-daemon --info
       - name: List files in libs
         run: ls -ahl build/libs
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts-gradle
+          path: |
+            build/libs/
+            !build/libs/libraries/
+            frontend/dist/spa
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: report
+          path: build/reports/tests/test/
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5
       # DOCKER RELATED
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -33,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./Dockerfile.webservice
+          file: ./Dockerfile
+          build-args: BRANCH_OR_TAG=${{ steps.branch-name.outputs.current_branch }}
           platforms: linux/amd64,linux/arm64
           push: false

@@ -7,9 +7,6 @@
   "gradle-lite": {
     "enabled": true
   },
-  "npm": {
-    "stabilityDays": 3
-  },
   "packageRules": [
     {
       "extends": "config:base",

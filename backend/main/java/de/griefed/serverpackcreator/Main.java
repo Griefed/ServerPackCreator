@@ -24,8 +24,8 @@ import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.FileWatcher;
+import de.griefed.serverpackcreator.utilities.JarUtilities;
 import de.griefed.serverpackcreator.utilities.VersionLister;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.system.ApplicationHome;
@@ -33,10 +33,9 @@ import org.springframework.boot.system.ApplicationHome;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.net.URISyntaxException;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
 
 /**
  * Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
@@ -83,11 +82,27 @@ public class Main {
      */
     public static void main(String[] args) {
 
-        //Create our log4j2.xml and serverpackcreator.properties
-        createFile(log4j2xml);
-        createFile(properties);
+        JarUtilities jarUtilities = new JarUtilities();
+        ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
 
-        ApplicationProperties applicationProperties = new ApplicationProperties();
+        String jarPath = home.getSource().toString().replace("\\", "/");
+        String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
+        String javaVersion = System.getProperty("java.version");
+        String osArch = System.getProperty("os.arch");
+        String osName = System.getProperty("os.name");
+        String osVersion = System.getProperty("os.version");
+
+        jarUtilities.copyFileFromJar(log4j2xml);
+        jarUtilities.copyFileFromJar(properties);
+
+        try {
+            jarUtilities.copyFolderFromJar(jarPath,"/de/griefed/resources/lang", "lang", "BOOT-INF/classes");
+        } catch (IOException ex) {
+            LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
+        }
+
+
+        ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
 
         List<String> programArgs = Arrays.asList(args);
 
@@ -110,21 +125,13 @@ public class Main {
         } else {
 
                 // Check local serverpackcreator.properties file for locale setting.
-                LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+                LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
 
         }
 
         //Print system information to console and logs.
         LOG.debug("Gathering system information to include in log to make debugging easier.");
-        ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
-        String jarPath = home.getSource().toString().replace("\\", "/");
-        String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
-        String javaVersion = System.getProperty("java.version");
-        String osArch = System.getProperty("os.arch");
-        String osName = System.getProperty("os.name");
-        String osVersion = System.getProperty("os.version");
-
-        applicationProperties.setProperty("homeDir", jarPath.substring(0, jarPath.lastIndexOf("/")).replace("\\", "/"));
+        APPLICATIONPROPERTIES.setProperty("homeDir", jarPath.substring(0, jarPath.lastIndexOf("/")).replace("\\", "/"));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
@@ -145,7 +152,7 @@ public class Main {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), osVersion));
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, applicationProperties);
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
 
         // Start ServerPackCreator as webservice.
@@ -176,16 +183,19 @@ public class Main {
                 } while (!answer.equals("No") && !answer.equals("Yes"));
 
             } else {
+
                 MainSpringBoot.main(args);
+
             }
+
         } else {
             // Prepare instances for dependency injection
-            VersionLister VERSIONLISTER = new VersionLister(applicationProperties);
-            AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, applicationProperties);
-            CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, applicationProperties);
-            ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, applicationProperties);
-            ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER);
-            FileWatcher FILEWATCHER = new FileWatcher(applicationProperties, DEFAULTFILES);
+            VersionLister VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+            AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+            CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+            ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES);
+            ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER);
+            FileWatcher FILEWATCHER = new FileWatcher(APPLICATIONPROPERTIES, DEFAULTFILES);
 
             // Print help and information about ServerPackCreator which could help the user figure out what to do.
             if (Arrays.asList(args).contains("-help")) {
@@ -241,7 +251,7 @@ public class Main {
 
                 ConfigurationModel configurationModel = new ConfigurationModel();
 
-                if (SERVERPACKHANDLER.run(applicationProperties.FILE_CONFIG, configurationModel)) {
+                if (SERVERPACKHANDLER.run(APPLICATIONPROPERTIES.FILE_CONFIG, configurationModel)) {
                     System.exit(0);
                 } else {
                     System.exit(1);
@@ -250,61 +260,38 @@ public class Main {
                 // Start ServerPackCreator in commandline mode.
             } else if (Arrays.asList(args).contains("-cli")) {
 
-                // Start generation of a new configuration with user input if no configuration file is present.
-                if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
-
-                    CONFIGURATIONHANDLER.createConfigurationFile();
-                }
-
-                ConfigurationModel configurationModel = new ConfigurationModel();
-
-                if (SERVERPACKHANDLER.run(applicationProperties.FILE_CONFIG, configurationModel)) {
-                    System.exit(0);
-                } else {
-                    System.exit(1);
-                }
+                runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
 
                 // If the environment is headless, so no possibility for GUI, start in commandline-mode.
             } else if (GraphicsEnvironment.isHeadless()) {
 
-                // Start generation of a new configuration with user input if no configuration file is present.
-                if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
-
-                    CONFIGURATIONHANDLER.createConfigurationFile();
-                }
-
-                ConfigurationModel configurationModel = new ConfigurationModel();
-
-                if (SERVERPACKHANDLER.run(applicationProperties.FILE_CONFIG, configurationModel)) {
-                    System.exit(0);
-                } else {
-                    System.exit(1);
-                }
+                runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
 
                 // If no mode is specified, and we have a graphical environment, start in GUI mode.
             } else {
 
-                SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, applicationProperties, VERSIONLISTER);
+                SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER);
 
                 swingGuiInitializer.mainGUI();
             }
         }
     }
 
-    /**
-     * Copy a file from inside our JAR to the host filesystem.
-     * @author Griefed
-     * @param fileToCreate File. The file in the JAR to create on the host filesystem.
-     */
-    private static void createFile(File fileToCreate) {
-        if (!fileToCreate.exists()) {
-            try {
-                FileUtils.copyInputStreamToFile(
-                        Objects.requireNonNull(Main.class.getResourceAsStream("/" + fileToCreate.getName())),
-                        fileToCreate);
-            } catch (IOException ex) {
-                LOG.error("Error creating file: " + fileToCreate, ex);
-            }
+    private static void runHeadless(ConfigurationHandler CONFIGURATIONHANDLER, ServerPackHandler SERVERPACKHANDLER, ApplicationProperties APPLICATIONPROPERTIES) {
+        // Start generation of a new configuration with user input if no configuration file is present.
+        if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
+
+            CONFIGURATIONHANDLER.createConfigurationFile();
+        }
+
+        ConfigurationModel configurationModel = new ConfigurationModel();
+
+        if (SERVERPACKHANDLER.run(APPLICATIONPROPERTIES.FILE_CONFIG, configurationModel)) {
+            System.exit(0);
+        } else {
+            System.exit(1);
         }
     }
+
+
 }

@@ -45,7 +45,6 @@ public class MainSpringBootTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         try {
             FileUtils.copyFile(new File("backend/test/resources/serverpackcreator.db"),new File("serverpackcreator.db"));
         } catch (IOException e) {

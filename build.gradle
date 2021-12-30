@@ -7,12 +7,16 @@ plugins {
     id 'java'
     id 'idea'
 
+    id 'jacoco'
+
+    id "com.github.ben-manes.versions" version '0.39.0'
+
     id 'maven-publish'
 
     id 'edu.sc.seis.launch4j' version '2.5.1'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
 
-    id 'org.springframework.boot' version '2.6.1'
+    id 'org.springframework.boot' version '2.6.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
@@ -61,6 +65,28 @@ launch4j {
     icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
+def isNonStable = { String version ->
+  def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+  def regex = /^[0-9,.v-]+(-r)?$/
+  return !stableKeyword && !(version ==~ regex)
+}
+
+tasks.named("dependencyUpdates").configure {
+
+    checkForGradleUpdate = true
+    outputFormatter = "json"
+
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
+                    reject('Release candidate')
+                }
+            }
+        }
+    }
+}
+
 configurations {
     all {
         // Exclude logging from dependencies because we already have logging set up
@@ -83,29 +109,35 @@ dependencies {
     embed 'org.xerial:sqlite-jdbc:3.36.0.3'
     embed 'org.pf4j:pf4j-update:2.3.0'
 
+    embed 'org.apache.logging.log4j:log4j-api:2.17.1'
+    embed 'org.apache.logging.log4j:log4j-core:2.17.1'
+    embed 'org.apache.logging.log4j:log4j-web:2.17.1'
+    embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
+    embed 'org.apache.logging.log4j:log4j-jul:2.17.1'
+
     // GUI
     embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
 
     // WEB
     //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
-    embed 'org.springframework.boot:spring-boot-starter-validation:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.1'
-    embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.1'
+    embed 'org.springframework.boot:spring-boot-starter-validation:2.6.2'
+    embed 'org.springframework.boot:spring-boot-starter-web:2.6.2'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.2'
+    embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.2'
+    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.2'
+    embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.2'
     embed 'org.apache.activemq:artemis-jms-server:2.19.0'
     embed 'com.github.gwenn:sqlite-dialect:0.1.2'
-    embed 'org.apache.logging.log4j:log4j-web:2.16.0'
+    embed 'org.apache.logging.log4j:log4j-web:2.17.1'
     embed 'org.pf4j:pf4j-spring:0.7.0'
 
     // Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.1'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.2'
 
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.1'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.2'
     testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
@@ -118,6 +150,23 @@ test {
                "skipped",
                "failed"
     }
+
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.required = true
+        //csv.required = false
+        //html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+    reportsDirectory = layout.buildDirectory.dir('jacoco')
 }
 
 // Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
@@ -156,7 +205,7 @@ tasks.register('about', Copy) {
     from layout.projectDirectory.file("CODE_OF_CONDUCT.md") into layout.projectDirectory.dir("backend/main/resources")
 }
 
-
+// Make sure quasar is installed
 tasks.register('installQuasar', RunNpm) {
     dependsOn tasks.named('installNode')
     script = 'install -g @quasar/cli'
@@ -182,6 +231,7 @@ tasks.register('copyDist', Copy) {
 tasks.withType(Javadoc) {
     options.addStringOption('encoding', 'UTF-8')
 }
+
 javadoc {
     options.memberLevel = JavadocMemberLevel.PRIVATE
     classpath = sourceSets.main.runtimeClasspath

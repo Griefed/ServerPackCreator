@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.i18n;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,7 +150,8 @@ public class LocalizationManager {
      */
     public void init(ApplicationProperties serverPackCreatorProperties) throws IncorrectLanguageException{
 
-        String langProp = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language");
+        String langProp = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language", "en_us");
+
         LOG.debug(langProp);
 
         boolean doesLanguageExist = false;
@@ -167,21 +169,39 @@ public class LocalizationManager {
 
         if (Boolean.FALSE.equals(doesLanguageExist)) throw new IncorrectLanguageException();
 
-        String langProperty = serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language", "en_us");
         String[] langCode;
 
-        if (langProperty.contains("_")) {
+        if (langProp.contains("_")) {
 
-            langCode = langProperty.split("_");
+            langCode = langProp.split("_");
 
             CURRENT_LANGUAGE.put(MAP_PATH_LANGUAGE, langCode[0]);
             CURRENT_LANGUAGE.put(MAP_PATH_COUNTRY, langCode[1]);
 
         } else {
+
             throw new IncorrectLanguageException();
+
         }
 
-        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+        try (InputStream inputStream = FileUtils.openInputStream(new File(String.format("lang/lang_%s.properties", serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language"))))) {
+
+            localeResources = new PropertyResourceBundle(inputStream);
+
+            LOG.debug("Using local language-definitions.");
+
+        } catch (IOException ex) {
+
+            if (!ex.toString().startsWith("java.io.FileNotFoundException")) {
+                LOG.error("Local language-definitions corrupted, not present or otherwise unreadable. Using defaults.", ex);
+            } else {
+                LOG.error("Local language-definitions corrupted, not present or otherwise unreadable. Using defaults.");
+            }
+
+            localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", serverPackCreatorProperties.getProperty("de.griefed.serverpackcreator.language")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+
+        }
+
         LOG.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
 
         if (!CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).equalsIgnoreCase("en")) {
@@ -228,10 +248,28 @@ public class LocalizationManager {
             CURRENT_LANGUAGE.put(MAP_PATH_COUNTRY, langCode[1]);
 
         } else {
+
             throw new IncorrectLanguageException();
+
         }
 
-        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", locale));
+        try (InputStream inputStream = FileUtils.openInputStream(new File(String.format("lang/lang_%s.properties", locale)))) {
+
+            localeResources = new PropertyResourceBundle(inputStream);
+
+            LOG.debug("Using local language-definitions.");
+
+        } catch (IOException ex) {
+
+            if (!ex.toString().startsWith("java.io.FileNotFoundException")) {
+                LOG.error("Local language-definitions corrupted, not present or otherwise unreadable. Using defaults.", ex);
+            } else {
+                LOG.error("Local language-definitions corrupted, not present or otherwise unreadable. Using defaults.");
+            }
+
+            localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", locale), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+
+        }
 
         LOG.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
 
@@ -265,7 +303,8 @@ public class LocalizationManager {
             LOG.error(ex);
         }
 
-        String langProp = langProperties.getProperty("de.griefed.serverpackcreator.language");
+        String langProp = langProperties.getProperty("de.griefed.serverpackcreator.language", "en_us");
+
         LOG.debug(langProp);
 
         boolean doesLanguageExist = false;
@@ -283,13 +322,11 @@ public class LocalizationManager {
 
         if (Boolean.FALSE.equals(doesLanguageExist)) throw new IncorrectLanguageException();
 
-        String defaultLocale = "en_us";
-        String langProperty = langProperties.getProperty("de.griefed.serverpackcreator.language", defaultLocale);
         String[] langCode;
 
-        if (langProperty.contains("_")) {
+        if (langProp.contains("_")) {
 
-            langCode = langProperty.split("_");
+            langCode = langProp.split("_");
 
             CURRENT_LANGUAGE.put(MAP_PATH_LANGUAGE, langCode[0]);
             CURRENT_LANGUAGE.put(MAP_PATH_COUNTRY, langCode[1]);
@@ -298,7 +335,24 @@ public class LocalizationManager {
             throw new IncorrectLanguageException();
         }
 
-        localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("de.griefed.serverpackcreator.language")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+        try (InputStream inputStream = FileUtils.openInputStream(new File(String.format("lang/lang_%s.properties", langProperties.getProperty("de.griefed.serverpackcreator.language"))))) {
+
+            localeResources = new PropertyResourceBundle(inputStream);
+
+            LOG.debug("Using local language-definitions.");
+
+        } catch (IOException ex) {
+
+            if (!ex.toString().startsWith("java.io.FileNotFoundException")) {
+                LOG.error("Local language-definitions corrupted, not present or otherwise unreadable. Using defaults.", ex);
+            } else {
+                LOG.error("Local language-definitions corrupted, not present or otherwise unreadable. Using defaults.");
+            }
+
+            localeResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", langProperties.getProperty("de.griefed.serverpackcreator.language")), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+
+        }
+
         LOG.info(String.format("Using language: %s", getLocalizedString("localeUnlocalizedName")));
 
         if (!CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).equalsIgnoreCase("en")) {
