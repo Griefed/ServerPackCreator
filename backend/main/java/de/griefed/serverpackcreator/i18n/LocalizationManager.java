@@ -419,7 +419,7 @@ public class LocalizationManager {
 
         } catch (MissingResourceException ex) {
 
-            LOG.debug(String.format("Language key %s not found in the language file. Using fallback.", ex.getKey()));
+            LOG.debug(String.format("Language key \"%s\" not found for locale \"%s_%s\". Using fallback from \"en_US\".", ex.getKey(), CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
 
             value = fallbackResources.getString(languageKey);
 
