@@ -664,85 +664,92 @@ public class ConfigurationHandler {
 
         if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
 
-            String[] curseForgeIDCombination;
-            curseForgeIDCombination = modpackDir.split(",");
+            LOG.info("IMPORTANT!!! - Modpack directory matches CurseForge projectID and fileID format. However, the CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.");
+            LOG.info("IMPORTANT!!! - Downloading and installing a modpack is disabled until further notice.");
+            // TODO: Reactivate once custom implementation of CurseForgeAPI has been implemented and CurseForge has provided me with an API key
+            encounteredErrors.add("IMPORTANT!!! - Modpack directory matches CurseForge projectID and fileID format. However, the CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.");
+            encounteredErrors.add("IMPORTANT!!! - Downloading and installing a modpack is disabled until further notice.");
 
-            int curseProjectID = Integer.parseInt(curseForgeIDCombination[0]);
-            int curseFileID = Integer.parseInt(curseForgeIDCombination[1]);
+            return false;
 
-            CurseProject curseProject = null;
-
-            try {
-
-                if (CurseAPI.project(curseProjectID).isPresent()) {
-
-                    curseProject = CurseAPI.project(curseProjectID).get();
-
-                    if (!curseProject.game().name().equalsIgnoreCase("Minecraft")) {
-                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
-                        throw new InvalidModpackException(curseProjectID, curseProject.name());
-                    }
-
-                    if (!curseProject.categorySection().name().equalsIgnoreCase("Modpacks")) {
-                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
-                        throw new InvalidModpackException(curseProjectID, curseProject.name());
-                    }
-
-                    //noinspection UnusedAssignment
-                    configCorrect = true;
-
-                    configurationModel.setProjectID(curseProjectID);
-                    configurationModel.setProjectName(CURSECREATEMODPACK.retrieveProjectName(curseProjectID));
-                }
-
-            } catch (NoSuchElementException ex) {
-
-                //noinspection UnusedAssignment
-                configCorrect = false;
-
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID), ex);
-                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID));
-
-            }
-
-            try {
-                if (curseProject != null) {
-
-                    if (curseProject.refreshFiles().fileWithID(curseFileID) != null) {
-
-                        configurationModel.setFileID(curseFileID);
-                        configurationModel.setFileName(CURSECREATEMODPACK.retrieveFileName(curseProjectID, curseFileID));
-                        configurationModel.setFileDiskName(CURSECREATEMODPACK.retrieveFileDiskName(curseProjectID,curseFileID));
-
-                        configCorrect = true;
-
-                    } else {
-
-                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
-                        throw new InvalidFileException(curseFileID);
-                    }
-                } else {
-
-                    encounteredErrors.add("Specified CurseForge project " + curseProjectID + " could not be found.");
-                    throw new CurseException("Project was null. Does the specified project " + curseProjectID + " exist?");
-                }
-
-            } catch (CurseException | NoSuchElementException ex) {
-
-                configCorrect = false;
-
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID), ex);
-                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
-
-            }
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.info"));
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.return"), configurationModel.getProjectID(), configurationModel.getFileID()));
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkcurseforge.warn"));
-
+//            String[] curseForgeIDCombination;
+//            curseForgeIDCombination = modpackDir.split(",");
+//
+//            int curseProjectID = Integer.parseInt(curseForgeIDCombination[0]);
+//            int curseFileID = Integer.parseInt(curseForgeIDCombination[1]);
+//
+//            CurseProject curseProject = null;
+//
+//            try {
+//
+//                if (CurseAPI.project(curseProjectID).isPresent()) {
+//
+//                    curseProject = CurseAPI.project(curseProjectID).get();
+//
+//                    if (!curseProject.game().name().equalsIgnoreCase("Minecraft")) {
+//                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
+//                        throw new InvalidModpackException(curseProjectID, curseProject.name());
+//                    }
+//
+//                    if (!curseProject.categorySection().name().equalsIgnoreCase("Modpacks")) {
+//                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
+//                        throw new InvalidModpackException(curseProjectID, curseProject.name());
+//                    }
+//
+//                    //noinspection UnusedAssignment
+//                    configCorrect = true;
+//
+//                    configurationModel.setProjectID(curseProjectID);
+//                    configurationModel.setProjectName(CURSECREATEMODPACK.retrieveProjectName(curseProjectID));
+//                }
+//
+//            } catch (NoSuchElementException ex) {
+//
+//                //noinspection UnusedAssignment
+//                configCorrect = false;
+//
+//                /* This log is meant to be read by the user, therefore we allow translation. */
+//                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID), ex);
+//                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID));
+//
+//            }
+//
+//            try {
+//                if (curseProject != null) {
+//
+//                    if (curseProject.refreshFiles().fileWithID(curseFileID) != null) {
+//
+//                        configurationModel.setFileID(curseFileID);
+//                        configurationModel.setFileName(CURSECREATEMODPACK.retrieveFileName(curseProjectID, curseFileID));
+//                        configurationModel.setFileDiskName(CURSECREATEMODPACK.retrieveFileDiskName(curseProjectID,curseFileID));
+//
+//                        configCorrect = true;
+//
+//                    } else {
+//
+//                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
+//                        throw new InvalidFileException(curseFileID);
+//                    }
+//                } else {
+//
+//                    encounteredErrors.add("Specified CurseForge project " + curseProjectID + " could not be found.");
+//                    throw new CurseException("Project was null. Does the specified project " + curseProjectID + " exist?");
+//                }
+//
+//            } catch (CurseException | NoSuchElementException ex) {
+//
+//                configCorrect = false;
+//
+//                /* This log is meant to be read by the user, therefore we allow translation. */
+//                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID), ex);
+//                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
+//
+//            }
+//
+//            /* This log is meant to be read by the user, therefore we allow translation. */
+//            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.info"));
+//            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.return"), configurationModel.getProjectID(), configurationModel.getFileID()));
+//            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkcurseforge.warn"));
 
         } else {
             /* This log is meant to be read by the user, therefore we allow translation. */

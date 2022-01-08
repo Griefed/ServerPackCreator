@@ -69,15 +69,21 @@ public class CurseController {
     @CrossOrigin(origins = {"*"})
     @GetMapping("task")
     public String task(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
-        String[] project = modpack.split(",");
-        int projectID = Integer.parseInt(project[0]);
-        int fileID = Integer.parseInt(project[1]);
-        try {
-            return CURSESERVICE.createFromCurseModpack(projectID, fileID);
-        } catch (CurseException ex) {
-            LOG.error("Couldn't generate server pack for project " + modpack, ex);
-            return CURSERESPONSEMODEL.response(modpack, 2, "Project or file could not be found!", 3000, "error", "negative");
-        }
+        LOG.info("IMPORTANT!!! - Modpack directory matches CurseForge projectID and fileID format. However, the CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.");
+        LOG.info("IMPORTANT!!! - Downloading and installing a modpack is disabled until further notice.");
+        // TODO: Reactivate once custom implementation of CurseForgeAPI has been implemented and CurseForge has provided me with an API key
+
+        return CURSERESPONSEMODEL.response(modpack, 2, "The CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.", 7000, "error", "negative");
+
+//        String[] project = modpack.split(",");
+//        int projectID = Integer.parseInt(project[0]);
+//        int fileID = Integer.parseInt(project[1]);
+//        try {
+//            return CURSESERVICE.createFromCurseModpack(projectID, fileID);
+//        } catch (CurseException ex) {
+//            LOG.error("Couldn't generate server pack for project " + modpack, ex);
+//            return CURSERESPONSEMODEL.response(modpack, 2, "Project or file could not be found!", 3000, "error", "negative");
+//        }
     }
 
     /**
@@ -91,7 +97,13 @@ public class CurseController {
     @CrossOrigin(origins = {"*"})
     @GetMapping("/regenerate")
     public String regenerate(@RequestParam(value = "modpack", defaultValue = "10,60018") String modpack) {
-        return CURSESERVICE.regenerateFromCurseModpack(modpack);
+        LOG.info("IMPORTANT!!! - Modpack directory matches CurseForge projectID and fileID format. However, the CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.");
+        LOG.info("IMPORTANT!!! - Downloading and installing a modpack is disabled until further notice.");
+        // TODO: Reactivate once custom implementation of CurseForgeAPI has been implemented and CurseForge has provided me with an API key
+
+        return CURSERESPONSEMODEL.response(modpack, 2, "The CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.", 7000, "error", "negative");
+
+        //return CURSESERVICE.regenerateFromCurseModpack(modpack);
     }
 
     /**
