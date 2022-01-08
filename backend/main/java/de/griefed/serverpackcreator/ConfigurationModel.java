@@ -53,12 +53,12 @@ public class ConfigurationModel {
     private String serverIconPath = "";
     private String serverPropertiesPath = "";
 
-    private JsonNode curseModpack;
-
     private Boolean includeServerInstallation = true;
     private Boolean includeServerIcon = true;
     private Boolean includeServerProperties = true;
     private Boolean includeZipCreation = true;
+
+    private JsonNode curseModpack;
 
     private String projectName;
     private String fileName;
