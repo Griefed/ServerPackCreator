@@ -95,7 +95,20 @@ public class Main {
         jarUtilities.copyFileFromJar(properties);
 
         try {
-            jarUtilities.copyFolderFromJar(jarPath,"/de/griefed/resources/lang", "lang", "BOOT-INF/classes");
+
+            String prefix;
+            String source;
+
+            if (jarName.endsWith(".exe")) {
+                prefix = "";
+                source = "de/griefed/resources/lang";
+            } else {
+                prefix = "BOOT-INF/classes";
+                source = "/de/griefed/resources/lang";
+            }
+
+            jarUtilities.copyFolderFromJar(jarPath,source, "lang", prefix);
+
         } catch (IOException ex) {
             LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
         }
