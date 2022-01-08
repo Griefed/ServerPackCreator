@@ -33,7 +33,6 @@ import org.springframework.boot.system.ApplicationHome;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
 
@@ -101,7 +100,6 @@ public class Main {
             LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
         }
 
-
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
 
         List<String> programArgs = Arrays.asList(args);
@@ -167,6 +165,7 @@ public class Main {
                 LOG.warn("ServerPackCreator webservice-mode does not support Windows. Are you sure you want to proceed? Prepare for unforeseen consequences.");
                 System.out.print("Answer \"Yes\" to proceed, \"No\" to quit: ");
 
+                //noinspection UnusedAssignment
                 String answer = "foobar";
 
                 do {
@@ -195,6 +194,7 @@ public class Main {
             CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
             ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES);
             ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER);
+            //noinspection unused
             FileWatcher FILEWATCHER = new FileWatcher(APPLICATIONPROPERTIES, DEFAULTFILES);
 
             // Print help and information about ServerPackCreator which could help the user figure out what to do.
@@ -249,23 +249,17 @@ public class Main {
                 // Start generation of a new configuration file with user input.
                 CONFIGURATIONHANDLER.createConfigurationFile();
 
-                ConfigurationModel configurationModel = new ConfigurationModel();
-
-                if (SERVERPACKHANDLER.run(APPLICATIONPROPERTIES.FILE_CONFIG, configurationModel)) {
-                    System.exit(0);
-                } else {
-                    System.exit(1);
-                }
+                runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
 
                 // Start ServerPackCreator in commandline mode.
-            } else if (Arrays.asList(args).contains("-cli")) {
+            } else if (Arrays.asList(args).contains("-cli") || GraphicsEnvironment.isHeadless()) {
 
-                runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
+                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
 
                 // If the environment is headless, so no possibility for GUI, start in commandline-mode.
             } else if (GraphicsEnvironment.isHeadless()) {
 
-                runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
+                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
 
                 // If no mode is specified, and we have a graphical environment, start in GUI mode.
             } else {
@@ -277,20 +271,29 @@ public class Main {
         }
     }
 
-    private static void runHeadless(ConfigurationHandler CONFIGURATIONHANDLER, ServerPackHandler SERVERPACKHANDLER, ApplicationProperties APPLICATIONPROPERTIES) {
+    private static void preRunCheck(ConfigurationHandler CONFIGURATIONHANDLER) {
         // Start generation of a new configuration with user input if no configuration file is present.
         if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
             CONFIGURATIONHANDLER.createConfigurationFile();
         }
+    }
+
+    private static void runHeadless(ConfigurationHandler CONFIGURATIONHANDLER, ServerPackHandler SERVERPACKHANDLER, ApplicationProperties APPLICATIONPROPERTIES) {
 
         ConfigurationModel configurationModel = new ConfigurationModel();
 
-        if (SERVERPACKHANDLER.run(APPLICATIONPROPERTIES.FILE_CONFIG, configurationModel)) {
+        if (CONFIGURATIONHANDLER.checkConfiguration(APPLICATIONPROPERTIES.FILE_CONFIG, configurationModel, false) && SERVERPACKHANDLER.run(configurationModel)) {
             System.exit(0);
         } else {
             System.exit(1);
         }
+    }
+
+    private static void runHeadlessWithPreChecks(ConfigurationHandler CONFIGURATIONHANDLER, ServerPackHandler SERVERPACKHANDLER, ApplicationProperties APPLICATIONPROPERTIES) {
+        // Start generation of a new configuration with user input if no configuration file is present.
+        preRunCheck(CONFIGURATIONHANDLER);
+        runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
     }
 
 

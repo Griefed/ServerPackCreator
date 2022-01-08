@@ -182,6 +182,8 @@ public class TaskHandler {
 
                 try {
 
+                    CONFIGURATIONHANDLER.checkConfiguration(serverPack, true, true);
+
                     pack = SERVERPACKHANDLER.run(serverPack);
 
                     if (pack!=null) {
