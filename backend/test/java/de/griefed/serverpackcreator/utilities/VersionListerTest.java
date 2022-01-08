@@ -38,7 +38,7 @@ public class VersionListerTest {
     private final DefaultFiles DEFAULTFILES;
     private final VersionLister VERSIONLISTER;
     private static final Logger LOG = LogManager.getLogger(VersionListerTest.class);
-    private ApplicationProperties serverPackCreatorProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     public VersionListerTest() {
         try {
@@ -46,12 +46,12 @@ public class VersionListerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.serverPackCreatorProperties = new ApplicationProperties();
-        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
+        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
-        this.VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+        this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
     }
 
     @Test

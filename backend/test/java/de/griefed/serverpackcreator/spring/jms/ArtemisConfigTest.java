@@ -21,8 +21,6 @@ package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
-import de.griefed.serverpackcreator.MainSpringBoot;
-import de.griefed.serverpackcreator.MainSpringBootTest;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -33,9 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
-import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessagePostProcessor;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
@@ -43,8 +38,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -59,13 +52,10 @@ public class ArtemisConfigTest {
     private final JmsTemplate jmsTemplate;
 
     private final String QUEUE_UNIQUE_ID = "unique_id";
-    private final String QUEUE_TYPE = "type";
     private final String QUEUE_TASKS = "tasks.background";
-    private final String QUEUE_TASKS_TYPE = "task";
-    private final String QUEUE_TASKS_SELECTOR = "$QUEUE_TYPE = '$QUEUE_TASKS_TYPE'";
     private final DefaultFiles DEFAULTFILES;
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private ApplicationProperties serverPackCreatorProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     @Autowired
     ArtemisConfigTest(JmsTemplate injectedJmsTemplate) {
@@ -75,15 +65,15 @@ public class ArtemisConfigTest {
             e.printStackTrace();
         }
 
-        this.serverPackCreatorProperties = new ApplicationProperties();
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
         this.jmsTemplate = injectedJmsTemplate;
 
         this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);
 
-        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
         DEFAULTFILES.checkDatabase();
     }
@@ -102,12 +92,7 @@ public class ArtemisConfigTest {
             jmsTemplate.convertAndSend(QUEUE_TASKS, "message " + i);
         }
 
-        int size = jmsTemplate.browse(QUEUE_TASKS, new BrowserCallback<Integer>() {
-            @Override
-            public Integer doInJms(Session session, QueueBrowser browser) throws JMSException {
-                return Collections.list(browser.getEnumeration()).size();
-            }
-        });
+        int size = jmsTemplate.browse(QUEUE_TASKS, (session, browser) -> Collections.list(browser.getEnumeration()).size());
 
         String message = Objects.requireNonNull(jmsTemplate.receiveAndConvert(QUEUE_TASKS)).toString();
 
@@ -129,12 +114,7 @@ public class ArtemisConfigTest {
             });
         }
 
-        int size = jmsTemplate.browse(QUEUE_TASKS, new BrowserCallback<Integer>() {
-            @Override
-            public Integer doInJms(Session session, QueueBrowser browser) throws JMSException {
-                return Collections.list(browser.getEnumeration()).size();
-            }
-        });
+        int size = jmsTemplate.browse(QUEUE_TASKS, (session, browser) -> Collections.list(browser.getEnumeration()).size());
 
         String message = Objects.requireNonNull(jmsTemplate.receiveAndConvert(QUEUE_TASKS)).toString();
 

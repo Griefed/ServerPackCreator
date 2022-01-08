@@ -43,7 +43,7 @@ class CurseCreateModpackTest {
 
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private ApplicationProperties serverPackCreatorProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     CurseCreateModpackTest() {
         try {
@@ -52,11 +52,11 @@ class CurseCreateModpackTest {
             e.printStackTrace();
         }
 
-        this.serverPackCreatorProperties = new ApplicationProperties();
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
-        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
-        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
     }
 
     @Test
@@ -130,8 +130,8 @@ class CurseCreateModpackTest {
         String modpackDir = "./backend/test/resources/forge_tests/Vanilla Forge/Vanilla Forge 1.16.5";
         configurationModel.setModpackDir(modpackDir);
         configurationModel.setProjectName(CurseAPI.project(projectID).get().name());
-        configurationModel.setFileName(CurseAPI.project(projectID).get().files().fileWithID(fileID).displayName());
-        configurationModel.setFileDiskName(CurseAPI.project(projectID).get().files().fileWithID(fileID).nameOnDisk());
+        configurationModel.setFileName(CurseAPI.file(projectID, fileID).orElseThrow(NullPointerException::new).displayName());
+        configurationModel.setFileDiskName(CurseAPI.file(projectID, fileID).orElseThrow(NullPointerException::new).nameOnDisk());
         CURSECREATEMODPACK.initializeModpack(modpackDir, projectID, fileID, configurationModel);
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/Vanilla Forge").isDirectory());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/Vanilla Forge/Vanilla Forge 1.16.5").isDirectory());

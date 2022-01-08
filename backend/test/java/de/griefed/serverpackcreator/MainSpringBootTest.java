@@ -37,7 +37,7 @@ public class MainSpringBootTest {
 
     private final DefaultFiles DEFAULTFILES;
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private ApplicationProperties serverPackCreatorProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     MainSpringBootTest() {
         try {
@@ -51,11 +51,11 @@ public class MainSpringBootTest {
             e.printStackTrace();
         }
 
-        this.serverPackCreatorProperties = new ApplicationProperties();
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
-        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
         DEFAULTFILES.checkDatabase();
     }
