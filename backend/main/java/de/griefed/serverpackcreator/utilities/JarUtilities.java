@@ -148,52 +148,56 @@ public class JarUtilities {
 
                 File destination = new File(destinationDirectory + "/" + entryName.substring(entryName.replace("\\","/").lastIndexOf("/") + 1));
 
-                File parent = destination.getParentFile();
+                if (!destination.exists()) {
 
-                if (parent != null && parent.mkdirs()) {
+                    File parent = destination.getParentFile();
 
-                    LOG.debug("Created directory " + parent + ".");
+                    if (parent != null && parent.mkdirs()) {
 
-                }
+                        LOG.debug("Created directory " + parent + ".");
 
-                FileOutputStream fileOutputStream = null;
-                InputStream inputStream = null;
-
-                try {
-                    fileOutputStream = new FileOutputStream(destination);
-                } catch (FileNotFoundException ex) {
-                    LOG.error("File " + destination + " not found.", ex);
-                }
-
-                try {
-                    inputStream = jarToCopyFrom.getInputStream(entry);
-                } catch (IOException ex) {
-                    LOG.error("Couldn't acquire input stream for entry " + entryName + ".", ex);
-                }
-
-                try {
-
-                    byte[] bytes = new byte[8192];
-
-                    int length = 0;
-
-                    while ((length = inputStream.read(bytes)) > 0) {
-                        fileOutputStream.write(bytes, 0, length);
                     }
 
-                } catch (IOException ex) {
-
-                    throw new IOException("Couldn't copy asset " + entryName + " from JAR-file.", ex);
-
-                } finally {
+                    FileOutputStream fileOutputStream = null;
+                    InputStream inputStream = null;
 
                     try {
-                        inputStream.close();
-                    } catch (IOException ignored) {}
+                        fileOutputStream = new FileOutputStream(destination);
+                    } catch (FileNotFoundException ex) {
+                        LOG.error("File " + destination + " not found.", ex);
+                    }
 
                     try {
-                        fileOutputStream.close();
-                    } catch (IOException ignored) {}
+                        inputStream = jarToCopyFrom.getInputStream(entry);
+                    } catch (IOException ex) {
+                        LOG.error("Couldn't acquire input stream for entry " + entryName + ".", ex);
+                    }
+
+                    try {
+
+                        byte[] bytes = new byte[8192];
+
+                        int length = 0;
+
+                        while ((length = inputStream.read(bytes)) > 0) {
+                            fileOutputStream.write(bytes, 0, length);
+                        }
+
+                    } catch (IOException ex) {
+
+                        throw new IOException("Couldn't copy asset " + entryName + " from JAR-file.", ex);
+
+                    } finally {
+
+                        try {
+                            inputStream.close();
+                        } catch (IOException ignored) {}
+
+                        try {
+                            fileOutputStream.close();
+                        } catch (IOException ignored) {}
+
+                    }
 
                 }
 
@@ -219,7 +223,7 @@ public class JarUtilities {
         };
 
         File[] files;
-        List<String> langFiles = new ArrayList<>(1000);
+        List<String> filesFromJar = new ArrayList<>(1000);
 
         try {
 
@@ -230,10 +234,10 @@ public class JarUtilities {
 
                 String file = value.toString().replace("\\", "/");
 
-                langFiles.add(file.substring(file.lastIndexOf("/") + 1));
+                filesFromJar.add(file.substring(file.lastIndexOf("/") + 1));
             }
 
-            langFiles.forEach(System.out::println);
+            filesFromJar.forEach(System.out::println);
 
         } catch (URISyntaxException ex) {
             LOG.error("Error retrieving file list from JAR.", ex);
@@ -247,17 +251,20 @@ public class JarUtilities {
             }
         }
 
-        langFiles.forEach(file -> {
+        filesFromJar.forEach(file -> {
 
-            try (InputStream inputStream = Main.class.getResourceAsStream(source + "/" + file)) {
+            if (!new File(destination + "/" + file).exists()) {
 
-                assert inputStream != null;
-                FileUtils.copyInputStreamToFile(inputStream, new File(destination + "/" + file));
+                try (InputStream inputStream = Main.class.getResourceAsStream(source + "/" + file)) {
 
-            } catch (IOException ex) {
-                LOG.error("Error extracting files.", ex);
+                    assert inputStream != null;
+                    FileUtils.copyInputStreamToFile(inputStream, new File(destination + "/" + file));
+
+                } catch (IOException ex) {
+                    LOG.error("Error extracting files.", ex);
+                }
+
             }
-
         });
 
     }
