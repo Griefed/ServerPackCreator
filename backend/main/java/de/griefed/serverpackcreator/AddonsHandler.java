@@ -52,11 +52,10 @@ public class AddonsHandler {
     private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     private List<String> listOfAddons;
     private List<String> listOfServerPackAddons;
-
-    private ApplicationProperties applicationProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -70,13 +69,13 @@ public class AddonsHandler {
     @Autowired
     public AddonsHandler(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }

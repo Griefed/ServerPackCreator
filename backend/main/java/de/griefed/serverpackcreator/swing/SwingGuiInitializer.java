@@ -63,6 +63,7 @@ public class SwingGuiInitializer extends JPanel {
     private final ServerPackHandler CREATESERVERPACK;
     private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     private final LightTheme LIGHTTHEME = new LightTheme();
     private final DarkTheme DARKTHEME = new DarkTheme();
@@ -84,8 +85,6 @@ public class SwingGuiInitializer extends JPanel {
     private final MenuBar MENUBAR;
 
     private BufferedImage bufferedImage;
-
-    private ApplicationProperties applicationProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -112,42 +111,42 @@ public class SwingGuiInitializer extends JPanel {
         super(new GridLayout(1, 1));
 
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, applicationProperties);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedAddonsHandler == null) {
-            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, applicationProperties);
+            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.ADDONSHANDLER = injectedAddonsHandler;
         }
 
         if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(applicationProperties);
+            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
         } else {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, applicationProperties);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -160,10 +159,10 @@ public class SwingGuiInitializer extends JPanel {
 
         this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui"));
 
-        this.TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER, applicationProperties, FRAME_SERVERPACKCREATOR);
-        this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER, applicationProperties);
-        this.TAB_LOG_MODLOADERINSTALLER = new TabModloaderInstallerLog(LOCALIZATIONMANAGER, applicationProperties);
-        this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog(LOCALIZATIONMANAGER, applicationProperties);
+        this.TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER, APPLICATIONPROPERTIES, FRAME_SERVERPACKCREATOR);
+        this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.TAB_LOG_MODLOADERINSTALLER = new TabModloaderInstallerLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
         this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
@@ -214,7 +213,7 @@ public class SwingGuiInitializer extends JPanel {
                 LAF_DARK,
                 TAB_CREATESERVERPACK,
                 TABBEDPANE,
-                applicationProperties
+                APPLICATIONPROPERTIES
         );
 
         FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
@@ -231,7 +230,7 @@ public class SwingGuiInitializer extends JPanel {
 
             try {
 
-                if (applicationProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode").equals("true")) {
+                if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.gui.darkmode").equals("true")) {
 
                     UIManager.setLookAndFeel(LAF_DARK);
                     MaterialLookAndFeel.changeTheme(DARKTHEME);

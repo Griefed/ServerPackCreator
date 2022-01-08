@@ -63,6 +63,7 @@ public class MenuBar extends Component {
     private final Clipboard CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     private final LightTheme LIGHTTHEME;
     private final DarkTheme DARKTHEME;
@@ -128,8 +129,6 @@ public class MenuBar extends Component {
 
     private final JPanel helpPanel = new JPanel();
 
-    private ApplicationProperties applicationProperties;
-
     private boolean isDarkTheme;
 
     private JMenu fileMenu;
@@ -190,13 +189,13 @@ public class MenuBar extends Component {
                    TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties) {
 
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -210,11 +209,11 @@ public class MenuBar extends Component {
         this.TABBEDPANE = injectedTabbedPane;
 
         try {
-            isDarkTheme = Boolean.parseBoolean(applicationProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+            isDarkTheme = Boolean.parseBoolean(APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
         } catch (NullPointerException ex) {
             LOG.error("No setting for darkmode found in properties-file. Using true.");
             isDarkTheme = true;
-            applicationProperties.put("de.griefed.serverpackcreator.gui.darkmode", "true");
+            APPLICATIONPROPERTIES.put("de.griefed.serverpackcreator.gui.darkmode", "true");
         }
 
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
@@ -856,7 +855,7 @@ public class MenuBar extends Component {
         LOG.debug("Saving serverpackcreator.conf");
         TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"), false);
 
-        if (lastLoadedConfigurationFile != null && applicationProperties.getSaveLoadedConfiguration()) {
+        if (lastLoadedConfigurationFile != null && APPLICATIONPROPERTIES.getSaveLoadedConfiguration()) {
             LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
             TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile, true);
         }
@@ -882,10 +881,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(applicationProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = new FileOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
-                    applicationProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
-                    applicationProperties.store(outputStream, null);
+                    APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
+                    APPLICATIONPROPERTIES.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -905,10 +904,10 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(applicationProperties.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = new FileOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES)) {
 
-                    applicationProperties.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
-                    applicationProperties.store(outputStream, null);
+                    APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
+                    APPLICATIONPROPERTIES.store(outputStream, null);
 
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -1031,7 +1030,7 @@ public class MenuBar extends Component {
         LOG.debug("Clicked open server packs directory.");
 
         try {
-            Desktop.getDesktop().open(new File(applicationProperties.getDirectoryServerPacks()));
+            Desktop.getDesktop().open(new File(APPLICATIONPROPERTIES.getDirectoryServerPacks()));
         } catch (IOException ex) {
             LOG.error("Error opening file explorer for server-packs.", ex);
         }
@@ -1189,7 +1188,7 @@ public class MenuBar extends Component {
      */
     private String createHasteBinFromFile(File textFile) {
         String text = null;
-        String requestURL = applicationProperties.getProperty(
+        String requestURL = APPLICATIONPROPERTIES.getProperty(
                 "de.griefed.serverpackcreator.configuration.hastebinserver",
                 "https://haste.zneix.eu/documents"
         );
