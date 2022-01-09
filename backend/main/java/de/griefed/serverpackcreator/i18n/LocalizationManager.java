@@ -37,8 +37,13 @@ import java.util.*;
  * All localization properties-files need to be stored in the <code>de/griefed/resources/lang/</code>-directory
  * and be named using following pattern: lang_{language code in lowercase}_{country code in lowercase}.
  * For example: <code>lang_en_us.properties</code>.<br>
- * Currently only supports Strings to be used in localized fields.
+ * Currently, only supports Strings to be used in localized fields.<br>
+ * By default, ServerPackCreator tries to load language definitions from the local filesystem, in the <code>lang</code>-folder.
+ * If no file can be found for the specified locale, ServerPackCreator tries to load language definitions from inside the JAR-file,
+ * from the resource bundles. If the specified key can not be retrieved when calling {@link #getLocalizedString(String)}, a default
+ * is retrieved from the lang_en_us-bundle inside the JAR-file by default.
  * @author whitebear60
+ * @author Griefed
  */
 @Component
 public class LocalizationManager {
@@ -71,8 +76,9 @@ public class LocalizationManager {
      * Localized strings which ServerPackCreator uses.
      */
     private ResourceBundle localeResources;
+    private final ResourceBundle fallbackResources;
 
-    private ApplicationProperties applicationProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     /**
      * Constructor for our LocalizationManager using the locale set in serverpackcreator.properties.
@@ -82,13 +88,15 @@ public class LocalizationManager {
     @Autowired
     public LocalizationManager(ApplicationProperties injectedApplicationProperties) {
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
 
+        this.fallbackResources = setFallbackResources();
+
         try {
-            init(applicationProperties);
+            init(APPLICATIONPROPERTIES);
         } catch (IncorrectLanguageException ex) {
             init();
         }
@@ -101,7 +109,10 @@ public class LocalizationManager {
      * @throws IncorrectLanguageException Thrown if no language could be set by {@link LocalizationManager}.
      */
     public LocalizationManager(String locale) throws IncorrectLanguageException {
-        this.applicationProperties = new ApplicationProperties();
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
+
+        this.fallbackResources = setFallbackResources();
+
         init(locale);
     }
 
@@ -110,7 +121,10 @@ public class LocalizationManager {
      * @author Griefed
      */
     public LocalizationManager() {
-        this.applicationProperties = new ApplicationProperties();
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
+
+        this.fallbackResources = setFallbackResources();
+
         init();
     }
 
@@ -144,6 +158,7 @@ public class LocalizationManager {
     /**
      * Initializes the LocalizationManager with a provided localePropertiesFile.
      * @author whitebear60
+     * @author Griefed
      * @param serverPackCreatorProperties Instance of {@link ApplicationProperties} containing the locale to use.
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
      * ServerPackCreator or specified in the invalid format.
@@ -211,12 +226,22 @@ public class LocalizationManager {
     }
 
     /**
+     * Set the fallback resource bundle which is used in case any specified langkey can not be retrieved from local definitions.
+     * @author Griefed
+     * @return ResourceBundle. Returns a resource bundle containing the lang_en_us langkey definitions.
+     */
+    private ResourceBundle setFallbackResources() {
+        return ResourceBundle.getBundle("de/griefed/resources/lang/lang_en_us", new Locale("en", "us"));
+    }
+
+    /**
      * Initializes the LocalizationManager with a provided locale.
      * Calls<br>
      * {@link #getSupportedLanguages()}<br>
      * {@link #getLocalizedString(String)}<br>
      * {@link #writeLocaleToFile(String)}
      * @author whitebear60
+     * @author Griefed
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
      * ServerPackCreator or specified in the invalid format.
      * @param locale Locale to be used by application in this run.
@@ -284,6 +309,7 @@ public class LocalizationManager {
     /**
      * Initializes the LocalizationManager with a provided localePropertiesFile.
      * @author whitebear60
+     * @author Griefed
      * @param localePropertiesFile Path to the locale properties file which specifies the language to use.
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
      * ServerPackCreator or specified in the invalid format.
@@ -375,19 +401,36 @@ public class LocalizationManager {
 
     /**
      * Acquires a localized String for the provided language key from the initialized locale resource.
+     * If the specified langkey can not be found in the lang-file loaded, a fallback from the en_us-definitions is used.
      * @author whitebear60
+     * @author Griefed
      * @param languageKey The language key to search for.
      * @return Localized string that is referred to by the language key.
      */
     public String getLocalizedString(String languageKey) {
+
+        //noinspection UnusedAssignment
+        String text = null;
+        String value = null;
+
         try {
-            String value =  localeResources.getString(languageKey);
-            return new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+
+            value =  localeResources.getString(languageKey);
+
         } catch (MissingResourceException ex) {
-            LOG.error(String.format("ERROR: Language key %s not found in the language file.", ex.getKey()));
-            System.exit(8);
+
+            LOG.debug(String.format("Language key \"%s\" not found for locale \"%s_%s\". Using fallback from \"en_US\".", ex.getKey(), CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+
+            value = fallbackResources.getString(languageKey);
+
+        } finally {
+
+            text = new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+
         }
-        return null;
+
+        return text;
+
     }
 
     /**
@@ -407,8 +450,8 @@ public class LocalizationManager {
             init();
 
             try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-                applicationProperties.setProperty("de.griefed.serverpackcreator.language", "en_us");
-                applicationProperties.store(outputStream, null);
+                APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", "en_us");
+                APPLICATIONPROPERTIES.store(outputStream, null);
             } catch (IOException ex) {
                 LOG.error("Couldn't write properties-file.", ex);
             }
@@ -426,8 +469,8 @@ public class LocalizationManager {
      */
     void writeLocaleToFile(String locale) {
         try (OutputStream outputStream = new FileOutputStream(getPropertiesFile())) {
-            applicationProperties.setProperty("de.griefed.serverpackcreator.language", locale);
-            applicationProperties.store(outputStream, null);
+            APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", locale);
+            APPLICATIONPROPERTIES.store(outputStream, null);
         } catch (IOException ex) {
             LOG.error("Couldn't write properties-file.", ex);
         }

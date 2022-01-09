@@ -110,7 +110,7 @@ import { useQuasar, Cookies, openURL  } from 'quasar';
 import { api } from "boot/axios";
 
 export default defineComponent({
-  name: "Configuration",
+  name: "CurseForge",
   setup() {
 
     const store = inject('store');

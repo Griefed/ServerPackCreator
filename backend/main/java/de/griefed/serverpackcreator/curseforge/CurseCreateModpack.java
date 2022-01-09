@@ -20,13 +20,15 @@
 package de.griefed.serverpackcreator.curseforge;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
+import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.VersionLister;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
@@ -60,15 +62,20 @@ import java.util.*;
  */
 @Component
 public class CurseCreateModpack {
+
     private static final Logger LOG = LogManager.getLogger(CurseCreateModpack.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final VersionLister VERSIONLISTER;
+    private final BooleanUtilities BOOLEANUTILITIES;
+    private final ListUtilities LISTUTILITIES;
+    private final StringUtilities STRINGUTILITIES;
+    private final ConfigUtilities CONFIGUTILITIES;
 
     private final ReticulatingSplines reticulatingSplines = new ReticulatingSplines();
 
     private final Random randInt = new Random();
-
-    private ApplicationProperties applicationProperties;
 
     /**
      * <strong>Constructor</strong><p>
@@ -78,19 +85,57 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
+     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
+     * @param injectedListUtilities Instance of {@link ListUtilities}.
+     * @param injectedStringUtilities Instance of {@link StringUtilities}.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedVersionLister Instance of {@link VersionLister}.
      */
     @Autowired
-    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+    public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties,
+                              VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities,
+                              ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities) {
+
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+        }
+
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
+        }
+
+        if (injectedBooleanUtilities == null) {
+            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        } else {
+            this.BOOLEANUTILITIES = injectedBooleanUtilities;
+        }
+
+        if (injectedListUtilities == null) {
+            this.LISTUTILITIES = new ListUtilities();
+        } else {
+            this.LISTUTILITIES = injectedListUtilities;
+        }
+
+        if (injectedStringUtilities == null) {
+            this.STRINGUTILITIES = new StringUtilities();
+        } else {
+            this.STRINGUTILITIES = injectedStringUtilities;
+        }
+
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+        } else {
+            this.CONFIGUTILITIES = injectedConfigUtilities;
         }
     }
 
@@ -237,6 +282,8 @@ public class CurseCreateModpack {
                 !configurationModel.getFileDiskName().equals(String.valueOf(fileID))) {
 
             initializeModpack(configurationModel.getModpackDir(), projectID, fileID, configurationModel);
+
+            updateConfigurationModel(configurationModel);
 
         } else {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.overwrite"));
@@ -469,7 +516,7 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir.create"));
         } else {
-            if (applicationProperties.getProperty("de.griefed.serverpackcreator.curseforge.cleanup.enabled").equalsIgnoreCase("true")) {
+            if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.curseforge.cleanup.enabled").equalsIgnoreCase("true")) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));
@@ -534,5 +581,122 @@ public class CurseCreateModpack {
             }
         }
         return cleanedUp;
+    }
+
+    /**
+     * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
+     * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
+     * If <code>modLoaders</code> in the manifest specifies Fabric, use that to set the modloader and its version.
+     * @author Griefed
+     * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
+     * @return Boolean. Returns true if Jumploader is found.
+     */
+    private boolean checkModpackForFabric(JsonNode modpackJson) {
+
+        for (int i = 0; i < modpackJson.get("files").size(); i++) {
+
+            LOG.debug(String.format("Mod ID: %s", modpackJson.get("files").get(i).get("projectID").asText()));
+            LOG.debug(String.format("File ID: %s", modpackJson.get("files").get(i).get("fileID").asText()));
+
+            if (modpackJson.get("files").get(i).get("projectID").asText().equalsIgnoreCase("361988") || modpackJson.get("files").get(i).get("fileID").asText().equalsIgnoreCase("306612")) {
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
+                return true;
+            }
+        }
+
+        String[] modloaderAndVersion = modpackJson.get("minecraft").get("modLoaders").get(0).get("id").asText().split("-");
+
+        return modloaderAndVersion[0].equalsIgnoreCase("fabric");
+    }
+
+    /**
+     * Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
+     * The list of directories to include in the server pack which is generated by this method excludes well know directories
+     * which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on
+     * <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a>
+     * @author Griefed
+     * @param modpackDir String. The directory for which to gather a list of directories to copy to the server pack.
+     * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only
+     * directories.
+     */
+    private List<String> suggestCopyDirs(String modpackDir) {
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
+
+        File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
+
+        List<String> dirsInModpack = new ArrayList<>(100);
+
+        try {
+            assert listDirectoriesInModpack != null;
+            for (File dir : listDirectoriesInModpack) {
+                if (dir.isDirectory()) {
+                    dirsInModpack.add(dir.getName());
+                }
+            }
+        } catch (NullPointerException np) {
+            LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
+        }
+
+        for (int idirs = 0; idirs < APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().size(); idirs++) {
+
+            int i = idirs;
+
+            dirsInModpack.removeIf(n -> (n.contains(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().get(i))));
+        }
+
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
+
+        return dirsInModpack;
+    }
+
+    /**
+     * Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack.
+     * @author Griefed
+     * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration for a modpack from which
+     *                                                     to create a server pack.
+     */
+    private void updateConfigurationModel(ConfigurationModel configurationModel) {
+
+        configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("minecraft").get("version").asText());
+
+        if (checkModpackForFabric(configurationModel.getCurseModpack())) {
+
+            if (configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().contains("fabric")) {
+
+                configurationModel.setModLoader("Fabric");
+                configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(7));
+
+            } else {
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                LOG.debug("Setting modloader to Fabric.");
+
+                configurationModel.setModLoader("Fabric");
+                configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
+
+            }
+
+        } else {
+
+            // TODO: Replace with lang key
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.debug("Setting modloader to Forge.");
+
+            configurationModel.setModLoader("Forge");
+            configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
+
+        }
+
+        configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
+
+        CONFIGUTILITIES.writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG,false);
+
     }
 }

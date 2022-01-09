@@ -17,12 +17,12 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.utilities;
+package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.ApplicationProperties;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -52,6 +52,8 @@ public class VersionLister {
 
     private static final Logger LOG = LogManager.getLogger(VersionLister.class);
 
+    private final ApplicationProperties APPLICATIONPROPERTIES;
+
     private String minecraftReleaseVersion;
     private List<String> minecraftReleaseVersions;
 
@@ -67,8 +69,6 @@ public class VersionLister {
 
     private HashMap<String, String[]> forgeMeta;
 
-    private ApplicationProperties applicationProperties;
-
     /**
      * Creates the Minecraft and Fabric version lists as well as Fabric-Latest and Fabric-Release versions.
      * @author Griefed
@@ -77,9 +77,9 @@ public class VersionLister {
     @Autowired
     public VersionLister(ApplicationProperties injectedApplicationProperties) {
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
 
         this.minecraftReleaseVersion = setMinecraftSpecificVersion("release");
@@ -89,17 +89,17 @@ public class VersionLister {
         this.minecraftSnapshotVersions = getMinecraftVersionsList("snapshot");
 
         this.fabricVersions = setFabricVersionList();
-        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC));
-        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC));
+        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC));
+        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC));
 
-        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
-        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
+        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
+        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
 
         this.forgeMeta = setForgeMeta();
     }
 
     /**
-     *
+     * Refresh all Minecraft, Forge and Fabric versions so we can work with up-to-date values.
      * @author Griefed
      */
     public void refreshVersions() {
@@ -110,11 +110,11 @@ public class VersionLister {
         this.minecraftSnapshotVersions = getMinecraftVersionsList("snapshot");
 
         this.fabricVersions = setFabricVersionList();
-        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC));
-        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC));
+        this.fabricLatestVersion = setFabricSpecificVersion("latest", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC));
+        this.fabricReleaseVersion = setFabricSpecificVersion("release", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC));
 
-        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
-        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
+        this.fabricLatestInstallerVersion = setFabricSpecificVersion("latest", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
+        this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
 
         this.forgeMeta = setForgeMeta();
     }
@@ -242,12 +242,11 @@ public class VersionLister {
     /**
      * Reverses the order of a passed String List.
      * @author Griefed
-     * @param listToReverse The String List to reverseOrderArray-order.
-     * @return String List. The passed String List in reverseOrderArray-order.
+     * @param listToReverse The String List to reverse.
+     * @return String List. The passed String List in reverse.
      */
     public List<String> reverseOrderList(List<String> listToReverse) {
-        Collections.reverse(listToReverse);
-        return listToReverse;
+        return Lists.reverse(listToReverse);
     }
 
     /**
@@ -325,7 +324,7 @@ public class VersionLister {
         List<String> minecraftReleases = new ArrayList<>();
 
         try {
-            JsonNode minecraftJson = getJson(applicationProperties.PATH_FILE_MANIFEST_MINECRAFT);
+            JsonNode minecraftJson = getJson(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT);
 
             JsonNode versions = minecraftJson.get("versions");
 
@@ -355,7 +354,7 @@ public class VersionLister {
         String minecraftVersion = null;
 
         try {
-            JsonNode minecraftJson = getJson(applicationProperties.PATH_FILE_MANIFEST_MINECRAFT);
+            JsonNode minecraftJson = getJson(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT);
 
             minecraftVersion = minecraftJson.get("latest").get(type).asText();
 
@@ -378,7 +377,7 @@ public class VersionLister {
         List<String> forgeReleases = new ArrayList<>();
 
         try {
-            JsonNode forgeJson = getJson(applicationProperties.PATH_FILE_MANIFEST_FORGE);
+            JsonNode forgeJson = getJson(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE);
 
             try {
                 JsonNode versions = forgeJson.get(selectedMinecraftVersion);
@@ -434,7 +433,7 @@ public class VersionLister {
 
         List<String> fabricReleases = new ArrayList<>();
 
-        Document fabricXml = getXml(applicationProperties.PATH_FILE_MANIFEST_FABRIC);
+        Document fabricXml = getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC);
 
         NodeList versions = fabricXml.getElementsByTagName("version");
 

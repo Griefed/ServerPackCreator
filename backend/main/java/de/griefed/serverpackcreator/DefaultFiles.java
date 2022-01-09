@@ -60,8 +60,7 @@ public class DefaultFiles {
     private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
-
-    private ApplicationProperties applicationProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     /**
      * <strong>Constructor</strong><p>
@@ -74,13 +73,13 @@ public class DefaultFiles {
     @Autowired
     public DefaultFiles(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
@@ -191,14 +190,14 @@ public class DefaultFiles {
             LOG.error("Could not create addons directory.", ex);
         }
 
-        refreshManifestFile(getMinecraftManifestUrl(), applicationProperties.FILE_MANIFEST_MINECRAFT);
-        refreshManifestFile(getForgeManifestUrl(), applicationProperties.FILE_MANIFEST_FORGE);
-        refreshManifestFile(getFabricManifestUrl(), applicationProperties.FILE_MANIFEST_FABRIC);
-        refreshManifestFile(getFabricInstallerManifestUrl(), applicationProperties.FILE_MANIFEST_FABRIC_INSTALLER);
+        refreshManifestFile(getMinecraftManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT);
+        refreshManifestFile(getForgeManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE);
+        refreshManifestFile(getFabricManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC);
+        refreshManifestFile(getFabricInstallerManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER);
 
         boolean doesConfigExist         = checkForConfig();
-        boolean doesPropertiesExist     = checkForFile(applicationProperties.FILE_SERVER_PROPERTIES);
-        boolean doesIconExist           = checkForFile(applicationProperties.FILE_SERVER_ICON);
+        boolean doesPropertiesExist     = checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES);
+        boolean doesIconExist           = checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_ICON);
 
         // Inform user about customization of files if any of them were generated from the template.
         if (doesConfigExist            ||
@@ -226,25 +225,27 @@ public class DefaultFiles {
      */
     boolean checkForConfig() {
         boolean firstRun = false;
-        if (applicationProperties.FILE_CONFIG_OLD.exists()) {
+        if (APPLICATIONPROPERTIES.FILE_CONFIG_OLD.exists()) {
             try {
-                Files.copy(applicationProperties.FILE_CONFIG_OLD.getAbsoluteFile().toPath(), applicationProperties.FILE_CONFIG.getAbsoluteFile().toPath());
+                Files.copy(APPLICATIONPROPERTIES.FILE_CONFIG_OLD.getAbsoluteFile().toPath(), APPLICATIONPROPERTIES.FILE_CONFIG.getAbsoluteFile().toPath());
 
-                boolean isOldConfigDeleted = applicationProperties.FILE_CONFIG_OLD.delete();
+                boolean isOldConfigDeleted = APPLICATIONPROPERTIES.FILE_CONFIG_OLD.delete();
                 if (isOldConfigDeleted) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
                 }
 
             } catch (IOException ex) {
-                LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
+                if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
+                    LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
+                }
             }
-        } else if (!applicationProperties.FILE_CONFIG.exists()) {
+        } else if (!APPLICATIONPROPERTIES.FILE_CONFIG.exists()) {
             try {
 
                 FileUtils.copyInputStreamToFile(
-                        Objects.requireNonNull(DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", applicationProperties.FILE_CONFIG.getName()))),
-                        applicationProperties.FILE_CONFIG);
+                        Objects.requireNonNull(DefaultFiles.class.getResourceAsStream(String.format("/de/griefed/resources/%s", APPLICATIONPROPERTIES.FILE_CONFIG.getName()))),
+                        APPLICATIONPROPERTIES.FILE_CONFIG);
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
@@ -355,7 +356,7 @@ public class DefaultFiles {
     public void checkDatabase() {
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:" + applicationProperties.FILE_SERVERPACKCREATOR_DATABASE);
+            connection = DriverManager.getConnection("jdbc:sqlite:" + APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_DATABASE);
 
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             LOG.debug("Database driver name: " + databaseMetaData.getDriverName());

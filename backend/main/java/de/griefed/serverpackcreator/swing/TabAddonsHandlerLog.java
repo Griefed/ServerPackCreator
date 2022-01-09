@@ -38,8 +38,7 @@ import java.util.Properties;
 public class TabAddonsHandlerLog extends JComponent {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
-
-    private ApplicationProperties applicationProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     private JTextArea textArea;
 
@@ -54,13 +53,13 @@ public class TabAddonsHandlerLog extends JComponent {
      */
     public TabAddonsHandlerLog(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
 
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }

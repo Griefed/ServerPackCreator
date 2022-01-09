@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.DefaultFiles;
+import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import org.apache.commons.io.FileUtils;
@@ -38,7 +39,7 @@ public class VersionListerTest {
     private final DefaultFiles DEFAULTFILES;
     private final VersionLister VERSIONLISTER;
     private static final Logger LOG = LogManager.getLogger(VersionListerTest.class);
-    private ApplicationProperties serverPackCreatorProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     public VersionListerTest() {
         try {
@@ -46,12 +47,12 @@ public class VersionListerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.serverPackCreatorProperties = new ApplicationProperties();
-        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
+        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
-        this.VERSIONLISTER = new VersionLister(serverPackCreatorProperties);
+        this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
     }
 
     @Test
@@ -135,6 +136,24 @@ public class VersionListerTest {
     @Test
     void getFabricReleaseInstallerVersionTest() {
         Assertions.assertNotNull(VERSIONLISTER.getFabricReleaseInstallerVersion());
+    }
+
+    @Test
+    void reverseOrderListTest() {
+        Assertions.assertNotNull(VERSIONLISTER.reverseOrderList(VERSIONLISTER.getFabricVersions()));
+        Assertions.assertEquals(
+                VERSIONLISTER.reverseOrderList(VERSIONLISTER.getFabricVersions()).get(VERSIONLISTER.reverseOrderList(VERSIONLISTER.getFabricVersions()).size() - 1),
+                VERSIONLISTER.getFabricVersions().get(0)
+        );
+    }
+
+    @Test
+    void reverseOrderArrayTest() {
+        Assertions.assertNotNull(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersion())));
+        Assertions.assertEquals(
+                VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersion()))[VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersion())).length - 1],
+                VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersion())[0]
+        );
     }
 
 }

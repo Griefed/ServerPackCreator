@@ -110,16 +110,30 @@
           <q-list padding>
 
             <q-item
+              v-ripple
+              active-class="tab-active"
+              clickable
+              exact
+              to="/">
+              <q-item-section avatar>
+                <q-icon name="mdi-folder-zip-outline"/>
+              </q-item-section>
+              <q-item-section>
+                ZIP-Archive
+              </q-item-section>
+            </q-item>
+
+            <q-item
                 v-ripple
                 active-class="tab-active"
                 clickable
                 exact
-                to="/">
+                to="/curseforge">
               <q-item-section avatar>
-                <q-icon name="mdi-settings-transfer"/>
+                <q-icon name="mdi-anvil"/>
               </q-item-section>
               <q-item-section>
-                Configuration
+                CurseForge
               </q-item-section>
             </q-item>
 
@@ -129,7 +143,7 @@
                 clickable
                 to="/downloads">
               <q-item-section avatar>
-                <q-icon name="mdi-download"/>
+                <q-icon name="mdi-content-save"/>
               </q-item-section>
               <q-item-section>
                 Downloads

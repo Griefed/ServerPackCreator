@@ -28,7 +28,8 @@ import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
-import de.griefed.serverpackcreator.utilities.VersionLister;
+import de.griefed.serverpackcreator.VersionLister;
+import de.griefed.serverpackcreator.utilities.*;
 import mdlaf.MaterialLookAndFeel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,6 +64,12 @@ public class SwingGuiInitializer extends JPanel {
     private final ServerPackHandler CREATESERVERPACK;
     private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
+    private final BooleanUtilities BOOLEANUTILITIES;
+    private final ListUtilities LISTUTILITIES;
+    private final StringUtilities STRINGUTILITIES;
+    private final ConfigUtilities CONFIGUTILITIES;
+    private final SystemUtilities SYSTEMUTILITIES;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     private final LightTheme LIGHTTHEME = new LightTheme();
     private final DarkTheme DARKTHEME = new DarkTheme();
@@ -85,8 +92,6 @@ public class SwingGuiInitializer extends JPanel {
 
     private BufferedImage bufferedImage;
 
-    private ApplicationProperties applicationProperties;
-
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -105,49 +110,87 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related in the GUI.
+     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
+     * @param injectedListUtilities Instance of {@link ListUtilities}.
+     * @param injectedStringUtilities Instance of {@link StringUtilities}.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
      */
     public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               AddonsHandler injectedAddonsHandler, ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister) {
+                               AddonsHandler injectedAddonsHandler, ApplicationProperties injectedApplicationProperties,
+                               VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
+                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities) {
+
         super(new GridLayout(1, 1));
 
         if (injectedApplicationProperties == null) {
-            this.applicationProperties = new ApplicationProperties();
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
-            this.applicationProperties = injectedApplicationProperties;
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         }
         if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(applicationProperties);
+            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
+        }
+
+        if (injectedBooleanUtilities == null) {
+            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        } else {
+            this.BOOLEANUTILITIES = injectedBooleanUtilities;
+        }
+
+        if (injectedListUtilities == null) {
+            this.LISTUTILITIES = new ListUtilities();
+        } else {
+            this.LISTUTILITIES = injectedListUtilities;
+        }
+
+        if (injectedStringUtilities == null) {
+            this.STRINGUTILITIES = new StringUtilities();
+        } else {
+            this.STRINGUTILITIES = injectedStringUtilities;
+        }
+
+        if (injectedSystemUtilities == null) {
+            this.SYSTEMUTILITIES = new SystemUtilities();
+        } else {
+            this.SYSTEMUTILITIES = injectedSystemUtilities;
+        }
+
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+        } else {
+            this.CONFIGUTILITIES = injectedConfigUtilities;
+        }
+
         if (injectedConfigurationHandler == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, applicationProperties);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedAddonsHandler == null) {
-            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, applicationProperties);
+            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
         } else {
             this.ADDONSHANDLER = injectedAddonsHandler;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(applicationProperties);
-        } else {
-            this.VERSIONLISTER = injectedVersionLister;
-        }
-
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, applicationProperties);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -160,10 +203,21 @@ public class SwingGuiInitializer extends JPanel {
 
         this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui"));
 
-        this.TAB_CREATESERVERPACK = new TabCreateServerPack(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER, applicationProperties, FRAME_SERVERPACKCREATOR);
-        this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(LOCALIZATIONMANAGER, applicationProperties);
-        this.TAB_LOG_MODLOADERINSTALLER = new TabModloaderInstallerLog(LOCALIZATIONMANAGER, applicationProperties);
-        this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog(LOCALIZATIONMANAGER, applicationProperties);
+        this.TAB_CREATESERVERPACK = new TabCreateServerPack(
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER, APPLICATIONPROPERTIES, FRAME_SERVERPACKCREATOR, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+        );
+
+        this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
+        );
+
+        this.TAB_LOG_MODLOADERINSTALLER = new TabModloaderInstallerLog(
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
+        );
+
+        this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog(
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
+        );
 
         this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
@@ -214,7 +268,7 @@ public class SwingGuiInitializer extends JPanel {
                 LAF_DARK,
                 TAB_CREATESERVERPACK,
                 TABBEDPANE,
-                applicationProperties
+                APPLICATIONPROPERTIES
         );
 
         FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
@@ -231,7 +285,7 @@ public class SwingGuiInitializer extends JPanel {
 
             try {
 
-                if (applicationProperties.getProperty("de.griefed.serverpackcreator.gui.darkmode").equals("true")) {
+                if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.gui.darkmode").equals("true")) {
 
                     UIManager.setLookAndFeel(LAF_DARK);
                     MaterialLookAndFeel.changeTheme(DARKTHEME);

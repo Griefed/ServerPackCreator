@@ -29,10 +29,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -77,18 +74,61 @@ public class JarUtilities {
     }
 
     /**
+     * Retrieve the ApplicatiomHome for a given class.
+     * @author Griefed
+     * @param classToRetrieveHomeFor Class. The class to retrieve the {@link ApplicationHome} for.
+     * @return ApplicationHome. An instance of {@link ApplicationHome} for the given class.
+     */
+    public ApplicationHome getApplicationHomeForClass(Class<?> classToRetrieveHomeFor) {
+        return new ApplicationHome(classToRetrieveHomeFor);
+    }
+
+    /**
+     * Retrieve information about the environment for the given instance of {@link ApplicationHome}, stored in a {@link HashMap}.<br>
+     * Available key-value-pairs:<br>
+     * jarPath - The path to the JAR-file.<br>
+     * jarName - The name of the JAR-file.<br>
+     * javaVersion - The version of the Java installation used.<br>
+     * osArch - Architecture of the system.<br>
+     * osName - Name of the operating system.<br>
+     * osVersion - Version of the operating system.<br>
+     * @author Griefed
+     * @param applicationHome Instance of {@link ApplicationHome} from which to gather information about the JAR-file and system.
+     * @return HashMap String String. A hashmap containing key-value-pairs with information about the JAR-file and system.
+     */
+    public HashMap<String, String> systemInformation(ApplicationHome applicationHome) {
+
+        return new HashMap<String, String>() {
+            {
+                try {
+                    put("jarPath"    ,applicationHome.getSource().toString().replace("\\", "/"));
+                } catch (Exception ex) {
+                    put("jarPath"    ,applicationHome.getDir().toString().replace("\\", "/"));
+                }
+
+                try {
+                    put("jarName"    ,applicationHome.getSource().toString().replace("\\", "/").substring(applicationHome.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1));
+                } catch (Exception ex) {
+                    put("jarName"    ,applicationHome.getDir().toString().replace("\\", "/").substring(applicationHome.getDir().toString().replace("\\", "/").lastIndexOf("/") + 1));
+                }
+
+                put("javaVersion",System.getProperty("java.version"));
+                put("osArch"     ,System.getProperty("os.arch"));
+                put("osName"     ,System.getProperty("os.name"));
+                put("osVersion"  ,System.getProperty("os.version"));
+            }
+        };
+    }
+
+    /**
      * Retrieve the JAR-file for a given class.
      * @author Griefed
      * @param classToRetrieveJarFor The class to retrieve the JAR-file path for.
      * @return JarFile. Returns the JarFile for the given class.
      * @throws IOException Thrown if the JAR-file could not be determined or otherwise accessed.
      */
-    public JarFile retrieveJarFromClass(Class<?> classToRetrieveJarFor) throws IOException {
-
-        ApplicationHome applicationHome = new ApplicationHome(classToRetrieveJarFor);
-
-        return new JarFile(new File(applicationHome.getSource().toString().replace("\\","/")));
-
+    private JarFile retrieveJarFromClass(Class<?> classToRetrieveJarFor) throws IOException {
+        return new JarFile(new File(new ApplicationHome(classToRetrieveJarFor).getSource().toString().replace("\\","/")));
     }
 
     /**
@@ -148,52 +188,56 @@ public class JarUtilities {
 
                 File destination = new File(destinationDirectory + "/" + entryName.substring(entryName.replace("\\","/").lastIndexOf("/") + 1));
 
-                File parent = destination.getParentFile();
+                if (!destination.exists()) {
 
-                if (parent != null && parent.mkdirs()) {
+                    File parent = destination.getParentFile();
 
-                    LOG.debug("Created directory " + parent + ".");
+                    if (parent != null && parent.mkdirs()) {
 
-                }
+                        LOG.debug("Created directory " + parent + ".");
 
-                FileOutputStream fileOutputStream = null;
-                InputStream inputStream = null;
-
-                try {
-                    fileOutputStream = new FileOutputStream(destination);
-                } catch (FileNotFoundException ex) {
-                    LOG.error("File " + destination + " not found.", ex);
-                }
-
-                try {
-                    inputStream = jarToCopyFrom.getInputStream(entry);
-                } catch (IOException ex) {
-                    LOG.error("Couldn't acquire input stream for entry " + entryName + ".", ex);
-                }
-
-                try {
-
-                    byte[] bytes = new byte[8192];
-
-                    int length = 0;
-
-                    while ((length = inputStream.read(bytes)) > 0) {
-                        fileOutputStream.write(bytes, 0, length);
                     }
 
-                } catch (IOException ex) {
-
-                    throw new IOException("Couldn't copy asset " + entryName + " from JAR-file.", ex);
-
-                } finally {
+                    FileOutputStream fileOutputStream = null;
+                    InputStream inputStream = null;
 
                     try {
-                        inputStream.close();
-                    } catch (IOException ignored) {}
+                        fileOutputStream = new FileOutputStream(destination);
+                    } catch (FileNotFoundException ex) {
+                        LOG.error("File " + destination + " not found.", ex);
+                    }
 
                     try {
-                        fileOutputStream.close();
-                    } catch (IOException ignored) {}
+                        inputStream = jarToCopyFrom.getInputStream(entry);
+                    } catch (IOException ex) {
+                        LOG.error("Couldn't acquire input stream for entry " + entryName + ".", ex);
+                    }
+
+                    try {
+
+                        byte[] bytes = new byte[8192];
+
+                        int length = 0;
+
+                        while ((length = inputStream.read(bytes)) > 0) {
+                            fileOutputStream.write(bytes, 0, length);
+                        }
+
+                    } catch (IOException ex) {
+
+                        throw new IOException("Couldn't copy asset " + entryName + " from JAR-file.", ex);
+
+                    } finally {
+
+                        try {
+                            inputStream.close();
+                        } catch (IOException ignored) {}
+
+                        try {
+                            fileOutputStream.close();
+                        } catch (IOException ignored) {}
+
+                    }
 
                 }
 
@@ -219,7 +263,7 @@ public class JarUtilities {
         };
 
         File[] files;
-        List<String> langFiles = new ArrayList<>(1000);
+        List<String> filesFromJar = new ArrayList<>(1000);
 
         try {
 
@@ -230,10 +274,10 @@ public class JarUtilities {
 
                 String file = value.toString().replace("\\", "/");
 
-                langFiles.add(file.substring(file.lastIndexOf("/") + 1));
+                filesFromJar.add(file.substring(file.lastIndexOf("/") + 1));
             }
 
-            langFiles.forEach(System.out::println);
+            filesFromJar.forEach(System.out::println);
 
         } catch (URISyntaxException ex) {
             LOG.error("Error retrieving file list from JAR.", ex);
@@ -247,17 +291,20 @@ public class JarUtilities {
             }
         }
 
-        langFiles.forEach(file -> {
+        filesFromJar.forEach(file -> {
 
-            try (InputStream inputStream = Main.class.getResourceAsStream(source + "/" + file)) {
+            if (!new File(destination + "/" + file).exists()) {
 
-                assert inputStream != null;
-                FileUtils.copyInputStreamToFile(inputStream, new File(destination + "/" + file));
+                try (InputStream inputStream = Main.class.getResourceAsStream(source + "/" + file)) {
 
-            } catch (IOException ex) {
-                LOG.error("Error extracting files.", ex);
+                    assert inputStream != null;
+                    FileUtils.copyInputStreamToFile(inputStream, new File(destination + "/" + file));
+
+                } catch (IOException ex) {
+                    LOG.error("Error extracting files.", ex);
+                }
+
             }
-
         });
 
     }

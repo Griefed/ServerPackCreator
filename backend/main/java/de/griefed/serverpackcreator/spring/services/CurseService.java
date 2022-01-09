@@ -143,7 +143,7 @@ public class CurseService {
      * @return String. Returns a {@link CurseResponse#response(String, int, String, int, String, String)} telling the requester the status of their request.
      */
     public String regenerateFromCurseModpack(String modpack) {
-        // TODO: When regeneration is triggered, set downloads and votes to 0
+
         if (APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled()) {
 
             ServerPack serverPack = SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();

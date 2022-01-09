@@ -24,6 +24,8 @@ import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.VersionLister;
+import de.griefed.serverpackcreator.utilities.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -43,7 +45,13 @@ class CurseCreateModpackTest {
 
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private ApplicationProperties serverPackCreatorProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final VersionLister VERSIONLISTER;
+    private final BooleanUtilities BOOLEANUTILITIES;
+    private final ListUtilities LISTUTILITIES;
+    private final StringUtilities STRINGUTILITIES;
+    private final ConfigUtilities CONFIGUTILITIES;
+    private final SystemUtilities SYSTEMUTILITIES;
 
     CurseCreateModpackTest() {
         try {
@@ -52,11 +60,18 @@ class CurseCreateModpackTest {
             e.printStackTrace();
         }
 
-        this.serverPackCreatorProperties = new ApplicationProperties();
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
-        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
-        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, serverPackCreatorProperties);
+        LISTUTILITIES = new ListUtilities();
+        STRINGUTILITIES = new StringUtilities();
+        SYSTEMUTILITIES = new SystemUtilities();
+        BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+        this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+
+        this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
     }
 
     @Test
@@ -130,8 +145,8 @@ class CurseCreateModpackTest {
         String modpackDir = "./backend/test/resources/forge_tests/Vanilla Forge/Vanilla Forge 1.16.5";
         configurationModel.setModpackDir(modpackDir);
         configurationModel.setProjectName(CurseAPI.project(projectID).get().name());
-        configurationModel.setFileName(CurseAPI.project(projectID).get().files().fileWithID(fileID).displayName());
-        configurationModel.setFileDiskName(CurseAPI.project(projectID).get().files().fileWithID(fileID).nameOnDisk());
+        configurationModel.setFileName(CurseAPI.file(projectID, fileID).orElseThrow(NullPointerException::new).displayName());
+        configurationModel.setFileDiskName(CurseAPI.file(projectID, fileID).orElseThrow(NullPointerException::new).nameOnDisk());
         CURSECREATEMODPACK.initializeModpack(modpackDir, projectID, fileID, configurationModel);
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/Vanilla Forge").isDirectory());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/Vanilla Forge/Vanilla Forge 1.16.5").isDirectory());

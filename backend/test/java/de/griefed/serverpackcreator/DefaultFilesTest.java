@@ -24,16 +24,12 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
 
 class DefaultFilesTest {
 
     private final DefaultFiles DEFAULTFILES;
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private ApplicationProperties serverPackCreatorProperties;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     DefaultFilesTest() {
         try {
@@ -42,12 +38,11 @@ class DefaultFilesTest {
             e.printStackTrace();
         }
 
-        this.serverPackCreatorProperties = new ApplicationProperties();
+        this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
-        LOCALIZATIONMANAGER = new LocalizationManager(serverPackCreatorProperties);
+        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, serverPackCreatorProperties);
-        DEFAULTFILES.filesSetup();
+        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
     }
 
     @Test
@@ -72,62 +67,90 @@ class DefaultFilesTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForConfigTestOld() throws IOException {
-        File oldConfigFile = new File("creator.conf");
-        oldConfigFile.createNewFile();
-        Assertions.assertFalse(DEFAULTFILES.checkForConfig());
-        Assertions.assertTrue(new File("serverpackcreator.conf").exists());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
     void checkForConfigTest() throws IOException {
-        File configFile = new File("serverpackcreator.conf");
-        configFile.createNewFile();
+        APPLICATIONPROPERTIES.FILE_CONFIG_OLD.createNewFile();
         Assertions.assertFalse(DEFAULTFILES.checkForConfig());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void checkForConfigTestNew() {
-        File configFile = new File("./serverpackcreator.conf");
-        configFile.delete();
+        Assertions.assertTrue(APPLICATIONPROPERTIES.FILE_CONFIG.exists());
+        Assertions.assertFalse(DEFAULTFILES.checkForConfig());
+        FileUtils.deleteQuietly(APPLICATIONPROPERTIES.FILE_CONFIG);
+        FileUtils.deleteQuietly(APPLICATIONPROPERTIES.FILE_CONFIG_OLD);
         Assertions.assertTrue(DEFAULTFILES.checkForConfig());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void checkForPropertiesTest() throws IOException {
-        FileUtils.createParentDirectories(new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)));
-        new File(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_PROPERTIES)).createNewFile();
-        Assertions.assertFalse(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_PROPERTIES));
+        FileUtils.createParentDirectories(new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)));
+        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)).createNewFile();
+        Assertions.assertFalse(DEFAULTFILES.checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void checkForPropertiesTestNew() {
-        new File(String.format("./server_files/%s",serverPackCreatorProperties.FILE_SERVER_PROPERTIES)).delete();
-        Assertions.assertTrue(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_PROPERTIES));
+        new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)).delete();
+        Assertions.assertTrue(DEFAULTFILES.checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void checkForIconTest() throws IOException {
-        FileUtils.createParentDirectories(new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)));
-        new File(String.format("server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)).createNewFile();
-        Assertions.assertFalse(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_ICON));
+        FileUtils.createParentDirectories(new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)));
+        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)).createNewFile();
+        Assertions.assertFalse(DEFAULTFILES.checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_ICON));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void checkForIconTestNew() {
-        new File(String.format("./server_files/%s", serverPackCreatorProperties.FILE_SERVER_ICON)).delete();
-        Assertions.assertTrue(DEFAULTFILES.checkForFile(serverPackCreatorProperties.FILE_SERVER_ICON));
+        new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)).delete();
+        Assertions.assertTrue(DEFAULTFILES.checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_ICON));
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void filesSetupTest() throws IOException {
+    void downloadMinecraftManifestTest() throws IOException {
+        //Files.createDirectories(Paths.get("./work"));
+        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT)));
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getMinecraftManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT);
+        Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT)).exists());
+    }
+
+    @Test
+    void downloadFabricManifestTest() throws IOException {
+        //Files.createDirectories(Paths.get("./work"));
+        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC)));
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC);
+        Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC)).exists());
+    }
+
+    @Test
+    void downloadForgeManifestTest() throws IOException {
+        //Files.createDirectories(Paths.get("./work"));
+        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE)));
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getForgeManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE);
+        Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE)).exists());
+    }
+
+    @Test
+    void downloadFabricInstallerManifestTest() throws IOException {
+        //Files.createDirectories(Paths.get("./work"));
+        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER)));
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricInstallerManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER);
+        Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER)).exists());
+    }
+
+    @Test
+    void filesSetupTest() {
+        FileUtils.deleteQuietly(new File("./server_files"));
+        FileUtils.deleteQuietly(new File("./work"));
+        FileUtils.deleteQuietly(new File("./work/temp"));
+        FileUtils.deleteQuietly(new File("./server-packs"));
+        FileUtils.deleteQuietly(new File("./server_files/server.properties"));
+        FileUtils.deleteQuietly(new File("./server_files/server-icon.png"));
+        FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
+        FileUtils.deleteQuietly(new File("./work/minecraft-manifest.json"));
+        FileUtils.deleteQuietly(new File("./work/fabric-manifest.xml"));
+        FileUtils.deleteQuietly(new File("./work/forge-manifest.json"));
         DEFAULTFILES.filesSetup();
         Assertions.assertTrue(new File("./server_files").isDirectory());
         Assertions.assertTrue(new File("./work").isDirectory());
@@ -141,39 +164,4 @@ class DefaultFilesTest {
         Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void downloadMinecraftManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT)));
-        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getMinecraftManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT);
-        Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_MINECRAFT)).exists());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void downloadFabricManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC)));
-        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC);
-        Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC)).exists());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void downloadForgeManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FORGE)));
-        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getForgeManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FORGE);
-        Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FORGE)).exists());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void downloadFabricInstallerManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER)));
-        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricInstallerManifestUrl(), serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER);
-        Assertions.assertTrue(new File(String.format("./work/%s", serverPackCreatorProperties.FILE_MANIFEST_FABRIC_INSTALLER)).exists());
-    }
 }

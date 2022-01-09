@@ -56,7 +56,7 @@ public class ApplicationProperties extends Properties {
             "itemzoom,itlt-,jeed-,jeiintegration_,JustEnoughProfessions-,JEITweaker-,justenoughbeacons-," +
             "JustEnoughCalculation-,jehc-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-," +
             "keywizard-,konkrete_,lazydfu-,LegendaryTooltips-,LightOverlay-,light-overlay-,LLOverlayReloaded-," +
-            "loadmyresources_,lootbeams-,mcbindtype-,modnametooltip_,modnametooltip-,MouseTweaks-," +
+            "loadmyresources_,lootbeams-,mcbindtype-,modnametooltip_,modnametooltip-,moreoverlays-,MouseTweaks-," +
             "multihotbar-,MyServerIsCompatible-,Neat,NotifMod-,OldJavaWarning-,ornaments-,overloadedarmorbar-," +
             "PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-," +
             "ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-," +
@@ -155,18 +155,22 @@ public class ApplicationProperties extends Properties {
             LOG.error("Couldn't read properties file.", ex);
         }
 
+        // Set the directory where the generated server packs will be stored in.
         String tempDir = null;
         try {
 
+            // Try to use the directory specified in the de.griefed.serverpackcreator.configuration.directories.serverpacks property.
             tempDir = this.getProperty("de.griefed.serverpackcreator.configuration.directories.serverpacks","server-packs");
 
         } catch (NullPointerException npe) {
 
+            // If setting the directory via property fails, set the property to the default value server-packs.
             this.setProperty("de.griefed.serverpackcreator.configuration.directories.serverpacks","server-packs");
             tempDir = "server-packs";
 
         } finally {
 
+            // Check tempDir for correctness. Set property and directory if it is correct and overwrite serverpackcreator.properties
             if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
                 this.setProperty("de.griefed.serverpackcreator.configuration.directories.serverpacks",tempDir);
                 this.directoryServerPacks = tempDir;
@@ -177,6 +181,7 @@ public class ApplicationProperties extends Properties {
                     LOG.error("Couldn't write properties-file.", ex);
                 }
 
+            // Use directory server-packs
             } else {
                 this.directoryServerPacks = "server-packs";
             }
@@ -373,7 +378,7 @@ public class ApplicationProperties extends Properties {
      * @author Griefed
      * @param entry String. The directory to add to the list of directories to exclude from server packs.
      */
-    void addToListOfDirectoriesToExclude(String entry) {
+    public void addToListOfDirectoriesToExclude(String entry) {
         if (!this.listDirectoriesExclude.contains(entry) && !this.listCheckAgainstNewEntry.contains(entry)) {
             this.listDirectoriesExclude.add(entry);
         }
