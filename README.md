@@ -15,6 +15,11 @@ Repositories on GitHub are now for issues only. I've set up my own installation 
 
 For questions, you can always join my [Discord server](https://discord.griefed.de) and talk to me there.
 
+This repository is available at:
+Source: https://git.griefed.de/Griefed/ServerPackCreator
+Mirror: https://gitlab.com/Griefed/ServerPackCreator
+Mirror: https://github.com/Griefed/ServerPackCreator
+
 ---
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/griefed/serverpackcreator?style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
