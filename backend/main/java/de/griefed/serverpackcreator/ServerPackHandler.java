@@ -26,7 +26,7 @@ import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
-import de.griefed.serverpackcreator.utilities.VersionLister;
+import de.griefed.serverpackcreator.utilities.*;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
@@ -72,6 +72,11 @@ public class ServerPackHandler {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final VersionLister VERSIONLISTER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final BooleanUtilities BOOLEANUTILITIES;
+    private final ConfigUtilities CONFIGUTILITIES;
+    private final ListUtilities LISTUTILITIES;
+    private final StringUtilities STRINGUTILITIES;
+    private final SystemUtilities SYSTEMUTILITIES;
 
     /**
      * <strong>Constructor</strong><p>
@@ -85,11 +90,18 @@ public class ServerPackHandler {
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required for accessing checks.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related.
+     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
+     * @param injectedListUtilities Instance of {@link ListUtilities}.
+     * @param injectedStringUtilities Instance of {@link StringUtilities}.
+     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      */
     @Autowired
     public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
                              AddonsHandler injectedAddonsHandler, ConfigurationHandler injectedConfigurationHandler,
-                             ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister) {
+                             ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister,
+                             BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities,
+                             SystemUtilities injectedSystemUtilities, ConfigUtilities injectedConfigUtilities) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -103,29 +115,61 @@ public class ServerPackHandler {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        } else {
-            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
-        }
-
-        if (injectedAddonsHandler == null) {
-            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        } else {
-            this.ADDONSHANDLER = injectedAddonsHandler;
-        }
-
         if (injectedVersionLister == null) {
             this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
         } else {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
+
+        if (injectedBooleanUtilities == null) {
+            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        } else {
+            this.BOOLEANUTILITIES = injectedBooleanUtilities;
+        }
+
+        if (injectedListUtilities == null) {
+            this.LISTUTILITIES = new ListUtilities();
+        } else {
+            this.LISTUTILITIES = injectedListUtilities;
+        }
+
+        if (injectedStringUtilities == null) {
+            this.STRINGUTILITIES = new StringUtilities();
+        } else {
+            this.STRINGUTILITIES = injectedStringUtilities;
+        }
+
+        if (injectedSystemUtilities == null) {
+            this.SYSTEMUTILITIES = new SystemUtilities();
+        } else {
+            this.SYSTEMUTILITIES = injectedSystemUtilities;
+        }
+
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+        } else {
+            this.CONFIGUTILITIES = injectedConfigUtilities;
+        }
+
+        if (injectedCurseCreateModpack == null) {
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+        } else {
+            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
+        }
+
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
+
+        if (injectedAddonsHandler == null) {
+            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+        } else {
+            this.ADDONSHANDLER = injectedAddonsHandler;
+        }
+
     }
 
     /**
@@ -133,7 +177,7 @@ public class ServerPackHandler {
      * @author Griefed
      * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
      */
-    public ObjectMapper getObjectMapper() {
+    private ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
@@ -239,7 +283,7 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
-                ADDONSHANDLER.runServerPackAddons(configurationModel, CONFIGURATIONHANDLER);
+                ADDONSHANDLER.runServerPackAddons(configurationModel);
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
             }
 
@@ -280,7 +324,7 @@ public class ServerPackHandler {
      * @param modloaderVersion String. The modloader version the modpack uses.
      * @param destination String. The destination where the scripts should be created in.
      */
-    void createStartScripts(String modLoader, String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
+    public void createStartScripts(String modLoader, String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
         if (javaArguments.equals("empty")) {
             javaArguments = "";
@@ -579,6 +623,7 @@ public class ServerPackHandler {
                             "REM Add custom JVM arguments to the user_jvm_args.txt\n" +
                             "REM Add custom program arguments {such as nogui} to this file in the next line before the %* or\n" +
                             "REM  pass them to this script directly\n" +
+                            "ECHO If you receive the error message \"Error: Could not find or load main class @user_jvm_args.txt\" you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft %MINECRAFT% version to find out which Java-version is required in order to run this server.\n" +
                             "\n" +
                             "%JAVA% \"%OTHERARGS%\" @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n" +
                             "\n" +
@@ -683,6 +728,7 @@ public class ServerPackHandler {
                             "# Add custom JVM arguments to the user_jvm_args.txt\n" +
                             "# Add custom program arguments {such as nogui} to this file in the next line before the \"$@\" or\n" +
                             "#  pass them to this script directly\n" +
+                            "echo \"If you receive the error message 'Error: Could not find or load main class @user_jvm_args.txt' you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft $MINECRAFT version to find out which Java-version is required in order to run this server.\"\n" +
                             "\n" +
                             "$JAVA $OTHERARGS @user_jvm_args.txt @libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/unix_args.txt nogui \"$@\""
                     );

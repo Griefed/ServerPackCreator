@@ -58,7 +58,7 @@ public class MenuBar extends Component {
 
     private static final Logger LOG = LogManager.getLogger(MenuBar.class);
 
-    private final ApplicationHome applicationHome = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
+    private final ApplicationHome APPLICATIONHOME = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
 
     private final Clipboard CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
 
@@ -103,31 +103,31 @@ public class MenuBar extends Component {
 
     private final JTextField JAVAARGS = new JTextField();
 
-    private final StyledDocument helpWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument aboutWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument configWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument spcLogWindowDocument = new DefaultStyledDocument();
-    private final StyledDocument fileTooLargeWindowDocument = new DefaultStyledDocument();
+    private final StyledDocument HELPWINDOWDOCUMENT = new DefaultStyledDocument();
+    private final StyledDocument ABOUTWINDOWDOCUMENT = new DefaultStyledDocument();
+    private final StyledDocument CONFIGWINDOWDOCUMENT = new DefaultStyledDocument();
+    private final StyledDocument SPCLOGWINDOWDOCUMENT = new DefaultStyledDocument();
+    private final StyledDocument FILETOOLARGEWINDOWDOCUMENT = new DefaultStyledDocument();
 
-    private final SimpleAttributeSet aboutAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet helpAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet configAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet spcLogAttributeSet = new SimpleAttributeSet();
-    private final SimpleAttributeSet fileTooLargeAttributeSet = new SimpleAttributeSet();
+    private final SimpleAttributeSet ABOUTATTRIBUTESET = new SimpleAttributeSet();
+    private final SimpleAttributeSet HELPATTRIBUTESET = new SimpleAttributeSet();
+    private final SimpleAttributeSet CONFIGATTRIBUTESET = new SimpleAttributeSet();
+    private final SimpleAttributeSet SPCLOGATTRIBUTESET = new SimpleAttributeSet();
+    private final SimpleAttributeSet FILETOOLARGEATTRIBUTESET = new SimpleAttributeSet();
 
-    private final JTextPane helpWindowTextPane = new JTextPane(helpWindowDocument);
-    private final JTextPane aboutWindowTextPane = new JTextPane(aboutWindowDocument);
-    private final JTextPane configWindowTextPane = new JTextPane(configWindowDocument);
-    private final JTextPane spcLogWindowTextPane = new JTextPane(spcLogWindowDocument);
-    private final JTextPane fileTooLargeWindowTextPane = new JTextPane();
+    private final JTextPane HELPWINDOWTEXTPANE = new JTextPane(HELPWINDOWDOCUMENT);
+    private final JTextPane ABOUTWINDOWTEXTPANE = new JTextPane(ABOUTWINDOWDOCUMENT);
+    private final JTextPane CONFIGWINDOWTEXTPANE = new JTextPane(CONFIGWINDOWDOCUMENT);
+    private final JTextPane SPCLOGWINDOWTEXTPANE = new JTextPane(SPCLOGWINDOWDOCUMENT);
+    private final JTextPane FILETOOLARGEWINDOWTEXTPANE = new JTextPane();
 
-    private final MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
-    private final MaterialTextFieldUI materialTextFieldUI = new MaterialTextFieldUI();
-    private final MaterialComboBoxUI materialComboBoxUI = new MaterialComboBoxUI();
+    private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
+    private final MaterialTextFieldUI MATERIALTEXTFIELDUI = new MaterialTextFieldUI();
+    private final MaterialComboBoxUI MATERIALCOMBOBOXUI = new MaterialComboBoxUI();
 
-    private final JTextArea helpTextArea = new JTextArea();
+    private final JTextArea HELPTEXTAREA = new JTextArea();
 
-    private final JPanel helpPanel = new JPanel();
+    private final JPanel HELPPANEL = new JPanel();
 
     private boolean isDarkTheme;
 
@@ -219,23 +219,23 @@ public class MenuBar extends Component {
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
 
         ABOUTWINDOWTEXT = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.text");
-        aboutWindowTextPane.setEditable(false);
-        aboutWindowTextPane.setOpaque(false);
-        aboutWindowTextPane.setMinimumSize(ABOUTDIMENSION);
-        aboutWindowTextPane.setPreferredSize(ABOUTDIMENSION);
-        aboutWindowTextPane.setMaximumSize(ABOUTDIMENSION);
-        StyleConstants.setBold(aboutAttributeSet, true);
-        StyleConstants.setFontSize(aboutAttributeSet, 14);
-        aboutWindowTextPane.setCharacterAttributes(aboutAttributeSet, true);
-        StyleConstants.setAlignment(aboutAttributeSet, StyleConstants.ALIGN_CENTER);
-        aboutWindowDocument.setParagraphAttributes(0, aboutWindowDocument.getLength(), aboutAttributeSet, false);
+        ABOUTWINDOWTEXTPANE.setEditable(false);
+        ABOUTWINDOWTEXTPANE.setOpaque(false);
+        ABOUTWINDOWTEXTPANE.setMinimumSize(ABOUTDIMENSION);
+        ABOUTWINDOWTEXTPANE.setPreferredSize(ABOUTDIMENSION);
+        ABOUTWINDOWTEXTPANE.setMaximumSize(ABOUTDIMENSION);
+        StyleConstants.setBold(ABOUTATTRIBUTESET, true);
+        StyleConstants.setFontSize(ABOUTATTRIBUTESET, 14);
+        ABOUTWINDOWTEXTPANE.setCharacterAttributes(ABOUTATTRIBUTESET, true);
+        StyleConstants.setAlignment(ABOUTATTRIBUTESET, StyleConstants.ALIGN_CENTER);
+        ABOUTWINDOWDOCUMENT.setParagraphAttributes(0, ABOUTWINDOWDOCUMENT.getLength(), ABOUTATTRIBUTESET, false);
         try {
-            aboutWindowDocument.insertString(0, ABOUTWINDOWTEXT, aboutAttributeSet);
+            ABOUTWINDOWDOCUMENT.insertString(0, ABOUTWINDOWTEXT, ABOUTATTRIBUTESET);
         } catch (BadLocationException ex) {
             LOG.error("Error inserting text into aboutDocument.", ex);
         }
-        aboutWindowTextPane.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(aboutWindowTextPane);
+        ABOUTWINDOWTEXTPANE.addHierarchyListener(e1 -> {
+            Window window = SwingUtilities.getWindowAncestor(ABOUTWINDOWTEXTPANE);
             if (window instanceof Dialog) {
                 Dialog dialog = (Dialog) window;
                 if (!dialog.isResizable()) {
@@ -258,20 +258,20 @@ public class MenuBar extends Component {
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
         );
-        helpWindowTextPane.setEditable(false);
-        helpWindowTextPane.setOpaque(false);
-        StyleConstants.setBold(helpAttributeSet, true);
-        StyleConstants.setFontSize(helpAttributeSet, 14);
-        helpWindowTextPane.setCharacterAttributes(helpAttributeSet, true);
-        StyleConstants.setAlignment(helpAttributeSet, StyleConstants.ALIGN_LEFT);
-        helpWindowDocument.setParagraphAttributes(0, helpWindowDocument.getLength(), helpAttributeSet, false);
+        HELPWINDOWTEXTPANE.setEditable(false);
+        HELPWINDOWTEXTPANE.setOpaque(false);
+        StyleConstants.setBold(HELPATTRIBUTESET, true);
+        StyleConstants.setFontSize(HELPATTRIBUTESET, 14);
+        HELPWINDOWTEXTPANE.setCharacterAttributes(HELPATTRIBUTESET, true);
+        StyleConstants.setAlignment(HELPATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+        HELPWINDOWDOCUMENT.setParagraphAttributes(0, HELPWINDOWDOCUMENT.getLength(), HELPATTRIBUTESET, false);
         try {
-            helpWindowDocument.insertString(0, HELPWINDOWTEXT, helpAttributeSet);
+            HELPWINDOWDOCUMENT.insertString(0, HELPWINDOWTEXT, HELPATTRIBUTESET);
         } catch (BadLocationException ex) {
             LOG.error("Error inserting text into aboutDocument.", ex);
         }
-        helpWindowTextPane.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(helpWindowTextPane);
+        HELPWINDOWTEXTPANE.addHierarchyListener(e1 -> {
+            Window window = SwingUtilities.getWindowAncestor(HELPWINDOWTEXTPANE);
             if (window instanceof Dialog) {
                 Dialog dialog = (Dialog) window;
                 if (!dialog.isResizable()) {
@@ -284,15 +284,15 @@ public class MenuBar extends Component {
         HASTEOPTIONS[1] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.clipboard");
         HASTEOPTIONS[2] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no");
 
-        configWindowTextPane.setOpaque(false);
-        configWindowTextPane.setEditable(false);
-        StyleConstants.setBold(configAttributeSet, true);
-        StyleConstants.setFontSize(configAttributeSet, 14);
-        configWindowTextPane.setCharacterAttributes(configAttributeSet, true);
-        StyleConstants.setAlignment(configAttributeSet, StyleConstants.ALIGN_LEFT);
-        configWindowDocument.setParagraphAttributes(0, configWindowDocument.getLength(), configAttributeSet, false);
-        configWindowTextPane.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(configWindowTextPane);
+        CONFIGWINDOWTEXTPANE.setOpaque(false);
+        CONFIGWINDOWTEXTPANE.setEditable(false);
+        StyleConstants.setBold(CONFIGATTRIBUTESET, true);
+        StyleConstants.setFontSize(CONFIGATTRIBUTESET, 14);
+        CONFIGWINDOWTEXTPANE.setCharacterAttributes(CONFIGATTRIBUTESET, true);
+        StyleConstants.setAlignment(CONFIGATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+        CONFIGWINDOWDOCUMENT.setParagraphAttributes(0, CONFIGWINDOWDOCUMENT.getLength(), CONFIGATTRIBUTESET, false);
+        CONFIGWINDOWTEXTPANE.addHierarchyListener(e1 -> {
+            Window window = SwingUtilities.getWindowAncestor(CONFIGWINDOWTEXTPANE);
             if (window instanceof Dialog) {
                 Dialog dialog = (Dialog) window;
                 if (!dialog.isResizable()) {
@@ -301,15 +301,15 @@ public class MenuBar extends Component {
             }
         });
 
-        spcLogWindowTextPane.setOpaque(false);
-        spcLogWindowTextPane.setEditable(false);
-        StyleConstants.setBold(spcLogAttributeSet, true);
-        StyleConstants.setFontSize(spcLogAttributeSet, 14);
-        spcLogWindowTextPane.setCharacterAttributes(spcLogAttributeSet, true);
-        StyleConstants.setAlignment(spcLogAttributeSet, StyleConstants.ALIGN_LEFT);
-        spcLogWindowDocument.setParagraphAttributes(0, spcLogWindowDocument.getLength(), spcLogAttributeSet, false);
-        spcLogWindowTextPane.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(spcLogWindowTextPane);
+        SPCLOGWINDOWTEXTPANE.setOpaque(false);
+        SPCLOGWINDOWTEXTPANE.setEditable(false);
+        StyleConstants.setBold(SPCLOGATTRIBUTESET, true);
+        StyleConstants.setFontSize(SPCLOGATTRIBUTESET, 14);
+        SPCLOGWINDOWTEXTPANE.setCharacterAttributes(SPCLOGATTRIBUTESET, true);
+        StyleConstants.setAlignment(SPCLOGATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+        SPCLOGWINDOWDOCUMENT.setParagraphAttributes(0, SPCLOGWINDOWDOCUMENT.getLength(), SPCLOGATTRIBUTESET, false);
+        SPCLOGWINDOWTEXTPANE.addHierarchyListener(e1 -> {
+            Window window = SwingUtilities.getWindowAncestor(SPCLOGWINDOWTEXTPANE);
             if (window instanceof Dialog) {
                 Dialog dialog = (Dialog) window;
                 if (!dialog.isResizable()) {
@@ -320,23 +320,23 @@ public class MenuBar extends Component {
 
         FILETOOLARGETEXT = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolarge");
         FILETOOLARGETITLE = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolargetitle");
-        fileTooLargeWindowTextPane.setOpaque(false);
-        fileTooLargeWindowTextPane.setEditable(false);
-        fileTooLargeWindowTextPane.setMinimumSize(FILETOOLARGEDIMENSION);
-        fileTooLargeWindowTextPane.setPreferredSize(FILETOOLARGEDIMENSION);
-        fileTooLargeWindowTextPane.setMaximumSize(FILETOOLARGEDIMENSION);
-        StyleConstants.setBold(fileTooLargeAttributeSet, true);
-        StyleConstants.setFontSize(fileTooLargeAttributeSet, 14);
-        fileTooLargeWindowTextPane.setCharacterAttributes(fileTooLargeAttributeSet, true);
-        StyleConstants.setAlignment(fileTooLargeAttributeSet, StyleConstants.ALIGN_LEFT);
-        fileTooLargeWindowDocument.setParagraphAttributes(0, fileTooLargeWindowDocument.getLength(), fileTooLargeAttributeSet, false);
+        FILETOOLARGEWINDOWTEXTPANE.setOpaque(false);
+        FILETOOLARGEWINDOWTEXTPANE.setEditable(false);
+        FILETOOLARGEWINDOWTEXTPANE.setMinimumSize(FILETOOLARGEDIMENSION);
+        FILETOOLARGEWINDOWTEXTPANE.setPreferredSize(FILETOOLARGEDIMENSION);
+        FILETOOLARGEWINDOWTEXTPANE.setMaximumSize(FILETOOLARGEDIMENSION);
+        StyleConstants.setBold(FILETOOLARGEATTRIBUTESET, true);
+        StyleConstants.setFontSize(FILETOOLARGEATTRIBUTESET, 14);
+        FILETOOLARGEWINDOWTEXTPANE.setCharacterAttributes(FILETOOLARGEATTRIBUTESET, true);
+        StyleConstants.setAlignment(FILETOOLARGEATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+        FILETOOLARGEWINDOWDOCUMENT.setParagraphAttributes(0, FILETOOLARGEWINDOWDOCUMENT.getLength(), FILETOOLARGEATTRIBUTESET, false);
         try {
-            fileTooLargeWindowDocument.insertString(0, FILETOOLARGETEXT, fileTooLargeAttributeSet);
+            FILETOOLARGEWINDOWDOCUMENT.insertString(0, FILETOOLARGETEXT, FILETOOLARGEATTRIBUTESET);
         } catch (BadLocationException ex) {
             LOG.error("Error inserting text into aboutDocument.", ex);
         }
-        fileTooLargeWindowTextPane.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(fileTooLargeWindowTextPane);
+        FILETOOLARGEWINDOWTEXTPANE.addHierarchyListener(e1 -> {
+            Window window = SwingUtilities.getWindowAncestor(FILETOOLARGEWINDOWTEXTPANE);
             if (window instanceof Dialog) {
                 Dialog dialog = (Dialog) window;
                 if (!dialog.isResizable()) {
@@ -388,11 +388,11 @@ public class MenuBar extends Component {
         HELPSELECTIONS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip");
         HELPSELECTIONS[11] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.javaargs");
 
-        helpTextArea.setEditable(false);
-        helpPanel.setLayout(new BoxLayout(helpPanel, BoxLayout.Y_AXIS));
-        helpPanel.setMinimumSize(HELPDIMENSION);
-        helpPanel.setPreferredSize(HELPDIMENSION);
-        helpPanel.setMaximumSize(HELPDIMENSION);
+        HELPTEXTAREA.setEditable(false);
+        HELPPANEL.setLayout(new BoxLayout(HELPPANEL, BoxLayout.Y_AXIS));
+        HELPPANEL.setMinimumSize(HELPDIMENSION);
+        HELPPANEL.setPreferredSize(HELPDIMENSION);
+        HELPPANEL.setMaximumSize(HELPDIMENSION);
     }
 
     /**
@@ -469,10 +469,10 @@ public class MenuBar extends Component {
         helpComboBox = new JComboBox<>(helpComboBoxModel);
 
         helpComboBox.setSelectedIndex(0);
-        helpTextArea.setText(HELPTEXTS[0]);
+        HELPTEXTAREA.setText(HELPTEXTS[0]);
 
-        helpPanel.add(helpTextArea);
-        helpPanel.add(helpComboBox);
+        HELPPANEL.add(HELPTEXTAREA);
+        HELPPANEL.add(helpComboBox);
 
         helpComboBox.addActionListener(this::actionEventSetHelpText);
 
@@ -583,16 +583,16 @@ public class MenuBar extends Component {
             String textContent = String.format("URL: %s", urltoHasteBin);
 
             try {
-                spcLogWindowDocument.insertString(0, textContent, spcLogAttributeSet);
+                SPCLOGWINDOWDOCUMENT.insertString(0, textContent, SPCLOGATTRIBUTESET);
             } catch (BadLocationException ex) {
                 LOG.error("Error inserting text into aboutDocument.", ex);
             }
 
-            materialTextPaneUI.installUI(spcLogWindowTextPane);
+            MATERIALTEXTPANEUI.installUI(SPCLOGWINDOWTEXTPANE);
 
             switch (JOptionPane.showOptionDialog(
                     FRAME_SERVERPACKCREATOR,
-                    spcLogWindowTextPane,
+                    SPCLOGWINDOWTEXTPANE,
                     LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.INFORMATION_MESSAGE,
@@ -639,16 +639,16 @@ public class MenuBar extends Component {
             String textContent = String.format("URL: %s", urltoHasteBin);
 
             try {
-                configWindowDocument.insertString(0, textContent, configAttributeSet);
+                CONFIGWINDOWDOCUMENT.insertString(0, textContent, CONFIGATTRIBUTESET);
             } catch (BadLocationException ex) {
                 LOG.error("Error inserting text into aboutDocument.", ex);
             }
 
-            materialTextPaneUI.installUI(configWindowTextPane);
+            MATERIALTEXTPANEUI.installUI(CONFIGWINDOWTEXTPANE);
 
             switch (JOptionPane.showOptionDialog(
                     FRAME_SERVERPACKCREATOR,
-                    configWindowTextPane,
+                    CONFIGWINDOWTEXTPANE,
                     LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.INFORMATION_MESSAGE,
@@ -685,10 +685,10 @@ public class MenuBar extends Component {
      * @author Griefed
      */
     private void fileTooLargeDialog() {
-        materialTextPaneUI.installUI(fileTooLargeWindowTextPane);
+        MATERIALTEXTPANEUI.installUI(FILETOOLARGEWINDOWTEXTPANE);
         JOptionPane.showConfirmDialog(
                 FRAME_SERVERPACKCREATOR,
-                fileTooLargeWindowTextPane,
+                FILETOOLARGEWINDOWTEXTPANE,
                 FILETOOLARGETITLE,
                 JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE,
@@ -704,21 +704,32 @@ public class MenuBar extends Component {
     private void actionEventOpenInEditorServerProperties(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server.properties in Editor.");
 
-        //TODO: If textfield server icon contains valid file, open that instead
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-                Desktop.getDesktop().open(
-                        new File(
-                                applicationHome.getSource().toString().replace("\\","/")
-                                        .replace(applicationHome.getSource().toString()
-                                                .substring(
-                                                        applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                        .replace("\\","/")
-                                        + "/server_files/server.properties")
-                );
+        if (new File(TAB_CREATESERVERPACK.getServerPropertiesPath()).isFile()) {
+            try {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+                    Desktop.getDesktop().open(
+                            new File(TAB_CREATESERVERPACK.getServerPropertiesPath())
+                    );
+                }
+            } catch (IOException ex) {
+                LOG.error("Error opening custom server.properties.", ex);
             }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for ServerPackCreator GitHub repository.", ex);
+        } else {
+            try {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+                    Desktop.getDesktop().open(
+                            new File(
+                                    APPLICATIONHOME.getSource().toString().replace("\\","/")
+                                            .replace(APPLICATIONHOME.getSource().toString()
+                                                    .substring(
+                                                            APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
+                                            .replace("\\","/")
+                                            + "/server_files/server.properties")
+                    );
+                }
+            } catch (IOException ex) {
+                LOG.error("Error opening default server.properties.", ex);
+            }
         }
     }
 
@@ -730,22 +741,34 @@ public class MenuBar extends Component {
     private void actionEventOpenServerIcon(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server-icon.png in Editor.");
 
-        //TODO: If textfield server properties contains valid file, open that instead
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                Desktop.getDesktop().open(
-                        new File(
-                                applicationHome.getSource().toString().replace("\\","/")
-                                        .replace(applicationHome.getSource().toString()
-                                                .substring(
-                                                        applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                        .replace("\\","/")
-                                        + "/server_files/server-icon.png")
-                );
+        if (new File(TAB_CREATESERVERPACK.getServerIconPath()).isFile()) {
+            try {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+                    Desktop.getDesktop().open(
+                            new File(TAB_CREATESERVERPACK.getServerIconPath())
+                    );
+                }
+            } catch (IOException ex) {
+                LOG.error("Error opening custom server-icon.png.", ex);
             }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for ServerPackCreator GitHub repository.", ex);
+        } else {
+            try {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(
+                            new File(
+                                    APPLICATIONHOME.getSource().toString().replace("\\","/")
+                                            .replace(APPLICATIONHOME.getSource().toString()
+                                                    .substring(
+                                                            APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
+                                            .replace("\\","/")
+                                            + "/server_files/server-icon.png")
+                    );
+                }
+            } catch (IOException ex) {
+                LOG.error("Error opening default server-icon.png.", ex);
+            }
         }
+
     }
 
     /**
@@ -969,10 +992,10 @@ public class MenuBar extends Component {
         try {
             Desktop.getDesktop().open(
                     new File(
-                            applicationHome.getSource().toString().replace("\\","/")
-                                    .replace(applicationHome.getSource().toString()
+                            APPLICATIONHOME.getSource().toString().replace("\\","/")
+                                    .replace(APPLICATIONHOME.getSource().toString()
                                             .substring(
-                                                    applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
+                                                    APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
                                     .replace("\\","/")
                                     + "/addons")
             );
@@ -1009,10 +1032,10 @@ public class MenuBar extends Component {
         try {
             Desktop.getDesktop().open(
                     new File(
-                            applicationHome.getSource().toString().replace("\\","/")
-                                    .replace(applicationHome.getSource().toString()
+                            APPLICATIONHOME.getSource().toString().replace("\\","/")
+                                    .replace(APPLICATIONHOME.getSource().toString()
                                             .substring(
-                                                    applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
+                                                    APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
                                     .replace("\\","/")
                                     + "/")
             );
@@ -1047,10 +1070,10 @@ public class MenuBar extends Component {
         try {
             Desktop.getDesktop().open(
                     new File(
-                            applicationHome.getSource().toString().replace("\\","/")
-                                    .replace(applicationHome.getSource().toString()
+                            APPLICATIONHOME.getSource().toString().replace("\\","/")
+                                    .replace(APPLICATIONHOME.getSource().toString()
                                             .substring(
-                                                    applicationHome.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
+                                                    APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
                                     .replace("\\","/")
                                     + "/server_files")
             );
@@ -1067,11 +1090,11 @@ public class MenuBar extends Component {
     private void actionEventOpenAboutSPCMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open about window.");
 
-        materialTextPaneUI.installUI(aboutWindowTextPane);
+        MATERIALTEXTPANEUI.installUI(ABOUTWINDOWTEXTPANE);
 
         JOptionPane.showMessageDialog(
                 FRAME_SERVERPACKCREATOR,
-                aboutWindowTextPane,
+                ABOUTWINDOWTEXTPANE,
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
                 JOptionPane.INFORMATION_MESSAGE,
                 HELPICON
@@ -1086,14 +1109,14 @@ public class MenuBar extends Component {
     private void actionEventOpenHelpMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open help window.");
 
-        materialComboBoxUI.installUI(helpComboBox);
+        MATERIALCOMBOBOXUI.installUI(helpComboBox);
         //materialPanelUI.installUI(helpPanel);
-        materialTextFieldUI.installUI(helpTextArea);
+        MATERIALTEXTFIELDUI.installUI(HELPTEXTAREA);
         //materialTextPaneUI.installUI(helpWindowTextPane);
 
         JOptionPane.showMessageDialog(
                 FRAME_SERVERPACKCREATOR,
-                helpPanel,
+                HELPPANEL,
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
                 JOptionPane.INFORMATION_MESSAGE,
                 HELPICON
@@ -1102,7 +1125,7 @@ public class MenuBar extends Component {
 
     private void actionEventSetHelpText(ActionEvent actionEvent) {
         LOG.debug("Selected helpItem: " + helpComboBox.getSelectedIndex());
-        helpTextArea.setText(HELPTEXTS[helpComboBox.getSelectedIndex()]);
+        HELPTEXTAREA.setText(HELPTEXTS[helpComboBox.getSelectedIndex()]);
     }
 
     /**

@@ -23,12 +23,9 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.utilities.FileWatcher;
-import de.griefed.serverpackcreator.utilities.JarUtilities;
-import de.griefed.serverpackcreator.utilities.VersionLister;
+import de.griefed.serverpackcreator.utilities.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.system.ApplicationHome;
 
 import java.awt.*;
 import java.io.File;
@@ -82,14 +79,8 @@ public class Main {
     public static void main(String[] args) {
 
         JarUtilities jarUtilities = new JarUtilities();
-        ApplicationHome home = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
 
-        String jarPath = home.getSource().toString().replace("\\", "/");
-        String jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1);
-        String javaVersion = System.getProperty("java.version");
-        String osArch = System.getProperty("os.arch");
-        String osName = System.getProperty("os.name");
-        String osVersion = System.getProperty("os.version");
+        HashMap<String, String> systemInformation = jarUtilities.systemInformation(jarUtilities.getApplicationHomeForClass(Main.class));
 
         jarUtilities.copyFileFromJar(log4j2xml);
         jarUtilities.copyFileFromJar(properties);
@@ -99,7 +90,7 @@ public class Main {
             String prefix;
             String source;
 
-            if (jarName.endsWith(".exe")) {
+            if (systemInformation.get("jarName").endsWith(".exe")) {
                 prefix = "";
                 source = "de/griefed/resources/lang";
             } else {
@@ -107,7 +98,7 @@ public class Main {
                 source = "/de/griefed/resources/lang";
             }
 
-            jarUtilities.copyFolderFromJar(jarPath,source, "lang", prefix);
+            jarUtilities.copyFolderFromJar(systemInformation.get("jarPath"),source, "lang", prefix);
 
         } catch (IOException ex) {
             LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
@@ -142,7 +133,7 @@ public class Main {
 
         //Print system information to console and logs.
         LOG.debug("Gathering system information to include in log to make debugging easier.");
-        APPLICATIONPROPERTIES.setProperty("homeDir", jarPath.substring(0, jarPath.lastIndexOf("/")).replace("\\", "/"));
+        APPLICATIONPROPERTIES.setProperty("homeDir", systemInformation.get("jarPath").substring(0, systemInformation.get("jarPath").lastIndexOf("/")).replace("\\", "/"));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
@@ -155,12 +146,12 @@ public class Main {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), jarPath));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), jarName));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"), javaVersion));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osarchitecture"), osArch));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"), osName));
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), osVersion));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), systemInformation.get("jarPath")));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), systemInformation.get("jarName")));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"), systemInformation.get("javaVersion")));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osarchitecture"), systemInformation.get("osArch")));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"), systemInformation.get("osName")));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), systemInformation.get("osVersion")));
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
         DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
@@ -171,7 +162,7 @@ public class Main {
 
             DEFAULTFILES.checkDatabase();
 
-            if (osName.contains("windows") || osName.contains("Windows")) {
+            if (systemInformation.get("osName").contains("windows") || systemInformation.get("osName").contains("Windows")) {
 
                 Scanner reader = new Scanner(System.in);
 
@@ -202,11 +193,42 @@ public class Main {
 
         } else {
             // Prepare instances for dependency injection
-            VersionLister VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-            AddonsHandler ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-            CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-            ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES);
-            ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER);
+            ListUtilities LISTUTILITIES = new ListUtilities();
+            StringUtilities STRINGUTILITIES = new StringUtilities();
+            SystemUtilities SYSTEMUTILITIES = new SystemUtilities();
+
+            VersionLister VERSIONLISTER = new VersionLister(
+                    APPLICATIONPROPERTIES
+            );
+
+            BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(
+                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
+            );
+
+            ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(
+                    LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES
+            );
+
+            CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
+                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES
+            );
+
+            AddonsHandler ADDONSHANDLER = new AddonsHandler(
+                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES
+            );
+
+            ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
+                    LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
+            );
+
+            ConfigurationCreator CONFIGURATIONCREATOR = new ConfigurationCreator(
+                    LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, BOOLEANUTILITIES, APPLICATIONPROPERTIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
+            );
+
+            ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
+                    LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
+            );
+
             //noinspection unused
             FileWatcher FILEWATCHER = new FileWatcher(APPLICATIONPROPERTIES, DEFAULTFILES);
 
@@ -260,35 +282,37 @@ public class Main {
             } else if (Arrays.asList(args).contains("-cgen")) {
 
                 // Start generation of a new configuration file with user input.
-                CONFIGURATIONHANDLER.createConfigurationFile();
+                CONFIGURATIONCREATOR.createConfigurationFile();
 
                 runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
 
                 // Start ServerPackCreator in commandline mode.
             } else if (Arrays.asList(args).contains("-cli") || GraphicsEnvironment.isHeadless()) {
 
-                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
+                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES, CONFIGURATIONCREATOR);
 
                 // If the environment is headless, so no possibility for GUI, start in commandline-mode.
             } else if (GraphicsEnvironment.isHeadless()) {
 
-                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
+                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES, CONFIGURATIONCREATOR);
 
                 // If no mode is specified, and we have a graphical environment, start in GUI mode.
             } else {
 
-                SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER);
+                SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
+                        LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+                );
 
                 swingGuiInitializer.mainGUI();
             }
         }
     }
 
-    private static void preRunCheck(ConfigurationHandler CONFIGURATIONHANDLER) {
+    private static void preRunCheck(ConfigurationCreator CONFIGURATIONCREATOR) {
         // Start generation of a new configuration with user input if no configuration file is present.
         if (!new File("creator.conf").exists() && !new File("serverpackcreator.conf").exists()) {
 
-            CONFIGURATIONHANDLER.createConfigurationFile();
+            CONFIGURATIONCREATOR.createConfigurationFile();
         }
     }
 
@@ -303,9 +327,9 @@ public class Main {
         }
     }
 
-    private static void runHeadlessWithPreChecks(ConfigurationHandler CONFIGURATIONHANDLER, ServerPackHandler SERVERPACKHANDLER, ApplicationProperties APPLICATIONPROPERTIES) {
+    private static void runHeadlessWithPreChecks(ConfigurationHandler CONFIGURATIONHANDLER, ServerPackHandler SERVERPACKHANDLER, ApplicationProperties APPLICATIONPROPERTIES, ConfigurationCreator CONFIGURATIONCREATOR) {
         // Start generation of a new configuration with user input if no configuration file is present.
-        preRunCheck(CONFIGURATIONHANDLER);
+        preRunCheck(CONFIGURATIONCREATOR);
         runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
     }
 

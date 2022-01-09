@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,10 @@ public class AddonsHandler {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final BooleanUtilities BOOLEANUTILITIES;
+    private final ListUtilities LISTUTILITIES;
+    private final StringUtilities STRINGUTILITIES;
+    private final ConfigUtilities CONFIGUTILITIES;
 
     private List<String> listOfAddons;
     private List<String> listOfServerPackAddons;
@@ -65,9 +70,16 @@ public class AddonsHandler {
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for various different things.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedStringUtilities Instance of {@link StringUtilities}.
+     * @param injectedListUtilities Instance of {@link ListUtilities}.
+     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
      */
     @Autowired
-    public AddonsHandler(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+    public AddonsHandler(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties,
+                         BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities,
+                         ConfigUtilities injectedConfigUtilities) {
+
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
@@ -78,6 +90,30 @@ public class AddonsHandler {
             this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+        }
+
+        if (injectedBooleanUtilities == null) {
+            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        } else {
+            this.BOOLEANUTILITIES = injectedBooleanUtilities;
+        }
+
+        if (injectedListUtilities == null) {
+            this.LISTUTILITIES = new ListUtilities();
+        } else {
+            this.LISTUTILITIES = injectedListUtilities;
+        }
+
+        if (injectedStringUtilities == null) {
+            this.STRINGUTILITIES = new StringUtilities();
+        } else {
+            this.STRINGUTILITIES = injectedStringUtilities;
+        }
+
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+        } else {
+            this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
         initializeAddons();
@@ -215,9 +251,8 @@ public class AddonsHandler {
      * <strong>NOTE: All addons are run in the <code>work/temp/addon_name</code>-directory. Be aware of that when creating your addons!</strong>
      * @author Griefed
      * @param configurationModel The instance of {@link ConfigurationModel} with which a server pack was generated.
-     * @param configurationHandler An instance of {@link ConfigurationHandler} to access {@link ConfigurationHandler#getConfigurationAsList(ConfigurationModel)}
      */
-    void runServerPackAddons(ConfigurationModel configurationModel, ConfigurationHandler configurationHandler) {
+    void runServerPackAddons(ConfigurationModel configurationModel) {
 
         List<String> commandArguments = new ArrayList<>();
         List<String> addonsToExecute = getListOfServerPackAddons();
@@ -253,7 +288,7 @@ public class AddonsHandler {
                     commandArguments.add("-jar");
                     commandArguments.add(addon);
 
-                    commandArguments.addAll(configurationHandler.getConfigurationAsList(configurationModel));
+                    commandArguments.addAll(CONFIGUTILITIES.getConfigurationAsList(configurationModel));
 
                     commandArguments.add(serverPackCreatorBaseDirectory);
 

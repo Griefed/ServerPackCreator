@@ -29,10 +29,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -77,18 +74,61 @@ public class JarUtilities {
     }
 
     /**
+     * Retrieve the ApplicatiomHome for a given class.
+     * @author Griefed
+     * @param classToRetrieveHomeFor Class. The class to retrieve the {@link ApplicationHome} for.
+     * @return ApplicationHome. An instance of {@link ApplicationHome} for the given class.
+     */
+    public ApplicationHome getApplicationHomeForClass(Class<?> classToRetrieveHomeFor) {
+        return new ApplicationHome(classToRetrieveHomeFor);
+    }
+
+    /**
+     * Retrieve information about the environment for the given instance of {@link ApplicationHome}, stored in a {@link HashMap}.<br>
+     * Available key-value-pairs:<br>
+     * jarPath - The path to the JAR-file.<br>
+     * jarName - The name of the JAR-file.<br>
+     * javaVersion - The version of the Java installation used.<br>
+     * osArch - Architecture of the system.<br>
+     * osName - Name of the operating system.<br>
+     * osVersion - Version of the operating system.<br>
+     * @author Griefed
+     * @param applicationHome Instance of {@link ApplicationHome} from which to gather information about the JAR-file and system.
+     * @return HashMap String String. A hashmap containing key-value-pairs with information about the JAR-file and system.
+     */
+    public HashMap<String, String> systemInformation(ApplicationHome applicationHome) {
+
+        return new HashMap<String, String>() {
+            {
+                try {
+                    put("jarPath"    ,applicationHome.getSource().toString().replace("\\", "/"));
+                } catch (Exception ex) {
+                    put("jarPath"    ,applicationHome.getDir().toString().replace("\\", "/"));
+                }
+
+                try {
+                    put("jarName"    ,applicationHome.getSource().toString().replace("\\", "/").substring(applicationHome.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1));
+                } catch (Exception ex) {
+                    put("jarName"    ,applicationHome.getDir().toString().replace("\\", "/").substring(applicationHome.getDir().toString().replace("\\", "/").lastIndexOf("/") + 1));
+                }
+
+                put("javaVersion",System.getProperty("java.version"));
+                put("osArch"     ,System.getProperty("os.arch"));
+                put("osName"     ,System.getProperty("os.name"));
+                put("osVersion"  ,System.getProperty("os.version"));
+            }
+        };
+    }
+
+    /**
      * Retrieve the JAR-file for a given class.
      * @author Griefed
      * @param classToRetrieveJarFor The class to retrieve the JAR-file path for.
      * @return JarFile. Returns the JarFile for the given class.
      * @throws IOException Thrown if the JAR-file could not be determined or otherwise accessed.
      */
-    public JarFile retrieveJarFromClass(Class<?> classToRetrieveJarFor) throws IOException {
-
-        ApplicationHome applicationHome = new ApplicationHome(classToRetrieveJarFor);
-
-        return new JarFile(new File(applicationHome.getSource().toString().replace("\\","/")));
-
+    private JarFile retrieveJarFromClass(Class<?> classToRetrieveJarFor) throws IOException {
+        return new JarFile(new File(new ApplicationHome(classToRetrieveJarFor).getSource().toString().replace("\\","/")));
     }
 
     /**

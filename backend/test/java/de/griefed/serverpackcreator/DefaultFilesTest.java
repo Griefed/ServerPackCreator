@@ -43,7 +43,6 @@ class DefaultFilesTest {
         LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         LOCALIZATIONMANAGER.init();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.filesSetup();
     }
 
     @Test
@@ -68,26 +67,13 @@ class DefaultFilesTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForConfigTestOld() throws IOException {
-        File oldConfigFile = new File("creator.conf");
-        oldConfigFile.createNewFile();
-        Assertions.assertFalse(DEFAULTFILES.checkForConfig());
-        Assertions.assertTrue(new File("serverpackcreator.conf").exists());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
     void checkForConfigTest() throws IOException {
-        File configFile = new File("serverpackcreator.conf");
-        configFile.createNewFile();
+        APPLICATIONPROPERTIES.FILE_CONFIG_OLD.createNewFile();
         Assertions.assertFalse(DEFAULTFILES.checkForConfig());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void checkForConfigTestNew() {
-        File configFile = new File("./serverpackcreator.conf");
-        configFile.delete();
+        Assertions.assertTrue(APPLICATIONPROPERTIES.FILE_CONFIG.exists());
+        Assertions.assertFalse(DEFAULTFILES.checkForConfig());
+        FileUtils.deleteQuietly(APPLICATIONPROPERTIES.FILE_CONFIG);
+        FileUtils.deleteQuietly(APPLICATIONPROPERTIES.FILE_CONFIG_OLD);
         Assertions.assertTrue(DEFAULTFILES.checkForConfig());
     }
 
@@ -122,21 +108,6 @@ class DefaultFilesTest {
     }
 
     @Test
-    void filesSetupTest() {
-        DEFAULTFILES.filesSetup();
-        Assertions.assertTrue(new File("./server_files").isDirectory());
-        Assertions.assertTrue(new File("./work").isDirectory());
-        Assertions.assertTrue(new File("./work/temp").isDirectory());
-        Assertions.assertTrue(new File("./server-packs").isDirectory());
-        Assertions.assertTrue(new File("./server_files/server.properties").exists());
-        Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
-        Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
-        Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
-        Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
-        Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
-    }
-
-    @Test
     void downloadMinecraftManifestTest() throws IOException {
         //Files.createDirectories(Paths.get("./work"));
         FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT)));
@@ -167,4 +138,30 @@ class DefaultFilesTest {
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricInstallerManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER);
         Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER)).exists());
     }
+
+    @Test
+    void filesSetupTest() {
+        FileUtils.deleteQuietly(new File("./server_files"));
+        FileUtils.deleteQuietly(new File("./work"));
+        FileUtils.deleteQuietly(new File("./work/temp"));
+        FileUtils.deleteQuietly(new File("./server-packs"));
+        FileUtils.deleteQuietly(new File("./server_files/server.properties"));
+        FileUtils.deleteQuietly(new File("./server_files/server-icon.png"));
+        FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
+        FileUtils.deleteQuietly(new File("./work/minecraft-manifest.json"));
+        FileUtils.deleteQuietly(new File("./work/fabric-manifest.xml"));
+        FileUtils.deleteQuietly(new File("./work/forge-manifest.json"));
+        DEFAULTFILES.filesSetup();
+        Assertions.assertTrue(new File("./server_files").isDirectory());
+        Assertions.assertTrue(new File("./work").isDirectory());
+        Assertions.assertTrue(new File("./work/temp").isDirectory());
+        Assertions.assertTrue(new File("./server-packs").isDirectory());
+        Assertions.assertTrue(new File("./server_files/server.properties").exists());
+        Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
+        Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
+        Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
+        Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
+        Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
+    }
+
 }
