@@ -67,6 +67,7 @@ public class JarUtilitiesTest {
 
     @Test
     void copyFolderFromJarTest() throws IOException {
+        new File("testruns").mkdir();
         HashMap<String, String> system = JARUTILITIES.systemInformation(JARUTILITIES.getApplicationHomeForClass(JarUtilitiesTest.class));
         JARUTILITIES.copyFolderFromJar("main","/de/griefed/resources/lang", "testruns/langTest","");
         Assertions.assertTrue(new File("testruns/langTest").isDirectory());
