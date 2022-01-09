@@ -1,3 +1,65 @@
+## [3.0.0-alpha.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.13...3.0.0-alpha.14) (2022-01-09)
+
+
+### :scissors: Refactor
+
+* Be more specific with not found language key ([129877b](https://git.griefed.de/Griefed/ServerPackCreator/commit/129877bebe2691663cd7dc962b2bfd73f7dae796))
+* Create empty serverpackcreator.properties. Makes manual migrations by users more unlikely while at the same time reducing risk of users breaking SPC with misconfigurations ([98c9a70](https://git.griefed.de/Griefed/ServerPackCreator/commit/98c9a70f6cd7deed6a0705f8589cc964824d765b))
+* Move helper and utility methods to separate classes. Reorganize code. More and improved unit tests. Add a little info text to start scripts for Minecraft 1.17+ as well as print of Java version ([e41e97c](https://git.griefed.de/Griefed/ServerPackCreator/commit/e41e97c1e31dd05aba19b5b429491d013401020a))
+* Move script creation to separate methods and refactor write.write() to increase readability and maintainability. Also, move info regarding EULA agreement. ([65121a2](https://git.griefed.de/Griefed/ServerPackCreator/commit/65121a2a8e7adaac47c25e2b08498b7b6cbb61d7))
+* Rearrange some fields ([4592b70](https://git.griefed.de/Griefed/ServerPackCreator/commit/4592b7041a130204a8847e775cc077ab8c64c498))
+* rename applicationProperties field ([533c850](https://git.griefed.de/Griefed/ServerPackCreator/commit/533c850300e6dfa17fa6607bc2ae738e45a22b78))
+* Rename applicationProperties field ([781e1cd](https://git.griefed.de/Griefed/ServerPackCreator/commit/781e1cdedfc303f933bea618b72a404e258b5027))
+* Rework checkConfiguration to provide more ways of checking a given configuration. Require checks to run before passing to run(...). ([a3ecd11](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3ecd11c58cf044c58d1f39c0b62bc30a729e189))
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node from 17.0.5 to 17.0.7 in /frontend ([9d66fc3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9d66fc3c153118d8e6555b4093d58574b6729fa1))
+* **deps-dev:** bump eslint from 8.5.0 to 8.6.0 in /frontend ([9698f98](https://git.griefed.de/Griefed/ServerPackCreator/commit/9698f98650490b0126467cfadf0ee7320ccd180a))
+* **deps:** bump com.github.ben-manes.versions from 0.39.0 to 0.40.0 ([778e5e6](https://git.griefed.de/Griefed/ServerPackCreator/commit/778e5e6ff9a25c3af7853b771dda0b940cf3013b))
+* **deps:** bump com.github.ben-manes.versions from 0.40.0 to 0.41.0 ([855c6e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/855c6e0a44232119c99ad028135083d817c98698))
+* **deps:** bump core-js from 3.20.1 to 3.20.2 in /frontend ([f9c1068](https://git.griefed.de/Griefed/ServerPackCreator/commit/f9c10686b424e460fd1fefaa92e8230b637bb189))
+* **deps:** bump log4j-api from 2.17.0 to 2.17.1 ([f243a62](https://git.griefed.de/Griefed/ServerPackCreator/commit/f243a626a7f8b956703807a83d12696a84a4b898))
+* **deps:** bump log4j-core from 2.17.0 to 2.17.1 ([1e579d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/1e579d2c9a4b75327cb42f44c7e9b549edae614e))
+* **deps:** bump log4j-jul from 2.17.0 to 2.17.1 ([7c10e41](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c10e41c2085471c78849b08f1230089d170273b))
+* **deps:** bump log4j-slf4j-impl from 2.17.0 to 2.17.1 ([303e2da](https://git.griefed.de/Griefed/ServerPackCreator/commit/303e2dad816660947384df1f10ea69fbba27b7f5))
+* **deps:** bump log4j-web from 2.17.0 to 2.17.1 ([7a2ba8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/7a2ba8ad49e1fe16d7733b8189fb5034a1cb0fe0))
+* **deps:** bump tsparticles from 1.37.6 to 1.38.0 in /frontend ([d17900b](https://git.griefed.de/Griefed/ServerPackCreator/commit/d17900b81fb766bf6984c844e3ca3bd609194767))
+
+
+### 🧪 Tests
+
+* Fix some paths and configs so tests don't fail because of Layer 8 ([8270c82](https://git.griefed.de/Griefed/ServerPackCreator/commit/8270c82a6cb32ed7415b680e7f38bd81462bf2c7))
+
+
+### 🚀 Features
+
+* If given languagekey can not be found, use en_us from resources as fallback ([5802636](https://git.griefed.de/Griefed/ServerPackCreator/commit/5802636a612c4a49878f68b827e1115895062a95))
+
+
+### 🛠 Fixes
+
+* Copy lang-files if running as .exe ([c7c1415](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7c1415ecdc4e30e9743f378e70e25b3b7545977))
+* Deactivate CurseForge related code until custom implementation of CurseForgeAPI with CurseForge-provided API token is implemented and provided ([8c9bbff](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c9bbff55d50a660ed0b673152a2b61c84845aae))
+* Fix reverseOrderList not actually reliably reversing a list ([bbfdea5](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbfdea53b9d6668f35f2635a295f042a45beade5))
+* Fix scheduling to not run every second or minute ([9e87689](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e87689c0dad05569bc74f7aba1bb687602c8bd4))
+* Only copy file from JAR-file if it is not found on local filesystem. ([09e271e](https://git.griefed.de/Griefed/ServerPackCreator/commit/09e271e4a8c6e0d202fd4a1db175087c8c9f9966))
+
+
+### Other
+
+* Add moreoverlays- to list of fallback modlist ([e990661](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9906612dd5b583c505f0eb0d4b5b5cb7fd769b2))
+* Add moveoverlays- to list of fallback modslist ([64ead40](https://git.griefed.de/Griefed/ServerPackCreator/commit/64ead409e5ffb156da1d9b3ed8103f722483e3e2))
+* **deps:** update dependency core-js to v3.20.2 ([b4bd45e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b4bd45e7ef3b140f4941fb9e93f6fce8ac390394))
+* **deps:** update dependency eslint to v8.6.0 ([2e6ab21](https://git.griefed.de/Griefed/ServerPackCreator/commit/2e6ab21ee3ba1ff0649b4442e9edd3d8a1cb9b02))
+* **deps:** update dependency quasar to v2.4.3 ([c3ff9b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/c3ff9b2e55f4cedf6346d53a4395fcea633f2967))
+* **deps:** update jamesives/github-pages-deploy-action action to v4.2.0 ([20a6b82](https://git.griefed.de/Griefed/ServerPackCreator/commit/20a6b828e163b949dc29f534241bb3dc98ccb923))
+* **deps:** update plugin com.github.ben-manes.versions to v0.40.0 ([55d37b1](https://git.griefed.de/Griefed/ServerPackCreator/commit/55d37b1f93623c823c788a9ee970a00a4cd961a2))
+* **deps:** update plugin com.github.ben-manes.versions to v0.41.0 ([28989fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/28989fdbd7aa57b6b036d91082694b047d266e4e))
+* **deps:** update registry.gitlab.com/haynes/jacoco2cobertura docker tag to v1.0.8 ([8df16d5](https://git.griefed.de/Griefed/ServerPackCreator/commit/8df16d58cbd755361e7b1354841cbc5a4d43e3eb))
+* **deps:** update typescript-eslint monorepo to v5.9.0 ([7b705a4](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b705a4f8dab2c8055629078208b89ea4c264b46))
+
 ## [3.0.0-alpha.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.12...3.0.0-alpha.13) (2021-12-30)
 
 
