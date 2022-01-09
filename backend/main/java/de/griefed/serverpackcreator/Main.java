@@ -83,7 +83,10 @@ public class Main {
         HashMap<String, String> systemInformation = jarUtilities.systemInformation(jarUtilities.getApplicationHomeForClass(Main.class));
 
         jarUtilities.copyFileFromJar(log4j2xml);
-        jarUtilities.copyFileFromJar(properties);
+        try { properties.createNewFile(); } catch (IOException ex) {
+            LOG.error("Couldn't create empty serverpackcreator.properties.");
+        }
+
 
         try {
 
