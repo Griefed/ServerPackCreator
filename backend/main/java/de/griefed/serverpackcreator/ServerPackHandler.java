@@ -326,6 +326,9 @@ public class ServerPackHandler {
      */
     public void createStartScripts(String modLoader, String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
+        // TODO: Move writes to separate methods
+        // TODO: refactor each write line to writer.write() instead of using + + + ++ + + ++ + ++ + ++ + ++ + to infinity
+
         if (javaArguments.equals("empty")) {
             javaArguments = "";
         }
@@ -423,6 +426,8 @@ public class ServerPackHandler {
                             "ECHO Starting server...\n" +
                             "ECHO Minecraft version: %MINECRAFT%\n" +
                             "ECHO Forge version: %FORGE%\n" +
+                            "ECHO Java version:\n" +
+                            "%JAVA% --version\n" +
                             "ECHO Java args: %ARGS%\n" +
                             "\n" +
                             "%JAVA% \"%OTHERARGS%\" %ARGS% -jar forge.jar nogui\n" +
@@ -515,6 +520,8 @@ public class ServerPackHandler {
                             "echo \"Starting server...\";\n" +
                             "echo \"Minecraft version: $MINECRAFT\";\n" +
                             "echo \"Forge version: $FORGE\";\n" +
+                            "echo \"Java version:\"\n" +
+                            "$JAVA --version\n" +
                             "echo \"Java args: $ARGS\";\n" +
                             "\n" +
                             "$JAVA $OTHERARGS $ARGS -jar forge.jar nogui"
@@ -617,13 +624,15 @@ public class ServerPackHandler {
                             "ECHO Starting server...\n" +
                             "ECHO Minecraft version: %MINECRAFT%\n" +
                             "ECHO Forge version: %FORGE%\n" +
+                            "ECHO Java version:\n" +
+                            "%JAVA% --version\n" +
                             "ECHO Java args in user_jvm_args.txt: %ARGS%\n" +
                             "\n" +
                             "REM Forge requires a configured set of both JVM and program arguments.\n" +
                             "REM Add custom JVM arguments to the user_jvm_args.txt\n" +
                             "REM Add custom program arguments {such as nogui} to this file in the next line before the %* or\n" +
                             "REM  pass them to this script directly\n" +
-                            "ECHO If you receive the error message \"Error: Could not find or load main class @user_jvm_args.txt\" you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft %MINECRAFT% version to find out which Java-version is required in order to run this server.\n" +
+                            "ECHO If you receive the error message \"Error: Could not find or load main class @user_jvm_args.txt\" you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft version to find out which Java-version is required in order to run this server.\n" +
                             "\n" +
                             "%JAVA% \"%OTHERARGS%\" @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n" +
                             "\n" +
@@ -722,13 +731,15 @@ public class ServerPackHandler {
                             "echo \"Starting server...\";\n" +
                             "echo \"Minecraft version: $MINECRAFT\";\n" +
                             "echo \"Forge version: $FORGE\";\n" +
+                            "echo \"Java version:\"\n" +
+                            "$JAVA --version\n" +
                             "echo \"Java args in user_jvm_args.txt: $ARGS\";\n" +
                             "\n" +
                             "# Forge requires a configured set of both JVM and program arguments.\n" +
                             "# Add custom JVM arguments to the user_jvm_args.txt\n" +
                             "# Add custom program arguments {such as nogui} to this file in the next line before the \"$@\" or\n" +
                             "#  pass them to this script directly\n" +
-                            "echo \"If you receive the error message 'Error: Could not find or load main class @user_jvm_args.txt' you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft $MINECRAFT version to find out which Java-version is required in order to run this server.\"\n" +
+                            "echo \"If you receive the error message 'Error: Could not find or load main class @user_jvm_args.txt' you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft version to find out which Java-version is required in order to run this server.\"\n" +
                             "\n" +
                             "$JAVA $OTHERARGS @user_jvm_args.txt @libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/unix_args.txt nogui \"$@\""
                     );
@@ -848,6 +859,8 @@ public class ServerPackHandler {
                         "ECHO Starting server...\n" +
                         "ECHO Minecraft version: %MINECRAFT%\n" +
                         "ECHO Fabric version: %FABRIC%\n" +
+                        "ECHO Java version:\n" +
+                        "%JAVA% --version\n" +
                         "ECHO Java args: %ARGS%\n" +
                         "\n" +
                         "%JAVA% \"%OTHERARGS%\" %ARGS% -jar fabric-server-launch.jar nogui\n" +
@@ -934,6 +947,8 @@ public class ServerPackHandler {
                         "echo \"Starting server...\";\n" +
                         "echo \"Minecraft version: $MINECRAFT\";\n" +
                         "echo \"Fabric version: $FABRIC\";\n" +
+                        "echo \"Java version:\"\n" +
+                        "$JAVA --version\n" +
                         "echo \"Java args: $ARGS\";\n" +
                         "\n" +
                         "$JAVA $OTHERARGS $ARGS -jar fabric-server-launch.jar nogui"
@@ -966,6 +981,8 @@ public class ServerPackHandler {
      * @param destination String. The destination where the files should be copied to.
      */
     void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion, String destination) {
+
+        // TODO: Move copy segments to private methods to make this whole thing more readable
 
         String serverPath = String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
 
