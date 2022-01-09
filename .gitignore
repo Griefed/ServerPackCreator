@@ -182,3 +182,5 @@ backend/test/resources/forge_tests/server_pack.zip
 /serverpackcreator.db
 /server.properties
 /creator.conf
+/banner.txt
+/somefile.conf
