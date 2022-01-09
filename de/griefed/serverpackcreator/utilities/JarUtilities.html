@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../../de/griefed/serverpackcreator/utilities/FileWatcher.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../../de/griefed/serverpackcreator/utilities/ReticulatingSplines.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../index.html?de/griefed/serverpackcreator/utilities/JarUtilities.html" target="_top">Frames</a></li>
@@ -198,9 +198,28 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.util.jar.JarFile</code></td>
+<td class="colFirst"><code>org.springframework.boot.system.ApplicationHome</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</code>
+<div class="block">Retrieve the ApplicatiomHome for a given class.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>private java.util.jar.JarFile</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/JarUtilities.html#retrieveJarFromClass-java.lang.Class-">retrieveJarFromClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveJarFor)</code>
 <div class="block">Retrieve the JAR-file for a given class.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/JarUtilities.html#systemInformation-org.springframework.boot.system.ApplicationHome-">systemInformation</a></span>(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</code>
+<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>, stored in a <code>HashMap</code>.<br>
+ Available key-value-pairs:<br>
+ jarPath - The path to the JAR-file.<br>
+ jarName - The name of the JAR-file.<br>
+ javaVersion - The version of the Java installation used.<br>
+ osArch - Architecture of the system.<br>
+ osName - Name of the operating system.<br>
+ osVersion - Version of the operating system.<br></div>
 </td>
 </tr>
 </table>
@@ -277,14 +296,53 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
+<a name="getApplicationHomeForClass-java.lang.Class-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getApplicationHomeForClass</h4>
+<pre>public&nbsp;org.springframework.boot.system.ApplicationHome&nbsp;getApplicationHomeForClass(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</pre>
+<div class="block">Retrieve the ApplicatiomHome for a given class.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>classToRetrieveHomeFor</code> - Class. The class to retrieve the <code>ApplicationHome</code> for.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>ApplicationHome. An instance of <code>ApplicationHome</code> for the given class.</dd>
+</dl>
+</li>
+</ul>
+<a name="systemInformation-org.springframework.boot.system.ApplicationHome-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>systemInformation</h4>
+<pre>public&nbsp;java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;systemInformation(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</pre>
+<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>, stored in a <code>HashMap</code>.<br>
+ Available key-value-pairs:<br>
+ jarPath - The path to the JAR-file.<br>
+ jarName - The name of the JAR-file.<br>
+ javaVersion - The version of the Java installation used.<br>
+ osArch - Architecture of the system.<br>
+ osName - Name of the operating system.<br>
+ osVersion - Version of the operating system.<br></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>applicationHome</code> - Instance of <code>ApplicationHome</code> from which to gather information about the JAR-file and system.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>HashMap String String. A hashmap containing key-value-pairs with information about the JAR-file and system.</dd>
+</dl>
+</li>
+</ul>
 <a name="retrieveJarFromClass-java.lang.Class-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>retrieveJarFromClass</h4>
-<pre>public&nbsp;java.util.jar.JarFile&nbsp;retrieveJarFromClass(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveJarFor)
-                                           throws java.io.IOException</pre>
+<pre>private&nbsp;java.util.jar.JarFile&nbsp;retrieveJarFromClass(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveJarFor)
+                                            throws java.io.IOException</pre>
 <div class="block">Retrieve the JAR-file for a given class.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -402,7 +460,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../../de/griefed/serverpackcreator/utilities/FileWatcher.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../../de/griefed/serverpackcreator/utilities/ReticulatingSplines.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../index.html?de/griefed/serverpackcreator/utilities/JarUtilities.html" target="_top">Frames</a></li>

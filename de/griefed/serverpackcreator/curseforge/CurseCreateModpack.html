@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -146,23 +146,43 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#applicationProperties">applicationProperties</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#APPLICATIONPROPERTIES">APPLICATIONPROPERTIES</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#BOOLEANUTILITIES">BOOLEANUTILITIES</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#CONFIGUTILITIES">CONFIGUTILITIES</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#LISTUTILITIES">LISTUTILITIES</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#LOCALIZATIONMANAGER">LOCALIZATIONMANAGER</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#LOG">LOG</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private java.util.Random</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#randInt">randInt</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/utilities/ReticulatingSplines.html" title="class in de.griefed.serverpackcreator.utilities">ReticulatingSplines</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#reticulatingSplines">reticulatingSplines</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#STRINGUTILITIES">STRINGUTILITIES</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#VERSIONLISTER">VERSIONLISTER</a></span></code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -179,8 +199,13 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">CurseCreateModpack</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-                  <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">CurseCreateModpack</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+                  <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                  <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister,
+                  <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
+                  <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
+                  <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
+                  <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>
 <div class="block"><strong>Constructor</strong></div>
 </td>
 </tr>
@@ -208,19 +233,25 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>private boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#checkModpackForFabric-com.fasterxml.jackson.databind.JsonNode-">checkModpackForFabric</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;modpackJson)</code>
+<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#cleanupEnvironment-java.lang.String-">cleanupEnvironment</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
  clean environment when creating a new modpack from CurseForge.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#copyOverride-java.lang.String-">copyOverride</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Recursively copy all folders and files from the override directory to the parent directory, our modpack directory.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#curseForgeModpack-de.griefed.serverpackcreator.ConfigurationModel-java.lang.Integer-java.lang.Integer-">curseForgeModpack</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
                  java.lang.Integer&nbsp;projectID,
@@ -228,20 +259,20 @@ extends java.lang.Object</pre>
 <div class="block">Acquires the names of the CurseForge project and file.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#downloadMods-java.lang.String-de.griefed.serverpackcreator.ConfigurationModel-">downloadMods</a></span>(java.lang.String&nbsp;modpackDir,
             <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Downloads all mods specified in the modpack's manifest.json file.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>(package private) com.fasterxml.jackson.databind.ObjectMapper</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#getObjectMapper--">getObjectMapper</a></span>()</code>
 <div class="block">Getter for the object-mapper used for working with JSON-data.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#initializeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-de.griefed.serverpackcreator.ConfigurationModel-">initializeModpack</a></span>(java.lang.String&nbsp;modpackDir,
                  java.lang.Integer&nbsp;projectID,
@@ -251,37 +282,49 @@ extends java.lang.Object</pre>
  name and file display name.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#retrieveFileDiskName-int-int-">retrieveFileDiskName</a></span>(int&nbsp;newProjectID,
                     int&nbsp;newFileID)</code>
 <div class="block">Retrieve the file disk-name of a given CurseForge project.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#retrieveFileName-int-int-">retrieveFileName</a></span>(int&nbsp;projectID,
                 int&nbsp;fileID)</code>
 <div class="block">Get the display-name of the project's file.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#retrieveProjectName-int-">retrieveProjectName</a></span>(int&nbsp;newProjectID)</code>
 <div class="block">Retrieve the name of a given CurseForge project.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>(package private) java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#setModloaderCase-java.lang.String-">setModloaderCase</a></span>(java.lang.String&nbsp;modloader)</code>
 <div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#suggestCopyDirs-java.lang.String-">suggestCopyDirs</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#unzipArchive-java.lang.String-java.lang.String-">unzipArchive</a></span>(java.lang.String&nbsp;zipFile,
             java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Unzips the downloaded modpack ZIP-archive to the specified directory.</div>
+</td>
+</tr>
+<tr id="i14" class="altColor">
+<td class="colFirst"><code>private void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#updateConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">updateConfigurationModel</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<div class="block">Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack.</div>
 </td>
 </tr>
 </table>
@@ -324,6 +367,60 @@ extends java.lang.Object</pre>
 <pre>private final&nbsp;<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
 </li>
 </ul>
+<a name="APPLICATIONPROPERTIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>APPLICATIONPROPERTIES</h4>
+<pre>private final&nbsp;<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> APPLICATIONPROPERTIES</pre>
+</li>
+</ul>
+<a name="VERSIONLISTER">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>VERSIONLISTER</h4>
+<pre>private final&nbsp;<a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a> VERSIONLISTER</pre>
+</li>
+</ul>
+<a name="BOOLEANUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>BOOLEANUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a> BOOLEANUTILITIES</pre>
+</li>
+</ul>
+<a name="LISTUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>LISTUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a> LISTUTILITIES</pre>
+</li>
+</ul>
+<a name="STRINGUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>STRINGUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a> STRINGUTILITIES</pre>
+</li>
+</ul>
+<a name="CONFIGUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>CONFIGUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a> CONFIGUTILITIES</pre>
+</li>
+</ul>
 <a name="reticulatingSplines">
 <!--   -->
 </a>
@@ -336,19 +433,10 @@ extends java.lang.Object</pre>
 <a name="randInt">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>randInt</h4>
 <pre>private final&nbsp;java.util.Random randInt</pre>
-</li>
-</ul>
-<a name="applicationProperties">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>applicationProperties</h4>
-<pre>private&nbsp;<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> applicationProperties</pre>
 </li>
 </ul>
 </li>
@@ -359,7 +447,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">
+<a name="CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -367,7 +455,12 @@ extends java.lang.Object</pre>
 <h4>CurseCreateModpack</h4>
 <pre>@Autowired
 public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-                                     <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+                                     <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                                     <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister,
+                                     <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
+                                     <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
+                                     <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
+                                     <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</pre>
 <div class="block"><strong>Constructor</strong><p>
  Used for Dependency Injection.<p>
  Receives an instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
@@ -376,6 +469,11 @@ public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
 <dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various different things.</dd>
+<dd><code>injectedBooleanUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>BooleanUtilities</code></a>.</dd>
+<dd><code>injectedListUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ListUtilities</code></a>.</dd>
+<dd><code>injectedStringUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>StringUtilities</code></a>.</dd>
+<dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a>.</dd>
+<dd><code>injectedVersionLister</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator"><code>VersionLister</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -601,7 +699,7 @@ public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator
 <a name="cleanupEnvironment-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>cleanupEnvironment</h4>
 <pre>public&nbsp;boolean&nbsp;cleanupEnvironment(java.lang.String&nbsp;modpackDir)</pre>
@@ -612,6 +710,59 @@ public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator
 <dd><code>modpackDir</code> - String. The directory we want to delete.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns false if every file and folder was, recursively and successfully, deleted.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkModpackForFabric-com.fasterxml.jackson.databind.JsonNode-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkModpackForFabric</h4>
+<pre>private&nbsp;boolean&nbsp;checkModpackForFabric(com.fasterxml.jackson.databind.JsonNode&nbsp;modpackJson)</pre>
+<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
+ If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
+ If <code>modLoaders</code> in the manifest specifies Fabric, use that to set the modloader and its version.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackJson</code> - JSonNode. JsonNode containing all information about the CurseForge modpack.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns true if Jumploader is found.</dd>
+</dl>
+</li>
+</ul>
+<a name="suggestCopyDirs-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>suggestCopyDirs</h4>
+<pre>private&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;suggestCopyDirs(java.lang.String&nbsp;modpackDir)</pre>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
+ The list of directories to include in the server pack which is generated by this method excludes well know directories
+ which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on
+ <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackDir</code> - String. The directory for which to gather a list of directories to copy to the server pack.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List, String. Returns a list of directories inside the modpack, excluding well known client-side only
+ directories.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>updateConfigurationModel</h4>
+<pre>private&nbsp;void&nbsp;updateConfigurationModel(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration for a modpack from which
+                                                     to create a server pack.</dd>
 </dl>
 </li>
 </ul>

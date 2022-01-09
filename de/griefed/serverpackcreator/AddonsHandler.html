@@ -140,6 +140,14 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#APPLICATIONPROPERTIES">APPLICATIONPROPERTIES</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#BOOLEANUTILITIES">BOOLEANUTILITIES</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#CONFIGUTILITIES">CONFIGUTILITIES</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#listOfAddons">listOfAddons</a></span></code>&nbsp;</td>
 </tr>
@@ -148,16 +156,24 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#listOfServerPackAddons">listOfServerPackAddons</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LISTUTILITIES">LISTUTILITIES</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LOCALIZATIONMANAGER">LOCALIZATIONMANAGER</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LOG">LOG</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LOG_ADDONS">LOG_ADDONS</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#STRINGUTILITIES">STRINGUTILITIES</a></span></code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -174,8 +190,12 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#AddonsHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">AddonsHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-             <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#AddonsHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">AddonsHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+             <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+             <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
+             <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
+             <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
+             <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>
 <div class="block"><strong>Constructor</strong></div>
 </td>
 </tr>
@@ -215,8 +235,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#runServerPackAddons-de.griefed.serverpackcreator.ConfigurationModel-de.griefed.serverpackcreator.ConfigurationHandler-">runServerPackAddons</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                   <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;configurationHandler)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#runServerPackAddons-de.griefed.serverpackcreator.ConfigurationModel-">runServerPackAddons</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Runs every server pack addon with the passed configuration model, allowing for further customization and actions
  after a server pack has been generated.</div>
 </td>
@@ -291,6 +310,42 @@ extends java.lang.Object</pre>
 <pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> APPLICATIONPROPERTIES</pre>
 </li>
 </ul>
+<a name="BOOLEANUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>BOOLEANUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a> BOOLEANUTILITIES</pre>
+</li>
+</ul>
+<a name="LISTUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>LISTUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a> LISTUTILITIES</pre>
+</li>
+</ul>
+<a name="STRINGUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>STRINGUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a> STRINGUTILITIES</pre>
+</li>
+</ul>
+<a name="CONFIGUTILITIES">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>CONFIGUTILITIES</h4>
+<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a> CONFIGUTILITIES</pre>
+</li>
+</ul>
 <a name="listOfAddons">
 <!--   -->
 </a>
@@ -317,7 +372,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="AddonsHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">
+<a name="AddonsHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -325,7 +380,11 @@ extends java.lang.Object</pre>
 <h4>AddonsHandler</h4>
 <pre>@Autowired
 public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-                                <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+                                <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                                <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
+                                <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
+                                <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
+                                <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</pre>
 <div class="block"><strong>Constructor</strong><p>
  Used for Dependency Injection.<p>
  Receives an instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
@@ -334,6 +393,10 @@ public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/Lo
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
 <dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> required for various different things.</dd>
+<dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a>.</dd>
+<dd><code>injectedStringUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>StringUtilities</code></a>.</dd>
+<dd><code>injectedListUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ListUtilities</code></a>.</dd>
+<dd><code>injectedBooleanUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>BooleanUtilities</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -417,14 +480,13 @@ public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/Lo
 </dl>
 </li>
 </ul>
-<a name="runServerPackAddons-de.griefed.serverpackcreator.ConfigurationModel-de.griefed.serverpackcreator.ConfigurationHandler-">
+<a name="runServerPackAddons-de.griefed.serverpackcreator.ConfigurationModel-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>runServerPackAddons</h4>
-<pre>void&nbsp;runServerPackAddons(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                         <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;configurationHandler)</pre>
+<pre>void&nbsp;runServerPackAddons(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
 <div class="block">Runs every server pack addon with the passed configuration model, allowing for further customization and actions
  after a server pack has been generated. The base path in which ServerPackCreator itself resides in is passed as
  the last argument, making it easier for you to work with server pack files and the like.<br>
@@ -434,7 +496,6 @@ public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/Lo
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - The instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> with which a server pack was generated.</dd>
-<dd><code>configurationHandler</code> - An instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationHandler</code></a> to access <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getConfigurationAsList-de.griefed.serverpackcreator.ConfigurationModel-"><code>ConfigurationHandler.getConfigurationAsList(ConfigurationModel)</code></a></dd>
 </dl>
 </li>
 </ul>
