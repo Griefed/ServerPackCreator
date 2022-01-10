@@ -41,7 +41,7 @@ class DefaultFilesTest {
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
         LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.init();
+        LOCALIZATIONMANAGER.initialize();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
     }
 

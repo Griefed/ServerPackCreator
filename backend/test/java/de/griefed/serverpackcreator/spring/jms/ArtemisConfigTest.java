@@ -72,7 +72,7 @@ public class ArtemisConfigTest {
         this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);
 
         LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.init();
+        LOCALIZATIONMANAGER.initialize();
         DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
         DEFAULTFILES.checkDatabase();

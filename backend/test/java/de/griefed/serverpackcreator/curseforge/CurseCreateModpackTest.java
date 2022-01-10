@@ -63,7 +63,7 @@ class CurseCreateModpackTest {
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
         this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.init();
+        LOCALIZATIONMANAGER.initialize();
         LISTUTILITIES = new ListUtilities();
         STRINGUTILITIES = new StringUtilities();
         SYSTEMUTILITIES = new SystemUtilities();

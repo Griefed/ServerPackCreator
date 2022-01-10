@@ -113,24 +113,14 @@ public class Main {
 
         LocalizationManager LOCALIZATIONMANAGER;
         if (Arrays.asList(args).contains("-lang")) {
-            try {
-                // Init the LocalizationManager with the locale passed by the cli arguments.
 
-                LOCALIZATIONMANAGER = new LocalizationManager(programArgs.get(programArgs.indexOf("-lang") + 1));
+            // Init the LocalizationManager with the locale passed by the cli arguments.
+            LOCALIZATIONMANAGER = new LocalizationManager(programArgs.get(programArgs.indexOf("-lang") + 1));
 
-            } catch (IncorrectLanguageException ex) {
-
-                LOG.info(programArgs.get(programArgs.indexOf("-lang") + 1));
-                // We can not use localized string here, because the localization manager has not yet been initialized.
-                LOG.error("Incorrect language specified, falling back to English (United States)...", ex);
-
-                // Init the LocalizationManager with the default locale en_US.
-                LOCALIZATIONMANAGER = new LocalizationManager();
-            }
         } else {
 
-                // Check local serverpackcreator.properties file for locale setting.
-                LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+            // Check local serverpackcreator.properties file for locale setting.
+            LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
 
         }
 
