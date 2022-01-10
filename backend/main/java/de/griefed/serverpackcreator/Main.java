@@ -115,7 +115,7 @@ public class Main {
         if (Arrays.asList(args).contains("-lang")) {
 
             // Init the LocalizationManager with the locale passed by the cli arguments.
-            LOCALIZATIONMANAGER = new LocalizationManager(programArgs.get(programArgs.indexOf("-lang") + 1));
+            LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES, programArgs.get(programArgs.indexOf("-lang") + 1));
 
         } else {
 

@@ -32,15 +32,15 @@ public class LocalizationManagerTest {
         FileUtils.deleteQuietly(new File("lang"));
 
         LOG.info("newLocaleTest() en_us");
-        LocalizationManager localizationManager = new LocalizationManager("en_us");
+        LocalizationManager localizationManager = new LocalizationManager(new ApplicationProperties(),"en_us");
         Assertions.assertEquals("English (United States)",localizationManager.getLocalizedString("localeUnlocalizedName"));
 
         LOG.info("newLocaleTest() uk_ua");
-        localizationManager = new LocalizationManager("uk_ua");
+        localizationManager = new LocalizationManager(new ApplicationProperties(),"uk_ua");
         Assertions.assertEquals("Ukrainian (Ukraine)",localizationManager.getLocalizedString("localeUnlocalizedName"));
 
         LOG.info("newLocaleTest() de_de");
-        localizationManager = new LocalizationManager("de_de");
+        localizationManager = new LocalizationManager(new ApplicationProperties(),"de_de");
         Assertions.assertEquals("German (Germany)",localizationManager.getLocalizedString("localeUnlocalizedName"));
     }
 
@@ -80,19 +80,19 @@ public class LocalizationManagerTest {
         FileUtils.copyDirectory(new File("backend/test/resources/testresources/languages/langMissing"), new File("lang"));
 
         LOG.info("getLocalizedStringTest() en_us");
-        LocalizationManager localizationManager = new LocalizationManager("en_us");
+        LocalizationManager localizationManager = new LocalizationManager(new ApplicationProperties(),"en_us");
         Assertions.assertEquals("English (United States)",localizationManager.getLocalizedString("localeUnlocalizedName"));
 
         LOG.info("getLocalizedStringTest() uk_ua");
-        localizationManager = new LocalizationManager("uk_ua");
+        localizationManager = new LocalizationManager(new ApplicationProperties(),"uk_ua");
         Assertions.assertEquals("Ukrainian (Ukraine)",localizationManager.getLocalizedString("localeUnlocalizedName"));
 
         LOG.info("getLocalizedStringTest() de_de");
-        localizationManager = new LocalizationManager("de_de");
+        localizationManager = new LocalizationManager(new ApplicationProperties(),"de_de");
         Assertions.assertEquals("German (Germany)",localizationManager.getLocalizedString("localeUnlocalizedName"));
 
         LOG.info("getLocalizedStringTest() ab_cd");
-        localizationManager = new LocalizationManager("ab_cd");
+        localizationManager = new LocalizationManager(new ApplicationProperties(),"ab_cd");
         Assertions.assertEquals("English (United States)",localizationManager.getLocalizedString("localeUnlocalizedName"));
     }
 
@@ -101,7 +101,7 @@ public class LocalizationManagerTest {
         FileUtils.copyFile(new File("backend/test/resources/testresources/languages/langMissing/lang_ef_gh.properties"), new File("lang/lang_ef_gh.properties"));
 
         LOG.info("customLanguageTest() ef_gh");
-        LocalizationManager localizationManager = new LocalizationManager("ef_gh");
+        LocalizationManager localizationManager = new LocalizationManager(new ApplicationProperties(),"ef_gh");
         Assertions.assertEquals("I bims 1 Sprache",localizationManager.getLocalizedString("localeUnlocalizedName"));
     }
 

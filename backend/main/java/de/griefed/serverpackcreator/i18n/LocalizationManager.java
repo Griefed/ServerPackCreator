@@ -73,7 +73,7 @@ public class LocalizationManager {
      * to this constructor. If initialization with the provided {@link ApplicationProperties}-instance fails, the
      * LocalizationManager is initialized with the default locale <code>en_us</code>.
      * @author Griefed
-     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for various different things.
      */
     @Autowired
     public LocalizationManager(ApplicationProperties injectedApplicationProperties) {
@@ -92,20 +92,29 @@ public class LocalizationManager {
 
     /**
      * Constructor for our LocalizationManager with a given locale. If initialization with the provided locale fails, the
-     * LocalizationManager is initialized with the default locale <code>en_us</code>.
+     * LocalizationManager is initialized with the locale set in the instance of {@link ApplicationProperties}. If this
+     * also fails, the default locale <code>en_us</code> is used.
      * @author Griefed
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for various different things.
      * @param locale String. The locale to initialize with.
      */
-    public LocalizationManager(String locale) {
-        this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
+    public LocalizationManager(ApplicationProperties injectedApplicationProperties,String locale) {
+        if (injectedApplicationProperties == null) {
+            this.APPLICATIONPROPERTIES = new ApplicationProperties();
+        } else {
+            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+        }
         try {
 
             initialize(locale);
             writeLocaleToFile(locale);
 
         } catch (IncorrectLanguageException ex) {
-            initialize();
+            try {
+                initialize(APPLICATIONPROPERTIES);
+            } catch (IncorrectLanguageException e) {
+                initialize();
+            }
         }
     }
 
