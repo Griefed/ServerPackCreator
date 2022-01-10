@@ -206,7 +206,8 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LocalizationManager-java.lang.String-">LocalizationManager</a></span>(java.lang.String&nbsp;locale)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html#LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-java.lang.String-">LocalizationManager</a></span>(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                   java.lang.String&nbsp;locale)</code>
 <div class="block">Constructor for our LocalizationManager with a given locale.</div>
 </td>
 </tr>
@@ -403,21 +404,24 @@ public&nbsp;LocalizationManager(<a href="../../../../de/griefed/serverpackcreato
  LocalizationManager is initialized with the default locale <code>en_us</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various different things.</dd>
+<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> required for various different things.</dd>
 </dl>
 </li>
 </ul>
-<a name="LocalizationManager-java.lang.String-">
+<a name="LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>LocalizationManager</h4>
-<pre>public&nbsp;LocalizationManager(java.lang.String&nbsp;locale)</pre>
+<pre>public&nbsp;LocalizationManager(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                           java.lang.String&nbsp;locale)</pre>
 <div class="block">Constructor for our LocalizationManager with a given locale. If initialization with the provided locale fails, the
- LocalizationManager is initialized with the default locale <code>en_us</code>.</div>
+ LocalizationManager is initialized with the locale set in the instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>. If this
+ also fails, the default locale <code>en_us</code> is used.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> required for various different things.</dd>
 <dd><code>locale</code> - String. The locale to initialize with.</dd>
 </dl>
 </li>
