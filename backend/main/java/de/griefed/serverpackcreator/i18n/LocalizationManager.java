@@ -305,7 +305,15 @@ public class LocalizationManager {
 
         } finally {
 
-            text = new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            if (value != null) {
+
+                text = new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+
+            } else {
+
+                text = "i18n: No value found for key " + languageKey " , Locale: " + CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE) + "_" + CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY);
+
+            }
 
         }
 
