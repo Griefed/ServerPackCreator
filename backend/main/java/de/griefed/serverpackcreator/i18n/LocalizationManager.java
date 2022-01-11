@@ -311,7 +311,7 @@ public class LocalizationManager {
 
             } else {
 
-                text = "i18n: No value found for key " + languageKey " , Locale: " + CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE) + "_" + CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY);
+                text = "i18n: No value found for key " + languageKey + " , Locale: " + CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE) + "_" + CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY);
 
             }
 
