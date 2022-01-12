@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
+var methods = {"i0":10,"i1":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -73,13 +73,13 @@ var activeTableTab = "activeTableTab";
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
@@ -123,61 +123,6 @@ extends java.lang.Object</pre>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
-<!-- =========== FIELD SUMMARY =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.summary">
-<!--   -->
-</a>
-<h3>Field Summary</h3>
-<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
-<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colLast" scope="col">Field and Description</th>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#APPLICATIONPROPERTIES">APPLICATIONPROPERTIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#BOOLEANUTILITIES">BOOLEANUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#CONFIGUTILITIES">CONFIGUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#listOfAddons">listOfAddons</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#listOfServerPackAddons">listOfServerPackAddons</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LISTUTILITIES">LISTUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LOCALIZATIONMANAGER">LOCALIZATIONMANAGER</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LOG">LOG</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#LOG_ADDONS">LOG_ADDONS</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#STRINGUTILITIES">STRINGUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-</table>
-</li>
-</ul>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.summary">
@@ -226,32 +171,6 @@ extends java.lang.Object</pre>
 <div class="block">Getter for the list of addons which will be executed after the generation of a server pack has finished.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#initializeAddons--">initializeAddons</a></span>()</code>
-<div class="block">Calls <a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#setListOfAddons--"><code>setListOfAddons()</code></a> and <a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#setListOfServerPackAddons-java.util.List-"><code>setListOfServerPackAddons(List)</code></a> in order to generate and set our
- list of addons overall and a list of addons which will be run right after server pack-generation.</div>
-</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#runServerPackAddons-de.griefed.serverpackcreator.ConfigurationModel-">runServerPackAddons</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
-<div class="block">Runs every server pack addon with the passed configuration model, allowing for further customization and actions
- after a server pack has been generated.</div>
-</td>
-</tr>
-<tr id="i4" class="altColor">
-<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#setListOfAddons--">setListOfAddons</a></span>()</code>
-<div class="block">Setter for the list of installed addons.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#setListOfServerPackAddons-java.util.List-">setListOfServerPackAddons</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;listOfInstalledAddons)</code>
-<div class="block">Setter for the list of server pack addons.</div>
-</td>
-</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -268,104 +187,6 @@ extends java.lang.Object</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
-<!-- ============ FIELD DETAIL =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.detail">
-<!--   -->
-</a>
-<h3>Field Detail</h3>
-<a name="LOG">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOG</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
-</li>
-</ul>
-<a name="LOG_ADDONS">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOG_ADDONS</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG_ADDONS</pre>
-</li>
-</ul>
-<a name="LOCALIZATIONMANAGER">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOCALIZATIONMANAGER</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
-</li>
-</ul>
-<a name="APPLICATIONPROPERTIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>APPLICATIONPROPERTIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> APPLICATIONPROPERTIES</pre>
-</li>
-</ul>
-<a name="BOOLEANUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>BOOLEANUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a> BOOLEANUTILITIES</pre>
-</li>
-</ul>
-<a name="LISTUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LISTUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a> LISTUTILITIES</pre>
-</li>
-</ul>
-<a name="STRINGUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>STRINGUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a> STRINGUTILITIES</pre>
-</li>
-</ul>
-<a name="CONFIGUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>CONFIGUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a> CONFIGUTILITIES</pre>
-</li>
-</ul>
-<a name="listOfAddons">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>listOfAddons</h4>
-<pre>private&nbsp;java.util.List&lt;java.lang.String&gt; listOfAddons</pre>
-</li>
-</ul>
-<a name="listOfServerPackAddons">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>listOfServerPackAddons</h4>
-<pre>private&nbsp;java.util.List&lt;java.lang.String&gt; listOfServerPackAddons</pre>
-</li>
-</ul>
-</li>
-</ul>
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.detail">
@@ -408,17 +229,6 @@ public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/Lo
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="initializeAddons--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>initializeAddons</h4>
-<pre>void&nbsp;initializeAddons()</pre>
-<div class="block">Calls <a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#setListOfAddons--"><code>setListOfAddons()</code></a> and <a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#setListOfServerPackAddons-java.util.List-"><code>setListOfServerPackAddons(List)</code></a> in order to generate and set our
- list of addons overall and a list of addons which will be run right after server pack-generation.</div>
-</li>
-</ul>
 <a name="getListOfAddons--">
 <!--   -->
 </a>
@@ -433,24 +243,10 @@ public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/Lo
 </dl>
 </li>
 </ul>
-<a name="setListOfAddons--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setListOfAddons</h4>
-<pre>private&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;setListOfAddons()</pre>
-<div class="block">Setter for the list of installed addons. Creates a list of all JAR-files in the addon-directory.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String List. A list of all addons found when ServerPackCreator was started.</dd>
-</dl>
-</li>
-</ul>
 <a name="getListOfServerPackAddons--">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>getListOfServerPackAddons</h4>
 <pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getListOfServerPackAddons()</pre>
@@ -458,44 +254,6 @@ public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/Lo
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String List. The list of addons which will be executed after the generation of a server pack has finished.</dd>
-</dl>
-</li>
-</ul>
-<a name="setListOfServerPackAddons-java.util.List-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setListOfServerPackAddons</h4>
-<pre>private&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;setListOfServerPackAddons(java.util.List&lt;java.lang.String&gt;&nbsp;listOfInstalledAddons)</pre>
-<div class="block">Setter for the list of server pack addons. Server pack addons are executed right after a server pack was generated.
- This checks all JAR-files previously gathered in <a href="../../../de/griefed/serverpackcreator/AddonsHandler.html#setListOfAddons--"><code>setListOfAddons()</code></a> for the setting in their <code>addon.conf</code>
- and whether it has a valid configuration of <code>serverpackcreator.addon.type=serverpack</code>. If said configuration
- is found, the JAR-file is added to the list of server pack addons.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>listOfInstalledAddons</code> - Receives a list of all addons installed.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String List. A list of all addons of which the configuration states that they are for server packs.</dd>
-</dl>
-</li>
-</ul>
-<a name="runServerPackAddons-de.griefed.serverpackcreator.ConfigurationModel-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>runServerPackAddons</h4>
-<pre>void&nbsp;runServerPackAddons(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
-<div class="block">Runs every server pack addon with the passed configuration model, allowing for further customization and actions
- after a server pack has been generated. The base path in which ServerPackCreator itself resides in is passed as
- the last argument, making it easier for you to work with server pack files and the like.<br>
- For an example of a Server Pack Addon, see the example addon <a href="https://github.com/Griefed/ServerPackCreatorExampleAddon">ServerPackCreator-ServerPack-Addon-Example</a>
- <p>
- <strong>NOTE: All addons are run in the <code>work/temp/addon_name</code>-directory. Be aware of that when creating your addons!</strong></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - The instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> with which a server pack was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -552,13 +310,13 @@ public&nbsp;AddonsHandler(<a href="../../../de/griefed/serverpackcreator/i18n/Lo
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>

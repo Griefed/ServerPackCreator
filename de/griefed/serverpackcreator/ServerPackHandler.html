@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10};
+var methods = {"i0":10,"i1":10,"i2":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -73,13 +73,13 @@ var activeTableTab = "activeTableTab";
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
@@ -120,73 +120,6 @@ extends java.lang.Object</pre>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
-<!-- =========== FIELD SUMMARY =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.summary">
-<!--   -->
-</a>
-<h3>Field Summary</h3>
-<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
-<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colLast" scope="col">Field and Description</th>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/AddonsHandler.html" title="class in de.griefed.serverpackcreator">AddonsHandler</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#ADDONSHANDLER">ADDONSHANDLER</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#APPLICATIONPROPERTIES">APPLICATIONPROPERTIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#BOOLEANUTILITIES">BOOLEANUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#CONFIGURATIONHANDLER">CONFIGURATIONHANDLER</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#CONFIGUTILITIES">CONFIGUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#CURSECREATEMODPACK">CURSECREATEMODPACK</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#LISTUTILITIES">LISTUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#LOCALIZATIONMANAGER">LOCALIZATIONMANAGER</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#LOG">LOG</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#LOG_INSTALLER">LOG_INSTALLER</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#STRINGUTILITIES">STRINGUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#SYSTEMUTILITIES">SYSTEMUTILITIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#VERSIONLISTER">VERSIONLISTER</a></span></code>&nbsp;</td>
-</tr>
-</table>
-</li>
-</ul>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.summary">
@@ -229,50 +162,6 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#cleanupEnvironment-boolean-java.lang.String-">cleanupEnvironment</a></span>(boolean&nbsp;deleteZip,
-                  java.lang.String&nbsp;destination)</code>
-<div class="block">Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
- server pack is as clean as possible.</div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#cleanUpServerPack-java.io.File-java.io.File-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">cleanUpServerPack</a></span>(java.io.File&nbsp;fabricInstaller,
-                 java.io.File&nbsp;forgeInstaller,
-                 java.lang.String&nbsp;modLoader,
-                 java.lang.String&nbsp;minecraftVersion,
-                 java.lang.String&nbsp;modLoaderVersion,
-                 java.lang.String&nbsp;destination)</code>
-<div class="block">Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#copyFiles-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-">copyFiles</a></span>(java.lang.String&nbsp;modpackDir,
-         java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
-         java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
-         java.lang.String&nbsp;minecraftVersion,
-         java.lang.String&nbsp;destination)</code>
-<div class="block">Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
- server pack directory.</div>
-</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#copyIcon-java.lang.String-java.lang.String-">copyIcon</a></span>(java.lang.String&nbsp;destination,
-        java.lang.String&nbsp;pathToServerIcon)</code>
-<div class="block">Copies the server-icon.png into server_pack.</div>
-</td>
-</tr>
-<tr id="i4" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#copyProperties-java.lang.String-java.lang.String-">copyProperties</a></span>(java.lang.String&nbsp;destination,
-              java.lang.String&nbsp;pathToServerProperties)</code>
-<div class="block">Copies the server.properties into server_pack.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#createStartScripts-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">createStartScripts</a></span>(java.lang.String&nbsp;modLoader,
                   java.lang.String&nbsp;javaArguments,
@@ -282,153 +171,16 @@ extends java.lang.Object</pre>
 <div class="block">Create start-scripts for the generated server pack.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#downloadFabricJar-java.lang.String-">downloadFabricJar</a></span>(java.lang.String&nbsp;destination)</code>
-<div class="block">Downloads the release Fabric installer into the server pack.</div>
-</td>
-</tr>
-<tr id="i7" class="rowColor">
-<td class="colFirst"><code>(package private) boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#downloadForgeJar-java.lang.String-java.lang.String-java.lang.String-">downloadForgeJar</a></span>(java.lang.String&nbsp;minecraftVersion,
-                java.lang.String&nbsp;modLoaderVersion,
-                java.lang.String&nbsp;destination)</code>
-<div class="block">Downloads the modloader server installer for Forge, for the specified modloader version.</div>
-</td>
-</tr>
-<tr id="i8" class="altColor">
-<td class="colFirst"><code>(package private) java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#excludeClientMods-java.lang.String-java.util.List-java.lang.String-">excludeClientMods</a></span>(java.lang.String&nbsp;modsDir,
-                 java.util.List&lt;java.lang.String&gt;&nbsp;userSpecifiedClientMods,
-                 java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Generates a list of all mods to include in the server pack excluding clientside-only mods.</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
-<td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#excludeFileOrDirectory-java.lang.String-">excludeFileOrDirectory</a></span>(java.lang.String&nbsp;fileToCheckFor)</code>
-<div class="block">Check whether the given file is present in the list of directories to exclude from the server pack.</div>
-</td>
-</tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#fabricBatchScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">fabricBatchScript</a></span>(java.lang.String&nbsp;javaArguments,
-                 java.lang.String&nbsp;minecraftVersion,
-                 java.lang.String&nbsp;modloaderVersion,
-                 java.lang.String&nbsp;destination)</code>
-<div class="block">Create a fabric batch start script.</div>
-</td>
-</tr>
-<tr id="i11" class="rowColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#fabricShellScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">fabricShellScript</a></span>(java.lang.String&nbsp;javaArguments,
-                 java.lang.String&nbsp;minecraftVersion,
-                 java.lang.String&nbsp;modloaderVersion,
-                 java.lang.String&nbsp;destination)</code>
-<div class="block">Create a fabric shell start script</div>
-</td>
-</tr>
-<tr id="i12" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#forgeBatchScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">forgeBatchScript</a></span>(java.lang.String&nbsp;javaArguments,
-                java.lang.String&nbsp;minecraftVersion,
-                java.lang.String&nbsp;modloaderVersion,
-                java.lang.String&nbsp;destination)</code>
-<div class="block">Create a forge batch script for Minecraft 1.16 and older.</div>
-</td>
-</tr>
-<tr id="i13" class="rowColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#forgeBatchScriptNewMC-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">forgeBatchScriptNewMC</a></span>(java.lang.String&nbsp;javaArguments,
-                     java.lang.String&nbsp;minecraftVersion,
-                     java.lang.String&nbsp;modloaderVersion,
-                     java.lang.String&nbsp;destination)</code>
-<div class="block">Create a Forge batch script for Minecraft 1.17 and newer.</div>
-</td>
-</tr>
-<tr id="i14" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#forgeJvmArgsTxt-java.lang.String-java.lang.String-">forgeJvmArgsTxt</a></span>(java.lang.String&nbsp;javaArguments,
-               java.lang.String&nbsp;destination)</code>
-<div class="block">Create a Forge JVM args file used by Forge Minecraft 1.17 and newer.</div>
-</td>
-</tr>
-<tr id="i15" class="rowColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#forgeShellScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">forgeShellScript</a></span>(java.lang.String&nbsp;javaArguments,
-                java.lang.String&nbsp;minecraftVersion,
-                java.lang.String&nbsp;modloaderVersion,
-                java.lang.String&nbsp;destination)</code>
-<div class="block">Create a Forge shell script for Minecraft 1.16 and older.</div>
-</td>
-</tr>
-<tr id="i16" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#forgeShellScriptNewMC-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">forgeShellScriptNewMC</a></span>(java.lang.String&nbsp;javaArguments,
-                     java.lang.String&nbsp;minecraftVersion,
-                     java.lang.String&nbsp;modloaderVersion,
-                     java.lang.String&nbsp;destination)</code>
-<div class="block">Create a Forge shell start script for Minecraft 1.17 and newer.</div>
-</td>
-</tr>
-<tr id="i17" class="rowColor">
-<td class="colFirst"><code>private java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#getMinecraftServerJarUrl-java.lang.String-">getMinecraftServerJarUrl</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Retrieves the URL to the Minecraft server for the specified Minecraft version.</div>
-</td>
-</tr>
-<tr id="i18" class="altColor">
-<td class="colFirst"><code>private com.fasterxml.jackson.databind.ObjectMapper</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#getObjectMapper--">getObjectMapper</a></span>()</code>
-<div class="block">Getter for the object-mapper used for working with JSON-data.</div>
-</td>
-</tr>
-<tr id="i19" class="rowColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">installServer</a></span>(java.lang.String&nbsp;modLoader,
-             java.lang.String&nbsp;minecraftVersion,
-             java.lang.String&nbsp;modLoaderVersion,
-             java.lang.String&nbsp;javaPath,
-             java.lang.String&nbsp;destination)</code>
-<div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft version.</div>
-</td>
-</tr>
-<tr id="i20" class="altColor">
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-">run</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Create a server pack from a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.spring.models.ServerPack-">run</a></span>(<a href="../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</code>
 <div class="block">Create a server pack from a given instance of <a href="../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models"><code>ServerPack</code></a> via webUI.</div>
-</td>
-</tr>
-<tr id="i22" class="altColor">
-<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#scanAnnotations-java.io.File:A-">scanAnnotations</a></span>(java.io.File[]&nbsp;filesInModsDir)</code>
-<div class="block">Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
- If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not listed as a dependency
- for another mod, it is added and therefore later on excluded from the server pack.</div>
-</td>
-</tr>
-<tr id="i23" class="rowColor">
-<td class="colFirst"><code>private java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#scanTomls-java.io.File:A-">scanTomls</a></span>(java.io.File[]&nbsp;filesInModsDir)</code>
-<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.<br>
- If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br>
- If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER</code>, it is added.<br>
- Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
- If no sideness can be found for a given mod, it is added to prevent false positives.</div>
-</td>
-</tr>
-<tr id="i24" class="altColor">
-<td class="colFirst"><code>(package private) void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#zipBuilder-java.lang.String-boolean-java.lang.String-">zipBuilder</a></span>(java.lang.String&nbsp;minecraftVersion,
-          boolean&nbsp;includeServerInstallation,
-          java.lang.String&nbsp;destination)</code>
-<div class="block">Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.</div>
 </td>
 </tr>
 </table>
@@ -447,131 +199,6 @@ extends java.lang.Object</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
-<!-- ============ FIELD DETAIL =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.detail">
-<!--   -->
-</a>
-<h3>Field Detail</h3>
-<a name="LOG">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOG</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
-</li>
-</ul>
-<a name="LOG_INSTALLER">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOG_INSTALLER</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG_INSTALLER</pre>
-</li>
-</ul>
-<a name="LOCALIZATIONMANAGER">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOCALIZATIONMANAGER</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a> LOCALIZATIONMANAGER</pre>
-</li>
-</ul>
-<a name="CURSECREATEMODPACK">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>CURSECREATEMODPACK</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a> CURSECREATEMODPACK</pre>
-</li>
-</ul>
-<a name="ADDONSHANDLER">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>ADDONSHANDLER</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/AddonsHandler.html" title="class in de.griefed.serverpackcreator">AddonsHandler</a> ADDONSHANDLER</pre>
-</li>
-</ul>
-<a name="CONFIGURATIONHANDLER">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>CONFIGURATIONHANDLER</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a> CONFIGURATIONHANDLER</pre>
-</li>
-</ul>
-<a name="VERSIONLISTER">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>VERSIONLISTER</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a> VERSIONLISTER</pre>
-</li>
-</ul>
-<a name="APPLICATIONPROPERTIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>APPLICATIONPROPERTIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> APPLICATIONPROPERTIES</pre>
-</li>
-</ul>
-<a name="BOOLEANUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>BOOLEANUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a> BOOLEANUTILITIES</pre>
-</li>
-</ul>
-<a name="CONFIGUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>CONFIGUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a> CONFIGUTILITIES</pre>
-</li>
-</ul>
-<a name="LISTUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LISTUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a> LISTUTILITIES</pre>
-</li>
-</ul>
-<a name="STRINGUTILITIES">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>STRINGUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a> STRINGUTILITIES</pre>
-</li>
-</ul>
-<a name="SYSTEMUTILITIES">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>SYSTEMUTILITIES</h4>
-<pre>private final&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a> SYSTEMUTILITIES</pre>
-</li>
-</ul>
-</li>
-</ul>
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.detail">
@@ -624,20 +251,6 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/i18
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getObjectMapper--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getObjectMapper</h4>
-<pre>private&nbsp;com.fasterxml.jackson.databind.ObjectMapper&nbsp;getObjectMapper()</pre>
-<div class="block">Getter for the object-mapper used for working with JSON-data.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>ObjectMapper. Returns the object-mapper used for working with JSON-data.</dd>
-</dl>
-</li>
-</ul>
 <a name="run-de.griefed.serverpackcreator.spring.models.ServerPack-">
 <!--   -->
 </a>
@@ -673,27 +286,10 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/i18
 </dl>
 </li>
 </ul>
-<a name="cleanupEnvironment-boolean-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>cleanupEnvironment</h4>
-<pre>private&nbsp;void&nbsp;cleanupEnvironment(boolean&nbsp;deleteZip,
-                                java.lang.String&nbsp;destination)</pre>
-<div class="block">Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
- server pack is as clean as possible.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>deleteZip</code> - Boolean. Whether to delete the server pack ZIP-archive.</dd>
-<dd><code>destination</code> - String. The destination at which to clean up in.</dd>
-</dl>
-</li>
-</ul>
 <a name="createStartScripts-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>createStartScripts</h4>
 <pre>public&nbsp;void&nbsp;createStartScripts(java.lang.String&nbsp;modLoader,
@@ -709,398 +305,6 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/i18
 <dd><code>minecraftVersion</code> - String. The Minecraft version the modpack uses.</dd>
 <dd><code>modloaderVersion</code> - String. The modloader version the modpack uses.</dd>
 <dd><code>destination</code> - String. The destination where the scripts should be created in.</dd>
-</dl>
-</li>
-</ul>
-<a name="fabricShellScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>fabricShellScript</h4>
-<pre>private&nbsp;void&nbsp;fabricShellScript(java.lang.String&nbsp;javaArguments,
-                               java.lang.String&nbsp;minecraftVersion,
-                               java.lang.String&nbsp;modloaderVersion,
-                               java.lang.String&nbsp;destination)</pre>
-<div class="block">Create a fabric shell start script</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArguments</code> - String. Java arguments with which the server should be started</dd>
-<dd><code>minecraftVersion</code> - String. Minecraft version of this server pack.</dd>
-<dd><code>modloaderVersion</code> - String. Modloader version of this server pack.</dd>
-<dd><code>destination</code> - String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code></dd>
-</dl>
-</li>
-</ul>
-<a name="fabricBatchScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>fabricBatchScript</h4>
-<pre>private&nbsp;void&nbsp;fabricBatchScript(java.lang.String&nbsp;javaArguments,
-                               java.lang.String&nbsp;minecraftVersion,
-                               java.lang.String&nbsp;modloaderVersion,
-                               java.lang.String&nbsp;destination)</pre>
-<div class="block">Create a fabric batch start script.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArguments</code> - String. Java arguments wich which the server should be started.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version of this server pack.</dd>
-<dd><code>modloaderVersion</code> - String. The modloader version of this server pack.</dd>
-<dd><code>destination</code> - String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code></dd>
-</dl>
-</li>
-</ul>
-<a name="forgeJvmArgsTxt-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>forgeJvmArgsTxt</h4>
-<pre>private&nbsp;void&nbsp;forgeJvmArgsTxt(java.lang.String&nbsp;javaArguments,
-                             java.lang.String&nbsp;destination)</pre>
-<div class="block">Create a Forge JVM args file used by Forge Minecraft 1.17 and newer.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArguments</code> - String. Java arguments with which the server should be started.</dd>
-<dd><code>destination</code> - String. Where the file should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS)</code></dd>
-</dl>
-</li>
-</ul>
-<a name="forgeShellScriptNewMC-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>forgeShellScriptNewMC</h4>
-<pre>private&nbsp;void&nbsp;forgeShellScriptNewMC(java.lang.String&nbsp;javaArguments,
-                                   java.lang.String&nbsp;minecraftVersion,
-                                   java.lang.String&nbsp;modloaderVersion,
-                                   java.lang.String&nbsp;destination)</pre>
-<div class="block">Create a Forge shell start script for Minecraft 1.17 and newer.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArguments</code> - String. Java arguments with which the server should be started.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version of this server pack.</dd>
-<dd><code>modloaderVersion</code> - String. The modloader version of this server pack.</dd>
-<dd><code>destination</code> - String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code></dd>
-</dl>
-</li>
-</ul>
-<a name="forgeBatchScriptNewMC-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>forgeBatchScriptNewMC</h4>
-<pre>private&nbsp;void&nbsp;forgeBatchScriptNewMC(java.lang.String&nbsp;javaArguments,
-                                   java.lang.String&nbsp;minecraftVersion,
-                                   java.lang.String&nbsp;modloaderVersion,
-                                   java.lang.String&nbsp;destination)</pre>
-<div class="block">Create a Forge batch script for Minecraft 1.17 and newer.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArguments</code> - String. Java arguments with which the server should be started.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version of this server pack.</dd>
-<dd><code>modloaderVersion</code> - String. The modloader version of this server pack.</dd>
-<dd><code>destination</code> - String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_WINDOWS)</code></dd>
-</dl>
-</li>
-</ul>
-<a name="forgeShellScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>forgeShellScript</h4>
-<pre>private&nbsp;void&nbsp;forgeShellScript(java.lang.String&nbsp;javaArguments,
-                              java.lang.String&nbsp;minecraftVersion,
-                              java.lang.String&nbsp;modloaderVersion,
-                              java.lang.String&nbsp;destination)</pre>
-<div class="block">Create a Forge shell script for Minecraft 1.16 and older.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArguments</code> - String. The Java arguments with which to start the server.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version of this server pack.</dd>
-<dd><code>modloaderVersion</code> - String. The modloader version of this server pack.</dd>
-<dd><code>destination</code> - String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code></dd>
-</dl>
-</li>
-</ul>
-<a name="forgeBatchScript-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>forgeBatchScript</h4>
-<pre>private&nbsp;void&nbsp;forgeBatchScript(java.lang.String&nbsp;javaArguments,
-                              java.lang.String&nbsp;minecraftVersion,
-                              java.lang.String&nbsp;modloaderVersion,
-                              java.lang.String&nbsp;destination)</pre>
-<div class="block">Create a forge batch script for Minecraft 1.16 and older.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArguments</code> - String. The Java arguments with which to start the server.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version of this server pack.</dd>
-<dd><code>modloaderVersion</code> - String. The modloader version of this server pack.</dd>
-<dd><code>destination</code> - String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_WINDOWS)</code></dd>
-</dl>
-</li>
-</ul>
-<a name="copyFiles-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>copyFiles</h4>
-<pre>void&nbsp;copyFiles(java.lang.String&nbsp;modpackDir,
-               java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
-               java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
-               java.lang.String&nbsp;minecraftVersion,
-               java.lang.String&nbsp;destination)</pre>
-<div class="block">Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the
- server pack directory.
- If a <code>source/file;destination/file</code>-combination is provided, the specified source-file is copied to
- the specified destination-file.
- Calls <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#excludeClientMods-java.lang.String-java.util.List-java.lang.String-"><code>excludeClientMods(String, List, String)</code></a> to generate a list of all mods to copy to server pack, excluding
- clientside-only mods.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. Files and directories are copied into the server_pack directory inside the modpack directory.</dd>
-<dd><code>directoriesToCopy</code> - String List. All directories and files therein to copy to the server pack.</dd>
-<dd><code>clientMods</code> - String List. List of clientside-only mods to exclude from the server pack.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version the modpack uses.</dd>
-<dd><code>destination</code> - String. The destination where the files should be copied to.</dd>
-</dl>
-</li>
-</ul>
-<a name="excludeClientMods-java.lang.String-java.util.List-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>excludeClientMods</h4>
-<pre>java.util.List&lt;java.lang.String&gt;&nbsp;excludeClientMods(java.lang.String&nbsp;modsDir,
-                                                   java.util.List&lt;java.lang.String&gt;&nbsp;userSpecifiedClientMods,
-                                                   java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Generates a list of all mods to include in the server pack excluding clientside-only mods. Automatically detects
- clientside-only mods for Minecraft 1.13+, if the mods <code>mods.toml</code>-file is correctly set up.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modsDir</code> - String. The mods-directory of the modpack of which to generate a list of all it's contents.</dd>
-<dd><code>userSpecifiedClientMods</code> - List String. A list of all clientside-only mods.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version the modpack uses. Determines whether mods are scanned for sideness.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. A list of all mods to include in the server pack.</dd>
-</dl>
-</li>
-</ul>
-<a name="excludeFileOrDirectory-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>excludeFileOrDirectory</h4>
-<pre>private&nbsp;boolean&nbsp;excludeFileOrDirectory(java.lang.String&nbsp;fileToCheckFor)</pre>
-<div class="block">Check whether the given file is present in the list of directories to exclude from the server pack.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileToCheckFor</code> - String. The string to check for.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file is found in the list of directories to exclude, false if not.</dd>
-</dl>
-</li>
-</ul>
-<a name="copyIcon-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>copyIcon</h4>
-<pre>void&nbsp;copyIcon(java.lang.String&nbsp;destination,
-              java.lang.String&nbsp;pathToServerIcon)</pre>
-<div class="block">Copies the server-icon.png into server_pack.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>destination</code> - String. The destination where the icon should be copied to.</dd>
-<dd><code>pathToServerIcon</code> - String. The path to the custom server-icon.</dd>
-</dl>
-</li>
-</ul>
-<a name="copyProperties-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>copyProperties</h4>
-<pre>void&nbsp;copyProperties(java.lang.String&nbsp;destination,
-                    java.lang.String&nbsp;pathToServerProperties)</pre>
-<div class="block">Copies the server.properties into server_pack.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>destination</code> - String. The destination where the properties should be copied to.</dd>
-<dd><code>pathToServerProperties</code> - String. The path to the custom server.properties.</dd>
-</dl>
-</li>
-</ul>
-<a name="installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>installServer</h4>
-<pre>void&nbsp;installServer(java.lang.String&nbsp;modLoader,
-                   java.lang.String&nbsp;minecraftVersion,
-                   java.lang.String&nbsp;modLoaderVersion,
-                   java.lang.String&nbsp;javaPath,
-                   java.lang.String&nbsp;destination)</pre>
-<div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft version.
- Calls<p>
- <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#downloadFabricJar-java.lang.String-"><code>downloadFabricJar(String)</code></a> to download the Fabric installer into the server_pack directory.<p>
- <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#downloadForgeJar-java.lang.String-java.lang.String-java.lang.String-"><code>downloadForgeJar(String, String, String)</code></a> to download the Forge installer for the specified Forge version
- and Minecraft version.<p>
- <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#cleanUpServerPack-java.io.File-java.io.File-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>cleanUpServerPack(File, File, String, String, String, String)</code></a> to delete no longer needed files generated
- by the installation process of the modloader server software.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modLoader</code> - String. The modloader for which to install the server software. Either Forge or Fabric.</dd>
-<dd><code>minecraftVersion</code> - String. The Minecraft version for which to install the modloader and Minecraft server.</dd>
-<dd><code>modLoaderVersion</code> - String. The modloader version for which to install the modloader and Minecraft server.</dd>
-<dd><code>javaPath</code> - String. The path to the Java executable/binary which is needed to execute the Forge/Fabric installers.</dd>
-<dd><code>destination</code> - String. The destination where the modloader server should be installed into.</dd>
-</dl>
-</li>
-</ul>
-<a name="zipBuilder-java.lang.String-boolean-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>zipBuilder</h4>
-<pre>void&nbsp;zipBuilder(java.lang.String&nbsp;minecraftVersion,
-                boolean&nbsp;includeServerInstallation,
-                java.lang.String&nbsp;destination)</pre>
-<div class="block">Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.</dd>
-<dd><code>includeServerInstallation</code> - Boolean. Determines whether the Minecraft server JAR info should be printed.</dd>
-<dd><code>destination</code> - String. The destination where the ZIP-archive should be created in.</dd>
-</dl>
-</li>
-</ul>
-<a name="getMinecraftServerJarUrl-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getMinecraftServerJarUrl</h4>
-<pre>private&nbsp;java.lang.String&nbsp;getMinecraftServerJarUrl(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Retrieves the URL to the Minecraft server for the specified Minecraft version.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - String. The Minecraft version for which to retrieve the URL for the server-jar.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. The URL to the server-jar of the specified Minecraft version as a string.</dd>
-</dl>
-</li>
-</ul>
-<a name="downloadFabricJar-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>downloadFabricJar</h4>
-<pre>boolean&nbsp;downloadFabricJar(java.lang.String&nbsp;destination)</pre>
-<div class="block">Downloads the release Fabric installer into the server pack.<p></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>destination</code> - String. The destination where the Fabric JAR-file should be downloaded to.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the download was successfull.</dd>
-</dl>
-</li>
-</ul>
-<a name="downloadForgeJar-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>downloadForgeJar</h4>
-<pre>boolean&nbsp;downloadForgeJar(java.lang.String&nbsp;minecraftVersion,
-                         java.lang.String&nbsp;modLoaderVersion,
-                         java.lang.String&nbsp;destination)</pre>
-<div class="block">Downloads the modloader server installer for Forge, for the specified modloader version.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - String. The Minecraft version for which to download the modloader server installer.</dd>
-<dd><code>modLoaderVersion</code> - String. The Forge version for which to download the modloader server installer.</dd>
-<dd><code>destination</code> - String. The destination where the Forge-installer should be downloaded to.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the download was successful.</dd>
-</dl>
-</li>
-</ul>
-<a name="cleanUpServerPack-java.io.File-java.io.File-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>cleanUpServerPack</h4>
-<pre>void&nbsp;cleanUpServerPack(java.io.File&nbsp;fabricInstaller,
-                       java.io.File&nbsp;forgeInstaller,
-                       java.lang.String&nbsp;modLoader,
-                       java.lang.String&nbsp;minecraftVersion,
-                       java.lang.String&nbsp;modLoaderVersion,
-                       java.lang.String&nbsp;destination)</pre>
-<div class="block">Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fabricInstaller</code> - File. The Fabric installer file which is to be deleted.</dd>
-<dd><code>forgeInstaller</code> - File. The Forge installer file which is to be deleted.</dd>
-<dd><code>modLoader</code> - String. Whether Forge or Fabric files are to be deleted.</dd>
-<dd><code>minecraftVersion</code> - String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.</dd>
-<dd><code>modLoaderVersion</code> - String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.</dd>
-<dd><code>destination</code> - String. The destination where we should clean up in.</dd>
-</dl>
-</li>
-</ul>
-<a name="scanTomls-java.io.File:A-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>scanTomls</h4>
-<pre>private&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;scanTomls(java.io.File[]&nbsp;filesInModsDir)</pre>
-<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.<br>
- If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br>
- If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER</code>, it is added.<br>
- Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
- If no sideness can be found for a given mod, it is added to prevent false positives.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>filesInModsDir</code> - A list of in which to check the <code>mods.toml</code>-files.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. List of mods not to include in server pack based on mods.toml-configuration.</dd>
-</dl>
-</li>
-</ul>
-<a name="scanAnnotations-java.io.File:A-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>scanAnnotations</h4>
-<pre>private&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;scanAnnotations(java.io.File[]&nbsp;filesInModsDir)</pre>
-<div class="block">Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
- If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not listed as a dependency
- for another mod, it is added and therefore later on excluded from the server pack.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>filesInModsDir</code> - A list of in which to check the <code>mods.toml</code>-files.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. List of mods not to include in server pack based on fml-cache-annotation.json-content.</dd>
 </dl>
 </li>
 </ul>
@@ -1157,13 +361,13 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/i18
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>

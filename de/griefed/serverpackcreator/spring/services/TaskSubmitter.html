@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -73,13 +73,13 @@ var activeTableTab = "activeTableTab";
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
@@ -121,33 +121,6 @@ extends java.lang.Object</pre>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
-<!-- =========== FIELD SUMMARY =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.summary">
-<!--   -->
-</a>
-<h3>Field Summary</h3>
-<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
-<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colLast" scope="col">Field and Description</th>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/TaskSubmitter.html#APPLICATIONPROPERTIES">APPLICATIONPROPERTIES</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private org.springframework.jms.core.JmsTemplate</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/TaskSubmitter.html#jmsTemplate">jmsTemplate</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/TaskSubmitter.html#LOG">LOG</a></span></code>&nbsp;</td>
-</tr>
-</table>
-</li>
-</ul>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.summary">
@@ -192,18 +165,6 @@ extends java.lang.Object</pre>
 <div class="block">Submit a task for scanning a CurseForge project and file id combination.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/TaskSubmitter.html#submitGeneration-de.griefed.serverpackcreator.spring.models.Task-">submitGeneration</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">Task</a>&nbsp;task)</code>
-<div class="block">Convert and send a generation-task to our JMS.</div>
-</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/TaskSubmitter.html#submitScan-de.griefed.serverpackcreator.spring.models.Task-">submitScan</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">Task</a>&nbsp;task)</code>
-<div class="block">Convert and send a scan-task to our JMS.</div>
-</td>
-</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -220,41 +181,6 @@ extends java.lang.Object</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
-<!-- ============ FIELD DETAIL =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.detail">
-<!--   -->
-</a>
-<h3>Field Detail</h3>
-<a name="LOG">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOG</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
-</li>
-</ul>
-<a name="jmsTemplate">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>jmsTemplate</h4>
-<pre>private&nbsp;org.springframework.jms.core.JmsTemplate jmsTemplate</pre>
-</li>
-</ul>
-<a name="APPLICATIONPROPERTIES">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>APPLICATIONPROPERTIES</h4>
-<pre>private final&nbsp;<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a> APPLICATIONPROPERTIES</pre>
-</li>
-</ul>
-</li>
-</ul>
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.detail">
@@ -303,7 +229,7 @@ public&nbsp;TaskSubmitter(org.springframework.jms.core.JmsTemplate&nbsp;injected
 <a name="generateCurseProject-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>generateCurseProject</h4>
 <pre>public&nbsp;void&nbsp;generateCurseProject(java.lang.String&nbsp;projectIDAndFileID)</pre>
@@ -311,36 +237,6 @@ public&nbsp;TaskSubmitter(org.springframework.jms.core.JmsTemplate&nbsp;injected
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>projectIDAndFileID</code> - The CurseForge project and file id combination.</dd>
-</dl>
-</li>
-</ul>
-<a name="submitScan-de.griefed.serverpackcreator.spring.models.Task-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>submitScan</h4>
-<pre>private&nbsp;void&nbsp;submitScan(<a href="../../../../../de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">Task</a>&nbsp;task)</pre>
-<div class="block">Convert and send a scan-task to our JMS. Set the <code>type</code> to <code>scan</code> and the <code>unique id</code>
- to tasks unique id which contains the CurseForge project and file id combination.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>task</code> - The task to be submitted to the scan-queue.</dd>
-</dl>
-</li>
-</ul>
-<a name="submitGeneration-de.griefed.serverpackcreator.spring.models.Task-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>submitGeneration</h4>
-<pre>private&nbsp;void&nbsp;submitGeneration(<a href="../../../../../de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">Task</a>&nbsp;task)</pre>
-<div class="block">Convert and send a generation-task to our JMS. Set the <code>type</code> to <code>generation</code> and the <code>unique id</code>
- to tasks unique id which contains the CurseForge project and file id combination.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>task</code> - The task to be submitted to the generation-queue.</dd>
 </dl>
 </li>
 </ul>
@@ -397,13 +293,13 @@ public&nbsp;TaskSubmitter(org.springframework.jms.core.JmsTemplate&nbsp;injected
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>

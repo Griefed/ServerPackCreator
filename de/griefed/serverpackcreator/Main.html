@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":9,"i2":9,"i3":9};
+var methods = {"i0":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -73,13 +73,13 @@ var activeTableTab = "activeTableTab";
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
@@ -139,33 +139,6 @@ extends java.lang.Object</pre>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
-<!-- =========== FIELD SUMMARY =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.summary">
-<!--   -->
-</a>
-<h3>Field Summary</h3>
-<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
-<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colLast" scope="col">Field and Description</th>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private static org.apache.logging.log4j.Logger</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#LOG">LOG</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private static java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#log4j2xml">log4j2xml</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private static java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#properties">properties</a></span></code>&nbsp;</td>
-</tr>
-</table>
-</li>
-</ul>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.summary">
@@ -202,23 +175,6 @@ extends java.lang.Object</pre>
  is executed.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>private static void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#preRunCheck-de.griefed.serverpackcreator.utilities.ConfigurationCreator-">preRunCheck</a></span>(<a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationCreator.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationCreator</a>&nbsp;CONFIGURATIONCREATOR)</code>&nbsp;</td>
-</tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>private static void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#runHeadless-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-">runHeadless</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;CONFIGURATIONHANDLER,
-           <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;SERVERPACKHANDLER,
-           <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;APPLICATIONPROPERTIES)</code>&nbsp;</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>private static void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/Main.html#runHeadlessWithPreChecks-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.ConfigurationCreator-">runHeadlessWithPreChecks</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;CONFIGURATIONHANDLER,
-                        <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;SERVERPACKHANDLER,
-                        <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;APPLICATIONPROPERTIES,
-                        <a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationCreator.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationCreator</a>&nbsp;CONFIGURATIONCREATOR)</code>&nbsp;</td>
-</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -235,41 +191,6 @@ extends java.lang.Object</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
-<!-- ============ FIELD DETAIL =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.detail">
-<!--   -->
-</a>
-<h3>Field Detail</h3>
-<a name="LOG">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>LOG</h4>
-<pre>private static final&nbsp;org.apache.logging.log4j.Logger LOG</pre>
-</li>
-</ul>
-<a name="log4j2xml">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>log4j2xml</h4>
-<pre>private static final&nbsp;java.io.File log4j2xml</pre>
-</li>
-</ul>
-<a name="properties">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>properties</h4>
-<pre>private static final&nbsp;java.io.File properties</pre>
-</li>
-</ul>
-</li>
-</ul>
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.detail">
@@ -296,7 +217,7 @@ extends java.lang.Object</pre>
 <a name="main-java.lang.String:A-">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>main</h4>
 <pre>public static&nbsp;void&nbsp;main(java.lang.String[]&nbsp;args)</pre>
@@ -308,38 +229,6 @@ extends java.lang.Object</pre>
 <dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
  will enter and which locale is used.</dd>
 </dl>
-</li>
-</ul>
-<a name="preRunCheck-de.griefed.serverpackcreator.utilities.ConfigurationCreator-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>preRunCheck</h4>
-<pre>private static&nbsp;void&nbsp;preRunCheck(<a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationCreator.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationCreator</a>&nbsp;CONFIGURATIONCREATOR)</pre>
-</li>
-</ul>
-<a name="runHeadless-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>runHeadless</h4>
-<pre>private static&nbsp;void&nbsp;runHeadless(<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;CONFIGURATIONHANDLER,
-                                <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;SERVERPACKHANDLER,
-                                <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;APPLICATIONPROPERTIES)</pre>
-</li>
-</ul>
-<a name="runHeadlessWithPreChecks-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.ConfigurationCreator-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>runHeadlessWithPreChecks</h4>
-<pre>private static&nbsp;void&nbsp;runHeadlessWithPreChecks(<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;CONFIGURATIONHANDLER,
-                                             <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;SERVERPACKHANDLER,
-                                             <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;APPLICATIONPROPERTIES,
-                                             <a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationCreator.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationCreator</a>&nbsp;CONFIGURATIONCREATOR)</pre>
 </li>
 </ul>
 </li>
@@ -395,13 +284,13 @@ extends java.lang.Object</pre>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>

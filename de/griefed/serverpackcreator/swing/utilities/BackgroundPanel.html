@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -208,32 +208,8 @@ extends javax.swing.JPanel</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#ACTUAL">ACTUAL</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>private float</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#alignmentX">alignmentX</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private float</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#alignmentY">alignmentY</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.awt.Image</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#image">image</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#isTransparentAdd">isTransparentAdd</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private java.awt.Paint</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#painter">painter</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#SCALED">SCALED</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>private int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#style">style</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static int</code></td>
@@ -331,72 +307,48 @@ extends javax.swing.JPanel</pre>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#drawActual-java.awt.Graphics-">drawActual</a></span>(java.awt.Graphics&nbsp;g)</code>
-<div class="block">Custom painting code for drawing the ACTUAL image as the background.</div>
-</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#drawScaled-java.awt.Graphics-">drawScaled</a></span>(java.awt.Graphics&nbsp;g)</code>
-<div class="block">Custom painting code for drawing a SCALED image as the background.</div>
-</td>
-</tr>
-<tr id="i4" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#drawTiled-java.awt.Graphics-">drawTiled</a></span>(java.awt.Graphics&nbsp;g)</code>
-<div class="block">Custom painting code for drawing TILED images as the background.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.awt.Dimension</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#getPreferredSize--">getPreferredSize</a></span>()</code>
 <div class="block">Override to provide a preferred size equal to the image size.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
-<td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#makeComponentTransparent-javax.swing.JComponent-">makeComponentTransparent</a></span>(javax.swing.JComponent&nbsp;component)</code>
-<div class="block">Try to make the component transparent.</div>
-</td>
-</tr>
-<tr id="i7" class="rowColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#paintComponent-java.awt.Graphics-">paintComponent</a></span>(java.awt.Graphics&nbsp;g)</code>
 <div class="block">Add custom painting.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#setImage-java.awt.Image-">setImage</a></span>(java.awt.Image&nbsp;image)</code>
 <div class="block">Setter for the image used as the background.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#setImageAlignmentX-float-">setImageAlignmentX</a></span>(float&nbsp;alignmentX)</code>
 <div class="block">Setter for the horizontal alignment of the image when using ACTUAL style.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#setImageAlignmentY-float-">setImageAlignmentY</a></span>(float&nbsp;alignmentY)</code>
 <div class="block">Setter for the horizontal alignment of the image when using ACTUAL style.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#setPaint-java.awt.Paint-">setPaint</a></span>(java.awt.Paint&nbsp;painter)</code>
 <div class="block">Setter for the Paint object used to paint the background.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#setStyle-int-">setStyle</a></span>(int&nbsp;style)</code>
 <div class="block">Setter the style used to paint the background image.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#setTransparentAdd-boolean-">setTransparentAdd</a></span>(boolean&nbsp;isTransparentAdd)</code>
 <div class="block">Controls whether components added to this panel should automatically
@@ -482,7 +434,7 @@ extends javax.swing.JPanel</pre>
 <a name="ACTUAL">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>ACTUAL</h4>
 <pre>public static final&nbsp;int ACTUAL</pre>
@@ -490,60 +442,6 @@ extends javax.swing.JPanel</pre>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../../constant-values.html#de.griefed.serverpackcreator.swing.utilities.BackgroundPanel.ACTUAL">Constant Field Values</a></dd>
 </dl>
-</li>
-</ul>
-<a name="painter">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>painter</h4>
-<pre>private&nbsp;java.awt.Paint painter</pre>
-</li>
-</ul>
-<a name="image">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>image</h4>
-<pre>private&nbsp;java.awt.Image image</pre>
-</li>
-</ul>
-<a name="style">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>style</h4>
-<pre>private&nbsp;int style</pre>
-</li>
-</ul>
-<a name="alignmentX">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>alignmentX</h4>
-<pre>private&nbsp;float alignmentX</pre>
-</li>
-</ul>
-<a name="alignmentY">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>alignmentY</h4>
-<pre>private&nbsp;float alignmentY</pre>
-</li>
-</ul>
-<a name="isTransparentAdd">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>isTransparentAdd</h4>
-<pre>private&nbsp;boolean isTransparentAdd</pre>
 </li>
 </ul>
 </li>
@@ -762,27 +660,10 @@ extends javax.swing.JPanel</pre>
 </dl>
 </li>
 </ul>
-<a name="makeComponentTransparent-javax.swing.JComponent-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>makeComponentTransparent</h4>
-<pre>private&nbsp;void&nbsp;makeComponentTransparent(javax.swing.JComponent&nbsp;component)</pre>
-<div class="block">Try to make the component transparent.
- For components that use renderers, like JTable, you will also need to
- change the renderer to be transparent. An easy way to do this it to
- set the background of the table to a Color using an alpha value of 0.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>component</code> - The component to make transparent.</dd>
-</dl>
-</li>
-</ul>
 <a name="paintComponent-java.awt.Graphics-">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>paintComponent</h4>
 <pre>protected&nbsp;void&nbsp;paintComponent(java.awt.Graphics&nbsp;g)</pre>
@@ -790,50 +671,6 @@ extends javax.swing.JPanel</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>paintComponent</code>&nbsp;in class&nbsp;<code>javax.swing.JComponent</code></dd>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>g</code> - Received from parent.</dd>
-</dl>
-</li>
-</ul>
-<a name="drawScaled-java.awt.Graphics-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>drawScaled</h4>
-<pre>private&nbsp;void&nbsp;drawScaled(java.awt.Graphics&nbsp;g)</pre>
-<div class="block">Custom painting code for drawing a SCALED image as the background.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>g</code> - Received from parent.</dd>
-</dl>
-</li>
-</ul>
-<a name="drawTiled-java.awt.Graphics-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>drawTiled</h4>
-<pre>private&nbsp;void&nbsp;drawTiled(java.awt.Graphics&nbsp;g)</pre>
-<div class="block">Custom painting code for drawing TILED images as the background.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>g</code> - Received from parent.</dd>
-</dl>
-</li>
-</ul>
-<a name="drawActual-java.awt.Graphics-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>drawActual</h4>
-<pre>private&nbsp;void&nbsp;drawActual(java.awt.Graphics&nbsp;g)</pre>
-<div class="block">Custom painting code for drawing the ACTUAL image as the background.
- The image is positioned in the panel based on the horizontal and
- vertical alignments specified.</div>
-<dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>g</code> - Received from parent.</dd>
 </dl>
