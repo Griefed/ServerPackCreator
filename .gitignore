@@ -185,3 +185,4 @@ backend/test/resources/forge_tests/server_pack.zip
 /banner.txt
 /somefile.conf
 /lang
+backend/main/resources/VERSION.txt

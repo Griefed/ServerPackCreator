@@ -69,7 +69,7 @@ public class JarUtilitiesTest {
     void copyFolderFromJarTest() throws IOException {
         new File("testruns").mkdir();
         HashMap<String, String> system = JARUTILITIES.systemInformation(JARUTILITIES.getApplicationHomeForClass(JarUtilitiesTest.class));
-        JARUTILITIES.copyFolderFromJar("main","/de/griefed/resources/lang", "testruns/langTest","");
+        JARUTILITIES.copyFolderFromJar("main","/de/griefed/resources/lang", "testruns/langTest","", ".properties");
         Assertions.assertTrue(new File("testruns/langTest").isDirectory());
         Assertions.assertTrue(new File("testruns/langTest/lang_de_de.properties").exists());
         Assertions.assertTrue(new File("testruns/langTest/lang_en_us.properties").exists());

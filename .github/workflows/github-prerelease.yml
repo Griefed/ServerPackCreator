@@ -10,7 +10,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      # GET LATEST CODE
+      # GET THE LATEST CODE
       - name: Checkout latest code
         uses: actions/checkout@master
         with:
@@ -54,8 +54,8 @@ jobs:
         run: |
           NEW_VERSION=$(echo "${{steps.tag.outputs.tag}}")
           echo "New version: ${NEW_VERSION}"
-          echo "Github username: ${GITHUB_ACTOR}"
           ./gradlew about
+          echo ${NEW_VERSION} > backend/main/resources/VERSION.txt
           ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
       - name: List files
         run: ls -ahl build/libs

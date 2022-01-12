@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
-import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
 import org.apache.logging.log4j.LogManager;
@@ -87,21 +86,17 @@ public class Main {
             LOG.error("Couldn't create empty serverpackcreator.properties.");
         }
 
-
         try {
 
-            String prefix;
-            String source;
+            String prefix = "BOOT-INF/classes";
+            String langSource = "/de/griefed/resources/lang";
 
             if (systemInformation.get("jarName").endsWith(".exe")) {
                 prefix = "";
-                source = "de/griefed/resources/lang";
-            } else {
-                prefix = "BOOT-INF/classes";
-                source = "/de/griefed/resources/lang";
+                langSource = "de/griefed/resources/lang";
             }
 
-            jarUtilities.copyFolderFromJar(systemInformation.get("jarPath"),source, "lang", prefix);
+            jarUtilities.copyFolderFromJar(systemInformation.get("jarPath"),langSource, "lang", prefix, ".properties");
 
         } catch (IOException ex) {
             LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
@@ -139,6 +134,7 @@ public class Main {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
+        LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.getServerPackCreatorVersion());
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), systemInformation.get("jarPath")));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), systemInformation.get("jarName")));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"), systemInformation.get("javaVersion")));

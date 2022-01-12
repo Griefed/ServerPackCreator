@@ -19,20 +19,25 @@
  */
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.utilities.JarUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.zip.ZipInputStream;
 
 /**
  * Our properties-class. Extends {@link java.util.Properties}. Sets up default properties loaded from the local serverpackcreator.properties
  * and allows reloading of said properties if the file has changed.
  * @author Griefed
  */
+@SuppressWarnings("UnusedAssignment")
 @Component
 public class ApplicationProperties extends Properties {
 
@@ -128,6 +133,13 @@ public class ApplicationProperties extends Properties {
      * Default is false.
      */
     private boolean saveLoadedConfiguration = false;
+
+    /**
+     * The version of ServerPackCreator.<br>
+     * If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
+     * If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.
+     */
+    private String serverPackCreatorVersion = "dev";
 
     /**
      * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
@@ -244,6 +256,34 @@ public class ApplicationProperties extends Properties {
         this.scheduleDatabaseCleanup = getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", "0 0 24 * *");
 
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
+
+        String prefix = "/BOOT-INF/classes";
+
+        JarUtilities jarUtilities = new JarUtilities();
+
+        if (jarUtilities.systemInformation(jarUtilities.getApplicationHomeForClass(ApplicationProperties.class)).get("jarName").endsWith(".exe")) {
+            prefix = "";
+        }
+
+        String version = "dev";
+
+        try {
+
+            version = StreamUtils.copyToString(Main.class.getResourceAsStream(prefix + "/VERSION.txt"), StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+
+            version = "dev";
+
+        } finally {
+
+            if (version.equals("")) {
+                version = "dev";
+            }
+
+            this.serverPackCreatorVersion = version;
+
+        }
     }
 
     /**
@@ -346,6 +386,10 @@ public class ApplicationProperties extends Properties {
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
     }
 
+    private void load() {
+
+    }
+
     /**
      * Getter for the directory in which the server packs are stored/generated in.
      * @author Griefed
@@ -418,5 +462,16 @@ public class ApplicationProperties extends Properties {
      */
     public int getQueueMaxDiskUsage() {
         return queueMaxDiskUsage;
+    }
+
+    /**
+     * Getter for the version of ServerPackCreator.<br>
+     * If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
+     * If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.
+     * @author Griefed
+     * @return String. Returns the version of ServerPackCreator.
+     */
+    public String getServerPackCreatorVersion() {
+        return serverPackCreatorVersion;
     }
 }
