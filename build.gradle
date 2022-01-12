@@ -233,7 +233,6 @@ tasks.withType(Javadoc) {
 }
 
 javadoc {
-    options.memberLevel = JavadocMemberLevel.PRIVATE
     classpath = sourceSets.main.runtimeClasspath
 }
 
