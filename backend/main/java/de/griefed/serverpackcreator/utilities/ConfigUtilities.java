@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -415,9 +415,8 @@ public class ConfigUtilities {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"), includeZip));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"), javaArgs));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.serverpacksuffix"), serverPackSuffix));
-        // TODO: Replace with lang keys
-        LOG.info("Path to custom server-icon:       " + serverIconPath);
-        LOG.info("Path to custom server.properties: " + serverPropertiesPath);
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.servericon"),serverIconPath));
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.serverproperties"),serverPropertiesPath));
     }
 
 }

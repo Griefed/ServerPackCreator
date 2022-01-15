@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1283,22 +1283,17 @@ public class TabCreateServerPack extends JComponent {
             if (encounteredErrors.size() > 0) {
 
                 StringBuilder errors = new StringBuilder();
-                //noinspection UnusedAssignment
-                int count = 0;
 
                 for (int i = 0; i < encounteredErrors.size(); i++) {
 
-                    count = i + 1;
-                    // TODO: Replace with lang key
-                    errors.append(count).append(": ").append(encounteredErrors.get(i)).append("\n");
+                    errors.append(i + 1).append(": ").append(encounteredErrors.get(i)).append("\n");
 
                 }
 
-                // TODO: Replace with lang key
                 JOptionPane.showMessageDialog(
                         FRAME_SERVERPACKCREATOR,
                         errors,
-                        "Encountered " + encounteredErrors.size() + " error(s).",
+                        String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.errors.encountered"),encounteredErrors.size()),
                         JOptionPane.ERROR_MESSAGE,
                         UIManager.getIcon("OptionPane.errorIcon")
                         );
@@ -1472,8 +1467,7 @@ public class TabCreateServerPack extends JComponent {
 
             } catch (NullPointerException ex) {
 
-                // TODO: Replace with lang key
-                LOG.error("Error parsing modloader-version from configfile: " + configFile + ". Using latest Forge version.");
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.errors.modloader.version"), configFile));
                 updateModloaderGuiComponents(false, true, "Forge");
 
                 changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());

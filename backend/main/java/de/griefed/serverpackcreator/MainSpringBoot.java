@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

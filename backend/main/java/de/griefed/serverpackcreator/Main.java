@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,11 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.versionchecker.github.GitHubChecker;
+import de.griefed.serverpackcreator.utilities.versionchecker.gitlab.GitLabChecker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.awt.*;
 import java.io.File;
@@ -143,6 +146,23 @@ public class Main {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), systemInformation.get("osVersion")));
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
+        String updater = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
+        if (!APPLICATIONPROPERTIES.getServerPackCreatorVersion().equals("dev")) {
+            try {
+                updater = new GitHubChecker(LOCALIZATIONMANAGER).checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+            } catch (HttpClientErrorException e) {
+                try {
+                    updater = new GitLabChecker(LOCALIZATIONMANAGER).checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+                } catch (HttpClientErrorException ex) {
+                    LOG.error("Couldn't reach Griefed's GitLab instance either. Welp...");
+                }
+                LOG.error("Error reading GitHub API. The rate limit was probably hit, you do not have an active internet connection, or GitHub is having problems right now.");
+            }
+        }
+        if (!updater.equals(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"))) {
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.newupdate"), updater.split(";")[0], updater.split(";")[1]));
+        }
+
         DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
 
@@ -155,8 +175,8 @@ public class Main {
 
                 Scanner reader = new Scanner(System.in);
 
-                LOG.warn("ServerPackCreator webservice-mode does not support Windows. Are you sure you want to proceed? Prepare for unforeseen consequences.");
-                System.out.print("Answer \"Yes\" to proceed, \"No\" to quit: ");
+                LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows"));
+                System.out.print(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.input"),"\"Yes\"", "\"No\""));
 
                 //noinspection UnusedAssignment
                 String answer = "foobar";
@@ -165,10 +185,10 @@ public class Main {
                     answer = reader.nextLine();
 
                     if (answer.equals("No")) {
-                        LOG.info("Answered no. Existing...");
+                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.no"));
                         System.exit(0);
                     } else if (answer.equals("Yes")) {
-                        LOG.warn("No regrets, Mr. Freeman...");
+                        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.yes"));
                         MainSpringBoot.main(args);
                     }
 
@@ -289,7 +309,7 @@ public class Main {
             } else {
 
                 SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
-                        LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+                        LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, updater
                 );
 
                 swingGuiInitializer.mainGUI();

@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -673,7 +673,7 @@ public class CurseCreateModpack {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-                LOG.debug("Setting modloader to Fabric.");
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
 
                 configurationModel.setModLoader("Fabric");
                 configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
@@ -682,9 +682,8 @@ public class CurseCreateModpack {
 
         } else {
 
-            // TODO: Replace with lang key
             /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.debug("Setting modloader to Forge.");
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
 
             configurationModel.setModLoader("Forge");
             configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));

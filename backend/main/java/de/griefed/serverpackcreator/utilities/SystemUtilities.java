@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,13 +55,20 @@ public class SystemUtilities {
     public String acquireJavaPathFromSystem() {
 
         LOG.debug("Acquiring path to Java installation from system properties...");
-        String javaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
 
-        for (String letter : DRIVES) {
-            if (javaPath.startsWith(letter)) {
+        String javaPath = "Couldn't acquire JavaPath";
 
-                LOG.debug("We're running on Windows. Ensuring javaPath ends with .exe");
-                javaPath = String.format("%s.exe", javaPath);
+        if (new File(System.getProperty("java.home")).exists()) {
+            javaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
+
+            if (!javaPath.startsWith("/")) {
+                for (String letter : DRIVES) {
+                    if (javaPath.startsWith(letter)) {
+
+                        LOG.debug("We're running on Windows. Ensuring javaPath ends with .exe");
+                        javaPath = String.format("%s.exe", javaPath);
+                    }
+                }
             }
         }
 

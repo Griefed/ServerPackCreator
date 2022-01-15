@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,15 +31,20 @@ import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.utilities.*;
 import mdlaf.MaterialLookAndFeel;
+import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -92,6 +97,8 @@ public class SwingGuiInitializer extends JPanel {
 
     private BufferedImage bufferedImage;
 
+    private String update;
+
     /**
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
@@ -115,14 +122,18 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedStringUtilities Instance of {@link StringUtilities}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param updater String. Update message fetcher from Main.
      */
     public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
                                AddonsHandler injectedAddonsHandler, ApplicationProperties injectedApplicationProperties,
                                VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities) {
+                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities,
+                               String updater) {
 
         super(new GridLayout(1, 1));
+
+        this.update = updater;
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -342,5 +353,86 @@ public class SwingGuiInitializer extends JPanel {
         TABBEDPANE.setOpaque(true);
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
+
+        displayUpdateDialog();
+    }
+
+    /**
+     * If an update is available for ServerPackCreator, display a dialog asking the user whether
+     * @author Griefed
+     */
+    private void displayUpdateDialog() {
+
+        if (!update.equals(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"))) {
+            String version = update.split(";")[0];
+            String url = update.split(";")[1];
+            String textContent = String.format(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.new"), url);
+
+            StyledDocument styledDocument = new DefaultStyledDocument();
+            SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
+            MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+            JTextPane jTextPane = new JTextPane(styledDocument);
+            StyleConstants.setBold(simpleAttributeSet, true);
+            StyleConstants.setFontSize(simpleAttributeSet, 14);
+            jTextPane.setCharacterAttributes(simpleAttributeSet, true);
+            StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT);
+            styledDocument.setParagraphAttributes(0, styledDocument.getLength(), simpleAttributeSet, false);
+            jTextPane.addHierarchyListener(e1 -> {
+                Window window = SwingUtilities.getWindowAncestor(jTextPane);
+                if (window instanceof Dialog) {
+                    Dialog dialog = (Dialog) window;
+                    if (!dialog.isResizable()) {
+                        dialog.setResizable(true);
+                    }
+                }
+            });
+            jTextPane.setOpaque(false);
+            jTextPane.setEditable(false);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            String[] options = new String[3];
+
+            options[0] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.yes");
+            options[1] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.no");
+            options[2] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.clipboard");
+
+
+            try {
+                styledDocument.insertString(0, textContent, simpleAttributeSet);
+            } catch (BadLocationException ex) {
+                LOG.error("Error inserting text into aboutDocument.", ex);
+            }
+
+            materialTextPaneUI.installUI(jTextPane);
+
+            switch (JOptionPane.showOptionDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    jTextPane,
+                    LOCALIZATIONMANAGER.getLocalizedString("update.dialog.available"),
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    UIManager.getIcon("OptionPane.informationIcon"),
+                    options,
+                    options[0])) {
+
+                case 0:
+
+                    try {
+                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                            Desktop.getDesktop().browse(URI.create(url));
+                        }
+                    } catch (IOException ex) {
+                        LOG.error("Error opening browser.", ex);
+                    }
+                    break;
+
+                case 1:
+
+                    clipboard.setContents(new StringSelection(url), null);
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -142,6 +142,12 @@ public class ApplicationProperties extends Properties {
     private String serverPackCreatorVersion = "dev";
 
     /**
+     * Whether ServerPackCreator should check for available PreReleases.
+     * Set to <code>true</code> to get notified about available PreReleases. Set to <code>false</code> if you only want stable releases.
+     */
+    private boolean versioncheck_prerelease = false;
+
+    /**
      * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
      * @author Griefed
      */
@@ -256,6 +262,8 @@ public class ApplicationProperties extends Properties {
         this.scheduleDatabaseCleanup = getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", "0 0 24 * *");
 
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
+
+        this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
 
         String prefix = "/BOOT-INF/classes";
 
@@ -384,10 +392,8 @@ public class ApplicationProperties extends Properties {
         this.scheduleDatabaseCleanup = getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", "0 0 24 * *");
 
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
-    }
 
-    private void load() {
-
+        this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
     }
 
     /**
@@ -473,5 +479,17 @@ public class ApplicationProperties extends Properties {
      */
     public String getServerPackCreatorVersion() {
         return serverPackCreatorVersion;
+    }
+
+    /**
+     * Getter for whether the search for available PreReleases is enabled or disabled.<br>
+     * Depending on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>true</code>
+     * if checks for available PreReleases are enabled, <code>false</code> if no checks for available PreReleases should
+     * be made.
+     * @author Griefed
+     * @return Boolean. Whether checks for available PreReleases are enabled.
+     */
+    public boolean checkForAvailablePreReleases() {
+        return versioncheck_prerelease;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2021  Griefed
+/* Copyright (C) 2022  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -387,8 +387,7 @@ public class ConfigurationHandler {
 
             configHasError = true;
 
-            // TODO: Replace with lang key
-            encounteredErrors.add("The specified server-icon does not exist: " + configurationModel.getServerIconPath());
+            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.servericon"),configurationModel.getServerIconPath()));
 
         }
 
@@ -396,8 +395,7 @@ public class ConfigurationHandler {
 
             configHasError = true;
 
-            // TODO: Replace with lang key
-            encounteredErrors.add("The specified server.properties does not exist: " + configurationModel.getServerPropertiesPath());
+            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.serverproperties"),configurationModel.getServerPropertiesPath()));
 
         }
 
@@ -513,8 +511,7 @@ public class ConfigurationHandler {
                 configHasError = true;
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.minecraftversion"));
-                // TODO: Replace with lang key
-                encounteredErrors.add("Incorrect Minecraft version specified.");
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.minecraft"));
 
             }
 
@@ -696,8 +693,8 @@ public class ConfigurationHandler {
      * @param encounteredErrors List String. A list of all errors which were encountered during a configuration check.
      */
     private void printEncounteredErrors(List<String> encounteredErrors) {
-        // TODO: Replace with lang key
-        LOG.error("Encountered " + encounteredErrors.size() + " errors during the configuration check.");
+
+        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.encountered"),encounteredErrors.size()));
 
         //noinspection UnusedAssignment
         int encounteredErrorNumber = 0;
@@ -706,7 +703,7 @@ public class ConfigurationHandler {
 
             encounteredErrorNumber = i + 1;
 
-            LOG.error("Error " + encounteredErrorNumber + ": " + encounteredErrors.get(i));
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.encountered.specific"), encounteredErrorNumber, encounteredErrors.get(i)));
         }
     }
 
@@ -734,8 +731,7 @@ public class ConfigurationHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.warn(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkmodpackdir"), modpackDir));
 
-            // TODO: Replace with lang key
-            encounteredErrors.add(String.format("Modpack directory %s could not be found.", modpackDir));
+            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.modpackdirectory"), modpackDir));
 
         } else {
 
