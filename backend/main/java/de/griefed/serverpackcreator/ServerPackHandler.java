@@ -42,6 +42,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -265,6 +266,11 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
             }
 
+            // If modloader is fabric, try and replace the old server-launch.jar with the new and improved one which also downloads the Minecraft server.
+            if (configurationModel.getModLoader().equalsIgnoreCase("Fabric")) {
+                replaceFabricServerLauncher(configurationModel.getMinecraftVersion(),configurationModel.getModLoaderVersion(), destination);
+            }
+
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (configurationModel.getIncludeZipCreation()) {
                 zipBuilder(configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation(), destination);
@@ -290,6 +296,33 @@ public class ServerPackHandler {
             return true;
         }
 
+    }
+
+    private void replaceFabricServerLauncher(String minecraftVersion, String modLoaderVersion, String destination) {
+
+        URL downloadUrl;
+        String fileDestination = String.format("%s/%s/fabric-server-launcher.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
+
+        try {
+            downloadUrl = new URL(String.format("https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar", minecraftVersion, modLoaderVersion, VERSIONLISTER.getFabricReleaseInstallerVersion()));
+        } catch (Exception ex) {
+            LOG.error("Couldn't create Fabric Server Launcher URL.",ex);
+            downloadUrl = null;
+        }
+
+        if (downloadUrl != null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
+
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabric.replace"));
+
+            FileUtils.deleteQuietly(new File(String.format("%s/%s/fabric-server-launch.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
+
+            try {
+                FileUtils.moveFile(new File(fileDestination), new File(String.format("%s/%s/fabric-server-launch.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
+            } catch (IOException ex) {
+                LOG.error("Couldn't move file \"" + fileDestination + "\" to " + String.format("\"%s/%s/fabric-server-launch.jar\"", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination));
+            }
+
+        }
     }
 
     /**
@@ -1366,12 +1399,6 @@ public class ServerPackHandler {
 
     /**
      * Installs the modloader server for the specified modloader, modloader version and Minecraft version.
-     * Calls<p>
-     * {@link #downloadFabricJar(String)} to download the Fabric installer into the server_pack directory.<p>
-     * {@link #downloadForgeJar(String, String, String)} to download the Forge installer for the specified Forge version
-     * and Minecraft version.<p>
-     * {@link #cleanUpServerPack(File, File, String, String, String, String)} to delete no longer needed files generated
-     * by the installation process of the modloader server software.
      * @author Griefed
      * @param modLoader String. The modloader for which to install the server software. Either Forge or Fabric.
      * @param minecraftVersion String. The Minecraft version for which to install the modloader and Minecraft server.
@@ -1385,13 +1412,23 @@ public class ServerPackHandler {
 
         Process process = null;
         BufferedReader bufferedReader = null;
+        URL downloadUrl = null;
+        String fileDestination;
 
         if (modLoader.equalsIgnoreCase("Fabric")) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
 
-            if (downloadFabricJar(destination)) {
+            try {
+                downloadUrl = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", VERSIONLISTER.getFabricReleaseInstallerVersion(), VERSIONLISTER.getFabricReleaseInstallerVersion()));
+            } catch (MalformedURLException ex) {
+                LOG.error("Couldn't create Fabric URL.", ex);
+            }
+
+            fileDestination = String.format("%s/%s/fabric-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
+
+            if (downloadUrl!= null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
 
@@ -1415,7 +1452,15 @@ public class ServerPackHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
 
-            if (downloadForgeJar(minecraftVersion, modLoaderVersion, destination)) {
+            try {
+                downloadUrl = new URL(String.format("https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar", minecraftVersion, modLoaderVersion, minecraftVersion, modLoaderVersion));
+            } catch (MalformedURLException ex) {
+                LOG.error("Couldn't create Forge URL.",ex);
+            }
+
+            fileDestination = String.format("%s/%s/forge-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
+
+            if (downloadUrl != null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
                 commandArguments.add(javaPath);
@@ -1569,95 +1614,6 @@ public class ServerPackHandler {
         }
 
         return minecraftVersionJarUrl;
-    }
-
-    /**
-     * Downloads the release Fabric installer into the server pack.<p>
-     * @author Griefed
-     * @param destination String. The destination where the Fabric JAR-file should be downloaded to.
-     * @return Boolean. Returns true if the download was successfull.
-     */
-    boolean downloadFabricJar(String destination) {
-
-        boolean downloaded = false;
-
-        try {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.downloadfabricjar.enter"));
-
-            URL downloadFabric = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", VERSIONLISTER.getFabricReleaseInstallerVersion(), VERSIONLISTER.getFabricReleaseInstallerVersion()));
-
-            ReadableByteChannel readableByteChannel = Channels.newChannel(downloadFabric.openStream());
-
-            FileOutputStream downloadFabricFileOutputStream = new FileOutputStream(String.format("%s/%s/fabric-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination));
-            FileChannel downloadFabricFileChannel = downloadFabricFileOutputStream.getChannel();
-            downloadFabricFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-
-            downloadFabricFileOutputStream.flush();
-            downloadFabricFileOutputStream.close();
-            readableByteChannel.close();
-            downloadFabricFileChannel.close();
-
-        } catch (IOException ex) {
-            LOG.error("An error occurred downloading Fabric.", ex);
-
-            try {
-                Files.deleteIfExists(Paths.get(String.format("%s/%s/fabric-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
-            } catch (IOException ex2) {
-                LOG.error("Couldn't delete Fabric installer.");
-            }
-        }
-
-        if (new File(String.format("%s/%s/fabric-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)).exists()) {
-            downloaded = true;
-        }
-        return downloaded;
-    }
-
-    /**
-     * Downloads the modloader server installer for Forge, for the specified modloader version.
-     * @author Griefed
-     * @param minecraftVersion String. The Minecraft version for which to download the modloader server installer.
-     * @param modLoaderVersion String. The Forge version for which to download the modloader server installer.
-     * @param destination String. The destination where the Forge-installer should be downloaded to.
-     * @return Boolean. Returns true if the download was successful.
-     */
-    boolean downloadForgeJar(String minecraftVersion, String modLoaderVersion, String destination) {
-
-        boolean downloaded = false;
-
-        try {
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.downloadforgejar.enter"));
-            URL downloadForge = new URL(String.format("https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar", minecraftVersion, modLoaderVersion, minecraftVersion, modLoaderVersion));
-
-            ReadableByteChannel readableByteChannel = Channels.newChannel(downloadForge.openStream());
-
-            FileOutputStream downloadForgeFileOutputStream = new FileOutputStream(String.format("%s/%s/forge-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination));
-            FileChannel downloadForgeFileChannel = downloadForgeFileOutputStream.getChannel();
-            downloadForgeFileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-
-            downloadForgeFileOutputStream.flush();
-            downloadForgeFileOutputStream.close();
-            readableByteChannel.close();
-            downloadForgeFileChannel.close();
-
-        } catch (IOException ex) {
-            LOG.error("An error occurred downloading Forge.", ex);
-
-            if (new File(String.format("%s/%s/forge-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)).exists()) {
-
-                if (new File(String.format("%s/%s/forge-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)).delete()) {
-                    LOG.error("Deleted incomplete Forge-installer...");
-                }
-            }
-        }
-
-        if (new File(String.format("%s/%s/forge-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)).exists()) {
-            downloaded = true;
-        }
-        return downloaded;
     }
 
     /**

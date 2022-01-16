@@ -338,29 +338,6 @@ class ServerPackHandlerTest {
         Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
     }
 
-    @Test
-    void downloadFabricJarTest() throws IOException {
-        String modpackDir = "./backend/test/resources/fabric_tests";
-        Files.createDirectories(Paths.get("server-packs/fabric_tests"));
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-        Assertions.assertTrue(SERVERPACKHANDLER.downloadFabricJar(destination));
-        Assertions.assertTrue(new File(String.format("server-packs/%s/fabric-installer.jar", destination)).exists());
-        FileUtils.deleteQuietly(new File(String.format("server-packs/%s/fabric-installer.jar", destination)));
-        FileUtils.deleteQuietly(new File(String.format("server-packs/%s/fabric-installer.xml", destination)));
-    }
-
-    @Test
-    void downloadForgeJarTest() throws IOException {
-        String modLoaderVersion = "36.1.2";
-        String modpackDir = "./backend/test/resources/forge_tests";
-        Files.createDirectories(Paths.get("server-packs/forge_tests"));
-        String minecraftVersion = "1.16.5";
-        String destination = modpackDir.substring(modpackDir.lastIndexOf("/") + 1);
-        Assertions.assertTrue(SERVERPACKHANDLER.downloadForgeJar(minecraftVersion, modLoaderVersion, destination));
-        Assertions.assertTrue(new File(String.format("server-packs/%s/forge-installer.jar", destination)).exists());
-        FileUtils.deleteQuietly(new File(String.format("server-packs/%s/forge-installer.jar", destination)));
-    }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void cleanUpServerPackForgeTest() throws IOException {
