@@ -17,6 +17,12 @@
     catch(err) {
     }
 //-->
+var methods = {"i0":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var altColor = "altColor";
+var rowColor = "rowColor";
+var tableTab = "tableTab";
+var activeTableTab = "activeTableTab";
 </script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -67,15 +73,15 @@
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li><a href="#nested.classes.inherited.from.class.javax.swing.JComponent">Nested</a>&nbsp;|&nbsp;</li>
-<li><a href="#fields.inherited.from.class.javax.swing.JComponent">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#fields.inherited.from.class.de.griefed.serverpackcreator.swing.utilities.JComponentTailer">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
-<li><a href="#methods.inherited.from.class.javax.swing.JComponent">Method</a></li>
+<li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method.detail">Method</a></li>
 </ul>
 </div>
 <a name="skip.navbar.top">
@@ -101,7 +107,12 @@
 <li>javax.swing.JComponent</li>
 <li>
 <ul class="inheritance">
+<li><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">de.griefed.serverpackcreator.swing.utilities.JComponentTailer</a></li>
+<li>
+<ul class="inheritance">
 <li>de.griefed.serverpackcreator.swing.TabModloaderInstallerLog</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -121,7 +132,7 @@
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">TabModloaderInstallerLog</span>
-extends javax.swing.JComponent</pre>
+extends <a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">JComponentTailer</a></pre>
 <div class="block">This class creates the tab which display the latest modloader_installer.log tailer.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
@@ -168,6 +179,13 @@ extends javax.swing.JComponent</pre>
 <!--   -->
 </a>
 <h3>Field Summary</h3>
+<ul class="blockList">
+<li class="blockList"><a name="fields.inherited.from.class.de.griefed.serverpackcreator.swing.utilities.JComponentTailer">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;de.griefed.serverpackcreator.swing.utilities.<a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">JComponentTailer</a></h3>
+<code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html#textArea">textArea</a></code></li>
+</ul>
 <ul class="blockList">
 <li class="blockList"><a name="fields.inherited.from.class.javax.swing.JComponent">
 <!--   -->
@@ -217,6 +235,24 @@ extends javax.swing.JComponent</pre>
 <!--   -->
 </a>
 <h3>Method Summary</h3>
+<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr id="i0" class="altColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/swing/TabModloaderInstallerLog.html#createTailer--">createTailer</a></span>()</code>&nbsp;</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.swing.utilities.JComponentTailer">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.swing.utilities.<a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">JComponentTailer</a></h3>
+<code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html#create--">create</a></code></li>
+</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.javax.swing.JComponent">
 <!--   -->
@@ -280,6 +316,27 @@ extends javax.swing.JComponent</pre>
 </ul>
 </li>
 </ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method.detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="createTailer--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>createTailer</h4>
+<pre>protected&nbsp;void&nbsp;createTailer()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html#createTailer--">createTailer</a></code>&nbsp;in class&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">JComponentTailer</a></code></dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
 </li>
 </ul>
 </div>
@@ -331,15 +388,15 @@ extends javax.swing.JComponent</pre>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li><a href="#nested.classes.inherited.from.class.javax.swing.JComponent">Nested</a>&nbsp;|&nbsp;</li>
-<li><a href="#fields.inherited.from.class.javax.swing.JComponent">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#fields.inherited.from.class.de.griefed.serverpackcreator.swing.utilities.JComponentTailer">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
-<li><a href="#methods.inherited.from.class.javax.swing.JComponent">Method</a></li>
+<li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method.detail">Method</a></li>
 </ul>
 </div>
 <a name="skip.navbar.bottom">
