@@ -60,6 +60,7 @@ public class GitLabChecker extends VersionChecker {
      * Constructor for the GitLab checker. Requires the username <code>gitLabBaseUrl</code> from which the repository with
      * the given <code>id</code> will make up the URL called for checks.
      * @author Griefed
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} for i18n.
      */
     public GitLabChecker(LocalizationManager injectedLocalizationManager) {
 

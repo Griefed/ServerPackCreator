@@ -62,6 +62,7 @@ public class GitHubChecker extends VersionChecker {
      * Constructor for the GitHub checker. Requires the username <code>user</code> for which the given repository
      * <code>repository</code> will make up the URL called for checks.
      * @author Griefed
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager} for i18n.
      */
     public GitHubChecker(LocalizationManager injectedLocalizationManager) {
 
