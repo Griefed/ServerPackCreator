@@ -1381,147 +1381,105 @@ public class ServerPackHandler {
      */
     void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath, String destination) {
 
-        File fabricInstaller = new File(String.format("%s/%s/fabric-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination));
-
-        File forgeInstaller = new File(String.format("%s/%s/forge-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination));
-
         List<String> commandArguments = new ArrayList<>();
 
         Process process = null;
-        BufferedReader reader = null;
+        BufferedReader bufferedReader = null;
 
         if (modLoader.equalsIgnoreCase("Fabric")) {
-            try {
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
+
+            if (downloadFabricJar(destination)) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
-                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
 
-                if (downloadFabricJar(destination)) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
+                commandArguments.add(javaPath);
+                commandArguments.add("-jar");
+                commandArguments.add("fabric-installer.jar");
+                commandArguments.add("server");
+                commandArguments.add("-mcversion");
+                commandArguments.add(minecraftVersion);
+                commandArguments.add("-loader");
+                commandArguments.add(modLoaderVersion);
+                commandArguments.add("-downloadMinecraft");
 
-                    commandArguments.add(javaPath);
-                    commandArguments.add("-jar");
-                    commandArguments.add("fabric-installer.jar");
-                    commandArguments.add("server");
-                    commandArguments.add("-mcversion");
-                    commandArguments.add(minecraftVersion);
-                    commandArguments.add("-loader");
-                    commandArguments.add(modLoaderVersion);
-                    commandArguments.add("-downloadMinecraft");
+            } else {
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
-
-                    LOG.debug("ProcessBuilder command: " + processBuilder.command());
-
-                    processBuilder.redirectErrorStream(true);
-                    process = processBuilder.start();
-
-                    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-
-                    while (true) {
-                        line = reader.readLine();
-                        if (line == null) { break; }
-                        LOG_INSTALLER.info(line);
-                    }
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.details"));
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
-
-                } else {
-
-                    LOG.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
-                }
-
-            } catch (IOException ex) {
-
-                LOG.error("An error occurred during Fabric installation.", ex);
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException ignored) {
-                    }
-                }
-                if (process != null) {
-                    process.destroy();
-                }
+                LOG.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
             }
+
         } else if (modLoader.equalsIgnoreCase("Forge")) {
 
-            try {
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
 
+            if (downloadForgeJar(minecraftVersion, modLoaderVersion, destination)) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
-                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
+                commandArguments.add(javaPath);
+                commandArguments.add("-jar");
+                commandArguments.add("forge-installer.jar");
+                commandArguments.add("--installServer");
 
-                if (downloadForgeJar(minecraftVersion, modLoaderVersion, destination)) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
-                    commandArguments.add(javaPath);
-                    commandArguments.add("-jar");
-                    commandArguments.add("forge-installer.jar");
-                    commandArguments.add("--installServer");
+            } else {
 
-                    ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
-
-                    LOG.debug("ProcessBuilder command: " + processBuilder.command());
-
-                    processBuilder.redirectErrorStream(true);
-                    process = processBuilder.start();
-
-                    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-
-                    while (true) {
-                        line = reader.readLine();
-                        if (line == null) { break; }
-                        LOG_INSTALLER.info(line);
-                    }
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.details"));
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"));
-
-                } else {
-
-                    LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
-                }
-            } catch (IOException ex) {
-
-                LOG.error("An error occurred during Forge installation.", ex);
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException ignored) {
-                    }
-                }
-                if (process != null) {
-                    process.destroy();
-                }
+                LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
             }
+
         } else {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
         }
 
-        commandArguments.clear();
+        try {
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.enter"), minecraftVersion, modLoader, modLoaderVersion));
+
+            ProcessBuilder processBuilder = new ProcessBuilder(commandArguments).directory(new File(String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
+
+            LOG.debug("ProcessBuilder command: " + processBuilder.command());
+
+            processBuilder.redirectErrorStream(true);
+            process = processBuilder.start();
+
+            bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+
+            while (true) {
+                line = bufferedReader.readLine();
+                if (line == null) { break; }
+                LOG_INSTALLER.info(line);
+            }
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG_INSTALLER.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"), minecraftVersion, modLoader, modLoaderVersion));
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver"), minecraftVersion, modLoader, modLoaderVersion));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.details"));
+
+        } catch (IOException ex) {
+
+            LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...",ex);
+
+        } finally {
+            try {
+                //noinspection ConstantConditions
+                bufferedReader.close();
+            } catch (Exception ignored) {}
+            try {
+                //noinspection ConstantConditions
+                process.destroy();
+            } catch (Exception ignored) {}
+            commandArguments.clear();
+        }
 
         if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled").equalsIgnoreCase("true")) {
             cleanUpServerPack(
-                    fabricInstaller,
-                    forgeInstaller,
+                    new File(String.format("%s/%s/fabric-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)),
+                    new File(String.format("%s/%s/forge-installer.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)),
                     modLoader,
                     minecraftVersion,
                     modLoaderVersion,
