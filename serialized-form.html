@@ -211,12 +211,18 @@
 <div class="block">Whether the manually loaded configuration file should be saved as well as the default serverpackcreator.conf. Setting this to true will make ServerPackCreator save serverpackcreator.conf as well as the last loaded configuration-file.
  Default is false.</div>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>serverPackCreatorVersion</h4>
 <pre>java.lang.String serverPackCreatorVersion</pre>
 <div class="block">The version of ServerPackCreator.<br>
  If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
  If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.</div>
+</li>
+<li class="blockListLast">
+<h4>versioncheck_prerelease</h4>
+<pre>boolean versioncheck_prerelease</pre>
+<div class="block">Whether ServerPackCreator should check for available PreReleases.
+ Set to <code>true</code> to get notified about available PreReleases. Set to <code>false</code> if you only want stable releases.</div>
 </li>
 </ul>
 </li>
@@ -750,9 +756,13 @@
 <h4>MENUBAR</h4>
 <pre><a href="de/griefed/serverpackcreator/swing/MenuBar.html" title="class in de.griefed.serverpackcreator.swing">MenuBar</a> MENUBAR</pre>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>bufferedImage</h4>
 <pre>java.awt.image.BufferedImage bufferedImage</pre>
+</li>
+<li class="blockListLast">
+<h4>update</h4>
+<pre>java.lang.String update</pre>
 </li>
 </ul>
 </li>

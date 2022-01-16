@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -274,54 +274,63 @@ extends java.util.Properties</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#checkForAvailablePreReleases--">checkForAvailablePreReleases</a></span>()</code>
+<div class="block">Getter for whether the search for available PreReleases is enabled or disabled.<br>
+ Depending on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>true</code>
+ if checks for available PreReleases are enabled, <code>false</code> if no checks for available PreReleases should
+ be made.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getCurseControllerRegenerationEnabled--">getCurseControllerRegenerationEnabled</a></span>()</code>
 <div class="block">Getter for whether the regeneration of server packs is enabled.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getDirectoryServerPacks--">getDirectoryServerPacks</a></span>()</code>
 <div class="block">Getter for the directory in which the server packs are stored/generated in.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getListFallbackMods--">getListFallbackMods</a></span>()</code>
 <div class="block">Getter for the fallback list of clientside-only mods.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getListOfDirectoriesToExclude--">getListOfDirectoriesToExclude</a></span>()</code>
 <div class="block">Getter for the list of directories to exclude from server packs.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getQueueMaxDiskUsage--">getQueueMaxDiskUsage</a></span>()</code>
 <div class="block">Getter for the maximum disk usage at which JMS/Artemis will stop storing queues on disk.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getSaveLoadedConfiguration--">getSaveLoadedConfiguration</a></span>()</code>
 <div class="block">Getter for whether the last loaded configuration file should be saved to as well.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getScheduleDatabaseCleanup--">getScheduleDatabaseCleanup</a></span>()</code>
 <div class="block">Getter for the cron-schedule at which ServerPackCreator should clean up the database.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getServerPackCreatorVersion--">getServerPackCreatorVersion</a></span>()</code>
 <div class="block">Getter for the version of ServerPackCreator.<br>
  If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#reload--">reload</a></span>()</code>
 <div class="block">Reload serverpackcreator.properties.</div>
@@ -677,7 +686,7 @@ public&nbsp;ApplicationProperties()</pre>
 <a name="getServerPackCreatorVersion--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getServerPackCreatorVersion</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getServerPackCreatorVersion()</pre>
@@ -687,6 +696,23 @@ public&nbsp;ApplicationProperties()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns the version of ServerPackCreator.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkForAvailablePreReleases--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>checkForAvailablePreReleases</h4>
+<pre>public&nbsp;boolean&nbsp;checkForAvailablePreReleases()</pre>
+<div class="block">Getter for whether the search for available PreReleases is enabled or disabled.<br>
+ Depending on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>true</code>
+ if checks for available PreReleases are enabled, <code>false</code> if no checks for available PreReleases should
+ be made.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Whether checks for available PreReleases are enabled.</dd>
 </dl>
 </li>
 </ul>
