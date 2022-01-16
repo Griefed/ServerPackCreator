@@ -298,6 +298,14 @@ public class ServerPackHandler {
 
     }
 
+    /**
+     * Download and replace the fabric-server-launch.jar with the improved Fabric Server Launcher, if it is available for
+     * the given Minecraft and Fabric version.
+     * @author Griefed
+     * @param minecraftVersion String. The Minecraft version the modpack uses and the Fabric Server Launcher should be downloaded for.
+     * @param modLoaderVersion String. The modloader version the modpack uses and the Fabric Server Launcher should be downloaded for.
+     * @param destination String. The destination of the server pack.
+     */
     private void replaceFabricServerLauncher(String minecraftVersion, String modLoaderVersion, String destination) {
 
         URL downloadUrl;
