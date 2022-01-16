@@ -21,13 +21,11 @@ package de.griefed.serverpackcreator.swing;
 
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.swing.utilities.SmartScroller;
+import de.griefed.serverpackcreator.swing.utilities.JComponentTailer;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.util.Properties;
 
@@ -35,12 +33,10 @@ import java.util.Properties;
  * This class creates the tab which display the latest modloader_installer.log tailer.
  * @author Griefed
  */
-public class TabModloaderInstallerLog extends JComponent {
+public class TabModloaderInstallerLog extends JComponentTailer {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-
-    private JTextArea textArea;
 
     private int i = 0;
 
@@ -68,49 +64,11 @@ public class TabModloaderInstallerLog extends JComponent {
     }
 
     /**
-     * Create the tab for the modloader_installer.log tailer in a JScrollPane with an always available vertical scrollbar
-     * and a horizontal scrollbar available as needed. Uses Apache commons-io's {@link Tailer} to keep the JTextArea up
-     * to date with the latest log entries. Should any line contain "Starting Fabric installation." or
-     * "Starting Forge installation." the textarea is cleared.
-     * @author Griefed
-     * @return JComponent. Returns a JPanel containing a JScrollPane containing the JTextArea with the latest
-     * modloader_installer.log entries.
-     */
-    JComponent modloaderInstallerLogTab() {
-        JComponent modloaderInstallerLogPanel = new JPanel(false);
-        modloaderInstallerLogPanel.setLayout(new GridBagLayout());
-        GridBagConstraints constraints = new GridBagConstraints();
-
-        constraints.anchor = GridBagConstraints.CENTER;
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.weighty = 1;
-        constraints.weightx = 1;
-
-        //Log Panel
-        textArea = new JTextArea();
-        textArea.setEditable(false);
-
-        createTailer();
-
-        JScrollPane scrollPane = new JScrollPane(
-                textArea,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-        new SmartScroller(scrollPane);
-
-        modloaderInstallerLogPanel.add(scrollPane, constraints);
-
-        return modloaderInstallerLogPanel;
-    }
-
-    /**
      *
      * @author Griefed
      */
-    private void createTailer() {
+    @Override
+    protected void createTailer() {
         class MyTailerListener extends TailerListenerAdapter {
             public void handle(String line) {
                 i++;
@@ -124,7 +82,7 @@ public class TabModloaderInstallerLog extends JComponent {
                     textArea.setText("");
                 }
                 if (!line.contains("DEBUG")) {
-                    textArea.append(line + "\n");
+                    textArea.append(line.substring(line.lastIndexOf(") - ") + 3) + "\n");
                 }
             }
         }

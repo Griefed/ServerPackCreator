@@ -245,7 +245,7 @@ public class SwingGuiInitializer extends JPanel {
         TABBEDPANE.addTab(
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
                 null,
-                TAB_LOG_SERVERPACKCREATOR.serverPackCreatorLogTab(),
+                TAB_LOG_SERVERPACKCREATOR.create(),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
 
         TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
@@ -253,7 +253,7 @@ public class SwingGuiInitializer extends JPanel {
         TABBEDPANE.addTab(
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.title"),
                 null,
-                TAB_LOG_MODLOADERINSTALLER.modloaderInstallerLogTab(),
+                TAB_LOG_MODLOADERINSTALLER.create(),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.modloaderinstallerlog.tip"));
 
         TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
@@ -261,7 +261,7 @@ public class SwingGuiInitializer extends JPanel {
         TABBEDPANE.addTab(
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.addonshandlerlog.title"),
                 null,
-                TAB_LOG_ADDONSHANDLER.addonsHandlerLogTab(),
+                TAB_LOG_ADDONSHANDLER.create(),
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
 
         TABBEDPANE.setMnemonicAt(3, KeyEvent.VK_4);
