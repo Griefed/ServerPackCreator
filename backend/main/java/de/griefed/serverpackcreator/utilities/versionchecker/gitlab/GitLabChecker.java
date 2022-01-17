@@ -48,7 +48,7 @@ public class GitLabChecker extends VersionChecker {
 
     private static final Logger LOG = LogManager.getLogger(GitLabChecker.class);
 
-    private final String GITLAB_API;
+    private final String GITLAB_API = "https://git.griefed.de/api/v4/projects/63/releases";
     private final RestTemplate REST_TEMPLATE = new RestTemplateBuilder()
             .setConnectTimeout(Duration.ofSeconds(5))
             .setReadTimeout(Duration.ofSeconds(5))
@@ -61,8 +61,10 @@ public class GitLabChecker extends VersionChecker {
      * the given <code>id</code> will make up the URL called for checks.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} for i18n.
+     * @throws JsonProcessingException Thrown if the requested repository couldn't be reached.
+     * @throws HttpClientErrorException Thrown if the GitHub API rate limit was exceeded.
      */
-    public GitLabChecker(LocalizationManager injectedLocalizationManager) {
+    public GitLabChecker(LocalizationManager injectedLocalizationManager) throws JsonProcessingException, HttpClientErrorException {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -70,13 +72,8 @@ public class GitLabChecker extends VersionChecker {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        this.GITLAB_API = "https://git.griefed.de/api/v4/projects/63/releases";
-        try {
-            setRepository();
-        } catch (JsonProcessingException | HttpClientErrorException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("update.log.error.gitlab.fetch"), ex);
-            this.repository = null;
-        }
+        setRepository();
+
         setAllVersions();
     }
 
@@ -99,6 +96,8 @@ public class GitLabChecker extends VersionChecker {
             }
         }
 
+        LOG.debug("All versions: " + versions);
+
         // In case the given repository does not have any releases
         if (versions == null || versions.size() == 0) {
             return null;
@@ -116,10 +115,15 @@ public class GitLabChecker extends VersionChecker {
     public String latestVersion() {
 
         for (String version : getAllVersions()) {
+            LOG.debug("version: " + version);
             if (!version.contains("alpha") && !version.contains("beta")) {
                 return version;
             }
         }
+
+        if (!latestBeta().equals("no_betas")) return latestBeta();
+
+        if (!latestAlpha().equals("no_alphas")) return latestAlpha();
 
         return "no_release";
     }

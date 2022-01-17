@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -147,18 +148,30 @@ public class Main {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
         String updater = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
+
         if (!APPLICATIONPROPERTIES.getServerPackCreatorVersion().equals("dev")) {
             try {
+
                 updater = new GitHubChecker(LOCALIZATIONMANAGER).checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-            } catch (HttpClientErrorException e) {
-                try {
-                    updater = new GitLabChecker(LOCALIZATIONMANAGER).checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-                } catch (HttpClientErrorException ex) {
-                    LOG.error("Couldn't reach Griefed's GitLab instance either. Welp...");
-                }
+
+            } catch (HttpClientErrorException | JsonProcessingException e) {
+
                 LOG.error("Error reading GitHub API. The rate limit was probably hit, you do not have an active internet connection, or GitHub is having problems right now.");
+                updater = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
+
+                try {
+
+                    updater = new GitLabChecker(LOCALIZATIONMANAGER).checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+
+                } catch (HttpClientErrorException | JsonProcessingException ex) {
+
+                    LOG.error("Couldn't reach Griefed's GitLab instance either. Welp...");
+                    updater = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
+                }
+
             }
         }
+
         if (!updater.equals(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"))) {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.newupdate"), updater.split(";")[0], updater.split(";")[1]));
         }
