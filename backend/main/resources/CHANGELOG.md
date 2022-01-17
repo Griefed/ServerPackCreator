@@ -1,3 +1,52 @@
+## [3.0.0-alpha.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.14...3.0.0-alpha.15) (2022-01-16)
+
+
+### :scissors: Refactor
+
+* Simplify log tabs to increase maintainability. Abstract classes rock! ([7fc3404](https://git.griefed.de/Griefed/ServerPackCreator/commit/7fc3404df9577c15493c6b98905792e0860c5ecd))
+* Simplify server installation to increase maintainability ([7bec08a](https://git.griefed.de/Griefed/ServerPackCreator/commit/7bec08a7e774f2935d34933b95b4624677e27737))
+
+
+### 📔 Docs
+
+* Add missing throws ([4538f54](https://git.griefed.de/Griefed/ServerPackCreator/commit/4538f547b291d5b02619e3f366ab53fff63726e9))
+* Don't include private methods in documentation ([719b4f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/719b4f2e8aec75075fda349383a305cce8aebf1a))
+* Write documentation for fabric-server-launch replace method ([7ab20eb](https://git.griefed.de/Griefed/ServerPackCreator/commit/7ab20eb47a2149271cf461dba0d0f0a0b1ad40d5))
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node from 17.0.5 to 17.0.8 in /frontend ([ea1383c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ea1383c2bcbc60b889d262778d89d75002c86cdc))
+* **deps:** bump @quasar/extras from 1.12.2 to 1.12.3 in /frontend ([08590a7](https://git.griefed.de/Griefed/ServerPackCreator/commit/08590a7bc96ad03837081ecc8b4779c3a1696791))
+* **deps:** bump JamesIves/github-pages-deploy-action ([49cd567](https://git.griefed.de/Griefed/ServerPackCreator/commit/49cd567d7b9d0a68611b5771778a97e309bc80e8))
+* **deps:** bump quasar from 2.4.3 to 2.4.4 in /frontend ([904db5f](https://git.griefed.de/Griefed/ServerPackCreator/commit/904db5feb51353c8054b200c32a560106ac1e6ca))
+* **deps:** bump tsparticles from 1.38.0 to 1.39.0 in /frontend ([75a3b00](https://git.griefed.de/Griefed/ServerPackCreator/commit/75a3b00e5119863a21f57207fbb1609a261ab2ee))
+
+
+### 🚀 Features
+
+* Check and notify on updates in logs, console and in GUI. Also replaced and update a couple of i18n keys. VersionChecker can be found at https://git.griefed.de/Griefed/VersionChecker ([64419a2](https://git.griefed.de/Griefed/ServerPackCreator/commit/64419a203a0d26bb001f20de2f8ab0a732156f20))
+* Display version in window title and print to logs ([201a64c](https://git.griefed.de/Griefed/ServerPackCreator/commit/201a64c32868b0d26800b50c55d1e39dd5daa464))
+* If i18n localized string can not be found in local file, try JAR-resource. If locale is not en_us, get en_us localized string as fallback. Allow users to write their own locales, languages and translations. ([802eb0c](https://git.griefed.de/Griefed/ServerPackCreator/commit/802eb0c5a4aa06b90d71bb570864bcda613bc55c))
+* replace fabric-server-launch.jar with improved Fabric Server Launcher, if it is available for the specified Minecraft and Fabric versions.Thanks to @TheButterbrotMan for the idea! ([befdaf7](https://git.griefed.de/Griefed/ServerPackCreator/commit/befdaf7ea4265af9b3a0398f58a43bab3f19525f))
+
+
+### 🛠 Fixes
+
+* Last fallback in case no value can be found for a given key. ([53817d4](https://git.griefed.de/Griefed/ServerPackCreator/commit/53817d4b8672359ff4a5b244c127afc581881436))
+* Prevent unlikely, but possible, overwriting of properties file with wrong content from i18n initialization ([3675b09](https://git.griefed.de/Griefed/ServerPackCreator/commit/3675b0934253c5d03457cd64b6ca96825e0ee063))
+* Whoops ([2c1841c](https://git.griefed.de/Griefed/ServerPackCreator/commit/2c1841ca18856ba0d398641d52923f8537135c71))
+
+
+### Other
+
+* Changelog from alpha branch ([c0e9383](https://git.griefed.de/Griefed/ServerPackCreator/commit/c0e93837a8751a3dcf06818953bf6e9ceea8e918))
+* List all places where ServerPackCreator is available at ([cb12edc](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb12edce4e26271d271344d90b7421c3118b3ee2))
+* TODO ([085c831](https://git.griefed.de/Griefed/ServerPackCreator/commit/085c83132b54693e05bab5d01eb77666ea5642ec))
+* **deps:** update dependency eslint-plugin-vue to v8.3.0 ([61e2eb4](https://git.griefed.de/Griefed/ServerPackCreator/commit/61e2eb47a22615bc23ef5040546ababeb8ca7a22))
+* **deps:** update dependency quasar to v2.4.9 ([467b615](https://git.griefed.de/Griefed/ServerPackCreator/commit/467b6153cd2284a17815f8eee025dd88caed3c13))
+* **deps:** update typescript-eslint monorepo to v5.9.1 ([a766e2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/a766e2a3cc33e4002f1bc38c97c997a6f24be9d2))
+
 ## [3.0.0-alpha.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.13...3.0.0-alpha.14) (2022-01-09)
 
 

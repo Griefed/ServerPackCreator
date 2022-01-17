@@ -23,6 +23,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
@@ -34,6 +36,8 @@ import java.util.List;
  * @author Griefed
  */
 public abstract class VersionChecker {
+
+    private static final Logger LOG = LogManager.getLogger(VersionChecker.class);
 
     private List<String> allVersions;
     protected LocalizationManager LOCALIZATIONMANAGER;
@@ -51,6 +55,9 @@ public abstract class VersionChecker {
      * New prerelease available: <code>Current version: 2.0.0. A new PreRelease is available: 3.0.0-alpha.14. Download available at: https://github.com/Griefed/ServerPackCreator/releases/tag/3.0.0-alpha.14</code>
      */
     public String checkForUpdate(String currentVersion, boolean checkForPreReleases) {
+
+        LOG.debug("Current version: " + currentVersion);
+
         String newVersion = isUpdateAvailable(currentVersion, checkForPreReleases);
         String noUpdateMessage = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
 
@@ -91,6 +98,9 @@ public abstract class VersionChecker {
      * <code>false</code>.
      */
     private boolean isNewSemanticVersion(String currentVersion, String newVersion) {
+
+        LOG.debug("Current version: " + currentVersion);
+        LOG.debug("New version: " + newVersion);
 
         int newMajor,newMinor,newPatch,currentMajor,currentMinor,currentPatch;
 
@@ -247,7 +257,7 @@ public abstract class VersionChecker {
      * @author Griefed
      * @return String. Returns the latest beta release. If no beta release is available, <code>no_betas</code> is returned.
      */
-    private String latestBeta() {
+    protected String latestBeta() {
 
         List<String> betaVersions = allBetaVersions();
         String beta = "no_betas";
@@ -273,7 +283,7 @@ public abstract class VersionChecker {
      * @author Griefed
      * @return String. Returns the latest alpha release. If no alpha release is available, <code>no_alphas</code> is returned.
      */
-    private String latestAlpha() {
+    protected String latestAlpha() {
 
         List<String> alphaVersions = allAlphaVersions();
         String alpha = "no_alphas";

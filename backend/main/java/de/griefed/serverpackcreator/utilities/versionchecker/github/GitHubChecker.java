@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.versionchecker.VersionChecker;
+import de.griefed.serverpackcreator.utilities.versionchecker.gitlab.GitLabChecker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -48,8 +49,8 @@ public class GitHubChecker extends VersionChecker {
 
     private static final Logger LOG = LogManager.getLogger(GitHubChecker.class);
 
-    private final String GITHUB_API;
-    private final String GITHUB_API_LATEST;
+    private final String GITHUB_API = "https://api.github.com/repos/Griefed/ServerPackCreator/releases";
+    private final String GITHUB_API_LATEST = "https://api.github.com/repos/Griefed/ServerPackCreator/releases/latest";
     private final RestTemplate REST_TEMPLATE = new RestTemplateBuilder()
             .setConnectTimeout(Duration.ofSeconds(5))
             .setReadTimeout(Duration.ofSeconds(5))
@@ -63,8 +64,10 @@ public class GitHubChecker extends VersionChecker {
      * <code>repository</code> will make up the URL called for checks.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} for i18n.
+     * @throws JsonProcessingException Thrown if the requested repository couldn't be reached.
+     * @throws HttpClientErrorException Thrown if the GitHub API rate limit was exceeded.
      */
-    public GitHubChecker(LocalizationManager injectedLocalizationManager) {
+    public GitHubChecker(LocalizationManager injectedLocalizationManager) throws JsonProcessingException, HttpClientErrorException {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -72,20 +75,8 @@ public class GitHubChecker extends VersionChecker {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        this.GITHUB_API = "https://api.github.com/repos/Griefed/ServerPackCreator/releases";
-        this.GITHUB_API_LATEST = "https://api.github.com/repos/Griefed/ServerPackCreator/releases/latest";
-        try {
-            setRepository();
-        } catch (JsonProcessingException | HttpClientErrorException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("update.log.error.github.fetch"), ex);
-            this.repository = null;
-        }
-        try {
-            setLatest();
-        } catch (JsonProcessingException | HttpClientErrorException ex) {
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("update.log.error.github.fetch"), ex);
-            this.latest = null;
-        }
+        setRepository();
+        setLatest();
         setAllVersions();
     }
 
@@ -126,6 +117,11 @@ public class GitHubChecker extends VersionChecker {
         if (latest != null) {
             return latest.get("tag_name").asText();
         }
+
+        if (!latestBeta().equals("no_betas")) return latestBeta();
+
+        if (!latestAlpha().equals("no_alphas")) return latestAlpha();
+
         return null;
 
     }

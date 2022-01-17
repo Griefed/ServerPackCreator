@@ -289,7 +289,7 @@ public class ApplicationProperties extends Properties {
                 version = "dev";
             }
 
-            this.serverPackCreatorVersion = version;
+            this.serverPackCreatorVersion = version.replace("\n","");
 
         }
     }
