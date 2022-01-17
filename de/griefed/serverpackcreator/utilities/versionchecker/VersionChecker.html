@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":10,"i2":10,"i3":6,"i4":6,"i5":10,"i6":6,"i7":10,"i8":6};
+var methods = {"i0":6,"i1":10,"i2":10,"i3":6,"i4":6,"i5":10,"i6":10,"i7":10,"i8":6,"i9":10,"i10":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -197,14 +197,26 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#getObjectMapper--">getObjectMapper</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
+<td class="colFirst"><code>protected java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestAlpha--">latestAlpha</a></span>()</code>
+<div class="block">Get the latest alpha release.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>protected java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestBeta--">latestBeta</a></span>()</code>
+<div class="block">Get the latest beta release.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>protected abstract java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestVersion--">latestVersion</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#setAllVersions--">setAllVersions</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>protected abstract void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#setRepository--">setRepository</a></span>()</code>&nbsp;</td>
 </tr>
@@ -294,6 +306,34 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>allVersions</h4>
 <pre>protected abstract&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;allVersions()</pre>
+</li>
+</ul>
+<a name="latestBeta--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>latestBeta</h4>
+<pre>protected&nbsp;java.lang.String&nbsp;latestBeta()</pre>
+<div class="block">Get the latest beta release.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the latest beta release. If no beta release is available, <code>no_betas</code> is returned.</dd>
+</dl>
+</li>
+</ul>
+<a name="latestAlpha--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>latestAlpha</h4>
+<pre>protected&nbsp;java.lang.String&nbsp;latestAlpha()</pre>
+<div class="block">Get the latest alpha release.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns the latest alpha release. If no alpha release is available, <code>no_alphas</code> is returned.</dd>
+</dl>
 </li>
 </ul>
 <a name="setAllVersions--">

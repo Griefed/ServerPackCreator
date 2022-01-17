@@ -208,7 +208,7 @@ extends <a href="../../../../../../de/griefed/serverpackcreator/utilities/versio
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.utilities.versionchecker.<a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html" title="class in de.griefed.serverpackcreator.utilities.versionchecker">VersionChecker</a></h3>
-<code><a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#checkForUpdate-java.lang.String-boolean-">checkForUpdate</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#getAllVersions--">getAllVersions</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#getObjectMapper--">getObjectMapper</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#setAllVersions--">setAllVersions</a></code></li>
+<code><a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#checkForUpdate-java.lang.String-boolean-">checkForUpdate</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#getAllVersions--">getAllVersions</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#getObjectMapper--">getObjectMapper</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestAlpha--">latestAlpha</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestBeta--">latestBeta</a>, <a href="../../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#setAllVersions--">setAllVersions</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -237,12 +237,17 @@ extends <a href="../../../../../../de/griefed/serverpackcreator/utilities/versio
 <ul class="blockListLast">
 <li class="blockList">
 <h4>GitLabChecker</h4>
-<pre>public&nbsp;GitLabChecker(<a href="../../../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</pre>
+<pre>public&nbsp;GitLabChecker(<a href="../../../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)
+              throws com.fasterxml.jackson.core.JsonProcessingException,
+                     org.springframework.web.client.HttpClientErrorException</pre>
 <div class="block">Constructor for the GitLab checker. Requires the username <code>gitLabBaseUrl</code> from which the repository with
  the given <code>id</code> will make up the URL called for checks.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> for i18n.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>com.fasterxml.jackson.core.JsonProcessingException</code> - Thrown if the requested repository couldn't be reached.</dd>
+<dd><code>org.springframework.web.client.HttpClientErrorException</code> - Thrown if the GitHub API rate limit was exceeded.</dd>
 </dl>
 </li>
 </ul>
