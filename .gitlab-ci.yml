@@ -173,6 +173,9 @@ Docker Test:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
       --file Dockerfile .
+  only:
+    variables:
+      - $CI_SERVER_HOST == "git.griefed.de"
 
 Release:
   stage: Release
@@ -241,7 +244,7 @@ Build Release:
     - chmod +x gradlew
     - echo "**** Ensure clean environment ****"
     - "./gradlew about"
-    - echo ${CI_COMMIT_TAG} > backend/main/resources/VERSION.txt
+    - echo "version=${CI_COMMIT_TAG}" > backend/main/resources/VERSION.txt
   script:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe
@@ -279,8 +282,8 @@ Build Release:
     --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar" --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
     --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
   rules:
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
+    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker Release:
   stage: Build Release
@@ -298,8 +301,9 @@ Build Docker Release:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
       --file Dockerfile .
-  rules:
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
+  only:
+    variables:
+      - '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker PreRelease:
   stage: Build Release
@@ -315,8 +319,9 @@ Build Docker PreRelease:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
       --file Dockerfile .
-  rules:
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+  only:
+    variables:
+      - '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 coverage:
   stage: Other

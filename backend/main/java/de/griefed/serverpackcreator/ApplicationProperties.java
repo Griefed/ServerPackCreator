@@ -275,13 +275,14 @@ public class ApplicationProperties extends Properties {
 
         String version = "dev";
 
-        try {
+        try (InputStream inputStream = new ClassPathResource(prefix + "/VERSION.txt").getInputStream()) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            version = properties.getProperty("version","dev");
 
-            version = StreamUtils.copyToString(Main.class.getResourceAsStream(prefix + "/VERSION.txt"), StandardCharsets.UTF_8);
+        } catch (IOException ex) {
 
-        } catch (IOException e) {
-
-            version = "dev";
+            LOG.error("Couldn't read properties file.", ex);
 
         } finally {
 
@@ -292,6 +293,8 @@ public class ApplicationProperties extends Properties {
             this.serverPackCreatorVersion = version.replace("\n","");
 
         }
+
+
     }
 
     /**

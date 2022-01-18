@@ -110,17 +110,20 @@ public class GitHubChecker extends VersionChecker {
     /**
      * Get the latest regular release.
      * @author Griefed
+     * @param checkForPreRelease Boolean. Whether to include alpha and beta releases for latest release versions.
      * @return String. Returns the latest regular release. If no regular release is available, <code>no_release</code> is returned.
      */
     @Override
-    public String latestVersion() {
+    public String latestVersion(boolean checkForPreRelease) {
         if (latest != null) {
             return latest.get("tag_name").asText();
         }
 
-        if (!latestBeta().equals("no_betas")) return latestBeta();
+        if (checkForPreRelease) {
+            if (!latestBeta().equals("no_betas")) return latestBeta();
 
-        if (!latestAlpha().equals("no_alphas")) return latestAlpha();
+            if (!latestAlpha().equals("no_alphas")) return latestAlpha();
+        }
 
         return null;
 
