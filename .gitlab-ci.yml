@@ -300,8 +300,8 @@ Build Release:
     --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar" --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
     --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
 
 Build Docker Release:
   stage: Build Release
@@ -329,9 +329,8 @@ Build Docker Release:
       else
         echo "Skipping..."
       fi
-  only:
-    variables:
-      - '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/'
+  rules:
+    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
 
 Build Docker PreRelease:
   stage: Build Release
@@ -357,9 +356,8 @@ Build Docker PreRelease:
       else
         echo "Skipping..."
       fi
-  only:
-    variables:
-      - '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/'
+  rules:
+    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
 
 coverage:
   stage: Other
