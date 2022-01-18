@@ -55,7 +55,7 @@ jobs:
           NEW_VERSION=$(echo "${{steps.tag.outputs.tag}}")
           echo "New version: ${NEW_VERSION}"
           ./gradlew about
-          echo "version=${CI_COMMIT_TAG}" > backend/main/resources/VERSION.txt
+          echo "version=${NEW_VERSION}" > backend/main/resources/VERSION.txt
           ./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
       - name: List files
         run: ls -ahl build/libs
