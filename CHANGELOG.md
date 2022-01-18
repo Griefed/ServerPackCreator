@@ -1,3 +1,28 @@
+## [3.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.15...3.0.0-alpha.16) (2022-01-18)
+
+
+### 👀 Reverts
+
+* Maybe another time ([f7ea248](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7ea248f50ef2dbbdc99fa4538c9561d35e96ea7))
+
+
+### 🦊 CI/CD
+
+* Ensure docker jobs only run on git.griefed.de ([e633a0b](https://git.griefed.de/Griefed/ServerPackCreator/commit/e633a0b59b1d937ef7752333434cd1733c05b105))
+* God damn, would you please only run when I tell you to? ([c610692](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6106922a1c04fa3cee17880dfd8b931e5b9f951))
+* Only run docker related jobs on git.griefed.de ([17339f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/17339f4d402b88ac6b358f0de6b2557d6df03122))
+* Run dockerjobs differently when running on other GitLab instances. ([169733f](https://git.griefed.de/Griefed/ServerPackCreator/commit/169733f1b9aa7c6295b4074f0468dc51caa342be))
+* Run dockerjobs differently when running on other GitLab instances. ([0385ba1](https://git.griefed.de/Griefed/ServerPackCreator/commit/0385ba139b783bf348dbd14b0f69bda587a0cb77))
+* Run dockerjobs differently when running on other GitLab instances. ([bfcbd51](https://git.griefed.de/Griefed/ServerPackCreator/commit/bfcbd51ebd6f30331d82fbc53284a357f9d751aa))
+
+
+### 🛠 Fixes
+
+* Improve VersionChecker by correctly throwing NumberFormatExceptions which can then be caught in checkForUpdate. Return updates.log.info.none on throw. Read version from property instead. ([c556baa](https://git.griefed.de/Griefed/ServerPackCreator/commit/c556baaac7fe41ec0a11958e868a1da5bf26b14f))
+* Improve VersionChecker by correctly throwing NumberFormatExceptions which can then be caught in checkForUpdate. Return updates.log.info.none on throw. Read version from property instead. ([b108b67](https://git.griefed.de/Griefed/ServerPackCreator/commit/b108b6773d99fa8747fca016c70479521b2d6b1a))
+* Improve VersionChecker by correctly throwing NumberFormatExceptions which can then be caught in checkForUpdate. Return updates.log.info.none on throw. Read version from property instead. ([6afdbb4](https://git.griefed.de/Griefed/ServerPackCreator/commit/6afdbb4eb04af7b53ba64603fcc6348610edd4af))
+* Improve VersionChecker by correctly throwing NumberFormatExceptions which can then be caught in checkForUpdate. Return updates.log.info.none on throw. Read version from property instead. ([dd3ff6e](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd3ff6ecf43a64ef29481007c700c74595b38229))
+
 ## [3.0.0-alpha.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.14...3.0.0-alpha.15) (2022-01-16)
 
 
