@@ -203,9 +203,13 @@ Release:
       artifacts: false
   image: griefed/gitlab-ci-cd:1.0.4
   script:
-    - npx semantic-release
+    - |-
+      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
+        npx semantic-release
+      else
+        echo "Skipping..."
+      fi
   only:
-    - master
     - main
   except:
     refs:
@@ -230,7 +234,12 @@ PreRelease:
       artifacts: false
   image: griefed/gitlab-ci-cd:1.0.4
   script:
-    - npx semantic-release
+    - |-
+      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
+        npx semantic-release
+      else
+        echo "Skipping..."
+      fi
   only:
     - alpha
     - beta
