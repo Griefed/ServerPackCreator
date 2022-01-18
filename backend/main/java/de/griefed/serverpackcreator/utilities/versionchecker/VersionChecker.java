@@ -57,14 +57,21 @@ public abstract class VersionChecker {
     public String checkForUpdate(String currentVersion, boolean checkForPreReleases) {
 
         LOG.debug("Current version: " + currentVersion);
-
-        String newVersion = isUpdateAvailable(currentVersion, checkForPreReleases);
         String noUpdateMessage = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
 
-        if (newVersion.equals("up_to_date")) {
+        try {
+
+            String newVersion = isUpdateAvailable(currentVersion, checkForPreReleases);
+
+            if (newVersion.equals("up_to_date")) {
+                return noUpdateMessage;
+            } else {
+                return newVersion + ";" + getDownloadUrl(newVersion);
+            }
+
+        } catch (NumberFormatException ex) {
+            LOG.error("A version could not be parsed into integers.", ex);
             return noUpdateMessage;
-        } else {
-            return newVersion + ";" + getDownloadUrl(newVersion);
         }
     }
 
@@ -83,7 +90,7 @@ public abstract class VersionChecker {
 
         if (isNewAlphaAvailable(currentVersion, checkForPreReleases) && checkForPreReleases) return latestAlpha();
 
-        if (isNewSemanticVersion(currentVersion, latestVersion())) return latestVersion();
+        if (isNewSemanticVersion(currentVersion, latestVersion(checkForPreReleases))) return latestVersion(checkForPreReleases);
 
         return "up_to_date";
     }
@@ -96,8 +103,10 @@ public abstract class VersionChecker {
      * @param newVersion String. New version to check against <code>currentVersion</code>.
      * @return Boolean. Returns <code>true</code> if the new version is indeed newer than the current version. Otherwise
      * <code>false</code>.
+     * @throws NumberFormatException Thrown if the passed <code>currentVersion</code> or <code>newVersion</code> can not be
+     * parsed into integers.
      */
-    private boolean isNewSemanticVersion(String currentVersion, String newVersion) {
+    private boolean isNewSemanticVersion(String currentVersion, String newVersion) throws NumberFormatException {
 
         LOG.debug("Current version: " + currentVersion);
         LOG.debug("New version: " + newVersion);
@@ -133,8 +142,10 @@ public abstract class VersionChecker {
      * @param newVersion String. New version to check against <code>currentVersion</code>.
      * @return Boolean. Returns <code>true</code> if the new version is newer than or equal to the current version. Otherwise
      * <code>false</code>.
+     * @throws NumberFormatException Thrown if the passed <code>currentVersion</code> or <code>newVersion</code> can not be
+     * parsed into integers.
      */
-    private boolean isNewOrSameSemanticVersion(String currentVersion, String newVersion) {
+    private boolean isNewOrSameSemanticVersion(String currentVersion, String newVersion) throws NumberFormatException {
         if (Integer.parseInt(newVersion.substring(0,1)) >= Integer.parseInt(currentVersion.substring(0,1))) {
             return true;
         } else if (Integer.parseInt(newVersion.substring(2,3)) >= Integer.parseInt(currentVersion.substring(2,3))) {
@@ -148,8 +159,10 @@ public abstract class VersionChecker {
      * @param currentVersion String. The current version to check against available alpha versions.
      * @param checkForPreRelease Boolean. Whether to check for PreReleases.
      * @return Boolean. Returns true if a new alpha release is found.
+     * @throws NumberFormatException Thrown if the passed <code>currentVersion</code> can not be
+     * parsed into integers.
      */
-    private boolean isNewAlphaAvailable(String currentVersion, boolean checkForPreRelease) {
+    private boolean isNewAlphaAvailable(String currentVersion, boolean checkForPreRelease) throws NumberFormatException {
 
         /*
          * If the current version does not contain alpha and checkForPreRelease is false, do not check for a new alpha
@@ -176,8 +189,10 @@ public abstract class VersionChecker {
      * @param currentVersion String. The current version to check against available beta versions.
      * @param checkForPreRelease Boolean. Whether to check for PreReleases.
      * @return Boolean. Returns true if a new beta release is found.
+     * @throws NumberFormatException Thrown if the passed <code>currentVersion</code> can not be
+     * parsed into integers.
      */
-    private boolean isNewBetaAvailable(String currentVersion, boolean checkForPreRelease) {
+    private boolean isNewBetaAvailable(String currentVersion, boolean checkForPreRelease) throws NumberFormatException {
 
         /*
          * If the current version does not contain beta and checkForPreRelease is false, do not check for a new beta
@@ -256,8 +271,9 @@ public abstract class VersionChecker {
      * Get the latest beta release.
      * @author Griefed
      * @return String. Returns the latest beta release. If no beta release is available, <code>no_betas</code> is returned.
+     * @throws NumberFormatException Thrown if a version can not be parsed into integers.
      */
-    protected String latestBeta() {
+    protected String latestBeta() throws NumberFormatException {
 
         List<String> betaVersions = allBetaVersions();
         String beta = "no_betas";
@@ -282,8 +298,9 @@ public abstract class VersionChecker {
      * Get the latest alpha release.
      * @author Griefed
      * @return String. Returns the latest alpha release. If no alpha release is available, <code>no_alphas</code> is returned.
+     * @throws NumberFormatException Thrown if a versions can not be parsed into integers.
      */
-    protected String latestAlpha() {
+    protected String latestAlpha() throws NumberFormatException {
 
         List<String> alphaVersions = allAlphaVersions();
         String alpha = "no_alphas";
@@ -312,7 +329,7 @@ public abstract class VersionChecker {
         return allVersions;
     }
 
-    protected abstract String latestVersion();
+    protected abstract String latestVersion(boolean checkForPreRelease);
 
     protected abstract String getDownloadUrl(String version);
 
@@ -328,5 +345,3 @@ public abstract class VersionChecker {
     }
 
 }
-
-

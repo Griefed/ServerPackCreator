@@ -30,7 +30,7 @@ public class VersionCheckerTests {
                     gitHubChecker.checkForUpdate("2.0.0", true)
             );
             Assertions.assertNotEquals(
-                    "No updates available. No PreReleases available.",
+                    "No updates available.",
                     gitHubChecker.checkForUpdate("2.0.0", true)
             );
 
@@ -39,7 +39,7 @@ public class VersionCheckerTests {
                     gitHubChecker.getDownloadUrl("3.0.0-alpha.14")
             );
 
-            Assertions.assertNotEquals("no_release", gitHubChecker.latestVersion());
+            Assertions.assertNotEquals("no_release", gitHubChecker.latestVersion(true));
 
             Assertions.assertNotNull(gitHubChecker.allVersions());
             Assertions.assertTrue(gitHubChecker.allVersions().size() > 0);
@@ -64,11 +64,11 @@ public class VersionCheckerTests {
 
             Assertions.assertNotEquals(
                     "2.0.0",
-                    gitLabChecker.checkForUpdate("2.0.0", false)
+                    gitLabChecker.checkForUpdate("2.0.0", true)
             );
             Assertions.assertNotEquals(
                     "No updates available.",
-                    gitLabChecker.checkForUpdate("2.0.0", false)
+                    gitLabChecker.checkForUpdate("2.0.0", true)
             );
 
             Assertions.assertNotEquals(
@@ -85,7 +85,7 @@ public class VersionCheckerTests {
                     gitLabChecker.getDownloadUrl("3.0.0-alpha.14")
             );
 
-            Assertions.assertNotEquals("no_release", gitLabChecker.latestVersion());
+            Assertions.assertNotEquals("no_release", gitLabChecker.latestVersion(true));
 
             Assertions.assertNotNull(gitLabChecker.allVersions());
             Assertions.assertTrue(gitLabChecker.allVersions().size() > 0);
