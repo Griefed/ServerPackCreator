@@ -1,3 +1,17 @@
+## [3.0.0-alpha.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.16...3.0.0-alpha.17) (2022-01-18)
+
+
+### 🦊 CI/CD
+
+* Correctly write VERSION.txt ([6434be8](https://git.griefed.de/Griefed/ServerPackCreator/commit/6434be836fa19f5df05eb38980dbaf57938e4866))
+* Fix release build... ([fe2f601](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe2f6014802607e822ac0fde7facfb79a32233af))
+* Only run tag and release generation on git.griefed.de ([8afea27](https://git.griefed.de/Griefed/ServerPackCreator/commit/8afea27163a985596c4d37102b6e7d366e640ba0))
+
+
+### 🛠 Fixes
+
+* Empty commit so a new alpha will be generated... ([c1b5698](https://git.griefed.de/Griefed/ServerPackCreator/commit/c1b5698a0aac863518244998c72a4f21ff4d604c))
+
 ## [3.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.15...3.0.0-alpha.16) (2022-01-18)
  
 
