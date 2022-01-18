@@ -210,7 +210,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>protected abstract java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestVersion--">latestVersion</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestVersion-boolean-">latestVersion</a></span>(boolean&nbsp;checkForPreRelease)</code>&nbsp;</td>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
@@ -314,11 +314,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>latestBeta</h4>
-<pre>protected&nbsp;java.lang.String&nbsp;latestBeta()</pre>
+<pre>protected&nbsp;java.lang.String&nbsp;latestBeta()
+                               throws java.lang.NumberFormatException</pre>
 <div class="block">Get the latest beta release.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns the latest beta release. If no beta release is available, <code>no_betas</code> is returned.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.NumberFormatException</code> - Thrown if a version can not be parsed into integers.</dd>
 </dl>
 </li>
 </ul>
@@ -328,11 +331,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>latestAlpha</h4>
-<pre>protected&nbsp;java.lang.String&nbsp;latestAlpha()</pre>
+<pre>protected&nbsp;java.lang.String&nbsp;latestAlpha()
+                                throws java.lang.NumberFormatException</pre>
 <div class="block">Get the latest alpha release.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns the latest alpha release. If no alpha release is available, <code>no_alphas</code> is returned.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.NumberFormatException</code> - Thrown if a versions can not be parsed into integers.</dd>
 </dl>
 </li>
 </ul>
@@ -354,13 +360,13 @@ extends java.lang.Object</pre>
 <pre>protected&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getAllVersions()</pre>
 </li>
 </ul>
-<a name="latestVersion--">
+<a name="latestVersion-boolean-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>latestVersion</h4>
-<pre>protected abstract&nbsp;java.lang.String&nbsp;latestVersion()</pre>
+<pre>protected abstract&nbsp;java.lang.String&nbsp;latestVersion(boolean&nbsp;checkForPreRelease)</pre>
 </li>
 </ul>
 <a name="getDownloadUrl-java.lang.String-">
