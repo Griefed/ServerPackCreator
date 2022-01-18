@@ -173,6 +173,8 @@ Docker Test:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
       --file Dockerfile .
+  rules:
+    - if: "$CI_SERVER_HOST =~ /git.griefed.de/"
 
 Release:
   stage: Release
@@ -300,6 +302,7 @@ Build Docker Release:
       --file Dockerfile .
   rules:
     - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
+    - if: "$CI_SERVER_HOST =~ /git.griefed.de/"
 
 Build Docker PreRelease:
   stage: Build Release
@@ -317,6 +320,7 @@ Build Docker PreRelease:
       --file Dockerfile .
   rules:
     - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+    - if: "$CI_SERVER_HOST =~ /git.griefed.de/"
 
 coverage:
   stage: Other
@@ -362,7 +366,6 @@ pages:
     - cp -Rf build/docs/javadoc public
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto public
   only:
-    - master
     - main
     - webservice
   artifacts:
