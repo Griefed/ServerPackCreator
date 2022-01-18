@@ -318,9 +318,7 @@ Build Docker Release:
           --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG \
           --file Dockerfile .
       else
-        docker buildx build --no-cache --platform linux/amd64,linux/arm64 \
-          --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG \
-          --file Dockerfile .
+        echo "Skipping..."
       fi
   only:
     variables:
@@ -348,9 +346,7 @@ Build Docker PreRelease:
           --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG \
           --file Dockerfile .
       else
-        docker buildx build --no-cache --platform linux/amd64,linux/arm64 \
-          --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG \
-          --file Dockerfile .
+        echo "Skipping..."
       fi
   only:
     variables:
