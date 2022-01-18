@@ -241,7 +241,7 @@ Build Release:
     - chmod +x gradlew
     - echo "**** Ensure clean environment ****"
     - "./gradlew about"
-    - echo ${CI_COMMIT_TAG} > backend/main/resources/VERSION.txt
+    - echo "version=${CI_COMMIT_TAG}" > backend/main/resources/VERSION.txt
   script:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe
