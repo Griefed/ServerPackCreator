@@ -179,10 +179,12 @@ Docker Test:
           --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME" \
           --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA" \
           --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME \
+          --build-arg HOSTER=$CI_SERVER_HOST \
           --file Dockerfile .
       else
         docker buildx build --no-cache --platform linux/amd64,linux/arm64 \
           --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME \
+          --build-arg HOSTER=$CI_SERVER_HOST \
           --file Dockerfile .
       fi
 
@@ -252,6 +254,10 @@ PreRelease:
 Build Release:
   stage: Build Release
   image: griefed/baseimage-ubuntu-jdk-8:2.0.0
+  needs:
+    - job: release_job
+      optional: true
+      artifacts: false
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -307,57 +313,39 @@ Build Docker Release:
   stage: Build Release
   image: griefed/gitlab-ci-cd:1.0.4
   before_script:
-    - |-
-      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
-        docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-        docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-      else
-        echo "Not logging in to DockerHub or GitHub..."
-      fi
-      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      docker buildx create --use --name grfdbuilder
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
   script:
-    - |-
-      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
-        docker buildx build --push --no-cache --platform linux/amd64,linux/arm64 \
-          --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG" \
-          --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest" \
-          --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG" \
-          --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest" \
-          --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG \
-          --file Dockerfile .
-      else
-        echo "Skipping..."
-      fi
+    - docker buildx build --push --no-cache --platform linux/amd64,linux/arm64
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
+      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
+      --build-arg HOSTER=$CI_SERVER_HOST
+      --file Dockerfile .
   rules:
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
+    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker PreRelease:
   stage: Build Release
   image: griefed/gitlab-ci-cd:1.0.4
   before_script:
-    - |-
-      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
-        docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-        docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-      else
-        echo "Not logging in to DockerHub or GitHub..."
-      fi
-      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      docker buildx create --use --name grfdbuilder
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
   script:
-    - |-
-      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
-        docker buildx build --push --no-cache --platform linux/amd64,linux/arm64 \
-          --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG" \
-          --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG" \
-          --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG \
-          --file Dockerfile .
-      else
-        echo "Skipping..."
-      fi
+    - docker buildx build --push --no-cache --platform linux/amd64,linux/arm64
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
+      --build-arg HOSTER=$CI_SERVER_HOST
+      --file Dockerfile .
   rules:
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
+    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 coverage:
   stage: Other
@@ -410,3 +398,15 @@ pages:
     paths:
       - public
     expire_in: 1 week
+
+release_job:
+  stage: Release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com"'
+  script:
+    - echo "Running the release job to mirror release generation from parent repository."
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: 'Release $CI_COMMIT_TAG'
+    description: './CHANGELOG.md'
