@@ -128,6 +128,11 @@ A list of known issues can be found in [Known Issues](https://github.com/Griefed
 
 # 2. Contributing
 
+Java documentation available at:
+- https://griefed.pages.griefed.de/ServerPackCreator/ or
+- https://griefed.github.io/ServerPackCreator/ or
+- https://griefed.gitlab.io/ServerPackCreator/
+
 **Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.**
 
 A short excerpt:
