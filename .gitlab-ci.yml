@@ -179,10 +179,12 @@ Docker Test:
           --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME" \
           --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA" \
           --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME \
+          --build-arg HOSTER=$CI_SERVER_HOST \
           --file Dockerfile .
       else
         docker buildx build --no-cache --platform linux/amd64,linux/arm64 \
           --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME \
+          --build-arg HOSTER=$CI_SERVER_HOST \
           --file Dockerfile .
       fi
 
@@ -322,6 +324,7 @@ Build Docker Release:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
+      --build-arg HOSTER=$CI_SERVER_HOST
       --file Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -339,6 +342,7 @@ Build Docker PreRelease:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
+      --build-arg HOSTER=$CI_SERVER_HOST
       --file Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'

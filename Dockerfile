@@ -1,6 +1,7 @@
 FROM griefed/baseimage-ubuntu-jdk-8:2.0.0 AS builder
 
 ARG BRANCH_OR_TAG=webservice
+ARG HOSTER=git.griefed.de
 
 RUN \
   apt-get update && apt-get upgrade -y && \
@@ -8,7 +9,7 @@ RUN \
     libatomic1 && \
   git clone \
     -b $BRANCH_OR_TAG \
-      https://github.com/Griefed/ServerPackCreator.git \
+      https://$HOSTER/Griefed/ServerPackCreator.git \
         /tmp/serverpackcreator && \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
