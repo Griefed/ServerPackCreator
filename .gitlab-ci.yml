@@ -410,3 +410,15 @@ pages:
     paths:
       - public
     expire_in: 1 week
+
+release_job:
+  stage: Release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com"'
+  script:
+    - echo "Running the release job to mirror release generation from parent repository."
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: 'Release $CI_COMMIT_TAG'
+    description: './CHANGELOG.md'
