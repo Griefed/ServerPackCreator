@@ -66,7 +66,8 @@ public class ApplicationProperties extends Properties {
             "PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-," +
             "ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-," +
             "sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-," +
-            "Toast Control-,Toast-Control-,torohealth-,toughnessbar-,TravelersTitles-,WorldNameRandomizer-";
+            "Toast Control-,Toast-Control-,ToastControl-,torchoptimizer-,torohealth-,toughnessbar-,TravelersTitles-," +
+            "WorldNameRandomizer-,yisthereautojump-";
     public final List<String> LIST_FALLBACK_MODS_DEFAULT = new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
 
     //DefaultFiles related

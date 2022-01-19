@@ -51,7 +51,8 @@ public class ApplicationPropertiesTest {
                                     "PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-," +
                                     "ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-," +
                                     "sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-," +
-                                    "Toast Control-,Toast-Control-,torohealth-,toughnessbar-,TravelersTitles-,WorldNameRandomizer-"
+                                    "Toast Control-,Toast-Control-,ToastControl-,torchoptimizer-,torohealth-,toughnessbar-,TravelersTitles-," +
+                                    "WorldNameRandomizer-,yisthereautojump-"
                                 )
                         .split(",")
                         )
