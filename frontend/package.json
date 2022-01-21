@@ -29,7 +29,7 @@
   "dependencies": {
     "@quasar/cli": "1.2.2",
     "@quasar/extras": "1.12.4",
-    "axios": "0.24.0",
+    "axios": "0.25.0",
     "core-js": "3.20.3",
     "tsparticles": "1.39.0",
     "quasar": "2.4.9",
