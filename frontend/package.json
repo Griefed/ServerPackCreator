@@ -32,7 +32,7 @@
     "axios": "0.24.0",
     "core-js": "3.20.3",
     "tsparticles": "1.39.0",
-    "quasar": "2.4.9",
+    "quasar": "2.4.12",
     "vue": "3.2.26",
     "vue-class-component": "8.0.0-rc.1"
   },
