@@ -7,7 +7,7 @@ public abstract class JComponentTailer extends JComponent {
 
     protected JTextArea textArea;
 
-    public JComponent create() {
+    public JComponent create(String tooltip) {
         JComponent jComponent = new JPanel(false);
         jComponent.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -23,16 +23,20 @@ public abstract class JComponentTailer extends JComponent {
         textArea = new JTextArea();
         textArea.setEditable(false);
 
-        createTailer();
+        if (tooltip != null) {
+            textArea.setToolTipText(tooltip);
+        }
 
         JScrollPane scrollPane = new JScrollPane(
                 textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        new SmartScroller(scrollPane);
+        new SmartScroller(scrollPane, SmartScroller.VERTICAL, SmartScroller.END);
 
         jComponent.add(scrollPane, constraints);
+
+        createTailer();
 
         return jComponent;
     }
