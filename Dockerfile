@@ -1,7 +1,8 @@
-FROM griefed/baseimage-ubuntu-jdk-8:2.0.1 AS builder
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.2 AS builder
 
 ARG BRANCH_OR_TAG=webservice
 ARG HOSTER=git.griefed.de
+ARG VERSION=dev
 
 RUN \
   apt-get update && apt-get upgrade -y && \
@@ -14,15 +15,21 @@ RUN \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
   rm -Rf /tmp/serverpackcreator/src/test && \
-  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon -x test && \
+  ./gradlew -Pversion=$VERSION about installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon -x test && \
+  mv \
+    tmp/serverpackcreator/build/libs/serverpackcreator-$VERSION.jar \
+    tmp/serverpackcreator/build/libs/serverpackcreator.jar && \
   ls -ahl ./build/libs/
 
-FROM griefed/baseimage-ubuntu-jdk-8:2.0.1
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.2
+
+ARG VERSION=dev
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
+LABEL version=$VERSION
 LABEL description="An app to create server packs from a given Minecraft Forge or Fabric modpack."
 
 RUN \

@@ -54,8 +54,8 @@ launch4j {
     mainClassName = 'de.griefed.serverpackcreator.Main'
     jarTask = project.tasks.jar
     fileDescription = "An application to create a server pack from any given Forge or Fabric Minecraft modpack."
-    version = System.getenv("NEW_VERSION").toString()
-    textVersion = System.getenv("NEW_VERSION").toString()
+    version = project.version
+    textVersion = project.version
     windowTitle = "ServerPackCreator"
     copyright = "GNU Lesser General Public License v2.1"
     downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
@@ -246,14 +246,35 @@ bootJar {
     // Customize MANIFEST to include relevant information.
     manifest {
         attributes  "Start-Class"    : "de.griefed.serverpackcreator.Main",
+                    "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
                     "Description"    : "Create server packs from Minecraft modpacks.",
                     "Built-By"       : System.getProperty("user.name"),
                     "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                     "Created-By"     : "Gradle ${gradle.gradleVersion}",
                     "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
-                    "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}"
+                    "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+                    "Implementation-Version" : "${project.version}",
+                    "Application-Name": "ServerPackCreator"
+
     }
+    exclude (
+            'META-INF/org',
+            'META-INF/org/**',
+            'META-INF/versions',
+            'META-INF/versions/**',
+            'META-INF/DEPENDENCIES',
+            'META-INF/LICENSE',
+            'META-INF/NOTICE',
+            'META-INF/CHANGES',
+            'META-INF/LICENSE.txt',
+            'META-INF/NOTICE.txt',
+            'META-INF/README.md',
+            'Log4j-**',
+            'icon.png',
+            'profile_icon.png'
+    )
 }
+
 
 // JAR configuration still needed for Launch4j.
 jar {
@@ -276,6 +297,8 @@ jar {
                 "Created-By"     : "Gradle ${gradle.gradleVersion}",
                 "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
                 "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+                "Implementation-Version" : "${project.version}",
+                "Application-Name": "ServerPackCreator"
         )
     }
     // Exclude files and folders which would otherwise bloat our JAR-file up.
@@ -295,24 +318,4 @@ jar {
             'icon.png',
             'profile_icon.png'
     )
-}
-
-// Publish the package with passed version to GHPR. Use ./gradlew -Pversion=${NEW_VERSION} publish, for example.
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Griefed/serverpackcreator")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-    publications {
-        gpr(MavenPublication) {
-            artifactId='serverpackcreator'
-            from (components.java)
-        }
-    }
 }

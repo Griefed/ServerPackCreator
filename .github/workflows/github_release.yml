@@ -10,7 +10,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      # GET LATEST CODE
+      # GET THE LATEST CODE
       - name: Checkout latest code
         uses: actions/checkout@master
         with:
@@ -33,8 +33,8 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{steps.tag.outputs.tag}}
           body: |
-            Automatic release of version: **${{steps.tag.outputs.tag}}**
-            **Changes in this release:**
+            Automatic pre-release of version: **${{steps.tag.outputs.tag}}**
+            **Changes in this pre-release:**
             TO BE COPY'N'PASTED BY GRIEFED FROM GITLAB
           draft: false
           prerelease: false
@@ -52,18 +52,16 @@ jobs:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_VERSION=$(echo "${{steps.tag.outputs.tag}}")
-          echo "New version: ${NEW_VERSION}"
-          echo "Github username: ${GITHUB_ACTOR}"
-          ./gradlew clean
-          ./gradlew -Pversion=${NEW_VERSION} publish createExe --info -x test
+          ./gradlew about
+          echo "version=${{steps.tag.outputs.tag}}" > backend/main/resources/VERSION.txt
+          ./gradlew -Pversion=${{steps.tag.outputs.tag}} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
       - name: List files
         run: ls -ahl build/libs
 
       - name: Rename files
         run: |
           echo "**** Renaming files to please the eye ****"
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+          mv build/libs/serverpackcreator.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
           mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar

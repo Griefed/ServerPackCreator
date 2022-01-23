@@ -363,36 +363,12 @@ public class ApplicationProperties extends Properties {
 
         this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
 
-        String prefix = "/BOOT-INF/classes";
-
-        JarUtilities jarUtilities = new JarUtilities();
-
-        if (jarUtilities.systemInformation(jarUtilities.getApplicationHomeForClass(ApplicationProperties.class)).get("jarName").endsWith(".exe")) {
-            prefix = "";
+        String version = ApplicationProperties.class.getPackage().getImplementationVersion();
+        if (version != null) {
+            this.serverPackCreatorVersion = version;
+        } else {
+            this.serverPackCreatorVersion = "dev";
         }
-
-        String version = "dev";
-
-        try (InputStream inputStream = new ClassPathResource(prefix + "/VERSION.txt").getInputStream()) {
-            Properties properties = new Properties();
-            properties.load(inputStream);
-            version = properties.getProperty("version","dev");
-
-        } catch (IOException ex) {
-
-            LOG.error("Couldn't read properties file.", ex);
-
-        } finally {
-
-            if (version.equals("")) {
-                version = "dev";
-            }
-
-            this.serverPackCreatorVersion = version.replace("\n","");
-
-        }
-
-
     }
 
     /**
