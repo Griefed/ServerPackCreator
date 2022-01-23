@@ -30,34 +30,125 @@ public class ApplicationPropertiesTest {
         Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS,new File("user_jvm_args.txt"));
 
         Assertions.assertNotNull(APPLICATIONPROPERTIES.LIST_FALLBACK_MODS_DEFAULT);
-        Assertions.assertEquals(
-                APPLICATIONPROPERTIES.LIST_FALLBACK_MODS_DEFAULT,new ArrayList<>(
-                        Arrays.asList(
-                                (
-                                    "AdvancementPlaques-,AmbientSounds_,backtools-,BetterAdvancements-,BetterAnimationsCollection-," +
-                                    "BetterDarkMode-,betterf3-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-," +
-                                    "Blur-,catalogue-,cherishedworlds-,classicbar-,clickadv-,ClientTweaks_,configured-," +
-                                    "Controlling-,CraftPresence-,CTM-,customdiscordrpc-,CustomMainMenu-,defaultoptions-,DefaultOptions_," +
-                                    "desiredservers-,Ding-,drippyloadingscreen-,drippyloadingscreen_,Durability101-,dynmus-," +
-                                    "dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,eiramoticons-,EiraMoticons_," +
-                                    "EnchantmentDescriptions-,EquipmentCompare-,extremesoundmuffler-,extremeSoundMuffler-," +
-                                    "Fallingleaves-,fallingleaves-,fancymenu_,findme-,flickerfix-,FpsReducer-,FullscreenWindowed-," +
-                                    "WindowedFullscreen-,InventoryEssentials_,InventorySpam-,invtweaks-,InventoryTweaks-,ItemBorders-," +
-                                    "itemzoom,itlt-,jeed-,jeiintegration_,JustEnoughProfessions-,JEITweaker-,justenoughbeacons-," +
-                                    "JustEnoughCalculation-,jehc-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-," +
-                                    "keywizard-,konkrete_,lazydfu-,LegendaryTooltips-,LightOverlay-,light-overlay-,LLOverlayReloaded-," +
-                                    "loadmyresources_,lootbeams-,mcbindtype-,modnametooltip_,modnametooltip-,moreoverlays-,MouseTweaks-," +
-                                    "multihotbar-,MyServerIsCompatible-,Neat,NotifMod-,OldJavaWarning-,ornaments-,overloadedarmorbar-," +
-                                    "PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-," +
-                                    "ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-," +
-                                    "sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-," +
-                                    "Toast Control-,Toast-Control-,ToastControl-,torchoptimizer-,torohealth-,toughnessbar-,TravelersTitles-," +
-                                    "WorldNameRandomizer-,yisthereautojump-"
-                                )
-                        .split(",")
-                        )
-                )
-        );
+        Assertions.assertEquals(APPLICATIONPROPERTIES.LIST_FALLBACK_MODS_DEFAULT,new ArrayList<>(
+            Arrays.asList((
+                "3dSkinLayers-," +
+                "AdvancementPlaques-," +
+                "AmbientSounds_," +
+                "armorchroma-," +
+                "backtools-," +
+                "BetterAdvancements-," +
+                "BetterAnimationsCollection-," +
+                "BetterDarkMode-," +
+                "BetterF3-," +
+                "BetterF3-," +
+                "BetterFoliage-," +
+                "BetterPingDisplay-," +
+                "BetterPlacement-," +
+                "Blur-," +
+                "catalogue-," +
+                "cherishedworlds-," +
+                "classicbar-," +
+                "clickadv-," +
+                "ClientTweaks_," +
+                "configured-," +
+                "Controlling-," +
+                "CraftPresence-," +
+                "CTM-," +
+                "customdiscordrpc-," +
+                "CustomMainMenu-," +
+                "DefaultOptions_," +
+                "defaultoptions-," +
+                "desiredservers-," +
+                "Ding-," +
+                "drippyloadingscreen_," +
+                "drippyloadingscreen-," +
+                "Durability101-," +
+                "dynamic-music-," +
+                "DynamicSurroundings-," +
+                "DynamicSurroundingsHuds-," +
+                "dynmus-," +
+                "EiraMoticons_," +
+                "eiramoticons-," +
+                "EnchantmentDescriptions-," +
+                "EquipmentCompare-," +
+                "extremesoundmuffler-," +
+                "extremeSoundMuffler-," +
+                "Fallingleaves-," +
+                "fallingleaves-," +
+                "fancymenu_," +
+                "findme-," +
+                "flickerfix-," +
+                "FpsReducer-," +
+                "FullscreenWindowed-," +
+                "InventoryEssentials_," +
+                "InventorySpam-," +
+                "InventoryTweaks-," +
+                "invtweaks-," +
+                "ItemBorders-," +
+                "itemzoom," +
+                "itlt-," +
+                "jeed-," +
+                "jehc-," +
+                "jeiintegration_," +
+                "JEITweaker-," +
+                "just-enough-harvestcraft-," +
+                "justenoughbeacons-," +
+                "JustEnoughCalculation-," +
+                "JustEnoughProfessions-," +
+                "JustEnoughProfessions-," +
+                "JustEnoughResources-," +
+                "keywizard-," +
+                "konkrete_," +
+                "lazydfu-," +
+                "LegendaryTooltips-," +
+                "light-overlay-," +
+                "LightOverlay-," +
+                "LLOverlayReloaded-," +
+                "loadmyresources_," +
+                "lootbeams-," +
+                "mcbindtype-," +
+                "medievalmusic-," +
+                "modnametooltip_," +
+                "modnametooltip-," +
+                "moreoverlays-," +
+                "MouseTweaks-," +
+                "multihotbar-," +
+                "MyServerIsCompatible-," +
+                "Neat ," +
+                "NotifMod-," +
+                "OldJavaWarning-," +
+                "ornaments-," +
+                "overloadedarmorbar-," +
+                "PackMenu-," +
+                "PickUpNotifier-," +
+                "Ping-," +
+                "preciseblockplacing-," +
+                "presencefootsteps-," +
+                "PresenceFootsteps-," +
+                "ReAuth-," +
+                "ResourceLoader-," +
+                "shutupexperimentalsettings-," +
+                "SimpleDiscordRichPresence-," +
+                "smoothboot-," +
+                "sounddeviceoptions-," +
+                "SpawnerFix-," +
+                "spoticraft-," +
+                "tconplanner-," +
+                "timestamps-," +
+                "Tips-," +
+                "TipTheScales-," +
+                "Toast Control-," +
+                "Toast-Control-," +
+                "ToastControl-," +
+                "torchoptimizer-," +
+                "torohealth-," +
+                "toughnessbar-," +
+                "TravelersTitles-," +
+                "WindowedFullscreen-," +
+                "WorldNameRandomizer-," +
+                "yisthereautojump-"
+            ).split(","))));
 
         Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_CONFIG);
         Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_CONFIG,new File("serverpackcreator.conf"));
