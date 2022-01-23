@@ -134,4 +134,16 @@ public class SystemUtilities {
 
         return new File(fileDestination).exists();
     }
+
+    public boolean replaceFile(File sourceFile, File destinationFile) throws IOException {
+
+        if (destinationFile.delete()) {
+
+            FileUtils.moveFile(sourceFile, destinationFile);
+            return true;
+
+        }
+
+        return false;
+    }
 }
