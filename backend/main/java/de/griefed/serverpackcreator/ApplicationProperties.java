@@ -434,6 +434,7 @@ public class ApplicationProperties extends Properties {
      */
     public void addToListOfDirectoriesToExclude(String entry) {
         if (!this.listDirectoriesExclude.contains(entry) && !this.listCheckAgainstNewEntry.contains(entry)) {
+            LOG.debug("Adding " + entry + " to list of files or directories to exclude.");
             this.listDirectoriesExclude.add(entry);
         }
     }
