@@ -378,7 +378,6 @@ public class ConfigurationHandler {
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
             configurationModel.setClientMods(APPLICATIONPROPERTIES.getListFallbackMods());
         } else {
-            // TODO: Delete empty values, like ,, and print warning
             configurationModel.setClientMods(configurationModel.getClientMods());
         }
 
@@ -761,8 +760,6 @@ public class ConfigurationHandler {
      */
     public boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir, List<String> encounteredErrors) {
         boolean configCorrect = true;
-        // TODO: Delete empty values, like ,, and print warning
-        // TODO: If size is 1 and entry is copy_whole_modpack, print warning about potential issues, server apck and archive size
 
         directoriesToCopy.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
 

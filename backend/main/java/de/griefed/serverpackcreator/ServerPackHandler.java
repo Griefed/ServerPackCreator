@@ -244,6 +244,7 @@ public class ServerPackHandler {
 
             // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
             if (configurationModel.getIncludeServerInstallation()) {
+                //TODO Only if modloader is Forge, otherwise simply download Fabric launcher
                 installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath(), destination);
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -307,7 +308,7 @@ public class ServerPackHandler {
      * @param destination String. The destination of the server pack.
      */
     private void replaceFabricServerLauncher(String minecraftVersion, String modLoaderVersion, String destination) {
-
+        //TODO: This needs to become the new fabric installer
         URL downloadUrl;
         String oldFile = String.format("%s/%s/fabric-server-launch.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
         String fileDestination = String.format("%s/%s/fabric-server-launcher.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
@@ -423,6 +424,10 @@ public class ServerPackHandler {
      * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
      */
     private void fabricShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
+        /*TODO
+         * Replace old fabric installer with new launcher. download of minecraft server jar needs to check in versions/<minecraft_version>/server-<minecraft_version>.jar
+         * Installer URL needs to be replaced with new launcher URL
+         */
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
@@ -517,6 +522,10 @@ public class ServerPackHandler {
      * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
      */
     private void fabricBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
+        /*TODO
+         * Replace old fabric installer with new launcher. download of minecraft server jar needs to check in versions/<minecraft_version>/server-<minecraft_version>.jar
+         * Installer URL needs to be replaced with new launcher URL
+         */
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
@@ -1449,6 +1458,8 @@ public class ServerPackHandler {
      */
     void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath, String destination) {
 
+        //TODO: Replace old fabric installer with new launcher, in this method the fabric installation would have to go
+
         List<String> commandArguments = new ArrayList<>();
 
         Process process = null;
@@ -1583,6 +1594,8 @@ public class ServerPackHandler {
      * @param destination String. The destination where the ZIP-archive should be created in.
      */
     void zipBuilder(String minecraftVersion, boolean includeServerInstallation, String destination) {
+
+        //TODO: Replace old fabric installer with new launcher and - new File(String.format("%s/%s/versions/%s/server-%s.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, minecraftVersion, minecraftVersion))
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.enter"));
