@@ -88,4 +88,16 @@ public class ListUtilities {
             }
         }
     }
+
+    /**
+     * Clean a given String List of any entry consisting only of whitespace or a length of <code>0</code>.
+     * @author Griefed
+     * @param listToCleanUp List String. The list from which to delete all entries consisting only of whitespace or with
+     *                      a length of zero.
+     * @return List String. Returns the cleaned up list.
+     */
+    public List<String> cleanList(List<String> listToCleanUp) {
+        listToCleanUp.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
+        return listToCleanUp;
+    }
 }

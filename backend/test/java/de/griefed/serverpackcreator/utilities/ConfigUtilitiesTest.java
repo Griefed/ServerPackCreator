@@ -389,5 +389,4 @@ public class ConfigUtilitiesTest {
         List<String> config = new ArrayList<>(100);
         Assertions.assertTrue(CONFIGUTILITIES.getConfigurationAsList(configurationModel).size() > 0);
     }
-
 }

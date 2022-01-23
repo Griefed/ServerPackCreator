@@ -213,8 +213,8 @@ public class ConfigUtilities {
                         "%s\njavaArgs = \"%s\"\n\n" +
                         "%s\nserverPackSuffix = \"%s\"",
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), LISTUTILITIES.encapsulateListElements(clientMods),
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), LISTUTILITIES.encapsulateListElements(copyDirs),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), LISTUTILITIES.encapsulateListElements(LISTUTILITIES.cleanList(clientMods)),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), LISTUTILITIES.encapsulateListElements(LISTUTILITIES.cleanList(copyDirs)),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.icon"), serverIconPath,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.properties"), serverPropertiesPath,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverinstallation"), includeServer,
@@ -418,5 +418,4 @@ public class ConfigUtilities {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.servericon"),serverIconPath));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.serverproperties"),serverPropertiesPath));
     }
-
 }

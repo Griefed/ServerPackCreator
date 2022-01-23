@@ -1318,8 +1318,8 @@ public class TabCreateServerPack extends JComponent {
             javaArgs = "empty";
         }
 
-        List<String> tempClientMods = new ArrayList<>(Arrays.asList(TEXTFIELD_CLIENTSIDEMODS.getText().replace(", ", ",").split(",")));
-        List<String> tempCopyDirs = new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(",")));
+        List<String> tempClientMods = LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
+        List<String> tempCopyDirs = LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
 
         CONFIGUTILITIES.writeConfigToFile(
                 TEXTFIELD_MODPACKDIRECTORY.getText(),

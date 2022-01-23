@@ -67,4 +67,9 @@ public class ListUtilitiesTest {
         Assertions.assertTrue(LISTUTILITIES.encapsulateListElements(clientMods).contains("\"SpawnerFix\""));
         Assertions.assertTrue(LISTUTILITIES.encapsulateListElements(clientMods).contains("\"WorldNameRandomizer\""));
     }
+
+    @Test
+    void cleanListTest() {
+        Assertions.assertEquals(1, LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(""," ","  ","   ","    ","     ","","","",""," ","hamlo"))).size());
+    }
 }
