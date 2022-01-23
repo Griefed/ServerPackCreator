@@ -81,11 +81,13 @@ public class TabCreateServerPack extends JComponent {
     private final SystemUtilities SYSTEMUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    private final StyledDocument serverPackGeneratedDocument = new DefaultStyledDocument();
+    private final StyledDocument SERVERPACKGENERATEDDOCUMENT = new DefaultStyledDocument();
+    private final SimpleAttributeSet SERVERPACKGENERATEDATTRIBUTESET = new SimpleAttributeSet();
+    private final JTextPane SERVERPACKGENERATEDTEXTPANE = new JTextPane(SERVERPACKGENERATEDDOCUMENT);
 
-    private final SimpleAttributeSet serverPackGeneratedAttributeSet = new SimpleAttributeSet();
-
-    private final JTextPane serverPackGeneratedTextPane = new JTextPane(serverPackGeneratedDocument);
+    private final StyledDocument LAZYMODEDOCUMENT = new DefaultStyledDocument();
+    private final SimpleAttributeSet LAZYMODEATTRIBUTESET = new SimpleAttributeSet();
+    private final JTextPane LAZYMODETEXTPANE = new JTextPane(LAZYMODEDOCUMENT);
 
     private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/folder.png")));
     private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/start_generation.png")));
@@ -269,6 +271,38 @@ public class TabCreateServerPack extends JComponent {
         }
 
         this.FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
+
+        SERVERPACKGENERATEDTEXTPANE.setOpaque(false);
+        SERVERPACKGENERATEDTEXTPANE.setEditable(false);
+        StyleConstants.setBold(SERVERPACKGENERATEDATTRIBUTESET, true);
+        StyleConstants.setFontSize(SERVERPACKGENERATEDATTRIBUTESET, 14);
+        SERVERPACKGENERATEDTEXTPANE.setCharacterAttributes(SERVERPACKGENERATEDATTRIBUTESET, true);
+        StyleConstants.setAlignment(SERVERPACKGENERATEDATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+        try {
+            SERVERPACKGENERATEDDOCUMENT.insertString(0,
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
+                    SERVERPACKGENERATEDATTRIBUTESET);
+        } catch (BadLocationException ex) {
+            LOG.error("Error inserting text into aboutDocument.", ex);
+        }
+
+        LAZYMODETEXTPANE.setOpaque(false);
+        LAZYMODETEXTPANE.setEditable(false);
+        StyleConstants.setBold(LAZYMODEATTRIBUTESET, true);
+        StyleConstants.setFontSize(LAZYMODEATTRIBUTESET, 14);
+        LAZYMODETEXTPANE.setCharacterAttributes(LAZYMODEATTRIBUTESET, true);
+        StyleConstants.setAlignment(LAZYMODEATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+        try {
+            LAZYMODEDOCUMENT.insertString(0,
+                    LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0") + "\n\n" +
+                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode1") + "\n" +
+                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode2") + "\n" +
+                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode3") + "\n\n" +
+                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"),
+                    LAZYMODEATTRIBUTESET);
+        } catch (BadLocationException ex) {
+            LOG.error("Error inserting text into aboutDocument.", ex);
+        }
     }
 
     /**
@@ -761,19 +795,7 @@ public class TabCreateServerPack extends JComponent {
 
 // --------------------------------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
-        serverPackGeneratedTextPane.setOpaque(false);
-        serverPackGeneratedTextPane.setEditable(false);
-        StyleConstants.setBold(serverPackGeneratedAttributeSet, true);
-        StyleConstants.setFontSize(serverPackGeneratedAttributeSet, 14);
-        serverPackGeneratedTextPane.setCharacterAttributes(serverPackGeneratedAttributeSet, true);
-        StyleConstants.setAlignment(serverPackGeneratedAttributeSet, StyleConstants.ALIGN_LEFT);
-        try {
-            serverPackGeneratedDocument.insertString(0,
-                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.browse"),
-                    serverPackGeneratedAttributeSet);
-        } catch (BadLocationException ex) {
-            LOG.error("Error inserting text into aboutDocument.", ex);
-        }
+
         loadConfig(new File("serverpackcreator.conf"));
 
         return CREATESERVERPACKPANEL;
@@ -1166,8 +1188,38 @@ public class TabCreateServerPack extends JComponent {
     private void generateServerpack(ActionEvent event) {
 
         FRAME_SERVERPACKCREATOR.setResizable(false);
-
         BUTTON_GENERATESERVERPACK.setEnabled(false);
+
+        int decision = 0;
+
+        MATERIALTEXTPANEUI.installUI(LAZYMODETEXTPANE);
+
+        if (TEXTFIELD_COPYDIRECTORIES.getText().equals("lazy_mode")) {
+            decision = JOptionPane.showConfirmDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LAZYMODETEXTPANE,
+                    LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.lazymode"),
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        LOG.debug("Case " + decision);
+
+        switch (decision) {
+            case 0:
+
+                generate();
+                break;
+
+            default:
+
+                FRAME_SERVERPACKCREATOR.setResizable(true);
+                BUTTON_GENERATESERVERPACK.setEnabled(true);
+                break;
+        }
+    }
+
+    private void generate() {
 
         Tailer tailer = Tailer.create(new File("./logs/serverpackcreator.log"), new TailerListenerAdapter() {
             public void handle(String line) {
@@ -1235,12 +1287,12 @@ public class TabCreateServerPack extends JComponent {
 
                         loadConfig(new File("serverpackcreator.conf"));
 
-                        serverPackGeneratedDocument.setParagraphAttributes(0, serverPackGeneratedDocument.getLength(), serverPackGeneratedAttributeSet, false);
-                        MATERIALTEXTPANEUI.installUI(serverPackGeneratedTextPane);
+                        SERVERPACKGENERATEDDOCUMENT.setParagraphAttributes(0, SERVERPACKGENERATEDDOCUMENT.getLength(), SERVERPACKGENERATEDATTRIBUTESET, false);
+                        MATERIALTEXTPANEUI.installUI(SERVERPACKGENERATEDTEXTPANE);
 
                         if (JOptionPane.showConfirmDialog(
                                 FRAME_SERVERPACKCREATOR,
-                                serverPackGeneratedTextPane,
+                                SERVERPACKGENERATEDTEXTPANE,
                                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE) == 0) {
@@ -1296,7 +1348,7 @@ public class TabCreateServerPack extends JComponent {
                         String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.errors.encountered"),encounteredErrors.size()),
                         JOptionPane.ERROR_MESSAGE,
                         UIManager.getIcon("OptionPane.errorIcon")
-                        );
+                );
             }
 
             BUTTON_GENERATESERVERPACK.setEnabled(true);

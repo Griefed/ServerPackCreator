@@ -51,23 +51,23 @@ Use at your own risk! Be aware that data loss is possible.
 
 ## Commandline Interface (CLI)
 
-| Windows | Linux | Mac
-| ------- | ----- | ----
-| ![CLI Win](https://i.griefed.de/images/2021/11/20/cli_windows.png) | ![CLI Linux](https://i.griefed.de/images/2021/11/20/cli_linux.png) | ![CLI Mac](https://i.griefed.de/images/2021/11/20/cli_mac.png)
+| Windows                                                            | Linux                                                              | Mac                                                            |
+|--------------------------------------------------------------------|--------------------------------------------------------------------|----------------------------------------------------------------|
+| ![CLI Win](https://i.griefed.de/images/2021/11/20/cli_windows.png) | ![CLI Linux](https://i.griefed.de/images/2021/11/20/cli_linux.png) | ![CLI Mac](https://i.griefed.de/images/2021/11/20/cli_mac.png) |
 
 ## Graphical User Interface (GUI)
 
-| Windows | Linux | Mac
-| ------- | ----- | ----
-| ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_windows_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_linux_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_mac_light.png)
-| ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_windows_dark.png) | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_linux_dark.png) | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_mac_dark.png)
+| Windows                                                                    | Linux                                                                    | Mac                                                                    |
+|----------------------------------------------------------------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
+| ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_windows_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_linux_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_mac_light.png) |
+| ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_windows_dark.png)   | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_linux_dark.png)   | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_mac_dark.png)   |
 
 ## Webservice
 
-| Light mode | Dark mode 
-| ---------- | ---------
-| ![Light Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_light.png) | ![Dark Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_dark.png)
-| ![Light Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_light.png) | ![Dark Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_dark.png)
+| Light mode                                                                                 | Dark mode                                                                                |
+|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| ![Light Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_light.png) | ![Dark Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_dark.png) |
+| ![Light Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_light.png)         | ![Dark Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_dark.png)         |
 
 # Advantages/Disadvantages of CLI, GUI and Webservice:
 
@@ -77,30 +77,30 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 ## CLI:
 
-| Advantages | Disadvantages |
-| :--------- | :------------ |
-| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use. | Gathering of information for a configuration file is tedious. |
-| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards. | No convenience features file folder-browsing or jumping to the generated server pack after generation. |
-|  | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. 
-|  | Manual editing of the configuration-file in case you want to change it. |
+| Advantages                                                                                                                                  | Disadvantages                                                                                                         |
+|:--------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use.                                   | Gathering of information for a configuration file is tedious.                                                         |
+| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards. | No convenience features file folder-browsing or jumping to the generated server pack after generation.                |
+|                                                                                                                                             | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
+|                                                                                                                                             | Manual editing of the configuration-file in case you want to change it.                                               |
 
 ## GUI:
 
-| Advantages | Disadvantages |
-| :--------- | :------------ |
-| Browse the filesystem for folders and file required by the configuration. | Requires a graphical environment. |
-| Setting up a configuration by browsing the filesystem and selecting your Minecraft and modloader versions from a list. |  |
-| Browsing the generated server pack after generation has finished. |  |
-| Loading and saving different configurations for quick generation of multiple server packs in short succession. |  |
-| Edit the configuration in the GUI. No manual file-editing required. |  |
+| Advantages                                                                                                             | Disadvantages                     |
+|:-----------------------------------------------------------------------------------------------------------------------|:----------------------------------|
+| Browse the filesystem for folders and file required by the configuration.                                              | Requires a graphical environment. |
+| Setting up a configuration by browsing the filesystem and selecting your Minecraft and modloader versions from a list. |                                   |
+| Browsing the generated server pack after generation has finished.                                                      |                                   |
+| Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
+| Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
 
 ## Webservice:
 
-| Advantages | Disadvantages |
-| :--------- | :------------ |
-| No installation/setup required if a public instance is available somewhere. | Requires someone to setup a publicly accessible instance. |
-| Punch in your projectID and fileID and get a download for a server pack after it has been generated. | Requires somewhat modern browser versions. |
-| Voting system to let users indicate whether a generated server pack works. | Not all browers may be supported. |
+| Advantages                                                                                                                                                 | Disadvantages                                                                              |
+|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| No installation/setup required if a public instance is available somewhere.                                                                                | Requires someone to setup a publicly accessible instance.                                  |
+| Punch in your projectID and fileID and get a download for a server pack after it has been generated.                                                       | Requires somewhat modern browser versions.                                                 |
+| Voting system to let users indicate whether a generated server pack works.                                                                                 | Not all browers may be supported.                                                          |
 | Mostly open REST API. Interaction with the webservice does not *require* a browser. You can request a server pack generation and/or download from the CLI. | Currently only allows server pack generation for modpacks and files already on CurseForge. |
 
 ---
@@ -111,9 +111,9 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 **Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
 Huge shoutout and thank you!**
 
-[JetBrains](https://www.jetbrains.com/) | [IntelliJ IDEA](https://www.jetbrains.com/idea/) | [WebStorm](https://www.jetbrains.com/webstorm/) | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)
---------- | ---------  | ------ | ----
-[![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
+| [JetBrains](https://www.jetbrains.com/)                                                             | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                                                      | [WebStorm](https://www.jetbrains.com/webstorm/)                                                                 | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
 
 ---
 
@@ -185,11 +185,12 @@ A short excerpt:
     1. Enter a CurseForge projectID;FileID-combination as the modpack directory.
 3. **Install a Forge or Fabric modloader server in your server pack**
 4. **Configurable list of clientside-only mods to not include your server pack**
-    1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`
+    1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`.
 5. **Configurable list of directories from your modpack to include in your server pack**
-    1. Copying worlds from `saves/world` will result in the world being copied to `server_pack/world`
-    2. Specify extra files to include in server pack like follows `source/path/to/file;server_pack/destination_file`
-    3. Exclude files/directories by prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties`
+    1. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
+    2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
+    3. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
+    4. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
 6. **Generate Forge or Fabric start-scripts in your server pack**
     1. Specify JVM flags / Java Args for your start scripts!
 7. **Include a server-icon.png-file in your server pack**
@@ -198,12 +199,12 @@ A short excerpt:
     1. Replace the file in `server-files` with your own!
 9. **Create a ZIP-archive of your server pack**
 11. **GUI to fully configure and run ServerPackCreator**
-    1. Load existing config
-    2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary
-    3. Logs from last run in separate tabs
-    4. Set a suffix for the server pack to be generated
+    1. Load existing config.
+    2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
+    3. Logs from last run in separate tabs.
+    4. Set a suffix for the server pack to be generated.
     5. And much more!
-12. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs.**
+12. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs**
     1. Generate a server pack from a projectID and fileID combination.
     2. All generated server packs available for download by everyone.
     3. Admin-area to edit some configurations, like the list of clientside-only mods, whether regeneration of server packs is allowed, reading the log file(s), enabling/disabling installed addons, etc.
@@ -216,11 +217,11 @@ A short excerpt:
 
 Consider major version incompatible to each other. Meaning, configs from 1.x.x are incompatible with version 2.x.x etc.
 
-Version mask | Description
--------------|------------
-**1.x.x** | CLI only
-**2.x.x** | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.**
-**3.x.x** | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`
+| Version mask | Description                                                                                                                                                                                            |
+|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **1.x.x**    | CLI only                                                                                                                                                                                               |
+| **2.x.x**    | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.** |
+| **3.x.x**    | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`                      |
 
 # 5. Addons
 
@@ -242,8 +243,8 @@ functionality, thanks to an addon, without having to wait for me to write it and
 
 For a detailed example of how such an addon is supposed to look, check the ExampleAddon in the list below!
 
-| Addon | Creator | Description |
-| :---- | :------ | :---------- |
+| Addon                                                                              | Creator | Description                                                        |
+|:-----------------------------------------------------------------------------------|:--------|:-------------------------------------------------------------------|
 | [ExampleServerPackAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon) | Griefed | An example addon providing a starting point for addon development. |
 
 # 6. Configuration
@@ -260,29 +261,29 @@ Should you be using ServerPackCreator.exe, the default/template-files will be ge
 An example for a fully configured `serverpackcreator.conf` can be viewed [here](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/examples/serverpackcreator.example).
 Detailed list of all template files:
 
-File | Description
----- | ----
-serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/serverpackcreator.conf).
-server.properties | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties).
-server-icon.png | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server-icon.png).
+| File                   | Description                                                                                                                                                                                                                                         |
+|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/serverpackcreator.conf).                      |
+| server.properties      | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties).            |
+| server-icon.png        | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server-icon.png). |
 
 The serverpackcreator.conf file allows you to customize a couple of different things:
 
-Variable | Description
--------- | -----------
-modpackDir | The path to the directory where your modpack resides in. Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4, version 4.6.7: `430517,3250155`. Specifying said combination would download and install version 4.6.7 of my modpack Survive Create Prosper, gather information, write a new config file and therefore allow you to generate server packs for any modpack on CurseForge. Special thanks to [TheRandomLabs](https://github.com/TheRandomLabs) and their [CurseAPI](https://github.com/TheRandomLabs/CurseAPI).
-clientMods | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look.
-copyDirs | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. A suggestion-list is created when setting `modpackDir`to a projectID,fileID-combination.
-includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.
-javaPath | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.
-minecraftVersion | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.
-modLoader | Which modloader to install. Must be either "Forge" or "Fabric". The same modloader your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.
-modLoaderVersion | Specific Modloader version to install the server in the serverpack. The same version your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.
-includeServerIcon | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.
-includeServerProperties | Whether to include server.properties in your serverpack. Must be `true` or `false`.
-includeStartScripts | Whether to include start scripts in your serverpack. Must be `true` or `false`.
-includeZipCreation | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.
-javaArgs | JVM flags / Java Args to add to the generated start-scripts. Set to "empty" to not use any in your start-scripts.
+| Variable                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| modpackDir                | The path to the directory where your modpack resides in. Can also be a combination of CurseForge projectID and fileID. Example for Survive Create Prosper 4, version 4.6.7: `430517,3250155`. Specifying said combination would download and install version 4.6.7 of my modpack Survive Create Prosper, gather information, write a new config file and therefore allow you to generate server packs for any modpack on CurseForge. Special thanks to [TheRandomLabs](https://github.com/TheRandomLabs) and their [CurseAPI](https://github.com/TheRandomLabs/CurseAPI). |
+| clientMods                | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look.                                                     |
+| copyDirs                  | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`. A suggestion-list is created when setting `modpackDir`to a projectID,fileID-combination.                                                                                                                                                                                                |
+| includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| javaPath                  | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| minecraftVersion          | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.                                                                                                                                                                                                                                                                                                                                                                        |
+| modLoader                 | Which modloader to install. Must be either "Forge" or "Fabric". The same modloader your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.                                                                                                                                                                                                                                                                                                                                                                                       |
+| modLoaderVersion          | Specific Modloader version to install the server in the serverpack. The same version your modpack uses. Automatically set when setting `modpackDir`to a projectID,fileID-combination.                                                                                                                                                                                                                                                                                                                                                                                     |
+| includeServerIcon         | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| includeServerProperties   | Whether to include server.properties in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| includeStartScripts       | Whether to include start scripts in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| includeZipCreation        | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| javaArgs                  | JVM flags / Java Args to add to the generated start-scripts. Set to "empty" to not use any in your start-scripts.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
@@ -368,9 +369,11 @@ Have fun!
 **1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
 
 **2.** Copy the .jar file to the partent directory of your modpack. Example:
+
 ![location](https://i.griefed.de/images/2021/03/03/run_windows1.png)
 
 **3.** Open a command prompt by Shift-Right-Clicking into a free space of the explorer window, followed by a click on "Open command prompt here":
+
 ![command](https://i.griefed.de/images/2021/03/03/run_windows2.png)
 
 **4.** Start the initial setup of ServerPackCreator by running it with the command: `java -jar ServerPackCreator-X.X.X.jar` (X.X.X corresponds to the version you downloaded. It will probably be different to the version used in these screenshots.)
@@ -525,6 +528,7 @@ Example after successfully running SPC:
 **1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
 
 **2.** Copy the .jar file to the partent directory of your modpack. Example:
+
 ![location](https://i.griefed.de/images/2021/03/05/3biap1.png)
 
 **3.** Open Terminal using Spotlight, Launchpad or by running `Terminal.app` from `/Applications/Utilities` folder
@@ -601,10 +605,10 @@ Creates a Container which runs [Griefed's](https://github.com/Griefed) [ServerPa
 The [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) image is a custom base image built with [Alpine linux](https://alpinelinux.org/) and [S6 overlay](https://github.com/just-containers/s6-overlay).
 Using this image allows us to use the same user/group ids in the container as on the host, making file transfers much easier
 
-Tags | Description
------|------------
-`latest` | Using the `latest` tag will pull the latest image for linux/amd64,linux/arm/v7,linux/arm64.
-`develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk!
+| Tags      | Description                                                                                   |
+|-----------|-----------------------------------------------------------------------------------------------|
+| `latest`  | Using the `latest` tag will pull the latest image for linux/amd64,linux/arm/v7,linux/arm64.   |
+| `develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk! |
 
 Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
 Images are available for linux/amd64 and linux/arm64.
@@ -612,23 +616,23 @@ Images are available for linux/amd64 and linux/arm64.
 When running as a docker container, there are a couple more settings you need to be aware of. Beware that any environment setting **after** `STARTUP_PARAMETER` is
 irrelevant when using `STARTUP_PARAMETER=web`.
 
-Variable | Description
--------- | -----------
-TZ | The timezone your system operates in. Default "Europe/Berlin"
-PUID | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.
-PGID | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.
-STARTUP_PARAMETER | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.
-MODPACKDIR | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID.
-MODLOADERVERSION | The version of the modlaoder the modpack uses.
-MODLOADER | Either Forge or Fabric
-MINECRAFTVERSION | The Minecraft version the modpack uses.
-INCLUDEZIPCREATION | true or false
-INCLUDESTARTSCRIPTS | true or false
-INCLUDESERVERPROPERTIES | true or false
-INCLUDESERVERINSTALLATION | true or false
-INCLUDESERVERICON | true or false
-COPYDIRS | Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.
-CLIENTMODS | Comma-separated. Client-side mods to delete from server pack.
+| Variable                  | Description                                                                                                                                                                                                                                     |
+|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| TZ                        | The timezone your system operates in. Default "Europe/Berlin"                                                                                                                                                                                   |
+| PUID                      | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.                                                                               |
+| PGID                      | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.                                                                             |
+| STARTUP_PARAMETER         | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.                                             |
+| MODPACKDIR                | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID. |
+| MODLOADERVERSION          | The version of the modlaoder the modpack uses.                                                                                                                                                                                                  |
+| MODLOADER                 | Either Forge or Fabric                                                                                                                                                                                                                          |
+| MINECRAFTVERSION          | The Minecraft version the modpack uses.                                                                                                                                                                                                         |
+| INCLUDEZIPCREATION        | true or false                                                                                                                                                                                                                                   |
+| INCLUDESTARTSCRIPTS       | true or false                                                                                                                                                                                                                                   |
+| INCLUDESERVERPROPERTIES   | true or false                                                                                                                                                                                                                                   |
+| INCLUDESERVERINSTALLATION | true or false                                                                                                                                                                                                                                   |
+| INCLUDESERVERICON         | true or false                                                                                                                                                                                                                                   |
+| COPYDIRS                  | Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.                                                                                                                             |
+| CLIENTMODS                | Comma-separated. Client-side mods to delete from server pack.                                                                                                                                                                                   |
 
 ### 7.4.1 Using docker-compose:
 
@@ -701,16 +705,16 @@ Build with:
 
 # 9. Third-Party libraries used in this project
 
-| Library | License |
-| :---- | :---- |
-[Typesafe](https://github.com/lightbend/config) | [License](backend/main/resources/third-party-licenses/Typesafe-Config-License)
-[Fasterxml Jackson Core](https://github.com/FasterXML/jackson-core) | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Core-License)
-[Fasterxml Jackson Databind](https://github.com/FasterXML/jackson) | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Databind-License)
-[Apache commons-io](https://github.com/apache/commons-io) | [License](backend/main/resources/third-party-licenses/Apache-Commons-IO-License)
-[Lingala zip4j](https://github.com/srikanth-lingala/zip4j) | [License](backend/main/resources/third-party-licenses/Lingala-zip4j-License)
-[moandjiezana toml4j](https://github.com/mwanji/toml4j) | [License](backend/main/resources/third-party-licenses/Moandjienza-toml4j-License)
-[TheRandomLabs CurseAPI](https://github.com/TheRandomLabs/CurseAPI) | [License](backend/main/resources/third-party-licenses/TheRandomLabs-CurseAPI-License)
-[Xerial SQLite JDBC](https://github.com/xerial/sqlite-jdbc) | [License](backend/main/resources/third-party-licenses/Xerial-SQLite-JDBC-License)
-[Vincenzopalazzo Material-UI-Swing](https://github.com/vincenzopalazzo/material-ui-swing) | [License](backend/main/resources/third-party-licenses/Vincenzopalazzo-Material-UI-Swing)
-[Springframework Spring-Boot](https://github.com/spring-projects/spring-framework) | [License](backend/main/resources/third-party-licenses/Springframework-Spring-Boot-License)
-[Apache log4j](https://github.com/apache/log4j) | [License](backend/main/resources/third-party-licenses/Apache-log4j-License)
+| Library                                                                                   | License                                                                                    |
+|:------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| [Typesafe](https://github.com/lightbend/config)                                           | [License](backend/main/resources/third-party-licenses/Typesafe-Config-License)             |
+| [Fasterxml Jackson Core](https://github.com/FasterXML/jackson-core)                       | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Core-License)      |
+| [Fasterxml Jackson Databind](https://github.com/FasterXML/jackson)                        | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Databind-License)  |
+| [Apache commons-io](https://github.com/apache/commons-io)                                 | [License](backend/main/resources/third-party-licenses/Apache-Commons-IO-License)           |
+| [Lingala zip4j](https://github.com/srikanth-lingala/zip4j)                                | [License](backend/main/resources/third-party-licenses/Lingala-zip4j-License)               |
+| [moandjiezana toml4j](https://github.com/mwanji/toml4j)                                   | [License](backend/main/resources/third-party-licenses/Moandjienza-toml4j-License)          |
+| [TheRandomLabs CurseAPI](https://github.com/TheRandomLabs/CurseAPI)                       | [License](backend/main/resources/third-party-licenses/TheRandomLabs-CurseAPI-License)      |
+| [Xerial SQLite JDBC](https://github.com/xerial/sqlite-jdbc)                               | [License](backend/main/resources/third-party-licenses/Xerial-SQLite-JDBC-License)          |
+| [Vincenzopalazzo Material-UI-Swing](https://github.com/vincenzopalazzo/material-ui-swing) | [License](backend/main/resources/third-party-licenses/Vincenzopalazzo-Material-UI-Swing)   |
+| [Springframework Spring-Boot](https://github.com/spring-projects/spring-framework)        | [License](backend/main/resources/third-party-licenses/Springframework-Spring-Boot-License) |
+| [Apache log4j](https://github.com/apache/log4j)                                           | [License](backend/main/resources/third-party-licenses/Apache-log4j-License)                |

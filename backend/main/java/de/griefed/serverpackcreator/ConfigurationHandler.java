@@ -378,6 +378,7 @@ public class ConfigurationHandler {
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
             configurationModel.setClientMods(APPLICATIONPROPERTIES.getListFallbackMods());
         } else {
+            // TODO: Delete empty values, like ,, and print warning
             configurationModel.setClientMods(configurationModel.getClientMods());
         }
 
@@ -760,6 +761,10 @@ public class ConfigurationHandler {
      */
     public boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir, List<String> encounteredErrors) {
         boolean configCorrect = true;
+        // TODO: Delete empty values, like ,, and print warning
+        // TODO: If size is 1 and entry is copy_whole_modpack, print warning about potential issues, server apck and archive size
+
+        directoriesToCopy.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
 
         if (directoriesToCopy.isEmpty()) {
 
@@ -770,7 +775,19 @@ public class ConfigurationHandler {
 
             encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
 
+        } else if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
+
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode1"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode2"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode3"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"));
+
         } else {
+
+            if (directoriesToCopy.size() > 1 && directoriesToCopy.contains("lazy_mode")) LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode.ignore"));
+
+            directoriesToCopy.removeIf(entry -> entry.equals("lazy_mode"));
 
             for (String directory : directoriesToCopy) {
 
@@ -794,6 +811,16 @@ public class ConfigurationHandler {
 
                 // Add an entry to the list of directories/files to exclude if it starts with !
                 } else if (directory.startsWith("!")) {
+
+                    File fileOrDirectory = new File(String.format("%s/%s",modpackDir, directory.substring(1)));
+
+                    if (fileOrDirectory.isFile()) {
+                        LOG.warn("File " + directory.substring(1) + " will be ignored.");
+                    } else if (fileOrDirectory.isDirectory()) {
+                        LOG.warn("Directory " + directory.substring(1) + " will be ignored.");
+                    } else {
+                        LOG.debug("What? " + fileOrDirectory + " is neither a file nor directory.");
+                    }
 
                     APPLICATIONPROPERTIES.addToListOfDirectoriesToExclude(directory.substring(directory.lastIndexOf("!") + 1));
 

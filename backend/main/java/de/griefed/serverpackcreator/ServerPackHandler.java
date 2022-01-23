@@ -309,6 +309,7 @@ public class ServerPackHandler {
     private void replaceFabricServerLauncher(String minecraftVersion, String modLoaderVersion, String destination) {
 
         URL downloadUrl;
+        String oldFile = String.format("%s/%s/fabric-server-launch.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
         String fileDestination = String.format("%s/%s/fabric-server-launcher.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
 
         try {
@@ -322,12 +323,20 @@ public class ServerPackHandler {
 
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabric.replace"));
 
-            FileUtils.deleteQuietly(new File(String.format("%s/%s/fabric-server-launch.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
-
             try {
-                FileUtils.moveFile(new File(fileDestination), new File(String.format("%s/%s/fabric-server-launch.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
+
+                LOG.debug(SYSTEMUTILITIES.replaceFile(new File(fileDestination), new File(oldFile)) ? "File replaced." : "File not replaced.");
+
             } catch (IOException ex) {
-                LOG.error("Couldn't move file \"" + fileDestination + "\" to " + String.format("\"%s/%s/fabric-server-launch.jar\"", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination));
+
+                LOG.error("Couldn't move file \"" + fileDestination + "\" to " + oldFile);
+
+                try {
+                    SYSTEMUTILITIES.downloadFile(oldFile,new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", VERSIONLISTER.getFabricReleaseInstallerVersion(), VERSIONLISTER.getFabricReleaseInstallerVersion())));
+                } catch (MalformedURLException e) {
+                    LOG.error("Couldn't download old launcher after replacing failed.",e);
+                }
+
             }
 
         }
@@ -1091,123 +1100,147 @@ public class ServerPackHandler {
             LOG.error(String.format("Failed to create directory %s", serverPath));
         }
 
+        // Note to self: What is this? How does this exclude files? What did I do here?
         directoriesToCopy.removeIf(n -> n.startsWith("!"));
 
-        for (String directory : directoriesToCopy) {
 
-            String clientDir = String.format("%s/%s", modpackDir, directory);
-            String serverDir = String.format("%s/%s", serverPath, directory);
+        if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), directory));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode1"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode2"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode3"));
+            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"));
 
-            /*
-             * Check for semicolon. If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
-             * for a file they specifically want to include in their server pack.
-             */
-            if (directory.contains(";")) {
+            try {
 
-                String[] sourceFileDestinationFileCombination = directory.split(";");
+                FileUtils.copyDirectory(
+                        new File(modpackDir),
+                        new File(serverPath)
+                );
 
-                File sourceFile = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
-                File destinationFile = new File(String.format("%s/%s", serverPath, sourceFileDestinationFileCombination[1]));
-
-                try {
-                    FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
-                } catch (IOException ex) {
-                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                }
-
-            /*
-             * Check whether the entry starts with saves, and if it does, change the destination path to NOT include
-             * saves in it, so when a world is specified inside the saves-directory, it is copied to the base-directory
-             * of the server pack, instead of a saves-directory inside the modpack.
-             */
-            } else if (directory.startsWith("saves/")) {
-
-                try {
-
-                    FileUtils.copyDirectory(new File(clientDir), new File(String.format("%s/%s", serverPath, directory.substring(6))));
-
-                } catch (IOException ex) {
-                    LOG.error("An error occurred copying the specified world.", ex);
-                }
-
-            /*
-             * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
-             * user-specified clientside-only mods from the list of mods in the mods-directory.
-             */
-            } else if (directory.startsWith("mods") && clientMods.size() > 0) {
-
-                List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
-
-                try {
-                    Files.createDirectories(Paths.get(serverDir));
-                } catch (IOException ex) {
-                    LOG.info(String.format("Setting up %s file(s).", serverDir));
-                }
-
-                for (String file : listOfFiles) {
-                    try {
-
-                        Files.copy(
-                                Paths.get(file),
-                                Paths.get(String.format("%s/%s", serverDir, new File(file).getName())),
-                                REPLACE_EXISTING
-                        );
-
-                        LOG.debug(String.format("Copying: %s", file));
-
-                    } catch (IOException ex) {
-                        if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                            LOG.error("An error occurred copying files to the serverpack.", ex);
-                        }
-                    }
-                }
-
-            } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
-
-                File sourceFile = new File(String.format("%s/%s", modpackDir, directory));
-                File destinationFile = new File(String.format("%s/%s", serverPath, directory));
-
-                try {
-                    FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
-                } catch (IOException ex) {
-                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                }
-
-            } else {
-
-                try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
-
-                    files.forEach(file -> {
-                        if (excludeFileOrDirectory(file.toString())) {
-
-                            LOG.debug("Excluding " + file + " from server pack");
-
-                        } else {
-                            try {
-
-                                Files.copy(
-                                        file,
-                                        Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
-                                        REPLACE_EXISTING
-                                );
-
-                                LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
-                            } catch (IOException ex) {
-                                if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                    LOG.error("An error occurred copying files to the serverpack.", ex);
-                                }
-                            }
-                        }
-                    });
-
-                } catch (IOException ex) {
-                    LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                }
+            } catch (IOException ex) {
+                LOG.error("An error occurred copying the modpack to the server pack in lazy mode.", ex);
             }
 
+        } else {
+            for (String directory : directoriesToCopy) {
+
+                String clientDir = String.format("%s/%s", modpackDir, directory);
+                String serverDir = String.format("%s/%s", serverPath, directory);
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), directory));
+
+                /*
+                 * Check for semicolon. If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
+                 * for a file they specifically want to include in their server pack.
+                 */
+                if (directory.contains(";")) {
+
+                    String[] sourceFileDestinationFileCombination = directory.split(";");
+
+                    try {
+                        FileUtils.copyFile(
+                                new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
+                                new File(String.format("%s/%s", serverPath, sourceFileDestinationFileCombination[1])),
+                                REPLACE_EXISTING
+                        );
+                    } catch (IOException ex) {
+                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    }
+
+                    /*
+                     * Check whether the entry starts with saves, and if it does, change the destination path to NOT include
+                     * saves in it, so when a world is specified inside the saves-directory, it is copied to the base-directory
+                     * of the server pack, instead of a saves-directory inside the modpack.
+                     */
+                } else if (directory.startsWith("saves/")) {
+
+                    try {
+
+                        FileUtils.copyDirectory(
+                                new File(clientDir),
+                                new File(String.format("%s/%s", serverPath, directory.substring(6))));
+
+                    } catch (IOException ex) {
+                        LOG.error("An error occurred copying the specified world.", ex);
+                    }
+
+                    /*
+                     * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
+                     * user-specified clientside-only mods from the list of mods in the mods-directory.
+                     */
+                } else if (directory.startsWith("mods") && clientMods.size() > 0) {
+
+                    List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
+
+                    try {
+                        Files.createDirectories(Paths.get(serverDir));
+                    } catch (IOException ignored) {}
+
+                    for (String file : listOfFiles) {
+                        try {
+
+                            Files.copy(
+                                    Paths.get(file),
+                                    Paths.get(String.format("%s/%s", serverDir, new File(file).getName())),
+                                    REPLACE_EXISTING
+                            );
+
+                            LOG.debug(String.format("Copying: %s", file));
+
+                        } catch (IOException ex) {
+                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                LOG.error("An error occurred copying files to the serverpack.", ex);
+                            }
+                        }
+                    }
+
+                } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
+
+                    File sourceFile = new File(String.format("%s/%s", modpackDir, directory));
+                    File destinationFile = new File(String.format("%s/%s", serverPath, directory));
+
+                    try {
+                        FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
+                    } catch (IOException ex) {
+                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    }
+
+                } else {
+
+                    try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
+
+                        files.forEach(file -> {
+                            if (excludeFileOrDirectory(file.toString().replace("\\","/"))) {
+
+                                LOG.debug("Excluding " + file + " from server pack");
+
+                            } else {
+                                try {
+
+                                    Files.copy(
+                                            file,
+                                            Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
+                                            REPLACE_EXISTING
+                                    );
+
+                                    LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
+                                } catch (IOException ex) {
+                                    if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                        LOG.error("An error occurred copying files to the serverpack.", ex);
+                                    }
+                                }
+                            }
+                        });
+
+                    } catch (IOException ex) {
+                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    }
+
+                }
+            }
         }
     }
 
