@@ -100,6 +100,7 @@ public class ConfigurationModel {
      * @param newClientMods The new list of clientside-only mods to store.
      */
     public void setClientMods(List<String> newClientMods) {
+        newClientMods.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
         this.clientMods = newClientMods;
     }
 
@@ -118,10 +119,8 @@ public class ConfigurationModel {
      * @param newCopyDirs The new list of directories to include in server pack to store.
      */
     public void setCopyDirs(List<String> newCopyDirs) {
-        for (int i = 0; i < newCopyDirs.size(); i++) {
-            newCopyDirs.removeIf(n -> (n.equalsIgnoreCase("server_pack")));
-            newCopyDirs.replaceAll(n -> n.replace("\\","/"));
-        }
+        newCopyDirs.removeIf(entry -> entry.equalsIgnoreCase("server_pack") || entry.matches("\\s+") || entry.length() == 0);
+        newCopyDirs.replaceAll(entry -> entry.replace("\\","/"));
         this.copyDirs = newCopyDirs;
     }
 
@@ -140,8 +139,7 @@ public class ConfigurationModel {
      * @param newModpackDir The new modpack directory path to store.
      */
     public void setModpackDir(String newModpackDir) {
-        newModpackDir = newModpackDir.replace("\\","/");
-        this.modpackDir = newModpackDir;
+        this.modpackDir = newModpackDir.replace("\\","/");
     }
 
     /**
@@ -159,8 +157,7 @@ public class ConfigurationModel {
      * @param newJavaPath The new Java path to store.
      */
     public void setJavaPath(String newJavaPath) {
-        newJavaPath = newJavaPath.replace("\\", "/");
-        this.javaPath = newJavaPath;
+        this.javaPath = newJavaPath.replace("\\", "/");
     }
 
     /**
