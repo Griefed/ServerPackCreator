@@ -57,21 +57,20 @@ public abstract class VersionChecker {
     public String checkForUpdate(String currentVersion, boolean checkForPreReleases) {
 
         LOG.debug("Current version: " + currentVersion);
-        String noUpdateMessage = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
 
         try {
 
             String newVersion = isUpdateAvailable(currentVersion, checkForPreReleases);
 
             if (newVersion.equals("up_to_date")) {
-                return noUpdateMessage;
+                return LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
             } else {
                 return newVersion + ";" + getDownloadUrl(newVersion);
             }
 
         } catch (NumberFormatException ex) {
             LOG.error("A version could not be parsed into integers.", ex);
-            return noUpdateMessage;
+            return LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
         }
     }
 
@@ -284,12 +283,14 @@ public abstract class VersionChecker {
 
             for (String betaVersion : betaVersions) {
 
-                if (isNewOrSameSemanticVersion(beta, betaVersion) && Integer.parseInt(betaVersion.substring(11)) > Integer.parseInt(beta.substring(11))) {
+                if (isNewOrSameSemanticVersion(beta, betaVersion) && Integer.parseInt(betaVersion.substring(11)) >= Integer.parseInt(beta.substring(11))) {
                     beta = betaVersion;
                 }
             }
 
         }
+
+        LOG.debug("Latest beta: " + beta);
 
         return beta;
     }
@@ -318,8 +319,12 @@ public abstract class VersionChecker {
 
         }
 
+        LOG.debug("Latest alpha: " + alpha);
+
         return alpha;
     }
+
+    public abstract void refresh() throws HttpClientErrorException, JsonProcessingException ;
 
     protected void setAllVersions() {
         this.allVersions = allVersions();

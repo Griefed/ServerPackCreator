@@ -64,17 +64,18 @@ public class GitHubChecker extends VersionChecker {
      * <code>repository</code> will make up the URL called for checks.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} for i18n.
-     * @throws JsonProcessingException Thrown if the requested repository couldn't be reached.
-     * @throws HttpClientErrorException Thrown if the GitHub API rate limit was exceeded.
      */
-    public GitHubChecker(LocalizationManager injectedLocalizationManager) throws JsonProcessingException, HttpClientErrorException {
+    public GitHubChecker(LocalizationManager injectedLocalizationManager) {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
+    }
 
+    @Override
+    public void refresh() throws HttpClientErrorException, JsonProcessingException {
         setRepository();
         setLatest();
         setAllVersions();

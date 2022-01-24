@@ -48,7 +48,7 @@ public class GitLabChecker extends VersionChecker {
 
     private static final Logger LOG = LogManager.getLogger(GitLabChecker.class);
 
-    private final String GITLAB_API = "https://git.griefed.de/api/v4/projects/63/releases";
+    private final String GITLAB_API;
     private final RestTemplate REST_TEMPLATE = new RestTemplateBuilder()
             .setConnectTimeout(Duration.ofSeconds(5))
             .setReadTimeout(Duration.ofSeconds(5))
@@ -61,10 +61,11 @@ public class GitLabChecker extends VersionChecker {
      * the given <code>id</code> will make up the URL called for checks.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} for i18n.
-     * @throws JsonProcessingException Thrown if the requested repository couldn't be reached.
-     * @throws HttpClientErrorException Thrown if the GitHub API rate limit was exceeded.
+     * @param repository String. The GitLab repository you want to check. Examples:<br>
+     *                   <code>https://gitlab.com/api/v4/projects/32677538/releases</code><br>
+     *                   <code>https://git.griefed.de/api/v4/projects/63/releases</code>
      */
-    public GitLabChecker(LocalizationManager injectedLocalizationManager) throws JsonProcessingException, HttpClientErrorException {
+    public GitLabChecker(LocalizationManager injectedLocalizationManager, String repository) {
 
         if (injectedLocalizationManager == null) {
             this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -72,8 +73,12 @@ public class GitLabChecker extends VersionChecker {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        setRepository();
+        this.GITLAB_API = repository;
+    }
 
+    @Override
+    public void refresh() throws HttpClientErrorException, JsonProcessingException  {
+        setRepository();
         setAllVersions();
     }
 
