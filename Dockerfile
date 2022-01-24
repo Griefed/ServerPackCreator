@@ -1,4 +1,4 @@
-FROM griefed/baseimage-ubuntu-jdk-8:2.0.0 AS builder
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.2 AS builder
 
 ARG BRANCH_OR_TAG=webservice
 
@@ -16,7 +16,7 @@ RUN \
   ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon -x test && \
   ls -ahl ./build/libs/
 
-FROM griefed/baseimage-ubuntu-jdk-8:2.0.0
+FROM griefed/baseimage-ubuntu-jdk-8:2.0.2
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
