@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":10,"i2":10,"i3":6,"i4":6,"i5":10,"i6":10,"i7":10,"i8":6,"i9":10,"i10":6};
+var methods = {"i0":6,"i1":10,"i2":10,"i3":6,"i4":6,"i5":10,"i6":10,"i7":10,"i8":6,"i9":6,"i10":10,"i11":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -213,10 +213,14 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#latestVersion-boolean-">latestVersion</a></span>(boolean&nbsp;checkForPreRelease)</code>&nbsp;</td>
 </tr>
 <tr id="i9" class="rowColor">
+<td class="colFirst"><code>abstract void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#refresh--">refresh</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#setAllVersions--">setAllVersions</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>protected abstract void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#setRepository--">setRepository</a></span>()</code>&nbsp;</td>
 </tr>
@@ -339,6 +343,22 @@ extends java.lang.Object</pre>
 <dd>String. Returns the latest alpha release. If no alpha release is available, <code>no_alphas</code> is returned.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.NumberFormatException</code> - Thrown if a versions can not be parsed into integers.</dd>
+</dl>
+</li>
+</ul>
+<a name="refresh--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>refresh</h4>
+<pre>public abstract&nbsp;void&nbsp;refresh()
+                      throws org.springframework.web.client.HttpClientErrorException,
+                             com.fasterxml.jackson.core.JsonProcessingException</pre>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>org.springframework.web.client.HttpClientErrorException</code></dd>
+<dd><code>com.fasterxml.jackson.core.JsonProcessingException</code></dd>
 </dl>
 </li>
 </ul>
