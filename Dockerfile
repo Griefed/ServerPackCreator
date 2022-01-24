@@ -14,11 +14,12 @@ RUN \
         /tmp/serverpackcreator && \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
-  rm -Rf /tmp/serverpackcreator/src/test && \
-  ./gradlew -Pversion=$VERSION about installQuasar cleanFrontend assembleFrontend copyDist build --info --no-daemon -x test && \
+  rm -Rf /tmp/serverpackcreator/backend/test && \
+  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build -Pversion=$VERSION --info --no-daemon -x test && \
+  ls -ahl ./build/libs/ && \
   mv \
-    tmp/serverpackcreator/build/libs/serverpackcreator-$VERSION.jar \
-    tmp/serverpackcreator/build/libs/serverpackcreator.jar && \
+    ./build/libs/serverpackcreator-$VERSION.jar \
+    ./build/libs/serverpackcreator.jar && \
   ls -ahl ./build/libs/
 
 FROM griefed/baseimage-ubuntu-jdk-8:2.0.2
