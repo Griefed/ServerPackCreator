@@ -54,7 +54,7 @@ jobs:
         run: |
           ./gradlew about
           echo "version=${{steps.tag.outputs.tag}}" > backend/main/resources/VERSION.txt
-          ./gradlew -Pversion=${{steps.tag.outputs.tag}} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info -x test
+          ./gradlew -Pversion=${{steps.tag.outputs.tag}} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace  -x test
       - name: List files
         run: ls -ahl build/libs
 

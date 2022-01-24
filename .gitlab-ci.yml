@@ -139,8 +139,7 @@ Gradle Test:
     - "./gradlew about"
   script:
     - echo "**** Building ServerPackCreator ****"
-    - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe
-    --info --no-daemon"
+    - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace --no-daemon"
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/jacoco/test
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
@@ -266,8 +265,7 @@ Build Release:
     - echo "version=${CI_COMMIT_TAG}" > backend/main/resources/VERSION.txt
   script:
     - echo "**** Building ServerPackCreator ****"
-    - "./gradlew -Pversion=${CI_COMMIT_TAG} installQuasar cleanFrontend assembleFrontend copyDist build createExe
-    --info --no-daemon -x test"
+    - "./gradlew -Pversion=${CI_COMMIT_TAG} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --no-daemon --stacktrace -x test"
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
