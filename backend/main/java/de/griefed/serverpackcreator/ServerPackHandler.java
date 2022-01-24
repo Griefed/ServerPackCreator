@@ -44,9 +44,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.*;
 import java.util.*;
 import java.util.List;
@@ -244,12 +241,16 @@ public class ServerPackHandler {
 
             // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
             if (configurationModel.getIncludeServerInstallation()) {
-                //TODO Only if modloader is Forge, otherwise simply download Fabric launcher
                 installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath(), destination);
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
             }
+            // If modloader is fabric, try and replace the old server-launch.jar with the new and improved one which also downloads the Minecraft server.
+            if (configurationModel.getModLoader().equalsIgnoreCase("Fabric")) {
+                provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),configurationModel.getModLoaderVersion(), destination);
+            }
+
 
             // If true, copy the server-icon.png from server_files to the server pack.
             if (configurationModel.getIncludeServerIcon()) {
@@ -265,11 +266,6 @@ public class ServerPackHandler {
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
-            }
-
-            // If modloader is fabric, try and replace the old server-launch.jar with the new and improved one which also downloads the Minecraft server.
-            if (configurationModel.getModLoader().equalsIgnoreCase("Fabric")) {
-                replaceFabricServerLauncher(configurationModel.getMinecraftVersion(),configurationModel.getModLoaderVersion(), destination);
             }
 
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
@@ -300,17 +296,14 @@ public class ServerPackHandler {
     }
 
     /**
-     * Download and replace the fabric-server-launch.jar with the improved Fabric Server Launcher, if it is available for
-     * the given Minecraft and Fabric version.
+     * Download and provide the improved Fabric Server Launcher, if it is available for the given Minecraft and Fabric version.
      * @author Griefed
      * @param minecraftVersion String. The Minecraft version the modpack uses and the Fabric Server Launcher should be downloaded for.
      * @param modLoaderVersion String. The modloader version the modpack uses and the Fabric Server Launcher should be downloaded for.
      * @param destination String. The destination of the server pack.
      */
-    private void replaceFabricServerLauncher(String minecraftVersion, String modLoaderVersion, String destination) {
-        //TODO: This needs to become the new fabric installer
+    private void provideImprovedFabricServerLauncher(String minecraftVersion, String modLoaderVersion, String destination) {
         URL downloadUrl;
-        String oldFile = String.format("%s/%s/fabric-server-launch.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
         String fileDestination = String.format("%s/%s/fabric-server-launcher.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination);
 
         try {
@@ -322,24 +315,32 @@ public class ServerPackHandler {
 
         if (downloadUrl != null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
 
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabric.replace"));
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabric.improved"));
 
-            try {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(
+                            String.valueOf(
+                                    Paths.get(
+                                            String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, "SERVER_PACK_INFO.txt")
+                                    )
+                            )
+                    )
+            )) {
 
-                LOG.debug(SYSTEMUTILITIES.replaceFile(new File(fileDestination), new File(oldFile)) ? "File replaced." : "File not replaced.");
+                // Fabric Bash file
+                writer.write("If you are using this server pack on a managed server, meaning you can not execute scripts, please use the fabric-server-launcher.jar instead of the fabric-server-launch.jar. Note the extra \"er\" at the end of \"launcher\".\n");
+                writer.write("This is the improved Fabric Server Launcher, which will take care of downloading and installing the Minecraft server and any and all libraries needed for running the Fabric server.\n");
+                writer.write("\n");
+                writer.write("The downside of this method is the occasional incompatibility of mods with the Fabric version, as the new Fabric Server Launcher always uses the latest available Fabric version.\n");
+                writer.write("If a mod is incompatible with said latest Fabric version, contact the mod-author and ask them to remedy the situation.\n");
+                writer.write("The official Fabric Discord had the following to add to this:\n");
+                writer.write("    Fabric loader however is cross version, so unless there is a mod incompatibility (which usually involves the mod being broken / using non-api internals)\n");
+                writer.write("    there is no good reason to use anything but the latest. I.e. the latest loader on any Minecraft version works with the new server launcher.");
 
             } catch (IOException ex) {
-
-                LOG.error("Couldn't move file \"" + fileDestination + "\" to " + oldFile);
-
-                try {
-                    SYSTEMUTILITIES.downloadFile(oldFile,new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", VERSIONLISTER.getFabricReleaseInstallerVersion(), VERSIONLISTER.getFabricReleaseInstallerVersion())));
-                } catch (MalformedURLException e) {
-                    LOG.error("Couldn't download old launcher after replacing failed.",e);
-                }
-
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error("Error generating shell-script for Forge.", ex);
             }
-
         }
     }
 
@@ -424,10 +425,7 @@ public class ServerPackHandler {
      * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
      */
     private void fabricShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-        /*TODO
-         * Replace old fabric installer with new launcher. download of minecraft server jar needs to check in versions/<minecraft_version>/server-<minecraft_version>.jar
-         * Installer URL needs to be replaced with new launcher URL
-         */
+
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
@@ -522,10 +520,7 @@ public class ServerPackHandler {
      * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
      */
     private void fabricBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-        /*TODO
-         * Replace old fabric installer with new launcher. download of minecraft server jar needs to check in versions/<minecraft_version>/server-<minecraft_version>.jar
-         * Installer URL needs to be replaced with new launcher URL
-         */
+
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
@@ -1458,8 +1453,6 @@ public class ServerPackHandler {
      */
     void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath, String destination) {
 
-        //TODO: Replace old fabric installer with new launcher, in this method the fabric installation would have to go
-
         List<String> commandArguments = new ArrayList<>();
 
         Process process = null;
@@ -1594,8 +1587,6 @@ public class ServerPackHandler {
      * @param destination String. The destination where the ZIP-archive should be created in.
      */
     void zipBuilder(String minecraftVersion, boolean includeServerInstallation, String destination) {
-
-        //TODO: Replace old fabric installer with new launcher and - new File(String.format("%s/%s/versions/%s/server-%s.jar", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination, minecraftVersion, minecraftVersion))
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.enter"));
