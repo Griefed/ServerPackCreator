@@ -6,10 +6,10 @@ import javax.swing.*;
 
 /**
  * Plugin interface for plugins which are to be executed after the ServerPackCreator GUI have been initialized. This
- * interface allows plugins to add additional {@link javax.swing.JTabbedPane}.
+ * interface allows plugins to add additional {@link JComponent}s as additional tabs.
  * @author Griefed
  */
-public interface AddTabbedPane extends PluginInformation {
+public interface AddTab extends PluginInformation {
 
     /**
      * Get the {@link JTabbedPane} from this addon to add it to the ServerPackCreator GUI.

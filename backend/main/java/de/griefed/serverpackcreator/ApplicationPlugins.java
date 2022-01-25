@@ -3,7 +3,7 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackArchiveCreated;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackCreated;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackStart;
-import de.griefed.serverpackcreator.plugins.swinggui.AddTabbedPane;
+import de.griefed.serverpackcreator.plugins.swinggui.AddTab;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pf4j.JarPluginManager;
@@ -22,7 +22,7 @@ public class ApplicationPlugins extends JarPluginManager {
     public final List<ServerPackStart> PLUGINS_SERVERPACKSTART;
     public final List<ServerPackCreated> PLUGINS_SERVERPACKCREATED;
     public final List<ServerPackArchiveCreated> PLUGINS_SERVERPACKARCHIVECREATED;
-    public final List<AddTabbedPane> PLUGINS_TABBEDPANE;
+    public final List<AddTab> PLUGINS_TABBEDPANE;
 
     @Autowired
     public ApplicationPlugins(ApplicationProperties injectedApplicationProperties) {
@@ -40,7 +40,7 @@ public class ApplicationPlugins extends JarPluginManager {
         this.PLUGINS_SERVERPACKSTART = getExtensions(ServerPackStart.class);
         this.PLUGINS_SERVERPACKCREATED = getExtensions(ServerPackCreated.class);
         this.PLUGINS_SERVERPACKARCHIVECREATED = getExtensions(ServerPackArchiveCreated.class);
-        this.PLUGINS_TABBEDPANE = getExtensions(AddTabbedPane.class);
+        this.PLUGINS_TABBEDPANE = getExtensions(AddTab.class);
 
         availablePluginsAndExtensions();
     }
@@ -73,8 +73,8 @@ public class ApplicationPlugins extends JarPluginManager {
         }
 
 
-        LOG.info("Available AddTabbedPane plugins:");
-        for (AddTabbedPane pane : PLUGINS_TABBEDPANE) {
+        LOG.info("Available AddTab plugins:");
+        for (AddTab pane : PLUGINS_TABBEDPANE) {
             LOG.info("Name:       " + pane.getName());
             LOG.info("Description:" + pane.getDescription());
             LOG.info("Version:    " + pane.getVersion());
