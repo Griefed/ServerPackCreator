@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import de.griefed.serverpackcreator.AddonsHandler;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
@@ -268,8 +267,7 @@ public class ConfigUtilities {
     }
 
     /**
-     * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to any addon run by
-     * ServerPackCreator in {@link AddonsHandler}.<br>
+     * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to any addon that may run.
      * Values included in this list are:<br>
      * 1. modpackDir<br>
      * 2. clientMods<br>

@@ -7,6 +7,8 @@ import de.griefed.serverpackcreator.utilities.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.pf4j.JarPluginManager;
+import org.pf4j.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +26,6 @@ class ServerPackHandlerTest {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
-    private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
     private final BooleanUtilities BOOLEANUTILITIES;
     private final ListUtilities LISTUTILITIES;
@@ -32,6 +33,7 @@ class ServerPackHandlerTest {
     private final ConfigUtilities CONFIGUTILITIES;
     private final SystemUtilities SYSTEMUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final ApplicationPlugins PLUGINMANAGER;
 
     ServerPackHandlerTest() {
         try {
@@ -52,17 +54,16 @@ class ServerPackHandlerTest {
         SYSTEMUTILITIES = new SystemUtilities();
         BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
-        ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
         CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
         CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
-        SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+        PLUGINMANAGER = new ApplicationPlugins(APPLICATIONPROPERTIES);
+        SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, PLUGINMANAGER);
 
     }
 
     @Test
     void runTest() throws IOException {
         DEFAULTFILES.filesSetup();
-        ADDONSHANDLER.initializeAddons();
         ConfigurationModel configurationModel = new ConfigurationModel();
         CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator.conf"), configurationModel, true);
         SERVERPACKHANDLER.run(configurationModel);
@@ -424,7 +425,6 @@ class ServerPackHandlerTest {
         serverPack.setMinecraftVersion("1.16.5");
         serverPack.setJavaArgs("");
         DEFAULTFILES.filesSetup();
-        ADDONSHANDLER.initializeAddons();
         CONFIGURATIONHANDLER.checkConfiguration(serverPack, false);
         SERVERPACKHANDLER.run(serverPack);
         Assertions.assertFalse(new File("server-packs/forge_tests_copy/libraries").isDirectory());

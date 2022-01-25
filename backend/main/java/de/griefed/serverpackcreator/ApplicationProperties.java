@@ -19,18 +19,16 @@
  */
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.utilities.JarUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.zip.ZipInputStream;
 
 /**
  * Our properties-class. Extends {@link java.util.Properties}. Sets up default properties loaded from the local serverpackcreator.properties
@@ -48,6 +46,7 @@ public class ApplicationProperties extends Properties {
     public final File FILE_WINDOWS = new File("start.bat");
     public final File FILE_LINUX = new File("start.sh");
     public final File FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS = new File("user_jvm_args.txt");
+    public final Path PLUGINS_DIRECTORY;
     private final String FALLBACK_MODS_DEFAULT_ASSTRING =
         "3dSkinLayers-," +
         "AdvancementPlaques-," +
@@ -369,6 +368,8 @@ public class ApplicationProperties extends Properties {
         } else {
             this.serverPackCreatorVersion = "dev";
         }
+
+        this.PLUGINS_DIRECTORY = Paths.get(getProperty("de.griefed.serverpackcreator.plugins.directory","./plugins"));
     }
 
     /**

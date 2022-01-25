@@ -20,20 +20,17 @@
 package de.griefed.serverpackcreator.swing;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
-import de.griefed.serverpackcreator.AddonsHandler;
-import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.ServerPackHandler;
+import de.griefed.serverpackcreator.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.utilities.*;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.pf4j.JarPluginManager;
+import org.pf4j.PluginManager;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -72,7 +69,6 @@ public class TabCreateServerPack extends JComponent {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ServerPackHandler CREATESERVERPACK;
     private final CurseCreateModpack CURSECREATEMODPACK;
-    private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
     private final BooleanUtilities BOOLEANUTILITIES;
     private final ListUtilities LISTUTILITIES;
@@ -80,6 +76,7 @@ public class TabCreateServerPack extends JComponent {
     private final ConfigUtilities CONFIGUTILITIES;
     private final SystemUtilities SYSTEMUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final ApplicationPlugins PLUGINMANAGER;
 
     private final StyledDocument SERVERPACKGENERATEDDOCUMENT = new DefaultStyledDocument();
     private final SimpleAttributeSet SERVERPACKGENERATEDATTRIBUTESET = new SimpleAttributeSet();
@@ -182,7 +179,6 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
-     * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedVersionLister Instance of {@link VersionLister} required for setting/changing comboboxes.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
@@ -191,12 +187,14 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedStringUtilities Instance of {@link StringUtilities}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               AddonsHandler injectedAddonsHandler, VersionLister injectedVersionLister, ApplicationProperties injectedApplicationProperties,
+                               VersionLister injectedVersionLister, ApplicationProperties injectedApplicationProperties,
                                JFrame injectedServerPackCreatorFrame, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities) {
+                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities,
+                               ApplicationPlugins injectedPluginManager) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -234,12 +232,6 @@ public class TabCreateServerPack extends JComponent {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
-        if (injectedAddonsHandler == null) {
-            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
-        } else {
-            this.ADDONSHANDLER = injectedAddonsHandler;
-        }
-
         if (injectedVersionLister == null) {
             this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
         } else {
@@ -264,8 +256,14 @@ public class TabCreateServerPack extends JComponent {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
+        if (injectedPluginManager == null) {
+            this.PLUGINMANAGER = new ApplicationPlugins(APPLICATIONPROPERTIES);
+        } else {
+            this.PLUGINMANAGER = injectedPluginManager;
+        }
+
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, PLUGINMANAGER);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }

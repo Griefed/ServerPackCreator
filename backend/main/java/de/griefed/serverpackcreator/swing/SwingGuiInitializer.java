@@ -19,16 +19,13 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.AddonsHandler;
-import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.ServerPackHandler;
+import de.griefed.serverpackcreator.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.plugins.swinggui.AddTabbedPane;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
-import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.utilities.*;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.textpane.MaterialTextPaneUI;
@@ -67,7 +64,6 @@ public class SwingGuiInitializer extends JPanel {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final ServerPackHandler CREATESERVERPACK;
-    private final AddonsHandler ADDONSHANDLER;
     private final VersionLister VERSIONLISTER;
     private final BooleanUtilities BOOLEANUTILITIES;
     private final ListUtilities LISTUTILITIES;
@@ -75,6 +71,7 @@ public class SwingGuiInitializer extends JPanel {
     private final ConfigUtilities CONFIGUTILITIES;
     private final SystemUtilities SYSTEMUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final ApplicationPlugins APPLICATIONPLUGINS;
 
     private final LightTheme LIGHTTHEME = new LightTheme();
     private final DarkTheme DARKTHEME = new DarkTheme();
@@ -114,7 +111,6 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
-     * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related in the GUI.
      * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
@@ -123,13 +119,14 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
      * @param updater String. Update message fetcher from Main.
+     * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      */
     public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               AddonsHandler injectedAddonsHandler, ApplicationProperties injectedApplicationProperties,
-                               VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
+                               ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister,
+                               BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
                                StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities,
-                               String updater) {
+                               String updater, ApplicationPlugins injectedPluginManager) {
 
         super(new GridLayout(1, 1));
 
@@ -188,20 +185,20 @@ public class SwingGuiInitializer extends JPanel {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
-        if (injectedAddonsHandler == null) {
-            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
-        } else {
-            this.ADDONSHANDLER = injectedAddonsHandler;
-        }
-
         if (injectedConfigurationHandler == null) {
             this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
+        if (injectedPluginManager == null) {
+            this.APPLICATIONPLUGINS = new ApplicationPlugins(APPLICATIONPROPERTIES);
+        } else {
+            this.APPLICATIONPLUGINS = injectedPluginManager;
+        }
+
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -215,7 +212,7 @@ public class SwingGuiInitializer extends JPanel {
         this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui") + " - " + APPLICATIONPROPERTIES.getServerPackCreatorVersion());
 
         this.TAB_CREATESERVERPACK = new TabCreateServerPack(
-                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, ADDONSHANDLER, VERSIONLISTER, APPLICATIONPROPERTIES, FRAME_SERVERPACKCREATOR, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, VERSIONLISTER, APPLICATIONPROPERTIES, FRAME_SERVERPACKCREATOR, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, APPLICATIONPLUGINS
         );
 
         this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(
@@ -265,6 +262,19 @@ public class SwingGuiInitializer extends JPanel {
                 LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
 
         TABBEDPANE.setMnemonicAt(3, KeyEvent.VK_4);
+
+        if (APPLICATIONPLUGINS.PLUGINS_TABBEDPANE.size() > 0) {
+            for (AddTabbedPane pane : APPLICATIONPLUGINS.PLUGINS_TABBEDPANE) {
+                TABBEDPANE.addTab(
+                        pane.getTabbedPaneTitle(),
+                        pane.getTabbedPaneIcon(),
+                        pane.getTabbedPane(),
+                        pane.getTabbedPaneTooltip()
+                );
+            }
+        } else {
+            LOG.info("No TabbedPane addons to add.");
+        }
 
         add(TABBEDPANE);
 

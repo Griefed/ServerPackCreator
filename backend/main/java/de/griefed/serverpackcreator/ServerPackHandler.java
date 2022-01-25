@@ -25,6 +25,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackArchiveCreated;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackCreated;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackStart;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.*;
 import net.lingala.zip4j.ZipFile;
@@ -34,6 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.pf4j.PluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -62,11 +66,11 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class ServerPackHandler {
 
     private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
+    private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
     private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
-    private final AddonsHandler ADDONSHANDLER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final VersionLister VERSIONLISTER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
@@ -75,6 +79,7 @@ public class ServerPackHandler {
     private final ListUtilities LISTUTILITIES;
     private final StringUtilities STRINGUTILITIES;
     private final SystemUtilities SYSTEMUTILITIES;
+    private final ApplicationPlugins APPLICATIONPLUGINS;
 
     /**
      * <strong>Constructor</strong><p>
@@ -84,7 +89,6 @@ public class ServerPackHandler {
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} required for creating a modpack from CurseForge.
-     * @param injectedAddonsHandler Instance of {@link AddonsHandler} required for accessing installed addons, if any exist.
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required for accessing checks.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related.
@@ -93,13 +97,14 @@ public class ServerPackHandler {
      * @param injectedStringUtilities Instance of {@link StringUtilities}.
      * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      */
     @Autowired
     public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
-                             AddonsHandler injectedAddonsHandler, ConfigurationHandler injectedConfigurationHandler,
-                             ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister,
-                             BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities,
-                             SystemUtilities injectedSystemUtilities, ConfigUtilities injectedConfigUtilities) {
+                             ConfigurationHandler injectedConfigurationHandler, ApplicationProperties injectedApplicationProperties,
+                             VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
+                             StringUtilities injectedStringUtilities, SystemUtilities injectedSystemUtilities, ConfigUtilities injectedConfigUtilities,
+                             ApplicationPlugins injectedPluginManager) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -162,10 +167,10 @@ public class ServerPackHandler {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
-        if (injectedAddonsHandler == null) {
-            this.ADDONSHANDLER = new AddonsHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+        if (injectedPluginManager == null) {
+            this.APPLICATIONPLUGINS = new ApplicationPlugins(APPLICATIONPROPERTIES);
         } else {
-            this.ADDONSHANDLER = injectedAddonsHandler;
+            this.APPLICATIONPLUGINS = injectedPluginManager;
         }
 
     }
@@ -215,6 +220,9 @@ public class ServerPackHandler {
 
         String destination = configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + configurationModel.getServerPackSuffix();
 
+        try { Files.createDirectories(Paths.get(String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), destination)));
+        } catch (IOException ignored) {}
+
         /*
          * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
          * If the server pack exists and overwrite is disabled, no new server pack will be generated.
@@ -232,6 +240,21 @@ public class ServerPackHandler {
 
             // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(true, destination);
+
+            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART.size() > 0) {
+                LOG_ADDONS.info("Executing ServerPackStart addons");
+                for (ServerPackStart start : APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART) {
+                    LOG_ADDONS.info("Executing plugin " + start.getName());
+
+                    try {
+                        start.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                    } catch (Exception ex) {
+                        LOG_ADDONS.error(start.getName() + " encountered an error.", ex);
+                    }
+                }
+            } else {
+                LOG.info("No ServerPackStart addons to execute.");
+            }
 
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
             copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion(), destination);
@@ -268,6 +291,22 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
             }
 
+            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED.size() > 0) {
+                LOG_ADDONS.info("Executing ServerPackCreated addons");
+                for (ServerPackCreated created : APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED) {
+                    LOG_ADDONS.info("Executing plugin " + created.getName());
+
+                    try {
+                        created.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                    } catch (Exception ex) {
+                        LOG_ADDONS.error(created.getName() + " encountered an error.", ex);
+                    }
+                }
+            } else {
+                LOG.info("No ServerPackCreated addons to execute.");
+            }
+
+
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (configurationModel.getIncludeZipCreation()) {
                 zipBuilder(configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation(), destination);
@@ -282,13 +321,21 @@ public class ServerPackHandler {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), destination));
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
-            if (ADDONSHANDLER.getListOfServerPackAddons().isEmpty() || ADDONSHANDLER.getListOfServerPackAddons() == null) {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.noaddonstoexecute"));
+            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED.size() > 0) {
+                LOG_ADDONS.info("Executing ServerPackArchiveCreated addons");
+                for (ServerPackArchiveCreated archive : APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED) {
+                    LOG_ADDONS.info("Executing plugin " + archive.getName());
+
+                    try {
+                        archive.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                    } catch (Exception ex) {
+                        LOG_ADDONS.error(archive.getName() + " encountered an error.", ex);
+                    }
+                }
             } else {
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.executingaddons"));
-                ADDONSHANDLER.runServerPackAddons(configurationModel);
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.addonsexecuted"));
+                LOG.info("No ServerPackArchiveCreated addons to execute.");
             }
+
 
             return true;
         }
@@ -1106,7 +1153,6 @@ public class ServerPackHandler {
 
         // Note to self: What is this? How does this exclude files? What did I do here?
         directoriesToCopy.removeIf(n -> n.startsWith("!"));
-
 
         if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
