@@ -15,7 +15,7 @@ RUN \
   chmod +x /tmp/serverpackcreator/gradlew* && \
   cd /tmp/serverpackcreator && \
   rm -Rf /tmp/serverpackcreator/backend/test && \
-  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build -Pversion=$VERSION --info --full-stacktrace --no-deamon -x test && \
+  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build -Pversion=$VERSION --info --full-stacktrace -x test && \
   ls -ahl ./build/libs/ && \
   mv \
     ./build/libs/serverpackcreator-$VERSION.jar \

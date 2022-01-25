@@ -20,7 +20,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe --no-daemon --info --stacktrace
+        run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace
       - name: List files in libs
         run: ls -ahl build/libs
       - uses: actions/upload-artifact@v2
