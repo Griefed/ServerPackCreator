@@ -463,36 +463,4 @@ public class ConfigurationModel {
     public void setServerPropertiesPath(String serverPropertiesPath) {
         this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
     }
-
-    /**
-     * Concatenates all configuration parameters into a String. Overrides the default toString() method.
-     * @author Griefed
-     * @return String. A concatenated string of the whole configuration.
-     */
-    @Override
-    public String toString() {
-        return "ConfigurationModel{" +
-                "clientMods=" + clientMods +
-                ", copyDirs=" + copyDirs +
-                ", modpackDir='" + modpackDir + '\'' +
-                ", javaPath='" + javaPath + '\'' +
-                ", minecraftVersion='" + minecraftVersion + '\'' +
-                ", modLoader='" + modLoader + '\'' +
-                ", modLoaderVersion='" + modLoaderVersion + '\'' +
-                ", javaArgs='" + javaArgs + '\'' +
-                ", serverPackSuffix='" + serverPackSuffix + '\'' +
-                ", serverIconPath='" + serverIconPath + '\'' +
-                ", serverProperties='" + serverPropertiesPath + '\'' +
-                ", curseModpack=" + curseModpack +
-                ", includeServerInstallation=" + includeServerInstallation +
-                ", includeServerIcon=" + includeServerIcon +
-                ", includeServerProperties=" + includeServerProperties +
-                ", includeZipCreation=" + includeZipCreation +
-                ", projectName='" + projectName + '\'' +
-                ", fileName='" + fileName + '\'' +
-                ", fileDiskName='" + fileDiskName + '\'' +
-                ", projectID=" + projectID +
-                ", fileID=" + fileID +
-                '}';
-    }
 }
