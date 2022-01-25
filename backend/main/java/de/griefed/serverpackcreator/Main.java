@@ -246,7 +246,7 @@ public class Main {
                 localizationManager, CONFIGURATIONHANDLER, BOOLEANUTILITIES, applicationProperties, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
         );
 
-        ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins(applicationProperties);
+        ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins();
 
         ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
                 localizationManager, CURSECREATEMODPACK, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, PLUGINMANAGER

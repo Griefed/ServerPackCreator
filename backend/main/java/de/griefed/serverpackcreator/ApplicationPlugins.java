@@ -17,23 +17,13 @@ public class ApplicationPlugins extends JarPluginManager {
 
     private static final Logger LOG = LogManager.getLogger(ApplicationPlugins.class);
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
-
     public final List<ServerPackStart> PLUGINS_SERVERPACKSTART;
     public final List<ServerPackCreated> PLUGINS_SERVERPACKCREATED;
     public final List<ServerPackArchiveCreated> PLUGINS_SERVERPACKARCHIVECREATED;
     public final List<AddTab> PLUGINS_TABBEDPANE;
 
     @Autowired
-    public ApplicationPlugins(ApplicationProperties injectedApplicationProperties) {
-        if (injectedApplicationProperties == null) {
-            this.APPLICATIONPROPERTIES = new ApplicationProperties();
-        } else {
-            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        }
-
-        this.pluginsRoots.add(APPLICATIONPROPERTIES.PLUGINS_DIRECTORY);
-
+    public ApplicationPlugins() {
         loadPlugins();
         startPlugins();
 

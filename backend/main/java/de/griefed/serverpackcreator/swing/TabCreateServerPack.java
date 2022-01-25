@@ -257,7 +257,7 @@ public class TabCreateServerPack extends JComponent {
         }
 
         if (injectedPluginManager == null) {
-            this.PLUGINMANAGER = new ApplicationPlugins(APPLICATIONPROPERTIES);
+            this.PLUGINMANAGER = new ApplicationPlugins();
         } else {
             this.PLUGINMANAGER = injectedPluginManager;
         }

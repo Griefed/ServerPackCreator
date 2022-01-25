@@ -168,7 +168,7 @@ public class ServerPackHandler {
         }
 
         if (injectedPluginManager == null) {
-            this.APPLICATIONPLUGINS = new ApplicationPlugins(APPLICATIONPROPERTIES);
+            this.APPLICATIONPLUGINS = new ApplicationPlugins();
         } else {
             this.APPLICATIONPLUGINS = injectedPluginManager;
         }
