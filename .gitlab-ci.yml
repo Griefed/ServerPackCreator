@@ -160,32 +160,21 @@ Docker Test:
   stage: Tests
   image: griefed/gitlab-ci-cd:2.0.0
   before_script:
-    - |-
-      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
-        docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-        docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-      else
-        echo "Not logging in to DockerHub or GitHub..."
-      fi
-      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      docker buildx create --use --name grfdbuilder
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
   script:
-    - |-
-      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
-        docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64 \
-          --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME" \
-          --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA" \
-          --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME" \
-          --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA" \
-          --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME \
-          --build-arg HOSTER=$CI_SERVER_HOST \
-          --file Dockerfile .
-      else
-        docker buildx build --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64 \
-          --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME \
-          --build-arg HOSTER=$CI_SERVER_HOST \
-          --file Dockerfile .
-      fi
+    - docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
+      --build-arg HOSTER=$CI_SERVER_HOST
+      --file Dockerfile .
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
 Release:
   stage: Release
