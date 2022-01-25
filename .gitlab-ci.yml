@@ -183,6 +183,7 @@ Release:
       artifacts: false
     - job: Docker Test
       artifacts: false
+      optional: true
     - job: eslint-sast
       artifacts: false
     - job: nodejs-scan-sast
@@ -214,6 +215,7 @@ PreRelease:
       artifacts: false
     - job: Docker Test
       artifacts: false
+      optional: true
     - job: eslint-sast
       artifacts: false
     - job: nodejs-scan-sast
