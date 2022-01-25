@@ -16,26 +16,26 @@ public interface AddTabbedPane extends PluginInformation {
      * @author Griefed
      * @return {@link JTabbedPane}.
      */
-    JTabbedPane getTabbedPane();
+    JComponent getTab();
 
     /**
      * Get the {@link Icon} for this tabbed pane addon to display to the ServerPackCreator GUI.
      * @author Griefed
      * @return {@link Icon}.
      */
-    Icon getTabbedPaneIcon();
+    Icon getTabIcon();
 
     /**
      * Get the title of this tabbed pane addon to display in the ServerPackCreator GUI.
      * @author Griefed
      * @return String. The title of this addons tabbed pane.
      */
-    String getTabbedPaneTitle();
+    String getTabTitle();
 
     /**
      * Get the tooltip for this tabbed pane addon to display in the ServerPackCreator GUI.
      * @author Griefed
      * @return String. The tooltip of this addons tabbed pane.
      */
-    String getTabbedPaneTooltip();
+    String getTabTooltip();
 }

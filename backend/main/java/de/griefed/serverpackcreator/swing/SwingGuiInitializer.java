@@ -266,10 +266,10 @@ public class SwingGuiInitializer extends JPanel {
         if (APPLICATIONPLUGINS.PLUGINS_TABBEDPANE.size() > 0) {
             for (AddTabbedPane pane : APPLICATIONPLUGINS.PLUGINS_TABBEDPANE) {
                 TABBEDPANE.addTab(
-                        pane.getTabbedPaneTitle(),
-                        pane.getTabbedPaneIcon(),
-                        pane.getTabbedPane(),
-                        pane.getTabbedPaneTooltip()
+                        pane.getTabTitle(),
+                        pane.getTabIcon(),
+                        pane.getTab(),
+                        pane.getTabTooltip()
                 );
             }
         } else {
