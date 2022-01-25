@@ -28,7 +28,7 @@ repositories {
     maven { url 'https://repo.spring.io/release' }
 }
 
-group = 'de.griefed'
+group = 'de.griefed.serverpackcreator'
 
 sourceSets {
     main {
