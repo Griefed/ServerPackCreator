@@ -170,7 +170,7 @@ Docker Test:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
-      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
+      --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
       --build-arg HOSTER=$CI_SERVER_HOST
       --file Dockerfile .
   rules:
