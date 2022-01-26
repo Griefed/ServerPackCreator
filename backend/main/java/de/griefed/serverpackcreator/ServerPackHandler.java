@@ -25,9 +25,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackArchiveCreated;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackCreated;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackStart;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.PreGenExtension;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.PostGenExtension;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.PreZipExtension;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.*;
 import net.lingala.zip4j.ZipFile;
@@ -250,8 +250,8 @@ public class ServerPackHandler {
             } catch (IOException ignored) {}
 
             if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART.size() > 0) {
-                LOG_ADDONS.info("Executing ServerPackStart addons");
-                for (ServerPackStart start : APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART) {
+                LOG_ADDONS.info("Executing PreGenExtension addons");
+                for (PreGenExtension start : APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART) {
                     LOG_ADDONS.info("Executing plugin " + start.getName());
 
                     try {
@@ -261,7 +261,7 @@ public class ServerPackHandler {
                     }
                 }
             } else {
-                LOG.info("No ServerPackStart addons to execute.");
+                LOG.info("No PreGenExtension addons to execute.");
             }
 
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
@@ -300,8 +300,8 @@ public class ServerPackHandler {
             }
 
             if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED.size() > 0) {
-                LOG_ADDONS.info("Executing ServerPackCreated addons");
-                for (ServerPackCreated created : APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED) {
+                LOG_ADDONS.info("Executing PreZipExtension addons");
+                for (PreZipExtension created : APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED) {
                     LOG_ADDONS.info("Executing plugin " + created.getName());
 
                     try {
@@ -311,7 +311,7 @@ public class ServerPackHandler {
                     }
                 }
             } else {
-                LOG.info("No ServerPackCreated addons to execute.");
+                LOG.info("No PreZipExtension addons to execute.");
             }
 
 
@@ -330,8 +330,8 @@ public class ServerPackHandler {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED.size() > 0) {
-                LOG_ADDONS.info("Executing ServerPackArchiveCreated addons");
-                for (ServerPackArchiveCreated archive : APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED) {
+                LOG_ADDONS.info("Executing PostGenExtension addons");
+                for (PostGenExtension archive : APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED) {
                     LOG_ADDONS.info("Executing plugin " + archive.getName());
 
                     try {
@@ -341,7 +341,7 @@ public class ServerPackHandler {
                     }
                 }
             } else {
-                LOG.info("No ServerPackArchiveCreated addons to execute.");
+                LOG.info("No PostGenExtension addons to execute.");
             }
 
 

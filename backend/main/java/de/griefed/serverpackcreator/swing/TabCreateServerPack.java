@@ -74,7 +74,7 @@ public class TabCreateServerPack extends JComponent {
     private final ConfigUtilities CONFIGUTILITIES;
     private final SystemUtilities SYSTEMUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final ApplicationPlugins PLUGINMANAGER;
+    private final ApplicationPlugins APPLICATIONPLUGINS;
 
     private final StyledDocument SERVERPACKGENERATEDDOCUMENT = new DefaultStyledDocument();
     private final SimpleAttributeSet SERVERPACKGENERATEDATTRIBUTESET = new SimpleAttributeSet();
@@ -255,13 +255,13 @@ public class TabCreateServerPack extends JComponent {
         }
 
         if (injectedPluginManager == null) {
-            this.PLUGINMANAGER = new ApplicationPlugins();
+            this.APPLICATIONPLUGINS = new ApplicationPlugins();
         } else {
-            this.PLUGINMANAGER = injectedPluginManager;
+            this.APPLICATIONPLUGINS = injectedPluginManager;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, PLUGINMANAGER);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }

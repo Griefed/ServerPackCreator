@@ -6,5 +6,5 @@ import de.griefed.serverpackcreator.plugins.PluginInformation;
  * Plugin interface for plugins which are to be executed before the generation of a server pack is started.
  * @author Griefed
  */
-public interface ServerPackStart extends PluginInformation {
+public interface PreGenExtension extends PluginInformation {
 }

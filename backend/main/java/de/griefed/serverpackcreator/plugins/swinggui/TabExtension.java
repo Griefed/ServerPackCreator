@@ -9,7 +9,7 @@ import javax.swing.*;
  * interface allows plugins to add additional {@link JComponent}s as additional tabs.
  * @author Griefed
  */
-public interface AddTab extends PluginInformation {
+public interface TabExtension extends PluginInformation {
 
     /**
      * Get the {@link JTabbedPane} from this addon to add it to the ServerPackCreator GUI.

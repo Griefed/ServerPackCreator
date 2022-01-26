@@ -246,10 +246,10 @@ public class Main {
                 localizationManager, CONFIGURATIONHANDLER, BOOLEANUTILITIES, applicationProperties, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
         );
 
-        ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins();
+        ApplicationPlugins APPLICATIONPLUGINS = new ApplicationPlugins();
 
         ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
-                localizationManager, CURSECREATEMODPACK, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, PLUGINMANAGER
+                localizationManager, CURSECREATEMODPACK, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS
         );
 
         if (Arrays.asList(args).contains("-cgen")) {
@@ -273,7 +273,7 @@ public class Main {
         } else {
 
             SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
-                    localizationManager, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, updater, PLUGINMANAGER
+                    localizationManager, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, updater, APPLICATIONPLUGINS
             );
 
             swingGuiInitializer.mainGUI();

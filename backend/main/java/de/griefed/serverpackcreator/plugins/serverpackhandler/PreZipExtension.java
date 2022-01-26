@@ -7,5 +7,5 @@ import de.griefed.serverpackcreator.plugins.PluginInformation;
  * is created.
  * @author Griefed
  */
-public interface ServerPackCreated extends PluginInformation {
+public interface PreZipExtension extends PluginInformation {
 }

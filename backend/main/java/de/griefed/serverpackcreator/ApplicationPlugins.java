@@ -1,9 +1,9 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackArchiveCreated;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackCreated;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackStart;
-import de.griefed.serverpackcreator.plugins.swinggui.AddTab;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.PostGenExtension;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.PreZipExtension;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.PreGenExtension;
+import de.griefed.serverpackcreator.plugins.swinggui.TabExtension;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.FileUtils;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 @Component
@@ -21,10 +20,10 @@ public class ApplicationPlugins extends JarPluginManager {
 
     private static final Logger LOG = LogManager.getLogger(ApplicationPlugins.class);
 
-    public final List<ServerPackStart> PLUGINS_SERVERPACKSTART;
-    public final List<ServerPackCreated> PLUGINS_SERVERPACKCREATED;
-    public final List<ServerPackArchiveCreated> PLUGINS_SERVERPACKARCHIVECREATED;
-    public final List<AddTab> PLUGINS_TABBEDPANE;
+    public final List<PreGenExtension> PLUGINS_SERVERPACKSTART;
+    public final List<PreZipExtension> PLUGINS_SERVERPACKCREATED;
+    public final List<PostGenExtension> PLUGINS_SERVERPACKARCHIVECREATED;
+    public final List<TabExtension> PLUGINS_TABBEDPANE;
 
     @Autowired
     public ApplicationPlugins() {
@@ -38,17 +37,17 @@ public class ApplicationPlugins extends JarPluginManager {
         loadPlugins();
         startPlugins();
 
-        this.PLUGINS_SERVERPACKSTART = getExtensions(ServerPackStart.class);
-        this.PLUGINS_SERVERPACKCREATED = getExtensions(ServerPackCreated.class);
-        this.PLUGINS_SERVERPACKARCHIVECREATED = getExtensions(ServerPackArchiveCreated.class);
-        this.PLUGINS_TABBEDPANE = getExtensions(AddTab.class);
+        this.PLUGINS_SERVERPACKSTART = getExtensions(PreGenExtension.class);
+        this.PLUGINS_SERVERPACKCREATED = getExtensions(PreZipExtension.class);
+        this.PLUGINS_SERVERPACKARCHIVECREATED = getExtensions(PostGenExtension.class);
+        this.PLUGINS_TABBEDPANE = getExtensions(TabExtension.class);
 
         availablePluginsAndExtensions();
     }
 
     private void availablePluginsAndExtensions() {
-        LOG.info("Available ServerPackStart plugins:");
-        for (ServerPackStart start : PLUGINS_SERVERPACKSTART) {
+        LOG.info("Available PreGenExtension plugins:");
+        for (PreGenExtension start : PLUGINS_SERVERPACKSTART) {
             LOG.info("Name:       " + start.getName());
             LOG.info("Description:" + start.getDescription());
             LOG.info("Version:    " + start.getVersion());
@@ -56,8 +55,8 @@ public class ApplicationPlugins extends JarPluginManager {
         }
 
 
-        LOG.info("Available ServerPackCreated plugins:");
-        for (ServerPackCreated created : PLUGINS_SERVERPACKCREATED) {
+        LOG.info("Available PreZipExtension plugins:");
+        for (PreZipExtension created : PLUGINS_SERVERPACKCREATED) {
             LOG.info("Name:       " + created.getName());
             LOG.info("Description:" + created.getDescription());
             LOG.info("Version:    " + created.getVersion());
@@ -65,8 +64,8 @@ public class ApplicationPlugins extends JarPluginManager {
         }
 
 
-        LOG.info("Available ServerPackArchiveCreated plugins:");
-        for (ServerPackArchiveCreated archive : PLUGINS_SERVERPACKARCHIVECREATED) {
+        LOG.info("Available PostGenExtension plugins:");
+        for (PostGenExtension archive : PLUGINS_SERVERPACKARCHIVECREATED) {
             LOG.info("Name:       " + archive.getName());
             LOG.info("Description:" + archive.getDescription());
             LOG.info("Version:    " + archive.getVersion());
@@ -74,8 +73,8 @@ public class ApplicationPlugins extends JarPluginManager {
         }
 
 
-        LOG.info("Available AddTab plugins:");
-        for (AddTab pane : PLUGINS_TABBEDPANE) {
+        LOG.info("Available TabExtension plugins:");
+        for (TabExtension pane : PLUGINS_TABBEDPANE) {
             LOG.info("Name:       " + pane.getName());
             LOG.info("Description:" + pane.getDescription());
             LOG.info("Version:    " + pane.getVersion());
