@@ -29,8 +29,6 @@ import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.pf4j.JarPluginManager;
-import org.pf4j.PluginManager;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -968,7 +966,11 @@ public class TabCreateServerPack extends JComponent {
 
         modpackDirChooser = new JFileChooser();
 
-        modpackDirChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
+        if (new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()) {
+            modpackDirChooser.setCurrentDirectory(new File(TEXTFIELD_MODPACKDIRECTORY.getText()));
+        } else {
+            modpackDirChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
+        }
         modpackDirChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonmodpackdir.title"));
         modpackDirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         modpackDirChooser.setAcceptAllFileFilterUsed(false);
@@ -1203,6 +1205,8 @@ public class TabCreateServerPack extends JComponent {
 
         LOG.debug("Case " + decision);
 
+        //No inspection in case we ever want to expand on this switch statement.
+        //noinspection SwitchStatementWithTooFewBranches
         switch (decision) {
             case 0:
 
@@ -1233,7 +1237,7 @@ public class TabCreateServerPack extends JComponent {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
         labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
 
-        saveConfig(new File("./work/temporaryConfig.conf"),true);
+        saveConfig(new File("./work/temporaryConfig.conf"));
 
         List<String> encounteredErrors = new ArrayList<>(100);
 
@@ -1266,7 +1270,7 @@ public class TabCreateServerPack extends JComponent {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
             labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
 
-            saveConfig(APPLICATIONPROPERTIES.FILE_CONFIG, false);
+            saveConfig(APPLICATIONPROPERTIES.FILE_CONFIG);
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
@@ -1306,7 +1310,7 @@ public class TabCreateServerPack extends JComponent {
 
                 } catch (Exception ex) {
 
-                    LOG.error("An error occurred when generating the server pack.");
+                    LOG.error("An error occurred when generating the server pack.",ex);
 
                 } finally {
 
@@ -1361,9 +1365,8 @@ public class TabCreateServerPack extends JComponent {
      * Save the current configuration to a specified file.
      * @author Griefed
      * @param configFile File. The file to store the configuration under.
-     * @param temporary Whether the file is temporary. Determines whether the config in the basedir is deleted first.
      */
-    void saveConfig(File configFile, boolean temporary) {
+    void saveConfig(File configFile) {
         if (javaArgs.equals("")) {
             javaArgs = "empty";
         }
@@ -1387,8 +1390,7 @@ public class TabCreateServerPack extends JComponent {
                 checkBoxZIP.isSelected(),
                 getJavaArgs(),
                 TEXTFIELD_SERVERPACKSUFFIX.getText(),
-                configFile,
-                temporary
+                configFile
         );
     }
 
@@ -1421,7 +1423,12 @@ public class TabCreateServerPack extends JComponent {
 
             } else {
 
-                TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(config.get("clientMods").toString()));
+                try {
+                    TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(config.get("clientMods").toString()));
+                } catch (Exception ex) {
+                    LOG.error("Couldn't parse clientMods. Using fallback.",ex);
+                    TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
+                }
 
             }
 
@@ -1431,7 +1438,12 @@ public class TabCreateServerPack extends JComponent {
 
             } else {
 
-                TEXTFIELD_COPYDIRECTORIES.setText(STRINGUTILITIES.buildString(config.get("copyDirs").toString().replace("\\", "/")));
+                try {
+                    TEXTFIELD_COPYDIRECTORIES.setText(STRINGUTILITIES.buildString(config.get("copyDirs").toString().replace("\\", "/")));
+                } catch (Exception ex) {
+                    LOG.error("Couldn't parse copyDirs. Using fallback.",ex);
+                    TEXTFIELD_COPYDIRECTORIES.setText("config, mods");
+                }
 
             }
 
@@ -1443,24 +1455,31 @@ public class TabCreateServerPack extends JComponent {
 
             try {
 
-                String minecraftVersion;
+                try {
+                    if (!config.getOrElse("minecraftVersion","").equals("")) {
+                        chosenMinecraftVersion = config.get("minecraftVersion");
+                    } else {
+                        chosenMinecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
+                    }
 
-                minecraftVersion = config.getOrElse("minecraftVersion", VERSIONLISTER.getMinecraftReleaseVersion());
+                } catch (NullPointerException ignored) {
+                    chosenMinecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
+                }
 
                 String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
 
                 for (int i = 0; i < mcver.length; i++) {
 
-                    if (mcver[i].equals(minecraftVersion)) {
+                    if (mcver[i].equals(chosenMinecraftVersion)) {
 
                         COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
-                        chosenMinecraftVersion = minecraftVersion;
-
+                        break;
                     }
                 }
 
             } catch (NullPointerException ex) {
                 LOG.error("Error parsing minecraft-version from configfile: " + configFile, ex);
+                chosenMinecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
             }
 
             // Set modloader and modloader version

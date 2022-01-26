@@ -695,7 +695,7 @@ public class CurseCreateModpack {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
 
-        CONFIGUTILITIES.writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG,false);
+        CONFIGUTILITIES.writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG);
 
     }
 }

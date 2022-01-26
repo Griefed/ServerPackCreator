@@ -89,8 +89,7 @@ public class ConfigUtilitiesTest {
                 true,
                 javaArgs,
                 "",
-                new File("./serverpackcreatorfabric.conf"),
-                false
+                new File("./serverpackcreatorfabric.conf")
         ));
         Assertions.assertTrue(new File("./serverpackcreatorfabric.conf").exists());
         new File("./serverpackcreatorfabric.conf").delete();
@@ -156,8 +155,7 @@ public class ConfigUtilitiesTest {
                 true,
                 javaArgs,
                 "",
-                new File("./serverpackcreatorforge.conf"),
-                false
+                new File("./serverpackcreatorforge.conf")
         ));
         Assertions.assertTrue(new File("./serverpackcreatorforge.conf").exists());
         new File("./serverpackcreatorforge.conf").delete();
@@ -208,7 +206,7 @@ public class ConfigUtilitiesTest {
         configurationModel.setModLoader("Forge");
         configurationModel.setModLoaderVersion("36.1.2");
         configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
-        Assertions.assertTrue(CONFIGUTILITIES.writeConfigToFile(configurationModel, new File("somefile.conf"),false));
+        Assertions.assertTrue(CONFIGUTILITIES.writeConfigToFile(configurationModel, new File("somefile.conf")));
         Assertions.assertTrue(new File("somefile.conf").exists());
     }
 

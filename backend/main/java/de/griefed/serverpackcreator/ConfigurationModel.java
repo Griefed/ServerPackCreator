@@ -463,4 +463,31 @@ public class ConfigurationModel {
     public void setServerPropertiesPath(String serverPropertiesPath) {
         this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
     }
+
+    @Override
+    public String toString() {
+        return "ConfigurationModel{" +
+                "clientMods=" + clientMods +
+                ", copyDirs=" + copyDirs +
+                ", modpackDir='" + modpackDir + '\'' +
+                ", javaPath='" + javaPath + '\'' +
+                ", minecraftVersion='" + minecraftVersion + '\'' +
+                ", modLoader='" + modLoader + '\'' +
+                ", modLoaderVersion='" + modLoaderVersion + '\'' +
+                ", javaArgs='" + javaArgs + '\'' +
+                ", serverPackSuffix='" + serverPackSuffix + '\'' +
+                ", serverIconPath='" + serverIconPath + '\'' +
+                ", serverPropertiesPath='" + serverPropertiesPath + '\'' +
+                ", includeServerInstallation=" + includeServerInstallation +
+                ", includeServerIcon=" + includeServerIcon +
+                ", includeServerProperties=" + includeServerProperties +
+                ", includeZipCreation=" + includeZipCreation +
+                ", curseModpack=" + curseModpack +
+                ", projectName='" + projectName + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", fileDiskName='" + fileDiskName + '\'' +
+                ", projectID=" + projectID +
+                ", fileID=" + fileID +
+                '}';
+    }
 }

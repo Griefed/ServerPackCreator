@@ -6,10 +6,14 @@ import de.griefed.serverpackcreator.plugins.serverpackhandler.ServerPackStart;
 import de.griefed.serverpackcreator.plugins.swinggui.AddTab;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.FileUtils;
 import org.pf4j.JarPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 @Component
@@ -24,6 +28,13 @@ public class ApplicationPlugins extends JarPluginManager {
 
     @Autowired
     public ApplicationPlugins() {
+
+        LOG.info("Plugins directory: " + new File(System.getProperty("pf4j.pluginsDir", "plugins")).getAbsolutePath());
+
+        try {
+            FileUtils.mkdir(new File(System.getProperty("pf4j.pluginsDir", "plugins")), true);
+        } catch (IOException ignored) {}
+
         loadPlugins();
         startPlugins();
 
