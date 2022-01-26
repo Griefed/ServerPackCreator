@@ -344,7 +344,6 @@ public class ServerPackHandler {
                 LOG.info("No PostGenExtension addons to execute.");
             }
 
-
             return true;
         }
 
