@@ -431,7 +431,7 @@ public class ServerPackHandler {
      * @param modloaderVersion String. The modloader version the modpack uses.
      * @param destination String. The destination where the scripts should be created in.
      */
-    public void createStartScripts(String modLoader, String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
+    private void createStartScripts(String modLoader, String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
         if (javaArguments.equals("empty")) {
             javaArguments = "";
@@ -1144,7 +1144,7 @@ public class ServerPackHandler {
      * @param minecraftVersion String. The Minecraft version the modpack uses.
      * @param destination String. The destination where the files should be copied to.
      */
-    void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion, String destination) {
+    private void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion, String destination) {
 
         // TODO: Move copy segments to private methods to make this whole thing more readable
 
@@ -1309,7 +1309,7 @@ public class ServerPackHandler {
      * @param minecraftVersion String. The Minecraft version the modpack uses. Determines whether mods are scanned for sideness.
      * @return List String. A list of all mods to include in the server pack.
      */
-    List<String> excludeClientMods(String modsDir, List<String> userSpecifiedClientMods, String minecraftVersion) {
+    private List<String> excludeClientMods(String modsDir, List<String> userSpecifiedClientMods, String minecraftVersion) {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.excludeclientmods"));
 
@@ -1395,7 +1395,7 @@ public class ServerPackHandler {
      * @param destination String. The destination where the icon should be copied to.
      * @param pathToServerIcon String. The path to the custom server-icon.
      */
-    void copyIcon(String destination, String pathToServerIcon) {
+    private void copyIcon(String destination, String pathToServerIcon) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyicon"));
@@ -1465,7 +1465,7 @@ public class ServerPackHandler {
      * @param destination String. The destination where the properties should be copied to.
      * @param pathToServerProperties String. The path to the custom server.properties.
      */
-    void copyProperties(String destination, String pathToServerProperties) {
+    private void copyProperties(String destination, String pathToServerProperties) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyproperties"));
@@ -1509,7 +1509,7 @@ public class ServerPackHandler {
      * @param javaPath String. The path to the Java executable/binary which is needed to execute the Forge/Fabric installers.
      * @param destination String. The destination where the modloader server should be installed into.
      */
-    void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath, String destination) {
+    private void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath, String destination) {
 
         List<String> commandArguments = new ArrayList<>();
 
@@ -1644,7 +1644,7 @@ public class ServerPackHandler {
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR info should be printed.
      * @param destination String. The destination where the ZIP-archive should be created in.
      */
-    void zipBuilder(String minecraftVersion, boolean includeServerInstallation, String destination) {
+    public void zipBuilder(String minecraftVersion, boolean includeServerInstallation, String destination) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.enter"));
@@ -1729,7 +1729,7 @@ public class ServerPackHandler {
      * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
      * @param destination String. The destination where we should clean up in.
      */
-    void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String minecraftVersion, String modLoaderVersion, String destination) {
+    private void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String minecraftVersion, String modLoaderVersion, String destination) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.enter"));
