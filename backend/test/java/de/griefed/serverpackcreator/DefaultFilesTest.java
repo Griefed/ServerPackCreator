@@ -48,8 +48,10 @@ class DefaultFilesTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForConfigTest() throws IOException {
-        APPLICATIONPROPERTIES.FILE_CONFIG_OLD.createNewFile();
+    void checkForConfigTest() {
+        try {
+            APPLICATIONPROPERTIES.FILE_CONFIG_OLD.createNewFile();
+        } catch (Exception ignored) {}
         Assertions.assertFalse(DEFAULTFILES.checkForConfig());
         Assertions.assertTrue(APPLICATIONPROPERTIES.FILE_CONFIG.exists());
         Assertions.assertFalse(DEFAULTFILES.checkForConfig());
@@ -60,9 +62,13 @@ class DefaultFilesTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForPropertiesTest() throws IOException {
-        FileUtils.createParentDirectories(new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)));
-        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)).createNewFile();
+    void checkForPropertiesTest() {
+        try {
+            FileUtils.createParentDirectories(new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)));
+        } catch (Exception ignored) {}
+        try {
+            new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)).createNewFile();
+        } catch (Exception ignored) {}
         Assertions.assertFalse(DEFAULTFILES.checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES));
     }
 
@@ -75,9 +81,13 @@ class DefaultFilesTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForIconTest() throws IOException {
-        FileUtils.createParentDirectories(new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)));
-        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)).createNewFile();
+    void checkForIconTest() {
+        try {
+            FileUtils.createParentDirectories(new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)));
+        } catch (Exception ignored) {}
+        try {
+            new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)).createNewFile();
+        } catch (Exception ignored) {}
         Assertions.assertFalse(DEFAULTFILES.checkForFile(APPLICATIONPROPERTIES.FILE_SERVER_ICON));
     }
 
@@ -89,33 +99,37 @@ class DefaultFilesTest {
     }
 
     @Test
-    void downloadMinecraftManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT)));
+    void downloadMinecraftManifestTest() {
+        try {
+            FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT)));
+        } catch (Exception ignored) {}
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getMinecraftManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT);
         Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT)).exists());
     }
 
     @Test
-    void downloadFabricManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC)));
+    void downloadFabricManifestTest() {
+        try {
+            FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC)));
+        } catch (Exception ignored) {}
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC);
         Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC)).exists());
     }
 
     @Test
-    void downloadForgeManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE)));
+    void downloadForgeManifestTest() {
+        try {
+            FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE)));
+        } catch (Exception ignored) {}
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getForgeManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE);
         Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE)).exists());
     }
 
     @Test
-    void downloadFabricInstallerManifestTest() throws IOException {
-        //Files.createDirectories(Paths.get("./work"));
-        FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER)));
+    void downloadFabricInstallerManifestTest() {
+        try {
+            FileUtils.createParentDirectories(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER)));
+        } catch (Exception ignored) {}
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricInstallerManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER);
         Assertions.assertTrue(new File(String.format("./work/%s", APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER)).exists());
     }

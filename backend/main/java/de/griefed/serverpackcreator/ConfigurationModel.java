@@ -464,11 +464,6 @@ public class ConfigurationModel {
         this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
     }
 
-    /**
-     * Concatenates all configuration parameters into a String. Overrides the default toString() method.
-     * @author Griefed
-     * @return String. A concatenated string of the whole configuration.
-     */
     @Override
     public String toString() {
         return "ConfigurationModel{" +
@@ -482,12 +477,12 @@ public class ConfigurationModel {
                 ", javaArgs='" + javaArgs + '\'' +
                 ", serverPackSuffix='" + serverPackSuffix + '\'' +
                 ", serverIconPath='" + serverIconPath + '\'' +
-                ", serverProperties='" + serverPropertiesPath + '\'' +
-                ", curseModpack=" + curseModpack +
+                ", serverPropertiesPath='" + serverPropertiesPath + '\'' +
                 ", includeServerInstallation=" + includeServerInstallation +
                 ", includeServerIcon=" + includeServerIcon +
                 ", includeServerProperties=" + includeServerProperties +
                 ", includeZipCreation=" + includeZipCreation +
+                ", curseModpack=" + curseModpack +
                 ", projectName='" + projectName + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", fileDiskName='" + fileDiskName + '\'' +

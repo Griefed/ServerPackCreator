@@ -135,11 +135,15 @@ class CurseCreateModpackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void downloadModsTest() throws IOException {
+    void downloadModsTest() {
         String modpackDir = "./backend/test/resources/forge_tests";
-        Files.copy(Paths.get("./backend/test/resources/testresources/manifest.json"), Paths.get("./backend/test/resources/forge_tests/manifest.json"), REPLACE_EXISTING);
+        try {
+            Files.copy(Paths.get("./backend/test/resources/testresources/manifest.json"), Paths.get("./backend/test/resources/forge_tests/manifest.json"), REPLACE_EXISTING);
+        } catch (Exception ignored) {}
         ConfigurationModel configurationModel = new ConfigurationModel();
-        configurationModel.setCurseModpack(CURSECREATEMODPACK.getObjectMapper().readTree(Files.readAllBytes(Paths.get("./backend/test/resources/forge_tests/manifest.json"))));
+        try {
+            configurationModel.setCurseModpack(CURSECREATEMODPACK.getObjectMapper().readTree(Files.readAllBytes(Paths.get("./backend/test/resources/forge_tests/manifest.json"))));
+        } catch (Exception ignored) {}
         CURSECREATEMODPACK.downloadMods(modpackDir, configurationModel);
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/BetterTitleScreen-1.16.4-1.10.2.jar").exists());
         Assertions.assertTrue(new File("./backend/test/resources/forge_tests/mods/jei-professions-1.0.0-1.16.4.jar").exists());
@@ -156,7 +160,7 @@ class CurseCreateModpackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void copyOverrideTest() throws IOException {
+    void copyOverrideTest() {
         String modpackDir = "./backend/test/resources/overridestest";
         CURSECREATEMODPACK.copyOverride(modpackDir);
         Assertions.assertTrue(new File("./backend/test/resources/overridestest/config").isDirectory());
@@ -192,27 +196,32 @@ class CurseCreateModpackTest {
         Assertions.assertTrue(new File("./backend/test/resources/overridestest/scripts/testscript.zs").exists());
         Assertions.assertTrue(new File("./backend/test/resources/overridestest/seeds/seed1.json").exists());
         Assertions.assertTrue(new File("./backend/test/resources/overridestest/seeds/testjson.json").exists());
+        try {
+            if (new File("./backend/test/resources/overridestest/config").isDirectory()) {
+                Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/config");
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
+        } catch (Exception ignored) {}
 
-        if (new File("./backend/test/resources/overridestest/config").isDirectory()) {
-            Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/config");
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
-
-        if (new File("./backend/test/resources/overridestest/defaultconfigs").isDirectory()) {
-            Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/defaultconfigs");
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
-
-        if (new File("./backend/test/resources/overridestest/mods").isDirectory()) {
-            Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/mods");
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
-
-        if (new File("./backend/test/resources/overridestest/scripts").isDirectory()) {
-            Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/scripts");
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
-
-        if (new File("./backend/test/resources/overridestest/seeds").isDirectory()) {
-            Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/seeds");
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
-
+        try {
+            if (new File("./backend/test/resources/overridestest/defaultconfigs").isDirectory()) {
+                Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/defaultconfigs");
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
+        } catch (Exception ignored) {}
+        try {
+            if (new File("./backend/test/resources/overridestest/mods").isDirectory()) {
+                Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/mods");
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
+        } catch (Exception ignored) {}
+        try {
+            if (new File("./backend/test/resources/overridestest/scripts").isDirectory()) {
+                Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/scripts");
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
+        } catch (Exception ignored) {}
+        try {
+            if (new File("./backend/test/resources/overridestest/seeds").isDirectory()) {
+                Path pathToBeDeleted = Paths.get("./backend/test/resources/overridestest/seeds");
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
+        } catch (Exception ignored) {}
         new File("./backend/test/resources/overridestest/config/testfile.txt").delete();
         new File("./backend/test/resources/overridestest/defaultconfigs/testfile.txt").delete();
         new File("./backend/test/resources/overridestest/mods/aaaaa.jar").delete();
@@ -236,7 +245,6 @@ class CurseCreateModpackTest {
         new File("./backend/test/resources/overridestest/mods/xxxxx.jar").delete();
         new File("./backend/test/resources/overridestest/mods/yyyyy.jar").delete();
         new File("./backend/test/resources/overridestest/mods/zzzzz.jar").delete();
-
         new File("./backend/test/resources/overridestest/scripts/testscript.zs").delete();
         new File("./backend/test/resources/overridestest/seeds/seed.json").delete();
         new File("./backend/test/resources/overridestest/seeds/testjson.json").delete();
@@ -250,7 +258,7 @@ class CurseCreateModpackTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void unzipArchiveTest() throws IOException {
+    void unzipArchiveTest() {
         String modpackDir = "backend/test/resources/curseforge_tests";
         String zipFile = "backend/test/resources/curseforge_tests/modpack.zip";
         CURSECREATEMODPACK.unzipArchive(zipFile, modpackDir);
@@ -259,8 +267,10 @@ class CurseCreateModpackTest {
         Assertions.assertTrue(new File("./backend/test/resources/curseforge_tests/overrides").isDirectory());
         new File("./backend/test/resources/curseforge_tests/manifest.json").delete();
         new File("./backend/test/resources/curseforge_tests/modlist.html").delete();
-        if (new File("./backend/test/resources/curseforge_tests/overrides").isDirectory()) {
-            Path pathToBeDeleted = Paths.get("./backend/test/resources/curseforge_tests/overrides");
-            Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
+        try {
+            if (new File("./backend/test/resources/curseforge_tests/overrides").isDirectory()) {
+                Path pathToBeDeleted = Paths.get("./backend/test/resources/curseforge_tests/overrides");
+                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
+        } catch (Exception ignored) {}
     }
 }

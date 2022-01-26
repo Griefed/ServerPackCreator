@@ -27,11 +27,15 @@ public class SystemUtilitiesTest {
     }
 
     @Test
-    void downloadFileTest() throws IOException {
-        SYSTEMUTILITIES.downloadFile("Fabric-Server-Launcher.jar",new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
+    void downloadFileTest() {
+        try {
+            SYSTEMUTILITIES.downloadFile("Fabric-Server-Launcher.jar",new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
+        } catch (Exception ignored) {}
         Assertions.assertTrue(new File("Fabric-Server-Launcher.jar").exists());
         FileUtils.deleteQuietly(new File("Fabric-Server-Launcher.jar"));
-        SYSTEMUTILITIES.downloadFile("some_foooooolder/foooobar/Fabric-Server-Launcher.jar",new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
+        try {
+            SYSTEMUTILITIES.downloadFile("some_foooooolder/foooobar/Fabric-Server-Launcher.jar",new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
+        } catch (Exception ignored) {}
         Assertions.assertTrue(new File("some_foooooolder/foooobar/Fabric-Server-Launcher.jar").exists());
         FileUtils.deleteQuietly(new File("some_foooooolder"));
     }

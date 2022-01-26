@@ -856,7 +856,7 @@ public class MenuBar extends Component {
         if (configChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
 
             try {
-                TAB_CREATESERVERPACK.saveConfig(new File(configChooser.getSelectedFile().getCanonicalPath()), true);
+                TAB_CREATESERVERPACK.saveConfig(new File(configChooser.getSelectedFile().getCanonicalPath()));
 
                 LOG.debug("Saved configuration to: " + configChooser.getSelectedFile().getCanonicalPath());
 
@@ -876,11 +876,11 @@ public class MenuBar extends Component {
     private void actionEventSaveConfigToFileMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Save.");
         LOG.debug("Saving serverpackcreator.conf");
-        TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"), false);
+        TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"));
 
         if (lastLoadedConfigurationFile != null && APPLICATIONPROPERTIES.getSaveLoadedConfiguration()) {
             LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
-            TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile, true);
+            TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile);
         }
 
     }

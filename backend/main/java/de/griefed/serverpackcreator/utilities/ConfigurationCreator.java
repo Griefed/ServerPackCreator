@@ -475,8 +475,7 @@ public class ConfigurationCreator {
                 includeZipCreation,
                 javaArgs,
                 serverPackSuffix,
-                APPLICATIONPROPERTIES.FILE_CONFIG,
-                false
+                APPLICATIONPROPERTIES.FILE_CONFIG
         )) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.written"));

@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import de.griefed.serverpackcreator.AddonsHandler;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,15 +118,13 @@ public class ConfigUtilities {
     }
 
     /**
-     * Convenience method to write a new configuration file with the {@link ConfigurationModel} passed to it. Passes all
-     * important fields from an instance of {@link ConfigurationModel} to {@link #writeConfigToFile(String, List, List, String, String, boolean, String, String, String, String, boolean, boolean, boolean, String, String, File, boolean)}.
+     * Convenience method to write a new configuration file with the {@link ConfigurationModel} passed to it. If the given file already exists, it is replaced.
      * @author Griefed
      * @param configurationModel Instance of {@link ConfigurationModel} to write to a file.
      * @param fileName The file to write to.
-     * @param isTemporary Whether the file is temporary.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
      */
-    public boolean writeConfigToFile(ConfigurationModel configurationModel, File fileName, boolean isTemporary) {
+    public boolean writeConfigToFile(ConfigurationModel configurationModel, File fileName) {
 
         return writeConfigToFile(
                 configurationModel.getModpackDir(),
@@ -144,12 +142,12 @@ public class ConfigUtilities {
                 configurationModel.getIncludeZipCreation(),
                 configurationModel.getJavaArgs(),
                 configurationModel.getServerPackSuffix(),
-                fileName,
-                isTemporary
+                fileName
         );
     }
 
-    /** Writes a new configuration file with the parameters passed to it.
+    /**
+     * Writes a new configuration file with the parameters passed to it. If the given file already exists, it is replaced.
      * @author whitebear60
      * @author Griefed
      * @param modpackDir String. The path to the modpack.
@@ -168,7 +166,6 @@ public class ConfigUtilities {
      * @param javaArgs String. Java arguments to write the start-scripts with.
      * @param serverPackSuffix String. Suffix to append to the server pack to be generated.
      * @param fileName The name under which to write the new configuration file.
-     * @param isTemporary Decides whether to delete existing config-file. If isTemporary is false, existing config files will be deleted before writing the new file.
      * @return Boolean. Returns true if the configuration file has been successfully written and old ones replaced.
      */
     public boolean writeConfigToFile(String modpackDir,
@@ -186,8 +183,7 @@ public class ConfigUtilities {
                                      boolean includeZip,
                                      String javaArgs,
                                      String serverPackSuffix,
-                                     File fileName,
-                                     boolean isTemporary) {
+                                     File fileName) {
 
         boolean configWritten = false;
 
@@ -229,27 +225,8 @@ public class ConfigUtilities {
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.serverpacksuffix"), serverPackSuffix
         );
 
-        if (!isTemporary) {
-            if (APPLICATIONPROPERTIES.FILE_CONFIG.exists()) {
-                boolean delConf = APPLICATIONPROPERTIES.FILE_CONFIG.delete();
-                if (delConf) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.config"));
-                } else {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile.config"));
-                }
-            }
-            if (APPLICATIONPROPERTIES.FILE_CONFIG_OLD.exists()) {
-                boolean delOldConf = APPLICATIONPROPERTIES.FILE_CONFIG_OLD.delete();
-                if (delOldConf) {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.writeconfigtofile.old"));
-                } else {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile.old"));
-                }
-            }
+        if (fileName.exists()) {
+            FileUtils.deleteQuietly(fileName);
         }
 
         try {
@@ -268,8 +245,7 @@ public class ConfigUtilities {
     }
 
     /**
-     * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to any addon run by
-     * ServerPackCreator in {@link AddonsHandler}.<br>
+     * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to any addon that may run.
      * Values included in this list are:<br>
      * 1. modpackDir<br>
      * 2. clientMods<br>

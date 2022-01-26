@@ -76,8 +76,10 @@ public class LocalizationManagerTest {
     }
 
     @Test
-    void getLocalizedStringTest() throws IOException {
-        FileUtils.copyDirectory(new File("backend/test/resources/testresources/languages/langMissing"), new File("lang"));
+    void getLocalizedStringTest(){
+        try {
+            FileUtils.copyDirectory(new File("backend/test/resources/testresources/languages/langMissing"), new File("lang"));
+        } catch (Exception ignored) {}
 
         LOG.info("getLocalizedStringTest() en_us");
         LocalizationManager localizationManager = new LocalizationManager(new ApplicationProperties(),"en_us");
@@ -97,8 +99,10 @@ public class LocalizationManagerTest {
     }
 
     @Test
-    void customLanguageTest() throws IOException {
-        FileUtils.copyFile(new File("backend/test/resources/testresources/languages/langMissing/lang_ef_gh.properties"), new File("lang/lang_ef_gh.properties"));
+    void customLanguageTest() {
+        try {
+            FileUtils.copyFile(new File("backend/test/resources/testresources/languages/langMissing/lang_ef_gh.properties"), new File("lang/lang_ef_gh.properties"));
+        } catch (Exception ignored) {}
 
         LOG.info("customLanguageTest() ef_gh");
         LocalizationManager localizationManager = new LocalizationManager(new ApplicationProperties(),"ef_gh");

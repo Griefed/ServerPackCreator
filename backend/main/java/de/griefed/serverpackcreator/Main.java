@@ -19,16 +19,12 @@
  */
 package de.griefed.serverpackcreator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
-import de.griefed.serverpackcreator.utilities.versionchecker.github.GitHubChecker;
-import de.griefed.serverpackcreator.utilities.versionchecker.gitlab.GitLabChecker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.awt.*;
 import java.io.File;
@@ -153,157 +149,169 @@ public class Main {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.newupdate"), updater.split(";")[0], updater.split(";")[1]));
         }
 
+        // Print help and information about ServerPackCreator which could help the user figure out what to do.
+        if (Arrays.asList(args).contains("-help")) {
+            LOG.debug("Issued printing of help.");
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help01"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help02"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help03"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help04"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help05"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help06"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help07"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help08"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help09"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help10"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help11"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help12"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help13"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help14"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help15"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help16"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help17"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help18"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help19"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help20"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help21"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help22"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help23"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help24"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help26"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help25"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help27"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help28"));
+            System.out.println("#");
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help29"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help30"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help31"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help32"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help33"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help34"));
+            System.out.println("#");
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help35"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help36"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help37"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help38"));
+            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help39"));
+
+            LOG.debug("Help printed. Exiting with code 0.");
+            System.exit(0);
+        }
+
         DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.filesSetup();
+
+        //noinspection unused
+        FileWatcher FILEWATCHER = new FileWatcher(APPLICATIONPROPERTIES, DEFAULTFILES);
 
         // Start ServerPackCreator as webservice.
         if (Arrays.asList(args).contains("-web")) {
 
-            DEFAULTFILES.checkDatabase();
-
-            if (systemInformation.get("osName").contains("windows") || systemInformation.get("osName").contains("Windows")) {
-
-                Scanner reader = new Scanner(System.in);
-
-                LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows"));
-                System.out.print(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.input"),"\"Yes\"", "\"No\""));
-
-                //noinspection UnusedAssignment
-                String answer = "foobar";
-
-                do {
-                    answer = reader.nextLine();
-
-                    if (answer.equals("No")) {
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.no"));
-                        System.exit(0);
-                    } else if (answer.equals("Yes")) {
-                        LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.yes"));
-                        MainSpringBoot.main(args);
-                    }
-
-                } while (!answer.equals("No") && !answer.equals("Yes"));
-
-            } else {
-
-                MainSpringBoot.main(args);
-
-            }
+            webservice(DEFAULTFILES, systemInformation, LOCALIZATIONMANAGER, args);
 
         } else {
-            // Prepare instances for dependency injection
-            ListUtilities LISTUTILITIES = new ListUtilities();
-            StringUtilities STRINGUTILITIES = new StringUtilities();
-            SystemUtilities SYSTEMUTILITIES = new SystemUtilities();
 
-            VersionLister VERSIONLISTER = new VersionLister(
-                    APPLICATIONPROPERTIES
+            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, DEFAULTFILES, args, updater);
+
+        }
+    }
+
+    private static void regular(ApplicationProperties applicationProperties, LocalizationManager localizationManager, DefaultFiles defaultFiles, String[] args, String updater) {
+
+        ListUtilities LISTUTILITIES = new ListUtilities();
+        StringUtilities STRINGUTILITIES = new StringUtilities();
+        SystemUtilities SYSTEMUTILITIES = new SystemUtilities();
+
+        VersionLister VERSIONLISTER = new VersionLister(
+                applicationProperties
+        );
+
+        BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(
+                localizationManager, applicationProperties
+        );
+
+        ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(
+                localizationManager, BOOLEANUTILITIES, LISTUTILITIES, applicationProperties, STRINGUTILITIES
+        );
+
+        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
+                localizationManager, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES
+        );
+
+        ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
+                localizationManager, CURSECREATEMODPACK, VERSIONLISTER, applicationProperties, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
+        );
+
+        ConfigurationCreator CONFIGURATIONCREATOR = new ConfigurationCreator(
+                localizationManager, CONFIGURATIONHANDLER, BOOLEANUTILITIES, applicationProperties, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
+        );
+
+        ApplicationPlugins APPLICATIONPLUGINS = new ApplicationPlugins();
+
+        ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
+                localizationManager, CURSECREATEMODPACK, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS
+        );
+
+        if (Arrays.asList(args).contains("-cgen")) {
+
+            // Start generation of a new configuration file with user input.
+            CONFIGURATIONCREATOR.createConfigurationFile();
+
+            runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, applicationProperties);
+
+            // Start ServerPackCreator in commandline mode.
+        } else if (Arrays.asList(args).contains("-cli") || GraphicsEnvironment.isHeadless()) {
+
+            runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, applicationProperties, CONFIGURATIONCREATOR);
+
+            // If the environment is headless, so no possibility for GUI, start in commandline-mode.
+        } else if (GraphicsEnvironment.isHeadless()) {
+
+            runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, applicationProperties, CONFIGURATIONCREATOR);
+
+            // If no mode is specified, and we have a graphical environment, start in GUI mode.
+        } else {
+
+            SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
+                    localizationManager, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, updater, APPLICATIONPLUGINS
             );
 
-            BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(
-                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
-            );
+            swingGuiInitializer.mainGUI();
+        }
 
-            ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(
-                    LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES
-            );
+    }
 
-            CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
-                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES
-            );
+    private static void webservice(DefaultFiles defaultFiles, HashMap<String, String> systemInformation, LocalizationManager localizationManager, String[] args) {
 
-            AddonsHandler ADDONSHANDLER = new AddonsHandler(
-                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES
-            );
+        defaultFiles.checkDatabase();
 
-            ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
-                    LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
-            );
+        if (systemInformation.get("osName").contains("windows") || systemInformation.get("osName").contains("Windows")) {
 
-            ConfigurationCreator CONFIGURATIONCREATOR = new ConfigurationCreator(
-                    LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, BOOLEANUTILITIES, APPLICATIONPROPERTIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
-            );
+            Scanner reader = new Scanner(System.in);
 
-            ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
-                    LOCALIZATIONMANAGER, CURSECREATEMODPACK, ADDONSHANDLER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
-            );
+            LOG.warn(localizationManager.getLocalizedString("main.log.warn.windows"));
+            System.out.print(String.format(localizationManager.getLocalizedString("main.log.warn.windows.input"),"\"Yes\"", "\"No\""));
 
-            //noinspection unused
-            FileWatcher FILEWATCHER = new FileWatcher(APPLICATIONPROPERTIES, DEFAULTFILES);
+            //noinspection UnusedAssignment
+            String answer = "foobar";
 
-            // Print help and information about ServerPackCreator which could help the user figure out what to do.
-            if (Arrays.asList(args).contains("-help")) {
-                LOG.debug("Issued printing of help.");
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help01"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help02"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help03"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help04"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help05"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help06"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help07"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help08"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help09"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help10"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help11"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help12"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help13"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help14"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help15"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help16"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help17"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help18"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help19"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help20"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help21"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help22"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help23"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help24"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help25"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help26"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help27"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help28"));
-                System.out.println("#");
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help29"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help30"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help31"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help32"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help33"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help34"));
-                System.out.println("#");
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help35"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help36"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help37"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help38"));
-                System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help39"));
+            do {
+                answer = reader.nextLine();
 
-                LOG.debug("Help printed. Exiting with code 0.");
-                System.exit(0);
-            } else if (Arrays.asList(args).contains("-cgen")) {
+                if (answer.equals("No")) {
+                    LOG.info(localizationManager.getLocalizedString("main.log.warn.windows.no"));
+                    System.exit(0);
+                } else if (answer.equals("Yes")) {
+                    LOG.warn(localizationManager.getLocalizedString("main.log.warn.windows.yes"));
+                    MainSpringBoot.main(args);
+                }
 
-                // Start generation of a new configuration file with user input.
-                CONFIGURATIONCREATOR.createConfigurationFile();
+            } while (!answer.equals("No") && !answer.equals("Yes"));
 
-                runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
+        } else {
 
-                // Start ServerPackCreator in commandline mode.
-            } else if (Arrays.asList(args).contains("-cli") || GraphicsEnvironment.isHeadless()) {
+            MainSpringBoot.main(args);
 
-                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES, CONFIGURATIONCREATOR);
-
-                // If the environment is headless, so no possibility for GUI, start in commandline-mode.
-            } else if (GraphicsEnvironment.isHeadless()) {
-
-                runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES, CONFIGURATIONCREATOR);
-
-                // If no mode is specified, and we have a graphical environment, start in GUI mode.
-            } else {
-
-                SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
-                        LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, ADDONSHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, updater
-                );
-
-                swingGuiInitializer.mainGUI();
-            }
         }
     }
 

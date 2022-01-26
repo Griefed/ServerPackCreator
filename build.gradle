@@ -12,6 +12,7 @@ plugins {
     id "com.github.ben-manes.versions" version '0.41.0'
 
     id 'maven-publish'
+    id 'java-library'
 
     id 'edu.sc.seis.launch4j' version '2.5.1'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
@@ -28,7 +29,7 @@ repositories {
     maven { url 'https://repo.spring.io/release' }
 }
 
-group = 'de.griefed'
+group = 'de.griefed.serverpackcreator'
 
 sourceSets {
     main {
@@ -103,11 +104,12 @@ dependencies {
     // Backend
     embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
+    embed 'commons-lang:commons-lang:2.6'
     embed 'net.lingala.zip4j:zip4j:2.9.1'
     embed 'com.moandjiezana.toml:toml4j:0.7.2'
     embed 'com.github.TheRandomLabs:CurseAPI:cdc5d48'
     embed 'org.xerial:sqlite-jdbc:3.36.0.3'
-    embed 'org.pf4j:pf4j-update:2.3.0'
+    embed 'org.pf4j:pf4j:3.6.0'
 
     embed 'org.apache.logging.log4j:log4j-api:2.17.1'
     embed 'org.apache.logging.log4j:log4j-core:2.17.1'
@@ -129,7 +131,6 @@ dependencies {
     embed 'org.apache.activemq:artemis-jms-server:2.19.0'
     embed 'com.github.gwenn:sqlite-dialect:0.1.2'
     embed 'org.apache.logging.log4j:log4j-web:2.17.1'
-    embed 'org.pf4j:pf4j-spring:0.7.0'
 
     // Dev tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.3'
@@ -254,6 +255,7 @@ bootJar {
                     "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
                     "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
                     "Implementation-Version" : "${project.version}",
+                    "Implementation-Title"   : "serverpackcreator",
                     "Application-Name": "ServerPackCreator"
 
     }
@@ -298,6 +300,7 @@ jar {
                 "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
                 "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
                 "Implementation-Version" : "${project.version}",
+                "Implementation-Title"   : "serverpackcreator",
                 "Application-Name": "ServerPackCreator"
         )
     }
