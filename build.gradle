@@ -322,3 +322,48 @@ jar {
             'profile_icon.png'
     )
 }
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Griefed/serverpackcreator")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+        maven {
+            url "https://git.griefed.de/api/v4/projects/63/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                name = "Private-Token"
+                value = System.getenv("GITLAB_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+        maven {
+            url "https://gitlab.com/api/v4/projects/32677538/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                name = "Private-Token"
+                value = System.getenv("GITLABCOM_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+    }
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        /*gpr(MavenPublication) {
+            //noinspection GroovyAssignabilityCheck
+            artifactId='serverpackcreator'
+            //noinspection GroovyAssignabilityCheck
+            from (components.java)
+        }*/
+        library(MavenPublication) {
+            from components.java
+        }
+    }
+}

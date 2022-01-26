@@ -20,6 +20,7 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 - Source: https://git.griefed.de/Griefed/ServerPackCreator
 - Mirror: https://gitlab.com/Griefed/ServerPackCreator
 - Mirror: https://github.com/Griefed/ServerPackCreator
+- Mirror: https://gitea.com/Griefed/ServerPackCreator
 
 ---
 
