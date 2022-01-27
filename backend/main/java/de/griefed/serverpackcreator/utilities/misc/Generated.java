@@ -17,15 +17,21 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugins.serverpackhandler;
+package de.griefed.serverpackcreator.utilities.misc;
 
-import de.griefed.serverpackcreator.plugins.PluginInformation;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Plugin interface for plugins which are to be executed before the generation of a server pack is started.
+ * Interface to exclude classes or methods from JaCoCo test coverage
  * @author Griefed
  */
-@Generated
-public interface PreGenExtension extends PluginInformation {
+@Documented
+@Retention(RUNTIME)
+@Target({ElementType.TYPE,ElementType.METHOD})
+public @interface Generated {
 }

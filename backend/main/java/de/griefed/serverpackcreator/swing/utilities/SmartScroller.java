@@ -48,6 +48,8 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
+import de.griefed.serverpackcreator.utilities.misc.Generated;
+
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
@@ -93,6 +95,7 @@ import java.awt.event.AdjustmentListener;
  *  Similar logic would apply for horizontal scrolling.
  * @author Rob Camick
  */
+@Generated
 public class SmartScroller implements AdjustmentListener {
     public final static int HORIZONTAL = 0;
     public final static int VERTICAL = 1;

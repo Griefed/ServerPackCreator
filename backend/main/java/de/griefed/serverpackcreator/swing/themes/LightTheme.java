@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.swing.themes;
 
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.shadows.DropShadowBorder;
 import mdlaf.themes.MaterialLiteTheme;
 import mdlaf.utils.MaterialBorders;
@@ -32,6 +33,7 @@ import java.awt.*;
  * which allows us to use the base light-theme as a starting point but changing every aspect of it in whatever way we like.
  * @author Griefed
  */
+@Generated
 public class LightTheme extends MaterialLiteTheme {
 
     @Override

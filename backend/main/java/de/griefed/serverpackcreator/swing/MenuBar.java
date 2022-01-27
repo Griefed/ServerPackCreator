@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.combobox.MaterialComboBoxUI;
 import mdlaf.components.textfield.MaterialTextFieldUI;
@@ -54,6 +55,7 @@ import java.util.Properties;
  * menus and menuitems to execute, change, open and edit various different aspects of ServerPackCreator.
  * @author Griefed
  */
+@Generated
 public class MenuBar extends Component {
 
     private static final Logger LOG = LogManager.getLogger(MenuBar.class);

@@ -1,8 +1,11 @@
 package de.griefed.serverpackcreator.swing.utilities;
 
+import de.griefed.serverpackcreator.utilities.misc.Generated;
+
 import javax.swing.*;
 import java.awt.*;
 
+@Generated
 public abstract class JComponentTailer extends JComponent {
 
     protected JTextArea textArea;

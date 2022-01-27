@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.swing.utilities.JComponentTailer;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -33,6 +34,7 @@ import java.util.Properties;
  * This class creates the tab which display the latest serverpackcreator.log tailer.
  * @author Griefed
  */
+@Generated
 public class TabServerPackCreatorLog extends JComponentTailer {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
