@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-class ConfigurationTest {
+class ConfigurationHandlerTest {
 
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final CurseCreateModpack CURSECREATEMODPACK;
@@ -28,7 +28,7 @@ class ConfigurationTest {
     private final SystemUtilities SYSTEMUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    ConfigurationTest() {
+    ConfigurationHandlerTest() {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {

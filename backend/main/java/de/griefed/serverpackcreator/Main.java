@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,6 +60,7 @@ import java.util.List;
  * enter <code>-cli</code>-mode.
  * @author Griefed
  */
+@Generated
 public class Main {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
