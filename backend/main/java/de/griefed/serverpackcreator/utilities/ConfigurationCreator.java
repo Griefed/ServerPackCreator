@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,6 +35,7 @@ import java.util.*;
  * Utility-class revolving around the creation of a new configuration file.
  * @author Griefed
  */
+@Generated
 public class ConfigurationCreator {
 
     private static final Logger LOG = LogManager.getLogger(ConfigurationCreator.class);

@@ -47,6 +47,8 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
+import de.griefed.serverpackcreator.utilities.misc.Generated;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -65,6 +67,7 @@ import java.awt.*;
  * Rob, you rule.
  * @author Rob Camick
  */
+@Generated
 public class BackgroundPanel extends JPanel {
     public static final int SCALED = 0;
     public static final int TILED = 1;

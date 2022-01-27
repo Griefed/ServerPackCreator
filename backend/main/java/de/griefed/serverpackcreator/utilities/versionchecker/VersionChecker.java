@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.client.HttpClientErrorException;
@@ -35,6 +36,7 @@ import java.util.List;
  * each other to find out which is newer.
  * @author Griefed
  */
+@Generated
 public abstract class VersionChecker {
 
     private static final Logger LOG = LogManager.getLogger(VersionChecker.class);

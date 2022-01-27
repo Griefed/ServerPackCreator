@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.utilities;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.Main;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
@@ -41,6 +42,7 @@ import java.util.Objects;
  * In the case of <code>serverpackcreator.properties</code>, defaults are then loaded.
  * @author Griefed
  */
+@Generated
 @Component
 public class FileWatcher {
 

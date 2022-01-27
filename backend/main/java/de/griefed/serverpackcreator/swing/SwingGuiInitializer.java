@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.logging.log4j.LogManager;
@@ -52,6 +53,7 @@ import java.util.Properties;
  * are created in the constructor of this class to make sure they are ready when the GUI is created and shown to the user.
  * @author Griefed
  */
+@Generated
 public class SwingGuiInitializer extends JPanel {
 
     private static final Logger LOG = LogManager.getLogger(SwingGuiInitializer.class);

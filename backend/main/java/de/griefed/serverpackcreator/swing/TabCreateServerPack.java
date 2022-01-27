@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -57,6 +58,7 @@ import java.util.concurrent.Executors;
  * If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
  * @author Griefed
  */
+@Generated
 public class TabCreateServerPack extends JComponent {
 
     private static final Logger LOG = LogManager.getLogger(TabCreateServerPack.class);
