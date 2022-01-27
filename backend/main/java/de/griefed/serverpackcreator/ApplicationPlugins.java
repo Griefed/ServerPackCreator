@@ -26,7 +26,7 @@ import de.griefed.serverpackcreator.plugins.swinggui.TabExtension;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.FileUtils;
-import org.pf4j.JarPluginManager;
+import org.pf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -68,6 +68,11 @@ public class ApplicationPlugins extends JarPluginManager {
         this.PLUGINS_TABBEDPANE = getExtensions(TabExtension.class);
 
         availablePluginsAndExtensions();
+    }
+
+    @Override
+    protected ExtensionFactory createExtensionFactory() {
+        return new SingletonExtensionFactory();
     }
 
     private void availablePluginsAndExtensions() {
