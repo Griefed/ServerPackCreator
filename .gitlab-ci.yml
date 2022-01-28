@@ -126,7 +126,7 @@ secret_detection:
 
 Gradle Test:
   stage: Tests
-  image: griefed/baseimage-ubuntu-jdk-8:2.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:2.0.2
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -238,7 +238,7 @@ PreRelease:
 
 Build Release:
   stage: Build Release
-  image: griefed/baseimage-ubuntu-jdk-8:2.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:2.0.2
   needs:
     - job: release_job
       optional: true
@@ -295,7 +295,7 @@ Build Release:
 
 Publish Maven Artifacts:
   stage: Build Release
-  image: griefed/baseimage-ubuntu-jdk-8:2.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:2.0.2
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -400,7 +400,7 @@ coverage:
       cobertura: build/cobertura.xml
 
 Gradle Dependency-Checks:
-  image: griefed/baseimage-ubuntu-jdk-8:2.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:2.0.2
   allow_failure: true
   stage: Other
   before_script:
@@ -421,7 +421,7 @@ Gradle Dependency-Checks:
 
 pages:
   stage: Documentation
-  image: griefed/baseimage-ubuntu-jdk-8:2.0.1
+  image: griefed/baseimage-ubuntu-jdk-8:2.0.2
   allow_failure: true
   before_script:
     - which java
