@@ -186,3 +186,4 @@ backend/test/resources/forge_tests/server_pack.zip
 /somefile.conf
 /lang
 backend/main/resources/VERSION.txt
+/plugins/
