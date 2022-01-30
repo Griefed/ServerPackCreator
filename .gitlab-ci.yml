@@ -202,7 +202,7 @@ Generate Release:
     refs:
       - tags
     variables:
-      - '"$CI_COMMIT_TITLE =~ /^RELEASE:.+$/" && $CI_SERVER_HOST == "git.griefed.de"'
+      - '"$CI_COMMIT_TITLE =~ /^RELEASE:.+$/" && $CI_SERVER_HOST == "gitlab.com"'
 
 Build Release:
   stage: Build Release
