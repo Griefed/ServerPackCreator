@@ -166,9 +166,7 @@ Docker Test:
     - docker buildx create --use --name grfdbuilder
   script:
     - docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME"
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
       --build-arg HOSTER=$CI_SERVER_HOST
@@ -198,15 +196,6 @@ Generate Release:
     - if: '$CI_COMMIT_BRANCH == "alpha" && $CI_COMMIT_TITLE !~ /^RELEASE:.+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_BRANCH == "beta" && $CI_COMMIT_TITLE !~ /^RELEASE:.+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_TITLE !~ /^RELEASE:.+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-#  only:
-#    - alpha
-#    - beta
-#    - main
-#  except:
-#    refs:
-#      - tags
-#    variables:
-#      - '"$CI_COMMIT_TITLE =~ /^RELEASE:.+$/" && $CI_SERVER_HOST == "gitlab.com"'
 
 Build Release:
   stage: Build Release
@@ -262,8 +251,8 @@ Build Release:
     --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar" --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar"
     --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
   rules:
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
+    - if: "$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/"
+    - if: "$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/"
 
 Publish Maven Artifacts:
   stage: Build Release
@@ -281,8 +270,8 @@ Publish Maven Artifacts:
     - echo "**** Publishing Maven Artifacts ****"
     - "./gradlew publish -Pversion=${CI_COMMIT_TAG}"
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker Release:
   stage: Build Release
@@ -303,7 +292,7 @@ Build Docker Release:
       --build-arg VERSION=$CI_COMMIT_TAG
       --file Dockerfile .
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker PreRelease:
   stage: Build Release
@@ -322,7 +311,7 @@ Build Docker PreRelease:
       --build-arg VERSION=$CI_COMMIT_TAG
       --file Dockerfile .
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Inform About Release:
   stage: Build Release
@@ -356,8 +345,8 @@ Inform About Release:
       --footer "Released at $CI_JOB_STARTED_AT"
       --footer-icon "https://i.griefed.de/images/2022/01/21/start_generation.png"
   rules:
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+(-beta|-alpha)\\.\\d+$/"
-    - if: "$CI_COMMIT_TAG =~ /^\\d+\\.\\d+\\.\\d+$/"
+    - if: "$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/"
+    - if: "$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/"
 
 coverage:
   stage: Other
