@@ -455,6 +455,8 @@
 <dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/plugins/swinggui/package-summary.html">de.griefed.serverpackcreator.plugins.swinggui</a> - package de.griefed.serverpackcreator.plugins.swinggui</dt>
 <dd>&nbsp;</dd>
+<dt><a href="de/griefed/serverpackcreator/spring/package-summary.html">de.griefed.serverpackcreator.spring</a> - package de.griefed.serverpackcreator.spring</dt>
+<dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/spring/controllers/package-summary.html">de.griefed.serverpackcreator.spring.controllers</a> - package de.griefed.serverpackcreator.spring.controllers</dt>
 <dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/spring/jms/package-summary.html">de.griefed.serverpackcreator.spring.jms</a> - package de.griefed.serverpackcreator.spring.jms</dt>
@@ -945,10 +947,6 @@
 <dd>
 <div class="block">Getter for whether the last loaded configuration file should be saved to as well.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#getScheduleDatabaseCleanup--">getScheduleDatabaseCleanup()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
-<dd>
-<div class="block">Getter for the cron-schedule at which ServerPackCreator should clean up the database.</div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getServerIconPath--">getServerIconPath()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Getter for the path to the server-icon.png to include in the server pack.</div>
@@ -1340,6 +1338,10 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html#refresh--">refresh()</a></span> - Method in class de.griefed.serverpackcreator.utilities.versionchecker.<a href="de/griefed/serverpackcreator/utilities/versionchecker/VersionChecker.html" title="class in de.griefed.serverpackcreator.utilities.versionchecker">VersionChecker</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/DefaultFiles.html#refreshManifestFile-java.net.URL-java.io.File-">refreshManifestFile(URL, File)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator">DefaultFiles</a></dt>
+<dd>
+<div class="block">Deletes the specified manifest if it is found, then downloads the specified manifest file again.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/VersionLister.html#refreshVersions--">refreshVersions()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a></dt>
 <dd>
 <div class="block">Refresh all Minecraft, Forge and Fabric versions so we can work with up-to-date values.</div>
@@ -1444,6 +1446,14 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/services/TaskSubmitter.html#scanCurseProject-java.lang.String-">scanCurseProject(String)</a></span> - Method in class de.griefed.serverpackcreator.spring.services.<a href="de/griefed/serverpackcreator/spring/services/TaskSubmitter.html" title="class in de.griefed.serverpackcreator.spring.services">TaskSubmitter</a></dt>
 <dd>
 <div class="block">Submit a task for scanning a CurseForge project and file id combination.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/spring/Schedules.html" title="class in de.griefed.serverpackcreator.spring"><span class="typeNameLink">Schedules</span></a> - Class in <a href="de/griefed/serverpackcreator/spring/package-summary.html">de.griefed.serverpackcreator.spring</a></dt>
+<dd>
+<div class="block">Schedules to cover all kinds of aspects of ServerPackCreator.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/Schedules.html#Schedules-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.spring.services.ServerPackService-de.griefed.serverpackcreator.DefaultFiles-de.griefed.serverpackcreator.VersionLister-">Schedules(ApplicationProperties, ServerPackService, DefaultFiles, VersionLister)</a></span> - Constructor for class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/Schedules.html" title="class in de.griefed.serverpackcreator.spring">Schedules</a></dt>
+<dd>
+<div class="block">Constructor for DI.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models"><span class="typeNameLink">ServerPack</span></a> - Class in <a href="de/griefed/serverpackcreator/spring/models/package-summary.html">de.griefed.serverpackcreator.spring.models</a></dt>
 <dd>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -204,6 +204,13 @@ extends java.lang.Object</pre>
 <div class="block">Getter for Mojang's Minecraft version-manifest.</div>
 </td>
 </tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#refreshManifestFile-java.net.URL-java.io.File-">refreshManifestFile</a></span>(java.net.URL&nbsp;manifestUrl,
+                   java.io.File&nbsp;manifestToRefresh)</code>
+<div class="block">Deletes the specified manifest if it is found, then downloads the specified manifest file again.</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -337,6 +344,23 @@ public&nbsp;DefaultFiles(<a href="../../../de/griefed/serverpackcreator/i18n/Loc
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
  said newly generated file.</dd>
+</dl>
+</li>
+</ul>
+<a name="refreshManifestFile-java.net.URL-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>refreshManifestFile</h4>
+<pre>public&nbsp;void&nbsp;refreshManifestFile(java.net.URL&nbsp;manifestUrl,
+                                java.io.File&nbsp;manifestToRefresh)</pre>
+<div class="block">Deletes the specified manifest if it is found, then downloads the specified manifest file again. Ensures we always
+ have the latest manifest for version validation available.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>manifestUrl</code> - The URL to the file which is to be downloaded.</dd>
+<dd><code>manifestToRefresh</code> - The manifest file to delete and then download, "refreshing" it</dd>
 </dl>
 </li>
 </ul>

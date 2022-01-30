@@ -4,6 +4,7 @@ de.griefed.serverpackcreator.i18n
 de.griefed.serverpackcreator.plugins
 de.griefed.serverpackcreator.plugins.serverpackhandler
 de.griefed.serverpackcreator.plugins.swinggui
+de.griefed.serverpackcreator.spring
 de.griefed.serverpackcreator.spring.controllers
 de.griefed.serverpackcreator.spring.jms
 de.griefed.serverpackcreator.spring.models

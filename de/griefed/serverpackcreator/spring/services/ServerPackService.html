@@ -157,13 +157,13 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/ServerPackService.html#deleteServerPack-int-">deleteServerPack</a></span>(int&nbsp;id)</code>
 <div class="block">Deletes a server pack with the given id.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/ServerPackService.html#deleteServerPack-int-int-">deleteServerPack</a></span>(int&nbsp;projectID,
                 int&nbsp;fileID)</code>
 <div class="block">Delete a server pack with a given CurseForge project and file ID.</div>
@@ -201,13 +201,13 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/ServerPackService.html#insert-de.griefed.serverpackcreator.spring.models.ServerPack-">insert</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</code>
 <div class="block">Store a server pack in the database.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/ServerPackService.html#updateConfirmedCounter-int-int-">updateConfirmedCounter</a></span>(int&nbsp;id,
                       int&nbsp;vote)</code>
 <div class="block">Either increment or decrement the confirmed working value of a given server pack entry in the database, identified by the
@@ -215,20 +215,20 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i10" class="altColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/ServerPackService.html#updateDownloadCounter-int-">updateDownloadCounter</a></span>(int&nbsp;id)</code>
 <div class="block">Increment the download counter for a given server pack entry in the database identified by the database id.</div>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/ServerPackService.html#updateServerPackByID-int-de.griefed.serverpackcreator.spring.models.ServerPack-">updateServerPackByID</a></span>(int&nbsp;id,
                     <a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</code>
 <div class="block">Update a server pack database entry with the given database id.</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/services/ServerPackService.html#updateServerPackByProjectIDAndFileID-int-int-de.griefed.serverpackcreator.spring.models.ServerPack-">updateServerPackByProjectIDAndFileID</a></span>(int&nbsp;projectID,
                                     int&nbsp;fileID,
                                     <a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</code>
@@ -407,7 +407,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <ul class="blockList">
 <li class="blockList">
 <h4>insert</h4>
-<pre>protected&nbsp;void&nbsp;insert(<a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</pre>
+<pre>public&nbsp;void&nbsp;insert(<a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</pre>
 <div class="block">Store a server pack in the database.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -421,8 +421,8 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <ul class="blockList">
 <li class="blockList">
 <h4>updateServerPackByID</h4>
-<pre>protected&nbsp;void&nbsp;updateServerPackByID(int&nbsp;id,
-                                    <a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</pre>
+<pre>public&nbsp;void&nbsp;updateServerPackByID(int&nbsp;id,
+                                 <a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</pre>
 <div class="block">Update a server pack database entry with the given database id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -437,7 +437,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <ul class="blockList">
 <li class="blockList">
 <h4>updateDownloadCounter</h4>
-<pre>protected&nbsp;void&nbsp;updateDownloadCounter(int&nbsp;id)</pre>
+<pre>public&nbsp;void&nbsp;updateDownloadCounter(int&nbsp;id)</pre>
 <div class="block">Increment the download counter for a given server pack entry in the database identified by the database id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -451,8 +451,8 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <ul class="blockList">
 <li class="blockList">
 <h4>updateConfirmedCounter</h4>
-<pre>protected&nbsp;void&nbsp;updateConfirmedCounter(int&nbsp;id,
-                                      int&nbsp;vote)</pre>
+<pre>public&nbsp;void&nbsp;updateConfirmedCounter(int&nbsp;id,
+                                   int&nbsp;vote)</pre>
 <div class="block">Either increment or decrement the confirmed working value of a given server pack entry in the database, identified by the
  database id.</div>
 <dl>
@@ -468,9 +468,9 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <ul class="blockList">
 <li class="blockList">
 <h4>updateServerPackByProjectIDAndFileID</h4>
-<pre>protected&nbsp;void&nbsp;updateServerPackByProjectIDAndFileID(int&nbsp;projectID,
-                                                    int&nbsp;fileID,
-                                                    <a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</pre>
+<pre>public&nbsp;void&nbsp;updateServerPackByProjectIDAndFileID(int&nbsp;projectID,
+                                                 int&nbsp;fileID,
+                                                 <a href="../../../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a>&nbsp;serverPack)</pre>
 <div class="block">Update a server pack entry in the database identified by a CurseForge project and file ID combination, using a passed
  server pack.</div>
 <dl>
@@ -487,7 +487,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <ul class="blockList">
 <li class="blockList">
 <h4>deleteServerPack</h4>
-<pre>protected&nbsp;void&nbsp;deleteServerPack(int&nbsp;id)</pre>
+<pre>public&nbsp;void&nbsp;deleteServerPack(int&nbsp;id)</pre>
 <div class="block">Deletes a server pack with the given id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -501,8 +501,8 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <ul class="blockListLast">
 <li class="blockList">
 <h4>deleteServerPack</h4>
-<pre>protected&nbsp;void&nbsp;deleteServerPack(int&nbsp;projectID,
-                                int&nbsp;fileID)</pre>
+<pre>public&nbsp;void&nbsp;deleteServerPack(int&nbsp;projectID,
+                             int&nbsp;fileID)</pre>
 <div class="block">Delete a server pack with a given CurseForge project and file ID.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

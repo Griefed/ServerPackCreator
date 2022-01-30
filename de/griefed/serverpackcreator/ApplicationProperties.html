@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -323,18 +323,12 @@ extends java.util.Properties</pre>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getScheduleDatabaseCleanup--">getScheduleDatabaseCleanup</a></span>()</code>
-<div class="block">Getter for the cron-schedule at which ServerPackCreator should clean up the database.</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getServerPackCreatorVersion--">getServerPackCreatorVersion</a></span>()</code>
 <div class="block">Getter for the version of ServerPackCreator.<br>
  If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#reload--">reload</a></span>()</code>
 <div class="block">Reload serverpackcreator.properties.</div>
@@ -665,20 +659,6 @@ public&nbsp;ApplicationProperties()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Whether the last loaded configuration file should be saved to as well.</dd>
-</dl>
-</li>
-</ul>
-<a name="getScheduleDatabaseCleanup--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getScheduleDatabaseCleanup</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getScheduleDatabaseCleanup()</pre>
-<div class="block">Getter for the cron-schedule at which ServerPackCreator should clean up the database.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. The cron-schedule at which ServerPackCreator should clean up the database.</dd>
 </dl>
 </li>
 </ul>
