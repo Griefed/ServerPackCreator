@@ -237,16 +237,16 @@ Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who know
 This allows people to write their own addons to expand the functionality of ServerPackCreator with their own features as
 they see fit or want.
 
-One example would be: Automatic setup of a server pack for BlueMap. An addon could check all mods in the specified modpacks
-mods-directory for textures, and if any are found, add them to BlueMap's resourcepack folder config/bluemap/resourcepacks,
-install BlueMap for the specified Minecraft and Forge/Fabric version and voilà! ServerPackCreator has BlueMap Support Automation
-functionality, thanks to an addon, without having to wait for me to write it and add it to ServerPackCreators core-functionality for you!
+For documentation about Pf4j, visit https://pf4j.org/
+
+If you have ideas and/or suggestions for improvements to the addon-system in ServerPackCreator, open an improvement-issue over at the ServerPackCreator [issues page](https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=enhancement&template=improvement.yml&title=%5BImprovement+request%5D%3A+)
 
 For a detailed example of how such an addon is supposed to look, check the ExampleAddon in the list below!
 
-| Addon                                                                              | Creator | Description                                                        |
-|:-----------------------------------------------------------------------------------|:--------|:-------------------------------------------------------------------|
-| [ExampleServerPackAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon) | Griefed | An example addon providing a starting point for addon development. |
+| Addon                                                                                    | Creator | Description                                                        |
+|:-----------------------------------------------------------------------------------------|:--------|:-------------------------------------------------------------------|
+| [ExampleServerPackAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)       | Griefed | An example addon providing a starting point for addon development. |
+| [Example MiniGame](https://github.com/Griefed/ServerPackCreatorExampleAddon/tree/tetris) | Griefed | Play Tetris in a new window whilst your server packs generate!     |
 
 # 6. Configuration
 

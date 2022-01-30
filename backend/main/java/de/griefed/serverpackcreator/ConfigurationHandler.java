@@ -590,7 +590,9 @@ public class ConfigurationHandler {
 
         boolean configCorrect = false;
 
-        if (modpackDir.matches("[0-9]{2,},[0-9]{5,}")) {
+        if (modpackDir.matches("[0-9]{2,},[0-9]{5,}") &&
+                Integer.parseInt(modpackDir.split(",")[0]) >= 10 &&
+                Integer.parseInt(modpackDir.split(",")[1]) >= 60018) {
 
             LOG.info("IMPORTANT!!! - Modpack directory matches CurseForge projectID and fileID format. However, the CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.");
             LOG.info("IMPORTANT!!! - Downloading and installing a modpack is disabled until further notice.");

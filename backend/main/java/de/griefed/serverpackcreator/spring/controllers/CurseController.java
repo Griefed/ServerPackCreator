@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.spring.controllers;
 
-import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.spring.models.CurseResponse;
 import de.griefed.serverpackcreator.spring.services.CurseService;

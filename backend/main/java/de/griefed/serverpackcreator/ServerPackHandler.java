@@ -123,7 +123,6 @@ public class ServerPackHandler {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
-
         if (injectedBooleanUtilities == null) {
             this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {

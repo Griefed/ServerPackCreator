@@ -220,12 +220,6 @@ public class ApplicationProperties extends Properties {
     private int queueMaxDiskUsage = 90;
 
     /**
-     * When running as a webservice: Cron-schedule for when ServerPackCreator should run a database-cleanup. Set to <code>-</code> to disable.
-     * Default is 0 0 24 * *.
-     */
-    private String scheduleDatabaseCleanup = "0 0 24 * *";
-
-    /**
      * Whether the manually loaded configuration file should be saved as well as the default serverpackcreator.conf. Setting this to true will make ServerPackCreator save serverpackcreator.conf as well as the last loaded configuration-file.
      * Default is false.
      */
@@ -356,8 +350,6 @@ public class ApplicationProperties extends Properties {
 
         this.queueMaxDiskUsage = Integer.parseInt(getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
 
-        this.scheduleDatabaseCleanup = getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", "0 0 24 * *");
-
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
 
         this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
@@ -467,8 +459,6 @@ public class ApplicationProperties extends Properties {
 
         this.queueMaxDiskUsage = Integer.parseInt(getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
 
-        this.scheduleDatabaseCleanup = getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", "0 0 24 * *");
-
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
 
         this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
@@ -529,15 +519,6 @@ public class ApplicationProperties extends Properties {
      */
     public boolean getSaveLoadedConfiguration() {
         return saveLoadedConfiguration;
-    }
-
-    /**
-     * Getter for the cron-schedule at which ServerPackCreator should clean up the database.
-     * @author Griefed
-     * @return String. The cron-schedule at which ServerPackCreator should clean up the database.
-     */
-    public String getScheduleDatabaseCleanup() {
-        return scheduleDatabaseCleanup;
     }
 
     /**

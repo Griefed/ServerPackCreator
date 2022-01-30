@@ -206,9 +206,4 @@ public class ApplicationPropertiesTest {
         APPLICATIONPROPERTIES.addToListOfDirectoriesToExclude("test");
         Assertions.assertTrue(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().contains("test"));
     }
-
-    @Test
-    void getScheduleDatabaseCleanupTest() {
-        Assertions.assertEquals(APPLICATIONPROPERTIES.getScheduleDatabaseCleanup(),"0 0 24 * *");
-    }
 }

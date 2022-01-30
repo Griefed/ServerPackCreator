@@ -302,7 +302,7 @@ public class DefaultFiles {
      * @param manifestToRefresh The manifest file to delete and then download, "refreshing" it
      * @author Griefed
      */
-    void refreshManifestFile(URL manifestUrl, File manifestToRefresh) {
+    public void refreshManifestFile(URL manifestUrl, File manifestToRefresh) {
 
         File fileName = new File(String.format("./work/%s", manifestToRefresh));
 

@@ -1,9 +1,6 @@
-package de.griefed.serverpackcreator.utilities;
+package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.DefaultFiles;
-import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.ApplicationProperties;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,6 +132,24 @@ public class VersionListerTest {
                 VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersion()))[VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersion())).length - 1],
                 VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersion())[0]
         );
+    }
+
+    @Test
+    void refreshVersionsTest() {
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getMinecraftManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT);
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getForgeManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE);
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC);
+        DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricInstallerManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER);
+
+        VERSIONLISTER.refreshVersions();
+
+        Assertions.assertNotNull(VERSIONLISTER.getFabricReleaseInstallerVersion());
+        Assertions.assertNotNull(VERSIONLISTER.getFabricLatestInstallerVersion());
+        Assertions.assertTrue(VERSIONLISTER.getFabricVersions().size() > 1);
+        Assertions.assertTrue(VERSIONLISTER.getMinecraftReleaseVersions().size() > 1);
+        for (int i = 0; i < VERSIONLISTER.getMinecraftReleaseVersions().size(); i++) {
+            Assertions.assertNotNull(VERSIONLISTER.getForgeVersionsAsArray(VERSIONLISTER.getMinecraftReleaseVersions().get(i)));
+        }
     }
 
 }

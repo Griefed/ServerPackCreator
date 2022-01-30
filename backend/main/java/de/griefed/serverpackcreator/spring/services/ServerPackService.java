@@ -65,8 +65,6 @@ public class ServerPackService {
         this.SERVERPACKREPOSITORY = injectedServerPackRepository;
     }
 
-    //TODO: Method: Refresh database. Remove any entries referencing server packs no longer available as files whose created timestamp is older than property and has zero downloads
-
     /**
      * Find a specific server pack by searching with a CurseForge project and file ID.
      * @author Griefed
@@ -195,7 +193,7 @@ public class ServerPackService {
      * @author Griefed
      * @param serverPack Instance of {@link ServerPack} to store in the database.
      */
-    protected void insert(ServerPack serverPack) {
+    public void insert(ServerPack serverPack) {
         SERVERPACKREPOSITORY.save(serverPack);
     }
 
@@ -205,7 +203,7 @@ public class ServerPackService {
      * @param id Integer. The database id of the server pack to update.
      * @param serverPack Instance of {@link ServerPack} with which to update the entry in the database.
      */
-    protected void updateServerPackByID(int id, ServerPack serverPack) {
+    public void updateServerPackByID(int id, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
             LOG.debug("Updating database with: " + serverPack.repositoryToString());
@@ -227,7 +225,7 @@ public class ServerPackService {
      * @author Griefed
      * @param id Integer. The database id of the server pack.
      */
-    protected void updateDownloadCounter(int id) {
+    public void updateDownloadCounter(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
             serverPackFromDB.setDownloads(serverPackFromDB.getDownloads() + 1);
@@ -242,7 +240,7 @@ public class ServerPackService {
      * @param id Integer. The database id of the server pack.
      * @param vote Integer. Positive for upvote, negative for downvote
      */
-    protected void updateConfirmedCounter(int id, int vote) {
+    public void updateConfirmedCounter(int id, int vote) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
             serverPackFromDB.setConfirmedWorking(serverPackFromDB.getConfirmedWorking() + vote);
@@ -258,7 +256,7 @@ public class ServerPackService {
      * @param fileID The CurseForge file ID.
      * @param serverPack The server pack with which to update the entry in the database.
      */
-    protected void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
+    public void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
         if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
             ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
             LOG.debug("Updating database with: " + serverPack.repositoryToString());
@@ -280,7 +278,7 @@ public class ServerPackService {
      * @author Griefed
      * @param id Integer. The database id of the server pack to delete.
      */
-    protected void deleteServerPack(int id) {
+    public void deleteServerPack(int id) {
         SERVERPACKREPOSITORY.deleteById(id);
     }
 
@@ -290,7 +288,7 @@ public class ServerPackService {
      * @param projectID Integer. The CurseForge project ID.
      * @param fileID Integer. The CurseForge file ID.
      */
-    protected void deleteServerPack(int projectID, int fileID) {
+    public void deleteServerPack(int projectID, int fileID) {
         SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
     }
 
