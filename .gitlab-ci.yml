@@ -176,46 +176,13 @@ Docker Test:
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
-Release:
+Generate Release:
   stage: Release
   needs:
     - job: Gradle Test
       artifacts: false
     - job: Docker Test
       artifacts: false
-      optional: true
-    - job: eslint-sast
-      artifacts: false
-    - job: nodejs-scan-sast
-      artifacts: false
-    - job: semgrep-sast
-      artifacts: false
-    - job: secret_detection
-      artifacts: false
-  image: griefed/gitlab-ci-cd:2.0.0
-  script:
-    - |-
-      if [[ $CI_SERVER_HOST == "git.griefed.de" ]]; then
-        npx semantic-release
-      else
-        echo "Skipping..."
-      fi
-  only:
-    - main
-  except:
-    refs:
-      - tags
-    variables:
-      - "$CI_COMMIT_TITLE =~ /^RELEASE:.+$/"
-
-PreRelease:
-  stage: Release
-  needs:
-    - job: Gradle Test
-      artifacts: false
-    - job: Docker Test
-      artifacts: false
-      optional: true
     - job: eslint-sast
       artifacts: false
     - job: nodejs-scan-sast
@@ -230,6 +197,7 @@ PreRelease:
   only:
     - alpha
     - beta
+    - main
   except:
     refs:
       - tags
