@@ -194,15 +194,19 @@ Generate Release:
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.0
   script:
     - npx semantic-release
-  only:
-    - alpha
-    - beta
-    - main
-  except:
-    refs:
-      - tags
-    variables:
-      - '"$CI_COMMIT_TITLE =~ /^RELEASE:.+$/" && $CI_SERVER_HOST == "gitlab.com"'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "alpha" && $CI_COMMIT_TITLE !~ /^RELEASE:.+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_BRANCH == "beta" && $CI_COMMIT_TITLE !~ /^RELEASE:.+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_TITLE !~ /^RELEASE:.+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+#  only:
+#    - alpha
+#    - beta
+#    - main
+#  except:
+#    refs:
+#      - tags
+#    variables:
+#      - '"$CI_COMMIT_TITLE =~ /^RELEASE:.+$/" && $CI_SERVER_HOST == "gitlab.com"'
 
 Build Release:
   stage: Build Release
