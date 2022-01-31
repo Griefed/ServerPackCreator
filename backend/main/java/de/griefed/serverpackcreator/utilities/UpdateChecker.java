@@ -14,9 +14,9 @@ public class UpdateChecker {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final GitHubChecker GITHUB;
-    private final GitLabChecker GITGRIEFED;
-    private final GitLabChecker GITLAB;
+    private GitHubChecker GITHUB;
+    private GitLabChecker GITGRIEFED;
+    private GitLabChecker GITLAB;
 
     public UpdateChecker(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
 
@@ -40,18 +40,21 @@ public class UpdateChecker {
     public UpdateChecker refresh() {
         try {
             this.GITHUB.refresh();
-        } catch (JsonProcessingException ex) {
+        } catch (Exception ex) {
             LOG.error("Error refreshing GitHub.", ex);
+            this.GITHUB = null;
         }
         try {
             this.GITLAB.refresh();
-        } catch (JsonProcessingException ex) {
+        } catch (Exception ex) {
             LOG.error("Error refreshing GitLab.", ex);
+            this.GITLAB = null;
         }
         try {
             this.GITGRIEFED.refresh();
-        } catch (JsonProcessingException ex) {
+        } catch (Exception ex) {
             LOG.error("Error refreshing GitGriefed.", ex);
+            this.GITGRIEFED = null;
         }
         return this;
     }
@@ -63,22 +66,29 @@ public class UpdateChecker {
 
             //Check GitLab mirror for most recent release
             LOG.debug("Checking GitLab for updates...");
-            updater = GITHUB.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+            if (GITHUB != null) {
+                updater = GITHUB.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+            }
+
 
             //After checking GitLab, and we did not get a version, check GitGriefed source
-            LOG.debug("Checking GitGriefed for updates...");
-            if (!updater.contains(";") && GITGRIEFED.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-                updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-            } else if (updater.contains(";") && GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-                updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+            if (GITGRIEFED != null) {
+                LOG.debug("Checking GitGriefed for updates...");
+                if (!updater.contains(";") && GITGRIEFED.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
+                    updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+                } else if (updater.contains(";") && GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
+                    updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+                }
             }
 
             //After checking GitGriefed, and we did not get a version, check GitHub mirror
-            LOG.debug("Checking GitHub for updates...");
-            if (!updater.contains(";") && GITLAB.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-                updater = GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-            } else if (updater.contains(";") && GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-                updater = GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+            if (GITLAB != null) {
+                LOG.debug("Checking GitHub for updates...");
+                if (!updater.contains(";") && GITLAB.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
+                    updater = GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+                } else if (updater.contains(";") && GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
+                    updater = GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+                }
             }
 
         }
