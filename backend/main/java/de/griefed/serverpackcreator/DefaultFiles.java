@@ -184,11 +184,7 @@ public class DefaultFiles {
             LOG.error("Could not create server-packs directory.", ex);
         }
 
-        try {
-            Files.createDirectories(Paths.get("./addons"));
-        } catch (IOException ex) {
-            LOG.error("Could not create addons directory.", ex);
-        }
+        preparePluginsDir();
 
         refreshManifestFile(getMinecraftManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT);
         refreshManifestFile(getForgeManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE);
@@ -216,6 +212,35 @@ public class DefaultFiles {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.finish"));
         }
     }
+
+    private void preparePluginsDir() {
+
+        try {
+            Files.createDirectories(Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins")));
+        } catch (IOException ex) {
+            LOG.error("Could not create plugins directory.", ex);
+        }
+
+        if (!new File(System.getProperty("pf4j.pluginsDir", "./plugins") + "/disabled.txt").isFile()) {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(
+                            Paths.get(
+                                    System.getProperty("pf4j.pluginsDir", "./plugins")) + "/disabled.txt"
+                    )
+            )) {
+
+                writer.write("########################################\n");
+                writer.write("# - Load all plugins except these.   - #\n");
+                writer.write("# - Add one plugin-id per line.      - #\n");
+                writer.write("########################################\n");
+                writer.write("#example-plugin\n");
+
+            } catch (IOException ex) {
+                LOG.error("Error generating disable.txt in the plugins directory.", ex);
+            }
+        }
+    }
+
     /**
      * Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new
      * config file is generated.

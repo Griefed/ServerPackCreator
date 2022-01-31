@@ -55,10 +55,6 @@ public class ApplicationPlugins extends JarPluginManager {
 
         LOG.info("Plugins directory: " + new File(System.getProperty("pf4j.pluginsDir", "plugins")).getAbsolutePath());
 
-        try {
-            FileUtils.mkdir(new File(System.getProperty("pf4j.pluginsDir", "plugins")), true);
-        } catch (IOException ignored) {}
-
         loadPlugins();
         startPlugins();
 
@@ -76,39 +72,58 @@ public class ApplicationPlugins extends JarPluginManager {
     }
 
     private void availablePluginsAndExtensions() {
-        LOG.info("Available PreGenExtension plugins:");
-        for (PreGenExtension start : PLUGINS_SERVERPACKSTART) {
-            LOG.info("Name:       " + start.getName());
-            LOG.info("Description:" + start.getDescription());
-            LOG.info("Version:    " + start.getVersion());
-            LOG.info("Author:     " + start.getAuthor());
+        if (PLUGINS_SERVERPACKSTART.size() > 0) {
+            LOG.info("Available PreGenExtension plugins:");
+            for (PreGenExtension start : PLUGINS_SERVERPACKSTART) {
+                LOG.info("Name:       " + start.getName());
+                LOG.info("Description:" + start.getDescription());
+                LOG.info("Version:    " + start.getVersion());
+                LOG.info("Author:     " + start.getAuthor());
+            }
+        } else {
+            LOG.info("No PreGenExtensions installed.");
+        }
+
+        if (PLUGINS_SERVERPACKCREATED.size() > 0) {
+            LOG.info("Available PreZipExtension plugins:");
+            for (PreZipExtension created : PLUGINS_SERVERPACKCREATED) {
+                LOG.info("Name:       " + created.getName());
+                LOG.info("Description:" + created.getDescription());
+                LOG.info("Version:    " + created.getVersion());
+                LOG.info("Author:     " + created.getAuthor());
+            }
+        } else {
+            LOG.info("No PreZipExtension installed.");
+        }
+
+        if (PLUGINS_SERVERPACKARCHIVECREATED.size() > 0) {
+            LOG.info("Available PostGenExtension plugins:");
+            for (PostGenExtension archive : PLUGINS_SERVERPACKARCHIVECREATED) {
+                LOG.info("Name:       " + archive.getName());
+                LOG.info("Description:" + archive.getDescription());
+                LOG.info("Version:    " + archive.getVersion());
+                LOG.info("Author:     " + archive.getAuthor());
+            }
+        } else {
+            LOG.info("No PostGenExtension installed.");
+        }
+
+        if (PLUGINS_TABBEDPANE.size() > 0) {
+            LOG.info("Available TabExtension plugins:");
+            for (TabExtension pane : PLUGINS_TABBEDPANE) {
+                LOG.info("Name:       " + pane.getName());
+                LOG.info("Description:" + pane.getDescription());
+                LOG.info("Version:    " + pane.getVersion());
+                LOG.info("Author:     " + pane.getAuthor());
+            }
+        } else {
+            LOG.info("No TabExtension installed.");
         }
 
 
-        LOG.info("Available PreZipExtension plugins:");
-        for (PreZipExtension created : PLUGINS_SERVERPACKCREATED) {
-            LOG.info("Name:       " + created.getName());
-            LOG.info("Description:" + created.getDescription());
-            LOG.info("Version:    " + created.getVersion());
-            LOG.info("Author:     " + created.getAuthor());
-        }
 
 
-        LOG.info("Available PostGenExtension plugins:");
-        for (PostGenExtension archive : PLUGINS_SERVERPACKARCHIVECREATED) {
-            LOG.info("Name:       " + archive.getName());
-            LOG.info("Description:" + archive.getDescription());
-            LOG.info("Version:    " + archive.getVersion());
-            LOG.info("Author:     " + archive.getAuthor());
-        }
 
 
-        LOG.info("Available TabExtension plugins:");
-        for (TabExtension pane : PLUGINS_TABBEDPANE) {
-            LOG.info("Name:       " + pane.getName());
-            LOG.info("Description:" + pane.getDescription());
-            LOG.info("Version:    " + pane.getVersion());
-            LOG.info("Author:     " + pane.getAuthor());
-        }
     }
 }
