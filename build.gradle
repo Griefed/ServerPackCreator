@@ -23,7 +23,7 @@ plugins {
 }
 
 sourceCompatibility = targetCompatibility = '1.8'
-group = 'de.griefed'
+group = 'de.griefed.serverpackcreator'
 
 repositories {
     mavenCentral()
@@ -354,7 +354,7 @@ publishing {
         }
         maven {
             name = "OSSRH"
-            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+            setUrl("https://s01.oss.sonatype.org/content/repositories/snapshots/")
             credentials {
                 username = System.getenv("OSSRH_USER")
                 password = System.getenv("OSSRH_PASSWORD")
@@ -367,7 +367,7 @@ publishing {
                 name = 'ServerPackCreator'
                 description = 'Create server packs from Minecraft Forge or Fabric modpacks.'
                 url = 'https://www.griefed.de/#/serverpackcreator'
-                groupId = 'de.griefed'
+                groupId = 'de.griefed.serverpackcreator'
                 from components.java
                 licenses {
                     license {
