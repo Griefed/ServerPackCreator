@@ -191,3 +191,4 @@ backend/main/resources/VERSION.txt
 /fabric_tests/
 /forge_tests/
 /plugins/
+/set_env.ps1

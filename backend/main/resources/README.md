@@ -243,10 +243,12 @@ If you have ideas and/or suggestions for improvements to the addon-system in Ser
 
 For a detailed example of how such an addon is supposed to look, check the ExampleAddon in the list below!
 
-| Addon                                                                                    | Creator | Description                                                        |
-|:-----------------------------------------------------------------------------------------|:--------|:-------------------------------------------------------------------|
-| [ExampleServerPackAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)       | Griefed | An example addon providing a starting point for addon development. |
-| [Example MiniGame](https://github.com/Griefed/ServerPackCreatorExampleAddon/tree/tetris) | Griefed | Play Tetris in a new window whilst your server packs generate!     |
+| Addon                                                                                                                                           | Creator | Description                                                                                                                                                                                         |
+|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [ExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)                                                                        | Griefed | An example addon providing a starting point for addon development.                                                                                                                                  |
+| [ExampleAddon Alternative Extension Declaration](https://github.com/Griefed/ServerPackCreatorExampleAddon/tree/alternativeExtensionDeclaration) | Griefed | An example addon providing a starting point for addon development. This addon provides an example for a different way of declaring extensions as well as reading entries from the plugins manifest. |
+| [Example MiniGame](https://github.com/Griefed/ServerPackCreatorExampleAddon/tree/tetris)                                                        | Griefed | Play Tetris in a new window whilst your server packs generate!                                                                                                                                      |
+
 
 # 6. Configuration
 
