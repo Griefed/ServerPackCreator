@@ -11,6 +11,7 @@ plugins {
 
     id "com.github.ben-manes.versions" version '0.41.0'
 
+    id 'signing'
     id 'maven-publish'
     id 'java-library'
 
@@ -22,14 +23,13 @@ plugins {
 }
 
 sourceCompatibility = targetCompatibility = '1.8'
+group = 'de.griefed'
 
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
     maven { url 'https://repo.spring.io/release' }
 }
-
-group = 'de.griefed.serverpackcreator'
 
 sourceSets {
     main {
@@ -46,44 +46,6 @@ sourceSets {
         }
         resources {
             srcDirs = ['backend/test/resources']
-        }
-    }
-}
-
-// Launch4j builds our ServerPackCreator.exe.
-launch4j {
-    mainClassName = 'de.griefed.serverpackcreator.Main'
-    jarTask = project.tasks.jar
-    fileDescription = "An application to create a server pack from any given Forge or Fabric Minecraft modpack."
-    version = project.version
-    textVersion = project.version
-    windowTitle = "ServerPackCreator"
-    copyright = "GNU Lesser General Public License v2.1"
-    downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
-    supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
-    libraryDir = 'libraries'
-    outputDir = 'libs'
-    icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
-}
-
-def isNonStable = { String version ->
-  def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
-  def regex = /^[0-9,.v-]+(-r)?$/
-  return !stableKeyword && !(version ==~ regex)
-}
-
-tasks.named("dependencyUpdates").configure {
-
-    checkForGradleUpdate = true
-    outputFormatter = "json"
-
-    resolutionStrategy {
-        componentSelection {
-            all {
-                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
-                    reject('Release candidate')
-                }
-            }
         }
     }
 }
@@ -142,34 +104,6 @@ dependencies {
     testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
-test {
-    useJUnitPlatform()
-
-    // Mention test result in logs
-    testLogging {
-        events "passed",
-               "skipped",
-               "failed"
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
-
-    reports {
-        xml.required = true
-        //csv.required = false
-        //html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
-    }
-}
-
-jacoco {
-    toolVersion = "0.8.7"
-    reportsDirectory = layout.buildDirectory.dir('jacoco')
-}
-
 // Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
 frontend {
     packageJsonDirectory = file("${projectDir}/frontend")
@@ -192,6 +126,27 @@ frontend {
         nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
     } else if (System.getProperty("os.arch").equals("aarch64")) {
         nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-arm64.TYPE'
+    }
+}
+
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+tasks.named("dependencyUpdates").configure {
+
+    checkForGradleUpdate = true
+    outputFormatter = "json"
+
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
+                    reject('Release candidate')
+                }
+            }
+        }
     }
 }
 
@@ -231,6 +186,50 @@ tasks.register('copyDist', Copy) {
 // Since this project is open source, we can include private etc. classes and methods docs.
 tasks.withType(Javadoc) {
     options.addStringOption('encoding', 'UTF-8')
+}
+
+// Launch4j builds our ServerPackCreator.exe.
+launch4j {
+    mainClassName = 'de.griefed.serverpackcreator.Main'
+    jarTask = project.tasks.jar
+    fileDescription = "Create server packs from Minecraft modpacks."
+    version = project.version
+    textVersion = project.version
+    windowTitle = "ServerPackCreator"
+    copyright = "GNU Lesser General Public License v2.1"
+    downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
+    supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
+    libraryDir = 'libraries'
+    outputDir = 'libs'
+    icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
+}
+
+test {
+    useJUnitPlatform()
+
+    // Mention test result in logs
+    testLogging {
+        events "passed",
+                "skipped",
+                "failed"
+    }
+
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.required = true
+        //csv.required = false
+        //html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+    reportsDirectory = layout.buildDirectory.dir('jacoco')
 }
 
 javadoc {
@@ -293,7 +292,7 @@ jar {
         attributes(
                 "Main-Class"     : "de.griefed.serverpackcreator.Main",
                 "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
-                "Description"    : "Create server packs from Minecraft modpacks.",
+                "Description"    : "Create server packs from Minecraft Forge or Fabric modpacks.",
                 "Built-By"       : System.getProperty("user.name"),
                 "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 "Created-By"     : "Gradle ${gradle.gradleVersion}",
@@ -353,17 +352,50 @@ publishing {
                 header(HttpHeaderAuthentication)
             }
         }
-    }
-    publications {
-        //noinspection GroovyAssignabilityCheck
-        /*gpr(MavenPublication) {
-            //noinspection GroovyAssignabilityCheck
-            artifactId='serverpackcreator'
-            //noinspection GroovyAssignabilityCheck
-            from (components.java)
-        }*/
-        library(MavenPublication) {
-            from components.java
+        maven {
+            name = "OSSRH"
+            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+            credentials {
+                username = System.getenv("OSSRH_USER")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
         }
     }
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = 'ServerPackCreator'
+                description = 'Create server packs from Minecraft Forge or Fabric modpacks.'
+                url = 'https://www.griefed.de/#/serverpackcreator'
+                groupId = 'de.griefed'
+                from components.java
+                licenses {
+                    license {
+                        name = 'GNU Lesser General Public License v2.1'
+                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = System.getenv("DOCKERHUB_USER")
+                        name = System.getenv("GITHUB_ACTOR")
+                        email = System.getenv("GIT_MAIL")
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://git.griefed.de/Griefed/ServerPackCreator.git'
+                    developerConnection = 'scm:git:git@git.griefed.de:Griefed/ServerPackCreator.git'
+                    url = 'https://git.griefed.de/Griefed/ServerPackCreator'
+                }
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+
+    useInMemoryPgpKeys(signingKey,signingPassword)
+    sign publishing.publications.mavenJava
 }
