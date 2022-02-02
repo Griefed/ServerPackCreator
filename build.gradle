@@ -23,7 +23,7 @@ plugins {
 }
 
 sourceCompatibility = targetCompatibility = '1.8'
-group = 'de.griefed.serverpackcreator'
+group = 'de.griefed'
 
 repositories {
     mavenCentral()
@@ -78,6 +78,7 @@ dependencies {
     embed 'org.apache.logging.log4j:log4j-web:2.17.1'
     embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
     embed 'org.apache.logging.log4j:log4j-jul:2.17.1'
+    embed 'org.jgroups:jgroups:5.2.0.Final'
 
     // GUI
     embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
@@ -233,6 +234,9 @@ jacoco {
 }
 
 javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
     classpath = sourceSets.main.runtimeClasspath
 }
 
@@ -323,6 +327,44 @@ jar {
 }
 
 publishing {
+    publications {
+        mavenJava(MavenPublication) {
+
+            groupId = 'de.griefed'
+            artifactId = 'serverpackcreator'
+            from components.java
+            version = project.version
+
+            pom {
+                name = 'ServerPackCreator'
+                description = 'Create server packs from Minecraft Forge or Fabric modpacks.'
+                url = 'https://git.griefed.de/Griefed/ServerPackCreator'
+
+                licenses {
+                    license {
+                        name = 'GNU Lesser General Public License v2.1'
+                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'griefed'
+                        name = 'Griefed'
+                        email = 'griefed@griefed.de'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git'
+                    developerConnection = 'scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git'
+                    url = 'https://git.griefed.de/Griefed/ServerPackCreator'
+                }
+
+            }
+        }
+    }
+
     repositories {
         maven {
             name = "GitHubPackages"
@@ -354,39 +396,10 @@ publishing {
         }
         maven {
             name = "OSSRH"
-            setUrl("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
-                username = System.getenv("OSSRH_USER")
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
-    publications {
-        mavenJava(MavenPublication) {
-            pom {
-                name = 'ServerPackCreator'
-                description = 'Create server packs from Minecraft Forge or Fabric modpacks.'
-                url = 'https://www.griefed.de/#/serverpackcreator'
-                groupId = 'de.griefed.serverpackcreator'
-                from components.java
-                licenses {
-                    license {
-                        name = 'GNU Lesser General Public License v2.1'
-                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html'
-                    }
-                }
-                developers {
-                    developer {
-                        id = System.getenv("DOCKERHUB_USER")
-                        name = System.getenv("GITHUB_ACTOR")
-                        email = System.getenv("GIT_MAIL")
-                    }
-                }
-                scm {
-                    connection = 'scm:git:https://git.griefed.de/Griefed/ServerPackCreator.git'
-                    developerConnection = 'scm:git:git@git.griefed.de:Griefed/ServerPackCreator.git'
-                    url = 'https://git.griefed.de/Griefed/ServerPackCreator'
-                }
+                username = project.properties["ossrhUsername"]
+                password = project.properties["ossrhPassword"]
             }
         }
     }

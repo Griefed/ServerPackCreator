@@ -5,4 +5,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = 'serverpackcreator'
+//rootProject.name = 'serverpackcreator'

@@ -6,7 +6,7 @@
       <env name="spring.profiles.active" value="dev" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="de.griefed.serverpackcreator.Main" />
-    <module name="serverpackcreator.main" />
+    <module name="ServerPackCreator.main" />
     <option name="PROGRAM_PARAMETERS" value="-web" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testruns" />
     <extension name="coverage">
