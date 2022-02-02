@@ -145,13 +145,13 @@ Gradle Test:
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
     - cat build/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
     - echo "**** Renaming files to please the eye ****"
-    - mv build/libs/serverpackcreator.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
-    - mv build/libs/serverpackcreator-dev.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
+    - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
+    - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
   coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
     paths:
-      - build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
-      - build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
+      - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.exe
+      - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.jar
       - build/jacoco/test/jacocoTestReport.xml
       - build/reports/tests/test
     expire_in: 1 week
@@ -223,10 +223,10 @@ Build Release:
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
     - LC_COLLATE=C ls -ah --group-directories-first --color=auto build/libs/libraries
     - echo "**** Renaming files to please the eye ****"
-    - mv build/libs/serverpackcreator.exe build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
-    - mv build/libs/serverpackcreator-${CI_COMMIT_TAG}.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
-    - mv build/libs/serverpackcreator-${CI_COMMIT_TAG}-javadoc.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
-    - mv build/libs/serverpackcreator-${CI_COMMIT_TAG}-sources.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
+    - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
+    - mv build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
+    - mv build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
+    - mv build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
     - echo "**** Uploading packages ****"
     - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe

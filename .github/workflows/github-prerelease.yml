@@ -61,10 +61,10 @@ jobs:
       - name: Rename files
         run: |
           echo "**** Renaming files to please the eye ****"
-          mv build/libs/serverpackcreator.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
-          mv build/libs/serverpackcreator-${{steps.tag.outputs.tag}}-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
+          mv build/libs/ServerPackCreator.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+          mv build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
+          mv build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
+          mv build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
 
       - uses: actions/upload-artifact@v2
         with:
