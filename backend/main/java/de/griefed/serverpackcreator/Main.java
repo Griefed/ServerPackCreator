@@ -145,7 +145,7 @@ public class Main {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), systemInformation.get("osVersion")));
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
-        String updater = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES).refresh().checkForUpdate();
+        String updater = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES).checkForUpdate();
 
         if (!updater.equals(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"))) {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.newupdate"), updater.split(";")[0], updater.split(";")[1]));

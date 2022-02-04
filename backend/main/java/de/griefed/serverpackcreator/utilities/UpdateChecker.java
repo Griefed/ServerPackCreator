@@ -26,7 +26,7 @@ import de.griefed.versionchecker.gitlab.GitLabChecker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 
 public class UpdateChecker {
 
@@ -53,19 +53,23 @@ public class UpdateChecker {
         }
 
         try {
-            this.GITHUB = new GitHubChecker("Griefed/ServerPackCreator");
-        } catch (MalformedURLException ex) {
+            this.GITHUB = new GitHubChecker("Griefed/ServerPackCreator").refresh();
+        } catch (IOException ex) {
             LOG.error("The GitHub user/repository you set resulted in a malformed URL.", ex);
+            this.GITHUB = null;
         }
+
         try {
-            this.GITLAB = new GitLabChecker("https://gitlab.com/api/v4/projects/32677538/releases");
-        } catch (MalformedURLException ex) {
+            this.GITLAB = new GitLabChecker("https://gitlab.com/api/v4/projects/32677538/releases").refresh();
+        } catch (IOException ex) {
             LOG.error("The GitLab URL you set resulted in a malformed URL.", ex);
+            this.GITLAB = null;
         }
         try {
-            this.GITGRIEFED = new GitLabChecker("https://git.griefed.de/api/v4/projects/63/releases");
-        } catch (MalformedURLException ex) {
+            this.GITGRIEFED = new GitLabChecker("https://git.griefed.de/api/v4/projects/63/releases").refresh();
+        } catch (IOException ex) {
             LOG.error("The GitGriefed URL you set resulted in a malformed URL.", ex);
+            this.GITGRIEFED = null;
         }
     }
 
