@@ -165,9 +165,7 @@ Docker Test:
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
-    - docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
-      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
-      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+    - docker buildx build --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
       --build-arg HOSTER=$CI_SERVER_HOST
       --file Dockerfile .
@@ -217,16 +215,13 @@ Build Release:
     - echo "version=${CI_COMMIT_TAG}" > backend/main/resources/VERSION.txt
   script:
     - echo "**** Building ServerPackCreator ****"
-    - "./gradlew -Pversion=${CI_COMMIT_TAG} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --full-stacktrace -x test"
+    - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace -x test"
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
     - LC_COLLATE=C ls -ah --group-directories-first --color=auto build/libs/libraries
     - echo "**** Renaming files to please the eye ****"
     - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
-    - mv build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar
-    - mv build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-javadoc.jar
-    - mv build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}-sources.jar
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
     - echo "**** Uploading packages ****"
     - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file build/libs/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.exe
@@ -266,9 +261,10 @@ Publish Maven Artifacts:
     - echo "**** Allowing execution of gradlew ****"
     - chmod +x gradlew
     - echo "**** Ensure clean environment ****"
+    - "./gradlew clean"
   script:
     - echo "**** Publishing Maven Artifacts ****"
-    - "./gradlew clean publish -Pversion=${CI_COMMIT_TAG}"
+    - "./gradlew publish -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
