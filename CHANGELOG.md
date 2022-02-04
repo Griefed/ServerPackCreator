@@ -1,3 +1,33 @@
+## [3.0.0-alpha.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.18...3.0.0-alpha.19) (2022-02-04)
+
+
+### :scissors: Refactor
+
+* Change groupID. Also change url for OSSRH to the correct snapshot url. ([e9ff899](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9ff899023f5f2386653cf49e29dd9cea87ab99e))
+* Change groupID. Also change url for OSSRH. Now everything works when ([0cf5dbc](https://git.griefed.de/Griefed/ServerPackCreator/commit/0cf5dbccc8f40cf16e28a4011ede3264a7626076))
+* Move plugins folder creationf to DefaultFiles. Create example file for disabling plugins. Improve logging for installed plugin extensions. ([1fad8ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/1fad8ac858377c43250d4f6f644ecf7c719c7e02))
+
+
+### 🦊 CI/CD
+
+* Add signing and publishing. Will be published to GitLab, GitHub, git.griefed, OSSRH on new tag creation. ([b60a8f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/b60a8f2a63c986eb609975f8299719aa9f731e32))
+* Switch VersionChecker to library implementation. Update jms-server. Minor URL refactorings in gradle publishing. ([62c438a](https://git.griefed.de/Griefed/ServerPackCreator/commit/62c438a75d5a783d741fbacfc8c0861899892f69))
+* **deps:** bump com.github.ben-manes.versions from 0.41.0 to 0.42.0 ([6456e3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6456e3f211af4dda8f693c5f6222950b709032bb))
+* Deactivate push on docker tests. Remove unnecessary file renaming in build release. Properly run publish job. ([481a048](https://git.griefed.de/Griefed/ServerPackCreator/commit/481a0488e27333ae3c7964a1fa67b8234e3ac6ac))
+* Fix artifact names for renaming ([d4f4f35](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4f4f352150a874f270e4468bcf102df10b72c68))
+* Prevent Generate Release job from running unnecessarily ([5be9fcd](https://git.griefed.de/Griefed/ServerPackCreator/commit/5be9fcdf2624991b9eaf845aafc3bdef8d34f04d))
+* You have a problem, so you use regex. Now you have two problems. ([b05c007](https://git.griefed.de/Griefed/ServerPackCreator/commit/b05c0075a810f89ba79ff3a9f32939e0abbe0ca8))
+
+
+### 🛠 Fixes
+
+* Prevent UpdateChecker from crashing SPC when any instance can not be reached ([b96cdb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b96cdb347329e4512ecfe2b7c11e66479ee8be10))
+
+
+### Other
+
+* Update README with new addon example ([bcca1ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/bcca1ce72aff02ad28cdd3408286bfa8c64311da))
+
 ## [3.0.0-alpha.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.17...3.0.0-alpha.18) (2022-01-30)
 
 
