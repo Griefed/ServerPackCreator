@@ -64,6 +64,7 @@ configurations {
 
 dependencies {
     // Backend
+    embed 'de.griefed:versionchecker:1.0.4'
     embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
     embed 'commons-lang:commons-lang:2.6'
@@ -91,7 +92,7 @@ dependencies {
     embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.3'
     embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.3'
     embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.3'
-    embed 'org.apache.activemq:artemis-jms-server:2.19.0'
+    embed 'org.apache.activemq:artemis-jms-server:2.19.1'
     embed 'com.github.gwenn:sqlite-dialect:0.1.2'
     embed 'org.apache.logging.log4j:log4j-web:2.17.1'
 
@@ -368,14 +369,14 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Griefed/serverpackcreator")
+            url = "https://maven.pkg.github.com/Griefed/serverpackcreator"
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
         maven {
-            url "https://git.griefed.de/api/v4/projects/63/packages/maven"
+            url = "https://git.griefed.de/api/v4/projects/63/packages/maven"
             credentials(HttpHeaderCredentials) {
                 name = "Private-Token"
                 value = System.getenv("GITLAB_TOKEN")
@@ -385,7 +386,7 @@ publishing {
             }
         }
         maven {
-            url "https://gitlab.com/api/v4/projects/32677538/packages/maven"
+            url = "https://gitlab.com/api/v4/projects/32677538/packages/maven"
             credentials(HttpHeaderCredentials) {
                 name = "Private-Token"
                 value = System.getenv("GITLABCOM_TOKEN")
@@ -398,8 +399,8 @@ publishing {
             name = "OSSRH"
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
-                username = project.properties["ossrhUsername"]
-                password = project.properties["ossrhPassword"]
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }
