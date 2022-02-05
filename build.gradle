@@ -206,6 +206,21 @@ launch4j {
     icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
+task cleanUp(type: Delete) {
+    //dependsOn task.named('test')
+
+    delete 'logs',
+            'plugins',
+            'server-packs',
+            'server_files',
+            'work',
+            'banner.txt',
+            'serverpackcreator.conf',
+            'serverpackcreator.db',
+            'serverpackcreator.properties',
+            'somefile.conf'
+}
+
 test {
     useJUnitPlatform()
 
@@ -216,7 +231,7 @@ test {
                 "failed"
     }
 
-    finalizedBy jacocoTestReport
+    finalizedBy jacocoTestReport, cleanUp
 }
 
 jacocoTestReport {
