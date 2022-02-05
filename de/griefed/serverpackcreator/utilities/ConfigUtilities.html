@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -129,11 +129,12 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#ConfigUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.StringUtilities-">ConfigUtilities</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#ConfigUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.VersionLister-">ConfigUtilities</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
                <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
                <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
                <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-               <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities)</code>&nbsp;</td>
+               <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
+               <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -151,24 +152,36 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#checkCurseForgeJsonForFabric-com.fasterxml.jackson.databind.JsonNode-">checkCurseForgeJsonForFabric</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;modpackJson)</code>
+<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#directoriesInModpackZip-java.nio.file.Path-">directoriesInModpackZip</a></span>(java.nio.file.Path&nbsp;zipURI)</code>
+<div class="block">Acquire a list of directories in a ZIP-file.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#getConfigurationAsList-de.griefed.serverpackcreator.ConfigurationModel-">getConfigurationAsList</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to any addon that may run.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#getModLoaderCase-java.lang.String-">getModLoaderCase</a></span>(java.lang.String&nbsp;modloader)</code>
 <div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">printConfigurationModel</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Convenience method which passes the important fields from an instance of <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, String, boolean, boolean, boolean, String, String, String, String)</code></a></div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">printConfigurationModel</a></span>(java.lang.String&nbsp;modpackDirectory,
                        java.util.List&lt;java.lang.String&gt;&nbsp;clientsideMods,
@@ -188,14 +201,55 @@ extends java.lang.Object</pre>
 <div class="block">Prints all passed fields to the console and serverpackcreator.log.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#suggestCopyDirs-java.lang.String-">suggestCopyDirs</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromConfigJson-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromConfigJson</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                               java.io.File&nbsp;config)</code>
+<div class="block">Update the given ConfigurationModel with values gathered from the modpacks config.json.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromCurseManifest</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                  java.io.File&nbsp;manifest)</code>
+<div class="block">Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromMinecraftInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMinecraftInstance</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                      java.io.File&nbsp;minecraftInstance)</code>
+<div class="block">Update the given ConfigurationModel with values gathered from the minecraftinstance.json of the modpack.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromMMCPack-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMMCPack</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                            java.io.File&nbsp;mmcPack)</code>
+<div class="block">Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json.</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateDestinationFromInstanceCfg-java.io.File-">updateDestinationFromInstanceCfg</a></span>(java.io.File&nbsp;instanceCfg)</code>
+<div class="block">Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks instance.cfg, which is usually
+ created by the MultiMC launcher.</div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#writeConfigToFile-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">writeConfigToFile</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
                  java.io.File&nbsp;fileName)</code>
 <div class="block">Convenience method to write a new configuration file with the <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> passed to it.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#writeConfigToFile-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.io.File-">writeConfigToFile</a></span>(java.lang.String&nbsp;modpackDir,
                  java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
@@ -238,7 +292,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ConfigUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.StringUtilities-">
+<a name="ConfigUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.VersionLister-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -249,7 +303,8 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/i1
                                   <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
                                   <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
                                   <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                                  <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities)</pre>
+                                  <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
+                                  <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister)</pre>
 </li>
 </ul>
 </li>
@@ -388,7 +443,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/i1
 <a name="printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>printConfigurationModel</h4>
 <pre>public&nbsp;void&nbsp;printConfigurationModel(java.lang.String&nbsp;modpackDirectory,
@@ -428,6 +483,175 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/i1
 <dd><code>serverPackSuffix</code> - String. Suffix to append to name of the server pack to be generated.</dd>
 <dd><code>serverIconPath</code> - String. The path to the custom server-icon.png to be used in the server pack.</dd>
 <dd><code>serverPropertiesPath</code> - String. The path to the custom server.properties to be used in the server pack.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromCurseManifest</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromCurseManifest(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                               java.io.File&nbsp;manifest)
+                                        throws java.io.IOException</pre>
+<div class="block">Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack. A manifest.json-file
+ is usually created when a modpack is exported through launchers like Overwolf's CurseForge or GDLauncher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration for a modpack from which
+ to create a server pack.</dd>
+<dd><code>manifest</code> - File. The CurseForge manifest.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the manifest.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromMinecraftInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromMinecraftInstance</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromMinecraftInstance(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                                   java.io.File&nbsp;minecraftInstance)
+                                            throws java.io.IOException</pre>
+<div class="block">Update the given ConfigurationModel with values gathered from the minecraftinstance.json of the modpack. A
+ minecraftinstance.json is usually created by Overwolf's CurseForge launcher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration for a modpack from which
+ to create a server pack.</dd>
+<dd><code>minecraftInstance</code> - File. The minecraftinstance.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the minecraftinstance.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromConfigJson-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromConfigJson</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromConfigJson(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                            java.io.File&nbsp;config)
+                                     throws java.io.IOException</pre>
+<div class="block">Update the given ConfigurationModel with values gathered from the modpacks config.json. A config.json is usually
+ created by GDLauncher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration for a modpack from which
+ to create a server pack.</dd>
+<dd><code>config</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the config.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromMMCPack-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromMMCPack</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromMMCPack(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                         java.io.File&nbsp;mmcPack)
+                                  throws java.io.IOException</pre>
+<div class="block">Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A mmc-pack.json is usually
+ created by the MultiMC launcher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration for a modpack from which
+ to create a server pack.</dd>
+<dd><code>mmcPack</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the mmc-pack.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateDestinationFromInstanceCfg-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateDestinationFromInstanceCfg</h4>
+<pre>public&nbsp;java.lang.String&nbsp;updateDestinationFromInstanceCfg(java.io.File&nbsp;instanceCfg)
+                                                  throws java.io.IOException</pre>
+<div class="block">Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks instance.cfg, which is usually
+ created by the MultiMC launcher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>instanceCfg</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>String</code> Returns the instance name.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the file could not be found or the properties not be loaded from the file.</dd>
+</dl>
+</li>
+</ul>
+<a name="suggestCopyDirs-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>suggestCopyDirs</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;suggestCopyDirs(java.lang.String&nbsp;modpackDir)</pre>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
+ The list of directories to include in the server pack which is generated by this method excludes well know directories
+ which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on
+ <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackDir</code> - String. The directory for which to gather a list of directories to copy to the server pack.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List, String. Returns a list of directories inside the modpack, excluding well known client-side only
+ directories.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkCurseForgeJsonForFabric-com.fasterxml.jackson.databind.JsonNode-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkCurseForgeJsonForFabric</h4>
+<pre>public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.databind.JsonNode&nbsp;modpackJson)</pre>
+<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
+ If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
+ If <code>modLoaders</code> in the manifest specifies Fabric, use that to set the modloader and its version.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackJson</code> - JSonNode. JsonNode containing all information about the CurseForge modpack.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns true if Jumploader is found.</dd>
+</dl>
+</li>
+</ul>
+<a name="directoriesInModpackZip-java.nio.file.Path-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>directoriesInModpackZip</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;directoriesInModpackZip(java.nio.file.Path&nbsp;zipURI)
+                                                         throws java.lang.IllegalArgumentException,
+                                                                java.nio.file.FileSystemAlreadyExistsException,
+                                                                java.nio.file.ProviderNotFoundException,
+                                                                java.io.IOException,
+                                                                java.lang.SecurityException</pre>
+<div class="block">Acquire a list of directories in a ZIP-file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>zipURI</code> - URI to the ZIP-file from which to gather a list of directories within.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String List. A list of all directories in the ZIP-file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not met, or the env parameter does not contain properties required by the provider, or a property value is invalid.</dd>
+<dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not installed.</dd>
+<dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an unspecified permission required by the file system provider implementation.</dd>
 </dl>
 </li>
 </ul>

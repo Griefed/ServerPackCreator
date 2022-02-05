@@ -144,13 +144,14 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">CurseCreateModpack</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-">CurseCreateModpack</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
                   <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
                   <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister,
                   <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
                   <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
                   <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
-                  <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>
+                  <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
+                  <a href="../../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a>&nbsp;injectedSystemUtilities)</code>
 <div class="block"><strong>Constructor</strong></div>
 </td>
 </tr>
@@ -170,7 +171,7 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#cleanupEnvironment-java.lang.String-">cleanupEnvironment</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
  clean environment when creating a new modpack from CurseForge.</div>
@@ -226,7 +227,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
+<a name="CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -239,7 +240,8 @@ public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator
                                      <a href="../../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
                                      <a href="../../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
                                      <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
-                                     <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</pre>
+                                     <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
+                                     <a href="../../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a>&nbsp;injectedSystemUtilities)</pre>
 <div class="block"><strong>Constructor</strong><p>
  Used for Dependency Injection.<p>
  Receives an instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
@@ -253,6 +255,7 @@ public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator
 <dd><code>injectedStringUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>StringUtilities</code></a>.</dd>
 <dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a>.</dd>
 <dd><code>injectedVersionLister</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator"><code>VersionLister</code></a>.</dd>
+<dd><code>injectedSystemUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>SystemUtilities</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -328,10 +331,7 @@ public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator
                               java.lang.Integer&nbsp;fileID)</pre>
 <div class="block">Acquires the names of the CurseForge project and file. Should no filename exist, we will use the fileDiskName as
  fallback to ensure we always have a folder-structure of projectName/FileDisplayName at hand in which the modpack
- will be created. Calls<br>
- <code>CurseAPI</code> and various methods of it in order to acquire information about the modpack.<br>
- <a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#checkCurseForgeDir-java.lang.String-"><code>checkCurseForgeDir(String)</code></a><br>
- <a href="../../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#initializeModpack-java.lang.String-java.lang.Integer-java.lang.Integer-de.griefed.serverpackcreator.ConfigurationModel-"><code>initializeModpack(String, Integer, Integer, ConfigurationModel)</code></a></div>
+ will be created.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. Required for getting the directory in which we
@@ -349,14 +349,12 @@ public&nbsp;CurseCreateModpack(<a href="../../../../de/griefed/serverpackcreator
 <ul class="blockListLast">
 <li class="blockList">
 <h4>cleanupEnvironment</h4>
-<pre>public&nbsp;boolean&nbsp;cleanupEnvironment(java.lang.String&nbsp;modpackDir)</pre>
+<pre>public&nbsp;void&nbsp;cleanupEnvironment(java.lang.String&nbsp;modpackDir)</pre>
 <div class="block">Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
  clean environment when creating a new modpack from CurseForge.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The directory we want to delete.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns false if every file and folder was, recursively and successfully, deleted.</dd>
 </dl>
 </li>
 </ul>

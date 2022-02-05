@@ -208,6 +208,10 @@
 <dd>
 <div class="block">Checks whether the specified modpack directory contains a valid projectID,fileID combination.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#checkCurseForgeJsonForFabric-com.fasterxml.jackson.databind.JsonNode-">checkCurseForgeJsonForFabric(JsonNode)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/DefaultFiles.html#checkDatabase--">checkDatabase()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator">DefaultFiles</a></dt>
 <dd>
 <div class="block">Ensures serverpackcreator.db exists.</div>
@@ -294,7 +298,7 @@
 <dd>
 <div class="block">Utility-class revolving around configuration utilities.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#ConfigUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.StringUtilities-">ConfigUtilities(LocalizationManager, BooleanUtilities, ListUtilities, ApplicationProperties, StringUtilities)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#ConfigUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.VersionLister-">ConfigUtilities(LocalizationManager, BooleanUtilities, ListUtilities, ApplicationProperties, StringUtilities, VersionLister)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/BooleanUtilities.html#convertToBoolean-java.lang.String-">convertToBoolean(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a></dt>
 <dd>
@@ -375,7 +379,7 @@
 <div class="block">Download a modpack from CurseForge and create it by unzipping the ZIP-archive, copy all folders and files from the
  override directory to the parent directory, download all mods in said modpack, and delete no longer needed files.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">CurseCreateModpack(LocalizationManager, ApplicationProperties, VersionLister, BooleanUtilities, ListUtilities, StringUtilities, ConfigUtilities)</a></span> - Constructor for class de.griefed.serverpackcreator.curseforge.<a href="de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html#CurseCreateModpack-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-">CurseCreateModpack(LocalizationManager, ApplicationProperties, VersionLister, BooleanUtilities, ListUtilities, StringUtilities, ConfigUtilities, SystemUtilities)</a></span> - Constructor for class de.griefed.serverpackcreator.curseforge.<a href="de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a></dt>
 <dd>
 <div class="block"><strong>Constructor</strong></div>
 </dd>
@@ -490,6 +494,10 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/services/ServerPackService.html#deleteServerPack-int-int-">deleteServerPack(int, int)</a></span> - Method in class de.griefed.serverpackcreator.spring.services.<a href="de/griefed/serverpackcreator/spring/services/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.services">ServerPackService</a></dt>
 <dd>
 <div class="block">Delete a server pack with a given CurseForge project and file ID.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#directoriesInModpackZip-java.nio.file.Path-">directoriesInModpackZip(Path)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Acquire a list of directories in a ZIP-file.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/SystemUtilities.html#downloadFile-java.lang.String-java.net.URL-">downloadFile(String, URL)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a></dt>
 <dd>
@@ -1055,6 +1063,10 @@
 <dd>
 <div class="block">Thrown if the specified project is not a valid Minecraft modpack.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#isCurseForgeActivated--">isCurseForgeActivated()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
+<dd>
+<div class="block">Getter for whether the CurseForge API in ServerPackCreator is activated.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#isFabricVersionCorrect-java.lang.String-">isFabricVersionCorrect(String)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
 <dd>
 <div class="block">Check whether the specified Fabric version is correct by searching the version list of the Fabric manifest
@@ -1277,7 +1289,9 @@
 <div class="block">Reload serverpackcreator.properties.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/SystemUtilities.html#replaceFile-java.io.File-java.io.File-">replaceFile(File, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Move a file from source to destination, and replace the destination file if it exists.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/models/ServerPack.html#repositoryToString--">repositoryToString()</a></span> - Method in class de.griefed.serverpackcreator.spring.models.<a href="de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models">ServerPack</a></dt>
 <dd>
 <div class="block">String concatenation of all important values of our server pack entry.</div>
@@ -1609,6 +1623,10 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/StringUtilities.html#StringUtilities--">StringUtilities()</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#suggestCopyDirs-java.lang.String-">suggestCopyDirs(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html" title="class in de.griefed.serverpackcreator.swing"><span class="typeNameLink">SwingGuiInitializer</span></a> - Class in <a href="de/griefed/serverpackcreator/swing/package-summary.html">de.griefed.serverpackcreator.swing</a></dt>
 <dd>
 <div class="block">This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode.</div>
@@ -1728,14 +1746,39 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/models/Task.html#uniqueId--">uniqueId()</a></span> - Method in class de.griefed.serverpackcreator.spring.models.<a href="de/griefed/serverpackcreator/spring/models/Task.html" title="class in de.griefed.serverpackcreator.spring.models">Task</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/SystemUtilities.html#unzipArchive-java.lang.String-java.lang.String-">unzipArchive(String, String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a></dt>
+<dd>
+<div class="block">Unzips the downloaded modpack ZIP-archive to the specified directory.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">UpdateChecker</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/package-summary.html">de.griefed.serverpackcreator.utilities</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#UpdateChecker-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">UpdateChecker(LocalizationManager, ApplicationProperties)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromConfigJson-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromConfigJson(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Update the given ConfigurationModel with values gathered from the modpacks config.json.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromCurseManifest(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromMinecraftInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMinecraftInstance(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Update the given ConfigurationModel with values gathered from the minecraftinstance.json of the modpack.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromMMCPack-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMMCPack(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/services/ServerPackService.html#updateConfirmedCounter-int-int-">updateConfirmedCounter(int, int)</a></span> - Method in class de.griefed.serverpackcreator.spring.services.<a href="de/griefed/serverpackcreator/spring/services/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.services">ServerPackService</a></dt>
 <dd>
 <div class="block">Either increment or decrement the confirmed working value of a given server pack entry in the database, identified by the
  database id.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateDestinationFromInstanceCfg-java.io.File-">updateDestinationFromInstanceCfg(File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks instance.cfg, which is usually
+ created by the MultiMC launcher.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/services/ServerPackService.html#updateDownloadCounter-int-">updateDownloadCounter(int)</a></span> - Method in class de.griefed.serverpackcreator.spring.services.<a href="de/griefed/serverpackcreator/spring/services/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.services">ServerPackService</a></dt>
 <dd>

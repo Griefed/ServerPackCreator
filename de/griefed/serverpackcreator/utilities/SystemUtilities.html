@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -162,7 +162,16 @@ extends java.lang.Object</pre>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html#replaceFile-java.io.File-java.io.File-">replaceFile</a></span>(java.io.File&nbsp;sourceFile,
-           java.io.File&nbsp;destinationFile)</code>&nbsp;</td>
+           java.io.File&nbsp;destinationFile)</code>
+<div class="block">Move a file from source to destination, and replace the destination file if it exists.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html#unzipArchive-java.lang.String-java.lang.String-">unzipArchive</a></span>(java.lang.String&nbsp;zipFile,
+            java.lang.String&nbsp;destinationDirectory)</code>
+<div class="block">Unzips the downloaded modpack ZIP-archive to the specified directory.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -241,15 +250,37 @@ public&nbsp;SystemUtilities()</pre>
 <a name="replaceFile-java.io.File-java.io.File-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>replaceFile</h4>
 <pre>public&nbsp;boolean&nbsp;replaceFile(java.io.File&nbsp;sourceFile,
                            java.io.File&nbsp;destinationFile)
                     throws java.io.IOException</pre>
+<div class="block">Move a file from source to destination, and replace the destination file if it exists.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>sourceFile</code> - The source file.</dd>
+<dd><code>destinationFile</code> - The destination file to be replaced by the source file.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns true if the file was sucessfully replaced.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - Thrown if an error occurs when the file is moved.</dd>
+</dl>
+</li>
+</ul>
+<a name="unzipArchive-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>unzipArchive</h4>
+<pre>public&nbsp;void&nbsp;unzipArchive(java.lang.String&nbsp;zipFile,
+                         java.lang.String&nbsp;destinationDirectory)</pre>
+<div class="block">Unzips the downloaded modpack ZIP-archive to the specified directory.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>zipFile</code> - String. The path to the ZIP-archive which we want to unzip.</dd>
+<dd><code>destinationDirectory</code> - The directory into which the ZIP-archive will be unzipped into.</dd>
 </dl>
 </li>
 </ul>

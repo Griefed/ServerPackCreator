@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -329,6 +329,12 @@ extends java.util.Properties</pre>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isCurseForgeActivated--">isCurseForgeActivated</a></span>()</code>
+<div class="block">Getter for whether the CurseForge API in ServerPackCreator is activated.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#reload--">reload</a></span>()</code>
 <div class="block">Reload serverpackcreator.properties.</div>
@@ -695,7 +701,7 @@ public&nbsp;ApplicationProperties()</pre>
 <a name="checkForAvailablePreReleases--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>checkForAvailablePreReleases</h4>
 <pre>public&nbsp;boolean&nbsp;checkForAvailablePreReleases()</pre>
@@ -706,6 +712,22 @@ public&nbsp;ApplicationProperties()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Whether checks for available PreReleases are enabled.</dd>
+</dl>
+</li>
+</ul>
+<a name="isCurseForgeActivated--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isCurseForgeActivated</h4>
+<pre>public&nbsp;boolean&nbsp;isCurseForgeActivated()</pre>
+<div class="block">Getter for whether the CurseForge API in ServerPackCreator is activated. In order for the CurseForge API to be
+ activated, you need to set the property <code>de.griefed.serverpackcreator.curseforge.api.token</code> with a
+ valid CurseAPI token in the serverpackcreator.properties-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Whether the CurseForge API in ServerPackCreator is activated.</dd>
 </dl>
 </li>
 </ul>

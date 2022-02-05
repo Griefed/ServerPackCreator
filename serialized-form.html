@@ -216,11 +216,17 @@
  If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
  If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.</div>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>versioncheck_prerelease</h4>
 <pre>boolean versioncheck_prerelease</pre>
 <div class="block">Whether ServerPackCreator should check for available PreReleases.
  Set to <code>true</code> to get notified about available PreReleases. Set to <code>false</code> if you only want stable releases.</div>
+</li>
+<li class="blockListLast">
+<h4>isCurseForgeActivated</h4>
+<pre>boolean isCurseForgeActivated</pre>
+<div class="block">Whether the CurseForge API in ServerPackCreator is activated.
+ Requires a valid CurseAPI token to be set in <code>de.griefed.serverpackcreator.curseforge.api.token</code>.</div>
 </li>
 </ul>
 </li>
