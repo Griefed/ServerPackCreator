@@ -64,7 +64,7 @@ configurations {
 
 dependencies {
     // Backend
-    embed 'de.griefed:versionchecker:1.0.4'
+    embed 'de.griefed:versionchecker:1.0.5'
     embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
     embed 'commons-lang:commons-lang:2.6'
