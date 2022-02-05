@@ -87,12 +87,6 @@ public class ConfigurationCreator {
             this.STRINGUTILITIES = injectedStringUtilities;
         }
 
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
-        } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
-        }
-
         if (injectedSystemUtilities == null) {
             this.SYSTEMUTILITIES = new SystemUtilities();
         } else {
@@ -105,8 +99,14 @@ public class ConfigurationCreator {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+        } else {
+            this.CONFIGUTILITIES = injectedConfigUtilities;
+        }
+
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }

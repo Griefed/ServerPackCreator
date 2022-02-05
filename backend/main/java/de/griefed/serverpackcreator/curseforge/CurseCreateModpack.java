@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.curseforge;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
@@ -29,8 +28,6 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.VersionLister;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,6 +69,7 @@ public class CurseCreateModpack {
     private final ListUtilities LISTUTILITIES;
     private final StringUtilities STRINGUTILITIES;
     private final ConfigUtilities CONFIGUTILITIES;
+    private final SystemUtilities SYSTEMUTILITIES;
 
     private final ReticulatingSplines reticulatingSplines = new ReticulatingSplines();
 
@@ -90,11 +88,13 @@ public class CurseCreateModpack {
      * @param injectedStringUtilities Instance of {@link StringUtilities}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      * @param injectedVersionLister Instance of {@link VersionLister}.
+     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
      */
     @Autowired
     public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties,
                               VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities,
-                              ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities) {
+                              ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities,
+                              SystemUtilities injectedSystemUtilities) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -133,9 +133,15 @@ public class CurseCreateModpack {
         }
 
         if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
+        }
+
+        if (injectedSystemUtilities == null) {
+            this.SYSTEMUTILITIES = new SystemUtilities();
+        } else {
+            this.SYSTEMUTILITIES = injectedSystemUtilities;
         }
     }
 
@@ -249,10 +255,7 @@ public class CurseCreateModpack {
     /**
      * Acquires the names of the CurseForge project and file. Should no filename exist, we will use the fileDiskName as
      * fallback to ensure we always have a folder-structure of projectName/FileDisplayName at hand in which the modpack
-     * will be created. Calls<br>
-     * {@link CurseAPI} and various methods of it in order to acquire information about the modpack.<br>
-     * {@link #checkCurseForgeDir(String)}<br>
-     * {@link #initializeModpack(String, Integer, Integer, ConfigurationModel)}
+     * will be created.
      * @author Griefed
      * @param configurationModel Instance of {@link ConfigurationModel}. Required for getting the directory in which we
      *                           will create our modpack.
@@ -283,7 +286,10 @@ public class CurseCreateModpack {
 
             initializeModpack(configurationModel.getModpackDir(), projectID, fileID, configurationModel);
 
-            updateConfigurationModel(configurationModel);
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
+
+            CONFIGUTILITIES.writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG);
 
         } else {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.overwrite"));
@@ -293,11 +299,7 @@ public class CurseCreateModpack {
     /**
      * Downloads the specified file of the specified project to a directory which is the combination of the project
      * name and file display name. Unzips the downloaded modpack ZIP-archive, gathers and displays information about the
-     * specified project/file and makes calls to methods which further set up the modpack. Calls<br>
-     * {@link CurseAPI} and various methods of it to create the modpack.<br>
-     * {@link #unzipArchive(String, String)}<br>
-     * {@link #copyOverride(String)}<br>
-     * {@link #downloadMods(String, ConfigurationModel)}<br>
+     * specified project/file and makes calls to methods which further set up the modpack.
      * @author Griefed
      * @param modpackDir String. Combination of project name and file name. Created during download procedure and later
      *                  replaces the modpackDir variable in the configuration file.
@@ -310,9 +312,9 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.download"), configurationModel.getProjectName(), configurationModel.getFileName()));
 
-            //CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
+            CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
 
-            unzipArchive(CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir)).orElseThrow(NullPointerException::new).toString(), modpackDir);
+            SYSTEMUTILITIES.unzipArchive(CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir)).orElseThrow(NullPointerException::new).toString(), modpackDir);
 
         } catch (NullPointerException | CurseException cex) {
             LOG.error(String.format("Error: Could not download file %s for project %s to directory %s.", configurationModel.getFileName(), configurationModel.getProjectName(), modpackDir));
@@ -328,10 +330,10 @@ public class CurseCreateModpack {
 
         if (new File(String.format("%s/manifest.json", modpackDir)).exists()) {
             try {
-                byte[] jsonData = Files.readAllBytes(Paths.get(String.format("%s/manifest.json", modpackDir)));
-                configurationModel.setCurseModpack(getObjectMapper().readTree(jsonData));
 
-                String[] modloaderAndVersion = configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().split("-");
+                CONFIGUTILITIES.updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", modpackDir)));
+
+                configurationModel.setCopyDirs(CONFIGUTILITIES.suggestCopyDirs(configurationModel.getModpackDir()));
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.infoheader"));
@@ -339,13 +341,12 @@ public class CurseCreateModpack {
                 try {
                     LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackversion"), configurationModel.getCurseModpack().get("version").asText()));
                 } catch (NullPointerException ignored) {}
-
                 try {
                     LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackauthor"), configurationModel.getCurseModpack().get("author").asText()));
                 } catch (NullPointerException ignored) {}
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackminecraftversion"), configurationModel.getCurseModpack().get("minecraft").get("version").asText()));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloader"), modloaderAndVersion[0]));
-                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloaderversion"), modloaderAndVersion[1]));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackminecraftversion"), configurationModel.getMinecraftVersion()));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloader"), configurationModel.getModLoader()));
+                LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloaderversion"), configurationModel.getModLoaderVersion()));
 
             } catch (IOException ex) {
                 LOG.error("Error: There was a fault during json parsing.", ex);
@@ -520,7 +521,7 @@ public class CurseCreateModpack {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.checkcurseforgedir"));
-                isModpackPresent = cleanupEnvironment(modpackDir);
+                cleanupEnvironment(modpackDir);
 
             } else {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanup"));
@@ -531,171 +532,12 @@ public class CurseCreateModpack {
     }
 
     /**
-     * Unzips the downloaded modpack ZIP-archive to the specified directory.
-     * @author Griefed
-     * @param zipFile String. The path to the ZIP-archive which we want to unzip.
-     * @param modpackDir The directory into which the ZIP-archive will be unzipped into.
-     */
-    void unzipArchive(String zipFile, String modpackDir) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.unziparchive"));
-        try {
-            new ZipFile(zipFile).extractAll(modpackDir);
-        } catch (ZipException ex) {
-            LOG.error("Error: There was an error extracting the archive " + zipFile, ex);
-        }
-    }
-
-    /**
      * Deletes any and all folder and files, recursively, inside the target directory, thus ensuring we are working in a
      * clean environment when creating a new modpack from CurseForge.
      * @author Griefed
      * @param modpackDir String. The directory we want to delete.
-     * @return Boolean. Returns false if every file and folder was, recursively and successfully, deleted.
      */
-    public boolean cleanupEnvironment(String modpackDir) {
-        boolean cleanedUp = false;
-
-        if (new File(modpackDir).exists()) {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanupenvironment.enter"));
-
-            try {
-
-                FileUtils.deleteDirectory(new File(modpackDir));
-
-            } catch (FileSystemException ex) {
-
-                LOG.error("Windows is blocking the deletion of a file. You need to delete \"" + modpackDir + "\" manually.", ex);
-
-            } catch (IOException ex) {
-
-                cleanedUp = true;
-                LOG.error("Error deleting a file from the CurseForge directory " + modpackDir, ex);
-
-            } finally {
-
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.cleanupenvironment.complete"));
-            }
-        }
-        return cleanedUp;
-    }
-
-    /**
-     * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
-     * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
-     * If <code>modLoaders</code> in the manifest specifies Fabric, use that to set the modloader and its version.
-     * @author Griefed
-     * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
-     * @return Boolean. Returns true if Jumploader is found.
-     */
-    private boolean checkModpackForFabric(JsonNode modpackJson) {
-
-        for (int i = 0; i < modpackJson.get("files").size(); i++) {
-
-            LOG.debug(String.format("Mod ID: %s", modpackJson.get("files").get(i).get("projectID").asText()));
-            LOG.debug(String.format("File ID: %s", modpackJson.get("files").get(i).get("fileID").asText()));
-
-            if (modpackJson.get("files").get(i).get("projectID").asText().equalsIgnoreCase("361988") || modpackJson.get("files").get(i).get("fileID").asText().equalsIgnoreCase("306612")) {
-
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
-                return true;
-            }
-        }
-
-        String[] modloaderAndVersion = modpackJson.get("minecraft").get("modLoaders").get(0).get("id").asText().split("-");
-
-        return modloaderAndVersion[0].equalsIgnoreCase("fabric");
-    }
-
-    /**
-     * Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
-     * The list of directories to include in the server pack which is generated by this method excludes well know directories
-     * which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on
-     * <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a>
-     * @author Griefed
-     * @param modpackDir String. The directory for which to gather a list of directories to copy to the server pack.
-     * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only
-     * directories.
-     */
-    private List<String> suggestCopyDirs(String modpackDir) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
-
-        File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
-
-        List<String> dirsInModpack = new ArrayList<>(100);
-
-        try {
-            assert listDirectoriesInModpack != null;
-            for (File dir : listDirectoriesInModpack) {
-                if (dir.isDirectory()) {
-                    dirsInModpack.add(dir.getName());
-                }
-            }
-        } catch (NullPointerException np) {
-            LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
-        }
-
-        for (int idirs = 0; idirs < APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().size(); idirs++) {
-
-            int i = idirs;
-
-            dirsInModpack.removeIf(n -> (n.contains(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().get(i))));
-        }
-
-        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
-
-        return dirsInModpack;
-    }
-
-    /**
-     * Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack.
-     * @author Griefed
-     * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration for a modpack from which
-     *                                                     to create a server pack.
-     */
-    private void updateConfigurationModel(ConfigurationModel configurationModel) {
-
-        configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("minecraft").get("version").asText());
-
-        if (checkModpackForFabric(configurationModel.getCurseModpack())) {
-
-            if (configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().contains("fabric")) {
-
-                configurationModel.setModLoader("Fabric");
-                configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(7));
-
-            } else {
-
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
-
-                configurationModel.setModLoader("Fabric");
-                configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
-
-            }
-
-        } else {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
-
-            configurationModel.setModLoader("Forge");
-            configurationModel.setModLoaderVersion(configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().substring(6));
-
-        }
-
-        configurationModel.setCopyDirs(suggestCopyDirs(configurationModel.getModpackDir()));
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
-
-        CONFIGUTILITIES.writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG);
-
+    public void cleanupEnvironment(String modpackDir) {
+        FileUtils.deleteQuietly(new File(modpackDir));
     }
 }

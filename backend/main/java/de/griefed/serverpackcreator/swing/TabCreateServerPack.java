@@ -26,6 +26,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.components.textpane.MaterialTextPaneUI;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
@@ -226,10 +227,16 @@ public class TabCreateServerPack extends JComponent {
             this.STRINGUTILITIES = injectedStringUtilities;
         }
 
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+        if (injectedSystemUtilities == null) {
+            this.SYSTEMUTILITIES = new SystemUtilities();
         } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
+            this.SYSTEMUTILITIES = injectedSystemUtilities;
+        }
+
+        if (injectedPluginManager == null) {
+            this.APPLICATIONPLUGINS = new ApplicationPlugins();
+        } else {
+            this.APPLICATIONPLUGINS = injectedPluginManager;
         }
 
         if (injectedVersionLister == null) {
@@ -238,28 +245,22 @@ public class TabCreateServerPack extends JComponent {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
-        if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
         } else {
-            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
+            this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
+        if (injectedCurseCreateModpack == null) {
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
         } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
+            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
             this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-        }
-
-        if (injectedPluginManager == null) {
-            this.APPLICATIONPLUGINS = new ApplicationPlugins();
-        } else {
-            this.APPLICATIONPLUGINS = injectedPluginManager;
         }
 
         if (injectedServerPackHandler == null) {
@@ -969,12 +970,19 @@ public class TabCreateServerPack extends JComponent {
         modpackDirChooser = new JFileChooser();
 
         if (new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()) {
+
             modpackDirChooser.setCurrentDirectory(new File(TEXTFIELD_MODPACKDIRECTORY.getText()));
+
+        } else if (new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isFile()) {
+
+            modpackDirChooser.setCurrentDirectory(new File(new File(TEXTFIELD_MODPACKDIRECTORY.getText()).getParent()));
+
         } else {
             modpackDirChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
         }
         modpackDirChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonmodpackdir.title"));
-        modpackDirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        modpackDirChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        modpackDirChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.chooser.modpack.filter"), "zip"));
         modpackDirChooser.setAcceptAllFileFilterUsed(false);
         modpackDirChooser.setMultiSelectionEnabled(false);
         modpackDirChooser.setPreferredSize(CHOOSERDIMENSION);
@@ -1243,71 +1251,51 @@ public class TabCreateServerPack extends JComponent {
 
         List<String> encounteredErrors = new ArrayList<>(100);
 
-        if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), encounteredErrors, true)) {
+        ConfigurationModel configurationModel = new ConfigurationModel();
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
-            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> {
 
-            if (new File("./work/temporaryConfig.conf").exists()) {
+            if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), configurationModel, encounteredErrors, false,  true)) {
 
-                boolean delTmp = new File("./work/temporaryConfig.conf").delete();
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
+                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));
 
-                if (delTmp) {
+                FileUtils.deleteQuietly(new File("./work/temporaryConfig.conf"));
 
-                    labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.tempfile"));
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
+                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
 
-                } else {
+                saveConfig(APPLICATIONPROPERTIES.FILE_CONFIG);
 
-                    labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttoncreateserverpack.tempfile"));
-
-                }
-            }
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
-
-            saveConfig(APPLICATIONPROPERTIES.FILE_CONFIG);
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
-            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
-
-            final ExecutorService executorService = Executors.newSingleThreadExecutor();
-            executorService.execute(() -> {
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
+                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
 
                 try {
 
-                    ConfigurationModel configurationModel = new ConfigurationModel();
+                    CREATESERVERPACK.run(configurationModel);
 
-                    if (!CONFIGURATIONHANDLER.checkConfiguration(APPLICATIONPROPERTIES.FILE_CONFIG, configurationModel, false)) {
+                    loadConfig(new File("serverpackcreator.conf"));
 
-                        CREATESERVERPACK.run(configurationModel);
+                    SERVERPACKGENERATEDDOCUMENT.setParagraphAttributes(0, SERVERPACKGENERATEDDOCUMENT.getLength(), SERVERPACKGENERATEDATTRIBUTESET, false);
+                    MATERIALTEXTPANEUI.installUI(SERVERPACKGENERATEDTEXTPANE);
 
-                        loadConfig(new File("serverpackcreator.conf"));
+                    if (JOptionPane.showConfirmDialog(
+                            FRAME_SERVERPACKCREATOR,
+                            SERVERPACKGENERATEDTEXTPANE,
+                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE) == 0) {
 
-                        SERVERPACKGENERATEDDOCUMENT.setParagraphAttributes(0, SERVERPACKGENERATEDDOCUMENT.getLength(), SERVERPACKGENERATEDATTRIBUTESET, false);
-                        MATERIALTEXTPANEUI.installUI(SERVERPACKGENERATEDTEXTPANE);
-
-                        if (JOptionPane.showConfirmDialog(
-                                FRAME_SERVERPACKCREATOR,
-                                SERVERPACKGENERATEDTEXTPANE,
-                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.openfolder.title"),
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.INFORMATION_MESSAGE) == 0) {
-
-                            try {
-                                Desktop.getDesktop().open(new File(String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
-                            } catch (IOException ex) {
-                                LOG.error("Error opening file explorer for server pack.", ex);
-                            }
-
+                        try {
+                            Desktop.getDesktop().open(new File(String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + TEXTFIELD_SERVERPACKSUFFIX.getText())));
+                        } catch (IOException ex) {
+                            LOG.error("Error opening file explorer for server pack.", ex);
                         }
+
                     }
 
                 } catch (Exception ex) {
@@ -1328,39 +1316,39 @@ public class TabCreateServerPack extends JComponent {
 
                     executorService.shutdown();
                 }
-            });
 
-        } else {
+            } else {
 
-            labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
+                labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
 
-            tailer.stop();
+                tailer.stop();
 
-            if (encounteredErrors.size() > 0) {
+                if (encounteredErrors.size() > 0) {
 
-                StringBuilder errors = new StringBuilder();
+                    StringBuilder errors = new StringBuilder();
 
-                for (int i = 0; i < encounteredErrors.size(); i++) {
+                    for (int i = 0; i < encounteredErrors.size(); i++) {
 
-                    errors.append(i + 1).append(": ").append(encounteredErrors.get(i)).append("\n");
+                        errors.append(i + 1).append(": ").append(encounteredErrors.get(i)).append("\n");
 
+                    }
+
+                    JOptionPane.showMessageDialog(
+                            FRAME_SERVERPACKCREATOR,
+                            errors,
+                            String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.errors.encountered"),encounteredErrors.size()),
+                            JOptionPane.ERROR_MESSAGE,
+                            UIManager.getIcon("OptionPane.errorIcon")
+                    );
                 }
 
-                JOptionPane.showMessageDialog(
-                        FRAME_SERVERPACKCREATOR,
-                        errors,
-                        String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.errors.encountered"),encounteredErrors.size()),
-                        JOptionPane.ERROR_MESSAGE,
-                        UIManager.getIcon("OptionPane.errorIcon")
-                );
+                BUTTON_GENERATESERVERPACK.setEnabled(true);
+                FRAME_SERVERPACKCREATOR.setResizable(true);
+
+                System.gc();
+                System.runFinalization();
             }
-
-            BUTTON_GENERATESERVERPACK.setEnabled(true);
-            FRAME_SERVERPACKCREATOR.setResizable(true);
-
-            System.gc();
-            System.runFinalization();
-        }
+        });
     }
 
     /**

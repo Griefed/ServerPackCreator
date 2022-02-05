@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +34,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,15 +138,42 @@ public class SystemUtilities {
         return new File(fileDestination).exists();
     }
 
+    /**
+     * Move a file from source to destination, and replace the destination file if it exists.
+     * @author Griefed
+     * @param sourceFile The source file.
+     * @param destinationFile The destination file to be replaced by the source file.
+     * @return Boolean. Returns true if the file was sucessfully replaced.
+     * @throws IOException Thrown if an error occurs when the file is moved.
+     */
     public boolean replaceFile(File sourceFile, File destinationFile) throws IOException {
 
-        if (destinationFile.delete()) {
+        if (sourceFile.exists() && destinationFile.delete()) {
 
             FileUtils.moveFile(sourceFile, destinationFile);
             return true;
 
         }
 
+        LOG.error("Source file not found.");
+
         return false;
     }
+
+    /**
+     * Unzips the downloaded modpack ZIP-archive to the specified directory.
+     * @author Griefed
+     * @param zipFile String. The path to the ZIP-archive which we want to unzip.
+     * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
+     */
+    public void unzipArchive(String zipFile, String destinationDirectory) {
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.info("Extracting ZIP-file: " + zipFile);
+        try {
+            new ZipFile(zipFile).extractAll(destinationDirectory);
+        } catch (ZipException ex) {
+            LOG.error("Error: There was an error extracting the archive " + zipFile, ex);
+        }
+    }
+
 }

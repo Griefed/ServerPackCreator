@@ -58,7 +58,7 @@ public class ConfigurationModel {
     private Boolean includeServerProperties = true;
     private Boolean includeZipCreation = true;
 
-    private JsonNode curseModpack;
+    private JsonNode curseModpack = null;
 
     private String projectName;
     private String fileName;

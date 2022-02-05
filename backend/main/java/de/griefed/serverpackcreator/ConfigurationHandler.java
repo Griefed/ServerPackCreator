@@ -29,12 +29,14 @@ import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.spring.models.ServerPack;
 import de.griefed.serverpackcreator.utilities.*;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -129,13 +131,17 @@ public class ConfigurationHandler {
         }
 
         if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+            this.CONFIGUTILITIES = new ConfigUtilities(
+                    LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER
+            );
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(
+                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+            );
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
@@ -399,86 +405,66 @@ public class ConfigurationHandler {
 
         }
 
-        try {
 
-            if (configurationModel.getModpackDir().equals("")) {
+        /*
+         * Run checks on the specified modpack directory.
+         * Depending on the setting, various configurations can be acquired automatically.
+         *
+         * 1. If the modpackDir is an actual directory, every check needs to run. Nothing can be acquired automatically, or rather, we want the user to set everything accordingly.
+         * 2. If CurseForge is activated and the specified modpackDir is a CurseForge projectID and fileID combination, create the modpack and gather information from said CurseForge modpack.
+         * 3. If the modpackDir is a ZIP-archive, check it and if it is found to be valid, extract it, gather as much information as possible.
+         *
+         * Last but by no means least: Run final checks.
+         */
+        if (new File(configurationModel.getModpackDir()).isDirectory()) {
 
-                configHasError = true;
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
-                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
+            configHasError = isDir(configurationModel, encounteredErrors);
 
-            } else if (new File(configurationModel.getModpackDir()).isDirectory()) {
+        } else if (APPLICATIONPROPERTIES.isCurseForgeActivated()) {
 
-                configHasError = isDir(configurationModel, encounteredErrors);
+            try {
 
-            } else if (checkCurseForge(configurationModel.getModpackDir(), configurationModel, encounteredErrors)) {
-
-                if (downloadAndCreateModpack) {
-
+                if (checkCurseForge(configurationModel.getModpackDir(), configurationModel, encounteredErrors) && downloadAndCreateModpack) {
                     configHasError = isCurse(configurationModel, encounteredErrors);
-
                 } else {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
                 }
 
+            } catch (InvalidModpackException ex) {
+
+                configHasError = true;
+                encounteredErrors.add("The specified project is not a valid Minecraft modpack!");
+                LOG.error("The specified project is not a valid Minecraft modpack!", ex);
+
+            } catch (InvalidFileException ex) {
+
+                configHasError = true;
+                encounteredErrors.add("The specified file is not a file of this project.");
+                LOG.error("The specified file is not a file of this project.", ex);
+
+            } catch (CurseException ex) {
+
+                configHasError = true;
+                encounteredErrors.add("The specified project does not exist.");
+                LOG.error("The specified project does not exist.", ex);
+
             }
 
+        } else if (new File(configurationModel.getModpackDir()).isFile() &&
+                configurationModel.getModpackDir().substring(configurationModel.getModpackDir().length() - 3).equalsIgnoreCase("zip")) {
 
-        } catch (InvalidModpackException ex) {
-            LOG.error("The specified project is not a valid Minecraft modpack!", ex);
-        } catch (InvalidFileException ex) {
-            LOG.error("The specified file is not a file of this project.", ex);
-        } catch (CurseException ex) {
-            LOG.error("The specified project does not exist.", ex);
-        }
-
-
-        if (quietCheck) {
-            CONFIGUTILITIES.printConfigurationModel(configurationModel);
-        }
-
-        if (!configHasError) {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
+            try {
+                configHasError = isZip(configurationModel, encounteredErrors);
+            } catch (IOException ex) {
+                configHasError = true;
+                LOG.error("An error occurred whilst working with the ZIP-archive.",ex);
+            }
 
         } else {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.failure"));
-
-            printEncounteredErrors(encounteredErrors);
-
-        }
-
-        return configHasError;
-    }
-
-    /**
-     * If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration
-     * of: directories to copy to server pack,<br>
-     * if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.
-     * @author Griefed
-     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
-     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
-     * @return Boolean. Returns true if an error is found during configuration check.
-     */
-    private boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
-        boolean configHasError = false;
-
-        if (checkCopyDirs(configurationModel.getCopyDirs(), configurationModel.getModpackDir(), encounteredErrors)) {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
-
-        } else {
-
             configHasError = true;
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
-            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
-
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
         }
 
         if (checkModloader(configurationModel.getModLoader())) {
@@ -524,6 +510,333 @@ public class ConfigurationHandler {
             encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
 
         }
+
+
+        if (quietCheck) CONFIGUTILITIES.printConfigurationModel(configurationModel);
+
+
+        if (!configHasError) {
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
+
+        } else {
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.failure"));
+
+            printEncounteredErrors(encounteredErrors);
+
+        }
+
+        return configHasError;
+    }
+
+    /**
+     * If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration
+     * of: directories to copy to server pack,<br>
+     * if includeServerInstallation is <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader version.
+     * @author Griefed
+     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
+     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
+     * @return Boolean. Returns true if an error is found during configuration check.
+     */
+    private boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
+        boolean configHasError = false;
+
+        if (checkCopyDirs(configurationModel.getCopyDirs(), configurationModel.getModpackDir(), encounteredErrors)) {
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
+
+        } else {
+
+            configHasError = true;
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
+
+        }
+
+        return configHasError;
+    }
+
+    /**
+     * Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be considered valid,
+     * it needs to contain the <code>mods</code> and <code>config</code> folders at minimum. If any of <code>manifest.json</code>,
+     * <code>minecraftinstance.json</code> or <code>config.json</code> are available, gather as much information from them
+     * as possible.
+     * @author Griefed
+     * @param configurationModel Instance of {@link ConfigurationModel} with a server pack configuration.
+     * @param encounteredErrors String List. A list of errors encountered during configuration checks.
+     * @return Boolean. Returns false when no errors were encountered.
+     */
+    private boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors) throws IOException {
+        boolean configHasError = false;
+
+        // modpackDir points at a ZIP-file. Get the path to the would be modpack directory.
+        String destination = String.format("./work/modpacks/%s",
+                configurationModel.getModpackDir().substring(
+                                configurationModel.getModpackDir().lastIndexOf("/") + 1)
+                        .substring(
+                                0,
+                                configurationModel.getModpackDir().substring(configurationModel.getModpackDir().lastIndexOf("/") + 1).length() - 4
+                        )
+        );
+
+
+        try {
+            List<String> foldersInModpackZip = CONFIGUTILITIES.directoriesInModpackZip(Paths.get(configurationModel.getModpackDir()));
+
+            // If the ZIP-file only contains one directory, assume it is overrides and return true to indicate invalid configuration.
+            if (foldersInModpackZip.size() == 1) {
+
+                LOG.error(String.format(
+                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
+                        foldersInModpackZip.get(0)
+                ));
+                encounteredErrors.add(
+                        String.format(
+                                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
+                                foldersInModpackZip.get(0)
+                        )
+                );
+
+                return true;
+
+            // If the ZIP-file does not contain the mods or config directories, consider it invalid.
+            } else if (!foldersInModpackZip.contains("mods") || !foldersInModpackZip.contains("config")) {
+
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
+
+                return true;
+            }
+
+        } catch (IOException ex) {
+
+            LOG.error("Couldn't acquire directories in ZIP-file.",ex);
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.directories"));
+
+            return true;
+        }
+
+        // Does the modpack extracted from the ZIP-archive already exist?
+        if (new File(destination).isDirectory()) {
+
+            int incrementation = 0;
+
+            // Has there been a previous incrementation?
+            if (destination.matches(".*_\\d")) {
+
+                incrementation = Integer.parseInt(destination.substring(destination.length() - 1));
+
+                while (new File(destination.substring(0, destination.length()-1) + "_" + incrementation).isDirectory()) {
+                    incrementation++;
+                }
+
+                destination = destination.substring(0, destination.length()-1) + "_" + incrementation;
+
+            // No previous incrementation, but it exists. Append _0 to prevent overwrite.
+            } else {
+                while (new File(destination + "_" + incrementation).isDirectory()) {
+                    incrementation++;
+                }
+
+                destination = destination + "_" + incrementation;
+            }
+
+        }
+
+        // Extract the archive to the modpack directory.
+        SYSTEMUTILITIES.unzipArchive(configurationModel.getModpackDir(), destination);
+
+        // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
+        List<String> newCopyDirs = CONFIGUTILITIES.suggestCopyDirs(destination);
+        for (String entry : configurationModel.getCopyDirs()) {
+            if (!newCopyDirs.contains(entry)) newCopyDirs.add(entry);
+        }
+        configurationModel.setCopyDirs(newCopyDirs);
+
+        String packName = null;
+
+        // If various manifests exist, gather as much information as possible.
+        // Check CurseForge manifest available if a modpack was exported through a client like Overwolf's CurseForge or through GDLauncher.
+        if (new File(String.format("%s/manifest.json", destination)).exists()) {
+
+            try {
+                CONFIGUTILITIES.updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", destination)));
+
+                // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
+                try {
+                    packName = String.format("./work/modpacks/%s",configurationModel.getCurseModpack().get("name").asText());
+                } catch (NullPointerException npe) {
+                    packName = null;
+                }
+
+            } catch (IOException ex) {
+
+                LOG.error("Error parsing CurseForge manifest.json from ZIP-file.",ex);
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.manifest"));
+
+                configHasError = true;
+            }
+
+        // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
+        } else if (new File(String.format("%s/minecraftinstance.json", destination)).exists()) {
+
+            try {
+                CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(configurationModel, new File(String.format("%s/minecraftinstance.json", destination)));
+
+                // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
+                try {
+                    packName = String.format("./work/modpacks/%s",configurationModel.getCurseModpack().get("name").asText());
+                } catch (NullPointerException npe) {
+                    packName = null;
+                }
+
+            } catch (IOException ex) {
+
+                LOG.error("Error parsing minecraftinstance.json from ZIP-file.",ex);
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.instance"));
+
+                configHasError = true;
+            }
+
+        // Check the config.json usually created by GDLauncher.
+        } else if (new File(String.format("%s/config.json", destination)).exists()) {
+
+            try {
+                CONFIGUTILITIES.updateConfigModelFromConfigJson(configurationModel, new File(String.format("%s/config.json",destination)));
+
+                // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
+                try {
+                    packName = String.format("./work/modpacks/%s",configurationModel.getCurseModpack().get("loader").get("sourceName").asText());
+                } catch (NullPointerException npe) {
+                    packName = null;
+                }
+
+            } catch (IOException ex) {
+
+                LOG.error("Error parsing config.json from ZIP-file.",ex);
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.config"));
+
+                configHasError = true;
+            }
+
+        // Check mmc-pack.json usually created by MultiMC.
+        } else if (new File(String.format("%s/mmc-pack.json", destination)).exists()) {
+
+            try {
+                CONFIGUTILITIES.updateConfigModelFromMMCPack(configurationModel, new File(String.format("%s/mmc-pack.json",destination)));
+
+            } catch (IOException ex) {
+
+                LOG.error("Error parsing mmc-pack.json from ZIP-file.",ex);
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.mmcpack"));
+
+                configHasError = true;
+            }
+
+            try {
+                if (new File(String.format("%s/instance.cfg",destination)).exists() &&
+                        CONFIGUTILITIES.updateDestinationFromInstanceCfg(new File(String.format("%s/instance.cfg",destination))) != null) {
+
+                    packName = String.format("./work/modpacks/%s",CONFIGUTILITIES.updateDestinationFromInstanceCfg(new File(String.format("%s/instance.cfg",destination))));
+
+                }
+            } catch (IOException ex) {
+                LOG.error("Couldn't read instance.cfg.",ex);
+            }
+
+
+        }
+
+        // If no json was read from the modpack, we must sadly use the ZIP-files name as the new destination. Sadface.
+        if (packName == null) packName = destination;
+
+        // Get the path to the would-be-server-pack with the new destination.
+        String wouldBeServerPack = new File(
+                String.format(
+                        "%s/%s",
+                        APPLICATIONPROPERTIES.getDirectoryServerPacks(),
+                        packName.substring(
+                                packName.lastIndexOf("/") + 1
+                        ) + configurationModel.getServerPackSuffix()
+                )
+        ).getAbsolutePath()
+                .replace("\\", "/");
+
+        // Check whether a server pack for the new destination already exists.
+        // If it does, we need to change it to avoid overwriting any existing files.
+        int incrementation = 0;
+
+        // If no name was acquired from the ZIP-archive, has there been a previous incrementation of the pack?
+        if (packName.matches(".*_\\d")) {
+
+            // Has there been a previous incrementation of the would-be-server-pack?
+            if (wouldBeServerPack.matches(".*_\\d")) {
+
+                // Increment until both a free would-be-server-pack and packname are found.
+                while (new File(wouldBeServerPack.substring(0, wouldBeServerPack.length()-1) + "_" + incrementation).isDirectory() ||
+                        new File(packName.substring(0,packName.length() - 1) + "_" + incrementation).isDirectory()) {
+
+                    incrementation++;
+                }
+
+                packName = packName + "_" + incrementation;
+
+            // No previous incrementation of the would-be-server-pack.
+            } else {
+
+                // Increment until both a free would-be-server-pack and packname are found.
+                while (new File(wouldBeServerPack + "_" + incrementation).isDirectory() ||
+                        new File(packName.substring(0,packName.length() - 1) + "_" + incrementation).isDirectory()) {
+
+                    incrementation++;
+                }
+
+                packName = packName + "_" + incrementation;
+
+            }
+
+        // the modpack has not been extracted yet by a previous run. FREEDOOOOOOM!
+        } else {
+
+            // Has there been a previous incrementation of the would-be-server-pack?
+            if (wouldBeServerPack.matches(".*_\\d")) {
+
+                // Increment until both a free would-be-server-pack and packname are found.
+                while (new File(wouldBeServerPack.substring(0, wouldBeServerPack.length()-1) + "_" + incrementation).isDirectory() ||
+                        new File(packName + "_" + incrementation).isDirectory()) {
+
+                    incrementation++;
+                }
+
+                packName = packName + "_" + incrementation;
+
+            // No previous incrementation of the would-be-server-pack.
+            } else {
+
+                // Increment until both a free would-be-server-pack and packname are found.
+                while (new File(wouldBeServerPack + "_" + incrementation).isDirectory() ||
+                        new File(packName + "_" + incrementation).isDirectory()) {
+
+                    incrementation++;
+                }
+
+                packName = packName + "_" + incrementation;
+
+            }
+        }
+
+        // Finally, move to new destination to avoid overwriting of server pack
+        FileUtils.moveDirectory(
+                new File(destination),
+                new File(packName));
+
+        // Last but not least, use the newly acquired packname as the modpack directory.
+        configurationModel.setModpackDir(packName);
 
         return configHasError;
     }

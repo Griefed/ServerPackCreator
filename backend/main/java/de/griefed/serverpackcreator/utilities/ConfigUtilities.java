@@ -19,8 +19,13 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
+import com.electronwill.nightconfig.core.file.FileConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
+import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -28,10 +33,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 /**
@@ -48,11 +51,12 @@ public class ConfigUtilities {
     private final ListUtilities LISTUTILITIES;
     private final StringUtilities STRINGUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final VersionLister VERSIONLISTER;
 
     @Autowired
     public ConfigUtilities(LocalizationManager injectedLocalizationManager, BooleanUtilities injectedBooleanUtilities,
                            ListUtilities injectedListUtilities, ApplicationProperties injectedApplicationProperties,
-                           StringUtilities injectedStringUtilities) {
+                           StringUtilities injectedStringUtilities, VersionLister injectedVersionLister) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -82,6 +86,12 @@ public class ConfigUtilities {
             this.STRINGUTILITIES = new StringUtilities();
         } else {
             this.STRINGUTILITIES = injectedStringUtilities;
+        }
+
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        } else {
+            this.VERSIONLISTER = injectedVersionLister;
         }
     }
 
@@ -393,5 +403,296 @@ public class ConfigUtilities {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.serverpacksuffix"), serverPackSuffix));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.servericon"),serverIconPath));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.serverproperties"),serverPropertiesPath));
+    }
+
+    /**
+     * Update the given ConfigurationModel with values gathered from the downloaded CurseForge modpack. A manifest.json-file
+     * is usually created when a modpack is exported through launchers like Overwolf's CurseForge or GDLauncher.
+     * @author Griefed
+     * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration for a modpack from which
+     * to create a server pack.
+     * @param manifest File. The CurseForge manifest.json-file of the modpack to read.
+     * @throws IOException when the manifest.json-file could not be parsed.
+     */
+    public void updateConfigModelFromCurseManifest(ConfigurationModel configurationModel, File manifest) throws IOException {
+
+        configurationModel.setCurseModpack(getJson(manifest));
+
+        String[] modloaderAndVersion = configurationModel.getCurseModpack().get("minecraft").get("modLoaders").get(0).get("id").asText().split("-");
+
+        configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("minecraft").get("version").asText());
+
+        if (checkCurseForgeJsonForFabric(configurationModel.getCurseModpack())) {
+
+            if (modloaderAndVersion[0].equalsIgnoreCase("Fabric")) {
+
+                configurationModel.setModLoader("Fabric");
+                configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
+
+            } else {
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+                LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
+
+                configurationModel.setModLoader("Fabric");
+                configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
+
+            }
+
+        } else {
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
+
+            configurationModel.setModLoader("Forge");
+            configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
+
+        }
+    }
+
+    /**
+     * Update the given ConfigurationModel with values gathered from the minecraftinstance.json of the modpack. A
+     * minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
+     * @author Griefed
+     * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration for a modpack from which
+     * to create a server pack.
+     * @param minecraftInstance File. The minecraftinstance.json-file of the modpack to read.
+     * @throws IOException when the minecraftinstance.json-file could not be parsed.
+     */
+    public void updateConfigModelFromMinecraftInstance(ConfigurationModel configurationModel, File minecraftInstance) throws IOException {
+
+        configurationModel.setCurseModpack(getJson(minecraftInstance));
+
+        String[] modLoaderAndVersion = configurationModel.getCurseModpack().get("baseModLoader").get("name").asText().split("-");
+
+        configurationModel.setModLoader(getModLoaderCase(modLoaderAndVersion[0]));
+        configurationModel.setModLoaderVersion(modLoaderAndVersion[1]);
+        configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("baseModLoader").get("minecraftVersion").asText());
+    }
+
+    /**
+     * Update the given ConfigurationModel with values gathered from the modpacks config.json. A config.json is usually
+     * created by GDLauncher.
+     * @author Griefed
+     * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration for a modpack from which
+     * to create a server pack.
+     * @param config {@link File}. The config.json-file of the modpack to read.
+     * @throws IOException when the config.json-file could not be parsed.
+     */
+    public void updateConfigModelFromConfigJson(ConfigurationModel configurationModel, File config) throws IOException {
+
+        configurationModel.setCurseModpack(getJson(config));
+
+        configurationModel.setModLoader(getModLoaderCase(configurationModel.getCurseModpack().get("loader").get("loaderType").asText()));
+        configurationModel.setMinecraftVersion(configurationModel.getCurseModpack().get("loader").get("mcVersion").asText());
+
+        if (configurationModel.getModLoader().equalsIgnoreCase("forge")) {
+
+            configurationModel.setModLoaderVersion(
+                    configurationModel.getCurseModpack().get("loader").get("loaderVersion").asText().split("-")[1]
+            );
+
+        } else {
+
+            configurationModel.setModLoaderVersion(
+                    configurationModel.getCurseModpack().get("loader").get("loaderVersion").asText()
+            );
+
+        }
+    }
+
+    /**
+     * Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A mmc-pack.json is usually
+     * created by the MultiMC launcher.
+     * @author Griefed
+     * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration for a modpack from which
+     * to create a server pack.
+     * @param mmcPack {@link File}. The config.json-file of the modpack to read.
+     * @throws IOException when the mmc-pack.json-file could not be parsed.
+     */
+    public void updateConfigModelFromMMCPack(ConfigurationModel configurationModel, File mmcPack) throws IOException {
+
+        configurationModel.setCurseModpack(getJson(mmcPack));
+
+        for (JsonNode jsonNode : configurationModel.getCurseModpack().get("components")) {
+
+            if (jsonNode.get("uid").asText().equals("net.minecraft")) {
+
+                configurationModel.setMinecraftVersion(jsonNode.get("version").asText());
+
+            } else if (jsonNode.get("uid").asText().equals("net.minecraftforge")) {
+
+                configurationModel.setModLoader("Forge");
+                configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+
+            } else if (jsonNode.get("uid").asText().equals("net.fabricmc.fabric-loader")) {
+
+                configurationModel.setModLoader("Fabric");
+                configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+
+            }
+
+        }
+
+    }
+
+    /**
+     * Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks instance.cfg, which is usually
+     * created by the MultiMC launcher.
+     * @author Griefed
+     * @param instanceCfg {@link File}. The config.json-file of the modpack to read.
+     * @return {@link String} Returns the instance name.
+     * @throws IOException when the file could not be found or the properties not be loaded from the file.
+     */
+    public String updateDestinationFromInstanceCfg(File instanceCfg) throws IOException {
+
+        InputStream inputStream = new FileInputStream(instanceCfg);
+
+        Properties properties = new Properties();
+        properties.load(inputStream);
+
+        return properties.getProperty("name",null);
+
+
+    }
+
+    /**
+     * Acquire a {@link JsonNode} from the given json file.
+     * @author Griefed
+     * @param jsonFile {@link File}. The file to read.
+     * @return {@link JsonNode} containing the files json data.
+     * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+     */
+    private JsonNode getJson(File jsonFile) throws IOException {
+        return getObjectMapper().readTree(
+                Files.readAllBytes(
+                        Paths.get(
+                                jsonFile.getAbsolutePath().replace("\\","/")
+                        )
+                )
+        );
+    }
+
+    /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
+    private ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
+    }
+
+    /**
+     * Creates a list of suggested directories to include in server pack which is later on written to a new configuration file.
+     * The list of directories to include in the server pack which is generated by this method excludes well know directories
+     * which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on
+     * <a href=https://github.com/Griefed/ServerPackCreator/issues/new/choose>GitHub</a>
+     * @author Griefed
+     * @param modpackDir String. The directory for which to gather a list of directories to copy to the server pack.
+     * @return List, String. Returns a list of directories inside the modpack, excluding well known client-side only
+     * directories.
+     */
+    public List<String> suggestCopyDirs(String modpackDir) {
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
+
+        File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
+
+        List<String> dirsInModpack = new ArrayList<>(100);
+
+        try {
+            assert listDirectoriesInModpack != null;
+            for (File dir : listDirectoriesInModpack) {
+                if (dir.isDirectory()) {
+                    dirsInModpack.add(dir.getName());
+                }
+            }
+        } catch (NullPointerException np) {
+            LOG.error("Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.", np);
+        }
+
+        for (int idirs = 0; idirs < APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().size(); idirs++) {
+
+            int i = idirs;
+
+            dirsInModpack.removeIf(n -> (n.contains(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().get(i))));
+        }
+
+        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),dirsInModpack));
+
+        return dirsInModpack;
+    }
+
+    /**
+     * Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.
+     * If Jumploader is found, the modloader for the new configuration-file will be set to Fabric.
+     * If <code>modLoaders</code> in the manifest specifies Fabric, use that to set the modloader and its version.
+     * @author Griefed
+     * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
+     * @return Boolean. Returns true if Jumploader is found.
+     */
+    public boolean checkCurseForgeJsonForFabric(JsonNode modpackJson) {
+
+        for (int i = 0; i < modpackJson.get("files").size(); i++) {
+
+            LOG.debug(String.format("Mod ID: %s", modpackJson.get("files").get(i).get("projectID").asText()));
+            LOG.debug(String.format("File ID: %s", modpackJson.get("files").get(i).get("fileID").asText()));
+
+            if (modpackJson.get("files").get(i).get("projectID").asText().equalsIgnoreCase("361988") ||
+                    modpackJson.get("files").get(i).get("fileID").asText().equalsIgnoreCase("306612")) {
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
+                return true;
+            }
+        }
+
+        String[] modloaderAndVersion = modpackJson.get("minecraft").get("modLoaders").get(0).get("id").asText().split("-");
+
+        return modloaderAndVersion[0].equalsIgnoreCase("fabric");
+    }
+
+    /**
+     * Acquire a list of directories in a ZIP-file.
+     * @author Griefed
+     * @param zipURI URI to the ZIP-file from which to gather a list of directories within.
+     * @return String List. A list of all directories in the ZIP-file.
+     * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or the env parameter does not contain properties required by the provider, or a property value is invalid.
+     * @throws FileSystemAlreadyExistsException if the file system has already been created.
+     * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
+     * @throws IOException if an I/O error occurs creating the file system.
+     * @throws SecurityException if a security manager is installed, and it denies an unspecified permission required by the file system provider implementation.
+     */
+    public List<String> directoriesInModpackZip(Path zipURI) throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException, IOException, SecurityException  {
+        List<String> directories = new ArrayList<>(100);
+
+        LOG.debug("URI: " + zipURI);
+
+        FileSystem fileSystems = FileSystems.newFileSystem(zipURI, null);
+
+        fileSystems.getRootDirectories().forEach(
+                root -> {
+                    LOG.debug("root: " + root);
+
+                    try {
+                        Files.walk(root).forEach(
+                                path -> {
+                                    if (path.toString().matches("^/\\w+/$")) {
+                                        LOG.debug("Path in ZIP: " + path);
+                                        directories.add(path.toString().replace("/",""));
+                                    }
+                                }
+                        );
+                    } catch (IOException ignored) {}
+                }
+        );
+
+        fileSystems.close();
+
+        return directories;
     }
 }

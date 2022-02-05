@@ -49,10 +49,9 @@ class CurseCreateModpackTest {
         STRINGUTILITIES = new StringUtilities();
         SYSTEMUTILITIES = new SystemUtilities();
         BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
         this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-
-        this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+        this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
     }
 
     @Test
@@ -90,7 +89,6 @@ class CurseCreateModpackTest {
                 .fileWithID(fileID))
                 .displayName();
         configurationModel.setModpackDir(String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName));
-        /*Assertions.assertTrue(*/CURSECREATEMODPACK.curseForgeModpack(configurationModel, projectID, fileID);/*);*/
         String deleteFile = String.format("./backend/test/resources/forge_tests/%s/%s", projectName, displayName);
         if (new File(deleteFile).isDirectory()) {
             Path pathToBeDeleted = Paths.get(deleteFile);
@@ -254,23 +252,5 @@ class CurseCreateModpackTest {
     void checkCurseForgeDirTest() {
         String modpackdir = "./backend/test/resources/forge_tests/overrides";
         Assertions.assertFalse(CURSECREATEMODPACK.checkCurseForgeDir(modpackdir));
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void unzipArchiveTest() {
-        String modpackDir = "backend/test/resources/curseforge_tests";
-        String zipFile = "backend/test/resources/curseforge_tests/modpack.zip";
-        CURSECREATEMODPACK.unzipArchive(zipFile, modpackDir);
-        Assertions.assertTrue(new File("./backend/test/resources/curseforge_tests/manifest.json").exists());
-        Assertions.assertTrue(new File("./backend/test/resources/curseforge_tests/modlist.html").exists());
-        Assertions.assertTrue(new File("./backend/test/resources/curseforge_tests/overrides").isDirectory());
-        new File("./backend/test/resources/curseforge_tests/manifest.json").delete();
-        new File("./backend/test/resources/curseforge_tests/modlist.html").delete();
-        try {
-            if (new File("./backend/test/resources/curseforge_tests/overrides").isDirectory()) {
-                Path pathToBeDeleted = Paths.get("./backend/test/resources/curseforge_tests/overrides");
-                Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);}
-        } catch (Exception ignored) {}
     }
 }

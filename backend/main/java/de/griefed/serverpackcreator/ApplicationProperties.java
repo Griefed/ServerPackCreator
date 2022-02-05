@@ -26,6 +26,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -239,6 +241,12 @@ public class ApplicationProperties extends Properties {
     private boolean versioncheck_prerelease = false;
 
     /**
+     * Whether the CurseForge API in ServerPackCreator is activated.
+     * Requires a valid CurseAPI token to be set in <code>de.griefed.serverpackcreator.curseforge.api.token</code>.
+     */
+    private boolean isCurseForgeActivated = false;
+
+    /**
      * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
      * @author Griefed
      */
@@ -362,6 +370,15 @@ public class ApplicationProperties extends Properties {
         }
 
         this.PLUGINS_DIRECTORY = Paths.get(getProperty("de.griefed.serverpackcreator.plugins.directory","./plugins"));
+
+        try {
+            this.isCurseForgeActivated = testCurseApiToken();
+        } catch (IOException ex) {
+            LOG.error("CurseAPI check failed.",ex);
+            this.isCurseForgeActivated = false;
+        } finally {
+            LOG.info("CurseForge API enabled: " + this.isCurseForgeActivated);
+        }
     }
 
     /**
@@ -462,6 +479,33 @@ public class ApplicationProperties extends Properties {
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
 
         this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
+
+        try {
+            this.isCurseForgeActivated = testCurseApiToken();
+        } catch (IOException ex) {
+            LOG.error("CurseAPI check failed.",ex);
+            this.isCurseForgeActivated = false;
+        } finally {
+            LOG.info("CurseForge API enabled: " + this.isCurseForgeActivated);
+        }
+    }
+
+    /**
+     * Test the CurseAPI token for validity.
+     * @author Griefed
+     * @throws IOException Thrown if the requested URL can not be reached or if any other error occurs during the request.
+     * @return boolean. Returns true if the request with the given token returns a code 200, indicating success.
+     */
+    private boolean testCurseApiToken() throws IOException {
+        URL curse = new URL("https://api.curseforge.com/v1/games");
+
+        HttpURLConnection httpURLConnection = (HttpURLConnection) curse.openConnection();
+        httpURLConnection.setRequestMethod("GET");
+
+        httpURLConnection.setRequestProperty("Accept","application/json");
+        httpURLConnection.setRequestProperty("x-api-key",getProperty("de.griefed.serverpackcreator.curseforge.api.token"));
+
+        return httpURLConnection.getResponseCode() == 200;
     }
 
     /**
@@ -551,5 +595,16 @@ public class ApplicationProperties extends Properties {
      */
     public boolean checkForAvailablePreReleases() {
         return versioncheck_prerelease;
+    }
+
+    /**
+     * Getter for whether the CurseForge API in ServerPackCreator is activated. In order for the CurseForge API to be
+     * activated, you need to set the property <code>de.griefed.serverpackcreator.curseforge.api.token</code> with a
+     * valid CurseAPI token in the serverpackcreator.properties-file.
+     * @author Griefed
+     * @return Boolean. Whether the CurseForge API in ServerPackCreator is activated.
+     */
+    public boolean isCurseForgeActivated() {
+        return isCurseForgeActivated;
     }
 }

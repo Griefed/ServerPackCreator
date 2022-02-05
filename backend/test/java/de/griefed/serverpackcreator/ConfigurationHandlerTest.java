@@ -46,8 +46,8 @@ class ConfigurationHandlerTest {
         STRINGUTILITIES = new StringUtilities();
         SYSTEMUTILITIES = new SystemUtilities();
         BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
-        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES);
+        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
         CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
 
     }
@@ -175,7 +175,7 @@ class ConfigurationHandlerTest {
             "TravelersTitles-," +
             "WindowedFullscreen-," +
             "WorldNameRandomizer-," +
-            "yisthereautojump-";;
+            "yisthereautojump-";
         //noinspection Convert2Diamond
         List<String> fallbackMods = new ArrayList<String>(
                 Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(","))
@@ -474,5 +474,15 @@ class ConfigurationHandlerTest {
         configurationModel.setModLoaderVersion("36.1.2");
         configurationModel.setMinecraftVersion("1.16.5");
         Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(configurationModel, false));
+    }
+
+    @Test
+    void zipArchiveTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip");
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,true));
+        configurationModel = new ConfigurationModel();
+        configurationModel.setModpackDir("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip");
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,true));
     }
 }

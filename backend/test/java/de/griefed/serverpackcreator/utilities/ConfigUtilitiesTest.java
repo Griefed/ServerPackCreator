@@ -1,12 +1,19 @@
 package de.griefed.serverpackcreator.utilities;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
+import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +26,7 @@ public class ConfigUtilitiesTest {
     private final ListUtilities LISTUTILITIES;
     private final StringUtilities STRINGUTILITIES;
     private final ConfigUtilities CONFIGUTILITIES;
+    private final VersionLister VERSIONLISTER;
 
     ConfigUtilitiesTest() {
         this.LOCALIZATIONMANAGER = new LocalizationManager();
@@ -26,7 +34,8 @@ public class ConfigUtilitiesTest {
         this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         this.LISTUTILITIES = new ListUtilities();
         this.STRINGUTILITIES = new StringUtilities();
-        this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES);
+        this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -384,7 +393,92 @@ public class ConfigUtilitiesTest {
         configurationModel.setModLoader("Forge");
         configurationModel.setModLoaderVersion("36.1.2");
         configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
-        List<String> config = new ArrayList<>(100);
         Assertions.assertTrue(CONFIGUTILITIES.getConfigurationAsList(configurationModel).size() > 0);
+    }
+
+    @Test
+    void updateConfigModelFromCurseManifestTest() throws IOException {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        CONFIGUTILITIES.updateConfigModelFromCurseManifest(configurationModel, new File("backend/test/resources/testresources/manifest.json"));
+        Assertions.assertEquals(configurationModel.getMinecraftVersion(),"1.16.5");
+        Assertions.assertEquals(configurationModel.getModLoader(),"Forge");
+        Assertions.assertEquals(configurationModel.getModLoaderVersion(),"36.0.1");
+    }
+
+    @Test
+    void updateConfigModelFromMinecraftInstanceTest() throws IOException {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(configurationModel, new File("backend/test/resources/testresources/minecraftinstance.json"));
+        Assertions.assertEquals(configurationModel.getMinecraftVersion(),"1.16.5");
+        Assertions.assertEquals(configurationModel.getModLoader(),"Forge");
+        Assertions.assertEquals(configurationModel.getModLoaderVersion(),"36.2.4");
+    }
+
+    @Test
+    void updateConfigModelFromConfigJsonTest() throws IOException {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        CONFIGUTILITIES.updateConfigModelFromConfigJson(configurationModel, new File("backend/test/resources/testresources/config.json"));
+        Assertions.assertEquals(configurationModel.getMinecraftVersion(),"1.18.1");
+        Assertions.assertEquals(configurationModel.getModLoader(),"Fabric");
+        Assertions.assertEquals(configurationModel.getModLoaderVersion(),"0.12.12");
+    }
+
+    @Test
+    void updateConfigModelFromMMCPackTest() throws IOException {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        CONFIGUTILITIES.updateConfigModelFromMMCPack(configurationModel, new File("backend/test/resources/testresources/mmc-pack.json"));
+        Assertions.assertEquals(configurationModel.getMinecraftVersion(),"1.18.1");
+        Assertions.assertEquals(configurationModel.getModLoader(),"Fabric");
+        Assertions.assertEquals(configurationModel.getModLoaderVersion(),"0.12.12");
+    }
+
+    @Test
+    void updateDestinationFromInstanceCfgTest() throws IOException {
+        String name = CONFIGUTILITIES.updateDestinationFromInstanceCfg(new File("backend/test/resources/testresources/instance.cfg"));
+        Assertions.assertEquals(name,"Better Minecraft [FABRIC] - 1.18.1");
+    }
+
+    @Test
+    void suggestCopyDirsTest() {
+        List<String> dirs = CONFIGUTILITIES.suggestCopyDirs("backend/test/resources/fabric_tests");
+        Assertions.assertTrue(dirs.contains("config"));
+        Assertions.assertTrue(dirs.contains("defaultconfigs"));
+        Assertions.assertTrue(dirs.contains("mods"));
+        Assertions.assertTrue(dirs.contains("scripts"));
+        Assertions.assertTrue(dirs.contains("seeds"));
+        Assertions.assertFalse(dirs.contains("server_pack"));
+    }
+
+    @Test
+    void checkCurseForgeJsonForFabricTest() throws IOException {
+        Assertions.assertTrue(CONFIGUTILITIES.checkCurseForgeJsonForFabric(getJson(new File("backend/test/resources/testresources/fabric_manifest.json"))));
+    }
+
+    @Test
+    void directoriesInModpackZipTest() throws IOException {
+        List<String> entries = CONFIGUTILITIES.directoriesInModpackZip(Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"));
+        Assertions.assertEquals(1, entries.size());
+        Assertions.assertTrue(entries.contains("overrides"));
+        entries = CONFIGUTILITIES.directoriesInModpackZip(Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"));
+        Assertions.assertEquals(2, entries.size());
+        Assertions.assertTrue(entries.contains("mods"));
+        Assertions.assertTrue(entries.contains("config"));
+    }
+
+    private ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
+    }
+
+    private JsonNode getJson(File jsonFile) throws IOException {
+        return getObjectMapper().readTree(
+                Files.readAllBytes(
+                        Paths.get(
+                                jsonFile.getAbsolutePath().replace("\\","/")
+                        )
+                )
+        );
     }
 }

@@ -233,11 +233,11 @@ public class Main {
         );
 
         ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(
-                localizationManager, BOOLEANUTILITIES, LISTUTILITIES, applicationProperties, STRINGUTILITIES
+                localizationManager, BOOLEANUTILITIES, LISTUTILITIES, applicationProperties, STRINGUTILITIES, VERSIONLISTER
         );
 
         CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
-                localizationManager, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES
+                localizationManager, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
         );
 
         ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
