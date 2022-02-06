@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -66,6 +67,7 @@ public class ListUtilities {
      * @author whitebear60
      * @return String List. Returns the list of values entered by the user.
      */
+    @Generated
     public List<String> readStringArray() {
 
         Scanner readerArray = new Scanner(System.in);

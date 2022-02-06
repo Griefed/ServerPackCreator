@@ -485,4 +485,94 @@ class ConfigurationHandlerTest {
         configurationModel.setModpackDir("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip");
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,true));
     }
+
+    @Test
+    void checkConfigurationFileTest() {
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), new ArrayList<>(),true));
+    }
+
+    @Test
+    void checkConfigurationFileNoDownloadTest() {
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"),false,true));
+    }
+
+    @Test
+    void checkConfigurationFileAndModelTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), configurationModel, false,true));
+        Assertions.assertEquals("./backend/test/resources/forge_tests", configurationModel.getModpackDir());
+        Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
+        Assertions.assertEquals("Forge",configurationModel.getModLoader());
+        Assertions.assertEquals("36.1.2",configurationModel.getModLoaderVersion());
+    }
+
+    @Test
+    void checkConfigurationFileModelExtendedParamsTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), configurationModel,new ArrayList<>(),false,false));
+        Assertions.assertEquals("./backend/test/resources/forge_tests", configurationModel.getModpackDir());
+        Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
+        Assertions.assertEquals("Forge",configurationModel.getModLoader());
+        Assertions.assertEquals("36.1.2",configurationModel.getModLoaderVersion());
+    }
+
+    @Test
+    void checkConfigurationNoFileTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        ));
+        configurationModel.setModpackDir("./backend/test/resources/forge_tests");
+        configurationModel.setClientMods(clientMods);
+        configurationModel.setCopyDirs(copyDirs);
+        configurationModel.setJavaPath("");
+        configurationModel.setIncludeServerInstallation(true);
+        configurationModel.setIncludeServerIcon(true);
+        configurationModel.setIncludeServerProperties(true);
+        configurationModel.setIncludeZipCreation(true);
+        configurationModel.setModLoader("Forge");
+        configurationModel.setModLoaderVersion("36.1.2");
+        configurationModel.setMinecraftVersion("1.16.5");
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,new ArrayList<>(),false,true));
+        Assertions.assertEquals("./backend/test/resources/forge_tests", configurationModel.getModpackDir());
+        Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
+        Assertions.assertEquals("Forge",configurationModel.getModLoader());
+        Assertions.assertEquals("36.1.2",configurationModel.getModLoaderVersion());
+    }
+
+    @Test
+    void checkIconAndPropertiesTest() {
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkIconAndProperties(""));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkIconAndProperties("/some/path"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkIconAndProperties("img/prosper.png"));
+    }
 }

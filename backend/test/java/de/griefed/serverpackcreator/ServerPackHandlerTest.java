@@ -76,22 +76,6 @@ class ServerPackHandlerTest {
         Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/start.bat").exists());
         Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
-
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/libraries"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/config"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/defaultconfigs"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/mods"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/scripts"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/seeds"));
-        FileUtils.deleteQuietly(new File("server_files"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/1.16.5.json"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/minecraft_server.1.16.5.jar"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/forge.jar"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/server.properties"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/server-icon.png"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/start.bat"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests/start.sh"));
-        FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
         try {
             Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("server-packs/forge_tests_server_pack.zip"), REPLACE_EXISTING);
         } catch (Exception ignored) {}
@@ -106,7 +90,6 @@ class ServerPackHandlerTest {
         String modpackDir = "./backend/test/resources/fabric_tests";
         SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
         Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
-        FileUtils.deleteQuietly(new File(modpackDir + "_server_pack.zip"));
         try {
             Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
         } catch (Exception ignored) {}
@@ -121,7 +104,6 @@ class ServerPackHandlerTest {
         String modpackDir = "./backend/test/resources/forge_tests";
         SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
         Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
-        FileUtils.deleteQuietly(new File(modpackDir + "_server_pack.zip"));
         try {
             Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
         } catch (Exception ignored) {}
@@ -129,6 +111,62 @@ class ServerPackHandlerTest {
 
     @Test
     void runServerPackTest() {
+        List<String> clientMods = new ArrayList<>(Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"
+        ));
+        List<String> copyDirs = new ArrayList<>(Arrays.asList(
+                "config",
+                "mods",
+                "scripts",
+                "seeds",
+                "defaultconfigs"
+        ));
+        ServerPack serverPack = new ServerPack();
+        try {
+            FileUtils.copyDirectory(new File("./backend/test/resources/fabric_tests"), new File("./backend/test/resources/fabric_tests_copy"));
+        } catch (Exception ignored) {}
+        serverPack.setModpackDir("./backend/test/resources/fabric_tests_copy");
+        serverPack.setClientMods(clientMods);
+        serverPack.setCopyDirs(copyDirs);
+        serverPack.setJavaPath("");
+        serverPack.setIncludeServerInstallation(true);
+        serverPack.setIncludeServerIcon(true);
+        serverPack.setIncludeServerProperties(true);
+        serverPack.setIncludeZipCreation(true);
+        serverPack.setModLoader("Fabric");
+        serverPack.setModLoaderVersion("0.13.1");
+        serverPack.setMinecraftVersion("1.18.1");
+        serverPack.setJavaArgs("");
+        DEFAULTFILES.filesSetup();
+        CONFIGURATIONHANDLER.checkConfiguration(serverPack, false);
+        Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPack));
+        Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
+    }
+
+    @Test
+    void runServerPackTestOldMinecraftVersion() {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
@@ -174,43 +212,12 @@ class ServerPackHandlerTest {
         serverPack.setIncludeServerProperties(true);
         serverPack.setIncludeZipCreation(true);
         serverPack.setModLoader("Forge");
-        serverPack.setModLoaderVersion("36.1.2");
-        serverPack.setMinecraftVersion("1.16.5");
+        serverPack.setModLoaderVersion("14.23.5.2855");
+        serverPack.setMinecraftVersion("1.12.2");
         serverPack.setJavaArgs("");
         DEFAULTFILES.filesSetup();
         CONFIGURATIONHANDLER.checkConfiguration(serverPack, false);
-        SERVERPACKHANDLER.run(serverPack);
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/libraries").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/config").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/defaultconfigs").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/mods").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/scripts").isDirectory());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/seeds").isDirectory());
-
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/1.16.5.json").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/minecraft_server.1.16.5.jar").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/forge.jar").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/server.properties").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/server-icon.png").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/start.bat").exists());
-        Assertions.assertFalse(new File("server-packs/forge_tests_copy/start.sh").exists());
-
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/libraries"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/config"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/defaultconfigs"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/mods"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/scripts"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/seeds"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/1.16.5.json"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/minecraft_server.1.16.5.jar"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/forge.jar"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/server.properties"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/server-icon.png"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/start.bat"));
-        FileUtils.deleteQuietly(new File("server-packs/forge_tests_copy/start.sh"));
-        FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
-        try {
-            Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("server-packs/forge_tests_server_pack.zip"), REPLACE_EXISTING);
-        } catch (Exception ignored) {}
+        Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPack));
+        Assertions.assertTrue(new File("server-packs/forge_tests_copy_server_pack.zip").isFile());
     }
 }

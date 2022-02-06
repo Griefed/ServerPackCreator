@@ -99,7 +99,7 @@ public class VersionLister {
     }
 
     /**
-     * Refresh all Minecraft, Forge and Fabric versions so we can work with up-to-date values.
+     * Refresh all Minecraft, Forge and Fabric versions, so we can work with up-to-date values.
      * @author Griefed
      */
     public void refreshVersions() {
@@ -117,18 +117,6 @@ public class VersionLister {
         this.fabricReleaseInstallerVersion = setFabricSpecificVersion("release", getXml(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER));
 
         this.forgeMeta = setForgeMeta();
-    }
-
-    /**
-     * Getter for the object-mapper used for working with JSON-data.
-     * @author Griefed
-     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
-     */
-    public ObjectMapper getObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-        return objectMapper;
     }
 
     /**
@@ -314,6 +302,46 @@ public class VersionLister {
     }
 
     /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
+    private ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
+    }
+
+    /**
+     * Helper method for {@link #setFabricVersionList()} and {@link #setFabricSpecificVersion(String, Document)}. Reads the Fabric
+     * manifest-file into a {@link Document} and {@link Document#normalize()} it.
+     * @author Griefed
+     * @param manifest The xml-file to parse into a Document.
+     * @return Document. Returns the file parsed into a Document.
+     */
+    @NotNull
+    private Document getXml(File manifest) {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = null;
+        Document xml = null;
+        try {
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        try {
+            assert documentBuilder != null;
+            xml = documentBuilder.parse(manifest);
+        } catch (SAXException | IOException e) {
+            e.printStackTrace();
+        }
+        assert xml != null;
+        xml.normalize();
+        return xml;
+    }
+
+    /**
      * Parses the Minecraft manifest-file to retrieve a list of all available Minecraft versions for a specified release-type.
      * @author Griefed
      * @param type Release type which determines which version get added to the list returned. Can be <code>release, snapshot, old_beta, old_alpha</code>
@@ -372,7 +400,7 @@ public class VersionLister {
      * @param selectedMinecraftVersion String. The Minecraft version for which to search for available Forge version.
      * @return List String. Returns a list of available Forge versions for the specified Minecraft version.
      */
-    public List<String> getForgeVersionsList(String selectedMinecraftVersion) {
+    private List<String> getForgeVersionsList(String selectedMinecraftVersion) {
 
         List<String> forgeReleases = new ArrayList<>();
 
@@ -394,34 +422,6 @@ public class VersionLister {
         }
 
         return forgeReleases;
-    }
-
-    /**
-     * Helper method for {@link #setFabricVersionList()} and {@link #setFabricSpecificVersion(String, Document)}. Reads the Fabric
-     * manifest-file into a {@link Document} and {@link Document#normalize()} it.
-     * @author Griefed
-     * @param manifest The xml-file to parse into a Document.
-     * @return Document. Returns the file parsed into a Document.
-     */
-    @NotNull
-    private Document getXml(File manifest) {
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = null;
-        Document xml = null;
-        try {
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        try {
-            assert documentBuilder != null;
-            xml = documentBuilder.parse(manifest);
-        } catch (SAXException | IOException e) {
-            e.printStackTrace();
-        }
-        assert xml != null;
-        xml.normalize();
-        return xml;
     }
 
     /**

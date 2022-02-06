@@ -248,7 +248,7 @@ public class DefaultFiles {
      * said newly generated file.
      * @author Griefed
      */
-    boolean checkForConfig() {
+    private boolean checkForConfig() {
         boolean firstRun = false;
         if (APPLICATIONPROPERTIES.FILE_CONFIG_OLD.exists()) {
             try {

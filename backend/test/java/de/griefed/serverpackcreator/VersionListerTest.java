@@ -34,11 +34,6 @@ public class VersionListerTest {
     }
 
     @Test
-    void getObjectMapperTest() {
-        Assertions.assertNotNull(VERSIONLISTER.getObjectMapper());
-    }
-
-    @Test
     void getMinecraftReleaseVersionTest() {
         Assertions.assertNotNull(VERSIONLISTER.getMinecraftReleaseVersion());
     }
@@ -71,14 +66,6 @@ public class VersionListerTest {
     @Test
     void getFabricReleaseVersionTest() {
         Assertions.assertNotNull(VERSIONLISTER.getFabricReleaseVersion());
-    }
-
-    @Test
-    void getForgeVersionTest() {
-        for (int i = 0; i < VERSIONLISTER.getMinecraftReleaseVersions().size(); i++) {
-            LOG.debug("Minecraft version: " + VERSIONLISTER.getMinecraftReleaseVersions().get(i) + " Forge versions: " + VERSIONLISTER.getForgeVersionsList(VERSIONLISTER.getMinecraftReleaseVersions().get(i)));
-            Assertions.assertNotNull(VERSIONLISTER.getForgeVersionsList(VERSIONLISTER.getMinecraftReleaseVersions().get(i)));
-        }
     }
 
     @Test

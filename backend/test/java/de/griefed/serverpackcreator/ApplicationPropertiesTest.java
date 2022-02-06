@@ -206,4 +206,28 @@ public class ApplicationPropertiesTest {
         APPLICATIONPROPERTIES.addToListOfDirectoriesToExclude("test");
         Assertions.assertTrue(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().contains("test"));
     }
+
+    @Test
+    void reloadTest() {
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.reload());
+        Assertions.assertInstanceOf(ApplicationProperties.class, APPLICATIONPROPERTIES.reload());
+    }
+
+    @Test
+    void booleanTests() {
+        Assertions.assertFalse(APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled());
+        Assertions.assertFalse(APPLICATIONPROPERTIES.getSaveLoadedConfiguration());
+        Assertions.assertFalse(APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+        Assertions.assertFalse(APPLICATIONPROPERTIES.isCurseForgeActivated());
+    }
+
+    @Test
+    void queueMaxUsageTest() {
+        Assertions.assertEquals(90,APPLICATIONPROPERTIES.getQueueMaxDiskUsage());
+    }
+
+    @Test
+    void getServerPackCreatorVersionTest() {
+        Assertions.assertEquals("dev",APPLICATIONPROPERTIES.getServerPackCreatorVersion());
+    }
 }

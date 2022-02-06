@@ -1,38 +1,16 @@
-/* Copyright (C) 2022  Griefed
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
- * USA
- *
- * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
- */
 package de.griefed.serverpackcreator.utilities;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 import java.util.Random;
 
-/**
- * Just something fun to brighten the mood. This class provides a list of messages which some of you may know from the
- * SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained.
- * Additional thanks to Larsz for providing a list of all these messages <a href=https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135>on GameFAQs </a>
- * @author Griefed
- */
-public class ReticulatingSplines {
+public class ReticulatingSplinesTest {
 
-    /**
-     * The list of messages as they were available in SimCity, plus Reticulating Splines added by myself, for good measure.
-     */
-    public final String[] RETICULATING = new String[] {
+    private final ReticulatingSplines RETICULATING_SPLINES = new ReticulatingSplines();
+
+    String[] reticulating = new String[] {
             "Adding Hidden Agendas",
             "Adjusting Bell Curves",
             "Aesthesizing Industrial Areas",
@@ -142,7 +120,7 @@ public class ReticulatingSplines {
             "Reticulating Splines"
     };
 
-    public final String[] SPLINES = new String[] {
+    String[] splines = new String[] {
             "Adding",
             "Hidden",
             "Agendas",
@@ -167,7 +145,7 @@ public class ReticulatingSplines {
             "Packed",
             "Exemplars",
             "Attempting",
-            "to",
+            "To",
             "Lock",
             "Back-Buffer",
             "Binding",
@@ -228,7 +206,7 @@ public class ReticulatingSplines {
             "Deciding",
             "What",
             "Message",
-            "to",
+            "To",
             "Display",
             "Next",
             "Decomposing",
@@ -254,7 +232,7 @@ public class ReticulatingSplines {
             "Indicators",
             "Determining",
             "Width",
-            "of",
+            "Of",
             "Blast",
             "Fronts",
             "Deunionizing",
@@ -272,7 +250,7 @@ public class ReticulatingSplines {
             "Exposing",
             "Flash",
             "Variables",
-            "to",
+            "To",
             "Streak",
             "System",
             "Extracting",
@@ -309,7 +287,7 @@ public class ReticulatingSplines {
             "Routine",
             "Increasing",
             "Accuracy",
-            "of",
+            "Of",
             "RCI",
             "Simulators",
             "Increasing",
@@ -380,7 +358,7 @@ public class ReticulatingSplines {
             "Templates",
             "Preparing",
             "Sprites",
-            "for",
+            "For",
             "Random",
             "Walks",
             "Prioritizing",
@@ -421,7 +399,7 @@ public class ReticulatingSplines {
             "Phong",
             "Shader",
             "Retrieving",
-            "from",
+            "From",
             "Back",
             "Store",
             "Reverse",
@@ -439,7 +417,7 @@ public class ReticulatingSplines {
             "Scrubbing",
             "Terrain",
             "Searching",
-            "for",
+            "For",
             "Llamas",
             "Seeding",
             "Architecture",
@@ -482,7 +460,7 @@ public class ReticulatingSplines {
             "Simulator",
             "Clock",
             "Unable",
-            "to",
+            "To",
             "Reveal",
             "Current",
             "Activity",
@@ -495,65 +473,9 @@ public class ReticulatingSplines {
             "Splines"
     };
 
-    /**
-     * Retrieves the index of a random message in {@link #RETICULATING}.
-     * @author Griefed
-     * @return Integer. Returns a randomly generated index.
-     */
-    private int getRandomIntReticulating() {
-        Random randInt = new Random();
-        return randInt.nextInt(RETICULATING.length);
-    }
-
-    /**
-     * Retrieve the index of a random string in {@link #SPLINES}.
-     * @author Griefed
-     * @return Integer. Returns a randomly generated index.
-     */
-    private int getRandomIntSplines() {
-        Random randInt = new Random();
-        return randInt.nextInt(SPLINES.length);
-    }
-
-    /**
-     * Retrieves a message from {@link #RETICULATING} using a randomly generated index from {@link #getRandomIntReticulating()}.
-     * @author Griefed
-     * @return String. Returns the message at the index provided by the randomizer.
-     */
-    private String getReticulation() {
-        return RETICULATING[getRandomIntReticulating()];
-    }
-
-    /**
-     * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
-     * @author Griefed
-     * @param wordCount The number of words the resulting string should be made up of.
-     * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
-     */
-    private String getSplines(int wordCount) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < wordCount; i++) {
-            stringBuilder.append(SPLINES[getRandomIntSplines()]);
-        }
-        return stringBuilder.toString();
-    }
-
-    /**
-     * Retrieve a random message from {@link #RETICULATING}.
-     * @author Griefed
-     * @return String. Returns a random message.
-     */
-    public String reticulate() {
-        return getReticulation();
-    }
-
-    /**
-     * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
-     * @author Griefed
-     * @param wordCount The number of words the resulting string should be made up of.
-     * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
-     */
-    public String spline(int wordCount) {
-        return getSplines(wordCount);
+    @Test
+    void reticulatingSplinesTest() {
+        for (int i = 1; i < 100; i++) Assertions.assertTrue(RETICULATING_SPLINES.spline(i).length() > 0);
+        Assertions.assertTrue(RETICULATING_SPLINES.reticulate().length() > 0);
     }
 }

@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,7 @@ public class BooleanUtilities {
      * @author whitebear60
      * @return Boolean. True or False, depending on user input.
      */
+    @Generated
     public boolean readBoolean() {
 
         Scanner readerBoolean = new Scanner(System.in);

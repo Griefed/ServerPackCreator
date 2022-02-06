@@ -384,8 +384,9 @@ public class ApplicationProperties extends Properties {
     /**
      * Reload serverpackcreator.properties.
      * @author Griefed
+     * @return {@link ApplicationProperties} The updated instance of this object.
      */
-    public void reload() {
+    public ApplicationProperties reload() {
 
         try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
             new Properties();
@@ -488,6 +489,8 @@ public class ApplicationProperties extends Properties {
         } finally {
             LOG.info("CurseForge API enabled: " + this.isCurseForgeActivated);
         }
+
+        return this;
     }
 
     /**

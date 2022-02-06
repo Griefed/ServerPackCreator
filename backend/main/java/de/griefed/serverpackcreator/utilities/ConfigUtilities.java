@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import com.electronwill.nightconfig.core.file.FileConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

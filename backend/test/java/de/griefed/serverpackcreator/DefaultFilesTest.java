@@ -48,20 +48,6 @@ class DefaultFilesTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    void checkForConfigTest() {
-        try {
-            APPLICATIONPROPERTIES.FILE_CONFIG_OLD.createNewFile();
-        } catch (Exception ignored) {}
-        Assertions.assertFalse(DEFAULTFILES.checkForConfig());
-        Assertions.assertTrue(APPLICATIONPROPERTIES.FILE_CONFIG.exists());
-        Assertions.assertFalse(DEFAULTFILES.checkForConfig());
-        FileUtils.deleteQuietly(APPLICATIONPROPERTIES.FILE_CONFIG);
-        FileUtils.deleteQuietly(APPLICATIONPROPERTIES.FILE_CONFIG_OLD);
-        Assertions.assertTrue(DEFAULTFILES.checkForConfig());
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
     void checkForPropertiesTest() {
         try {
             FileUtils.createParentDirectories(new File(String.format("./server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)));

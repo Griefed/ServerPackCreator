@@ -1,8 +1,15 @@
 package de.griefed.serverpackcreator;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -343,5 +350,77 @@ public class ConfigurationModelTest {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setFileID(fileID);
         Assertions.assertEquals(fileID, configurationModel.getFileID());
+    }
+
+    @Test
+    void getsetServerPackSuffixTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setServerPackSuffix("foo");
+        Assertions.assertEquals("foo", configurationModel.getServerPackSuffix());
+    }
+
+    @Test
+    void getsetJavaArgsTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setJavaArgs("-bla -blub -foo_bar");
+        Assertions.assertEquals("-bla -blub -foo_bar", configurationModel.getJavaArgs());
+    }
+
+    @Test
+    void getsetCurseModpackTest() throws IOException {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setCurseModpack(getJson(new File("backend/test/resources/testresources/manifest.json")));
+        Assertions.assertNotNull(configurationModel.getCurseModpack());
+    }
+
+    @Test
+    void getsetProjectNameTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setProjectName("fasel");
+        Assertions.assertEquals("fasel",configurationModel.getProjectName());
+    }
+
+    @Test
+    void getsetFileNameTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setFileName("hamlo");
+        Assertions.assertEquals("hamlo",configurationModel.getFileName());
+    }
+
+    @Test
+    void getsetFileDiskNameTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setFileDiskName("haaamloooo");
+        Assertions.assertEquals("haaamloooo",configurationModel.getFileDiskName());
+    }
+
+    @Test
+    void getsetServerIconPathTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setServerIconPath("/some/path/to/icon.png");
+        Assertions.assertEquals("/some/path/to/icon.png",configurationModel.getServerIconPath());
+    }
+
+    @Test
+    void getsetServerPropertiesPathTest() {
+        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel.setServerPropertiesPath("/some/path/to/some.properties");
+        Assertions.assertEquals("/some/path/to/some.properties",configurationModel.getServerPropertiesPath());
+    }
+
+    private JsonNode getJson(File jsonFile) throws IOException {
+        return getObjectMapper().readTree(
+                Files.readAllBytes(
+                        Paths.get(
+                                jsonFile.getAbsolutePath().replace("\\","/")
+                        )
+                )
+        );
+    }
+    private ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
     }
 }
