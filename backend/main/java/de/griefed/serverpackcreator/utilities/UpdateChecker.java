@@ -25,9 +25,17 @@ import de.griefed.versionchecker.github.GitHubChecker;
 import de.griefed.versionchecker.gitlab.GitLabChecker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+/**
+ * Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can then run our update
+ * checks later on.
+ * @author Griefed
+ */
+@Service
 public class UpdateChecker {
 
     private static final Logger LOG = LogManager.getLogger(UpdateChecker.class);
@@ -38,6 +46,13 @@ public class UpdateChecker {
     private GitLabChecker GITGRIEFED;
     private GitLabChecker GITLAB;
 
+    /**
+     * Constructor for Dependency Injection.
+     * @author Griefed
+     * @param injectedLocalizationManager Instance of {@link LocalizationManager}.
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     */
+    @Autowired
     public UpdateChecker(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
 
         if (injectedApplicationProperties == null) {
@@ -73,6 +88,11 @@ public class UpdateChecker {
         }
     }
 
+    /**
+     * Refresh the GitHub, GitLab and GitGriefed instances, so we get the most current releases.
+     * @author Griefed
+     * @return {@link UpdateChecker} reference.
+     */
     public UpdateChecker refresh() {
         try {
             this.GITHUB.refresh();
@@ -95,6 +115,11 @@ public class UpdateChecker {
         return this;
     }
 
+    /**
+     * Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.
+     * @author Griefed
+     * @return {@link String} The update, if available, as well as the download URL.
+     */
     public String checkForUpdate() {
         String updater = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
 
