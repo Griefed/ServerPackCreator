@@ -42,7 +42,7 @@ analyzeCommits:
       - type: ci        # Changes to our CI configuration files and scripts
         release: false
       - type: docs      # Documentation only changes
-        release: false
+        release: patch
       - type: feat      # A new feature
         release: minor
       - type: fix       # A bug fix
