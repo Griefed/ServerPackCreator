@@ -107,8 +107,11 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">UpdateChecker</span>
+<pre>@Service
+public class <span class="typeNameLabel">UpdateChecker</span>
 extends java.lang.Object</pre>
+<div class="block">Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can then run our update
+ checks later on.</div>
 </li>
 </ul>
 </div>
@@ -128,7 +131,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#UpdateChecker-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">UpdateChecker</a></span>(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-             <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>&nbsp;</td>
+             <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+<div class="block">Constructor for Dependency Injection.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -147,11 +152,15 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate--">checkForUpdate</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate--">checkForUpdate</a></span>()</code>
+<div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#refresh--">refresh</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#refresh--">refresh</a></span>()</code>
+<div class="block">Refresh the GitHub, GitLab and GitGriefed instances, so we get the most current releases.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -181,8 +190,15 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>UpdateChecker</h4>
-<pre>public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
-                     <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+<pre>@Autowired
+public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+                                <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+<div class="block">Constructor for Dependency Injection.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a>.</dd>
+<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -200,6 +216,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>refresh</h4>
 <pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a>&nbsp;refresh()</pre>
+<div class="block">Refresh the GitHub, GitLab and GitGriefed instances, so we get the most current releases.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities"><code>UpdateChecker</code></a> reference.</dd>
+</dl>
 </li>
 </ul>
 <a name="checkForUpdate--">
@@ -209,6 +230,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkForUpdate</h4>
 <pre>public&nbsp;java.lang.String&nbsp;checkForUpdate()</pre>
+<div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>String</code> The update, if available, as well as the download URL.</dd>
+</dl>
 </li>
 </ul>
 </li>
