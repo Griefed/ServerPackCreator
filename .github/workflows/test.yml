@@ -58,5 +58,5 @@ jobs:
           build-args: |
             BRANCH_OR_TAG=${{ steps.branch-name.outputs.current_branch }}
             HOSTER=github.com
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: false
