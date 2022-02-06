@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -201,60 +201,48 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#getForgeVersionsList-java.lang.String-">getForgeVersionsList</a></span>(java.lang.String&nbsp;selectedMinecraftVersion)</code>
-<div class="block">Retrieve a list of available Forge versions for the specified Minecraft version.</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#getMinecraftReleaseVersion--">getMinecraftReleaseVersion</a></span>()</code>
 <div class="block">Getter for the latest release version of Minecraft.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#getMinecraftReleaseVersions--">getMinecraftReleaseVersions</a></span>()</code>
 <div class="block">Getter for the list of available Minecraft versions of type <code>release</code></div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#getMinecraftReleaseVersionsAsArray--">getMinecraftReleaseVersionsAsArray</a></span>()</code>
 <div class="block">Getter for the list of Minecraft release versions as an array.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#getMinecraftSnapshotVersion--">getMinecraftSnapshotVersion</a></span>()</code>
 <div class="block">Getter for the latest Snapshot version of Minecraft.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#getMinecraftSnapshotVersions--">getMinecraftSnapshotVersions</a></span>()</code>
 <div class="block">Getter for the list of all available Snapshot version for Minecraft.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
-<td class="colFirst"><code>com.fasterxml.jackson.databind.ObjectMapper</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#getObjectMapper--">getObjectMapper</a></span>()</code>
-<div class="block">Getter for the object-mapper used for working with JSON-data.</div>
-</td>
-</tr>
-<tr id="i15" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#refreshVersions--">refreshVersions</a></span>()</code>
-<div class="block">Refresh all Minecraft, Forge and Fabric versions so we can work with up-to-date values.</div>
+<div class="block">Refresh all Minecraft, Forge and Fabric versions, so we can work with up-to-date values.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#reverseOrderArray-java.lang.String:A-">reverseOrderArray</a></span>(java.lang.String[]&nbsp;arrayToReverse)</code>
 <div class="block">Reverses the order of a passed String array.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/VersionLister.html#reverseOrderList-java.util.List-">reverseOrderList</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;listToReverse)</code>
 <div class="block">Reverses the order of a passed String List.</div>
@@ -312,21 +300,7 @@ public&nbsp;VersionLister(<a href="../../../de/griefed/serverpackcreator/Applica
 <li class="blockList">
 <h4>refreshVersions</h4>
 <pre>public&nbsp;void&nbsp;refreshVersions()</pre>
-<div class="block">Refresh all Minecraft, Forge and Fabric versions so we can work with up-to-date values.</div>
-</li>
-</ul>
-<a name="getObjectMapper--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getObjectMapper</h4>
-<pre>public&nbsp;com.fasterxml.jackson.databind.ObjectMapper&nbsp;getObjectMapper()</pre>
-<div class="block">Getter for the object-mapper used for working with JSON-data.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>ObjectMapper. Returns the object-mapper used for working with JSON-data.</dd>
-</dl>
+<div class="block">Refresh all Minecraft, Forge and Fabric versions, so we can work with up-to-date values.</div>
 </li>
 </ul>
 <a name="getMinecraftReleaseVersion--">
@@ -534,7 +508,7 @@ public&nbsp;VersionLister(<a href="../../../de/griefed/serverpackcreator/Applica
 <a name="getForgeVersionsAsArray-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>getForgeVersionsAsArray</h4>
 <pre>public&nbsp;java.lang.String[]&nbsp;getForgeVersionsAsArray(java.lang.String&nbsp;selectedMinecraftVersion)</pre>
@@ -544,23 +518,6 @@ public&nbsp;VersionLister(<a href="../../../de/griefed/serverpackcreator/Applica
 <dd><code>selectedMinecraftVersion</code> - The Minecraft version for which to check for Forge versions.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String Array. Returns the list of Forge versions for the specified Minecraft versions as an array.</dd>
-</dl>
-</li>
-</ul>
-<a name="getForgeVersionsList-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>getForgeVersionsList</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getForgeVersionsList(java.lang.String&nbsp;selectedMinecraftVersion)</pre>
-<div class="block">Retrieve a list of available Forge versions for the specified Minecraft version. If Forge is not available for a
- given Minecraft version, <code>"None"</code> is returned as the sole content of the list.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>selectedMinecraftVersion</code> - String. The Minecraft version for which to search for available Forge version.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. Returns a list of available Forge versions for the specified Minecraft version.</dd>
 </dl>
 </li>
 </ul>
