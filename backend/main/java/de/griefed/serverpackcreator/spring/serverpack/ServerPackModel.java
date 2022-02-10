@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.models;
+package de.griefed.serverpackcreator.spring.serverpack;
 
 import de.griefed.serverpackcreator.ConfigurationModel;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,23 +34,23 @@ import java.sql.Timestamp;
  * @author Griefed
  */
 @Entity
-public class ServerPack extends ConfigurationModel {
+public class ServerPackModel extends ConfigurationModel {
 
     /**
-     * Constructor for our ServerPack.
+     * Constructor for our ServerPackModel.
      * @author Griefed
      */
-    public ServerPack() {
+    public ServerPackModel() {
 
     }
 
     /**
-     * Constructor for our ServerPack using a project and file ID from a CurseForge project.
+     * Constructor for our ServerPackModel using a project and file ID from a CurseForge project.
      * @author Griefed
      * @param projectID Integer. The project ID of the CurseForge project.
      * @param fileID Integer. The file ID of the CurseForge project file.
      */
-    public ServerPack(int projectID, int fileID) {
+    public ServerPackModel(int projectID, int fileID) {
         this.projectID = projectID;
         this.fileID = fileID;
         this.projectName = "";
@@ -63,7 +63,7 @@ public class ServerPack extends ConfigurationModel {
     }
 
     /**
-     * Constructor for our ServerPack, setting id, projectID, fileID, fileName, displayName, size, downloads, confirmedWorking, status, dateCreated, lastModified manually.
+     * Constructor for our ServerPackModel, setting id, projectID, fileID, fileName, displayName, size, downloads, confirmedWorking, status, dateCreated, lastModified manually.
      * @author Griefed
      * @param id The ID of the server pack in our database.
      * @param projectID The project ID of the CurseForge project.
@@ -77,7 +77,7 @@ public class ServerPack extends ConfigurationModel {
      * @param dateCreated The date and time at which this server pack was requested for generation.
      * @param lastModified The date and time this server pack was last modified. Be it either due to regeneration or something else.
      */
-    public ServerPack(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
+    public ServerPackModel(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
         this.id = id;
         this.projectID = projectID;
         this.fileID = fileID;
@@ -385,7 +385,7 @@ public class ServerPack extends ConfigurationModel {
      * @return String. Returns all important information of a server pack entry as a concatenated string.
      */
     public String repositoryToString() {
-        return "ServerPack{" +
+        return "ServerPackModel{" +
                 "id=" + id +
                 ", projectID=" + projectID +
                 ", fileID=" + fileID +

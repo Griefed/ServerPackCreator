@@ -179,6 +179,12 @@ public class DefaultFiles {
         }
 
         try {
+            Files.createDirectories(Paths.get("./work/modpacks"));
+        } catch (IOException ex) {
+            LOG.error("Could not create work/temp directory.", ex);
+        }
+
+        try {
             Files.createDirectories(Paths.get("./server-packs"));
         } catch (IOException ex) {
             LOG.error("Could not create server-packs directory.", ex);

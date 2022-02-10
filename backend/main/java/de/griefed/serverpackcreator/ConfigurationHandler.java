@@ -27,7 +27,7 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforge.InvalidFileException;
 import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.spring.models.ServerPack;
+import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.*;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -585,41 +586,7 @@ public class ConfigurationHandler {
         );
 
 
-        try {
-            List<String> foldersInModpackZip = CONFIGUTILITIES.directoriesInModpackZip(Paths.get(configurationModel.getModpackDir()));
-
-            // If the ZIP-file only contains one directory, assume it is overrides and return true to indicate invalid configuration.
-            if (foldersInModpackZip.size() == 1) {
-
-                LOG.error(String.format(
-                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
-                        foldersInModpackZip.get(0)
-                ));
-                encounteredErrors.add(
-                        String.format(
-                                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
-                                foldersInModpackZip.get(0)
-                        )
-                );
-
-                return true;
-
-            // If the ZIP-file does not contain the mods or config directories, consider it invalid.
-            } else if (!foldersInModpackZip.contains("mods") || !foldersInModpackZip.contains("config")) {
-
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
-                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
-
-                return true;
-            }
-
-        } catch (IOException ex) {
-
-            LOG.error("Couldn't acquire directories in ZIP-file.",ex);
-            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.directories"));
-
-            return true;
-        }
+        if (checkZipArchive(Paths.get(configurationModel.getModpackDir()), encounteredErrors)) return true;
 
         // Does the modpack extracted from the ZIP-archive already exist?
         if (new File(destination).isDirectory()) {
@@ -739,12 +706,22 @@ public class ConfigurationHandler {
             }
 
             try {
-                if (new File(String.format("%s/instance.cfg",destination)).exists() &&
-                        CONFIGUTILITIES.updateDestinationFromInstanceCfg(new File(String.format("%s/instance.cfg",destination))) != null) {
 
-                    packName = String.format("./work/modpacks/%s",CONFIGUTILITIES.updateDestinationFromInstanceCfg(new File(String.format("%s/instance.cfg",destination))));
+                if (new File(String.format("%s/instance.cfg",destination)).exists()) {
+
+                    String name = CONFIGUTILITIES.updateDestinationFromInstanceCfg(
+                            new File(
+                                    String.format(
+                                            "%s/instance.cfg",
+                                            destination
+                                    )
+                            )
+                    );
+
+                    if (name != null) packName = name;
 
                 }
+
             } catch (IOException ex) {
                 LOG.error("Couldn't read instance.cfg.",ex);
             }
@@ -838,7 +815,60 @@ public class ConfigurationHandler {
         // Last but not least, use the newly acquired packname as the modpack directory.
         configurationModel.setModpackDir(packName);
 
+        // Almost forgot. Does the modpack contain a server-icon or server.properties? If so, include them in the server pack.
+        if (new File(packName + "/server-icon.png").exists()) configurationModel.setServerIconPath(packName + "/server-icon.png");
+        if (new File(packName + "/server.properties").exists()) configurationModel.setServerPropertiesPath(packName + "/server.properties");
+
         return configHasError;
+    }
+
+    /**
+     * Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it contains neither the
+     * mods nor the config directories, consider it invalid.
+     * @author Griefed
+     * @param pathToZip Path to the ZIP-file to check.
+     * @param encounteredErrors String List. List of encountered errors for further processing, like printing to logs or
+     *                          display in GUI or whatever you want, really.
+     * @return Boolean. Returns false if the ZIP-archive is considered valid.
+     */
+    public boolean checkZipArchive(Path pathToZip, List<String> encounteredErrors) {
+        try {
+            List<String> foldersInModpackZip = CONFIGUTILITIES.directoriesInModpackZip(pathToZip);
+
+            // If the ZIP-file only contains one directory, assume it is overrides and return true to indicate invalid configuration.
+            if (foldersInModpackZip.size() == 1) {
+
+                LOG.error(String.format(
+                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
+                        foldersInModpackZip.get(0)
+                ));
+                encounteredErrors.add(
+                        String.format(
+                                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
+                                foldersInModpackZip.get(0)
+                        )
+                );
+
+                return true;
+
+            // If the ZIP-file does not contain the mods or config directories, consider it invalid.
+            } else if (!foldersInModpackZip.contains("mods") || !foldersInModpackZip.contains("config")) {
+
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
+                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
+
+                return true;
+            }
+
+        } catch (IOException ex) {
+
+            LOG.error("Couldn't acquire directories in ZIP-file.",ex);
+            encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.directories"));
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -891,7 +921,7 @@ public class ConfigurationHandler {
      * then false is returned and the check is considered failed.
      * @author Griefed
      * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
-     * @param configurationModel or {@link ServerPack}. Instance containing
+     * @param configurationModel or {@link ServerPackModel}. Instance containing
      *                           all the information about our server pack.
      * @param encounteredErrors List String. A list to which all encountered errors are saved to.
      * @throws InvalidModpackException Thrown if the specified IDs do not match a CurseForge modpack.

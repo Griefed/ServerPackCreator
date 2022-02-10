@@ -26,6 +26,8 @@
           <q-img alt="header" src="~assets/serverpackcreator.webp" :ratio="323/54" :width="this.$q.platform.is.mobile ? '256px' : '256px'" fit="contain"/>
         </q-item>
 
+        <q-item class="flex-center"><b>Version {{version}}</b></q-item>
+
         <q-toolbar-title></q-toolbar-title>
 
         <q-btn v-if="!this.$q.platform.is.mobile" label="News" style="color: #C0FFEE" type="a" target="_blank" href="https://blog.griefed.de">
@@ -114,26 +116,12 @@
               active-class="tab-active"
               clickable
               exact
-              to="/">
+              to="/request">
               <q-item-section avatar>
-                <q-icon name="mdi-folder-zip-outline"/>
+                <q-icon name="mdi-webpack"/>
               </q-item-section>
               <q-item-section>
-                ZIP-Archive
-              </q-item-section>
-            </q-item>
-
-            <q-item
-                v-ripple
-                active-class="tab-active"
-                clickable
-                exact
-                to="/curseforge">
-              <q-item-section avatar>
-                <q-icon name="mdi-anvil"/>
-              </q-item-section>
-              <q-item-section>
-                CurseForge
+                Request Server Pack
               </q-item-section>
             </q-item>
 
@@ -204,13 +192,15 @@
 import { defineComponent, ref } from 'vue';
 import { useQuasar, Cookies } from 'quasar';
 import { tsParticles } from 'tsparticles';
+import {api} from "boot/axios";
 
 export default defineComponent({
   name: 'MainLayout',
   data() {
     return {
       drawer: ref(true),
-      miniState: ref(true)
+      miniState: ref(true),
+      version: ref("dev")
     }
   },
   methods : {
@@ -220,13 +210,14 @@ export default defineComponent({
     }
   },
   mounted() {
+    api.get("/settings").then(response => {this.version = response.data.serverPackCreatorVersion});
     this.$q.platform.is.mobile ? this.drawer = false : this.drawer = true;
     this.$q.dark.set(this.$q.cookies.get('dark.isActive'));
     tsParticles.load("particles-js",{
       "fpsLimit": 30,
       "particles": {
         "number": {
-          "value": 80,
+          "value": 50,
           "density": {
             "enable": true,
             "value_area": 800

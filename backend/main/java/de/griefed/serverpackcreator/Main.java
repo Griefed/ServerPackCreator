@@ -123,7 +123,7 @@ public class Main {
 
         //Print system information to console and logs.
         LOG.debug("Gathering system information to include in log to make debugging easier.");
-        APPLICATIONPROPERTIES.setProperty("homeDir", systemInformation.get("jarPath").substring(0, systemInformation.get("jarPath").lastIndexOf("/")).replace("\\", "/"));
+        APPLICATIONPROPERTIES.setProperty("homeDir", systemInformation.get("jarPath").substring(0, systemInformation.get("jarPath").replace("\\", "/").lastIndexOf("/")).replace("\\", "/"));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));

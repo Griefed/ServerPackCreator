@@ -17,21 +17,48 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.models;
+package de.griefed.serverpackcreator.spring.curseforge;
 
-import java.io.Serializable;
+import de.griefed.serverpackcreator.spring.task.Task;
 
 /**
  * <a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
  * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
  * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
  * the necessary changes to fully implement it in ServerPackCreator.<br>
- * Base class from which {@link GenerateCurseProject} and {@link ScanCurseProject} extend. See the aforementioned classes for
- * an example on how a new task class should be implemented. All new task must extend this class.
+ * Tasks related to scanning a submitted project and fileID combination for validity.
  * @author Griefed
  */
-public abstract class Task implements Serializable {
+public class ScanCurseProject extends Task {
 
-    public abstract String uniqueId();
+    private final String projectIDAndFileID;
 
+    /**
+     * Create a message with a task for scanning the passed project and fileID combination.
+     * @author Griefed
+     * @param projectIDAndFileID String. The project and file id combination of the submitted task.
+     */
+    public ScanCurseProject(String projectIDAndFileID) {
+        this.projectIDAndFileID = projectIDAndFileID;
+    }
+
+    /**
+     * Getter for the project and file id combination of the submitted task.
+     * @author Griefed
+     * @return Returns the project and file id combination of the submitted task.
+     */
+    public String getProjectIDAndFileID() {
+        return this.projectIDAndFileID;
+    }
+
+    /**
+     * Getter for the unique id of the submitted task.
+     * @author Griefed
+     * @return String. Returns the unique id of the submitted task.
+     */
+    @Override
+    public String uniqueId() {
+        return "SCAN_CURSEPROJECT_" + projectIDAndFileID;
+    }
 }
+

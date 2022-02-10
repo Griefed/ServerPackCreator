@@ -17,7 +17,9 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.models;
+package de.griefed.serverpackcreator.spring.curseforge;
+
+import de.griefed.serverpackcreator.spring.task.Task;
 
 /**
  * <a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
@@ -32,7 +34,7 @@ public class GenerateCurseProject extends Task {
     private final String projectIDAndFileID;
 
     /**
-     * Send a message with a task for a CurseForge generation.
+     * Create a message with a task for a CurseForge generation.
      * @author Griefed
      * @param projectIDAndFileID String. The project and file id combination of the submitted task.
      */

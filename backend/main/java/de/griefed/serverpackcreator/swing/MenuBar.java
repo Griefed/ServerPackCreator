@@ -1273,7 +1273,7 @@ public class MenuBar extends Component {
             bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             response = bufferedReader.readLine();
         } catch (IOException ex) {
-            LOG.error("Error encountered when acquiring response from URL.", ex);
+            LOG.error("Error encountered when acquiring curseResponse from URL.", ex);
         }
 
         if (Objects.requireNonNull(response).contains("\"key\"")) {

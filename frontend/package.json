@@ -1,6 +1,6 @@
 {
   "name": "serverpackcreator",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Create server packs from Minecraft Forge or Fabric modpacks.",
   "productName": "ServerPackCreator",
   "cordovaId": "org.cordova.quasar.app",

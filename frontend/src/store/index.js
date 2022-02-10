@@ -1,8 +1,8 @@
 import {reactive} from 'vue';
 
 const state = reactive({
-    projectID: 10,
-    fileID: 60018,
+  projectID: 10,
+  fileID: 60018,
 });
 
 const reticulating = [

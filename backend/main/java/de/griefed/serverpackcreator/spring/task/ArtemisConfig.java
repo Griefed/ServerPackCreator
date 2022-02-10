@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.jms;
+package de.griefed.serverpackcreator.spring.task;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;

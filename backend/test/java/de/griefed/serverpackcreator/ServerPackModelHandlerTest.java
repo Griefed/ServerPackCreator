@@ -2,7 +2,7 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.spring.models.ServerPack;
+import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
@@ -16,7 +16,7 @@ import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-class ServerPackHandlerTest {
+class ServerPackModelHandlerTest {
 
     private final ServerPackHandler SERVERPACKHANDLER;
     private final DefaultFiles DEFAULTFILES;
@@ -32,7 +32,7 @@ class ServerPackHandlerTest {
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ApplicationPlugins PLUGINMANAGER;
 
-    ServerPackHandlerTest() {
+    ServerPackModelHandlerTest() {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {
@@ -143,25 +143,25 @@ class ServerPackHandlerTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        ServerPack serverPack = new ServerPack();
+        ServerPackModel serverPackModel = new ServerPackModel();
         try {
             FileUtils.copyDirectory(new File("./backend/test/resources/fabric_tests"), new File("./backend/test/resources/fabric_tests_copy"));
         } catch (Exception ignored) {}
-        serverPack.setModpackDir("./backend/test/resources/fabric_tests_copy");
-        serverPack.setClientMods(clientMods);
-        serverPack.setCopyDirs(copyDirs);
-        serverPack.setJavaPath("");
-        serverPack.setIncludeServerInstallation(true);
-        serverPack.setIncludeServerIcon(true);
-        serverPack.setIncludeServerProperties(true);
-        serverPack.setIncludeZipCreation(true);
-        serverPack.setModLoader("Fabric");
-        serverPack.setModLoaderVersion("0.13.1");
-        serverPack.setMinecraftVersion("1.18.1");
-        serverPack.setJavaArgs("");
+        serverPackModel.setModpackDir("./backend/test/resources/fabric_tests_copy");
+        serverPackModel.setClientMods(clientMods);
+        serverPackModel.setCopyDirs(copyDirs);
+        serverPackModel.setJavaPath("");
+        serverPackModel.setIncludeServerInstallation(true);
+        serverPackModel.setIncludeServerIcon(true);
+        serverPackModel.setIncludeServerProperties(true);
+        serverPackModel.setIncludeZipCreation(true);
+        serverPackModel.setModLoader("Fabric");
+        serverPackModel.setModLoaderVersion("0.13.1");
+        serverPackModel.setMinecraftVersion("1.18.1");
+        serverPackModel.setJavaArgs("");
         DEFAULTFILES.filesSetup();
-        CONFIGURATIONHANDLER.checkConfiguration(serverPack, false);
-        Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPack));
+        CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
+        Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
         Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
     }
 
@@ -199,25 +199,25 @@ class ServerPackHandlerTest {
                 "seeds",
                 "defaultconfigs"
         ));
-        ServerPack serverPack = new ServerPack();
+        ServerPackModel serverPackModel = new ServerPackModel();
         try {
             FileUtils.copyDirectory(new File("./backend/test/resources/forge_tests"), new File("./backend/test/resources/forge_tests_copy"));
         } catch (Exception ignored) {}
-        serverPack.setModpackDir("./backend/test/resources/forge_tests_copy");
-        serverPack.setClientMods(clientMods);
-        serverPack.setCopyDirs(copyDirs);
-        serverPack.setJavaPath("");
-        serverPack.setIncludeServerInstallation(true);
-        serverPack.setIncludeServerIcon(true);
-        serverPack.setIncludeServerProperties(true);
-        serverPack.setIncludeZipCreation(true);
-        serverPack.setModLoader("Forge");
-        serverPack.setModLoaderVersion("14.23.5.2855");
-        serverPack.setMinecraftVersion("1.12.2");
-        serverPack.setJavaArgs("");
+        serverPackModel.setModpackDir("./backend/test/resources/forge_tests_copy");
+        serverPackModel.setClientMods(clientMods);
+        serverPackModel.setCopyDirs(copyDirs);
+        serverPackModel.setJavaPath("");
+        serverPackModel.setIncludeServerInstallation(true);
+        serverPackModel.setIncludeServerIcon(true);
+        serverPackModel.setIncludeServerProperties(true);
+        serverPackModel.setIncludeZipCreation(true);
+        serverPackModel.setModLoader("Forge");
+        serverPackModel.setModLoaderVersion("14.23.5.2855");
+        serverPackModel.setMinecraftVersion("1.12.2");
+        serverPackModel.setJavaArgs("");
         DEFAULTFILES.filesSetup();
-        CONFIGURATIONHANDLER.checkConfiguration(serverPack, false);
-        Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPack));
+        CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
+        Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
         Assertions.assertTrue(new File("server-packs/forge_tests_copy_server_pack.zip").isFile());
     }
 }

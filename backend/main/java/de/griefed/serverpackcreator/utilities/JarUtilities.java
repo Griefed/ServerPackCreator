@@ -236,11 +236,15 @@ public class JarUtilities {
 
                         try {
                             inputStream.close();
-                        } catch (IOException ignored) {}
+                        } catch (IOException ignored) {
+
+                        }
 
                         try {
                             fileOutputStream.close();
-                        } catch (IOException ignored) {}
+                        } catch (IOException ignored) {
+
+                        }
 
                     }
 

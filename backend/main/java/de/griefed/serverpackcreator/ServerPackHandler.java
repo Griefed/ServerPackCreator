@@ -28,7 +28,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.PreGenExtension;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.PostGenExtension;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.PreZipExtension;
-import de.griefed.serverpackcreator.spring.models.ServerPack;
+import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.*;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
@@ -192,25 +192,25 @@ public class ServerPackHandler {
     }
 
     /**
-     * Create a server pack from a given instance of {@link ServerPack} via webUI.
+     * Create a server pack from a given instance of {@link ServerPackModel} via webUI.
      * @author Griefed
-     * @param serverPack An instance of {@link ServerPack} which contains the configuration of the modpack.
-     * @return Returns the passed {@link ServerPack} which got altered during the creation of said server pack.
+     * @param serverPackModel An instance of {@link ServerPackModel} which contains the configuration of the modpack.
+     * @return Returns the passed {@link ServerPackModel} which got altered during the creation of said server pack.
      */
-    public ServerPack run(@NotNull ServerPack serverPack) {
+    public ServerPackModel run(@NotNull ServerPackModel serverPackModel) {
 
-        String destination = String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), serverPack.getModpackDir().substring(serverPack.getModpackDir().lastIndexOf("/") + 1) + serverPack.getServerPackSuffix());
+        String destination = String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), serverPackModel.getModpackDir().substring(serverPackModel.getModpackDir().lastIndexOf("/") + 1) + serverPackModel.getServerPackSuffix());
 
-        run((ConfigurationModel) serverPack);
+        run((ConfigurationModel) serverPackModel);
 
         cleanupEnvironment(false, destination);
-        CURSECREATEMODPACK.cleanupEnvironment(serverPack.getModpackDir());
+        CURSECREATEMODPACK.cleanupEnvironment(serverPackModel.getModpackDir());
 
-        serverPack.setStatus("Available");
-        serverPack.setSize(Double.parseDouble(String.valueOf(FileUtils.sizeOfAsBigInteger(new File(destination + "_server_pack.zip")).divide(BigInteger.valueOf(1048576)))));
-        serverPack.setPath(destination + "_server_pack.zip");
+        serverPackModel.setStatus("Available");
+        serverPackModel.setSize(Double.parseDouble(String.valueOf(FileUtils.sizeOfAsBigInteger(new File(destination + "_server_pack.zip")).divide(BigInteger.valueOf(1048576)))));
+        serverPackModel.setPath(destination + "_server_pack.zip");
 
-        return serverPack;
+        return serverPackModel;
     }
 
     /**
@@ -249,7 +249,9 @@ public class ServerPackHandler {
             cleanupEnvironment(true, destination);
 
             try { Files.createDirectories(Paths.get(destination));
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+
+            }
 
             if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART.size() > 0) {
                 LOG_ADDONS.info("Executing PreGenExtension addons");
@@ -1234,7 +1236,9 @@ public class ServerPackHandler {
 
                     try {
                         Files.createDirectories(Paths.get(serverDir));
-                    } catch (IOException ignored) {}
+                    } catch (IOException ignored) {
+
+                    }
 
                     for (String file : listOfFiles) {
                         try {
@@ -1614,14 +1618,21 @@ public class ServerPackHandler {
             LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...",ex);
 
         } finally {
+
             try {
                 //noinspection ConstantConditions
                 bufferedReader.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+
+            }
+
             try {
                 //noinspection ConstantConditions
                 process.destroy();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+
+            }
+
             commandArguments.clear();
         }
 
@@ -1710,7 +1721,9 @@ public class ServerPackHandler {
                         }
 
                     }
-                } catch (NullPointerException ignored) {}
+                } catch (NullPointerException ignored) {
+
+                }
             }
 
         } catch (IOException ex) {
@@ -2125,7 +2138,9 @@ public class ServerPackHandler {
                                     if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
                                         modId = child.get("values").get("modid").get("value").asText();
                                     }
-                                } catch (NullPointerException ignored) {}
+                                } catch (NullPointerException ignored) {
+
+                                }
 
                                 // Add mod to list of clientmods if clientSideOnly is true
                                 try {
@@ -2136,7 +2151,9 @@ public class ServerPackHandler {
                                             LOG.debug("Added clientMod: " + modId);
                                         }
                                     }
-                                } catch (NullPointerException ignored) {}
+                                } catch (NullPointerException ignored) {
+
+                                }
 
                                 // Get dependency modIds
                                 try {
@@ -2176,16 +2193,22 @@ public class ServerPackHandler {
                                         }
 
                                     }
-                                } catch (NullPointerException ignored) {}
+                                } catch (NullPointerException ignored) {
+
+                                }
 
                             }
 
-                        } catch (NullPointerException ignored) {}
+                        } catch (NullPointerException ignored) {
+
+                        }
 
                     }
 
                     inputStream.close();
-                } catch(IOException ignored) {}
+                } catch(IOException ignored) {
+
+                }
 
             }
 
@@ -2222,7 +2245,9 @@ public class ServerPackHandler {
                                 if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
                                     modIdTocheck = child.get("values").get("modid").get("value").asText();
                                 }
-                            } catch (NullPointerException ignored) {}
+                            } catch (NullPointerException ignored) {
+
+                            }
 
                             // Add mod to list of clientmods if clientSideOnly is true
                             try {
@@ -2231,10 +2256,14 @@ public class ServerPackHandler {
                                         addToDelta = true;
                                     }
                                 }
-                            } catch (NullPointerException ignored) {}
+                            } catch (NullPointerException ignored) {
+
+                            }
 
                         }
-                    } catch (NullPointerException ignored) {}
+                    } catch (NullPointerException ignored) {
+
+                    }
 
                 }
 

@@ -325,7 +325,9 @@ public class CurseCreateModpack {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.deletezip"));
             }
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+
+        }
 
 
         if (new File(String.format("%s/manifest.json", modpackDir)).exists()) {
@@ -338,12 +340,19 @@ public class CurseCreateModpack {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.infoheader"));
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackname"), configurationModel.getCurseModpack().get("name").asText()));
+
                 try {
                     LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackversion"), configurationModel.getCurseModpack().get("version").asText()));
-                } catch (NullPointerException ignored) {}
+                } catch (NullPointerException ignored) {
+
+                }
+
                 try {
                     LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackauthor"), configurationModel.getCurseModpack().get("author").asText()));
-                } catch (NullPointerException ignored) {}
+                } catch (NullPointerException ignored) {
+
+                }
+
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modpackminecraftversion"), configurationModel.getMinecraftVersion()));
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloader"), configurationModel.getModLoader()));
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.modloaderversion"), configurationModel.getModLoaderVersion()));

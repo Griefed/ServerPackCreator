@@ -15,19 +15,12 @@ declare module '@vue/runtime-core' {
 // for each client)
 const api = axios.create(
   {
-    baseURL: '/api',
+    baseURL: '/api/v1',
     headers: {
       "Content-type": "application/json"
     }
   }
 );
-
-const curse = axios.create({
-  baseURL: 'https://addons-ecs.forgesvc.net/api',
-  headers: {
-    "Content-type": "application/json"
-  }
-});
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
@@ -39,8 +32,6 @@ export default boot(({ app }) => {
   app.config.globalProperties.$api = api;
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
-
-  app.config.globalProperties.$curse = curse
 });
 
-export { axios,api,curse };
+export { axios,api };

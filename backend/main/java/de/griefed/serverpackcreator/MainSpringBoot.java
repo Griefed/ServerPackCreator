@@ -30,7 +30,8 @@ import org.springframework.context.annotation.PropertySources;
 @SpringBootApplication
 @PropertySources({
         @PropertySource("classpath:application.properties"),
-        @PropertySource(value = "file:./serverpackcreator.properties", ignoreResourceNotFound = true)
+        @PropertySource(value = "file:./serverpackcreator.properties", ignoreResourceNotFound = true),
+        @PropertySource(value = "file:./application.properties", ignoreResourceNotFound = true)
 })
 public class MainSpringBoot {
 

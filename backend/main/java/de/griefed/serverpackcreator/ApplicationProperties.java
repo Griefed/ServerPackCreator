@@ -201,7 +201,16 @@ public class ApplicationProperties extends Properties {
      * List of directories which should be excluded from server packs.
      * Default is overrides, packmenu, resourcepacks, server_pack, fancymenu.
      */
-    private List<String> listDirectoriesExclude = new ArrayList<>(Arrays.asList("overrides","packmenu","resourcepacks","server_pack","fancymenu"));
+    private List<String> listDirectoriesExclude = new ArrayList<>(
+            Arrays.asList(
+                    "overrides",
+                    "packmenu",
+                    "resourcepacks",
+                    "server_pack",
+                    "fancymenu",
+                    "downloads"
+            )
+    );
 
     /**
      * When running as a webservice: Whether regeneration of server packs, that have already been generated, is enabled.
@@ -213,7 +222,17 @@ public class ApplicationProperties extends Properties {
      * List of directories which must not be excluded from server packs.
      * Default is mods, config, defaultconfigs, scripts, saves, seeds, libraries.
      */
-    private List<String> listCheckAgainstNewEntry = new ArrayList<>(Arrays.asList("mods","config","defaultconfigs","scripts","saves","seeds","libraries"));
+    private List<String> listCheckAgainstNewEntry = new ArrayList<>(
+            Arrays.asList(
+                    "mods",
+                    "config",
+                    "defaultconfigs",
+                    "scripts",
+                    "saves",
+                    "seeds",
+                    "libraries",
+                    "kubejs"
+            ));
 
     /**
      * When running as a webservice: Maximum disk usage in % at which JMS/Artemis will stop storing message in the queue saved on disk.
@@ -609,5 +628,40 @@ public class ApplicationProperties extends Properties {
      */
     public boolean isCurseForgeActivated() {
         return isCurseForgeActivated;
+    }
+
+    @Override
+    public String toString() {
+        return "ApplicationProperties{" +
+                "FILE_SERVERPACKCREATOR_PROPERTIES=" + FILE_SERVERPACKCREATOR_PROPERTIES +
+                ", FILE_WINDOWS=" + FILE_WINDOWS +
+                ", FILE_LINUX=" + FILE_LINUX +
+                ", FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS=" + FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS +
+                ", PLUGINS_DIRECTORY=" + PLUGINS_DIRECTORY +
+                ", LIST_FALLBACK_MODS_DEFAULT=" + LIST_FALLBACK_MODS_DEFAULT +
+                ", FILE_CONFIG=" + FILE_CONFIG +
+                ", FILE_CONFIG_OLD=" + FILE_CONFIG_OLD +
+                ", FILE_SERVER_PROPERTIES=" + FILE_SERVER_PROPERTIES +
+                ", FILE_SERVER_ICON=" + FILE_SERVER_ICON +
+                ", FILE_MANIFEST_MINECRAFT=" + FILE_MANIFEST_MINECRAFT +
+                ", FILE_MANIFEST_FORGE=" + FILE_MANIFEST_FORGE +
+                ", FILE_MANIFEST_FABRIC=" + FILE_MANIFEST_FABRIC +
+                ", FILE_MANIFEST_FABRIC_INSTALLER=" + FILE_MANIFEST_FABRIC_INSTALLER +
+                ", FILE_SERVERPACKCREATOR_DATABASE=" + FILE_SERVERPACKCREATOR_DATABASE +
+                ", PATH_FILE_MANIFEST_MINECRAFT=" + PATH_FILE_MANIFEST_MINECRAFT +
+                ", PATH_FILE_MANIFEST_FORGE=" + PATH_FILE_MANIFEST_FORGE +
+                ", PATH_FILE_MANIFEST_FABRIC=" + PATH_FILE_MANIFEST_FABRIC +
+                ", PATH_FILE_MANIFEST_FABRIC_INSTALLER=" + PATH_FILE_MANIFEST_FABRIC_INSTALLER +
+                ", directoryServerPacks='" + getDirectoryServerPacks() + '\'' +
+                ", listFallbackMods=" + getListFallbackMods() +
+                ", listDirectoriesExclude=" + getListOfDirectoriesToExclude() +
+                ", curseControllerRegenerationEnabled=" + getCurseControllerRegenerationEnabled() +
+                ", listCheckAgainstNewEntry=" + listCheckAgainstNewEntry +
+                ", queueMaxDiskUsage=" + getQueueMaxDiskUsage() +
+                ", saveLoadedConfiguration=" + getSaveLoadedConfiguration() +
+                ", serverPackCreatorVersion='" + getServerPackCreatorVersion() + '\'' +
+                ", versioncheck_prerelease=" + checkForAvailablePreReleases() +
+                ", isCurseForgeActivated=" + isCurseForgeActivated() +
+                '}';
     }
 }

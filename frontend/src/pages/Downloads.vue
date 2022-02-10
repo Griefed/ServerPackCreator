@@ -72,7 +72,6 @@
                     </template>
                   </q-input>
                 </template>
-
                 <template v-slot:top-right>
                   <div v-if="this.$q.screen.gt.xs" class="col">
                     <q-toggle v-model="visibleColumns" val="id" label="ID" />
@@ -80,6 +79,7 @@
                     <q-toggle v-model="visibleColumns" val="fileID" label="File (ID)" />
                     <q-toggle v-model="visibleColumns" val="size" label="Size" />
                     <q-toggle v-model="visibleColumns" val="downloads" label="Downloads" />
+                    <q-toggle v-model="visibleColumns" val="fileName" label="File name" />
                     <q-toggle v-model="visibleColumns" val="fileDiskName" label="File disk name" />
                     <q-toggle v-model="visibleColumns" val="dateCreated" label="Created at" />
                     <q-toggle v-model="visibleColumns" val="lastModified" label="Last modified at" />
@@ -131,13 +131,13 @@ export default {
       { name: 'id',               required: false, label: 'ID',                align: 'left',   field: 'id',                sortable: true },
       { name: 'projectID',        required: false, label: 'Project (ID)',      align: 'left',   field: 'projectID',         sortable: true },
       { name: 'fileID',           required: false, label: 'File (ID)',         align: 'left',   field: 'fileID',            sortable: true },
-      { name: 'projectName',      required: true,  label: 'Project',           align: 'left',   field: 'projectName',       sortable: true },
+      { name: 'projectName',      required: false, label: 'Project',           align: 'left',   field: 'projectName',       sortable: true },
       { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',   field: 'fileName',          sortable: true },
-      { name: 'fileDiskName',     required: false, label: 'File disk name',    align: 'left',   field: 'fileDiskName',      sortable: true },
-      { name: 'size',             required: false, label: 'Size (MB)',         align: 'right',  field: 'size',              sortable: true },
-      { name: 'downloads',        required: false, label: 'Downloads',         align: 'center', field: 'downloads',         sortable: true },
+      { name: 'fileDiskName',     required: true,  label: 'File disk name',    align: 'left',   field: 'fileDiskName',      sortable: true },
+      { name: 'size',             required: true,  label: 'Size (MB)',         align: 'right',  field: 'size',              sortable: true },
+      { name: 'downloads',        required: true,  label: 'Downloads',         align: 'center', field: 'downloads',         sortable: true },
       { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',   field: 'dateCreated',       sortable: true },
-      { name: 'lastModified',     required: false, label: 'Last modified at',  align: 'left',   field: 'lastModified',      sortable: true },
+      { name: 'lastModified',     required: true,  label: 'Last modified at',  align: 'left',   field: 'lastModified',      sortable: true },
       { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'center', field: 'confirmedWorking',  sortable: true },
       { name: 'status',           required: true,  label: 'Download',          align: 'left',   field: 'status',            sortable: true }
     ];
@@ -161,23 +161,23 @@ export default {
       });
 
     return {
-      visibleColumns: ref([ 'projectName', 'fileName', 'size', 'downloads', 'lastModified', 'confirmedWorking', 'status' ]),
+      // TODO: Once CurseForge API is back up and running again, add 'projectName' to list of visibleColumns again
+      visibleColumns: ref([ 'fileName','fileDiskName', 'size', 'downloads', 'lastModified', 'status' ]),
       columns,
       rows,
       filter: ref(''),
       vote: ref(false),
       initialPagination: {
-        sortBy: 'download',
+        sortBy: 'lastModified',
         descending: true,
         page: 1,
-        rowsPerPage: 13
-        // rowsNumber: xx if getting data from a server
+        rowsPerPage: 20
       },
     }
   },
   methods: {
     download(id) {
-      return '/api/packs/download/' + id;
+      return '/api/v1/packs/download/' + id;
     },
     works(id, doesItWork) {
       api.get("/packs/vote/" + id + "," + doesItWork)

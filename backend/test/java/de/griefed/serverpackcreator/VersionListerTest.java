@@ -139,4 +139,8 @@ public class VersionListerTest {
         }
     }
 
+    @Test
+    void forgeVersionsAsListTest() {
+        for (String minecraft : VERSIONLISTER.getMinecraftReleaseVersions()) Assertions.assertNotNull(VERSIONLISTER.getForgeVersionsAsList(minecraft));
+    }
 }

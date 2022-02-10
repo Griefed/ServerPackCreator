@@ -17,12 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.services;
+package de.griefed.serverpackcreator.spring.task;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.spring.models.GenerateCurseProject;
-import de.griefed.serverpackcreator.spring.models.ScanCurseProject;
-import de.griefed.serverpackcreator.spring.models.Task;
+import de.griefed.serverpackcreator.spring.curseforge.GenerateCurseProject;
+import de.griefed.serverpackcreator.spring.curseforge.ScanCurseProject;
+import de.griefed.serverpackcreator.spring.zip.GenerateZip;
+import de.griefed.serverpackcreator.spring.zip.ZipController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class TaskSubmitter {
      * @param projectIDAndFileID The CurseForge project and file id combination
      */
     public void scanCurseProject(String projectIDAndFileID) {
+        LOG.debug("Sending Curse scan task: " + projectIDAndFileID);
         submitScan(new ScanCurseProject(projectIDAndFileID));
     }
 
@@ -72,7 +74,19 @@ public class TaskSubmitter {
      * @param projectIDAndFileID The CurseForge project and file id combination.
      */
     public void generateCurseProject(String projectIDAndFileID) {
+        LOG.debug("Sending Curse generate task: " + projectIDAndFileID);
         submitGeneration(new GenerateCurseProject(projectIDAndFileID));
+    }
+
+    /**
+     * Submit a task for the generation of a server pack from a ZIP-archive.
+     * @author Griefed
+     * @param zipGenerationProperties {@link String} containing all information required to generate a server pack from
+     *                                              a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String, boolean)}.
+     */
+    public void generateZip(String zipGenerationProperties) {
+        LOG.debug("Sending ZIP generate task: " + zipGenerationProperties);
+        submitGeneration(new GenerateZip(zipGenerationProperties));
     }
 
     /**

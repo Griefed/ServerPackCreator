@@ -289,6 +289,18 @@ public class VersionLister {
     }
 
     /**
+     * Getter for the list of FOrge versions for the specified Minecraft version as a String List.
+     * @author Griefed
+     * @param selectedMinecraftVersion String. The Minecraft version for which to check for Forge versions.
+     * @return String List. A list of all available Forge versions for the passed Minecraft version.
+     */
+    public List<String> getForgeVersionsAsList(String selectedMinecraftVersion) {
+        List<String> versions = new ArrayList<>(1000);
+        versions.addAll(Arrays.asList(getForgeVersionsAsArray(selectedMinecraftVersion)));
+        return versions;
+    }
+
+    /**
      * Helper method for {@link #getMinecraftVersionsList(String)} and {@link #setMinecraftSpecificVersion(String)}.
      * Reads the passed manifest-file into a byte array and returns a JsonNode containing said byte array.
      * @author Griefed
@@ -361,7 +373,9 @@ public class VersionLister {
                     if (version.get("type").asText().equals(type)) {
                         minecraftReleases.add(version.get("id").asText());
                     }
-                } catch (NullPointerException ignored) {}
+                } catch (NullPointerException ignored) {
+
+                }
             }
 
         } catch (IOException ex) {

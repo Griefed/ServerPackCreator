@@ -17,9 +17,8 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.repositories;
+package de.griefed.serverpackcreator.spring.serverpack;
 
-import de.griefed.serverpackcreator.spring.models.ServerPack;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -27,8 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Our JPA repository for storing and retrieving {@link ServerPack}s to and from our SQLite database. Provides methods for
- * retrieving, storing, deleting. Calls must always be made from {@link de.griefed.serverpackcreator.spring.services.ServerPackService} and not directly
+ * Our JPA repository for storing and retrieving {@link ServerPackModel}s to and from our SQLite database. Provides methods for
+ * retrieving, storing, deleting. Calls must always be made from {@link ServerPackService} and not directly
  * to this repository. It may seem strange, but this accomplishes a couple of things:<br>
  * 1. Centralized access to the repository.<br>
  * 2. Complete control over what happens with the data retrieved from the repository.<br>
@@ -37,7 +36,7 @@ import java.util.Optional;
  * @author Griefed
  */
 @Repository
-public interface ServerPackRepository extends CrudRepository<ServerPack, Integer> {
+public interface ServerPackRepository extends CrudRepository<ServerPackModel, Integer> {
 
     /**
      * Find all server packs using a CurseForge project ID.
@@ -45,7 +44,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPack, Integer
      * @param projectID Integer. The CurseForge project ID with which to search for server pack.
      * @return Returns a list of all server packs for the passed CurseForge project ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    Optional<List<ServerPack>> findAllByProjectID(int projectID);
+    Optional<List<ServerPackModel>> findAllByProjectID(int projectID);
 
     /**
      * Find a specific server pack by searching with a CurseForge project and file ID.
@@ -54,7 +53,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPack, Integer
      * @param fileID Integer. The CurseForge project file ID.
      * @return Returns the server pack for the passed project and file ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    Optional<ServerPack> findByProjectIDAndFileID(int projectID, int fileID);
+    Optional<ServerPackModel> findByProjectIDAndFileID(int projectID, int fileID);
 
     /**
      * Find all server packs using a CurseForge project name.
@@ -62,7 +61,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPack, Integer
      * @param projectName String. The project name with which to search for server packs.
      * @return Returns a list of all server packs for the passed CurseForge project name wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    Optional<List<ServerPack>> findAllByProjectName(String projectName);
+    Optional<List<ServerPackModel>> findAllByProjectName(String projectName);
 
     /**
      * Find a server pack by its database id.
@@ -70,7 +69,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPack, Integer
      * @param fileID Integer. The database id with which to search for a server pack.
      * @return Returns a server pack for the passed database id wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    Optional<ServerPack> findByFileID(int fileID);
+    Optional<ServerPackModel> findByFileID(int fileID);
 
     /**
      * Find a server pack by its CurseForge file display name.
@@ -78,7 +77,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPack, Integer
      * @param fileName String. The CurseForge file display name with which to search for a server pack.
      * @return Returns a server pack for the passed file display name wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    Optional<ServerPack> findByFileName(String fileName);
+    Optional<ServerPackModel> findByFileName(String fileName);
 
     /**
      * Find all server packs by their status.
@@ -86,7 +85,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPack, Integer
      * @param status String. The status with which to search for server packs.
      * @return Returns a list of server packs for the passed status wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    Optional<List<ServerPack>> findByStatus(String status);
+    Optional<List<ServerPackModel>> findByStatus(String status);
 
     /**
      * Count all server packs by a CurseForge projectID.

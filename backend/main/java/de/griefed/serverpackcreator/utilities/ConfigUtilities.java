@@ -35,6 +35,8 @@ import org.springframework.stereotype.Component;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Utility-class revolving around configuration utilities.
@@ -546,14 +548,18 @@ public class ConfigUtilities {
      */
     public String updateDestinationFromInstanceCfg(File instanceCfg) throws IOException {
 
-        InputStream inputStream = new FileInputStream(instanceCfg);
+        String name = null;
 
-        Properties properties = new Properties();
-        properties.load(inputStream);
+        try (InputStream inputStream = new FileInputStream(instanceCfg);) {
 
-        return properties.getProperty("name",null);
+            Properties properties = new Properties();
+            properties.load(inputStream);
 
+            name = properties.getProperty("name",null);
 
+        }
+
+        return name;
     }
 
     /**
@@ -680,15 +686,41 @@ public class ConfigUtilities {
                     try {
                         Files.walk(root).forEach(
                                 path -> {
-                                    if (path.toString().matches("^/\\w+/$")) {
+
+                                    /*
+                                     * In regular regex: ^[\/\\]\w+[\/\\]?$
+                                     * What is this madness?
+                                     */
+                                    if (path.toString().matches("^[\\/\\\\]\\w+[\\/\\\\]?$")) {
                                         LOG.debug("Path in ZIP: " + path);
                                         directories.add(path.toString().replace("/",""));
                                     }
                                 }
                         );
-                    } catch (IOException ignored) {}
+                    } catch (IOException ignored) {
+
+                    }
                 }
         );
+
+        if (directories.isEmpty()) {
+
+            ZipFile zipFile = new ZipFile(zipURI.toString());
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+            while(entries.hasMoreElements()) {
+                ZipEntry zipEntry = entries.nextElement();
+                LOG.debug("ZIP entry: " + zipEntry.getName());
+
+                /*
+                 * In regular regex: ^[\/\\]\w+[\/\\]?$
+                 * You have a problem, so you use regex. Now you have two problems.
+                 */
+                if (zipEntry.getName().matches("^[\\/\\\\]\\w+[\\/\\\\]?$")) {
+                    directories.add(zipEntry.getName());
+                }
+            }
+        }
 
         fileSystems.close();
 

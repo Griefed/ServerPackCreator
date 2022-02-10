@@ -17,11 +17,8 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.controllers;
+package de.griefed.serverpackcreator.spring.serverpack;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.spring.models.ServerPack;
-import de.griefed.serverpackcreator.spring.services.ServerPackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -33,28 +30,25 @@ import java.util.List;
 
 /**
  * RestController for everything server pack related, like downloads.<br>
- * All requests are in <code>/api/packs</code>.
+ * All requests are in <code>/api/v1/packs</code>.
  * @author Griefed
  */
 @RestController
 @CrossOrigin(origins = {"*"})
-@RequestMapping("/api/packs")
+@RequestMapping("/api/v1/packs")
 public class ServerPackController {
 
     private static final Logger LOG = LogManager.getLogger(ServerPackController.class);
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackService SERVERPACKSERVICE;
 
     /**
      * Constructor responsible for our DI.
      * @author Griefed
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}
      * @param injectedServerPackService Instance of {@link ServerPackService}
      */
     @Autowired
-    public ServerPackController(ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerPackService) {
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    public ServerPackController(ServerPackService injectedServerPackService) {
         this.SERVERPACKSERVICE = injectedServerPackService;
     }
 
@@ -73,46 +67,86 @@ public class ServerPackController {
      * GET request for retrieving a list of server packs by CurseForge projectID.
      * @author Griefed
      * @param projectID Integer. The id of the CurseForge project.
-     * @return List {@link ServerPack}. A list of all server packs, if any, with the given CurseForge projectID.
+     * @return List {@link ServerPackModel}. A list of all server packs, if any, with the given CurseForge projectID.
      */
     @GetMapping("project/{projectid}")
-    public List<ServerPack> getByProjectID(@PathVariable("projectid") int projectID) {
-        return SERVERPACKSERVICE.getServerPacksByProjectID(projectID);
+    public ResponseEntity<List<ServerPackModel>> getByProjectID(@PathVariable("projectid") int projectID) {
+        if (SERVERPACKSERVICE.getServerPacksByProjectID(projectID).isEmpty()) {
+
+            return ResponseEntity.notFound().build();
+
+        } else {
+
+            return ResponseEntity
+                    .ok()
+                    .header(
+                            "Content-Type",
+                            "application/json"
+                    ).body(
+                            SERVERPACKSERVICE.getServerPacksByProjectID(projectID)
+                    );
+        }
+
     }
 
     /**
      * GET request for a server pack matching the given CurseForge fileID.
      * @author Griefed
      * @param fileID Integer. The fileID of the CurseForge project for which to retrieve the server pack.
-     * @return {@link ServerPack}. The server pack for the corresponding CurseForge fileID, if it was found.
+     * @return {@link ServerPackModel}. The server pack for the corresponding CurseForge fileID, if it was found.
      */
     @GetMapping("file/{fileid}")
-    public ServerPack getByFileID(@PathVariable("fileid") int fileID) {
+    public ResponseEntity<ServerPackModel> getByFileID(@PathVariable("fileid") int fileID) {
         if (SERVERPACKSERVICE.findByFileID(fileID).isPresent()) {
-            return SERVERPACKSERVICE.findByFileID(fileID).get();
+
+            return ResponseEntity
+                    .ok()
+                    .header(
+                            "Content-Type",
+                            "application/json"
+                    ).body(
+                            SERVERPACKSERVICE.findByFileID(fileID).get()
+                    );
+
         } else {
-            return null;
+            return ResponseEntity.notFound().build();
         }
     }
 
     /**
      * GET request for retrieving a list of all available server packs.
      * @author Griefed
-     * @return List {@link ServerPack}. A list of all available server packs on this instance.
+     * @return List {@link ServerPackModel}. A list of all available server packs on this instance.
      */
     @GetMapping("all")
-    public List<ServerPack> getAllServerPacks() {
-        return SERVERPACKSERVICE.getServerPacks();
+    public ResponseEntity<List<ServerPackModel>> getAllServerPacks() {
+        if (SERVERPACKSERVICE.getServerPacks().isEmpty()) {
+
+            return ResponseEntity.notFound().build();
+
+        } else {
+
+            return ResponseEntity
+                    .ok()
+                    .header(
+                            "Content-Type",
+                            "application/json"
+                    ).body(
+                            SERVERPACKSERVICE.getServerPacks()
+                    );
+
+        }
+
     }
 
     /**
      * GET request for retrieving a server pack for a specific CurseForge projectID and fileID.
      * @author Griefed
      * @param specific String. Comma seperated combination of CurseForge projectID and fileID.
-     * @return {@link ServerPack}. The server pack for the specified CurseForge projectID and fileID, if it was found.
+     * @return {@link ServerPackModel}. The server pack for the specified CurseForge projectID and fileID, if it was found.
      */
     @GetMapping("specific/{specific}")
-    public ServerPack getByFileID(@PathVariable("specific") String specific) {
+    public ResponseEntity<ServerPackModel> getByFileID(@PathVariable("specific") String specific) {
 
         String[] project = specific.split(",");
 
@@ -121,11 +155,18 @@ public class ServerPackController {
 
         if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
 
-            return SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
+            return ResponseEntity
+                    .ok()
+                    .header(
+                            "Content-Type",
+                            "application/json"
+                    ).body(
+                            SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get()
+                    );
 
         } else {
 
-            return null;
+            return ResponseEntity.notFound().build();
 
         }
 

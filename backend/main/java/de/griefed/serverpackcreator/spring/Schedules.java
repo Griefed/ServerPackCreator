@@ -1,10 +1,29 @@
+/* Copyright (C) 2022  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator.spring;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.VersionLister;
-import de.griefed.serverpackcreator.spring.models.ServerPack;
-import de.griefed.serverpackcreator.spring.services.ServerPackService;
+import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
+import de.griefed.serverpackcreator.spring.serverpack.ServerPackService;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,7 +67,7 @@ public class Schedules {
         this.VERSIONLISTER = injectedVersionLister;
     }
 
-    private void deletePack(ServerPack pack) {
+    private void deletePack(ServerPackModel pack) {
         LOG.info("Deleting archive " + pack.getPath().replace("\\","/"));
         FileUtils.deleteQuietly(new File(pack.getPath().replace("\\","/")));
 
@@ -75,7 +94,7 @@ public class Schedules {
 
             LOG.info("Cleaning database...");
 
-            for (ServerPack pack : SERVERPACKSERVICE.getServerPacks()) {
+            for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
 
                 if ((new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime()) >= 604800000 && pack.getDownloads() == 0) {
 
@@ -106,7 +125,7 @@ public class Schedules {
 
             LOG.info("Cleaning files...");
 
-            for (ServerPack pack : SERVERPACKSERVICE.getServerPacks()) {
+            for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
 
                 if (new File(pack.getPath()).isFile() && new File(pack.getPath().replace("_server_pack-zip","")).isDirectory()) {
 

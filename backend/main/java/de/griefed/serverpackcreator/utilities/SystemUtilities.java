@@ -97,7 +97,9 @@ public class SystemUtilities {
 
         try {
             FileUtils.createParentDirectories(new File(fileDestination));
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+
+        }
 
         ReadableByteChannel readableByteChannel = null;
         FileOutputStream fileOutputStream = null;
@@ -117,21 +119,34 @@ public class SystemUtilities {
             LOG.error("An error occurred downloading " + fileDestination.replace("\\","/") + ".", ex);
             FileUtils.deleteQuietly(new File(fileDestination.replace("\\","/")));
         } finally {
+
             try {
                 //noinspection ConstantConditions
                 fileOutputStream.flush();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+
+            }
+
             try {
                 fileOutputStream.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+
+            }
+
             try {
                 //noinspection ConstantConditions
                 readableByteChannel.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+
+            }
+
             try {
                 //noinspection ConstantConditions
                 fileChannel.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+
+            }
+
         }
 
         return new File(fileDestination).exists();

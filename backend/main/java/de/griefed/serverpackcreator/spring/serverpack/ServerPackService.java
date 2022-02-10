@@ -17,11 +17,9 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.spring.services;
+package de.griefed.serverpackcreator.spring.serverpack;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.spring.models.ServerPack;
-import de.griefed.serverpackcreator.spring.repositories.ServerPackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +70,7 @@ public class ServerPackService {
      * @param fileID Integer. The CurseForge project file ID.
      * @return Returns the server pack for the passed project and file ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    public Optional<ServerPack> findByProjectIDAndFileID(int projectID, int fileID) {
+    public Optional<ServerPackModel> findByProjectIDAndFileID(int projectID, int fileID) {
         return SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID);
     }
 
@@ -82,7 +80,7 @@ public class ServerPackService {
      * @param projectID Integer. The CurseForge project ID.
      * @param fileID Integer. The CurseForge file ID.
      */
-    protected void deleteByProjectIDAndFileID(int projectID, int fileID) {
+    public void deleteByProjectIDAndFileID(int projectID, int fileID) {
         SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
     }
 
@@ -92,7 +90,7 @@ public class ServerPackService {
      * @param fileID Integer. The database id with which to search for a server pack.
      * @return Returns a server pack for the passed database id wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    public Optional<ServerPack> findByFileID(int fileID) {
+    public Optional<ServerPackModel> findByFileID(int fileID) {
         return SERVERPACKREPOSITORY.findByFileID(fileID);
     }
 
@@ -100,14 +98,14 @@ public class ServerPackService {
      * Download a server pack with the given database id.
      * @author Griefed
      * @param id Integer. The database id of the server pack to download.
-     * @return Returns a response entity with either the server pack as a downloadable file, or a response entity with a not found body.
+     * @return Returns a curseResponse entity with either the server pack as a downloadable file, or a curseResponse entity with a not found body.
      */
     public ResponseEntity<Resource> downloadServerPackById(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Available")) {
 
-            ServerPack serverPack = SERVERPACKREPOSITORY.findById(id).get();
+            ServerPackModel serverPackModel = SERVERPACKREPOSITORY.findById(id).get();
 
-            Path path = Paths.get(serverPack.getPath());
+            Path path = Paths.get(serverPackModel.getPath());
             Resource resource = null;
             String contentType = "application/zip";
 
@@ -121,7 +119,10 @@ public class ServerPackService {
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + serverPack.getFileDiskName().replace(".zip","") + "_server_pack.zip" + "\"")
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + serverPackModel.getFileDiskName().replace(".zip","") + "_server_pack.zip" + "\""
+                    )
                     .body(resource);
         } else {
 
@@ -165,12 +166,12 @@ public class ServerPackService {
     /**
      * Get a list of all available server packs.
      * @author Griefed
-     * @return List ServerPack. Returns a list of all available server packs.
+     * @return List ServerPackModel. Returns a list of all available server packs.
      */
-    public List<ServerPack> getServerPacks() {
-        List<ServerPack> serverPacks = new ArrayList<>();
-        SERVERPACKREPOSITORY.findAll().forEach(serverPacks::add);
-        return serverPacks;
+    public List<ServerPackModel> getServerPacks() {
+        List<ServerPackModel> serverPackModels = new ArrayList<>();
+        SERVERPACKREPOSITORY.findAll().forEach(serverPackModels::add);
+        return serverPackModels;
     }
 
     /**
@@ -179,11 +180,11 @@ public class ServerPackService {
      * @param projectID Integer. The CurseForge project ID with which to search for server pack.
      * @return Returns a list of all server packs for the passed CurseForge project ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
-    public List<ServerPack> getServerPacksByProjectID(int projectID) {
+    public List<ServerPackModel> getServerPacksByProjectID(int projectID) {
         if (SERVERPACKREPOSITORY.findAllByProjectID(projectID).isPresent()) {
-            return new ArrayList<ServerPack>(SERVERPACKREPOSITORY.findAllByProjectID(projectID).get());
+            return new ArrayList<ServerPackModel>(SERVERPACKREPOSITORY.findAllByProjectID(projectID).get());
         } else {
-            return new ArrayList<ServerPack>();
+            return new ArrayList<ServerPackModel>();
         }
 
     }
@@ -191,32 +192,32 @@ public class ServerPackService {
     /**
      * Store a server pack in the database.
      * @author Griefed
-     * @param serverPack Instance of {@link ServerPack} to store in the database.
+     * @param serverPackModel Instance of {@link ServerPackModel} to store in the database.
      */
-    public void insert(ServerPack serverPack) {
-        SERVERPACKREPOSITORY.save(serverPack);
+    public void insert(ServerPackModel serverPackModel) {
+        SERVERPACKREPOSITORY.save(serverPackModel);
     }
 
     /**
      * Update a server pack database entry with the given database id.
      * @author Griefed
      * @param id Integer. The database id of the server pack to update.
-     * @param serverPack Instance of {@link ServerPack} with which to update the entry in the database.
+     * @param serverPackModel Instance of {@link ServerPackModel} with which to update the entry in the database.
      */
-    public void updateServerPackByID(int id, ServerPack serverPack) {
+    public void updateServerPackByID(int id, ServerPackModel serverPackModel) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            LOG.debug("Updating database with: " + serverPack.repositoryToString());
-            serverPackFromDB.setProjectName(serverPack.getProjectName());
-            serverPackFromDB.setFileName(serverPack.getFileName());
-            serverPackFromDB.setFileDiskName(serverPack.getFileDiskName());
-            serverPackFromDB.setSize(serverPack.getSize());
-            serverPackFromDB.setDownloads(serverPack.getDownloads());
-            serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
-            serverPackFromDB.setStatus(serverPack.getStatus());
-            serverPackFromDB.setLastModified(new Timestamp(new Date().getTime()));
-            serverPackFromDB.setPath(serverPack.getPath());
-            SERVERPACKREPOSITORY.save(serverPackFromDB);
+            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+            LOG.debug("Updating database with: " + serverPackModel.repositoryToString());
+            serverPackModelFromDB.setProjectName(serverPackModel.getProjectName());
+            serverPackModelFromDB.setFileName(serverPackModel.getFileName());
+            serverPackModelFromDB.setFileDiskName(serverPackModel.getFileDiskName());
+            serverPackModelFromDB.setSize(serverPackModel.getSize());
+            serverPackModelFromDB.setDownloads(serverPackModel.getDownloads());
+            serverPackModelFromDB.setConfirmedWorking(serverPackModel.getConfirmedWorking());
+            serverPackModelFromDB.setStatus(serverPackModel.getStatus());
+            serverPackModelFromDB.setLastModified(new Timestamp(new Date().getTime()));
+            serverPackModelFromDB.setPath(serverPackModel.getPath());
+            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
         }
     }
 
@@ -227,9 +228,9 @@ public class ServerPackService {
      */
     public void updateDownloadCounter(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            serverPackFromDB.setDownloads(serverPackFromDB.getDownloads() + 1);
-            SERVERPACKREPOSITORY.save(serverPackFromDB);
+            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+            serverPackModelFromDB.setDownloads(serverPackModelFromDB.getDownloads() + 1);
+            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
         }
     }
 
@@ -242,9 +243,9 @@ public class ServerPackService {
      */
     public void updateConfirmedCounter(int id, int vote) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            serverPackFromDB.setConfirmedWorking(serverPackFromDB.getConfirmedWorking() + vote);
-            SERVERPACKREPOSITORY.save(serverPackFromDB);
+            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+            serverPackModelFromDB.setConfirmedWorking(serverPackModelFromDB.getConfirmedWorking() + vote);
+            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
         }
     }
 
@@ -254,22 +255,22 @@ public class ServerPackService {
      * @author Griefed
      * @param projectID The CurseForge project ID.
      * @param fileID The CurseForge file ID.
-     * @param serverPack The server pack with which to update the entry in the database.
+     * @param serverPackModel The server pack with which to update the entry in the database.
      */
-    public void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPack serverPack) {
+    public void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPackModel serverPackModel) {
         if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
-            ServerPack serverPackFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
-            LOG.debug("Updating database with: " + serverPack.repositoryToString());
-            serverPackFromDB.setProjectName(serverPack.getProjectName());
-            serverPackFromDB.setFileName(serverPack.getFileName());
-            serverPackFromDB.setFileDiskName(serverPack.getFileDiskName());
-            serverPackFromDB.setSize(serverPack.getSize());
-            serverPackFromDB.setDownloads(serverPack.getDownloads());
-            serverPackFromDB.setConfirmedWorking(serverPack.getConfirmedWorking());
-            serverPackFromDB.setStatus(serverPack.getStatus());
-            serverPackFromDB.setLastModified(new Timestamp(new Date().getTime()));
-            serverPackFromDB.setPath(serverPack.getPath());
-            SERVERPACKREPOSITORY.save(serverPackFromDB);
+            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
+            LOG.debug("Updating database with: " + serverPackModel.repositoryToString());
+            serverPackModelFromDB.setProjectName(serverPackModel.getProjectName());
+            serverPackModelFromDB.setFileName(serverPackModel.getFileName());
+            serverPackModelFromDB.setFileDiskName(serverPackModel.getFileDiskName());
+            serverPackModelFromDB.setSize(serverPackModel.getSize());
+            serverPackModelFromDB.setDownloads(serverPackModel.getDownloads());
+            serverPackModelFromDB.setConfirmedWorking(serverPackModel.getConfirmedWorking());
+            serverPackModelFromDB.setStatus(serverPackModel.getStatus());
+            serverPackModelFromDB.setLastModified(new Timestamp(new Date().getTime()));
+            serverPackModelFromDB.setPath(serverPackModel.getPath());
+            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
         }
     }
 
