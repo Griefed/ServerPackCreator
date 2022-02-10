@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -295,12 +295,19 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i16" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkZipArchive-java.nio.file.Path-java.util.List-">checkZipArchive</a></span>(java.nio.file.Path&nbsp;pathToZip,
+               java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<div class="block">Check a given ZIP-archives contents.</div>
+</td>
+</tr>
+<tr id="i17" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isFabricVersionCorrect-java.lang.String-">isFabricVersionCorrect</a></span>(java.lang.String&nbsp;fabricVersion)</code>
 <div class="block">Check whether the specified Fabric version is correct by searching the version list of the Fabric manifest
  for the specified version.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isForgeVersionCorrect-java.lang.String-java.lang.String-">isForgeVersionCorrect</a></span>(java.lang.String&nbsp;forgeVersion,
                      java.lang.String&nbsp;minecraftVersion)</code>
@@ -308,7 +315,7 @@ extends java.lang.Object</pre>
  for the specified version.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isMinecraftVersionCorrect-java.lang.String-">isMinecraftVersionCorrect</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Check whether the specified Minecraft version is correct by searching the version list of the Minecraft manifest
@@ -628,6 +635,26 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 </dl>
 </li>
 </ul>
+<a name="checkZipArchive-java.nio.file.Path-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkZipArchive</h4>
+<pre>public&nbsp;boolean&nbsp;checkZipArchive(java.nio.file.Path&nbsp;pathToZip,
+                               java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it contains neither the
+ mods nor the config directories, consider it invalid.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>pathToZip</code> - Path to the ZIP-file to check.</dd>
+<dd><code>encounteredErrors</code> - String List. List of encountered errors for further processing, like printing to logs or
+                          display in GUI or whatever you want, really.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns false if the ZIP-archive is considered valid.</dd>
+</dl>
+</li>
+</ul>
 <a name="checkCurseForge-java.lang.String-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
 <!--   -->
 </a>
@@ -648,7 +675,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The string which to check for a valid projectID,fileID combination.</dd>
-<dd><code>configurationModel</code> - or <a href="../../../de/griefed/serverpackcreator/spring/models/ServerPack.html" title="class in de.griefed.serverpackcreator.spring.models"><code>ServerPack</code></a>. Instance containing
+<dd><code>configurationModel</code> - or <a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a>. Instance containing
                            all the information about our server pack.</dd>
 <dd><code>encounteredErrors</code> - List String. A list to which all encountered errors are saved to.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
