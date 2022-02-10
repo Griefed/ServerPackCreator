@@ -67,8 +67,8 @@ Use at your own risk! Be aware that data loss is possible.
 
 | Light mode                                                                                 | Dark mode                                                                                |
 |--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| ![Light Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_light.png) | ![Dark Configuration](https://i.griefed.de/images/2021/11/20/web_configuration_dark.png) |
-| ![Light Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_light.png)         | ![Dark Downloads](https://i.griefed.de/images/2021/11/20/web_downloads_dark.png)         |
+| ![Light Configuration](https://i.griefed.de/images/2022/02/10/web_configuration_light.png) | ![Dark Configuration](https://i.griefed.de/images/2022/02/10/web_configuration_dark.png) |
+| ![Light Downloads](https://i.griefed.de/images/2022/02/10/web_downloads_light.png)         | ![Dark Downloads](https://i.griefed.de/images/2022/02/10/web_downloads_dark.png)         |
 
 # Advantages/Disadvantages of CLI, GUI and Webservice:
 
@@ -127,94 +127,38 @@ Huge shoutout and thank you!**
 
 A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
 
-# 2. Contributing
-
-Java documentation available at:
-- https://griefed.pages.griefed.de/ServerPackCreator/ or
-- https://griefed.github.io/ServerPackCreator/ or
-- https://griefed.gitlab.io/ServerPackCreator/
-
-**Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.**
-
-A short excerpt:
-
-> If you want to contribute to ServerPackCreator, then the following procedure **must** be adhered to:
->
-> 1. Fork ServerPackCreator
-> 2. Create a new branch in your fork, following one of the following naming schemes:
->     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
->         - griefed_chore_readme
->         - griefed_perf_curseforgemodpack
->         - griefed_feat_ziparchive
->     2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
->     3. Schemes:
->         1. your_username_breaking_
->         2. your_username_build_
->         3. your_username_chore_
->         4. your_username_ci_
->         5. your_username_docs_
->         6. your_username_feat_
->         7. your_username_fix_
->         8. your_username_perf_
->         9. your_username_refactor_
->         10. your_username_revert_
->         11. your_username_style_
->         12. your_username_test_
->         13. your_username_other_
-> 3. Make your changes to your new branch:
->     1. Try to keep the changes atomic, so they best fit the name of the branch.
->     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
->         - feat: Allow upload of modpack-export zip-archive to web-frontend
->         - refactor: Use apache commons-io for copying, instead of Files
-> 4. Open an issue on the main repository, using the **Pull Request** template:
->     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
->         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
->     2. Issue description: Fill in the sections the template provide.
->     3. Submit the new issue
-> 5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
-> 6. If checks and tests pass, or any changes necessary have been made, the pull request is ready to be merged etc., I will merge it to your main repository branch.
-> 7. I can then merge your main repository branch into main/master/whatever locally, push these changes to my GitLab instance, which will in turn push these changes to GitHub.
-> 8. Done!
-> 
-> This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
-> Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
-
-# 3. Features
+# 2. Features
 
 1. **Generate a config step-by-step by running with argument**`-cgen`
-2. **Download a modpack and create a server pack from it.**
-    1. Enter a CurseForge projectID;FileID-combination as the modpack directory.
-3. **Install a Forge or Fabric modloader server in your server pack**
-4. **Configurable list of clientside-only mods to not include your server pack**
+2. **Install a Forge or Fabric modloader server in your server pack**
+3. **Configurable list of clientside-only mods to not include your server pack**
     1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`.
-5. **Configurable list of directories from your modpack to include in your server pack**
-    1. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
-    2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
-    3. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
-    4. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
-6. **Generate Forge or Fabric start-scripts in your server pack**
-    1. Specify JVM flags / Java Args for your start scripts!
-7. **Include a server-icon.png-file in your server pack**
-    1. Replace the file in `server-files` with your own!
-8. **Include a server.properties-file in your server pack**
-    1. Replace the file in `server-files` with your own!
-9. **Create a ZIP-archive of your server pack**
-11. **GUI to fully configure and run ServerPackCreator**
-    1. Load existing config.
-    2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
-    3. Logs from last run in separate tabs.
-    4. Set a suffix for the server pack to be generated.
-    5. And much more!
-12. !!!NOT YET FULLY IMPLEMENTED!!!**Webservice providing a web-frontend to configure, generate and download server packs**
-    1. Generate a server pack from a projectID and fileID combination.
-    2. All generated server packs available for download by everyone.
-    3. Admin-area to edit some configurations, like the list of clientside-only mods, whether regeneration of server packs is allowed, reading the log file(s), enabling/disabling installed addons, etc.
-    4. Upload an Overwolf modpack export to generate a server pack from it. (Must contain a valid `manifest.json`-file like [this one](https://haste.zneix.eu/cinadiwubi.json))
-13. **Addons!**
-    1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
-    2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
+4. **Configurable list of directories from your modpack to include in your server pack**
+    2. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
+    3. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
+    4. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
+    5. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
+5. **Generate Forge or Fabric start-scripts in your server pack**
+    6. Specify JVM flags / Java Args for your start scripts!
+6. **Include a server-icon.png-file in your server pack**
+    7. Replace the file in `server-files` with your own!
+7. **Include a server.properties-file in your server pack**
+    8. Replace the file in `server-files` with your own!
+8. **Create a ZIP-archive of your server pack**
+9. **GUI to fully configure and run ServerPackCreator**
+    9. Load existing config.
+    10. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
+    11. Logs from last run in separate tabs.
+    12. Set a suffix for the server pack to be generated.
+    13. And much more!
+10. **Webservice**
+    14. Generate a server pack from zipped up modpacks.
+    15. All generated server packs available for download to everyone.
+11. **Addons!**
+    16. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
+    17. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
-# 4. Versions
+# 3. Versions
 
 Consider major version incompatible to each other. Meaning, configs from 1.x.x are incompatible with version 2.x.x etc.
 
@@ -224,7 +168,7 @@ Consider major version incompatible to each other. Meaning, configs from 1.x.x a
 | **2.x.x**    | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.** |
 | **3.x.x**    | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`                      |
 
-# 5. Addons
+# 4. Addons
 
 There are things which people want to do with their server packs which could most certainly be automated. Some of those
 things so special, or maybe out of place, that they would not warrant a separate feature for ServerPackCreator itself.
@@ -250,7 +194,7 @@ For a detailed example of how such an addon is supposed to look, check the Examp
 | [Example MiniGame](https://github.com/Griefed/ServerPackCreatorExampleAddon/tree/tetris)                                                        | Griefed | Play Tetris in a new window whilst your server packs generate!                                                                                                                                      |
 
 
-# 6. Configuration
+# 5. Configuration
 
 After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator resides in.
 Inside it are files you can customize, so they suit your modpack and server pack:
@@ -292,19 +236,19 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 
 ---
 
-# 7. Running
+# 6. Running
 
 In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
 The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
 
-## 7.1 Localization
+## 6.1 Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the lang.properties-file with your specified locale.
 2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will set the locale to en_us by default and create the lang.properties-file.
 3. Modify the `serverpackcreator.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for example `lang=en_us`
 
-## 7.2 Using the GUI
+## 6.2 Using the GUI
 
 You want to create a server pack for your modpack, right?
 
@@ -365,9 +309,9 @@ That's pretty much it! Sounds like a lot, but honestly, all the stuff you need t
 
 Have fun!
 
-## 7.3 Using the Command-line Interface
+## 6.3 Using the Command-line Interface
 
-### 7.3.1 Windows
+### 6.3.1 Windows
 
 **1.** Download the latest version of ServerPackCreator from the Releases page: https://github.com/Griefed/ServerPackCreator/releases
 
@@ -435,7 +379,7 @@ Example after successfully running SPC:
     └── Survive Create Prosper 4_server_pack.zip
 ```
 
-### 7.3.2 Linux
+### 6.3.2 Linux
 
 **1.** Switch to a directory where you want ServerPackCreator to be stored in and where it can save and deploy all of its files.
 
@@ -524,7 +468,7 @@ Example after successfully running SPC:
     └── Survive Create Prosper 4_server_pack.zip
 ```
 
-### 7.3.3 Mac
+### 6.3.3 Mac
 
 (By user [whitebear60](https://github.com/whitebear60))
 
@@ -601,43 +545,23 @@ Example after successfully running SPC:
     └── Survive Create Prosper 4_server_pack.zip
 ```
 
-## 7.4 Docker
-
-Creates a Container which runs [Griefed's](https://github.com/Griefed) [ServerPackCreator](https://github.com/Griefed/ServerPackCreator), with [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) as the base image.
-
-The [lsiobase/alpine](https://hub.docker.com/r/lsiobase/alpine) image is a custom base image built with [Alpine linux](https://alpinelinux.org/) and [S6 overlay](https://github.com/just-containers/s6-overlay).
-Using this image allows us to use the same user/group ids in the container as on the host, making file transfers much easier
+## 6.4 Docker
 
 | Tags      | Description                                                                                   |
 |-----------|-----------------------------------------------------------------------------------------------|
 | `latest`  | Using the `latest` tag will pull the latest image for linux/amd64,linux/arm/v7,linux/arm64.   |
 | `develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk! |
 
-Using GitHub Workflows, images for this container are multi-arch. Simply pulling `:latest` should retrieve the correct image for your architecture.
-Images are available for linux/amd64 and linux/arm64.
-
-When running as a docker container, there are a couple more settings you need to be aware of. Beware that any environment setting **after** `STARTUP_PARAMETER` is
-irrelevant when using `STARTUP_PARAMETER=web`.
+When running as a docker container, there are a couple more settings you need to be aware of:
 
 | Variable                  | Description                                                                                                                                                                                                                                     |
 |---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | TZ                        | The timezone your system operates in. Default "Europe/Berlin"                                                                                                                                                                                   |
 | PUID                      | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.                                                                               |
 | PGID                      | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.                                                                             |
-| STARTUP_PARAMETER         | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.                                             |
-| MODPACKDIR                | Mount your modpack like this `/path/to/your_modpack:data/your_modpack` and set MODPACKDIR=/data/your_modpack.</br>If you provide a CurseForge projectID and fileID, mount any folder `/path/to/data:/data` and set MODPACKDIR=projectID,fileID. |
-| MODLOADERVERSION          | The version of the modlaoder the modpack uses.                                                                                                                                                                                                  |
-| MODLOADER                 | Either Forge or Fabric                                                                                                                                                                                                                          |
-| MINECRAFTVERSION          | The Minecraft version the modpack uses.                                                                                                                                                                                                         |
-| INCLUDEZIPCREATION        | true or false                                                                                                                                                                                                                                   |
-| INCLUDESTARTSCRIPTS       | true or false                                                                                                                                                                                                                                   |
-| INCLUDESERVERPROPERTIES   | true or false                                                                                                                                                                                                                                   |
-| INCLUDESERVERINSTALLATION | true or false                                                                                                                                                                                                                                   |
-| INCLUDESERVERICON         | true or false                                                                                                                                                                                                                                   |
-| COPYDIRS                  | Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.                                                                                                                             |
-| CLIENTMODS                | Comma-separated. Client-side mods to delete from server pack.                                                                                                                                                                                   |
+| STARTUP_PARAMETER         | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.                                             |                                                                                                                                                                               |
 
-### 7.4.1 Using docker-compose:
+### 6.4.1 Using docker-compose:
 
 ```docker-compose.yml
 version: "2"
@@ -645,79 +569,91 @@ services:
   serverpackcreator:
     image: griefed/serverpackcreator:latest
     container_name: serverpackcreator
-    restart: "no" # Set to unless-stopped if you set STARTUP_PARAMETER=web
+    restart: unless-stopped
     environment:
-      - STARTUP_PARAMETER=web # Must be either cli or web
-      - TZ=Europe/Berlin # Your Timezone
-      - PUID=1000 # Your user ID
-      - PGID=1000 # Your group ID
+      - STARTUP_PARAMETER=web
+      - TZ=Europe/Berlin
+      - PUID=1000
+      - PGID=1000
     volumes:
       - /host/path/todata:/data # ServerPackCreator files like configuration files are here
     ports:
       - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
 ```
 
-### 7.4.2 Using CLI:
-
-```bash
-docker create \
-  --name=serverpackcreator \
-  -e STARTUP_PARAMETER=cli `# Must be either cli or web` \
-  -e TZ=Europe/Berlin `# Your Timezone` \
-  -e PUID=1000 `# Your user ID` \
-  -e PGID=1000 `# Your group ID` \
-  -e MODPACKDIR= `# Either path to the modpack directory or CurseForge projectID,fileID combination.` \
-  -e MODLOADERVERSION= `# The version of the modloader the modpack uses.` \
-  -e MODLOADER= `# Either Forge or Fabric` \
-  -e MINECRAFTVERSION= `# The Minecraft version the modpack uses.` \
-  -e INCLUDEZIPCREATION=true `# Or false` \
-  -e INCLUDESTARTSCRIPTS=true `# Or false` \
-  -e INCLUDESERVERPROPERTIES=true `# Or false` \
-  -e INCLUDESERVERINSTALLATION=true `# Or false` \
-  -e INCLUDESERVERICON=true `# Or false` \
-  -e COPYDIRS= `# Comma-separated. Must be set if MODPACKDIR is a path. Can be empty if MODPACKDIR is a projectID,fileID combination.` \
-  -e CLIENTMODS= `# Comma-separated. Client-side mods to delete from server pack.` \
-  -p 8080:8080 `# Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web.` \
-  -v /host/path/todata:/data `# ServerPackCreator files like configuration files are here` \
-  -v /host/path/todata:/server-packs `# Created server packs will be here` \
-  --restart "no" \ `# Set to unless-stopped if you set STARTUP_PARAMETER=web`
-  griefed/serverpackcreator:latest
-```
-
-## 7.5 Securing ServerPackCreator running as a webservice
-
-Login and authentication will not be added to SPC running as a webservice, because that's a can of worms I do not want
-to open, but I will provide an example on how you can secure it by using [Authelia](https://github.com/authelia/authelia).
-TODO: Write small guide on running ServerPackCreator as webservice in Docker and secure it with Authelia.
-
 ---
+
+# 7. Contributing
+
+Java documentation available at:
+- https://griefed.pages.griefed.de/ServerPackCreator/ or
+- https://griefed.github.io/ServerPackCreator/ or
+- https://griefed.gitlab.io/ServerPackCreator/
+
+**Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.**
+
+A short excerpt:
+
+> If you want to contribute to ServerPackCreator, then the following procedure **must** be adhered to:
+>
+> 1. Fork ServerPackCreator
+> 2. Create a new branch in your fork, following one of the following naming schemes:
+     >     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
+              >         - griefed_chore_readme
+>         - griefed_perf_curseforgemodpack
+>         - griefed_feat_ziparchive
+>     2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
+>     3. Schemes:
+         >         1. your_username_breaking_
+>         2. your_username_build_
+>         3. your_username_chore_
+>         4. your_username_ci_
+>         5. your_username_docs_
+>         6. your_username_feat_
+>         7. your_username_fix_
+>         8. your_username_perf_
+>         9. your_username_refactor_
+>         10. your_username_revert_
+>         11. your_username_style_
+>         12. your_username_test_
+>         13. your_username_other_
+> 3. Make your changes to your new branch:
+     >     1. Try to keep the changes atomic, so they best fit the name of the branch.
+>     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
+         >         - feat: Allow upload of modpack-export zip-archive to web-frontend
+>         - refactor: Use apache commons-io for copying, instead of Files
+> 4. Open an issue on the main repository, using the **Pull Request** template:
+     >     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
+              >         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
+>     2. Issue description: Fill in the sections the template provide.
+>     3. Submit the new issue
+> 5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
+> 6. If checks and tests pass, or any changes necessary have been made, the pull request is ready to be merged etc., I will merge it to your main repository branch.
+> 7. I can then merge your main repository branch into main/master/whatever locally, push these changes to my GitLab instance, which will in turn push these changes to GitHub.
+> 8. Done!
+>
+> This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
+> Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
+
 
 # 8. Building ServerPackCreator locally
 
 Clone the webservice branch of the repository:
 
-`git clone -b webservice https://git.griefed.de/Griefed/ServerPackCreator.git`
+`git clone -b $BRANCH https://git.griefed.de/Griefed/ServerPackCreator.git`
+
+Where `$BRANCH` represents the branch you want to clone.
 
 If you are on linux, run `chmod +x gradlew` first.
 
 Build with:
 
-`gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe`
+`about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace`
 
----
+Build without tests:
 
-# 9. Third-Party libraries used in this project
+`about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace -x test`
 
-| Library                                                                                   | License                                                                                    |
-|:------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|
-| [Typesafe](https://github.com/lightbend/config)                                           | [License](backend/main/resources/third-party-licenses/Typesafe-Config-License)             |
-| [Fasterxml Jackson Core](https://github.com/FasterXML/jackson-core)                       | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Core-License)      |
-| [Fasterxml Jackson Databind](https://github.com/FasterXML/jackson)                        | [License](backend/main/resources/third-party-licenses/Fasterxml-Jackson-Databind-License)  |
-| [Apache commons-io](https://github.com/apache/commons-io)                                 | [License](backend/main/resources/third-party-licenses/Apache-Commons-IO-License)           |
-| [Lingala zip4j](https://github.com/srikanth-lingala/zip4j)                                | [License](backend/main/resources/third-party-licenses/Lingala-zip4j-License)               |
-| [moandjiezana toml4j](https://github.com/mwanji/toml4j)                                   | [License](backend/main/resources/third-party-licenses/Moandjienza-toml4j-License)          |
-| [TheRandomLabs CurseAPI](https://github.com/TheRandomLabs/CurseAPI)                       | [License](backend/main/resources/third-party-licenses/TheRandomLabs-CurseAPI-License)      |
-| [Xerial SQLite JDBC](https://github.com/xerial/sqlite-jdbc)                               | [License](backend/main/resources/third-party-licenses/Xerial-SQLite-JDBC-License)          |
-| [Vincenzopalazzo Material-UI-Swing](https://github.com/vincenzopalazzo/material-ui-swing) | [License](backend/main/resources/third-party-licenses/Vincenzopalazzo-Material-UI-Swing)   |
-| [Springframework Spring-Boot](https://github.com/spring-projects/spring-framework)        | [License](backend/main/resources/third-party-licenses/Springframework-Spring-Boot-License) |
-| [Apache log4j](https://github.com/apache/log4j)                                           | [License](backend/main/resources/third-party-licenses/Apache-log4j-License)                |
+Build with custom version:
+
+`about installQuasar cleanFrontend assembleFrontend copyDist build createExe -Pversion=6.6.6-alpha.666 --info --stacktrace`
