@@ -118,6 +118,8 @@ public class ApplicationPropertiesTest {
                 "Neat ," +
                 "NotifMod-," +
                 "OldJavaWarning-," +
+                "OptiFine," +
+                "OptiForge," +
                 "ornaments-," +
                 "overloadedarmorbar-," +
                 "PackMenu-," +
