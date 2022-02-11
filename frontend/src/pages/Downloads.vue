@@ -122,7 +122,7 @@
 <script lang="js">
 import { api } from "boot/axios";
 import { ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { useQuasar,date } from 'quasar';
 
 export default {
   name: "Downloads",
@@ -136,8 +136,8 @@ export default {
       { name: 'fileDiskName',     required: true,  label: 'File disk name',    align: 'left',   field: 'fileDiskName',      sortable: true },
       { name: 'size',             required: true,  label: 'Size (MB)',         align: 'right',  field: 'size',              sortable: true },
       { name: 'downloads',        required: true,  label: 'Downloads',         align: 'center', field: 'downloads',         sortable: true },
-      { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',   field: 'dateCreated',       sortable: true },
-      { name: 'lastModified',     required: true,  label: 'Last modified at',  align: 'left',   field: 'lastModified',      sortable: true },
+      { name: 'dateCreated',      required: false, label: 'Created at',        align: 'left',   field: 'dateCreated',       sortable: true, format: val => date.formatDate(val, 'YYYY-MM-DD : HH:mm') },
+      { name: 'lastModified',     required: true,  label: 'Last modified at',  align: 'left',   field: 'lastModified',      sortable: true, format: val => date.formatDate(val, 'YYYY-MM-DD : HH:mm') },
       { name: 'confirmedWorking', required: false, label: 'Confirmed working', align: 'center', field: 'confirmedWorking',  sortable: true },
       { name: 'status',           required: true,  label: 'Download',          align: 'left',   field: 'status',            sortable: true }
     ];
