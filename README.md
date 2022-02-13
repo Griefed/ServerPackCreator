@@ -169,6 +169,8 @@ Consider major version incompatible to each other. Meaning, configs from 1.x.x a
 
 # 4. Addons
 
+## 4.1 Why
+
 There are things which people want to do with their server packs which could most certainly be automated. Some of those
 things so special, or maybe out of place, that they would not warrant a separate feature for ServerPackCreator itself.
 
@@ -180,18 +182,37 @@ Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who know
 This allows people to write their own addons to expand the functionality of ServerPackCreator with their own features as
 they see fit or want.
 
-For documentation about Pf4j, visit https://pf4j.org/
+For documentation about Pf4j, visit the [Pf4j documentation](https://pf4j.org/)
 
-If you have ideas and/or suggestions for improvements to the addon-system in ServerPackCreator, open an improvement-issue over at the ServerPackCreator [issues page](https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=enhancement&template=improvement.yml&title=%5BImprovement+request%5D%3A+)
+## 4.2 Adding your own
 
-For a detailed example of how such an addon is supposed to look, check the ExampleAddon in the list below!
+How to get your own addon into this list:
 
-| Addon                                                                                                                                           | Creator | Description                                                                                                                                                                                         |
-|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [ExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)                                                                        | Griefed | An example addon providing a starting point for addon development.                                                                                                                                  |
-| [ExampleAddon Alternative Extension Declaration](https://github.com/Griefed/ServerPackCreatorExampleAddon/tree/alternativeExtensionDeclaration) | Griefed | An example addon providing a starting point for addon development. This addon provides an example for a different way of declaring extensions as well as reading entries from the plugins manifest. |
-| [Example MiniGame](https://github.com/Griefed/ServerPackCreatorExampleAddon/tree/tetris)                                                        | Griefed | Play Tetris in a new window whilst your server packs generate!                                                                                                                                      |
+If you have written your own addon or plugin for ServerPackCreator and you would like to see it added here, please open an issue over at ServerPackCreatoron GitHub, using the Documentation template.
 
+For an addon to be accepted, you must at least provide:
+- The name of the repository, and therefore the addon.
+- The owner of the repository, and therefore the addon.
+- The branch of the repository where the main code resides in.
+- A description of the plugin or addon.
+
+A curated list of officially acknowledged addons/plugins can be found at [addons.griefed.de](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
+
+## 4.3 Examples for potential addons
+
+Some examples for potential addons can be found [in this discussion thread](https://github.com/Griefed/ServerPackCreator/discussions/201).
+
+Some excerpts:
+1. Changelog generator, by @TheButterbrotMan at [Feature request]: Changelog generator #198
+    - A changelog generator that checks the differences to the previous version and generates a changelog.
+
+2. Bundle Adoptium Java with server packs, by @kreezxil at [Feature request]: Bundle Adoptium Java #199
+    - Because modpacks need one of the either Java 8, 16, or 17, it would be nice to have the corresponding https://adoptium.net java prebundled with the server pack.
+
+3. Automatic setup of a server pack for [BlueMap](https://www.curseforge.com/minecraft/mc-mods/bluemap)
+    - Check all mods in the specified modpacks mods-directory for textures, and if any are found, add the mod to
+      BlueMap's resourcepack folder `config/bluemap/resourcepacks`, install BlueMap for the specified Minecraft and Forge/Fabric
+      version and voilà!
 
 # 5. Configuration
 
