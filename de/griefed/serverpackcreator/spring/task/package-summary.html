@@ -69,6 +69,10 @@
 <!-- ========= END OF TOP NAVBAR ========= -->
 <div class="header">
 <h1 title="Package" class="title">Package&nbsp;de.griefed.serverpackcreator.spring.task</h1>
+<div class="docSummary">
+<div class="block">Artemis JMS configuration.</div>
+</div>
+<p>See:&nbsp;<a href="#package.description">Description</a></p>
 </div>
 <div class="contentContainer">
 <ul class="blockList">
@@ -112,6 +116,15 @@
 </table>
 </li>
 </ul>
+<a name="package.description">
+<!--   -->
+</a>
+<h2 title="Package de.griefed.serverpackcreator.spring.task Description">Package de.griefed.serverpackcreator.spring.task Description</h2>
+<div class="block">Artemis JMS configuration. Setup, configure and provide our JMS, so we can send, request and process our queues which
+ contain various types of tasks. We mainly have two types of tasks: <code>scan</code> and <code>generate</code>.<br>
+ The scan task is responsible for handling CurseForge requests. If a CurseForge requests comes in, it is checked for
+ validity and submitted to the <code>generate</code>-queue if it is valid.<br>
+ The <code>generate</code>-queue is responsible for starting a server pack generation.</div>
 </div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <div class="bottomNav"><a name="navbar.bottom">
