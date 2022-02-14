@@ -138,7 +138,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item
+<!--            <q-item
                 v-ripple
                 active-class="tab-active"
                 clickable
@@ -149,7 +149,7 @@
               <q-item-section>
                 Logs
               </q-item-section>
-            </q-item>
+            </q-item>-->
 
             <q-item
                 v-ripple

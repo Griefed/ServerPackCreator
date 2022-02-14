@@ -7,7 +7,7 @@ const routes = [
       { path: '', component: () => import('pages/SubmitRequest.vue') },
       { path: '/request', component: () => import('pages/SubmitRequest.vue') },
       { path: '/downloads', component: () => import('pages/Downloads.vue') },
-      { path: '/logs', component: () => import('pages/Logs.vue') },
+      /*{ path: '/logs', component: () => import('pages/Logs.vue') },*/
       { path: '/about', component: () => import('pages/About.vue') }
     ]
   },

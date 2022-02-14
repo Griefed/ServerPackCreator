@@ -136,6 +136,8 @@ public class ApplicationProperties extends Properties {
         "Neat ," +
         "NotifMod-," +
         "OldJavaWarning-," +
+        "OptiFine," +
+        "OptiForge," +
         "ornaments-," +
         "overloadedarmorbar-," +
         "PackMenu-," +
