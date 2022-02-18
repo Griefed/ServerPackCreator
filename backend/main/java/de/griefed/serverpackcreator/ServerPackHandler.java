@@ -50,7 +50,10 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -1318,14 +1321,16 @@ public class ServerPackHandler {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.excludeclientmods"));
 
-        File[] filesInModsDir = new File(modsDir).listFiles();
-        assert filesInModsDir != null;
+        //File[] filesInModsDir = new File(modsDir).listFiles();
+        String[] extensions = new String[] {"jar"};
+
+        Collection<File> filesInModsDir = FileUtils.listFiles(new File(modsDir),extensions,true);
 
         List<String> modsInModpack = new ArrayList<>();
         List<String> autodiscoveredClientMods = new ArrayList<>();
 
         // Check whether scanning mods for sideness is activated.
-        if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true")) {
+        if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled").equals("true") && filesInModsDir != null) {
 
             String[] split = minecraftVersion.split("\\.");
 
@@ -1339,15 +1344,17 @@ public class ServerPackHandler {
         }
 
         // Gather a list of all mod-JAR-files.
-        try {
+        if (filesInModsDir != null) {
+
             for (File mod : filesInModsDir) {
+
                 if (mod.isFile() && mod.toString().endsWith("jar")) {
                     modsInModpack.add(mod.getAbsolutePath());
                 }
             }
-        } catch (NullPointerException ex) {
-            LOG.error("Error: There was an error during the acquisition of files in mods directory.", ex);
+
         }
+
 
         // Exclude user-specified mods from copying.
         if (!userSpecifiedClientMods.get(0).equals("")) {
@@ -1675,9 +1682,9 @@ public class ServerPackHandler {
 
         zipParameters.setFileComment("Server pack made with ServerPackCreator by Griefed.");
 
-        try {
+        try (ZipFile zip = new ZipFile(String.format("%s_server_pack.zip", destination))) {
 
-            new ZipFile(String.format("%s_server_pack.zip", destination)).addFolder(new File(destination), zipParameters);
+            zip.addFolder(new File(destination), zipParameters);
 
         } catch (IOException ex) {
 
@@ -1858,7 +1865,7 @@ public class ServerPackHandler {
      * @param filesInModsDir A list of in which to check the <code>mods.toml</code>-files.
      * @return List String. List of mods not to include in server pack based on mods.toml-configuration.
      */
-    private List<String> scanTomls(File[] filesInModsDir) {
+    private List<String> scanTomls(Collection<File> filesInModsDir) {
 
         /*
          * Can I just say:
@@ -1872,229 +1879,300 @@ public class ServerPackHandler {
         for (File mod : filesInModsDir) {
             if (mod.toString().endsWith("jar")) {
 
+                JarFile jarFile = null;
+                JarEntry jarEntry = null;
+                InputStream inputStream = null;
+
+                try {
+                    jarFile = new JarFile(mod);
+                    jarEntry = jarFile.getJarEntry("META-INF/mods.toml");
+                    inputStream = jarFile.getInputStream(jarEntry);
+                } catch (Exception ex) {
+                    LOG.error("Can not scan " + mod);
+                }
+
                 try {
 
-                    String modToCheck = mod.toString().replace("\\", "/");
-                    URL urlToToml = new URL(String.format("jar:file:%s!/META-INF/mods.toml", modToCheck));
-                    InputStream inputStream = urlToToml.openStream();
-                    Toml modToml = new Toml().read(inputStream);
-                    String modId = modToml.getString("mods[0].modId");
+                    if (inputStream != null) {
 
-                    // Check whether the sideness is specified in [[mods]]
-                    try {
-                        if (modToml.getString("mods[0].side").toLowerCase().matches("(server|both)")) {
+                        Toml modToml = new Toml().read(inputStream);
 
-                            if (!serverMods.contains(modId)) {
+                        String modId = modToml.getString("mods[0].modId");
 
-                                LOG.debug("Adding modId to list of server mods: " + modId);
-                                serverMods.add(modId);
-                            }
-
-                        }
-                    } catch (NullPointerException ignored) {
-                    }
-
-                    try {
-                        if (modToml.getList("dependencies." + modId) != null) {
-                            for (int i = 0; i < modToml.getList("dependencies." + modId).size(); i++) {
-
-                                // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
-                                try {
-                                    if (modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
-
-                                        /*
-                                         * If Forge|Minecraft are listed as dependencies, but no sideness is specified, we need to add this mod just in case,
-                                         * so we do not exclude any mods which MAY need to be on the server.
-                                         */
-                                        if (modToml.getString("dependencies." + modId + "[" + i + "].side") == null) {
-
-                                            if (!serverMods.contains(modId)) {
-
-                                                LOG.debug("Adding modId to list of server mods: " + modId);
-                                                serverMods.add(modId);
-                                            }
-                                        }
-
-                                        /*
-                                         * If Forge|Minecraft sideness is BOTH|SERVER, add the mod to the list.
-                                         */
-                                        if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
-
-                                            if (!serverMods.contains(modId)) {
-
-                                                LOG.debug("Adding modId to list of server mods: " + modId);
-                                                serverMods.add(modId);
-                                            }
-                                        }
-
-                                    } else {
-                                        /*
-                                         * I know this looks stupid. If a mod does not specify BOTH|SERVER in either of the Forge or Minecraft dependencies,
-                                         * and NO sideness was detected in [[mods]], we need to add this mod just in case, so we do not exclude any mods
-                                         * which MAY need to be on the server.
-                                         */
-                                        if (!serverMods.contains(modId) && modToml.getString("mods[0].side") == null) {
-
-                                            LOG.debug("Adding modId to list of server mods: " + modId);
-                                            serverMods.add(modId);
-                                        }
-                                    }
-
-                                } catch (NullPointerException ignored) {
-                                }
-
-                                /*
-                                 * Add every dependency of the mod we are currently checking, which specifies BOTH|SERVER as their sideness, to the list.
-                                 */
-                                try {
-
-                                    if (!modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
-                                        if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
-
-                                            if (!serverMods.contains(modToml.getString("dependencies." + modId + "[" + i + "].modId"))) {
-
-                                                LOG.debug("Adding modId to list of server mods: " + modToml.getString("dependencies." + modId + "[" + i + "].modId"));
-                                                serverMods.add(modToml.getString("dependencies." + modId + "[" + i + "].modId"));
-                                            }
-                                        }
-                                    }
-
-                                } catch (NullPointerException ignored) {
-                                }
-
-                            }
-                        }
-                    } catch (NullPointerException | ClassCastException ex) {
+                        // Check whether the sideness is specified in [[mods]]
                         try {
-
-                            for (int i = 0; i < modToml.getList("dependencies").size(); i++) {
-
-                                LOG.warn(modId + " does not contain valid dependency definitions. Please contact the mod maker and ask them to fix their shit. :D");
-
-                                String subDependencyId = null;
-                                String subDependencySide = null;
-
-                                for (String element : modToml.getList("dependencies").get(i).toString().replace("{", "").replace("}", "").split(",")) {
-                                    // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
-                                    if (element.contains("modId")) {
-                                        subDependencyId = element.substring(element.lastIndexOf("=") + 1);
-                                    } else if (element.contains("side")) {
-                                        subDependencySide = element.substring(element.lastIndexOf("=") + 1);
-                                    }
-                                }
-
-                                if (subDependencyId != null && subDependencySide != null) {
-
-                                    if (!subDependencyId.equalsIgnoreCase("minecraft") && !subDependencyId.equalsIgnoreCase("forge")) {
-
-                                        if (subDependencySide.equalsIgnoreCase("both") || subDependencySide.equalsIgnoreCase("server")) {
-                                            if (!serverMods.contains(subDependencyId)) {
-
-                                                LOG.debug("Adding modId to list of server mods: " + subDependencyId);
-                                                serverMods.add(subDependencyId);
-                                            }
-                                        }
-
-                                    } else {
-
-                                        if (subDependencySide.equalsIgnoreCase("both") || subDependencySide.equalsIgnoreCase("server")) {
-                                            if (!serverMods.contains(modId)) {
-
-                                                LOG.debug("Adding modId to list of server mods: " + modId);
-                                                serverMods.add(modId);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                        } catch (ClassCastException | NullPointerException ignored) {
-                        }
-                    }
-
-                    /*
-                     * If sideness is neither specified in [[mods]] and no dependencies exist, we need to add this mod just in case, so we do
-                     * not exclude any mods which MAY need to be on the server.
-                     */
-                    try {
-                        if (modToml.getString("mods[0].side") == null) {
-
-                            try {
-
-                                if (modToml.getList("dependencies." + modId) == null) {
-
-                                    try {
-
-                                        if (modToml.getList("dependencies") == null) {
-
-                                            if (!serverMods.contains(modId)) {
-
-                                                LOG.debug("Adding modId to list of server mods: " + modId);
-                                                serverMods.add(modId);
-                                            }
-                                        }
-
-                                    } catch (ClassCastException ex) {
-
-                                        if (!serverMods.contains(modId)) {
-
-                                            LOG.debug("Adding modId to list of server mods: " + modId);
-                                            serverMods.add(modId);
-                                        }
-                                    }
-
-                                    if (!serverMods.contains(modId)) {
-
-                                        LOG.debug("Adding modId to list of server mods: " + modId);
-                                        serverMods.add(modId);
-                                    }
-
-                                }
-
-                            } catch (NullPointerException ex) {
+                            if (modToml.getString("mods[0].side").toLowerCase().matches("(server|both)")) {
 
                                 if (!serverMods.contains(modId)) {
 
                                     LOG.debug("Adding modId to list of server mods: " + modId);
                                     serverMods.add(modId);
                                 }
+
+                            }
+                        } catch (NullPointerException ignored) {
+                        }
+
+                        try {
+                            if (modToml.getList("dependencies." + modId) != null) {
+                                for (int i = 0; i < modToml.getList("dependencies." + modId).size(); i++) {
+
+                                    // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
+                                    try {
+                                        if (modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
+
+                                            /*
+                                             * If Forge|Minecraft are listed as dependencies, but no sideness is specified, we need to add this mod just in case,
+                                             * so we do not exclude any mods which MAY need to be on the server.
+                                             */
+                                            if (modToml.getString("dependencies." + modId + "[" + i + "].side") == null) {
+
+                                                if (!serverMods.contains(modId)) {
+
+                                                    LOG.debug("Adding modId to list of server mods: " + modId);
+                                                    serverMods.add(modId);
+                                                }
+                                            }
+
+                                            /*
+                                             * If Forge|Minecraft sideness is BOTH|SERVER, add the mod to the list.
+                                             */
+                                            if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+
+                                                if (!serverMods.contains(modId)) {
+
+                                                    LOG.debug("Adding modId to list of server mods: " + modId);
+                                                    serverMods.add(modId);
+                                                }
+                                            }
+
+                                        } else {
+                                            /*
+                                             * I know this looks stupid. If a mod does not specify BOTH|SERVER in either of the Forge or Minecraft dependencies,
+                                             * and NO sideness was detected in [[mods]], we need to add this mod just in case, so we do not exclude any mods
+                                             * which MAY need to be on the server.
+                                             */
+                                            if (!serverMods.contains(modId) && modToml.getString("mods[0].side") == null) {
+
+                                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                                serverMods.add(modId);
+                                            }
+                                        }
+
+                                    } catch (NullPointerException ignored) {
+                                    }
+
+                                    /*
+                                     * Add every dependency of the mod we are currently checking, which specifies BOTH|SERVER as their sideness, to the list.
+                                     */
+                                    try {
+
+                                        if (!modToml.getString("dependencies." + modId + "[" + i + "].modId").toLowerCase().matches("(forge|minecraft)")) {
+                                            if (modToml.getString("dependencies." + modId + "[" + i + "].side").toLowerCase().matches("(server|both)")) {
+
+                                                if (!serverMods.contains(modToml.getString("dependencies." + modId + "[" + i + "].modId"))) {
+
+                                                    LOG.debug("Adding modId to list of server mods: " + modToml.getString("dependencies." + modId + "[" + i + "].modId"));
+                                                    serverMods.add(modToml.getString("dependencies." + modId + "[" + i + "].modId"));
+                                                }
+                                            }
+                                        }
+
+                                    } catch (NullPointerException ignored) {
+                                    }
+
+                                }
+                            }
+                        } catch (NullPointerException | ClassCastException ex) {
+                            try {
+
+                                for (int i = 0; i < modToml.getList("dependencies").size(); i++) {
+
+                                    LOG.warn(modId + " does not contain valid dependency definitions. Please contact the mod maker and ask them to fix their shit. :D");
+
+                                    String subDependencyId = null;
+                                    String subDependencySide = null;
+
+                                    for (String element : modToml.getList("dependencies").get(i).toString().replace("{", "").replace("}", "").split(",")) {
+                                        // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
+                                        if (element.contains("modId")) {
+                                            subDependencyId = element.substring(element.lastIndexOf("=") + 1);
+                                        } else if (element.contains("side")) {
+                                            subDependencySide = element.substring(element.lastIndexOf("=") + 1);
+                                        }
+                                    }
+
+                                    if (subDependencyId != null && subDependencySide != null) {
+
+                                        if (!subDependencyId.equalsIgnoreCase("minecraft") && !subDependencyId.equalsIgnoreCase("forge")) {
+
+                                            if (subDependencySide.equalsIgnoreCase("both") || subDependencySide.equalsIgnoreCase("server")) {
+                                                if (!serverMods.contains(subDependencyId)) {
+
+                                                    LOG.debug("Adding modId to list of server mods: " + subDependencyId);
+                                                    serverMods.add(subDependencyId);
+                                                }
+                                            }
+
+                                        } else {
+
+                                            if (subDependencySide.equalsIgnoreCase("both") || subDependencySide.equalsIgnoreCase("server")) {
+                                                if (!serverMods.contains(modId)) {
+
+                                                    LOG.debug("Adding modId to list of server mods: " + modId);
+                                                    serverMods.add(modId);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                            } catch (ClassCastException | NullPointerException ignored) {
                             }
                         }
-                    } catch (ClassCastException | NullPointerException ignored) {
+
+                        /*
+                         * If sideness is neither specified in [[mods]] and no dependencies exist, we need to add this mod just in case, so we do
+                         * not exclude any mods which MAY need to be on the server.
+                         */
+                        try {
+                            if (modToml.getString("mods[0].side") == null) {
+
+                                try {
+
+                                    if (modToml.getList("dependencies." + modId) == null) {
+
+                                        try {
+
+                                            if (modToml.getList("dependencies") == null) {
+
+                                                if (!serverMods.contains(modId)) {
+
+                                                    LOG.debug("Adding modId to list of server mods: " + modId);
+                                                    serverMods.add(modId);
+                                                }
+                                            }
+
+                                        } catch (ClassCastException ex) {
+
+                                            if (!serverMods.contains(modId)) {
+
+                                                LOG.debug("Adding modId to list of server mods: " + modId);
+                                                serverMods.add(modId);
+                                            }
+                                        }
+
+                                        if (!serverMods.contains(modId)) {
+
+                                            LOG.debug("Adding modId to list of server mods: " + modId);
+                                            serverMods.add(modId);
+                                        }
+
+                                    }
+
+                                } catch (NullPointerException ex) {
+
+                                    if (!serverMods.contains(modId)) {
+
+                                        LOG.debug("Adding modId to list of server mods: " + modId);
+                                        serverMods.add(modId);
+                                    }
+                                }
+                            }
+                        } catch (ClassCastException | NullPointerException ignored) {
+                        }
+
                     }
 
-                    inputStream.close();
+                } catch (Exception ex) {
 
-                } catch (IOException ignored) {
+                    LOG.error("Error acquiring sideness from mod " + mod,ex);
+
+                } finally {
+
+                    try {
+                        //noinspection ConstantConditions
+                        jarFile.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    try {
+                        //noinspection ConstantConditions
+                        inputStream.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    jarEntry = null;
+
                 }
 
             }
         }
 
         for (File mod : filesInModsDir) {
+
+            String modToCheck = mod.toString().replace("\\", "/");
+
+            boolean addToDelta = true;
+
+            JarFile jarFile = null;
+            JarEntry jarEntry = null;
+            InputStream inputStream = null;
+
+            try {
+                jarFile = new JarFile(mod);
+                jarEntry = jarFile.getJarEntry("META-INF/mods.toml");
+                inputStream = jarFile.getInputStream(jarEntry);
+            } catch (Exception ex) {
+                LOG.error("Can not scan " + mod);
+            }
+
             try {
 
-                String modToCheck = mod.toString().replace("\\", "/");
-                URL urlToToml = new URL(String.format("jar:file:%s!/META-INF/mods.toml", modToCheck));
-                InputStream inputStream = urlToToml.openStream();
-                Toml modToml = new Toml().read(inputStream);
-                boolean addToDelta = true;
+                if (inputStream != null) {
 
-                for (String modId : serverMods) {
+                    Toml modToml = new Toml().read(inputStream);
 
-                    if (modToml.getString("mods[0].modId").toLowerCase().matches(modId)) {
-                        addToDelta = false;
+                    for (String modId : serverMods) {
+
+                        if (modToml.getString("mods[0].modId").toLowerCase().matches(modId)) {
+                            addToDelta = false;
+                        }
+
+                    }
+
+                    if (addToDelta) {
+                        modsDelta.add(modToCheck);
                     }
 
                 }
 
-                if (addToDelta) {
-                    modsDelta.add(modToCheck);
+            } catch (Exception ex) {
+
+                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+
+            } finally {
+
+                try {
+                    //noinspection ConstantConditions
+                    jarFile.close();
+                } catch (Exception ignored) {
+
                 }
 
-                inputStream.close();
-            } catch (IOException ignored) {
+                try {
+                    //noinspection ConstantConditions
+                    inputStream.close();
+                } catch (Exception ignored) {
+
+                }
+
+                jarEntry = null;
+
             }
+
         }
 
         return modsDelta;
@@ -2108,7 +2186,7 @@ public class ServerPackHandler {
      * @param filesInModsDir A list of in which to check the <code>mods.toml</code>-files.
      * @return List String. List of mods not to include in server pack based on fml-cache-annotation.json-content.
      */
-    private List<String> scanAnnotations(File[] filesInModsDir) {
+    private List<String> scanAnnotations(Collection<File> filesInModsDir) {
 
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scanannotation"));
 
@@ -2119,55 +2197,82 @@ public class ServerPackHandler {
         for (File mod : filesInModsDir) {
             if (mod.toString().endsWith("jar")) {
 
+                String modId = null;
+
+                JarFile jarFile = null;
+                JarEntry jarEntry = null;
+                InputStream inputStream = null;
+
                 try {
-                    String modToCheck = mod.toString().replace("\\", "/");
-                    URL urlToJson = new URL(String.format("jar:file:%s!/META-INF/fml_cache_annotation.json", modToCheck));
-                    InputStream inputStream = urlToJson.openStream();
-                    JsonNode modJson = getObjectMapper().readTree(inputStream);
-                    String modId = null;
+                    jarFile = new JarFile(mod);
+                    jarEntry = jarFile.getJarEntry("META-INF/fml_cache_annotation.json");
+                    inputStream = jarFile.getInputStream(jarEntry);
+                } catch (Exception ex) {
+                    LOG.error("Can not scan " + mod);
+                }
 
-                    //base of json
-                    for (JsonNode node : modJson) {
+                try {
 
-                        try {
-                            // iterate though annotations
-                            for (JsonNode child : node.get("annotations")) {
+                    if (inputStream != null) {
 
-                                // Get the modId
-                                try {
-                                    if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
-                                        modId = child.get("values").get("modid").get("value").asText();
-                                    }
-                                } catch (NullPointerException ignored) {
+                        JsonNode modJson = getObjectMapper().readTree(inputStream);
 
-                                }
+                        //base of json
+                        for (JsonNode node : modJson) {
 
-                                // Add mod to list of clientmods if clientSideOnly is true
-                                try {
-                                    if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
-                                        if (!clientMods.contains(modId)) {
-                                            clientMods.add(modId);
+                            try {
+                                // iterate though annotations
+                                for (JsonNode child : node.get("annotations")) {
 
-                                            LOG.debug("Added clientMod: " + modId);
+                                    // Get the modId
+                                    try {
+                                        if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
+                                            modId = child.get("values").get("modid").get("value").asText();
                                         }
+                                    } catch (NullPointerException ignored) {
+
                                     }
-                                } catch (NullPointerException ignored) {
 
-                                }
+                                    // Add mod to list of clientmods if clientSideOnly is true
+                                    try {
+                                        if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
+                                            if (!clientMods.contains(modId)) {
+                                                clientMods.add(modId);
 
-                                // Get dependency modIds
-                                try {
-                                    if (!child.get("values").get("dependencies").get("value").asText().isEmpty()) {
+                                                LOG.debug("Added clientMod: " + modId);
+                                            }
+                                        }
+                                    } catch (NullPointerException ignored) {
 
-                                        if (child.get("values").get("dependencies").get("value").asText().contains(";")) {
+                                    }
 
-                                            String [] dependencies = child.get("values").get("dependencies").get("value").asText().split(";");
+                                    // Get dependency modIds
+                                    try {
+                                        if (!child.get("values").get("dependencies").get("value").asText().isEmpty()) {
 
-                                            for (String dependency : dependencies) {
+                                            if (child.get("values").get("dependencies").get("value").asText().contains(";")) {
 
-                                                if (dependency.matches("(before:.*|after:.*|)")) {
+                                                String [] dependencies = child.get("values").get("dependencies").get("value").asText().split(";");
 
-                                                    dependency = dependency.substring(dependency.lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
+                                                for (String dependency : dependencies) {
+
+                                                    if (dependency.matches("(before:.*|after:.*|)")) {
+
+                                                        dependency = dependency.substring(dependency.lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
+
+                                                        if (!modDependencies.contains(dependency) && !dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
+                                                            modDependencies.add(dependency);
+
+                                                            LOG.debug("Added dependency " + dependency);
+                                                        }
+
+                                                    }
+
+                                                }
+                                            } else {
+                                                if (child.get("values").get("dependencies").get("value").asText().matches("(before:.*|after:.*|)")) {
+
+                                                    String dependency = child.get("values").get("dependencies").get("value").asText().substring(child.get("values").get("dependencies").get("value").asText().lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
 
                                                     if (!modDependencies.contains(dependency) && !dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
                                                         modDependencies.add(dependency);
@@ -2176,37 +2281,44 @@ public class ServerPackHandler {
                                                     }
 
                                                 }
-
                                             }
-                                        } else {
-                                            if (child.get("values").get("dependencies").get("value").asText().matches("(before:.*|after:.*|)")) {
 
-                                                String dependency = child.get("values").get("dependencies").get("value").asText().substring(child.get("values").get("dependencies").get("value").asText().lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
-
-                                                if (!modDependencies.contains(dependency) && !dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
-                                                    modDependencies.add(dependency);
-
-                                                    LOG.debug("Added dependency " + dependency);
-                                                }
-
-                                            }
                                         }
+                                    } catch (NullPointerException ignored) {
 
                                     }
-                                } catch (NullPointerException ignored) {
 
                                 }
 
-                            }
+                            } catch (NullPointerException ignored) {
 
-                        } catch (NullPointerException ignored) {
+                            }
 
                         }
 
                     }
 
-                    inputStream.close();
-                } catch(IOException ignored) {
+                } catch(IOException ex) {
+
+                    LOG.error("Couldn't acquire sideness for mod " + mod,ex);
+
+                } finally {
+
+                    try {
+                        //noinspection ConstantConditions
+                        jarFile.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    try {
+                        //noinspection ConstantConditions
+                        inputStream.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    jarEntry = null;
 
                 }
 
@@ -2223,58 +2335,94 @@ public class ServerPackHandler {
 
         //After removing dependencies from the list of potential clientside mods, we can remove any mod that says it is clientside-only.
         for (File mod : filesInModsDir) {
+
+            String modToCheck = mod.toString().replace("\\", "/");
+            String modIdTocheck = null;
+
+            boolean addToDelta = false;
+
+            JarFile jarFile = null;
+            JarEntry jarEntry = null;
+            InputStream inputStream = null;
+
+            try {
+                jarFile = new JarFile(mod);
+                jarEntry = jarFile.getJarEntry("META-INF/fml_cache_annotation.json");
+                inputStream = jarFile.getInputStream(jarEntry);
+            } catch (Exception ex) {
+                LOG.error("Can not scan " + mod);
+            }
+
             try {
 
-                String modToCheck = mod.toString().replace("\\", "/");
-                URL urlToJson = new URL(String.format("jar:file:%s!/META-INF/fml_cache_annotation.json", modToCheck));
-                InputStream inputStream = urlToJson.openStream();
-                JsonNode modJson = getObjectMapper().readTree(inputStream);
-                String modIdTocheck = null;
+                if (inputStream != null) {
 
-                boolean addToDelta = false;
+                    JsonNode modJson = getObjectMapper().readTree(inputStream);
 
-                //base of json
-                for (JsonNode node : modJson) {
+                    //base of json
+                    for (JsonNode node : modJson) {
 
-                    try {
-                        // iterate though annotations
-                        for (JsonNode child : node.get("annotations")) {
+                        try {
+                            // iterate though annotations
+                            for (JsonNode child : node.get("annotations")) {
 
-                            // Get the modId
-                            try {
-                                if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
-                                    modIdTocheck = child.get("values").get("modid").get("value").asText();
-                                }
-                            } catch (NullPointerException ignored) {
-
-                            }
-
-                            // Add mod to list of clientmods if clientSideOnly is true
-                            try {
-                                if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
-                                    if (clientMods.contains(modIdTocheck)) {
-                                        addToDelta = true;
+                                // Get the modId
+                                try {
+                                    if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
+                                        modIdTocheck = child.get("values").get("modid").get("value").asText();
                                     }
+                                } catch (NullPointerException ignored) {
+
                                 }
-                            } catch (NullPointerException ignored) {
+
+                                // Add mod to list of clientmods if clientSideOnly is true
+                                try {
+                                    if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
+                                        if (clientMods.contains(modIdTocheck)) {
+                                            addToDelta = true;
+                                        }
+                                    }
+                                } catch (NullPointerException ignored) {
+
+                                }
 
                             }
+                        } catch (NullPointerException ignored) {
 
                         }
-                    } catch (NullPointerException ignored) {
+
+                    }
+
+                    if (addToDelta) {
+                        modsDelta.add(modToCheck);
 
                     }
 
                 }
 
-                if (addToDelta) {
-                    modsDelta.add(modToCheck);
+
+            } catch (Exception ex) {
+
+                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+
+            } finally {
+
+                try {
+                    //noinspection ConstantConditions
+                    jarFile.close();
+                } catch (Exception ignored) {
 
                 }
 
-                inputStream.close();
+                try {
+                    //noinspection ConstantConditions
+                    inputStream.close();
+                } catch (Exception ignored) {
 
-            } catch (IOException ignored) {
+                }
+
+                jarEntry = null;
+
             }
         }
 
