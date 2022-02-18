@@ -1,3 +1,15 @@
+## [3.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.2...3.0.0-beta.3) (2022-02-18)
+
+
+### 📔 Docs
+
+* Do not display the version *dev* in the title of the Java documentation ([124c19f](https://git.griefed.de/Griefed/ServerPackCreator/commit/124c19f4ac5fe2b6cd291c308890a1338ccf7d6d))
+
+
+### 🛠 Fixes
+
+* Prevent file-lock from mod-sideness-scanning. Thanks to @Seniorendi for reporting. ([28a88dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/28a88dc3890d843677723cbdeed0847f725a4533))
+
 ## [3.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.1...3.0.0-beta.2) (2022-02-14)
 
 
