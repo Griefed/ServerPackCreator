@@ -383,7 +383,7 @@ pages:
     - chmod +x gradlew
     - "./gradlew clean"
   script:
-    - "./gradlew javaDoc --info -x test"
+    - "./gradlew javaDoc -Pversion='' --info -x test"
     - cp -Rf build/docs/javadoc public
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto public
   only:

@@ -1306,22 +1306,11 @@ public class TabCreateServerPack extends JComponent {
 
                     labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.ready"));
 
-                    tailer.stop();
-
-                    BUTTON_GENERATESERVERPACK.setEnabled(true);
-                    FRAME_SERVERPACKCREATOR.setResizable(true);
-
-                    System.gc();
-                    System.runFinalization();
-
-                    executorService.shutdown();
                 }
 
             } else {
 
                 labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.fail"));
-
-                tailer.stop();
 
                 if (encounteredErrors.size() > 0) {
 
@@ -1341,13 +1330,18 @@ public class TabCreateServerPack extends JComponent {
                             UIManager.getIcon("OptionPane.errorIcon")
                     );
                 }
-
-                BUTTON_GENERATESERVERPACK.setEnabled(true);
-                FRAME_SERVERPACKCREATOR.setResizable(true);
-
-                System.gc();
-                System.runFinalization();
             }
+
+            tailer.stop();
+
+            BUTTON_GENERATESERVERPACK.setEnabled(true);
+            FRAME_SERVERPACKCREATOR.setResizable(true);
+
+            System.gc();
+            System.runFinalization();
+
+            executorService.shutdown();
+
         });
     }
 
