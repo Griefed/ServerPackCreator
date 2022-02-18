@@ -60,6 +60,7 @@ public class ApplicationPropertiesController {
 
     @GetMapping(produces = "application/json")
     public String getConfiguration() {
+        // TODO: Fix formatting and content
         /*return "{" +
                 "\"FILE_SERVERPACKCREATOR_PROPERTIES\":\"" + APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES + "\"," +
                 "\"FILE_WINDOWS\":\"" + APPLICATIONPROPERTIES.FILE_WINDOWS + "\"," +
