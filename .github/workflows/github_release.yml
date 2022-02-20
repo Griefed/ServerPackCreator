@@ -3,8 +3,7 @@ name: Create GitHub Release after GitLab tag mirror
 on:
   push:
     tags:
-      - '!*.*.*-*.*'
-  workflow_dispatch:
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   release:

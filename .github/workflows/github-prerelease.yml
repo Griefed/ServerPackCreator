@@ -3,8 +3,9 @@ name: Create GitHub Pre-Release after GitLab tag mirror
 on:
   push:
     tags:
-      - '*.*.*-*.*'
-  workflow_dispatch:
+      - '[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-pre.[0-9]+'
 
 jobs:
   release:
