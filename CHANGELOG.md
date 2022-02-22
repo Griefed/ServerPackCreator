@@ -1,3 +1,23 @@
+## [3.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.3...3.0.0-beta.4) (2022-02-21)
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node from 17.0.17 to 17.0.19 in /frontend ([8ae217b](https://git.griefed.de/Griefed/ServerPackCreator/commit/8ae217bf2b621f060b77d18b13f696c2c770e890))
+* **deps-dev:** bump @typescript-eslint/eslint-plugin in /frontend ([9cccb82](https://git.griefed.de/Griefed/ServerPackCreator/commit/9cccb82e522181a5017ac1c879ebde65e1f30dfc))
+* **deps-dev:** bump @typescript-eslint/parser in /frontend ([ca93040](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca93040d6b76c1f538f66a8fd8ccdb118976b744))
+* **deps-dev:** bump eslint-config-prettier in /frontend ([e3f70e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/e3f70e1dd7cbd9433b009fc7b6ff690d111cc5f5))
+* **deps:** bump griefed/baseimage-ubuntu-jdk-8 from 2.0.4 to 2.0.5 ([6bbacef](https://git.griefed.de/Griefed/ServerPackCreator/commit/6bbacef14f16213d42c3d2a83e0aeacc1837cb95))
+* **deps:** bump JamesIves/github-pages-deploy-action ([c63a20d](https://git.griefed.de/Griefed/ServerPackCreator/commit/c63a20d71daec6684ed437857b7c6920859c34dc))
+* **deps:** bump tsparticles from 1.41.1 to 1.41.4 in /frontend ([dc8440e](https://git.griefed.de/Griefed/ServerPackCreator/commit/dc8440e0ad9689c2336c7e72918d1e3e6e7ceb05))
+* **GitHub:** Correctly execute (pre)release actions when tags are pushed. ([19c24c3](https://git.griefed.de/Griefed/ServerPackCreator/commit/19c24c3aa0f504ca3f1a7e0c726c8d08ff578b79))
+
+
+### Other
+
+* **deps:** update dependency core-js to v3.21.1 ([9c612f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c612f2d94cf8001789ba2ee3327d0836fe5e40d))
+* **deps:** update dependency tsparticles to v1.41.2 ([b777818](https://git.griefed.de/Griefed/ServerPackCreator/commit/b777818b5f455b60e742f0bcd0d7fe93821472bc))
+
 ## [3.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.2...3.0.0-beta.3) (2022-02-18)
 
 
