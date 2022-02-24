@@ -4,7 +4,7 @@
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-Pversion=6.6.6-alpha.666 --info --stacktrace -x test" />
+      <option name="scriptParameters" value="-Pversion=3.0.0-beta.3 --info --stacktrace -x test" />
       <option name="taskDescriptions">
         <list />
       </option>
