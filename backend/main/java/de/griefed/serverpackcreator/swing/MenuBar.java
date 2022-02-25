@@ -85,7 +85,7 @@ public class MenuBar extends Component {
     private final Dimension JAVAARGSDIMENSION = new Dimension(750,25);
     private final Dimension ABOUTDIMENSION = new Dimension(925,520);
     private final Dimension FILETOOLARGEDIMENSION = new Dimension(200,10);
-    private final Dimension HELPDIMENSION = new Dimension(750,200);
+    private final Dimension HELPDIMENSION = new Dimension(750,300);
 
     private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/help.png")));
     private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/hastebin.png")));
