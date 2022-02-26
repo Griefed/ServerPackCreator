@@ -131,31 +131,31 @@ A list of known issues can be found in [Known Issues](https://github.com/Griefed
 1. **Generate a config step-by-step by running with argument**`-cgen`
 2. **Install a Forge or Fabric modloader server in your server pack**
 3. **Configurable list of clientside-only mods to not include your server pack**
-    1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`.
+   1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`.
 4. **Configurable list of directories from your modpack to include in your server pack**
-    2. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
-    3. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
-    4. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
-    5. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
+   1. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
+   2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
+   3. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
+   4. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
 5. **Generate Forge or Fabric start-scripts in your server pack**
-    6. Specify JVM flags / Java Args for your start scripts!
+   1. Specify JVM flags / Java Args for your start scripts!
 6. **Include a server-icon.png-file in your server pack**
-    7. Replace the file in `server-files` with your own!
+   1. Replace the file in `server-files` with your own!
 7. **Include a server.properties-file in your server pack**
-    8. Replace the file in `server-files` with your own!
+   1. Replace the file in `server-files` with your own!
 8. **Create a ZIP-archive of your server pack**
 9. **GUI to fully configure and run ServerPackCreator**
-    9. Load existing config.
-    10. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
-    11. Logs from last run in separate tabs.
-    12. Set a suffix for the server pack to be generated.
-    13. And much more!
+   1. Load existing config.
+   2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
+   3. Logs from last run in separate tabs.
+   4. Set a suffix for the server pack to be generated.
+   5. And much more!
 10. **Webservice**
-    14. Generate a server pack from zipped up modpacks.
-    15. All generated server packs available for download to everyone.
+   1. Generate a server pack from zipped up modpacks.
+   2. All generated server packs available for download to everyone.
 11. **Addons!**
-    16. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
-    17. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
+   1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
+   2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
 # 3. Versions
 
@@ -204,15 +204,15 @@ Some examples for potential addons can be found [in this discussion thread](http
 
 Some excerpts:
 1. Changelog generator, by @TheButterbrotMan at [Feature request]: Changelog generator #198
-    - A changelog generator that checks the differences to the previous version and generates a changelog.
+   - A changelog generator that checks the differences to the previous version and generates a changelog.
 
 2. Bundle Adoptium Java with server packs, by @kreezxil at [Feature request]: Bundle Adoptium Java #199
-    - Because modpacks need one of the either Java 8, 16, or 17, it would be nice to have the corresponding https://adoptium.net java prebundled with the server pack.
+   - Because modpacks need one of the either Java 8, 16, or 17, it would be nice to have the corresponding https://adoptium.net java prebundled with the server pack.
 
 3. Automatic setup of a server pack for [BlueMap](https://www.curseforge.com/minecraft/mc-mods/bluemap)
-    - Check all mods in the specified modpacks mods-directory for textures, and if any are found, add the mod to
-      BlueMap's resourcepack folder `config/bluemap/resourcepacks`, install BlueMap for the specified Minecraft and Forge/Fabric
-      version and voilà!
+   - Check all mods in the specified modpacks mods-directory for textures, and if any are found, add the mod to
+     BlueMap's resourcepack folder `config/bluemap/resourcepacks`, install BlueMap for the specified Minecraft and Forge/Fabric
+     version and voilà!
 
 # 5. Configuration
 
@@ -250,7 +250,9 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 | includeServerProperties   | Whether to include server.properties in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | includeZipCreation        | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                   |
 | javaArgs                  | JVM flags / Java Args to add to the generated start-scripts. Set to "empty" to not use any in your start-scripts.                                                                                                                                                                                                                                                                                                                                                                                                     |
-| serverPackSuffix          | A suffix to append to the name of the server pack directory and server pack ZIP-archive                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| serverPackSuffix          | A suffix to append to the name of the server pack directory and server pack ZIP-archive. Illegal characters are / < > : " \ &#124; ? * # % & { } $ ! ' @ + ´ ` = and must not end with a SPACE<code>&#32;&#32;</code> or a DOT<code>&#32;.&#32;&#32;</code>                                                                                                                                                                                                                                                           |                                                                                                                                                                                                                                                                                                                                                                                           |
+| serverIconPath            | Path to a custom server-icon.png-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| serverPropertiesPath      | Path to a custom server.properties-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 

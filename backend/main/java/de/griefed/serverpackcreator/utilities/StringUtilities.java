@@ -52,4 +52,67 @@ public class StringUtilities {
 
         return stringBuilder.toString();
     }
+
+    /**
+     * Remove commonly forbidden characters from the passed string, making the resulting String safe to use for files, paths,
+     * directories etc. If the passed text ends with a SPACE<code>(&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
+     * Replaced/removed are:
+     * <ul>
+     *     <li><b>&#47;</b></li>
+     *     <li><b>&#60;</b></li>
+     *     <li><b>&#62;</b></li>
+     *     <li><b>&#58;</b></li>
+     *     <li><b>&#34;</b></li>
+     *     <li><b>&#92;</b></li>
+     *     <li><b>&#124;</b></li>
+     *     <li><b>&#63;</b></li>
+     *     <li><b>&#42;</b></li>
+     *     <li><b>&#35;</b></li>
+     *     <li><b>&#37;</b></li>
+     *     <li><b>&#38;</b></li>
+     *     <li><b>&#123;</b></li>
+     *     <li><b>&#125;</b></li>
+     *     <li><b>&#36;</b></li>
+     *     <li><b>&#33;</b></li>
+     *     <li><b>&#39;</b></li>
+     *     <li><b>&#64;</b></li>
+     *     <li><b>&#43;</b></li>
+     *     <li><b>&#180;</b></li>
+     *     <li><b>&#96;</b></li>
+     *     <li><b>&#61;</b></li>
+     * </ul><br>
+     * @author Griefed
+     * @param text {@link String} The text which you want to be made safe.
+     * @return {@link String} The passed String safe for use for files, paths, directories etc.
+     */
+    public String pathSecureText(String text) {
+
+        while (text.endsWith(".") || text.endsWith(" ")) {
+            text = text.replace(text.substring(text.length() - 1),"");
+        }
+
+        return text
+                .replace("/","")
+                .replace("<","")
+                .replace(">","")
+                .replace(":","")
+                .replace("\"","")
+                .replace("\\","")
+                .replace("|","")
+                .replace("?","")
+                .replace("*","")
+                .replace("#","")
+                .replace("%","")
+                .replace("&","")
+                .replace("{","")
+                .replace("}","")
+                .replace("$","")
+                .replace("!","")
+                .replace("'","")
+                .replace("@","")
+                .replace("+","")
+                .replace("´","")
+                .replace("`","")
+                .replace("=","");
+    }
 }

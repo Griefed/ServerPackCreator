@@ -1359,13 +1359,13 @@ public class TabCreateServerPack extends JComponent {
         List<String> tempCopyDirs = LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
 
         CONFIGUTILITIES.writeConfigToFile(
-                TEXTFIELD_MODPACKDIRECTORY.getText(),
+                TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\","/"),
                 tempClientMods,
                 tempCopyDirs,
-                TEXTFIELD_SERVERICONPATH.getText(),
-                TEXTFIELD_SERVERPROPERTIESPATH.getText(),
+                TEXTFIELD_SERVERICONPATH.getText().replace("\\","/"),
+                TEXTFIELD_SERVERPROPERTIESPATH.getText().replace("\\","/"),
                 checkBoxServer.isSelected(),
-                TEXTFIELD_JAVAPATH.getText(),
+                TEXTFIELD_JAVAPATH.getText().replace("\\","/"),
                 chosenMinecraftVersion,
                 getChosenModloader(),
                 getSelectedModloaderVersion(),
@@ -1373,7 +1373,7 @@ public class TabCreateServerPack extends JComponent {
                 checkBoxProperties.isSelected(),
                 checkBoxZIP.isSelected(),
                 getJavaArgs(),
-                TEXTFIELD_SERVERPACKSUFFIX.getText(),
+                STRINGUTILITIES.pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
                 configFile
         );
     }
@@ -1536,7 +1536,7 @@ public class TabCreateServerPack extends JComponent {
 
             setJavaArgs(config.getOrElse("javaArgs","empty"));
 
-            TEXTFIELD_SERVERPACKSUFFIX.setText(config.getOrElse("serverPackSuffix",""));
+            TEXTFIELD_SERVERPACKSUFFIX.setText(STRINGUTILITIES.pathSecureText(config.getOrElse("serverPackSuffix","")));
 
         } catch (NullPointerException ex) {
 

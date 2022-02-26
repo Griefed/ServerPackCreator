@@ -1,3 +1,15 @@
+## [3.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.4...3.0.0-beta.5) (2022-02-25)
+
+
+### 🛠 Fixes
+
+* **VersionChecker:** Update VersionChecker to version 1.0.6, closing issue [#256](https://git.griefed.de/Griefed/ServerPackCreator/issues/256) on GitHub. ([08c16ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/08c16ca21006007263a9d903fbce9522c55ed5a5))
+
+
+### Other
+
+* **Icon:** Update icon template with layers for Addons Overview and Example Addon ([3df0c10](https://git.griefed.de/Griefed/ServerPackCreator/commit/3df0c101e98ee8e403a6dd2770ecb8b8e6e0577f))
+
 ## [3.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.3...3.0.0-beta.4) (2022-02-21)
 
 

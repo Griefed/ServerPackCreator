@@ -336,9 +336,9 @@ public class ConfigurationHandler {
             configurationModel.setModLoaderVersion(config.getOrElse("modLoaderVersion",""));
             configurationModel.setJavaArgs(config.getOrElse("javaArgs","empty"));
 
-            configurationModel.setServerPackSuffix(config.getOrElse("serverPackSuffix",""));
-            configurationModel.setServerIconPath(config.getOrElse("serverIconPath",""));
-            configurationModel.setServerPropertiesPath(config.getOrElse("serverPropertiesPath",""));
+            configurationModel.setServerPackSuffix(STRINGUTILITIES.pathSecureText(config.getOrElse("serverPackSuffix","")));
+            configurationModel.setServerIconPath(config.getOrElse("serverIconPath","").replace("\\", "/"));
+            configurationModel.setServerPropertiesPath(config.getOrElse("serverPropertiesPath","").replace("\\", "/"));
 
             configurationModel.setIncludeServerInstallation(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
             configurationModel.setIncludeServerIcon(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
