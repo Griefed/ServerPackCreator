@@ -15,7 +15,7 @@ plugins {
     id 'maven-publish'
     id 'java-library'
 
-    id 'edu.sc.seis.launch4j' version '2.5.1'
+    id 'edu.sc.seis.launch4j' version '2.5.2'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
 
     id 'org.springframework.boot' version '2.6.3'
