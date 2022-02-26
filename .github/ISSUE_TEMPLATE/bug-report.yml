@@ -15,7 +15,7 @@ body:
       label: What happened?
       description: Describe, in detail, what happened.
       placeholder: Tell us what you see!
-      value: "Detailed explanation on what happened goes here!"
+      value: "Your detailed explanation on what happened goes here!"
     validations:
       required: true
   - type: textarea
