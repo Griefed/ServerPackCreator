@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10};
+var methods = {"i0":10,"i1":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -152,6 +152,13 @@ extends java.lang.Object</pre>
 <div class="block">Converts a sequence of Strings, for example from a list, into a concatenated String.</div>
 </td>
 </tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/StringUtilities.html#pathSecureText-java.lang.String-">pathSecureText</a></span>(java.lang.String&nbsp;text)</code>
+<div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe to use for files, paths,
+ directories etc.</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -195,7 +202,7 @@ public&nbsp;StringUtilities()</pre>
 <a name="buildString-java.lang.String...-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>buildString</h4>
 <pre>public&nbsp;java.lang.String&nbsp;buildString(java.lang.String...&nbsp;args)</pre>
@@ -205,6 +212,48 @@ public&nbsp;StringUtilities()</pre>
 <dd><code>args</code> - Strings that will be concatenated into one string</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns concatenated string that contains all provided values.</dd>
+</dl>
+</li>
+</ul>
+<a name="pathSecureText-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>pathSecureText</h4>
+<pre>public&nbsp;java.lang.String&nbsp;pathSecureText(java.lang.String&nbsp;text)</pre>
+<div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe to use for files, paths,
+ directories etc. If the passed text ends with a SPACE<code>(&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
+ Replaced/removed are:
+ <ul>
+     <li><b>&#47;</b></li>
+     <li><b>&#60;</b></li>
+     <li><b>&#62;</b></li>
+     <li><b>&#58;</b></li>
+     <li><b>&#34;</b></li>
+     <li><b>&#92;</b></li>
+     <li><b>&#124;</b></li>
+     <li><b>&#63;</b></li>
+     <li><b>&#42;</b></li>
+     <li><b>&#35;</b></li>
+     <li><b>&#37;</b></li>
+     <li><b>&#38;</b></li>
+     <li><b>&#123;</b></li>
+     <li><b>&#125;</b></li>
+     <li><b>&#36;</b></li>
+     <li><b>&#33;</b></li>
+     <li><b>&#39;</b></li>
+     <li><b>&#64;</b></li>
+     <li><b>&#43;</b></li>
+     <li><b>&#180;</b></li>
+     <li><b>&#96;</b></li>
+     <li><b>&#61;</b></li>
+ </ul><br></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>text</code> - <code>String</code> The text which you want to be made safe.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>String</code> The passed String safe for use for files, paths, directories etc.</dd>
 </dl>
 </li>
 </ul>
