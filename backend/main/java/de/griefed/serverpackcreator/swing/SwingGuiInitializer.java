@@ -74,6 +74,7 @@ public class SwingGuiInitializer extends JPanel {
     private final SystemUtilities SYSTEMUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
+    private final UpdateChecker UPDATECHECKER;
 
     private final LightTheme LIGHTTHEME = new LightTheme();
     private final DarkTheme DARKTHEME = new DarkTheme();
@@ -95,8 +96,6 @@ public class SwingGuiInitializer extends JPanel {
     private final MenuBar MENUBAR;
 
     private BufferedImage bufferedImage;
-
-    private final String update;
 
     /**
      * <strong>Constructor</strong><p>
@@ -120,7 +119,7 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedStringUtilities Instance of {@link StringUtilities}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
-     * @param updater String. Update message fetcher from Main.
+     * @param injectedUpdateChecker Instance of {@link UpdateChecker}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      */
     public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
@@ -128,11 +127,9 @@ public class SwingGuiInitializer extends JPanel {
                                ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister,
                                BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
                                StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities,
-                               String updater, ApplicationPlugins injectedPluginManager) {
+                               UpdateChecker injectedUpdateChecker, ApplicationPlugins injectedPluginManager) {
 
         super(new GridLayout(1, 1));
-
-        this.update = updater;
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -176,19 +173,22 @@ public class SwingGuiInitializer extends JPanel {
         }
 
         if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES,
+                    APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER,
+                    BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER,
+                    APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
@@ -200,9 +200,17 @@ public class SwingGuiInitializer extends JPanel {
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER,
+                    APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES,
+                    CONFIGUTILITIES, APPLICATIONPLUGINS);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
+        }
+
+        if (injectedUpdateChecker == null) {
+            this.UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        } else {
+            this.UPDATECHECKER = injectedUpdateChecker;
         }
 
         try {
@@ -214,7 +222,9 @@ public class SwingGuiInitializer extends JPanel {
         this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui") + " - " + APPLICATIONPROPERTIES.getServerPackCreatorVersion());
 
         this.TAB_CREATESERVERPACK = new TabCreateServerPack(
-                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, VERSIONLISTER, APPLICATIONPROPERTIES, FRAME_SERVERPACKCREATOR, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, APPLICATIONPLUGINS
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, VERSIONLISTER, APPLICATIONPROPERTIES,
+                FRAME_SERVERPACKCREATOR, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES,
+                APPLICATIONPLUGINS
         );
 
         this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(
@@ -375,9 +385,11 @@ public class SwingGuiInitializer extends JPanel {
      */
     private void displayUpdateDialog() {
 
-        if (!update.equals(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"))) {
-            String version = update.split(";")[0];
-            String url = update.split(";")[1];
+        String updater = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+
+        if (updater.contains(";")) {
+            String version = updater.split(";")[0];
+            String url = updater.split(";")[1];
             String textContent = String.format(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.new"), url);
 
             StyledDocument styledDocument = new DefaultStyledDocument();

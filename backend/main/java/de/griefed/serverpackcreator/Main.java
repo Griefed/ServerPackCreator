@@ -145,12 +145,6 @@ public class Main {
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"), systemInformation.get("osVersion")));
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
 
-        String updater = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES).checkForUpdate();
-
-        if (!updater.equals(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"))) {
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.newupdate"), updater.split(";")[0], updater.split(";")[1]));
-        }
-
         // Print help and information about ServerPackCreator which could help the user figure out what to do.
         if (Arrays.asList(args).contains("-help")) {
             LOG.debug("Issued printing of help.");
@@ -213,69 +207,84 @@ public class Main {
 
         } else {
 
-            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, DEFAULTFILES, args, updater);
+            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, args);
 
         }
     }
 
-    private static void regular(ApplicationProperties applicationProperties, LocalizationManager localizationManager, DefaultFiles defaultFiles, String[] args, String updater) {
+    private static void regular(ApplicationProperties APPLICATIONPROPERTIES, LocalizationManager LOCALIZATIONMANAGER, String[] args) {
 
         ListUtilities LISTUTILITIES = new ListUtilities();
         StringUtilities STRINGUTILITIES = new StringUtilities();
         SystemUtilities SYSTEMUTILITIES = new SystemUtilities();
 
+        UpdateChecker UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+
         VersionLister VERSIONLISTER = new VersionLister(
-                applicationProperties
+                APPLICATIONPROPERTIES
         );
 
         BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(
-                localizationManager, applicationProperties
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
         );
 
         ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(
-                localizationManager, BOOLEANUTILITIES, LISTUTILITIES, applicationProperties, STRINGUTILITIES, VERSIONLISTER
+                LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES,
+                VERSIONLISTER
         );
 
         CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
-                localizationManager, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES,
+                STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
         );
 
         ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
-                localizationManager, CURSECREATEMODPACK, VERSIONLISTER, applicationProperties, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
+                LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES,
+                LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
         );
 
         ConfigurationCreator CONFIGURATIONCREATOR = new ConfigurationCreator(
-                localizationManager, CONFIGURATIONHANDLER, BOOLEANUTILITIES, applicationProperties, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, BOOLEANUTILITIES, APPLICATIONPROPERTIES, LISTUTILITIES,
+                STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
         );
 
         ApplicationPlugins APPLICATIONPLUGINS = new ApplicationPlugins();
 
         ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
-                localizationManager, CURSECREATEMODPACK, CONFIGURATIONHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS
+                LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER,
+                BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS
         );
 
         if (Arrays.asList(args).contains("-cgen")) {
 
+            checkForUpdate(LOCALIZATIONMANAGER, UPDATECHECKER, APPLICATIONPROPERTIES);
+
             // Start generation of a new configuration file with user input.
             CONFIGURATIONCREATOR.createConfigurationFile();
 
-            runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, applicationProperties);
+            runHeadless(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES);
 
             // Start ServerPackCreator in commandline mode.
         } else if (Arrays.asList(args).contains("-cli") || GraphicsEnvironment.isHeadless()) {
 
-            runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, applicationProperties, CONFIGURATIONCREATOR);
+            checkForUpdate(LOCALIZATIONMANAGER, UPDATECHECKER, APPLICATIONPROPERTIES);
+
+            runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES, CONFIGURATIONCREATOR);
 
             // If the environment is headless, so no possibility for GUI, start in commandline-mode.
         } else if (GraphicsEnvironment.isHeadless()) {
 
-            runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, applicationProperties, CONFIGURATIONCREATOR);
+            checkForUpdate(LOCALIZATIONMANAGER, UPDATECHECKER, APPLICATIONPROPERTIES);
+
+            runHeadlessWithPreChecks(CONFIGURATIONHANDLER, SERVERPACKHANDLER, APPLICATIONPROPERTIES, CONFIGURATIONCREATOR);
 
             // If no mode is specified, and we have a graphical environment, start in GUI mode.
         } else {
 
             SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
-                    localizationManager, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, applicationProperties, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, updater, APPLICATIONPLUGINS
+                    LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, APPLICATIONPROPERTIES,
+                    VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES,
+                    UPDATECHECKER, APPLICATIONPLUGINS
             );
 
             swingGuiInitializer.mainGUI();
@@ -314,6 +323,19 @@ public class Main {
 
             MainSpringBoot.main(args);
 
+        }
+    }
+
+    private static void checkForUpdate(LocalizationManager LOCALIZATIONMANAGER, UpdateChecker UPDATECHECKER, ApplicationProperties APPLICATIONPROPERTIES) {
+
+        String updater = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+
+        if (updater.contains(";")) {
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.available"));
+            LOG.info("    " + updater.split(";")[0]);
+            LOG.info("    " + updater.split(";")[1]);
+        } else {
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"));
         }
     }
 

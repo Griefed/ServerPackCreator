@@ -25,6 +25,7 @@ import de.griefed.versionchecker.github.GitHubChecker;
 import de.griefed.versionchecker.gitlab.GitLabChecker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -116,65 +117,94 @@ public class UpdateChecker {
     }
 
     /**
+     * Getter for the instance of our {@link GitHubChecker}.
+     * @author Griefed
+     * @return {@link GitHubChecker}.
+     */
+    public GitHubChecker getGitHub() {
+        return GITHUB;
+    }
+
+    /**
+     * Getter for the instance of our {@link GitLabChecker} for GitLab.
+     * @author Griefed
+     * @return {@link GitLabChecker}.
+     */
+    public GitLabChecker getGitLab() {
+        return GITLAB;
+    }
+
+    /**
+     * Getter for the instance of our {@link GitLabChecker} for GitGriefed.
+     * @author Griefed
+     * @return {@link GitLabChecker}.
+     */
+    public GitLabChecker getGitGriefed() {
+        return GITGRIEFED;
+    }
+
+    /**
      * Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.
      * @author Griefed
+     * @param version {@link String} The version for which to check for updates.
+     * @param preReleaseCheck {@link Boolean} Whether to check pre-releases as well. Use <code>true</code> to check pre-releases
+     *                                       as well, <Code>false</Code> to only check with regular releases.
      * @return {@link String} The update, if available, as well as the download URL.
      */
-    public String checkForUpdate() {
-        String updater = LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
+    public String checkForUpdate(@NotNull String version, Boolean preReleaseCheck) {
 
-        if (!APPLICATIONPROPERTIES.getServerPackCreatorVersion().equals("dev")) {
-
-            if (GITHUB != null) {
-                LOG.debug("Checking GitLab for updates...");
-
-                // Check GitHub for the most recent release.
-                // Check GitHub for new versions, with/without pre-releases depending on property.
-                updater = GITHUB.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-            }
-
-
-            if (GITGRIEFED != null) {
-                LOG.debug("Checking GitGriefed for updates...");
-
-                // After checking GitHub, and we did not get a version, check GitGriefed.
-                // Check GitGriefed for new versions, with/without pre-releases depending on property.
-                // Only check if we did not already get a version from prior checks.
-                if (!updater.contains(";") && GITGRIEFED.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-
-                    updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-
-                // Check GitGriefed for a newer version, with the version received from GitHub, if we received a new version from GitHub.
-                // With/without pre-releases depending on property.
-                } else if (updater.contains(";") && GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-
-                    updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-                }
-            }
-
-
-            if (GITLAB != null) {
-                LOG.debug("Checking GitHub for updates...");
-
-                // After checking GitGriefed, and we did not get a version, check GitLab.
-                // Check GitLab for new versions, with/without pre-releases depending on property.
-                // Only check if we did not already get a version from prior checks.
-                if (!updater.contains(";") && GITLAB.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-
-                    updater = GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-
-                // Check GitLab for a newer version, with the version we received from GitGriefed, if we received a new version from GitGriefed.
-                // With/without pre-releases depending on property.
-                } else if (updater.contains(";") && GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases()).contains(";")) {
-
-                    updater = GITLAB.checkForUpdate(updater.split(";")[0], APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-                }
-            }
-
+        if (version.equalsIgnoreCase("dev")) {
+            return LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
         }
+
+        String updater = null;
+
+        if (GITHUB != null) {
+            LOG.debug("Checking GitLab for updates...");
+
+            // Check GitHub for the most recent release.
+            updater = GITHUB.checkForUpdate(version, preReleaseCheck);
+        }
+
+        if (GITGRIEFED != null && updater != null) {
+            LOG.debug("Checking GitGriefed for updates...");
+
+            // After checking GitHub, and we did not get a version, check GitGriefed.
+            if (!updater.contains(";") && GITGRIEFED.checkForUpdate(version, preReleaseCheck).contains(";")) {
+
+                updater = GITGRIEFED.checkForUpdate(version, preReleaseCheck);
+
+            // Check GitGriefed for a newer version, with the version received from GitHub, if we received a new version from GitHub.
+            } else if (updater.contains(";") && GITGRIEFED.checkForUpdate(updater.split(";")[0], preReleaseCheck).contains(";")) {
+
+                updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], preReleaseCheck);
+            }
+        }
+
+
+        if (GITLAB != null && updater != null) {
+            LOG.debug("Checking GitHub for updates...");
+
+            // After checking GitGriefed, and we did not get a version, check GitLab.
+            if (!updater.contains(";") && GITLAB.checkForUpdate(version, preReleaseCheck).contains(";")) {
+
+                updater = GITLAB.checkForUpdate(version, preReleaseCheck);
+
+            // Check GitLab for a newer version, with the version we received from GitGriefed, if we received a new version from GitGriefed.
+            } else if (updater.contains(";") && GITLAB.checkForUpdate(updater.split(";")[0], preReleaseCheck).contains(";")) {
+
+                updater = GITLAB.checkForUpdate(updater.split(";")[0], preReleaseCheck);
+            }
+        }
+
 
         LOG.debug("Received " + updater + " from UpdateChecker.");
 
-        return updater;
+
+        if (updater == null) {
+            return LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
+        } else {
+            return updater;
+        }
     }
 }

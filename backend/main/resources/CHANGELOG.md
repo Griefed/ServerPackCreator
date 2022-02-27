@@ -1,3 +1,15 @@
+## [3.0.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.5...3.0.0-beta.6) (2022-02-25)
+
+
+### 💎 Improvements
+
+* **Clientside Mods Help:** Expand help text for clientside only mods with a more detailed explanation of possible ways of configuration ([2ba30ea](https://git.griefed.de/Griefed/ServerPackCreator/commit/2ba30ea8c6727e24f89e133d8dc929fcbefa2228))
+
+
+### Other
+
+* **README:** Fix markdown formatting. Thanks GitHub/IDEA, for showing different renderings of the same markdown file. *le sigh* ([bc780b5](https://git.griefed.de/Griefed/ServerPackCreator/commit/bc780b5f11dc8c0c3999f9fb992e5fbc93e053e7))
+
 ## [3.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.4...3.0.0-beta.5) (2022-02-25)
 
 
