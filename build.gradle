@@ -89,7 +89,7 @@ dependencies {
     embed 'org.springframework.boot:spring-boot-starter-validation:2.6.3'
     embed 'org.springframework.boot:spring-boot-starter-web:2.6.3'
     embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.3'
-    embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.3'
+    embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.4'
     embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.3'
     embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.4'
     embed 'org.apache.activemq:artemis-jms-server:2.19.1'
