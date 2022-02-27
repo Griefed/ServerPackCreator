@@ -18,7 +18,7 @@ plugins {
     id 'edu.sc.seis.launch4j' version '2.5.2'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
 
-    id 'org.springframework.boot' version '2.6.3'
+    id 'org.springframework.boot' version '2.6.4'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
@@ -74,7 +74,7 @@ dependencies {
     embed 'org.xerial:sqlite-jdbc:3.36.0.3'
     embed 'org.pf4j:pf4j:3.6.0'
 
-    embed 'org.apache.logging.log4j:log4j-api:2.17.1'
+    embed 'org.apache.logging.log4j:log4j-api:2.17.2'
     embed 'org.apache.logging.log4j:log4j-core:2.17.1'
     embed 'org.apache.logging.log4j:log4j-web:2.17.1'
     embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
@@ -86,9 +86,9 @@ dependencies {
 
     // WEB
     //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
-    embed 'org.springframework.boot:spring-boot-starter-validation:2.6.3'
+    embed 'org.springframework.boot:spring-boot-starter-validation:2.6.4'
     embed 'org.springframework.boot:spring-boot-starter-web:2.6.4'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.3'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.4'
     embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.4'
     embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.3'
     embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.4'
@@ -102,7 +102,7 @@ dependencies {
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.3'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.4'
     testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
