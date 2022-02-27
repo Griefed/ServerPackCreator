@@ -31,7 +31,7 @@
     "@quasar/extras": "1.12.5",
     "axios": "0.26.0",
     "core-js": "3.21.1",
-    "tsparticles": "1.41.4",
+    "tsparticles": "1.41.5",
     "vue": "3.2.31",
     "quasar": "2.5.5",
     "vue-class-component": "8.0.0-rc.1"
@@ -40,11 +40,11 @@
     "@babel/eslint-parser": "7.17.0",
     "@typescript-eslint/eslint-plugin": "5.12.1",
     "@typescript-eslint/parser": "5.12.1",
-    "eslint": "8.9.0",
+    "eslint": "8.10.0",
     "@types/node": "17.0.19",
     "@quasar/app": "3.3.3",
     "eslint-config-prettier": "8.4.0",
-    "eslint-plugin-vue": "8.4.1",
+    "eslint-plugin-vue": "8.5.0",
     "eslint-webpack-plugin": "3.1.1"
   },
   "browserslist": [
