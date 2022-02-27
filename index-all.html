@@ -235,7 +235,7 @@
 <dd>
 <div class="block">Checks for existence of defaults files.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate--">checkForUpdate()</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate-java.lang.String-java.lang.Boolean-">checkForUpdate(String, Boolean)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
 <dd>
 <div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
 </dd>
@@ -851,6 +851,18 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/VersionLister.html#getForgeVersionsAsList-java.lang.String-">getForgeVersionsAsList(String)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a></dt>
 <dd>
 <div class="block">Getter for the list of FOrge versions for the specified Minecraft version as a String List.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitGriefed--">getGitGriefed()</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
+<dd>
+<div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitGriefed.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitHub--">getGitHub()</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
+<dd>
+<div class="block">Getter for the instance of our <code>GitHubChecker</code>.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitLab--">getGitLab()</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
+<dd>
+<div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitLab.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getId--">getId()</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a></dt>
 <dd>
@@ -1755,7 +1767,7 @@
 <dd>
 <div class="block">This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html#SwingGuiInitializer-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-java.lang.String-de.griefed.serverpackcreator.ApplicationPlugins-">SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, ApplicationProperties, VersionLister, BooleanUtilities, ListUtilities, StringUtilities, ConfigUtilities, SystemUtilities, String, ApplicationPlugins)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html" title="class in de.griefed.serverpackcreator.swing">SwingGuiInitializer</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html#SwingGuiInitializer-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-de.griefed.serverpackcreator.utilities.UpdateChecker-de.griefed.serverpackcreator.ApplicationPlugins-">SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, ApplicationProperties, VersionLister, BooleanUtilities, ListUtilities, StringUtilities, ConfigUtilities, SystemUtilities, UpdateChecker, ApplicationPlugins)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html" title="class in de.griefed.serverpackcreator.swing">SwingGuiInitializer</a></dt>
 <dd>
 <div class="block"><strong>Constructor</strong></div>
 </dd>

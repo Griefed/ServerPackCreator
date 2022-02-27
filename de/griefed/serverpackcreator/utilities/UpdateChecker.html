@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -152,11 +152,30 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate--">checkForUpdate</a></span>()</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate-java.lang.String-java.lang.Boolean-">checkForUpdate</a></span>(@NotNull java.lang.String&nbsp;version,
+              java.lang.Boolean&nbsp;preReleaseCheck)</code>
 <div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>de.griefed.versionchecker.gitlab.GitLabChecker</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitGriefed--">getGitGriefed</a></span>()</code>
+<div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitGriefed.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>de.griefed.versionchecker.github.GitHubChecker</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitHub--">getGitHub</a></span>()</code>
+<div class="block">Getter for the instance of our <code>GitHubChecker</code>.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>de.griefed.versionchecker.gitlab.GitLabChecker</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitLab--">getGitLab</a></span>()</code>
+<div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitLab.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#refresh--">refresh</a></span>()</code>
 <div class="block">Refresh the GitHub, GitLab and GitGriefed instances, so we get the most current releases.</div>
@@ -223,15 +242,63 @@ public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n
 </dl>
 </li>
 </ul>
-<a name="checkForUpdate--">
+<a name="getGitHub--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getGitHub</h4>
+<pre>public&nbsp;de.griefed.versionchecker.github.GitHubChecker&nbsp;getGitHub()</pre>
+<div class="block">Getter for the instance of our <code>GitHubChecker</code>.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>GitHubChecker</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="getGitLab--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getGitLab</h4>
+<pre>public&nbsp;de.griefed.versionchecker.gitlab.GitLabChecker&nbsp;getGitLab()</pre>
+<div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitLab.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>GitLabChecker</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="getGitGriefed--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getGitGriefed</h4>
+<pre>public&nbsp;de.griefed.versionchecker.gitlab.GitLabChecker&nbsp;getGitGriefed()</pre>
+<div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitGriefed.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>GitLabChecker</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkForUpdate-java.lang.String-java.lang.Boolean-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>checkForUpdate</h4>
-<pre>public&nbsp;java.lang.String&nbsp;checkForUpdate()</pre>
+<pre>public&nbsp;java.lang.String&nbsp;checkForUpdate(@NotNull
+                                       @NotNull java.lang.String&nbsp;version,
+                                       java.lang.Boolean&nbsp;preReleaseCheck)</pre>
 <div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>version</code> - <code>String</code> The version for which to check for updates.</dd>
+<dd><code>preReleaseCheck</code> - <code>Boolean</code> Whether to check pre-releases as well. Use <code>true</code> to check pre-releases
+                                       as well, <Code>false</Code> to only check with regular releases.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>String</code> The update, if available, as well as the download URL.</dd>
 </dl>
