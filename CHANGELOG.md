@@ -1,3 +1,47 @@
+## [3.0.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.6...3.0.0-beta.7) (2022-02-27)
+
+
+### 💎 Improvements
+
+* **Strings:** Strengthen configuration checks by making sure some strings do not contain backslashes. Make server pack suffix more secure by removing illegal characters. ([04b76c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/04b76c93b6dd1955440b247f3542d0729d4af7b7))
+
+
+### 🦊 CI/CD
+
+* **deps:** bump edu.sc.seis.launch4j from 2.5.1 to 2.5.2 ([59051b9](https://git.griefed.de/Griefed/ServerPackCreator/commit/59051b927831a6e09ee3b0a491b014c4d67a6034))
+* **deps:** bump log4j-api from 2.17.1 to 2.17.2 ([2984f46](https://git.griefed.de/Griefed/ServerPackCreator/commit/2984f46d7ce916705c9fc537ddeb1b13a3b4355a))
+* **deps:** bump log4j-core from 2.17.1 to 2.17.2 ([06c0dd6](https://git.griefed.de/Griefed/ServerPackCreator/commit/06c0dd6f2848484b9e97e3a441b8dcd893ce144a))
+* **deps:** bump log4j-jul from 2.17.1 to 2.17.2 ([2f38947](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f38947cde6546126a08e1716174fd1d0ea70520))
+* **deps:** bump log4j-slf4j-impl from 2.17.1 to 2.17.2 ([0a9099b](https://git.griefed.de/Griefed/ServerPackCreator/commit/0a9099bdd28c88f2a8e040a9cc558bb82dc84cda))
+* **deps:** bump log4j-web from 2.17.1 to 2.17.2 ([e76c049](https://git.griefed.de/Griefed/ServerPackCreator/commit/e76c049e05342c0aa3ff41076db12bd6ca36df5c))
+* **deps:** bump org.springframework.boot from 2.6.3 to 2.6.4 ([f9e0d1a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f9e0d1af4051320b368eb31872881bc79759b334))
+* **deps:** bump spring-boot-devtools from 2.6.3 to 2.6.4 ([077e0b4](https://git.griefed.de/Griefed/ServerPackCreator/commit/077e0b4a387c912de8990469f54bb238fdef05d4))
+* **deps:** bump spring-boot-starter-artemis from 2.6.3 to 2.6.4 ([7b651ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b651ca2bf8efbaf84b14d5465b8a739c74c2743))
+* **deps:** bump spring-boot-starter-data-jpa from 2.6.3 to 2.6.4 ([74a7ada](https://git.griefed.de/Griefed/ServerPackCreator/commit/74a7adab6934bd62cd55a356ebc9cde1ec86a606))
+* **deps:** bump spring-boot-starter-log4j2 from 2.6.3 to 2.6.4 ([536134d](https://git.griefed.de/Griefed/ServerPackCreator/commit/536134d96b352227981c37215f72ce5336f6af27))
+* **deps:** bump spring-boot-starter-quartz from 2.6.3 to 2.6.4 ([2211d4d](https://git.griefed.de/Griefed/ServerPackCreator/commit/2211d4d67bc7bc14097859a879e78270dcb80902))
+* **deps:** bump spring-boot-starter-test from 2.6.3 to 2.6.4 ([f27d94d](https://git.griefed.de/Griefed/ServerPackCreator/commit/f27d94d6942a241bdf13948940c7c454921f020c))
+* **deps:** bump spring-boot-starter-validation from 2.6.3 to 2.6.4 ([9f66c07](https://git.griefed.de/Griefed/ServerPackCreator/commit/9f66c0711de1a88bdb555dcc15fe3c009b9df8de))
+* **deps:** bump spring-boot-starter-web from 2.6.3 to 2.6.4 ([c017e87](https://git.griefed.de/Griefed/ServerPackCreator/commit/c017e87f03cdce98511b271ddf084fba372dee85))
+
+
+### 🛠 Fixes
+
+* **UpdateChecker:** Update VersionChecker to 1.0.7 and refactor UpdateChecker to DI to prevent false positives and correctly check for available updates. ([341d2d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/341d2d1403922df2f685ad94d1a996eac6645645))
+
+
+### Other
+
+* **deps:** update actions/setup-java action to v3 ([90a6baf](https://git.griefed.de/Griefed/ServerPackCreator/commit/90a6baf68ab7a4f73e8da5c74dfa92eb686a79b9))
+* **deps:** update dependency @typescript-eslint/eslint-plugin to v5.12.1 ([c58b2a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/c58b2a0722e9a80322c9a88170dd7d20246ff6b4))
+* **deps:** update dependency eslint to v8.10.0 ([2e5f498](https://git.griefed.de/Griefed/ServerPackCreator/commit/2e5f4985b73024908e94acb9d1f4a75d3e10dc94))
+* **deps:** update dependency eslint-plugin-vue to v8.5.0 ([b30b829](https://git.griefed.de/Griefed/ServerPackCreator/commit/b30b829d56525606d1f365abdbbc8f3e70f31699))
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.6 ([5941f91](https://git.griefed.de/Griefed/ServerPackCreator/commit/5941f9133f29623800d46da9fedd419c2618645a))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.0.3 ([bad28e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/bad28e82029e6e4e429a0e8468551d99265095c0))
+* **deps:** update dependency tsparticles to v1.41.5 ([71fd7cb](https://git.griefed.de/Griefed/ServerPackCreator/commit/71fd7cb1d1b6a4589f44ae201cd42c78c0aefccd))
+* **deps:** update plugin edu.sc.seis.launch4j to v2.5.2 ([4e515f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e515f41687b5c13fa1a431ee5f664dc9f7748c3))
+* **deps:** update spring boot to v2.6.4 ([7ceabfc](https://git.griefed.de/Griefed/ServerPackCreator/commit/7ceabfc1acf20f1f388209108255958bc74e6101))
+
 ## [3.0.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.5...3.0.0-beta.6) (2022-02-25)
 
 
