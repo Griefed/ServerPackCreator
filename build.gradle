@@ -18,7 +18,7 @@ plugins {
     id 'edu.sc.seis.launch4j' version '2.5.2'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
 
-    id 'org.springframework.boot' version '2.6.3'
+    id 'org.springframework.boot' version '2.6.4'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
