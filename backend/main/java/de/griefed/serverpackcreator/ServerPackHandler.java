@@ -561,7 +561,8 @@ public class ServerPackHandler {
             writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
             writer.write("echo \"Fabric version: $FABRIC\";\n");
             writer.write("echo \"Java version:\"\n");
-            writer.write("$JAVA --version\n");
+            // Bash, Linux, we must use -version
+            writer.write("$JAVA -version\n");
             writer.write("echo \"Java args: $ARGS\";\n");
             writer.write("\n");
             writer.write("$JAVA $OTHERARGS $ARGS -jar fabric-server-launch.jar nogui");
@@ -658,6 +659,7 @@ public class ServerPackHandler {
             writer.write("ECHO Minecraft version: %MINECRAFT%\n");
             writer.write("ECHO Fabric version: %FABRIC%\n");
             writer.write("ECHO Java version:\n");
+            // Batch, Windows, we can use --version
             writer.write("%JAVA% --version\n");
             writer.write("ECHO Java args: %ARGS%\n");
             writer.write("\n");
@@ -800,7 +802,8 @@ public class ServerPackHandler {
             writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
             writer.write("echo \"Forge version: $FORGE\";\n");
             writer.write("echo \"Java version:\"\n");
-            writer.write("$JAVA --version\n");
+            // Bash, Linux, we must use -version
+            writer.write("$JAVA -version\n");
             writer.write("echo \"Java args in user_jvm_args.txt: $ARGS\";\n");
             writer.write("\n");
             writer.write("# Forge requires a configured set of both JVM and program arguments.\n");
@@ -915,6 +918,7 @@ public class ServerPackHandler {
             writer.write("ECHO Minecraft version: %MINECRAFT%\n");
             writer.write("ECHO Forge version: %FORGE%\n");
             writer.write("ECHO Java version:\n");
+            // Batch, Windows, we can use --version
             writer.write("%JAVA% --version\n");
             writer.write("ECHO Java args in user_jvm_args.txt: %ARGS%\n");
             writer.write("\n");
@@ -1022,7 +1026,8 @@ public class ServerPackHandler {
             writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
             writer.write("echo \"Forge version: $FORGE\";\n");
             writer.write("echo \"Java version:\"\n");
-            writer.write("$JAVA --version\n");
+            // Bash, Linux, we must use -version
+            writer.write("$JAVA -version\n");
             writer.write("echo \"Java args: $ARGS\";\n");
             writer.write("\n");
             writer.write("$JAVA $OTHERARGS $ARGS -jar forge.jar nogui");
@@ -1124,6 +1129,7 @@ public class ServerPackHandler {
             writer.write("ECHO Minecraft version: %MINECRAFT%\n");
             writer.write("ECHO Forge version: %FORGE%\n");
             writer.write("ECHO Java version:\n");
+            // Batch, Windows, we can use --version
             writer.write("%JAVA% --version\n");
             writer.write("ECHO Java args: %ARGS%\n");
             writer.write("\n");
