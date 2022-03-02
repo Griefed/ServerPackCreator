@@ -48,7 +48,6 @@ public class ApplicationProperties extends Properties {
     public final File FILE_WINDOWS = new File("start.bat");
     public final File FILE_LINUX = new File("start.sh");
     public final File FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS = new File("user_jvm_args.txt");
-    public final Path PLUGINS_DIRECTORY;
     private final String FALLBACK_MODS_DEFAULT_ASSTRING =
         "3dSkinLayers-," +
         "AdvancementPlaques-," +
@@ -390,8 +389,6 @@ public class ApplicationProperties extends Properties {
             this.serverPackCreatorVersion = "dev";
         }
 
-        this.PLUGINS_DIRECTORY = Paths.get(getProperty("de.griefed.serverpackcreator.plugins.directory","./plugins"));
-
         try {
             this.isCurseForgeActivated = testCurseApiToken();
         } catch (IOException ex) {
@@ -639,7 +636,6 @@ public class ApplicationProperties extends Properties {
                 ", FILE_WINDOWS=" + FILE_WINDOWS +
                 ", FILE_LINUX=" + FILE_LINUX +
                 ", FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS=" + FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS +
-                ", PLUGINS_DIRECTORY=" + PLUGINS_DIRECTORY +
                 ", LIST_FALLBACK_MODS_DEFAULT=" + LIST_FALLBACK_MODS_DEFAULT +
                 ", FILE_CONFIG=" + FILE_CONFIG +
                 ", FILE_CONFIG_OLD=" + FILE_CONFIG_OLD +

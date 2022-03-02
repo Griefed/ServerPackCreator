@@ -23,15 +23,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author Griefed
  */
 @SpringBootApplication
+@EnableScheduling
 @PropertySources({
         @PropertySource("classpath:application.properties"),
-        @PropertySource(value = "file:./serverpackcreator.properties", ignoreResourceNotFound = true),
-        @PropertySource(value = "file:./application.properties", ignoreResourceNotFound = true)
+        @PropertySource("classpath:serverpackcreator.properties")
 })
 public class MainSpringBoot {
 

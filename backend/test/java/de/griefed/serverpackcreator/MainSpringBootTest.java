@@ -12,7 +12,7 @@ import java.io.IOException;
 
 @SpringBootTest(classes = MainSpringBootTest.class)
 @PropertySources({
-        @PropertySource("classpath:application.properties")
+        @PropertySource("classpath:serverpackcreator.properties")
 })
 public class MainSpringBootTest {
 

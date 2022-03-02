@@ -256,6 +256,101 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 
 After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
 
+# 5.1 Properties
+
+# 5.1.1 Default `serverpackcreator.properties`
+
+```properties
+de.griefed.serverpackcreator.versioncheck.prerelease=false
+de.griefed.serverpackcreator.language=en_us
+de.griefed.serverpackcreator.configuration.fallbackmodslist=3dSkinLayers-,AdvancementPlaques-,AmbientSounds_,armorchroma-,backtools-,BetterAdvancements-,BetterAnimationsCollection-,BetterDarkMode-,BetterF3-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,Blur-,catalogue-,cherishedworlds-,classicbar-,clickadv-,ClientTweaks_,configured-,Controlling-,CraftPresence-,CTM-,customdiscordrpc-,CustomMainMenu-,DefaultOptions_,defaultoptions-,desiredservers-,Ding-,drippyloadingscreen_,drippyloadingscreen-,Durability101-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,dynmus-,EiraMoticons_,eiramoticons-,EnchantmentDescriptions-,EquipmentCompare-,extremesoundmuffler-,extremeSoundMuffler-,Fallingleaves-,fallingleaves-,fancymenu_,findme-,flickerfix-,FpsReducer-,FullscreenWindowed-,InventoryEssentials_,InventorySpam-,InventoryTweaks-,invtweaks-,ItemBorders-,itemzoom,itlt-,jeed-,jehc-,jeiintegration_,JEITweaker-,just-enough-harvestcraft-,justenoughbeacons-,JustEnoughCalculation-,JustEnoughProfessions-,JustEnoughProfessions-,JustEnoughResources-,keywizard-,konkrete_,lazydfu-,LegendaryTooltips-,light-overlay-,LightOverlay-,LLOverlayReloaded-,loadmyresources_,lootbeams-,mcbindtype-,medievalmusic-,modnametooltip_,modnametooltip-,moreoverlays-,MouseTweaks-,multihotbar-,MyServerIsCompatible-,Neat ,NotifMod-,OldJavaWarning-,OptiFine,OptiForge,ornaments-,overloadedarmorbar-,PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-,ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-,sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-,Toast Control-,Toast-Control-,ToastControl-,torchoptimizer-,torohealth-,toughnessbar-,TravelersTitles-,WindowedFullscreen-,WorldNameRandomizer-,yisthereautojump-
+de.griefed.serverpackcreator.configuration.hastebinserver=https://haste.zneix.eu/documents
+de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true
+de.griefed.serverpackcreator.gui.darkmode=true
+de.griefed.serverpackcreator.configuration.directories.serverpacks=server-packs
+de.griefed.serverpackcreator.curseforge.cleanup.enabled=true
+de.griefed.serverpackcreator.serverpack.cleanup.enabled=true
+de.griefed.serverpackcreator.serverpack.overwrite.enabled=true
+de.griefed.serverpackcreator.configuration.directories.shouldexclude=overrides,packmenu,resourcepacks,server_pack,fancymenu
+de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled=false
+de.griefed.serverpackcreator.spring.schedules.database.cleanup=0 0 0 * * *
+de.griefed.serverpackcreator.spring.schedules.files.cleanup=0 0 0 * * *
+de.griefed.serverpackcreator.spring.schedules.versions.refresh=0 0 0 * * *
+de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage=90
+de.griefed.serverpackcreator.configuration.saveloadedconfig=false
+de.griefed.serverpackcreator.configuration.directories.mustinclude=mods,config,defaultconfigs,scripts,saves,seeds,libraries
+de.griefed.serverpackcreator.curseforge.api.token=
+```
+
+| Property                                                              | Description                                                                                                                  |
+|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| de.griefed.serverpackcreator.versioncheck.prerelease                  | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                              |
+| de.griefed.serverpackcreator.language                                 | The language in which ServerPackCreator should run.                                                                          |
+| de.griefed.serverpackcreator.configuration.fallbackmodslist           | Comma separated fallback-list of clientside-only mods.                                                                       |
+| de.griefed.serverpackcreator.configuration.hastebinserver             | Address of a HasteBin server to use for config and logs uploading.                                                           |
+| de.griefed.serverpackcreator.serverpack.autodiscoverenabled           | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically.                                 |
+| de.griefed.serverpackcreator.gui.darkmode                             | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                            |
+| de.griefed.serverpackcreator.configuration.directories.serverpacks    | The directory in which server packs will be generated and stored in.                                                         |
+| de.griefed.serverpackcreator.curseforge.cleanup.enabled               | `true` or `false`. Whether to cleanup files after generating a server pack from a CurseForge project.                        |
+| de.griefed.serverpackcreator.serverpack.cleanup.enabled               | `true` or `false`. Whether to cleanup files after generating a server pack.                                                  |
+| de.griefed.serverpackcreator.serverpack.overwrite.enabled             | `true` or `false`. Whether an already existing server pack should be overwritten.                                            |
+| de.griefed.serverpackcreator.configuration.directories.shouldexclude  | List of directories which should not be in a server pack.                                                                    |
+| de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled | `true` or `false`. Web only. Whether regeneration of an already available CurseForge project server pack is allowed/enabled. |
+| de.griefed.serverpackcreator.spring.schedules.database.cleanup        | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                 |
+| de.griefed.serverpackcreator.spring.schedules.files.cleanup           | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                       |
+| de.griefed.serverpackcreator.spring.schedules.versions.refresh        | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                           |
+| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage      | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.   |
+| de.griefed.serverpackcreator.configuration.saveloadedconfig           | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                          |
+| de.griefed.serverpackcreator.configuration.directories.mustinclude    | List of directories which must be included in a server pack.                                                                 |
+| de.griefed.serverpackcreator.curseforge.api.token                     | CurseAPI token used for generating server packs from CurseForge projects.                                                    |
+
+# 5.1.2 Default `application.properties` 
+
+`application.properties`
+```properties
+server.port=8080
+server.error.whitelabel.enabled=false
+server.tomcat.basedir=.
+server.tomcat.accesslog.enabled=true
+server.tomcat.accesslog.directory=logs
+server.tomcat.accesslog.file-date-format=_yyyy-MM-dd
+server.tomcat.accesslog.prefix=tomcat_access
+server.tomcat.accesslog.suffix=.log
+server.tomcat.accesslog.pattern=common
+spring.output.ansi.enabled=ALWAYS
+server.error.include-message=ALWAYS
+server.error.include-stacktrace=ALWAYS
+spring.application.name=ServerPackCreator
+spring.datasource.url=jdbc:sqlite:serverpackcreator.db
+spring.datasource.driver-class-name=org.sqlite.JDBC
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.sqlite.hibernate.dialect.SQLiteDialect
+spring.jpa.open-in-view=false
+spring.jdbc.template.query-timeout=3600
+spring.transaction.default-timeout=3600
+spring.artemis.mode=embedded
+spring.artemis.embedded.persistent=true
+spring.artemis.embedded.data-directory=work/artemis
+spring.datasource.tomcat.max-active=50
+spring.datasource.tomcat.max-idle=15
+spring.datasource.tomcat.min-idle=8
+spring.servlet.multipart.max-file-size=500MB
+spring.servlet.multipart.max-request-size=500MB
+spring.config.import=optional:file:./serverpackcreator.properties
+```
+
+If a property above has no description in the table below, it is not to be touched. Changing any of these can break ServerPackCreator or cause otherwise unwanted behaviour.
+Changes to properties not described below are not supported. If you changed a property you were not meant to fiddle around with, do not report an issue. Such issues will be closed without further comment.
+
+| Property | Description                                                                                            |
+| -------- |--------------------------------------------------------------------------------------------------------|
+| server.port | The port at which ServerPackCreator as a webservice will be available at.                              |
+| spring.datasource.url | Path to and name of the SQLite database which the webservice will use.                                 |
+| spring.artemis.embedded.data-directory | The path to and name of the directory in which Artemis will store queues and task related information. |
+| spring.servlet.multipart.max-file-size | Maximum filesize for uploads.                                                                          |
+| spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
+| spring.config.import | Additional properties-file to import properties from.                                                  |
+
 ---
 
 # 6. Running
