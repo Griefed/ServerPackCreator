@@ -108,7 +108,8 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@SpringBootApplication
- @PropertySource(value="classpath:application.properties") @PropertySource(value="file:./serverpackcreator.properties",ignoreResourceNotFound=true) @PropertySource(value="file:./application.properties",ignoreResourceNotFound=true)
+ @EnableScheduling
+ @PropertySource(value="classpath:application.properties") @PropertySource(value="classpath:serverpackcreator.properties")
 public class <span class="typeNameLabel">MainSpringBoot</span>
 extends java.lang.Object</pre>
 </li>
