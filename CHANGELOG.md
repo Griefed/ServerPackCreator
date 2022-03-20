@@ -1,3 +1,35 @@
+## [3.0.0-beta.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.9...3.0.0-beta.10) (2022-03-20)
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node from 17.0.19 to 17.0.21 in /frontend ([43834fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/43834fefc1c84b63d4eba4dc3ca74898953801b0))
+* **deps-dev:** bump @typescript-eslint/eslint-plugin in /frontend ([925b5d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/925b5d2eb9bec460ede155840e950482c41e5c11))
+* **deps-dev:** bump @typescript-eslint/eslint-plugin in /frontend ([38cfdde](https://git.griefed.de/Griefed/ServerPackCreator/commit/38cfdde75095c3b2cb50676a11811965cc3ab148))
+* **deps-dev:** bump @typescript-eslint/parser in /frontend ([a04e32d](https://git.griefed.de/Griefed/ServerPackCreator/commit/a04e32dcbae32613130238cfcff0428274cb45db))
+* **deps-dev:** bump @typescript-eslint/parser in /frontend ([2fdeec9](https://git.griefed.de/Griefed/ServerPackCreator/commit/2fdeec99954be7b1a9af3fd9239398ad0569ad8d))
+* **deps-dev:** bump eslint from 8.10.0 to 8.11.0 in /frontend ([66c8700](https://git.griefed.de/Griefed/ServerPackCreator/commit/66c8700a345a54d70084dadb413f6e62593a089d))
+* **deps-dev:** bump eslint-config-prettier in /frontend ([0692bf8](https://git.griefed.de/Griefed/ServerPackCreator/commit/0692bf815373976cc0c67812a158050a1fb1cb6d))
+* **deps:** bump @quasar/cli from 1.2.2 to 1.3.0 in /frontend ([3d39571](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d39571341e6755707904d8b19c44b85ff37d59d))
+* **deps:** bump @quasar/extras from 1.12.5 to 1.13.0 in /frontend ([a9add11](https://git.griefed.de/Griefed/ServerPackCreator/commit/a9add1111d404935ea14219ae72fbad95629018a))
+* **deps:** bump @quasar/extras from 1.13.0 to 1.13.1 in /frontend ([7e2fe46](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e2fe46061145338673180bffbb6dc8f37741bd1))
+* **deps:** bump axios from 0.26.0 to 0.26.1 in /frontend ([42dd920](https://git.griefed.de/Griefed/ServerPackCreator/commit/42dd92070f4ee12f527e7dba19d388ae3dce3768))
+* **deps:** bump griefed/baseimage-ubuntu-jdk-8 from 2.0.6 to 2.0.7 ([2acd8c0](https://git.griefed.de/Griefed/ServerPackCreator/commit/2acd8c06b783136c030ea6c540bff234b9ef0023))
+* **deps:** bump quasar from 2.5.5 to 2.6.0 in /frontend ([8b35e1f](https://git.griefed.de/Griefed/ServerPackCreator/commit/8b35e1f5e2a759c6ac3e5cfd127747cc84f1ce2e))
+* **deps:** bump tsparticles from 1.41.5 to 1.41.6 in /frontend ([ecb4eff](https://git.griefed.de/Griefed/ServerPackCreator/commit/ecb4effc29673172fd7c74bfb57a325b6b3c5f4f))
+* **deps:** bump tsparticles from 1.41.6 to 1.42.2 in /frontend ([7c8b807](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c8b807935a3a0bc9780ee6df30ded68b8c18149))
+
+
+### 🛠 Fixes
+
+* Correctly check source;destination-combinations no matter whether a absolute path, relative path, file or folder was specified as the source and correctly copy them to the server pack. ([ba2a2f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba2a2f11eef0771448022c8fd8f299d1c98473cd))
+
+
+### Other
+
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.7 ([11a5684](https://git.griefed.de/Griefed/ServerPackCreator/commit/11a568470256ccff757fecff38329f6516b6832c))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.0.4 ([22fe616](https://git.griefed.de/Griefed/ServerPackCreator/commit/22fe616e492d36c8107f2993cce2fcdceb10665a))
+
 ## [3.0.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.8...3.0.0-beta.9) (2022-03-02)
 
 
