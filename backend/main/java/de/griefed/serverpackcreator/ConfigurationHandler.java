@@ -1106,7 +1106,7 @@ public class ConfigurationHandler {
     public boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir, List<String> encounteredErrors) {
         boolean configCorrect = true;
 
-        directoriesToCopy.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
+        directoriesToCopy.removeIf(entry -> entry.matches("^\\s+$") || entry.length() == 0);
 
         if (directoriesToCopy.isEmpty()) {
 
@@ -1140,7 +1140,11 @@ public class ConfigurationHandler {
 
                     File sourceFileToCheck = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
 
-                    if (!sourceFileToCheck.exists()) {
+                    if (!new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isFile() &&
+                            !new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isDirectory() &&
+                            !new File(sourceFileDestinationFileCombination[0]).isFile() &&
+                            !new File(sourceFileDestinationFileCombination[0]).isDirectory()
+                    ) {
 
                         configCorrect = false;
 

@@ -192,7 +192,7 @@
 import { defineComponent, ref } from 'vue';
 import { useQuasar, Cookies } from 'quasar';
 import { tsParticles } from 'tsparticles';
-import {api} from "boot/axios";
+import { api } from "boot/axios";
 
 export default defineComponent({
   name: 'MainLayout',

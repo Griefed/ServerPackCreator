@@ -441,7 +441,7 @@ CREATE FROM MODRINTH MODPACK
 <script lang="js">
 import { defineComponent, inject, ref } from 'vue';
 import { useQuasar, Cookies, openURL  } from 'quasar';
-import {api} from "boot/axios";
+import { api } from "boot/axios";
 
 export default defineComponent({
   name: "SubmitRequest",

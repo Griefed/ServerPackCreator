@@ -160,7 +160,7 @@ public class UpdateChecker {
         String updater = null;
 
         if (GITHUB != null) {
-            LOG.debug("Checking GitLab for updates...");
+            LOG.debug("Checking GitHub for updates...");
 
             // Check GitHub for the most recent release.
             updater = GITHUB.checkForUpdate(version, preReleaseCheck);
@@ -183,7 +183,7 @@ public class UpdateChecker {
 
 
         if (GITLAB != null && updater != null) {
-            LOG.debug("Checking GitHub for updates...");
+            LOG.debug("Checking GitLab for updates...");
 
             // After checking GitGriefed, and we did not get a version, check GitLab.
             if (!updater.contains(";") && GITLAB.checkForUpdate(version, preReleaseCheck).contains(";")) {

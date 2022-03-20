@@ -1,3 +1,10 @@
+## [3.0.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.7...3.0.0-beta.8) (2022-03-01)
+
+
+### 🛠 Fixes
+
+* **Start Scripts:** Correctly call Java version print in bash scripts. Thanks to [@kreezxil](https://git.griefed.de/kreezxil) for reporting this issue! Closes [#274](https://git.griefed.de/Griefed/ServerPackCreator/issues/274). ([defb89b](https://git.griefed.de/Griefed/ServerPackCreator/commit/defb89b48cd6d217f78e3149eca68f859c53483c))
+
 ## [3.0.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.6...3.0.0-beta.7) (2022-02-27)
 
 

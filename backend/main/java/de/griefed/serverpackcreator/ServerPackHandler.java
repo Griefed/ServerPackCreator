@@ -1208,14 +1208,52 @@ public class ServerPackHandler {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    try {
-                        FileUtils.copyFile(
-                                new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
-                                new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1])),
-                                REPLACE_EXISTING
-                        );
-                    } catch (IOException ex) {
-                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                    if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isFile()) {
+
+                        try {
+                            FileUtils.copyFile(
+                                    new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
+                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1])),
+                                    REPLACE_EXISTING
+                            );
+                        } catch (IOException ex) {
+                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                        }
+
+                    } else if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isDirectory()){
+
+                        try {
+                            FileUtils.copyDirectory(
+                                    new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
+                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1]))
+                            );
+                        } catch (Exception ex) {
+                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                        }
+
+                    } else if(new File(sourceFileDestinationFileCombination[0]).isFile()) {
+
+                        try {
+                            FileUtils.copyFile(
+                                    new File(sourceFileDestinationFileCombination[0]),
+                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1])),
+                                    REPLACE_EXISTING
+                            );
+                        } catch (IOException ex) {
+                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                        }
+
+                    } else if (new File(sourceFileDestinationFileCombination[0]).isDirectory()) {
+
+                        try {
+                            FileUtils.copyDirectory(
+                                    new File(sourceFileDestinationFileCombination[0]),
+                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1]))
+                            );
+                        } catch (Exception ex) {
+                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+                        }
+
                     }
 
                     /*
