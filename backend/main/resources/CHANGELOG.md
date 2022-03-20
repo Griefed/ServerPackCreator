@@ -1,3 +1,10 @@
+## [3.0.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.8...3.0.0-beta.9) (2022-03-02)
+
+
+### 🛠 Fixes
+
+* **Configuration:** Correctly load default properties and allow overriding of application properties from serverpackcreator properties. ([2f03d33](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f03d33f5634603d305b85a2681307a63a7ec10a))
+
 ## [3.0.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.7...3.0.0-beta.8) (2022-03-01)
 
 
@@ -962,7 +969,7 @@
 * Empty commit so a new alpha will be generated... ([c1b5698](https://git.griefed.de/Griefed/ServerPackCreator/commit/c1b5698a0aac863518244998c72a4f21ff4d604c))
 
 ## [3.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.15...3.0.0-alpha.16) (2022-01-18)
- 
+
 
 ### 👀 Reverts
 

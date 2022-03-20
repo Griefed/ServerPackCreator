@@ -151,11 +151,11 @@ A list of known issues can be found in [Known Issues](https://github.com/Griefed
    4. Set a suffix for the server pack to be generated.
    5. And much more!
 10. **Webservice**
-   1. Generate a server pack from zipped up modpacks.
-   2. All generated server packs available for download to everyone.
+1. Generate a server pack from zipped up modpacks.
+2. All generated server packs available for download to everyone.
 11. **Addons!**
-   1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
-   2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
+1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
+2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
 # 3. Versions
 
@@ -304,7 +304,7 @@ de.griefed.serverpackcreator.curseforge.api.token=
 | de.griefed.serverpackcreator.configuration.directories.mustinclude    | List of directories which must be included in a server pack.                                                                 |
 | de.griefed.serverpackcreator.curseforge.api.token                     | CurseAPI token used for generating server packs from CurseForge projects.                                                    |
 
-# 5.1.2 Default `application.properties` 
+# 5.1.2 Default `application.properties`
 
 `application.properties`
 ```properties
@@ -715,13 +715,13 @@ A short excerpt:
 >
 > 1. Fork ServerPackCreator
 > 2. Create a new branch in your fork, following one of the following naming schemes:
->     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
->         - griefed_chore_readme
+     >     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
+              >         - griefed_chore_readme
 >         - griefed_perf_curseforgemodpack
 >         - griefed_feat_ziparchive
 >     2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
 >     3. Schemes:
->         1. your_username_breaking_
+         >         1. your_username_breaking_
 >         2. your_username_build_
 >         3. your_username_chore_
 >         4. your_username_ci_
@@ -735,13 +735,13 @@ A short excerpt:
 >         12. your_username_test_
 >         13. your_username_other_
 > 3. Make your changes to your new branch:
->     1. Try to keep the changes atomic, so they best fit the name of the branch.
+     >     1. Try to keep the changes atomic, so they best fit the name of the branch.
 >     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
->         - feat: Allow upload of modpack-export zip-archive to web-frontend
+         >         - feat: Allow upload of modpack-export zip-archive to web-frontend
 >         - refactor: Use apache commons-io for copying, instead of Files
 > 4. Open an issue on the main repository, using the **Pull Request** template:
->     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
->         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
+     >     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
+              >         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
 >     2. Issue description: Fill in the sections the template provide.
 >     3. Submit the new issue
 > 5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
