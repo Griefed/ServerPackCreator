@@ -1158,8 +1158,6 @@ public class ServerPackHandler {
      */
     private void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion, String destination) {
 
-        // TODO: Move copy segments to private methods to make this whole thing more readable
-
         try {
 
             Files.createDirectories(Paths.get(destination));
