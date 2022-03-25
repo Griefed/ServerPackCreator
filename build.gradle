@@ -97,7 +97,7 @@ dependencies {
     embed 'org.apache.logging.log4j:log4j-web:2.17.2'
 
     // Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.4'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.5'
 
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
