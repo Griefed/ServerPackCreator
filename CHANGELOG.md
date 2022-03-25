@@ -1,3 +1,15 @@
+## [3.0.0-beta.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.10...3.0.0-beta.11) (2022-03-25)
+
+
+### 🦊 CI/CD
+
+* **deps:** Update VersionChecker to 1.0.8 to make sure update notifications for 3.0.0 from 3.0.0-alpha or 3.0.0-beta version come through ([e178b56](https://git.griefed.de/Griefed/ServerPackCreator/commit/e178b567188692310009f71a23cb9e51324f5696))
+
+
+### Other
+
+* Re-add test-application.properties, which somehow vanished somewhere in the last commits. Set versioncheck.prerelease to false, in preparation for 3.0.0. Some cleanups here and there. ([a7718cc](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7718ccae217adf7a37df7e461af29637dd40bf8))
+
 ## [3.0.0-beta.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-beta.9...3.0.0-beta.10) (2022-03-20)
 
 
