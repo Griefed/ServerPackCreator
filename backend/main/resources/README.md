@@ -119,7 +119,7 @@ Huge shoutout and thank you!**
 
 - A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
 
-- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it!
+- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it! 
 
 - A wiki article containing useful hints, tips & tricks about, for and with ServerPackCreator can be found on [my Wiki's ServerPackCreator Help page](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
@@ -147,9 +147,9 @@ Huge shoutout and thank you!**
    3. Logs from last run in separate tabs.
    4. Set a suffix for the server pack to be generated.
    5. And much more!
-10. **Webservice**
+10. **Webservice** 
     1. Generate a server pack from zipped up modpacks.
-    1. All generated server packs available for download to everyone.
+    2. All generated server packs available for download to everyone.
 11. **Addons!**
     1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
     2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
@@ -301,7 +301,7 @@ de.griefed.serverpackcreator.curseforge.api.token=
 | de.griefed.serverpackcreator.configuration.directories.mustinclude    | List of directories which must be included in a server pack.                                                                 |
 | de.griefed.serverpackcreator.curseforge.api.token                     | CurseAPI token used for generating server packs from CurseForge projects.                                                    |
 
-# 5.1.2 Default `application.properties`
+# 5.1.2 Default `application.properties` 
 
 `application.properties`
 ```properties
