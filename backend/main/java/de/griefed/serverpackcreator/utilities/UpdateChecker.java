@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.github.GitHubChecker;
 import de.griefed.versionchecker.gitlab.GitLabChecker;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +37,7 @@ import java.io.IOException;
  * checks later on.
  * @author Griefed
  */
+@Generated
 @Service
 public class UpdateChecker {
 
