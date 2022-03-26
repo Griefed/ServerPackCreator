@@ -24,20 +24,13 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 
 ---
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/griefed/serverpackcreator?style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
-[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/griefed/serverpackcreator?label=Image%20size&sort=date&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
-[![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/griefed/serverpackcreator?label=Docker%20build&style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
-
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases/latest)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
-
-[![GitLab Pipeline Status](https://img.shields.io/gitlab/pipeline/Griefed/ServerPackCreator/main?gitlab_url=https%3A%2F%2Fgit.griefed.de&label=GitLab%20CI/CD%20Status&color=c0ffee&logo=GitHub&logoColor=white&labelColor=325358&&style=for-the-badge)](https://git.griefed.de/Griefed/ServerPackCreator)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Griefed/ServerPackCreator/Deploy%20javadocs%20to%20GitHub%20pages?color=c0ffee&labelColor=325358&label=GitHub%20Pages%20Deploy&logo=GitHub&logoColor=white&style=for-the-badge)](https://griefed.github.io/ServerPackCreator)
-
+[![GitHub all releases](https://img.shields.io/github/downloads/Griefed/ServerPackCreator/total?color=c0ffee&logo=GitHub&logoColor=white&labelColor=325358&style=for-the-badge)](https://github.com/Griefed/ServerPackCreator/releases)
+[![Docker Pulls](https://img.shields.io/docker/pulls/griefed/serverpackcreator?style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
 [![GitHub Repo stars](https://img.shields.io/github/stars/Griefed/serverpackcreator?label=GitHub%20Stars&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub contributors](https://img.shields.io/github/contributors/Griefed/ServerPackCreator?color=c0ffee&label=Contributors&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/graphs/contributors)
-[![GitHub all releases](https://img.shields.io/github/downloads/Griefed/ServerPackCreator/total?color=c0ffee&logo=GitHub&logoColor=white&labelColor=325358&style=for-the-badge)](https://github.com/Griefed/ServerPackCreator/releases)
 
 **ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric modpack. Customize the configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.**
@@ -126,7 +119,7 @@ Huge shoutout and thank you!**
 
 - A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
 
-- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it! 
+- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it!
 
 - A wiki article containing useful hints, tips & tricks about, for and with ServerPackCreator can be found on [my Wiki's ServerPackCreator Help page](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
@@ -155,11 +148,11 @@ Huge shoutout and thank you!**
    4. Set a suffix for the server pack to be generated.
    5. And much more!
 10. **Webservice**
-   1. Generate a server pack from zipped up modpacks.
-   2. All generated server packs available for download to everyone.
+    1. Generate a server pack from zipped up modpacks.
+    1. All generated server packs available for download to everyone.
 11. **Addons!**
-   1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
-   2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
+    1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
+    2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
 # 3. Versions
 
@@ -308,7 +301,7 @@ de.griefed.serverpackcreator.curseforge.api.token=
 | de.griefed.serverpackcreator.configuration.directories.mustinclude    | List of directories which must be included in a server pack.                                                                 |
 | de.griefed.serverpackcreator.curseforge.api.token                     | CurseAPI token used for generating server packs from CurseForge projects.                                                    |
 
-# 5.1.2 Default `application.properties` 
+# 5.1.2 Default `application.properties`
 
 `application.properties`
 ```properties
