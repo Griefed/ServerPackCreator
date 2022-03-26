@@ -6,7 +6,7 @@
         <Property name="pattern">%d{ISO8601} %5p [%t] (%F:%L) - %m%n</Property>
         <Property name="console-pattern">%style{%d{ISO8601}}{dim,white} %highlight{%5p} [%style{%t}{bright,blue}] %style{(%F:%L)}{bright,yellow} - %m%n</Property>
         <Property name="log-level">INFO</Property>
-        <Property name="log-level-spc">DEBUG</Property>
+        <Property name="log-level-spc">INFO</Property>
         <Property name="charset">UTF-8</Property>
     </Properties>
 
