@@ -59,42 +59,10 @@ if [ ! -f /data/server_files/server-icon.png ]; then
     /data/server_files/server-icon.png
 fi
 
-if [ ! -f /data/server_files/start-fabric.bat ]; then
-  echo "**** Setting up default start-fabric.bat. ****"
-  cp -f \
-    /defaults/server_files/start-fabric.bat \
-    /data/server_files/start-fabric.bat
-fi
-
-if [ ! -f /data/server_files/start-fabric.sh ]; then
-  echo "**** Setting up default start-fabric.sh. ****"
-  cp -f \
-    /defaults/server_files/start-fabric.sh \
-    /data/server_files/start-fabric.sh
-fi
-
-if [ ! -f /data/server_files/start-forge.bat ]; then
-  echo "**** Setting up default start-forge.bat. ****"
-  cp -f \
-    /defaults/server_files/start-forge.bat \
-    /data/server_files/start-forge.bat
-fi
-
-if [ ! -f /data/server_files/start-forge.sh ]; then
-  echo "**** Setting up default start-forge.sh. ****"
-  cp -f \
-    /defaults/server_files/start-forge.sh \
-    /data/server_files/start-forge.sh
-fi
-
 chown -R \
-  abc:abc \
+  grfd:grfd \
     /app/serverpackcreator \
-    /data
-
-#chown -R \
-#  abc:abc \
-#    /app/serverpackcreator \
-#    /data
+    /data \
+    /server-packs
 
 echo "**** To reset the configuration, delete serverpackcreator.conf in /data and restart the container. ****"

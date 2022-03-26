@@ -1,0 +1,66 @@
+# Path to your modpack. Can be either relative or absolute.
+# Example: "./Some Modpack" or "C:/Minecraft/Some Modpack"
+modpackDir = "C:/Minecraft/Game/Instances/Survive Create Prosper 4 custom"
+
+# List of client-only mods to delete from serverpack.
+# No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!
+# Example: [AmbientSounds,ClientTweaks,PackMenu,BetterAdvancement,jeiintegration]
+clientMods = ["AmbientSounds","BackTools","BetterAdvancement","BetterFoliage","BetterPing","BetterPlacement","Blur","cherished","ClientTweaks","Controlling","customdiscordrpc","CustomMainMenu","DefaultOptions","durability","DynamicSurroundings","FullscreenWindowed","iemzoom","jeiintegration","jei-professions","JustEnoughResources","keywizard","modnametooltip","MouseTweaks","multihotbar-","Neat","OldJavaWarning","PackMenu","prciseblockplacing","ResourceLoader","SimpleDiscordRichPresence","SpawnerFix","timestamps","TipTheScales","WorldNameRandomizer"]
+
+# Name of directories or files to include in serverpack.
+# When specifying "saves/world_name", "world_name" will be copied to the base directory of the serverpack
+# for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.
+# Example: [config,mods,scripts]
+copyDirs = ["config","defaultconfigs","mods","scripts","seeds"]
+
+# Path to a custom server-icon.png-file to include in the server pack.
+serverIconPath = "G:/Bilder/Project Prosper/SCP/SCP_icon.png"
+
+# Path to a custom server.properties-file to include in the server pack.
+serverPropertiesPath = ""
+
+# Whether to install a Forge/Fabric server for the serverpack. Must be true or false.
+# Default value is true.
+includeServerInstallation = true
+
+# Path to the Java executable. On Linux systems it would be something like "/usr/bin/java".
+# Only needed if includeServerInstallation is true.
+javaPath = "C:/Program Files/Java/jdk-17.0.1/bin/java.exe"
+
+# Which Minecraft version to use. Example: "1.16.5".
+# Automatically set when projectID,fileID for modpackDir has been specified.
+# Only needed if includeServerInstallation is true.
+minecraftVersion = "1.16.5"
+
+# Which modloader to install. Must be either "Forge" or "Fabric".
+# Automatically set when projectID,fileID for modpackDir has been specified.
+# Only needed if includeServerInstallation is true.
+modLoader = "Forge"
+
+# The version of the modloader you want to install. Example for Fabric="0.7.3", example for Forge="36.0.15".
+# Automatically set when projectID,fileID for modpackDir has been specified.
+# Only needed if includeServerInstallation is true.
+modLoaderVersion = "36.1.16"
+
+# Include a server-icon.png in your serverpack. Must be true or false.
+# Customize server-icon.png in ./server_files.
+# Dimensions must be 64x64!
+# Default value is true.
+includeServerIcon = true
+
+# Include a server.properties in your serverpack. Must be true or false.
+# Customize server.properties in ./server_files.
+# If no server.properties is provided but is set to true, a default one will be provided.
+# Default value is true.
+includeServerProperties = true
+
+# Create zip-archive of serverpack. Must be true or false.
+# Default value is true.
+includeZipCreation = true
+
+# Java arguments to set in the start-scripts for the generated server pack. Default value is "empty".
+# Leave as "empty" to not have Java arguments in your start-scripts.
+javaArgs = "empty"
+
+# Suffix to append to the server pack to be generated. Can be left blank/empty.
+serverPackSuffix = ""

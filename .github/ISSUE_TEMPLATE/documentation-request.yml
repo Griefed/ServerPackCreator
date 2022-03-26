@@ -1,0 +1,37 @@
+name: Documentation Request
+description: Request for documentation about a certain aspect of the application
+title: "[Documentation]: "
+labels: ["documentation"]
+assignees:
+- Griefed
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this documentation request!
+  - type: textarea
+    id: what-needs-updating
+    attributes:
+      label: Which documentation would you like to be updated?
+      description: Describe which part of the documentation should be updated.
+      placeholder: If possible, post links to the files in which you require better documentation for.
+      value: "If possible, post links to the files in which you require better documentation for."
+    validations:
+      required: true
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else you would like to add?
+      description: Any additional info you would like to add?
+      placeholder: Tell me!
+      value: "Tell me!"
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Griefed/ServerPackCreator/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

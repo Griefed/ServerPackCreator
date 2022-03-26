@@ -1,4 +1,15 @@
-branches: ['master','main']
+branches: [
+    'master',
+    'main',
+  {
+    name: 'alpha',
+    prerelease: true
+  },
+  {
+    name: 'beta',
+    prerelease: true
+  }
+]
 ci: true
 debug: true
 dryRun: false
@@ -31,7 +42,7 @@ analyzeCommits:
       - type: ci        # Changes to our CI configuration files and scripts
         release: false
       - type: docs      # Documentation only changes
-        release: false
+        release: patch
       - type: feat      # A new feature
         release: minor
       - type: fix       # A bug fix
@@ -46,6 +57,8 @@ analyzeCommits:
         release: false
       - type: test      # Adding missing tests or correcting existing tests
         release: false
+      - type: improv    # A change which improves an already existing feature or aspect
+        release: minor
 
 # Responsible for generating the content of the release note.
 # If multiple plugins with a generateNotes step are defined,
@@ -60,6 +73,9 @@ generateNotes:
     linkReferences: true
     presetConfig:
       types:  # looks like it only works with 'conventionalcommits' preset
+        - type: 'breaking'
+          section: '🧨 Breaking changes!'
+          hidden: false
         - type: 'build'
           section: '🦊 CI/CD'
           hidden: false
@@ -95,6 +111,9 @@ generateNotes:
           hidden: false
         - type: 'test'
           section: '🧪 Tests'
+          hidden: false
+        - type: 'improv'
+          section: '💎 Improvements'
           hidden: false
 
 # Responsible for preparing the release, for example creating or updating files

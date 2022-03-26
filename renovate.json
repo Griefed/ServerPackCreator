@@ -7,7 +7,12 @@
   "gradle-lite": {
     "enabled": true
   },
-  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "extends": "config:base",
+      "matchPaths": ["package.json"]
+    }
+  ],
   "labels": ["dependencies"],
   "assignees": ["Griefed"]
 }

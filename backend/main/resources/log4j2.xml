@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="log-path">logs</Property>
+        <Property name="archive">${log-path}/archive</Property>
+        <Property name="pattern">%d{ISO8601} %5p [%t] (%F:%L) - %m%n</Property>
+        <Property name="console-pattern">%style{%d{ISO8601}}{dim,white} %highlight{%5p} [%style{%t}{bright,blue}] %style{(%F:%L)}{bright,yellow} - %m%n</Property>
+        <Property name="log-level">INFO</Property>
+        <Property name="log-level-spc">DEBUG</Property>
+        <Property name="charset">UTF-8</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>
+                    ${console-pattern}
+                </Pattern>
+            </PatternLayout>
+        </Console>
+
+        <RollingFile name="ApplicationLogger" fileName="${log-path}/serverpackcreator.log" filePattern="${archive}/serverpackcreator.log.%i">
+            <PatternLayout>
+                <Charset>
+                    ${charset}
+                </Charset>
+                <Pattern>
+                    ${pattern}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5" />
+        </RollingFile>
+
+        <RollingFile name="InstallerLogger" fileName="${log-path}/modloader_installer.log" filePattern="${archive}/modloader_installer.log.%i">
+            <PatternLayout>
+                <Charset>
+                    ${charset}
+                </Charset>
+                <Pattern>
+                    ${pattern}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5" />
+        </RollingFile>
+
+        <RollingFile name="AddonsLogger" fileName="${log-path}/addons.log" filePattern="${archive}/addons.log.%i">
+            <PatternLayout>
+                <Charset>
+                    ${charset}
+                </Charset>
+                <Pattern>
+                    ${pattern}
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5" />
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="ALL">
+            <AppenderRef ref="Console" level="${log-level}"/>
+            <AppenderRef ref="ApplicationLogger" level="${log-level}" />
+        </Root>
+
+        <Logger name="de.griefed.serverpackcreator" level="ALL" additivity="false">
+            <AppenderRef ref="Console" level="${log-level-spc}"/>
+            <AppenderRef ref="ApplicationLogger" level="${log-level-spc}" />
+        </Logger>
+
+        <Logger name="InstallerLogger" level="ALL" additivity="false">
+            <AppenderRef ref="InstallerLogger" level="${log-level-spc}" />
+        </Logger>
+
+        <Logger name="AddonsLogger" level="ALL" additivity="false">
+            <AppenderRef ref="AddonsLogger" level="${log-level-spc}" />
+        </Logger>
+    </Loggers>
+</Configuration>

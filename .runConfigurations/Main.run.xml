@@ -1,9 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
+  <configuration default="false" name="Run" type="Application" factoryName="Application">
     <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="de.griefed.serverpackcreator.Main" />
-    <module name="serverpackcreator.main" />
+    <module name="ServerPackCreator.main" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testruns" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="de.griefed.serverpackcreator.*" />
