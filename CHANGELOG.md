@@ -1,3 +1,15 @@
+### [3.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0...3.0.1) (2022-03-26)
+
+
+### 🛠 Fixes
+
+* **Tests:** Remove unnecessary tests for UpdateChecker as I already have those covered over on VersionChecker. This gets rid of the failing tests as well. ([a1a694b](https://git.griefed.de/Griefed/ServerPackCreator/commit/a1a694b978fcd0903b988c549679a8923b7b36c2))
+
+
+### Other
+
+* **log4j:** Set log level back down to INFO instead of DEBUG. If you are interested in debug logging, edit your log4j2.xml and set the`property `log-level-spc` to DEBUG ([2a31a2d](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a31a2da0751ae7febdaa6e0791d4a9e3157af15))
+
 ## [3.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/2.1.1...3.0.0) (2022-03-26)
 
 
