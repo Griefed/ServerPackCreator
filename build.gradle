@@ -64,7 +64,7 @@ configurations {
 
 dependencies {
     // Backend
-    embed 'de.griefed:versionchecker:1.0.7'
+    embed 'de.griefed:versionchecker:1.0.8'
     embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
     embed 'commons-lang:commons-lang:2.6'
@@ -79,7 +79,7 @@ dependencies {
     embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.2'
     embed 'org.apache.logging.log4j:log4j-web:2.17.2'
     embed 'org.apache.logging.log4j:log4j-jul:2.17.2'
-    embed 'org.jgroups:jgroups:5.2.0.Final'
+    embed 'org.jgroups:jgroups:5.2.2.Final'
 
     // GUI
     embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
@@ -102,7 +102,7 @@ dependencies {
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.4'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.5'
     testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
