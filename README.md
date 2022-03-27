@@ -222,14 +222,14 @@ If you wish to re-generate the default-files, simply delete any one of the previ
 
 Running ServerPackCreator.jar with the `-cli`-argument will guide you through the generation of a config-file, should none exist. Alternatively, run ServerPackCreator with the `-cgen` argument to create a new config file.
 Should you be using ServerPackCreator.exe, the default/template-files will be generated automatically, if they do not exist yet.
-An example for a fully configured `serverpackcreator.conf` can be viewed [here](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/examples/serverpackcreator.example).
+An example for a fully configured `serverpackcreator.conf` can be viewed [here](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/examples/serverpackcreator.example).
 Detailed list of all template files:
 
-| File                   | Description                                                                                                                                                                                                                                         |
-|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/serverpackcreator.conf).                      |
-| server.properties      | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server.properties).            |
-| server-icon.png        | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/338dbc0054aa632faecd58748e9f9fa1431b2dcb/src/main/resources/de/griefed/resources/server_files/server-icon.png). |
+| File                   | Description                                                                                                                                                                                                         |
+|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/serverpackcreator.conf).                      |
+| server.properties      | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/server_files/server.properties).            |
+| server-icon.png        | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/server_files/server-icon.png). |
 
 The serverpackcreator.conf file allows you to customize a couple of different things:
 
@@ -279,27 +279,27 @@ de.griefed.serverpackcreator.configuration.directories.mustinclude=mods,config,d
 de.griefed.serverpackcreator.curseforge.api.token=
 ```
 
-| Property                                                              | Description                                                                                                                  |
-|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| de.griefed.serverpackcreator.versioncheck.prerelease                  | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                              |
-| de.griefed.serverpackcreator.language                                 | The language in which ServerPackCreator should run.                                                                          |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist           | Comma separated fallback-list of clientside-only mods.                                                                       |
-| de.griefed.serverpackcreator.configuration.hastebinserver             | Address of a HasteBin server to use for config and logs uploading.                                                           |
-| de.griefed.serverpackcreator.serverpack.autodiscoverenabled           | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically.                                 |
-| de.griefed.serverpackcreator.gui.darkmode                             | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                            |
-| de.griefed.serverpackcreator.configuration.directories.serverpacks    | The directory in which server packs will be generated and stored in.                                                         |
-| de.griefed.serverpackcreator.curseforge.cleanup.enabled               | `true` or `false`. Whether to cleanup files after generating a server pack from a CurseForge project.                        |
-| de.griefed.serverpackcreator.serverpack.cleanup.enabled               | `true` or `false`. Whether to cleanup files after generating a server pack.                                                  |
-| de.griefed.serverpackcreator.serverpack.overwrite.enabled             | `true` or `false`. Whether an already existing server pack should be overwritten.                                            |
-| de.griefed.serverpackcreator.configuration.directories.shouldexclude  | List of directories which should not be in a server pack.                                                                    |
+| Property                                                               | Description                                                                                                                  |
+|------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| de.griefed.serverpackcreator.versioncheck.prerelease                   | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                              |
+| de.griefed.serverpackcreator.language                                  | The language in which ServerPackCreator should run.                                                                          |
+| de.griefed.serverpackcreator.configuration.fallbackmodslist            | Comma separated fallback-list of clientside-only mods.                                                                       |
+| de.griefed.serverpackcreator.configuration.hastebinserver              | Address of a HasteBin server to use for config and logs uploading.                                                           |
+| de.griefed.serverpackcreator.serverpack.autodiscoverenabled            | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically.                                 |
+| de.griefed.serverpackcreator.gui.darkmode                              | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                            |
+| de.griefed.serverpackcreator.configuration.directories.serverpacks     | The directory in which server packs will be generated and stored in.                                                         |
+| de.griefed.serverpackcreator.curseforge.cleanup.enabled                | `true` or `false`. Whether to cleanup files after generating a server pack from a CurseForge project.                        |
+| de.griefed.serverpackcreator.serverpack.cleanup.enabled                | `true` or `false`. Whether to cleanup files after generating a server pack.                                                  |
+| de.griefed.serverpackcreator.serverpack.overwrite.enabled              | `true` or `false`. Whether an already existing server pack should be overwritten.                                            |
+| de.griefed.serverpackcreator.configuration.directories.shouldexclude   | List of directories which should not be in a server pack.                                                                    |
 | de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled | `true` or `false`. Web only. Whether regeneration of an already available CurseForge project server pack is allowed/enabled. |
-| de.griefed.serverpackcreator.spring.schedules.database.cleanup        | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                 |
-| de.griefed.serverpackcreator.spring.schedules.files.cleanup           | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                       |
-| de.griefed.serverpackcreator.spring.schedules.versions.refresh        | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                           |
-| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage      | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.   |
-| de.griefed.serverpackcreator.configuration.saveloadedconfig           | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                          |
-| de.griefed.serverpackcreator.configuration.directories.mustinclude    | List of directories which must be included in a server pack.                                                                 |
-| de.griefed.serverpackcreator.curseforge.api.token                     | CurseAPI token used for generating server packs from CurseForge projects.                                                    |
+| de.griefed.serverpackcreator.spring.schedules.database.cleanup         | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                 |
+| de.griefed.serverpackcreator.spring.schedules.files.cleanup            | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                       |
+| de.griefed.serverpackcreator.spring.schedules.versions.refresh         | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                           |
+| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage       | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.   |
+| de.griefed.serverpackcreator.configuration.saveloadedconfig            | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                          |
+| de.griefed.serverpackcreator.configuration.directories.mustinclude     | List of directories which must be included in a server pack.                                                                 |
+| de.griefed.serverpackcreator.curseforge.api.token                      | CurseAPI token used for generating server packs from CurseForge projects.                                                    |
 
 # 5.1.2 Default `application.properties` 
 

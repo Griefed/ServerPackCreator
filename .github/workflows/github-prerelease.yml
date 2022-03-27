@@ -36,7 +36,8 @@ jobs:
           body: |
             Automatic pre-release of version: **${{steps.tag.outputs.tag}}**
             **Changes in this pre-release:**
-            TO BE COPY'N'PASTED BY GRIEFED FROM GITLAB
+            If the changelog has not yet been copy'n'pasted by Griefed, look at [CHANGELOG.md](https://github.com/Griefed/ServerPackCreator/blob/main/CHANGELOG.md)
+            and look for the ${{steps.tag.outputs.tag}} tag.
           draft: false
           prerelease: true
 
