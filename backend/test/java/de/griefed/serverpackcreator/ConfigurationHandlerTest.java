@@ -73,6 +73,8 @@ class ConfigurationHandlerTest {
                 "BetterFoliage-," +
                 "BetterPingDisplay-," +
                 "BetterPlacement-," +
+                "bhmenu-," +
+                "BH-Menu-," +
                 "Blur-," +
                 "catalogue-," +
                 "cherishedworlds-," +

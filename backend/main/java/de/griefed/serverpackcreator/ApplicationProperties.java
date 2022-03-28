@@ -62,6 +62,8 @@ public class ApplicationProperties extends Properties {
         "BetterFoliage-," +
         "BetterPingDisplay-," +
         "BetterPlacement-," +
+        "bhmenu-," +
+        "BH-Menu-," +
         "Blur-," +
         "catalogue-," +
         "cherishedworlds-," +

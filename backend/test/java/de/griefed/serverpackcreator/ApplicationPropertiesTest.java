@@ -45,6 +45,8 @@ public class ApplicationPropertiesTest {
                 "BetterFoliage-," +
                 "BetterPingDisplay-," +
                 "BetterPlacement-," +
+                "bhmenu-," +
+                "BH-Menu-," +
                 "Blur-," +
                 "catalogue-," +
                 "cherishedworlds-," +
