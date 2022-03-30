@@ -160,7 +160,7 @@ UPLOAD AND CREATE FROM ZIP
                     </q-tooltip>
                   </q-input>
                 </div>
-
+                <!-- TODO refactor and fix modloader version selection to be more reliable -->
                 <!-- MINECRAFT VERSION -->
                 <div class="row flex-center">
 

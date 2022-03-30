@@ -41,7 +41,6 @@ public class ApplicationPropertiesTest {
                 "BetterAnimationsCollection-," +
                 "BetterDarkMode-," +
                 "BetterF3-," +
-                "BetterF3-," +
                 "BetterFoliage-," +
                 "BetterPingDisplay-," +
                 "BetterPlacement-," +
@@ -49,6 +48,8 @@ public class ApplicationPropertiesTest {
                 "BH-Menu-," +
                 "Blur-," +
                 "catalogue-," +
+                "charmonium-," +
+                "Charmonium-," +
                 "cherishedworlds-," +
                 "classicbar-," +
                 "clickadv-," +
@@ -59,6 +60,7 @@ public class ApplicationPropertiesTest {
                 "CTM-," +
                 "customdiscordrpc-," +
                 "CustomMainMenu-," +
+                "dashloader-," +
                 "DefaultOptions_," +
                 "defaultoptions-," +
                 "desiredservers-," +
@@ -73,6 +75,7 @@ public class ApplicationPropertiesTest {
                 "EiraMoticons_," +
                 "eiramoticons-," +
                 "EnchantmentDescriptions-," +
+                "entity-texture-features-," +
                 "EquipmentCompare-," +
                 "extremesoundmuffler-," +
                 "extremeSoundMuffler-," +

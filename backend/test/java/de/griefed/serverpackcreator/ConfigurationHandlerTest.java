@@ -69,7 +69,6 @@ class ConfigurationHandlerTest {
                 "BetterAnimationsCollection-," +
                 "BetterDarkMode-," +
                 "BetterF3-," +
-                "BetterF3-," +
                 "BetterFoliage-," +
                 "BetterPingDisplay-," +
                 "BetterPlacement-," +
@@ -77,6 +76,8 @@ class ConfigurationHandlerTest {
                 "BH-Menu-," +
                 "Blur-," +
                 "catalogue-," +
+                "charmonium-," +
+                "Charmonium-," +
                 "cherishedworlds-," +
                 "classicbar-," +
                 "clickadv-," +
@@ -87,6 +88,7 @@ class ConfigurationHandlerTest {
                 "CTM-," +
                 "customdiscordrpc-," +
                 "CustomMainMenu-," +
+                "dashloader-," +
                 "DefaultOptions_," +
                 "defaultoptions-," +
                 "desiredservers-," +
@@ -101,6 +103,7 @@ class ConfigurationHandlerTest {
                 "EiraMoticons_," +
                 "eiramoticons-," +
                 "EnchantmentDescriptions-," +
+                "entity-texture-features-," +
                 "EquipmentCompare-," +
                 "extremesoundmuffler-," +
                 "extremeSoundMuffler-," +
