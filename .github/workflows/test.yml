@@ -9,7 +9,7 @@ jobs:
   gradle:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
@@ -41,7 +41,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v5
