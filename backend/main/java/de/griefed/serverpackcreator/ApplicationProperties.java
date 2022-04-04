@@ -51,8 +51,16 @@ public class ApplicationProperties extends Properties {
     private final String FALLBACK_MODS_DEFAULT_ASSTRING =
             "3dSkinLayers-," +
             "AdvancementPlaques-," +
+            "AmbientEnvironment-," +
             "AmbientSounds_," +
+            "antighost-," +
             "armorchroma-," +
+            "armorpointspp-," +
+            "ArmorSoundTweak-," +
+            "authme-," +
+            "autoreconnect-," +
+            "auto-reconnect-," +
+            "axolotl-item-fix-," +
             "backtools-," +
             "BetterAdvancements-," +
             "BetterAnimationsCollection-," +
@@ -61,12 +69,15 @@ public class ApplicationProperties extends Properties {
             "BetterFoliage-," +
             "BetterPingDisplay-," +
             "BetterPlacement-," +
+            "BetterTaskbar-," +
             "bhmenu-," +
             "BH-Menu-," +
             "Blur-," +
+            "borderless-mining-," +
             "catalogue-," +
             "charmonium-," +
             "Charmonium-," +
+            "chat_heads-," +
             "cherishedworlds-," +
             "classicbar-," +
             "clickadv-," +
@@ -75,15 +86,18 @@ public class ApplicationProperties extends Properties {
             "Controlling-," +
             "CraftPresence-," +
             "CTM-," +
+            "cullleaves-," +
             "customdiscordrpc-," +
             "CustomMainMenu-," +
             "dashloader-," +
             "DefaultOptions_," +
             "defaultoptions-," +
+            "DeleteWorldsToTrash-," +
             "desiredservers-," +
             "Ding-," +
             "drippyloadingscreen_," +
             "drippyloadingscreen-," +
+            "DripSounds-," +
             "Durability101-," +
             "dynamic-music-," +
             "DynamicSurroundings-," +
@@ -96,6 +110,7 @@ public class ApplicationProperties extends Properties {
             "EquipmentCompare-," +
             "extremesoundmuffler-," +
             "extremeSoundMuffler-," +
+            "fabricemotes-," +
             "Fallingleaves-," +
             "fallingleaves-," +
             "fancymenu_," +
@@ -120,6 +135,7 @@ public class ApplicationProperties extends Properties {
             "JustEnoughProfessions-," +
             "JustEnoughProfessions-," +
             "JustEnoughResources-," +
+            "keymap-," +
             "keywizard-," +
             "konkrete_," +
             "lazydfu-," +
@@ -136,8 +152,11 @@ public class ApplicationProperties extends Properties {
             "moreoverlays-," +
             "MouseTweaks-," +
             "multihotbar-," +
+            "musicdr-," +
+            "music-duration-reducer-," +
             "MyServerIsCompatible-," +
             "Neat ," +
+            "ngrok-lan-expose-mod-," +
             "NotifMod-," +
             "OldJavaWarning-," +
             "OptiFine," +

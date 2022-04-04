@@ -34,8 +34,16 @@ public class ApplicationPropertiesTest {
             Arrays.asList((
                 "3dSkinLayers-," +
                 "AdvancementPlaques-," +
+                "AmbientEnvironment-," +
                 "AmbientSounds_," +
+                "antighost-," +
                 "armorchroma-," +
+                "armorpointspp-," +
+                "ArmorSoundTweak-," +
+                "authme-," +
+                "autoreconnect-," +
+                "auto-reconnect-," +
+                "axolotl-item-fix-," +
                 "backtools-," +
                 "BetterAdvancements-," +
                 "BetterAnimationsCollection-," +
@@ -44,12 +52,15 @@ public class ApplicationPropertiesTest {
                 "BetterFoliage-," +
                 "BetterPingDisplay-," +
                 "BetterPlacement-," +
+                "BetterTaskbar-," +
                 "bhmenu-," +
                 "BH-Menu-," +
                 "Blur-," +
+                "borderless-mining-," +
                 "catalogue-," +
                 "charmonium-," +
                 "Charmonium-," +
+                "chat_heads-," +
                 "cherishedworlds-," +
                 "classicbar-," +
                 "clickadv-," +
@@ -58,15 +69,18 @@ public class ApplicationPropertiesTest {
                 "Controlling-," +
                 "CraftPresence-," +
                 "CTM-," +
+                "cullleaves-," +
                 "customdiscordrpc-," +
                 "CustomMainMenu-," +
                 "dashloader-," +
                 "DefaultOptions_," +
                 "defaultoptions-," +
+                "DeleteWorldsToTrash-," +
                 "desiredservers-," +
                 "Ding-," +
                 "drippyloadingscreen_," +
                 "drippyloadingscreen-," +
+                "DripSounds-," +
                 "Durability101-," +
                 "dynamic-music-," +
                 "DynamicSurroundings-," +
@@ -79,6 +93,7 @@ public class ApplicationPropertiesTest {
                 "EquipmentCompare-," +
                 "extremesoundmuffler-," +
                 "extremeSoundMuffler-," +
+                "fabricemotes-," +
                 "Fallingleaves-," +
                 "fallingleaves-," +
                 "fancymenu_," +
@@ -103,6 +118,7 @@ public class ApplicationPropertiesTest {
                 "JustEnoughProfessions-," +
                 "JustEnoughProfessions-," +
                 "JustEnoughResources-," +
+                "keymap-," +
                 "keywizard-," +
                 "konkrete_," +
                 "lazydfu-," +
@@ -119,8 +135,11 @@ public class ApplicationPropertiesTest {
                 "moreoverlays-," +
                 "MouseTweaks-," +
                 "multihotbar-," +
+                "musicdr-," +
+                "music-duration-reducer-," +
                 "MyServerIsCompatible-," +
                 "Neat ," +
+                "ngrok-lan-expose-mod-," +
                 "NotifMod-," +
                 "OldJavaWarning-," +
                 "OptiFine," +
