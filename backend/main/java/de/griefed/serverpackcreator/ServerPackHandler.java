@@ -1167,9 +1167,6 @@ public class ServerPackHandler {
             LOG.error(String.format("Failed to create directory %s", destination));
         }
 
-        // Note to self: What is this? How does this exclude files? What did I do here?
-        directoriesToCopy.removeIf(n -> n.startsWith("!"));
-
         if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"));
@@ -1190,6 +1187,15 @@ public class ServerPackHandler {
             }
 
         } else {
+
+            List<String> exclusions = APPLICATIONPROPERTIES.getListOfDirectoriesToExclude();
+            directoriesToCopy.forEach(entry -> {
+                if (entry.startsWith("!")) {
+                    exclusions.add(entry.substring(1));
+                }
+            });
+            directoriesToCopy.removeIf(n -> n.startsWith("!"));
+
             for (String directory : directoriesToCopy) {
 
                 String clientDir = String.format("%s/%s", modpackDir, directory);
@@ -1275,7 +1281,7 @@ public class ServerPackHandler {
                      * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
                      * user-specified clientside-only mods from the list of mods in the mods-directory.
                      */
-                } else if (directory.startsWith("mods") && clientMods.size() > 0) {
+                } else if (directory.startsWith("mods")) {
 
                     List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
 
@@ -1286,21 +1292,31 @@ public class ServerPackHandler {
                     }
 
                     for (String file : listOfFiles) {
-                        try {
 
-                            Files.copy(
-                                    Paths.get(file),
-                                    Paths.get(String.format("%s/%s", serverDir, new File(file).getName())),
-                                    REPLACE_EXISTING
-                            );
+                        if (excludeFileOrDirectory(file.replace("\\","/"), exclusions)) {
 
-                            LOG.debug(String.format("Copying: %s", file));
+                            LOG.info("Excluding " + file + " from server pack");
 
-                        } catch (IOException ex) {
-                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                LOG.error("An error occurred copying files to the serverpack.", ex);
+                        } else {
+
+                            try {
+
+                                Files.copy(
+                                        Paths.get(file),
+                                        Paths.get(String.format("%s/%s", serverDir, new File(file).getName())),
+                                        REPLACE_EXISTING
+                                );
+
+                                LOG.debug(String.format("Copying: %s", file));
+
+                            } catch (IOException ex) {
+                                if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                    LOG.error("An error occurred copying files to the serverpack.", ex);
+                                }
                             }
+
                         }
+
                     }
 
                 } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
@@ -1319,9 +1335,9 @@ public class ServerPackHandler {
                     try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
 
                         files.forEach(file -> {
-                            if (excludeFileOrDirectory(file.toString().replace("\\","/"))) {
+                            if (excludeFileOrDirectory(file.toString().replace("\\","/"), exclusions)) {
 
-                                LOG.debug("Excluding " + file + " from server pack");
+                                LOG.info("Excluding " + file + " from server pack");
 
                             } else {
                                 try {
@@ -1399,7 +1415,7 @@ public class ServerPackHandler {
 
 
         // Exclude user-specified mods from copying.
-        if (!userSpecifiedClientMods.get(0).equals("")) {
+        if (userSpecifiedClientMods.size() > 0) {
             for (int m = 0; m < userSpecifiedClientMods.size(); m++) {
 
                 int i = m;
@@ -1432,9 +1448,9 @@ public class ServerPackHandler {
      * @param fileToCheckFor String. The string to check for.
      * @return Boolean. Returns true if the file is found in the list of directories to exclude, false if not.
      */
-    private boolean excludeFileOrDirectory(String fileToCheckFor) {
+    private boolean excludeFileOrDirectory(String fileToCheckFor, List<String> exclusions) {
         boolean isPresentInList = false;
-        for (String entry : APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) {
+        for (String entry : exclusions) {
             if (fileToCheckFor.contains(entry)) {
                 isPresentInList = true;
                 break;
