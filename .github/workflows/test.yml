@@ -23,7 +23,7 @@ jobs:
         run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace
       - name: List files in libs
         run: ls -ahl build/libs
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts-gradle
           path: |
@@ -31,7 +31,7 @@ jobs:
             !build/libs/libraries/
             frontend/dist/spa
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: report

@@ -27,7 +27,7 @@ jobs:
       - name: Build documentation
         run: ./gradlew clean build -Pversion='' -x test
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: build/docs/javadoc/
