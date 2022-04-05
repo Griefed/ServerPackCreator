@@ -31,7 +31,7 @@
     "@quasar/extras": "1.13.1",
     "axios": "0.26.1",
     "core-js": "3.21.1",
-    "tsparticles": "1.42.2",
+    "tsparticles": "1.42.4",
     "vue": "3.2.31",
     "quasar": "2.6.0",
     "vue-class-component": "8.0.0-rc.1"
