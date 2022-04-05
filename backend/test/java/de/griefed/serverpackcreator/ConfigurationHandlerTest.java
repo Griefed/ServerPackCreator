@@ -61,6 +61,8 @@ class ConfigurationHandlerTest {
     void getFallbackModsListTestEquals() {
         String FALLBACK_MODS_DEFAULT_ASSTRING =
                 "3dSkinLayers-," +
+                "3dskinlayers-," +
+                "Absolutely-Not-A-Zoom-Mod-," +
                 "AdvancementPlaques-," +
                 "AmbientEnvironment-," +
                 "AmbientSounds_," +
@@ -114,6 +116,7 @@ class ConfigurationHandlerTest {
                 "DynamicSurroundings-," +
                 "DynamicSurroundingsHuds-," +
                 "dynmus-," +
+                "effective-," +
                 "EiraMoticons_," +
                 "eiramoticons-," +
                 "EnchantmentDescriptions-," +
@@ -127,6 +130,7 @@ class ConfigurationHandlerTest {
                 "fancymenu_," +
                 "findme-," +
                 "flickerfix-," +
+                "FPS-Monitor-," +
                 "FpsReducer-," +
                 "FullscreenWindowed-," +
                 "InventoryEssentials_," +
@@ -162,6 +166,7 @@ class ConfigurationHandlerTest {
                 "modnametooltip-," +
                 "moreoverlays-," +
                 "MouseTweaks-," +
+                "movement-vision-," +
                 "multihotbar-," +
                 "musicdr-," +
                 "music-duration-reducer-," +

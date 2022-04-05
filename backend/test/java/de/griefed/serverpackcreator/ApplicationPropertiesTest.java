@@ -33,6 +33,8 @@ public class ApplicationPropertiesTest {
         Assertions.assertEquals(APPLICATIONPROPERTIES.LIST_FALLBACK_MODS_DEFAULT,new ArrayList<>(
             Arrays.asList((
                 "3dSkinLayers-," +
+                "3dskinlayers-," +
+                "Absolutely-Not-A-Zoom-Mod-," +
                 "AdvancementPlaques-," +
                 "AmbientEnvironment-," +
                 "AmbientSounds_," +
@@ -86,6 +88,7 @@ public class ApplicationPropertiesTest {
                 "DynamicSurroundings-," +
                 "DynamicSurroundingsHuds-," +
                 "dynmus-," +
+                "effective-," +
                 "EiraMoticons_," +
                 "eiramoticons-," +
                 "EnchantmentDescriptions-," +
@@ -99,6 +102,7 @@ public class ApplicationPropertiesTest {
                 "fancymenu_," +
                 "findme-," +
                 "flickerfix-," +
+                "FPS-Monitor-," +
                 "FpsReducer-," +
                 "FullscreenWindowed-," +
                 "InventoryEssentials_," +
@@ -134,6 +138,7 @@ public class ApplicationPropertiesTest {
                 "modnametooltip-," +
                 "moreoverlays-," +
                 "MouseTweaks-," +
+                "movement-vision-," +
                 "multihotbar-," +
                 "musicdr-," +
                 "music-duration-reducer-," +

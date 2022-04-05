@@ -50,6 +50,8 @@ public class ApplicationProperties extends Properties {
     public final File FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS = new File("user_jvm_args.txt");
     private final String FALLBACK_MODS_DEFAULT_ASSTRING =
             "3dSkinLayers-," +
+            "3dskinlayers-," +
+            "Absolutely-Not-A-Zoom-Mod-," +
             "AdvancementPlaques-," +
             "AmbientEnvironment-," +
             "AmbientSounds_," +
@@ -103,6 +105,7 @@ public class ApplicationProperties extends Properties {
             "DynamicSurroundings-," +
             "DynamicSurroundingsHuds-," +
             "dynmus-," +
+            "effective-," +
             "EiraMoticons_," +
             "eiramoticons-," +
             "EnchantmentDescriptions-," +
@@ -116,6 +119,7 @@ public class ApplicationProperties extends Properties {
             "fancymenu_," +
             "findme-," +
             "flickerfix-," +
+            "FPS-Monitor-," +
             "FpsReducer-," +
             "FullscreenWindowed-," +
             "InventoryEssentials_," +
@@ -151,6 +155,7 @@ public class ApplicationProperties extends Properties {
             "modnametooltip-," +
             "moreoverlays-," +
             "MouseTweaks-," +
+            "movement-vision-," +
             "multihotbar-," +
             "musicdr-," +
             "music-duration-reducer-," +
