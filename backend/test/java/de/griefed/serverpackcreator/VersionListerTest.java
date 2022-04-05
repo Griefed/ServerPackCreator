@@ -26,10 +26,10 @@ public class VersionListerTest {
             e.printStackTrace();
         }
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
-        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.initialize();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.filesSetup();
+        this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+        this.LOCALIZATIONMANAGER.initialize();
+        this.DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.DEFAULTFILES.filesSetup();
         this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
     }
 

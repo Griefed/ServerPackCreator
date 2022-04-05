@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.textpane.MaterialTextPaneUI;
@@ -67,11 +68,7 @@ public class SwingGuiInitializer extends JPanel {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final ServerPackHandler CREATESERVERPACK;
     private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final Utilities UTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
     private final UpdateChecker UPDATECHECKER;
@@ -114,20 +111,14 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related in the GUI.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedUtilities Instance of {@link de.griefed.serverpackcreator.utilities.Utilities}.
      * @param injectedUpdateChecker Instance of {@link UpdateChecker}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      */
     public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
                                ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister,
-                               BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities,
-                               UpdateChecker injectedUpdateChecker, ApplicationPlugins injectedPluginManager) {
+                               Utilities injectedUtilities, UpdateChecker injectedUpdateChecker, ApplicationPlugins injectedPluginManager) {
 
         super(new GridLayout(1, 1));
 
@@ -148,47 +139,22 @@ public class SwingGuiInitializer extends JPanel {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
-        }
-
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES,
-                    APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
-        } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedConfigurationHandler == null) {
             this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER,
-                    BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
+                    UTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
             this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER,
-                    APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+                    APPLICATIONPROPERTIES, UTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
@@ -201,8 +167,7 @@ public class SwingGuiInitializer extends JPanel {
 
         if (injectedServerPackHandler == null) {
             this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER,
-                    APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES,
-                    CONFIGUTILITIES, APPLICATIONPLUGINS);
+                    APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES, APPLICATIONPLUGINS);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -223,8 +188,7 @@ public class SwingGuiInitializer extends JPanel {
 
         this.TAB_CREATESERVERPACK = new TabCreateServerPack(
                 LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, VERSIONLISTER, APPLICATIONPROPERTIES,
-                FRAME_SERVERPACKCREATOR, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES,
-                APPLICATIONPLUGINS
+                FRAME_SERVERPACKCREATOR, UTILITIES, APPLICATIONPLUGINS
         );
 
         this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(

@@ -24,16 +24,12 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Scanner;
 
 /**
  * Utility-class revolving around Booleans.
  * @author Griefed
  */
-@Component
 public class BooleanUtilities {
 
     private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
@@ -41,7 +37,6 @@ public class BooleanUtilities {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    @Autowired
     public BooleanUtilities(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
 
         if (injectedApplicationProperties == null) {

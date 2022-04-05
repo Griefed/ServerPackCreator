@@ -20,10 +20,9 @@ class DefaultFilesTest {
         }
 
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
-        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.initialize();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+        this.LOCALIZATIONMANAGER.initialize();
+        this.DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
     }
 
     @Test

@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.spring.NotificationResponse;
 import de.griefed.serverpackcreator.spring.task.TaskSubmitter;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.Utilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class ZipService {
 
     private final TaskSubmitter TASKSUBMITTER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
-    private final ConfigUtilities CONFIGUTILITIES;
+    private final Utilities UTILITIES;
     private final NotificationResponse NOTIFICATIONRESPONSE;
 
     /**
@@ -54,16 +55,16 @@ public class ZipService {
      * @author Griefed
      * @param injectedTaskSubmitter Instance of {@link TaskSubmitter}.
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
      */
     @Autowired
     public ZipService(TaskSubmitter injectedTaskSubmitter, ConfigurationHandler injectedConfigurationHandler,
-                      ConfigUtilities injectedConfigUtilities, NotificationResponse injectedNotificationResponse) {
+                      Utilities injectedUtilities, NotificationResponse injectedNotificationResponse) {
 
         this.TASKSUBMITTER = injectedTaskSubmitter;
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-        this.CONFIGUTILITIES = injectedConfigUtilities;
+        this.UTILITIES = injectedUtilities;
         this.NOTIFICATIONRESPONSE = injectedNotificationResponse;
     }
 
@@ -142,7 +143,7 @@ public class ZipService {
         if (CONFIGURATIONHANDLER.checkModloader(parameters[3])) {
 
             // Check Forge
-            if (CONFIGUTILITIES.getModLoaderCase(parameters[3]).equals("Forge")) {
+            if (UTILITIES.ConfigUtils().getModLoaderCase(parameters[3]).equals("Forge")) {
 
                 if (!CONFIGURATIONHANDLER.isForgeVersionCorrect(parameters[4],parameters[2])) {
                     LOG.info(parameters[3] + " version " + parameters[2] + "-" + parameters[4] + " incorrect.");

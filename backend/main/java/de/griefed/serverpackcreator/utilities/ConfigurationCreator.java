@@ -42,19 +42,13 @@ public class ConfigurationCreator {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
-    private final BooleanUtilities BOOLEANUTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
-    private final CurseCreateModpack CURSECREATEMODPACK;
+    private final Utilities UTILITIES;
     private final VersionLister VERSIONLISTER;
+    private final CurseCreateModpack CURSECREATEMODPACK;
 
     public ConfigurationCreator(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
-                                BooleanUtilities injectedBooleanUtilities, ApplicationProperties injectedApplicationProperties,
-                                ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities,
-                                SystemUtilities injectedSystemUtilities, CurseCreateModpack injectedCurseCreateModpack,
+                                ApplicationProperties injectedApplicationProperties, Utilities injectedUtilities, CurseCreateModpack injectedCurseCreateModpack,
                                 VersionLister injectedVersionLister) {
 
         if (injectedApplicationProperties == null) {
@@ -69,50 +63,26 @@ public class ConfigurationCreator {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
-        }
-
         if (injectedVersionLister == null) {
             this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
         } else {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
         } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, UTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
@@ -183,7 +153,7 @@ public class ConfigurationCreator {
 
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
-            } while (!BOOLEANUTILITIES.readBoolean());
+            } while (!UTILITIES.BooleanUtils().readBoolean());
 
             modpackDir = tmpModpackDir.replace("\\", "/");
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -196,7 +166,7 @@ public class ConfigurationCreator {
             do {
                 clientMods.clear();
 
-                clientMods.addAll(LISTUTILITIES.readStringArray());
+                clientMods.addAll(UTILITIES.ListUtils().readStringArray());
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), clientMods));
@@ -217,7 +187,7 @@ public class ConfigurationCreator {
 
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
-            } while (!BOOLEANUTILITIES.readBoolean());
+            } while (!UTILITIES.BooleanUtils().readBoolean());
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), clientMods));
@@ -240,7 +210,7 @@ public class ConfigurationCreator {
                     copyDirs.clear();
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.specify"));
-                    copyDirs.addAll(LISTUTILITIES.readStringArray());
+                    copyDirs.addAll(UTILITIES.ListUtils().readStringArray());
 
                 } while (!CONFIGURATIONHANDLER.checkCopyDirs(copyDirs, modpackDir, encounteredErrors));
 
@@ -250,7 +220,7 @@ public class ConfigurationCreator {
 
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
-            } while (!BOOLEANUTILITIES.readBoolean());
+            } while (!UTILITIES.BooleanUtils().readBoolean());
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), copyDirs));
@@ -279,7 +249,7 @@ public class ConfigurationCreator {
 
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
-            } while (!BOOLEANUTILITIES.readBoolean());
+            } while (!UTILITIES.BooleanUtils().readBoolean());
 
             serverIconPath = tmpServerIcon.replace("\\", "/");
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -304,7 +274,7 @@ public class ConfigurationCreator {
 
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
-            } while (!BOOLEANUTILITIES.readBoolean());
+            } while (!UTILITIES.BooleanUtils().readBoolean());
 
             serverPropertiesPath = tmpServerProperties.replace("\\", "/");
             /* This log is meant to be read by the user, therefore we allow translation. */
@@ -316,7 +286,7 @@ public class ConfigurationCreator {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.server.enter"));
 
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.server.include") + " ");
-            includeServerInstallation = BOOLEANUTILITIES.readBoolean();
+            includeServerInstallation = UTILITIES.BooleanUtils().readBoolean();
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeServerInstallation));
@@ -345,7 +315,7 @@ public class ConfigurationCreator {
 
             } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
 
-            modLoader = CONFIGUTILITIES.getModLoaderCase(modLoader);
+            modLoader = UTILITIES.ConfigUtils().getModLoaderCase(modLoader);
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), modLoader));
@@ -387,7 +357,7 @@ public class ConfigurationCreator {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.icon.enter"));
 
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.icon.cli") + " ");
-            includeServerIcon = BOOLEANUTILITIES.readBoolean();
+            includeServerIcon = UTILITIES.BooleanUtils().readBoolean();
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeServerIcon));
@@ -398,7 +368,7 @@ public class ConfigurationCreator {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.properties.enter"));
 
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.properties.cli") + " ");
-            includeServerProperties = BOOLEANUTILITIES.readBoolean();
+            includeServerProperties = UTILITIES.BooleanUtils().readBoolean();
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeServerProperties));
@@ -409,7 +379,7 @@ public class ConfigurationCreator {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.zip.enter"));
 
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.zip.cli") + " ");
-            includeZipCreation = BOOLEANUTILITIES.readBoolean();
+            includeZipCreation = UTILITIES.BooleanUtils().readBoolean();
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), includeZipCreation));
@@ -435,7 +405,7 @@ public class ConfigurationCreator {
             serverPackSuffix = reader.nextLine();
 
 //------------------------------------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
-            CONFIGUTILITIES.printConfigurationModel(modpackDir,
+            UTILITIES.ConfigUtils().printConfigurationModel(modpackDir,
                     clientMods,
                     copyDirs,
                     includeServerInstallation,
@@ -456,12 +426,12 @@ public class ConfigurationCreator {
 
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
 
-        } while (!BOOLEANUTILITIES.readBoolean());
+        } while (!UTILITIES.BooleanUtils().readBoolean());
 
         reader.close();
 
 //-----------------------------------------------------------------------------------------WRITE CONFIG TO FILE---------
-        if (CONFIGUTILITIES.writeConfigToFile(
+        if (UTILITIES.ConfigUtils().writeConfigToFile(
                 modpackDir,
                 Arrays.asList(tmpClientMods),
                 Arrays.asList(tmpCopyDirs),

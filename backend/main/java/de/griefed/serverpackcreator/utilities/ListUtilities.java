@@ -20,8 +20,6 @@
 package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.utilities.misc.Generated;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +29,8 @@ import java.util.Scanner;
  * Utility-class revolving around Lists.
  * @author Griefed
  */
-@Component
 public class ListUtilities {
 
-    @Autowired
     public ListUtilities() {
 
     }

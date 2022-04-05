@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.spring;
 
 import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.utilities.ListUtilities;
+import de.griefed.serverpackcreator.utilities.Utilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,18 +40,18 @@ public class VersionsController {
     private static final Logger LOG = LogManager.getLogger(VersionsController.class);
 
     private final VersionLister VERSIONLISTER;
-    private final ListUtilities LISTUTILITIES;
+    private final Utilities UTILITIES;
 
     /**
      * Constructor for DI.
      * @author Griefed
      * @param injectedVersionLister Instance of {@link VersionLister} for version acquisition.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      */
     @Autowired
-    public VersionsController(VersionLister injectedVersionLister, ListUtilities injectedListUtilities) {
+    public VersionsController(VersionLister injectedVersionLister, Utilities injectedUtilities) {
         this.VERSIONLISTER = injectedVersionLister;
-        this.LISTUTILITIES = injectedListUtilities;
+        this.UTILITIES = injectedUtilities;
     }
 
     /**
@@ -68,8 +69,9 @@ public class VersionsController {
                 "application/json"
                 ).body(
                         "{\"minecraft\":" +
-                        LISTUTILITIES.encapsulateListElements(VERSIONLISTER.getMinecraftReleaseVersions()) +
-                                "}"
+                        UTILITIES.ListUtils().encapsulateListElements(
+                                VERSIONLISTER.getMinecraftReleaseVersions()
+                        ) + "}"
                 );
     }
 
@@ -89,10 +91,10 @@ public class VersionsController {
                         "application/json"
                 ).body(
                         "{\"forge\":" +
-                                LISTUTILITIES.encapsulateListElements(
-                                        VERSIONLISTER.reverseOrderList(
-                                                VERSIONLISTER.getForgeVersionsAsList(minecraftVersion)
-                                        )
+                                UTILITIES.ListUtils().encapsulateListElements(
+                                    VERSIONLISTER.reverseOrderList(
+                                        VERSIONLISTER.getForgeVersionsAsList(minecraftVersion)
+                                    )
                                 ) +
                                 "}"
                 );
@@ -114,8 +116,8 @@ public class VersionsController {
                         "application/json"
                 ).body(
                         "{\"fabric\":" +
-                        LISTUTILITIES.encapsulateListElements(
-                                VERSIONLISTER.reverseOrderList(
+                                UTILITIES.ListUtils().encapsulateListElements(
+                                    VERSIONLISTER.reverseOrderList(
                                         VERSIONLISTER.getFabricVersions()
                                 )
                         ) +

@@ -28,11 +28,7 @@ class CurseCreateModpackTest {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final Utilities UTILITIES;
 
     CurseCreateModpackTest() {
         try {
@@ -42,16 +38,11 @@ class CurseCreateModpackTest {
         }
 
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
         this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.initialize();
-        LISTUTILITIES = new ListUtilities();
-        STRINGUTILITIES = new StringUtilities();
-        SYSTEMUTILITIES = new SystemUtilities();
-        BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.LOCALIZATIONMANAGER.initialize();
         this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
-        this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
+        this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
+        this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES);
     }
 
     @Test

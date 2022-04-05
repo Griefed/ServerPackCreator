@@ -64,12 +64,7 @@ public class CurseCreateModpack {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final Utilities UTILITIES;
 
     private final ReticulatingSplines reticulatingSplines = new ReticulatingSplines();
 
@@ -83,18 +78,12 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      * @param injectedVersionLister Instance of {@link VersionLister}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      */
     @Autowired
     public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties,
-                              VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities,
-                              ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities,
-                              SystemUtilities injectedSystemUtilities) {
+                              VersionLister injectedVersionLister, Utilities injectedUtilities) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -108,40 +97,17 @@ public class CurseCreateModpack {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
+        VersionLister VERSIONLISTER;
         if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+            VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
         } else {
-            this.VERSIONLISTER = injectedVersionLister;
+            VERSIONLISTER = injectedVersionLister;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
-        } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
+            this.UTILITIES = injectedUtilities;
         }
     }
 
@@ -289,7 +255,7 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
 
-            CONFIGUTILITIES.writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG);
+            UTILITIES.ConfigUtils().writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG);
 
         } else {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.overwrite"));
@@ -314,7 +280,7 @@ public class CurseCreateModpack {
 
             CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
 
-            SYSTEMUTILITIES.unzipArchive(CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir)).orElseThrow(NullPointerException::new).toString(), modpackDir);
+            UTILITIES.FileUtils().unzipArchive(CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir)).orElseThrow(NullPointerException::new).toString(), modpackDir);
 
         } catch (NullPointerException | CurseException cex) {
             LOG.error(String.format("Error: Could not download file %s for project %s to directory %s.", configurationModel.getFileName(), configurationModel.getProjectName(), modpackDir));
@@ -333,9 +299,9 @@ public class CurseCreateModpack {
         if (new File(String.format("%s/manifest.json", modpackDir)).exists()) {
             try {
 
-                CONFIGUTILITIES.updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", modpackDir)));
+                UTILITIES.ConfigUtils().updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", modpackDir)));
 
-                configurationModel.setCopyDirs(CONFIGUTILITIES.suggestCopyDirs(configurationModel.getModpackDir()));
+                configurationModel.setCopyDirs(UTILITIES.ConfigUtils().suggestCopyDirs(configurationModel.getModpackDir()));
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.infoheader"));

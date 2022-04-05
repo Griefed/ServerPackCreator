@@ -29,8 +29,6 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.nio.file.*;
@@ -42,7 +40,6 @@ import java.util.zip.ZipFile;
  * Utility-class revolving around configuration utilities.
  * @author Griefed
  */
-@Component
 public class ConfigUtilities {
 
     private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
@@ -54,7 +51,6 @@ public class ConfigUtilities {
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final VersionLister VERSIONLISTER;
 
-    @Autowired
     public ConfigUtilities(LocalizationManager injectedLocalizationManager, BooleanUtilities injectedBooleanUtilities,
                            ListUtilities injectedListUtilities, ApplicationProperties injectedApplicationProperties,
                            StringUtilities injectedStringUtilities, VersionLister injectedVersionLister) {

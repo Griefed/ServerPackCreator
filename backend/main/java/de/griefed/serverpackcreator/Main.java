@@ -79,33 +79,6 @@ public class Main {
      */
     public static void main(String[] args) {
 
-        JarUtilities jarUtilities = new JarUtilities();
-
-        HashMap<String, String> systemInformation = jarUtilities.systemInformation(jarUtilities.getApplicationHomeForClass(Main.class));
-
-        jarUtilities.copyFileFromJar(log4j2xml);
-        try {
-            properties.createNewFile();
-        } catch (IOException ex) {
-            LOG.error("Couldn't create empty serverpackcreator.properties.");
-        }
-
-        try {
-
-            String prefix = "BOOT-INF/classes";
-            String langSource = "/de/griefed/resources/lang";
-
-            if (systemInformation.get("jarName").endsWith(".exe")) {
-                prefix = "";
-                langSource = "de/griefed/resources/lang";
-            }
-
-            jarUtilities.copyFolderFromJar(systemInformation.get("jarPath"),langSource, "lang", prefix, ".properties");
-
-        } catch (IOException ex) {
-            LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
-        }
-
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
 
         List<String> programArgs = Arrays.asList(args);
@@ -122,6 +95,42 @@ public class Main {
             LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
 
         }
+
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        DEFAULTFILES.filesSetup();
+
+        VersionLister VERSIONLISTER = new VersionLister(
+                APPLICATIONPROPERTIES
+        );
+
+        Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
+
+        HashMap<String, String> systemInformation = UTILITIES.JarUtils().systemInformation(UTILITIES.JarUtils().getApplicationHomeForClass(Main.class));
+
+        UTILITIES.JarUtils().copyFileFromJar(log4j2xml);
+        try {
+            properties.createNewFile();
+        } catch (IOException ex) {
+            LOG.error("Couldn't create empty serverpackcreator.properties.");
+        }
+
+        try {
+
+            String prefix = "BOOT-INF/classes";
+            String langSource = "/de/griefed/resources/lang";
+
+            if (systemInformation.get("jarName").endsWith(".exe")) {
+                prefix = "";
+                langSource = "de/griefed/resources/lang";
+            }
+
+            UTILITIES.JarUtils().copyFolderFromJar(systemInformation.get("jarPath"),langSource, "lang", prefix, ".properties");
+
+        } catch (IOException ex) {
+            LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
+        }
+
+
 
         //Print system information to console and logs.
         LOG.debug("Gathering system information to include in log to make debugging easier.");
@@ -196,9 +205,6 @@ public class Main {
             System.exit(0);
         }
 
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.filesSetup();
-
         //noinspection unused
         FileWatcher FILEWATCHER = new FileWatcher(APPLICATIONPROPERTIES, DEFAULTFILES);
 
@@ -209,52 +215,32 @@ public class Main {
 
         } else {
 
-            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, args);
+            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, VERSIONLISTER, UTILITIES, args);
 
         }
     }
 
-    private static void regular(ApplicationProperties APPLICATIONPROPERTIES, LocalizationManager LOCALIZATIONMANAGER, String[] args) {
-
-        ListUtilities LISTUTILITIES = new ListUtilities();
-        StringUtilities STRINGUTILITIES = new StringUtilities();
-        SystemUtilities SYSTEMUTILITIES = new SystemUtilities();
+    private static void regular(ApplicationProperties APPLICATIONPROPERTIES, LocalizationManager LOCALIZATIONMANAGER, VersionLister VERSIONLISTER, Utilities UTILITIES, String[] args) {
 
         UpdateChecker UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
-        VersionLister VERSIONLISTER = new VersionLister(
-                APPLICATIONPROPERTIES
-        );
-
-        BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(
-                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
-        );
-
-        ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(
-                LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES,
-                VERSIONLISTER
-        );
-
         CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
-                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES,
-                STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES
         );
 
         ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
-                LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES,
-                LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
+                LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, UTILITIES
         );
 
         ConfigurationCreator CONFIGURATIONCREATOR = new ConfigurationCreator(
-                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, BOOLEANUTILITIES, APPLICATIONPROPERTIES, LISTUTILITIES,
-                STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, UTILITIES, CURSECREATEMODPACK, VERSIONLISTER
         );
 
         ApplicationPlugins APPLICATIONPLUGINS = new ApplicationPlugins();
 
         ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
                 LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER,
-                BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS
+                UTILITIES, APPLICATIONPLUGINS
         );
 
         if (Arrays.asList(args).contains("-cgen")) {
@@ -285,8 +271,7 @@ public class Main {
 
             SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
                     LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, APPLICATIONPROPERTIES,
-                    VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES,
-                    UPDATECHECKER, APPLICATIONPLUGINS
+                    VERSIONLISTER, UTILITIES, UPDATECHECKER, APPLICATIONPLUGINS
             );
 
             swingGuiInitializer.mainGUI();

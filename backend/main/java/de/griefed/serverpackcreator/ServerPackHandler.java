@@ -76,11 +76,7 @@ public class ServerPackHandler {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final VersionLister VERSIONLISTER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final Utilities UTILITIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
 
     /**
@@ -94,18 +90,13 @@ public class ServerPackHandler {
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required for accessing checks.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      */
     @Autowired
     public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
                              ConfigurationHandler injectedConfigurationHandler, ApplicationProperties injectedApplicationProperties,
-                             VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                             StringUtilities injectedStringUtilities, SystemUtilities injectedSystemUtilities, ConfigUtilities injectedConfigUtilities,
+                             VersionLister injectedVersionLister, Utilities injectedUtilities,
                              ApplicationPlugins injectedPluginManager) {
 
         if (injectedApplicationProperties == null) {
@@ -126,50 +117,20 @@ public class ServerPackHandler {
             this.VERSIONLISTER = injectedVersionLister;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
-        }
-
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(
-                    LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER
-            );
-        } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(
-                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
-            );
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(
-                    LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
-            );
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, UTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
@@ -374,7 +335,7 @@ public class ServerPackHandler {
             downloadUrl = null;
         }
 
-        if (downloadUrl != null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
+        if (downloadUrl != null && UTILITIES.WebUtils().downloadFile(fileDestination, downloadUrl)) {
 
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabric.improved"));
 
@@ -1585,7 +1546,7 @@ public class ServerPackHandler {
 
             fileDestination = String.format("%s/fabric-installer.jar", destination);
 
-            if (downloadUrl!= null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
+            if (downloadUrl!= null && UTILITIES.WebUtils().downloadFile(fileDestination, downloadUrl)) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
 
@@ -1617,7 +1578,7 @@ public class ServerPackHandler {
 
             fileDestination = String.format("%s/forge-installer.jar", destination);
 
-            if (downloadUrl != null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
+            if (downloadUrl != null && UTILITIES.WebUtils().downloadFile(fileDestination, downloadUrl)) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
                 commandArguments.add(javaPath);

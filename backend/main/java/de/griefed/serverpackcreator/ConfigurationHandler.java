@@ -56,11 +56,7 @@ public class ConfigurationHandler {
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionLister VERSIONLISTER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final Utilities UTILITIES;
 
     /**
      * <strong>Constructor</strong><p>
@@ -75,18 +71,12 @@ public class ConfigurationHandler {
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionLister Instance of {@link VersionLister} required for everything version-related.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      */
     @Autowired
     public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
                                 VersionLister injectedVersionLister, ApplicationProperties injectedApplicationProperties,
-                                BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                                StringUtilities injectedStringUtilities, SystemUtilities injectedSystemUtilities,
-                                ConfigUtilities injectedConfigUtilities) {
+                                Utilities injectedUtilities) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -107,42 +97,14 @@ public class ConfigurationHandler {
         }
 
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
-        }
-
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(
-                    LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER
-            );
-        } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(
-                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
-            );
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
@@ -336,14 +298,14 @@ public class ConfigurationHandler {
             configurationModel.setModLoaderVersion(config.getOrElse("modLoaderVersion",""));
             configurationModel.setJavaArgs(config.getOrElse("javaArgs","empty"));
 
-            configurationModel.setServerPackSuffix(STRINGUTILITIES.pathSecureText(config.getOrElse("serverPackSuffix","")));
+            configurationModel.setServerPackSuffix(UTILITIES.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix","")));
             configurationModel.setServerIconPath(config.getOrElse("serverIconPath","").replace("\\", "/"));
             configurationModel.setServerPropertiesPath(config.getOrElse("serverPropertiesPath","").replace("\\", "/"));
 
-            configurationModel.setIncludeServerInstallation(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
-            configurationModel.setIncludeServerIcon(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
-            configurationModel.setIncludeServerProperties(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
-            configurationModel.setIncludeZipCreation(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
+            configurationModel.setIncludeServerInstallation(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
+            configurationModel.setIncludeServerIcon(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
+            configurationModel.setIncludeServerProperties(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
+            configurationModel.setIncludeZipCreation(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
 
         } else {
 
@@ -513,7 +475,7 @@ public class ConfigurationHandler {
         }
 
 
-        if (quietCheck) CONFIGUTILITIES.printConfigurationModel(configurationModel);
+        if (quietCheck) UTILITIES.ConfigUtils().printConfigurationModel(configurationModel);
 
 
         if (!configHasError) {
@@ -616,10 +578,10 @@ public class ConfigurationHandler {
         }
 
         // Extract the archive to the modpack directory.
-        SYSTEMUTILITIES.unzipArchive(configurationModel.getModpackDir(), destination);
+        UTILITIES.FileUtils().unzipArchive(configurationModel.getModpackDir(), destination);
 
         // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
-        List<String> newCopyDirs = CONFIGUTILITIES.suggestCopyDirs(destination);
+        List<String> newCopyDirs = UTILITIES.ConfigUtils().suggestCopyDirs(destination);
         for (String entry : configurationModel.getCopyDirs()) {
             if (!newCopyDirs.contains(entry)) newCopyDirs.add(entry);
         }
@@ -632,7 +594,7 @@ public class ConfigurationHandler {
         if (new File(String.format("%s/manifest.json", destination)).exists()) {
 
             try {
-                CONFIGUTILITIES.updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", destination)));
+                UTILITIES.ConfigUtils().updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", destination)));
 
                 // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
                 try {
@@ -653,7 +615,7 @@ public class ConfigurationHandler {
         } else if (new File(String.format("%s/minecraftinstance.json", destination)).exists()) {
 
             try {
-                CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(configurationModel, new File(String.format("%s/minecraftinstance.json", destination)));
+                UTILITIES.ConfigUtils().updateConfigModelFromMinecraftInstance(configurationModel, new File(String.format("%s/minecraftinstance.json", destination)));
 
                 // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
                 try {
@@ -674,7 +636,7 @@ public class ConfigurationHandler {
         } else if (new File(String.format("%s/config.json", destination)).exists()) {
 
             try {
-                CONFIGUTILITIES.updateConfigModelFromConfigJson(configurationModel, new File(String.format("%s/config.json",destination)));
+                UTILITIES.ConfigUtils().updateConfigModelFromConfigJson(configurationModel, new File(String.format("%s/config.json",destination)));
 
                 // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
                 try {
@@ -695,7 +657,7 @@ public class ConfigurationHandler {
         } else if (new File(String.format("%s/mmc-pack.json", destination)).exists()) {
 
             try {
-                CONFIGUTILITIES.updateConfigModelFromMMCPack(configurationModel, new File(String.format("%s/mmc-pack.json",destination)));
+                UTILITIES.ConfigUtils().updateConfigModelFromMMCPack(configurationModel, new File(String.format("%s/mmc-pack.json",destination)));
 
             } catch (IOException ex) {
 
@@ -709,7 +671,7 @@ public class ConfigurationHandler {
 
                 if (new File(String.format("%s/instance.cfg",destination)).exists()) {
 
-                    String name = CONFIGUTILITIES.updateDestinationFromInstanceCfg(
+                    String name = UTILITIES.ConfigUtils().updateDestinationFromInstanceCfg(
                             new File(
                                     String.format(
                                             "%s/instance.cfg",
@@ -833,7 +795,7 @@ public class ConfigurationHandler {
      */
     public boolean checkZipArchive(Path pathToZip, List<String> encounteredErrors) {
         try {
-            List<String> foldersInModpackZip = CONFIGUTILITIES.directoriesInModpackZip(pathToZip);
+            List<String> foldersInModpackZip = UTILITIES.ConfigUtils().directoriesInModpackZip(pathToZip);
 
             // If the ZIP-file only contains one directory, assume it is overrides and return true to indicate invalid configuration.
             if (foldersInModpackZip.size() == 1) {
@@ -1236,14 +1198,14 @@ public class ConfigurationHandler {
             } else {
 
                 LOG.debug("Acquiring path to Java installation from system properties...");
-                checkedJavaPath = SYSTEMUTILITIES.acquireJavaPathFromSystem();
+                checkedJavaPath = UTILITIES.SystemUtils().acquireJavaPathFromSystem();
 
                 LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
             }
 
         } catch (NullPointerException ex) {
 
-            checkedJavaPath = SYSTEMUTILITIES.acquireJavaPathFromSystem();
+            checkedJavaPath = UTILITIES.SystemUtils().acquireJavaPathFromSystem();
 
             LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
 

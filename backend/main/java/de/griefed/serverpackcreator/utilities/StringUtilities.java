@@ -19,19 +19,14 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 
 /**
  * Utility-class revolving around Strings.
  * @author Griefed
  */
-@Component
 public class StringUtilities {
 
-    @Autowired
     public StringUtilities() {
 
     }

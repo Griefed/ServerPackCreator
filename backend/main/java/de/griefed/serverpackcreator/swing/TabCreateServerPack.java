@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.FileUtils;
@@ -71,11 +72,7 @@ public class TabCreateServerPack extends JComponent {
     private final ServerPackHandler CREATESERVERPACK;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final Utilities UTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
 
@@ -183,19 +180,13 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedVersionLister Instance of {@link VersionLister} required for setting/changing comboboxes.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedUtilities Instance of {@link de.griefed.serverpackcreator.utilities.Utilities}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
                                VersionLister injectedVersionLister, ApplicationProperties injectedApplicationProperties,
-                               JFrame injectedServerPackCreatorFrame, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities,
-                               ApplicationPlugins injectedPluginManager) {
+                               JFrame injectedServerPackCreatorFrame, Utilities injectedUtilities, ApplicationPlugins injectedPluginManager) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -209,28 +200,16 @@ public class TabCreateServerPack extends JComponent {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedVersionLister == null) {
+            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
+            this.VERSIONLISTER = injectedVersionLister;
         }
 
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
         } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedPluginManager == null) {
@@ -239,32 +218,20 @@ public class TabCreateServerPack extends JComponent {
             this.APPLICATIONPLUGINS = injectedPluginManager;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-        } else {
-            this.VERSIONLISTER = injectedVersionLister;
-        }
-
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
-        } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
-        }
-
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, UTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES, APPLICATIONPLUGINS);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -1098,7 +1065,7 @@ public class TabCreateServerPack extends JComponent {
             }
 
             TEXTFIELD_CLIENTSIDEMODS.setText(
-                    STRINGUTILITIES.buildString(
+                    UTILITIES.StringUtils().buildString(
                             Arrays.toString(
                                     clientModsFilenames.toArray(new String[0])))
             );
@@ -1139,7 +1106,7 @@ public class TabCreateServerPack extends JComponent {
                 copyDirsNames.add(directory.getName());
             }
 
-            TEXTFIELD_COPYDIRECTORIES.setText(STRINGUTILITIES.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+            TEXTFIELD_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
 
             LOG.debug("Selected directories: " + copyDirsNames);
         }
@@ -1355,10 +1322,10 @@ public class TabCreateServerPack extends JComponent {
             javaArgs = "empty";
         }
 
-        List<String> tempClientMods = LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
-        List<String> tempCopyDirs = LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
+        List<String> tempClientMods = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
+        List<String> tempCopyDirs = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
 
-        CONFIGUTILITIES.writeConfigToFile(
+        UTILITIES.ConfigUtils().writeConfigToFile(
                 TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\","/"),
                 tempClientMods,
                 tempCopyDirs,
@@ -1373,7 +1340,7 @@ public class TabCreateServerPack extends JComponent {
                 checkBoxProperties.isSelected(),
                 checkBoxZIP.isSelected(),
                 getJavaArgs(),
-                STRINGUTILITIES.pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
+                UTILITIES.StringUtils().pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
                 configFile
         );
     }
@@ -1402,16 +1369,16 @@ public class TabCreateServerPack extends JComponent {
 
             if (config.getOrElse("clientMods", APPLICATIONPROPERTIES.getListFallbackMods()).isEmpty()) {
 
-                TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
+                TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
                 LOG.debug("Set clientMods with fallback list.");
 
             } else {
 
                 try {
-                    TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(config.get("clientMods").toString()));
+                    TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(config.get("clientMods").toString()));
                 } catch (Exception ex) {
                     LOG.error("Couldn't parse clientMods. Using fallback.",ex);
-                    TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
+                    TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
                 }
 
             }
@@ -1423,7 +1390,7 @@ public class TabCreateServerPack extends JComponent {
             } else {
 
                 try {
-                    TEXTFIELD_COPYDIRECTORIES.setText(STRINGUTILITIES.buildString(config.get("copyDirs").toString().replace("\\", "/")));
+                    TEXTFIELD_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(config.get("copyDirs").toString().replace("\\", "/")));
                 } catch (Exception ex) {
                     LOG.error("Couldn't parse copyDirs. Using fallback.",ex);
                     TEXTFIELD_COPYDIRECTORIES.setText("config, mods");
@@ -1435,7 +1402,7 @@ public class TabCreateServerPack extends JComponent {
 
             TEXTFIELD_SERVERPROPERTIESPATH.setText(config.getOrElse("serverPropertiesPath","").replace("\\","/"));
 
-            TEXTFIELD_JAVAPATH.setText(SYSTEMUTILITIES.acquireJavaPathFromSystem());
+            TEXTFIELD_JAVAPATH.setText(UTILITIES.SystemUtils().acquireJavaPathFromSystem());
 
             try {
 
@@ -1526,17 +1493,17 @@ public class TabCreateServerPack extends JComponent {
                 changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
             }
 
-            checkBoxServer.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
+            checkBoxServer.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
 
-            checkBoxIcon.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
+            checkBoxIcon.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
 
-            checkBoxProperties.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
+            checkBoxProperties.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
 
-            checkBoxZIP.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
+            checkBoxZIP.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
 
             setJavaArgs(config.getOrElse("javaArgs","empty"));
 
-            TEXTFIELD_SERVERPACKSUFFIX.setText(STRINGUTILITIES.pathSecureText(config.getOrElse("serverPackSuffix","")));
+            TEXTFIELD_SERVERPACKSUFFIX.setText(UTILITIES.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix","")));
 
         } catch (NullPointerException ex) {
 
@@ -1570,11 +1537,11 @@ public class TabCreateServerPack extends JComponent {
     protected void clearInterface() {
         TEXTFIELD_MODPACKDIRECTORY.setText("");
         TEXTFIELD_SERVERPACKSUFFIX.setText("");
-        TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
+        TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
         TEXTFIELD_COPYDIRECTORIES.setText("");
         TEXTFIELD_SERVERICONPATH.setText("");
         TEXTFIELD_SERVERPROPERTIESPATH.setText("");
-        TEXTFIELD_JAVAPATH.setText(SYSTEMUTILITIES.acquireJavaPathFromSystem());
+        TEXTFIELD_JAVAPATH.setText(UTILITIES.SystemUtils().acquireJavaPathFromSystem());
 
         String minecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
         String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
