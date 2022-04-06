@@ -240,7 +240,7 @@ UPLOAD AND CREATE FROM ZIP
                     </div>
                   </div>
 
-                  <div class="column flex-center">
+<!--                  <div class="column flex-center">
                     <q-toggle
                       v-model="installServer"
                       checked-icon="check"
@@ -248,14 +248,14 @@ UPLOAD AND CREATE FROM ZIP
                       :color="installServer ? 'positive' : 'negative'"
                       label="Install modloader server?"
                     />
-                  </div>
+                  </div>-->
 
                 </div>
 
-                <div :class="this.$q.platform.is.mobile ? 'row flex-center' : 'row no-wrap flex-center'">
+                <div :class="this.$q.platform.is.mobile ? 'row flex-center' : 'row no-wrap flex-center'" style="margin-top: 20px;">
                   <div>
                     <q-btn label="Submit" :disable="disableZip" :loading="loading" type="submit" color="primary" />
-                    <q-btn label="Reset"                                        type="reset" color="warning" class="q-ml-sm" />
+                    <q-btn label="Reset"                                           type="reset" color="warning" class="q-ml-sm" />
                   </div>
                 </div>
 
@@ -466,7 +466,7 @@ export default defineComponent({
       store,
       loading: ref(false),
       tab: ref('zip'),
-      installServer: ref(true),
+      installServer: ref(false),
       /*
        * CURSE
        */
@@ -935,41 +935,44 @@ export default defineComponent({
      * with versions that are available to the backend, too.
      */
     api.get("/versions/minecraft")
-      .then(response => {
-        this.minecraftVersions = response.data.minecraft;
+      .then(mcResponse => {
+        this.minecraftVersions = mcResponse.data.minecraft;
         this.minecraftVersion = this.minecraftVersions[0];
+        /*
+         * Acquire a list of available Forge versions for a given Minecraft version from our backend.
+         * We do not get this list from Forge directly because we need to make sure we only submit request to the backend
+         * with versions that are available to the backend, too.
+         */
+        api.get("/versions/forge/" + this.minecraftVersion)
+          .then(forgeResponse => {
+            this.forgeVersions = forgeResponse.data.forge;
+            this.modloaderVersion = this.forgeVersions[0];
+          })
+          .catch(error => {
+            console.log(error);
+            this.errorNotification(error);
+          });
+
       })
       .catch(error => {
         console.log(error);
         this.errorNotification(error);
       });
+
     /*
-     * Acquire a list of available Fabric versions from our backend.
-     * We do not get this list from Fabric directly because we need to make sure we only submit request to the backend
-     * with versions that are available to the backend, too.
-     */
+ * Acquire a list of available Fabric versions from our backend.
+ * We do not get this list from Fabric directly because we need to make sure we only submit request to the backend
+ * with versions that are available to the backend, too.
+ */
     api.get("/versions/fabric")
       .then(response => {
         this.fabricVersions = response.data.fabric;
       })
       .catch(error => {
-      console.log(error);
-        this.errorNotification(error);
-      });
-    /*
-     * Acquire a list of available Forge versions for a given Minecraft version from our backend.
-     * We do not get this list from Forge directly because we need to make sure we only submit request to the backend
-     * with versions that are available to the backend, too.
-     */
-    api.get("/versions/forge/" + this.minecraftVersion)
-      .then(response => {
-        this.forgeVersions = response.data.forge;
-        this.modloaderVersion = this.forgeVersions[0];
-      })
-      .catch(error => {
         console.log(error);
         this.errorNotification(error);
       });
+
     /*
      * Check cookies whether the user has previously generated a server pack from a CurseForge projectID,fileID and set
      * the GUI accordingly.
