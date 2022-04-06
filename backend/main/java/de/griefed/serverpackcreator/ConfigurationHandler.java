@@ -305,8 +305,6 @@ public class ConfigurationHandler {
      */
     public boolean checkConfiguration(@NotNull File configFile, @NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean downloadAndCreateModpack, boolean quietCheck) {
 
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
-
         FileConfig config = null;
 
         try {
@@ -1167,8 +1165,6 @@ public class ConfigurationHandler {
                     } else {
                         LOG.debug("What? " + fileOrDirectory + " is neither a file nor directory.");
                     }
-
-                    APPLICATIONPROPERTIES.addToListOfDirectoriesToExclude(directory.substring(directory.lastIndexOf("!") + 1));
 
                 // Check if the entry exists
                 } else {
