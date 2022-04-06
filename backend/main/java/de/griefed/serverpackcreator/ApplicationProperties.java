@@ -50,9 +50,19 @@ public class ApplicationProperties extends Properties {
     public final File FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS = new File("user_jvm_args.txt");
     private final String FALLBACK_MODS_DEFAULT_ASSTRING =
             "3dSkinLayers-," +
+            "3dskinlayers-," +
+            "Absolutely-Not-A-Zoom-Mod-," +
             "AdvancementPlaques-," +
+            "AmbientEnvironment-," +
             "AmbientSounds_," +
+            "antighost-," +
             "armorchroma-," +
+            "armorpointspp-," +
+            "ArmorSoundTweak-," +
+            "authme-," +
+            "autoreconnect-," +
+            "auto-reconnect-," +
+            "axolotl-item-fix-," +
             "backtools-," +
             "BetterAdvancements-," +
             "BetterAnimationsCollection-," +
@@ -61,12 +71,15 @@ public class ApplicationProperties extends Properties {
             "BetterFoliage-," +
             "BetterPingDisplay-," +
             "BetterPlacement-," +
+            "BetterTaskbar-," +
             "bhmenu-," +
             "BH-Menu-," +
             "Blur-," +
+            "borderless-mining-," +
             "catalogue-," +
             "charmonium-," +
             "Charmonium-," +
+            "chat_heads-," +
             "cherishedworlds-," +
             "classicbar-," +
             "clickadv-," +
@@ -75,20 +88,24 @@ public class ApplicationProperties extends Properties {
             "Controlling-," +
             "CraftPresence-," +
             "CTM-," +
+            "cullleaves-," +
             "customdiscordrpc-," +
             "CustomMainMenu-," +
             "dashloader-," +
             "DefaultOptions_," +
             "defaultoptions-," +
+            "DeleteWorldsToTrash-," +
             "desiredservers-," +
             "Ding-," +
             "drippyloadingscreen_," +
             "drippyloadingscreen-," +
+            "DripSounds-," +
             "Durability101-," +
             "dynamic-music-," +
             "DynamicSurroundings-," +
             "DynamicSurroundingsHuds-," +
             "dynmus-," +
+            "effective-," +
             "EiraMoticons_," +
             "eiramoticons-," +
             "EnchantmentDescriptions-," +
@@ -96,11 +113,13 @@ public class ApplicationProperties extends Properties {
             "EquipmentCompare-," +
             "extremesoundmuffler-," +
             "extremeSoundMuffler-," +
+            "fabricemotes-," +
             "Fallingleaves-," +
             "fallingleaves-," +
             "fancymenu_," +
             "findme-," +
             "flickerfix-," +
+            "FPS-Monitor-," +
             "FpsReducer-," +
             "FullscreenWindowed-," +
             "InventoryEssentials_," +
@@ -120,6 +139,7 @@ public class ApplicationProperties extends Properties {
             "JustEnoughProfessions-," +
             "JustEnoughProfessions-," +
             "JustEnoughResources-," +
+            "keymap-," +
             "keywizard-," +
             "konkrete_," +
             "lazydfu-," +
@@ -135,9 +155,13 @@ public class ApplicationProperties extends Properties {
             "modnametooltip-," +
             "moreoverlays-," +
             "MouseTweaks-," +
+            "movement-vision-," +
             "multihotbar-," +
+            "musicdr-," +
+            "music-duration-reducer-," +
             "MyServerIsCompatible-," +
             "Neat ," +
+            "ngrok-lan-expose-mod-," +
             "NotifMod-," +
             "OldJavaWarning-," +
             "OptiFine," +

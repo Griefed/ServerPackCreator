@@ -61,9 +61,19 @@ class ConfigurationHandlerTest {
     void getFallbackModsListTestEquals() {
         String FALLBACK_MODS_DEFAULT_ASSTRING =
                 "3dSkinLayers-," +
+                "3dskinlayers-," +
+                "Absolutely-Not-A-Zoom-Mod-," +
                 "AdvancementPlaques-," +
+                "AmbientEnvironment-," +
                 "AmbientSounds_," +
+                "antighost-," +
                 "armorchroma-," +
+                "armorpointspp-," +
+                "ArmorSoundTweak-," +
+                "authme-," +
+                "autoreconnect-," +
+                "auto-reconnect-," +
+                "axolotl-item-fix-," +
                 "backtools-," +
                 "BetterAdvancements-," +
                 "BetterAnimationsCollection-," +
@@ -72,12 +82,15 @@ class ConfigurationHandlerTest {
                 "BetterFoliage-," +
                 "BetterPingDisplay-," +
                 "BetterPlacement-," +
+                "BetterTaskbar-," +
                 "bhmenu-," +
                 "BH-Menu-," +
                 "Blur-," +
+                "borderless-mining-," +
                 "catalogue-," +
                 "charmonium-," +
                 "Charmonium-," +
+                "chat_heads-," +
                 "cherishedworlds-," +
                 "classicbar-," +
                 "clickadv-," +
@@ -86,20 +99,24 @@ class ConfigurationHandlerTest {
                 "Controlling-," +
                 "CraftPresence-," +
                 "CTM-," +
+                "cullleaves-," +
                 "customdiscordrpc-," +
                 "CustomMainMenu-," +
                 "dashloader-," +
                 "DefaultOptions_," +
                 "defaultoptions-," +
+                "DeleteWorldsToTrash-," +
                 "desiredservers-," +
                 "Ding-," +
                 "drippyloadingscreen_," +
                 "drippyloadingscreen-," +
+                "DripSounds-," +
                 "Durability101-," +
                 "dynamic-music-," +
                 "DynamicSurroundings-," +
                 "DynamicSurroundingsHuds-," +
                 "dynmus-," +
+                "effective-," +
                 "EiraMoticons_," +
                 "eiramoticons-," +
                 "EnchantmentDescriptions-," +
@@ -107,11 +124,13 @@ class ConfigurationHandlerTest {
                 "EquipmentCompare-," +
                 "extremesoundmuffler-," +
                 "extremeSoundMuffler-," +
+                "fabricemotes-," +
                 "Fallingleaves-," +
                 "fallingleaves-," +
                 "fancymenu_," +
                 "findme-," +
                 "flickerfix-," +
+                "FPS-Monitor-," +
                 "FpsReducer-," +
                 "FullscreenWindowed-," +
                 "InventoryEssentials_," +
@@ -131,6 +150,7 @@ class ConfigurationHandlerTest {
                 "JustEnoughProfessions-," +
                 "JustEnoughProfessions-," +
                 "JustEnoughResources-," +
+                "keymap-," +
                 "keywizard-," +
                 "konkrete_," +
                 "lazydfu-," +
@@ -146,9 +166,13 @@ class ConfigurationHandlerTest {
                 "modnametooltip-," +
                 "moreoverlays-," +
                 "MouseTweaks-," +
+                "movement-vision-," +
                 "multihotbar-," +
+                "musicdr-," +
+                "music-duration-reducer-," +
                 "MyServerIsCompatible-," +
                 "Neat ," +
+                "ngrok-lan-expose-mod-," +
                 "NotifMod-," +
                 "OldJavaWarning-," +
                 "OptiFine," +
