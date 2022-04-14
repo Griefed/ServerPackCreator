@@ -1,9 +1,11 @@
 package de.griefed.serverpackcreator;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -12,6 +14,14 @@ public class ApplicationPropertiesTest {
     private final ApplicationProperties APPLICATIONPROPERTIES;
 
     ApplicationPropertiesTest() {
+        try {
+            FileUtils.copyFile(
+                    new File("backend/test/resources/serverpackcreator.properties"),
+                    new File("serverpackcreator.properties")
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
     }
 
@@ -236,5 +246,12 @@ public class ApplicationPropertiesTest {
     @Test
     void getServerPackCreatorVersionTest() {
         Assertions.assertEquals("dev",APPLICATIONPROPERTIES.getServerPackCreatorVersion());
+    }
+
+    @Test
+    void updateFallbackTest() {
+        APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist","bla");
+        APPLICATIONPROPERTIES.updateFallback();
+        Assertions.assertNotEquals(APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"),"bla");
     }
 }

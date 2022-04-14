@@ -27,7 +27,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -288,7 +290,7 @@ public class ApplicationProperties extends Properties {
          * but has the advantage of always providing default values if any property in the applications.properties
          * on the filesystem should be commented out.
          */
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+        try (InputStream inputStream = Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
             new Properties();
             load(inputStream);
         } catch (
@@ -316,7 +318,7 @@ public class ApplicationProperties extends Properties {
                 this.setProperty("de.griefed.serverpackcreator.configuration.directories.serverpacks",tempDir);
                 this.directoryServerPacks = tempDir;
 
-                try (OutputStream outputStream = new FileOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = Files.newOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
                     this.store(outputStream, null);
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -410,7 +412,7 @@ public class ApplicationProperties extends Properties {
      */
     public ApplicationProperties reload() {
 
-        try (InputStream inputStream = new FileInputStream("serverpackcreator.properties")) {
+        try (InputStream inputStream = Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
             new Properties();
             load(inputStream);
         } catch (
@@ -434,7 +436,7 @@ public class ApplicationProperties extends Properties {
                 this.setProperty("de.griefed.serverpackcreator.configuration.directories.serverpacks",tempDir);
                 this.directoryServerPacks = tempDir;
 
-                try (OutputStream outputStream = new FileOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = Files.newOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
                     this.store(outputStream, null);
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -631,6 +633,67 @@ public class ApplicationProperties extends Properties {
      */
     public boolean isCurseForgeActivated() {
         return isCurseForgeActivated;
+    }
+
+    /**
+     * Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code> from the main-repository
+     * or one of its mirrors.
+     * @author Griefed
+     */
+    public void updateFallback() {
+
+        Properties properties;
+
+        try (InputStream github = new URL("https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/backend/main/resources/serverpackcreator.properties").openStream()) {
+
+            properties = new Properties();
+            properties.load(github);
+
+        } catch (IOException e) {
+
+            LOG.debug("GitHub could not be reached. Checking GitLab.",e);
+            properties = null;
+            try (InputStream gitlab = new URL("https://gitlab.com/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties").openStream()) {
+
+                properties = new Properties();
+                properties.load(gitlab);
+
+            } catch (IOException ex) {
+                LOG.debug("GitLab could not be reached. Checking GitGriefed",ex);
+                properties = null;
+                try (InputStream gitgriefed = new URL("https://git.griefed.de/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties").openStream()) {
+
+                    properties = new Properties();
+                    properties.load(gitgriefed);
+
+                } catch (IOException exe) {
+                    LOG.debug("GitGriefed could not be reached.",exe);
+                    properties = null;
+                }
+            }
+        }
+        
+        if (properties != null &&
+                getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").hashCode() !=
+                        properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").hashCode()) {
+
+            setProperty(
+                    "de.griefed.serverpackcreator.configuration.fallbackmodslist",
+                    properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
+            );
+
+            try (OutputStream outputStream = Files.newOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
+                this.store(outputStream, null);
+            } catch (IOException ex) {
+                LOG.error("Couldn't write properties-file.", ex);
+            }
+
+            this.listFallbackMods = new ArrayList<>(Arrays.asList(this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist",this.FALLBACK_MODS_DEFAULT_ASSTRING).split(",")));
+            LOG.debug("Fallbackmodslist set to: " + this.listFallbackMods);
+            LOG.info("The fallback-list for clientside only mods has been updated.");
+        } else {
+            LOG.info("No fallback-list updates available.");
+        }
     }
 
     @Override
