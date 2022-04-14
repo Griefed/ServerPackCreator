@@ -34,9 +34,6 @@ public class ArtemisConfigTest {
 
     private final String QUEUE_UNIQUE_ID = "unique_id";
     private final String QUEUE_TASKS = "tasks.background";
-    private final DefaultFiles DEFAULTFILES;
-    private final LocalizationManager LOCALIZATIONMANAGER;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     @Autowired
     ArtemisConfigTest(JmsTemplate injectedJmsTemplate) {
@@ -46,16 +43,14 @@ public class ArtemisConfigTest {
             e.printStackTrace();
         }
 
-        this.APPLICATIONPROPERTIES = new ApplicationProperties();
+        ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
 
         this.jmsTemplate = injectedJmsTemplate;
 
         this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);
 
-        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.initialize();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.filesSetup();
+        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         DEFAULTFILES.checkDatabase();
     }
 

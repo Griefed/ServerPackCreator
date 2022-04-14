@@ -5,8 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.commonutilities.BooleanUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.ListUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.StringUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,22 +24,16 @@ import java.util.List;
 
 public class ConfigUtilitiesTest {
 
-    private final LocalizationManager LOCALIZATIONMANAGER;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
     private final ConfigUtilities CONFIGUTILITIES;
-    private final VersionLister VERSIONLISTER;
 
-    ConfigUtilitiesTest() {
-        this.LOCALIZATIONMANAGER = new LocalizationManager();
-        this.APPLICATIONPROPERTIES = new ApplicationProperties();
-        this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        this.LISTUTILITIES = new ListUtilities();
-        this.STRINGUTILITIES = new StringUtilities();
-        this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-        this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+    ConfigUtilitiesTest() throws IOException {
+        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager();
+        ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
+        BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        ListUtilities LISTUTILITIES = new ListUtilities();
+        StringUtilities STRINGUTILITIES = new StringUtilities();
+        VersionMeta VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
+        this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES), APPLICATIONPROPERTIES, VERSIONMETA);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

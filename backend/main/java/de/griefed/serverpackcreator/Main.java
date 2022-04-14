@@ -23,7 +23,9 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -76,35 +78,9 @@ public class Main {
      * @author Griefed
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
      * will enter and which locale is used.
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
-    public static void main(String[] args) {
-
-        JarUtilities jarUtilities = new JarUtilities();
-
-        HashMap<String, String> systemInformation = jarUtilities.systemInformation(jarUtilities.getApplicationHomeForClass(Main.class));
-
-        jarUtilities.copyFileFromJar(log4j2xml);
-        try {
-            properties.createNewFile();
-        } catch (IOException ex) {
-            LOG.error("Couldn't create empty serverpackcreator.properties.");
-        }
-
-        try {
-
-            String prefix = "BOOT-INF/classes";
-            String langSource = "/de/griefed/resources/lang";
-
-            if (systemInformation.get("jarName").endsWith(".exe")) {
-                prefix = "";
-                langSource = "de/griefed/resources/lang";
-            }
-
-            jarUtilities.copyFolderFromJar(systemInformation.get("jarPath"),langSource, "lang", prefix, ".properties");
-
-        } catch (IOException ex) {
-            LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
-        }
+    public static void main(String[] args) throws IOException {
 
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
 
@@ -122,6 +98,39 @@ public class Main {
             LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
 
         }
+
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+
+        VersionMeta VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
+
+        Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+
+        HashMap<String, String> systemInformation = UTILITIES.JarUtils().systemInformation(UTILITIES.JarUtils().getApplicationHomeForClass(Main.class));
+
+        UTILITIES.JarUtils().copyFileFromJar(log4j2xml);
+        try {
+            properties.createNewFile();
+        } catch (IOException ex) {
+            LOG.error("Couldn't create empty serverpackcreator.properties.");
+        }
+
+        try {
+
+            String prefix = "BOOT-INF/classes";
+            String langSource = "/de/griefed/resources/lang";
+
+            if (systemInformation.get("jarName").endsWith(".exe")) {
+                prefix = "";
+                langSource = "de/griefed/resources/lang";
+            }
+
+            UTILITIES.JarUtils().copyFolderFromJar(systemInformation.get("jarPath"),langSource, "lang", prefix, ".properties");
+
+        } catch (IOException ex) {
+            LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
+        }
+
+
 
         //Print system information to console and logs.
         LOG.debug("Gathering system information to include in log to make debugging easier.");
@@ -196,9 +205,6 @@ public class Main {
             System.exit(0);
         }
 
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.filesSetup();
-
         //noinspection unused
         FileWatcher FILEWATCHER = new FileWatcher(APPLICATIONPROPERTIES, DEFAULTFILES);
 
@@ -209,52 +215,33 @@ public class Main {
 
         } else {
 
-            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, args);
+            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, VERSIONMETA, UTILITIES, args);
 
         }
     }
 
-    private static void regular(ApplicationProperties APPLICATIONPROPERTIES, LocalizationManager LOCALIZATIONMANAGER, String[] args) {
-
-        ListUtilities LISTUTILITIES = new ListUtilities();
-        StringUtilities STRINGUTILITIES = new StringUtilities();
-        SystemUtilities SYSTEMUTILITIES = new SystemUtilities();
+    private static void regular(ApplicationProperties APPLICATIONPROPERTIES, LocalizationManager LOCALIZATIONMANAGER, VersionMeta VERSIONMETA, Utilities UTILITIES, String[] args) throws IOException {
 
         UpdateChecker UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
-        VersionLister VERSIONLISTER = new VersionLister(
-                APPLICATIONPROPERTIES
-        );
-
-        BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(
-                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES
-        );
-
-        ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(
-                LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES,
-                VERSIONLISTER
-        );
+        ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
 
         CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
-                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES,
-                STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES
         );
 
         ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
-                LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES,
-                LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
+                LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES
         );
 
         ConfigurationCreator CONFIGURATIONCREATOR = new ConfigurationCreator(
-                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, BOOLEANUTILITIES, APPLICATIONPROPERTIES, LISTUTILITIES,
-                STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES, CURSECREATEMODPACK, VERSIONLISTER
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, UTILITIES, CURSECREATEMODPACK, VERSIONMETA, CONFIGUTILITIES
         );
 
         ApplicationPlugins APPLICATIONPLUGINS = new ApplicationPlugins();
 
         ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
-                LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER,
-                BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS
+                LOCALIZATIONMANAGER, CURSECREATEMODPACK, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES
         );
 
         if (Arrays.asList(args).contains("-cgen")) {
@@ -285,8 +272,7 @@ public class Main {
 
             SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
                     LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, APPLICATIONPROPERTIES,
-                    VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES,
-                    UPDATECHECKER, APPLICATIONPLUGINS
+                    VERSIONMETA, UTILITIES, UPDATECHECKER, APPLICATIONPLUGINS, CONFIGUTILITIES
             );
 
             swingGuiInitializer.mainGUI();

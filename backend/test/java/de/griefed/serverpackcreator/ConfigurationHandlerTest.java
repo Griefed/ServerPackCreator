@@ -5,7 +5,9 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforge.InvalidFileException;
 import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -17,18 +19,10 @@ import java.util.*;
 class ConfigurationHandlerTest {
 
     private final ConfigurationHandler CONFIGURATIONHANDLER;
-    private final CurseCreateModpack CURSECREATEMODPACK;
-    private final LocalizationManager LOCALIZATIONMANAGER;
-    private final DefaultFiles DEFAULTFILES;
-    private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final VersionMeta VERSIONMETA;
     private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    ConfigurationHandlerTest() {
+    ConfigurationHandlerTest() throws IOException {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {
@@ -36,19 +30,13 @@ class ConfigurationHandlerTest {
         }
 
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
-        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.initialize();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.filesSetup();
-        VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-        LISTUTILITIES = new ListUtilities();
-        STRINGUTILITIES = new StringUtilities();
-        SYSTEMUTILITIES = new SystemUtilities();
-        BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
-        CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
-        CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
+        Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES,CONFIGUTILITIES);
+        this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
 
     }
 
@@ -430,32 +418,32 @@ class ConfigurationHandlerTest {
 
     @Test
     void isMinecraftVersionCorrectTest() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.16.5"));
+        Assertions.assertTrue(VERSIONMETA.minecraft().checkMinecraftVersion("1.16.5"));
     }
 
     @Test
     void isMinecraftVersionCorrectTestFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isMinecraftVersionCorrect("1.99.5"));
+        Assertions.assertFalse(VERSIONMETA.minecraft().checkMinecraftVersion("1.99.5"));
     }
 
     @Test
     void isFabricVersionCorrectTest() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isFabricVersionCorrect("0.11.3"));
+        Assertions.assertTrue(VERSIONMETA.fabric().checkFabricVersion("0.11.3"));
     }
 
     @Test
     void isFabricVersionCorrectTestFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isFabricVersionCorrect("0.90.3"));
+        Assertions.assertFalse(VERSIONMETA.fabric().checkFabricVersion("0.90.3"));
     }
 
     @Test
     void isForgeVersionCorrectTest() {
-        Assertions.assertTrue(CONFIGURATIONHANDLER.isForgeVersionCorrect("36.1.2", "1.16.5"));
+        Assertions.assertTrue(VERSIONMETA.forge().checkForgeAndMinecraftVersion("1.16.5","36.1.2"));
     }
 
     @Test
     void isForgeVersionCorrectTestFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.isForgeVersionCorrect("99.0.0","1.16.5"));
+        Assertions.assertFalse(VERSIONMETA.forge().checkForgeAndMinecraftVersion("1.16.5","99.0.0"));
     }
 
     @Test

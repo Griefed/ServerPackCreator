@@ -19,13 +19,21 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -83,6 +91,8 @@ public class DefaultFiles {
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
+
+        filesSetup();
     }
 
     /**
@@ -337,47 +347,172 @@ public class DefaultFiles {
 
         File fileName = new File(String.format("./work/%s", manifestToRefresh));
 
-        if (fileName.delete()) {
-            LOG.debug(String.format("Deleted %s.", manifestToRefresh));
+        if (fileName.exists()) {
+
+            try (InputStream existing = new FileInputStream(fileName); InputStream newManifest = manifestUrl.openStream()) {
+
+                int countOldFile = 0;
+                int countNewFile = 0;
+
+                if (manifestToRefresh.toString().endsWith("json")) {
+
+                    if (manifestToRefresh.toString().contains("forge")) {
+
+                        for (JsonNode mcVer : getJson(existing)) {
+                            countOldFile += mcVer.size();
+                        }
+                        for (JsonNode mcVer : getJson(newManifest)) {
+                            countNewFile += mcVer.size();
+                        }
+
+                    } else {
+
+                        countOldFile = getJson(existing).get("versions").size();
+                        countNewFile = getJson(newManifest).get("versions").size();
+                    }
+
+                } else {
+
+                    countOldFile = getXml(existing).getElementsByTagName("version").getLength();
+                    countNewFile = getXml(newManifest).getElementsByTagName("version").getLength();
+                }
+
+                LOG.debug("Nodes/Versions/Size in/of old " + manifestToRefresh + ": " + countOldFile);
+                LOG.debug("Nodes/Versions/Size in/of new " + manifestToRefresh + ": " + countNewFile);
+
+                if (countNewFile > countOldFile) {
+
+                    LOG.info("Refreshing " + manifestToRefresh + ".");
+
+                    refresh(manifestUrl, fileName);
+
+                } else {
+
+                    LOG.info("Manifest " + manifestToRefresh + " does not need to be refreshed.");
+
+                }
+
+            } catch (IOException ex) {
+
+                LOG.error("Couldn't refresh manifest " + manifestToRefresh, ex);
+
+            }
+
+        } else {
+
+            refresh(manifestUrl, fileName);
         }
+
+
+    }
+
+    private void refresh(URL manifestUrl, File manifestToRefresh) {
+        FileUtils.deleteQuietly(manifestToRefresh);
+
+        try {
+            FileUtils.createParentDirectories(manifestToRefresh);
+        } catch (IOException ignored) {
+
+        }
+
+        ReadableByteChannel readableByteChannel = null;
+        FileOutputStream fileOutputStream = null;
+        FileChannel fileChannel = null;
 
         try {
 
-            ReadableByteChannel readableByteChannel = Channels.newChannel(manifestUrl.openStream());
-            FileOutputStream downloadManifestOutputStream;
+            readableByteChannel = Channels.newChannel(manifestUrl.openStream());
+
+            fileOutputStream = new FileOutputStream(manifestToRefresh);
+
+            fileChannel = fileOutputStream.getChannel();
+
+            fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+
+        } catch (IOException ex) {
+
+            LOG.error("An error occurred downloading " + manifestToRefresh + ".", ex);
+            FileUtils.deleteQuietly(manifestToRefresh);
+
+        } finally {
 
             try {
-                downloadManifestOutputStream = new FileOutputStream(fileName);
-            } catch (FileNotFoundException ex) {
+                //noinspection ConstantConditions
+                fileOutputStream.flush();
+            } catch (Exception ignored) {
 
-                LOG.debug(String.format("Couldn't find %s.", fileName), ex);
-
-                if (!fileName.exists()) {
-                    LOG.debug(String.format("Creating Manifest %s.", fileName));
-
-                    if (fileName.createNewFile()) {
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.debug.manifest.created"), fileName));
-
-                    } else {
-                        LOG.error(String.format("Error: Could not create Manifest %s.", fileName));
-                    }
-                }
-                downloadManifestOutputStream = new FileOutputStream(fileName);
             }
-            FileChannel downloadManifestOutputStreamChannel = downloadManifestOutputStream.getChannel();
 
-            downloadManifestOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            downloadManifestOutputStream.flush();
+            try {
+                fileOutputStream.close();
+            } catch (Exception ignored) {
 
-            downloadManifestOutputStream.close();
-            readableByteChannel.close();
-            downloadManifestOutputStreamChannel.close();
+            }
 
-        } catch (Exception ex) {
+            try {
+                //noinspection ConstantConditions
+                readableByteChannel.close();
+            } catch (Exception ignored) {
 
-            LOG.error(String.format("Error: Something went wrong during the download of the %s Manifest.", fileName), ex);
+            }
+
+            try {
+                //noinspection ConstantConditions
+                fileChannel.close();
+            } catch (Exception ignored) {
+
+            }
+
         }
+    }
+
+    /**
+     * Reads the Fabric manifest-file into a {@link Document} and {@link Document#normalize()} it.
+     * @author Griefed
+     * @param manifest The xml-file to parse into a Document.
+     * @return Document. Returns the file parsed into a Document.
+     */
+    private Document getXml(InputStream manifest) {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = null;
+        Document xml = null;
+        try {
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        try {
+            assert documentBuilder != null;
+            xml = documentBuilder.parse(manifest);
+        } catch (SAXException | IOException e) {
+            e.printStackTrace();
+        }
+        assert xml != null;
+        xml.normalize();
+        return xml;
+    }
+
+    /**
+     * Acquire a {@link JsonNode} from the given json file.
+     * @author Griefed
+     * @param inputStream {@link InputStream}. The file to read.
+     * @return {@link JsonNode} containing the files json data.
+     * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+     */
+    private JsonNode getJson(InputStream inputStream) throws IOException {
+        return getObjectMapper().readTree(inputStream);
+    }
+
+    /**
+     * Getter for the object-mapper used for working with JSON-data.
+     * @author Griefed
+     * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     */
+    private ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        return objectMapper;
     }
 
     /**

@@ -21,9 +21,9 @@ package de.griefed.serverpackcreator.spring;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
-import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackService;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +32,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -47,7 +48,7 @@ public class Schedules {
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackService SERVERPACKSERVICE;
     private final DefaultFiles DEFAULTFILES;
-    private final VersionLister VERSIONLISTER;
+    private final VersionMeta VERSIONMETA;
 
     /**
      * Constructor for DI.
@@ -55,16 +56,16 @@ public class Schedules {
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
      * @param injectedServerPackService Instance of {@link ServerPackService}.
      * @param injectedDefaultFiles Instance of {@link DefaultFiles}.
-     * @param injectedVersionLister Instance of {@link VersionLister}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta}.
      */
     @Autowired
     public Schedules(ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerPackService,
-                     DefaultFiles injectedDefaultFiles, VersionLister injectedVersionLister) {
+                     DefaultFiles injectedDefaultFiles, VersionMeta injectedVersionMeta) {
 
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         this.SERVERPACKSERVICE = injectedServerPackService;
         this.DEFAULTFILES = injectedDefaultFiles;
-        this.VERSIONLISTER = injectedVersionLister;
+        this.VERSIONMETA = injectedVersionMeta;
     }
 
     private void deletePack(ServerPackModel pack) {
@@ -155,6 +156,10 @@ public class Schedules {
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC);
         DEFAULTFILES.refreshManifestFile(DEFAULTFILES.getFabricInstallerManifestUrl(), APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER);
 
-        VERSIONLISTER.refreshVersions();
+        try {
+            VERSIONMETA.update();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
