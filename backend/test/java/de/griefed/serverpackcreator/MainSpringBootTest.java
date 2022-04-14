@@ -34,9 +34,7 @@ public class MainSpringBootTest {
 
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
         this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        this.LOCALIZATIONMANAGER.initialize();
         this.DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        this.DEFAULTFILES.filesSetup();
         this.DEFAULTFILES.checkDatabase();
     }
 

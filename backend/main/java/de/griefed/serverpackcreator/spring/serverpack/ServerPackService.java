@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.spring.serverpack;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,18 +47,15 @@ public class ServerPackService {
 
     private static final Logger LOG = LogManager.getLogger(ServerPackService.class);
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackRepository SERVERPACKREPOSITORY;
 
     /**
      * Constructor responsible for our DI.
      * @author Griefed
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
      * @param injectedServerPackRepository Instance of {@link ServerPackRepository}.
      */
     @Autowired
-    public ServerPackService(ApplicationProperties injectedApplicationProperties, ServerPackRepository injectedServerPackRepository) {
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    public ServerPackService(ServerPackRepository injectedServerPackRepository) {
         this.SERVERPACKREPOSITORY = injectedServerPackRepository;
     }
 
@@ -201,8 +197,8 @@ public class ServerPackService {
     /**
      * Update a server pack database entry with the given database id.
      * @author Griefed
-     * @param id Integer. The database id of the server pack to update.
-     * @param serverPackModel Instance of {@link ServerPackModel} with which to update the entry in the database.
+     * @param id Integer. The database id of the server pack to initialize.
+     * @param serverPackModel Instance of {@link ServerPackModel} with which to initialize the entry in the database.
      */
     public void updateServerPackByID(int id, ServerPackModel serverPackModel) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
@@ -255,7 +251,7 @@ public class ServerPackService {
      * @author Griefed
      * @param projectID The CurseForge project ID.
      * @param fileID The CurseForge file ID.
-     * @param serverPackModel The server pack with which to update the entry in the database.
+     * @param serverPackModel The server pack with which to initialize the entry in the database.
      */
     public void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPackModel serverPackModel) {
         if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {

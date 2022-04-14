@@ -27,7 +27,8 @@ import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.*;
-import de.griefed.serverpackcreator.VersionLister;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,7 +66,7 @@ public class CurseCreateModpack {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final Utilities UTILITIES;
-
+    private final ConfigUtilities CONFIGUTILITIES;
     private final ReticulatingSplines reticulatingSplines = new ReticulatingSplines();
 
     private final Random randInt = new Random();
@@ -78,12 +79,14 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedVersionLister Instance of {@link VersionLister}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta}.
      * @param injectedUtilities Instance of {@link Utilities}.
+     * @param injectedConfigUtilities Instance {@link ConfigUtilities}
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     @Autowired
     public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties,
-                              VersionLister injectedVersionLister, Utilities injectedUtilities) {
+                              VersionMeta injectedVersionMeta, Utilities injectedUtilities, ConfigUtilities injectedConfigUtilities) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -97,17 +100,23 @@ public class CurseCreateModpack {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        VersionLister VERSIONLISTER;
-        if (injectedVersionLister == null) {
-            VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        VersionMeta VERSIONMETA;
+        if (injectedVersionMeta == null) {
+            VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            VERSIONLISTER = injectedVersionLister;
+            VERSIONMETA = injectedVersionMeta;
         }
 
         if (injectedUtilities == null) {
-            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.UTILITIES = injectedUtilities;
+        }
+
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+        } else {
+            this.CONFIGUTILITIES = injectedConfigUtilities;
         }
     }
 
@@ -255,7 +264,7 @@ public class CurseCreateModpack {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.replace"));
 
-            UTILITIES.ConfigUtils().writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG);
+            CONFIGUTILITIES.writeConfigToFile(configurationModel, APPLICATIONPROPERTIES.FILE_CONFIG);
 
         } else {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.overwrite"));
@@ -299,9 +308,9 @@ public class CurseCreateModpack {
         if (new File(String.format("%s/manifest.json", modpackDir)).exists()) {
             try {
 
-                UTILITIES.ConfigUtils().updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", modpackDir)));
+                CONFIGUTILITIES.updateConfigModelFromCurseManifest(configurationModel, new File(String.format("%s/manifest.json", modpackDir)));
 
-                configurationModel.setCopyDirs(UTILITIES.ConfigUtils().suggestCopyDirs(configurationModel.getModpackDir()));
+                configurationModel.setCopyDirs(CONFIGUTILITIES.suggestCopyDirs(configurationModel.getModpackDir()));
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.info.initializemodpack.infoheader"));

@@ -23,7 +23,8 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.spring.NotificationResponse;
 import de.griefed.serverpackcreator.spring.task.TaskSubmitter;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
-import de.griefed.serverpackcreator.utilities.Utilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,8 @@ public class ZipService {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final Utilities UTILITIES;
     private final NotificationResponse NOTIFICATIONRESPONSE;
+    private final VersionMeta VERSIONMETA;
+    private final ConfigUtilities CONFIGUTILITIES;
 
     /**
      * Constructor responsible for DI.
@@ -57,15 +60,20 @@ public class ZipService {
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
      * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta}.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
      */
     @Autowired
     public ZipService(TaskSubmitter injectedTaskSubmitter, ConfigurationHandler injectedConfigurationHandler,
-                      Utilities injectedUtilities, NotificationResponse injectedNotificationResponse) {
+                      Utilities injectedUtilities, NotificationResponse injectedNotificationResponse,
+                      VersionMeta injectedVersionMeta, ConfigUtilities injectedConfigUtilities) {
 
         this.TASKSUBMITTER = injectedTaskSubmitter;
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.UTILITIES = injectedUtilities;
         this.NOTIFICATIONRESPONSE = injectedNotificationResponse;
+        this.VERSIONMETA = injectedVersionMeta;
+        this.CONFIGUTILITIES = injectedConfigUtilities;
     }
 
     /**
@@ -126,7 +134,7 @@ public class ZipService {
         }
 
         // Check the Minecraft version
-        if (!CONFIGURATIONHANDLER.isMinecraftVersionCorrect(parameters[2])) {
+        if (!VERSIONMETA.minecraft().checkMinecraftVersion(parameters[2])) {
             LOG.info("Minecraft version " + parameters[2] + " incorrect.");
 
             return NOTIFICATIONRESPONSE.zipResponse(
@@ -143,9 +151,9 @@ public class ZipService {
         if (CONFIGURATIONHANDLER.checkModloader(parameters[3])) {
 
             // Check Forge
-            if (UTILITIES.ConfigUtils().getModLoaderCase(parameters[3]).equals("Forge")) {
+            if (CONFIGUTILITIES.getModLoaderCase(parameters[3]).equals("Forge")) {
 
-                if (!CONFIGURATIONHANDLER.isForgeVersionCorrect(parameters[4],parameters[2])) {
+                if (!VERSIONMETA.forge().checkForgeAndMinecraftVersion(parameters[2],parameters[4])) {
                     LOG.info(parameters[3] + " version " + parameters[2] + "-" + parameters[4] + " incorrect.");
                     return NOTIFICATIONRESPONSE.zipResponse(
                             "Incorrect Forge version: " + parameters[2],
@@ -160,7 +168,7 @@ public class ZipService {
             // Check Fabric
             } else {
 
-                if (!CONFIGURATIONHANDLER.isFabricVersionCorrect(parameters[4])) {
+                if (!VERSIONMETA.fabric().checkFabricVersion(parameters[4])) {
                     LOG.info(parameters[3] + " version " + parameters[4] + " incorrect.");
                     return NOTIFICATIONRESPONSE.zipResponse(
                             "Incorrect Fabric version: " + parameters[4],

@@ -21,14 +21,16 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -43,13 +45,13 @@ public class ConfigurationCreator {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final VersionMeta VERSIONMETA;
     private final Utilities UTILITIES;
-    private final VersionLister VERSIONLISTER;
-    private final CurseCreateModpack CURSECREATEMODPACK;
+    private final ConfigUtilities CONFIGUTILITIES;
 
     public ConfigurationCreator(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                 ApplicationProperties injectedApplicationProperties, Utilities injectedUtilities, CurseCreateModpack injectedCurseCreateModpack,
-                                VersionLister injectedVersionLister) {
+                                VersionMeta injectedVersionMeta, ConfigUtilities injectedConfigUtilities) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -63,26 +65,33 @@ public class ConfigurationCreator {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        if (injectedVersionMeta == null) {
+            this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            this.VERSIONLISTER = injectedVersionLister;
+            this.VERSIONMETA = injectedVersionMeta;
         }
 
         if (injectedUtilities == null) {
-            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.UTILITIES = injectedUtilities;
         }
 
-        if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES);
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
         } else {
-            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
+            this.CONFIGUTILITIES = injectedConfigUtilities;
+        }
+
+        CurseCreateModpack CURSECREATEMODPACK;
+        if (injectedCurseCreateModpack == null) {
+            CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
+        } else {
+            CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, UTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
@@ -299,7 +308,7 @@ public class ConfigurationCreator {
                 System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.minecraft.specify") + " ");
                 minecraftVersion = reader.nextLine();
 
-            } while (!CONFIGURATIONHANDLER.isMinecraftVersionCorrect(minecraftVersion));
+            } while (!VERSIONMETA.minecraft().checkMinecraftVersion(minecraftVersion));
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), minecraftVersion));
@@ -315,7 +324,7 @@ public class ConfigurationCreator {
 
             } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
 
-            modLoader = UTILITIES.ConfigUtils().getModLoaderCase(modLoader);
+            modLoader = CONFIGUTILITIES.getModLoaderCase(modLoader);
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"), modLoader));
@@ -405,7 +414,7 @@ public class ConfigurationCreator {
             serverPackSuffix = reader.nextLine();
 
 //------------------------------------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
-            UTILITIES.ConfigUtils().printConfigurationModel(modpackDir,
+            CONFIGUTILITIES.printConfigurationModel(modpackDir,
                     clientMods,
                     copyDirs,
                     includeServerInstallation,
@@ -431,7 +440,7 @@ public class ConfigurationCreator {
         reader.close();
 
 //-----------------------------------------------------------------------------------------WRITE CONFIG TO FILE---------
-        if (UTILITIES.ConfigUtils().writeConfigToFile(
+        if (CONFIGUTILITIES.writeConfigToFile(
                 modpackDir,
                 Arrays.asList(tmpClientMods),
                 Arrays.asList(tmpCopyDirs),

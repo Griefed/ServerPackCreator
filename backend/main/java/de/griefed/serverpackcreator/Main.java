@@ -23,7 +23,9 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.swing.SwingGuiInitializer;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -76,8 +78,9 @@ public class Main {
      * @author Griefed
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
      * will enter and which locale is used.
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
 
@@ -97,13 +100,10 @@ public class Main {
         }
 
         DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.filesSetup();
 
-        VersionLister VERSIONLISTER = new VersionLister(
-                APPLICATIONPROPERTIES
-        );
+        VersionMeta VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
 
-        Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
+        Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
         HashMap<String, String> systemInformation = UTILITIES.JarUtils().systemInformation(UTILITIES.JarUtils().getApplicationHomeForClass(Main.class));
 
@@ -215,32 +215,33 @@ public class Main {
 
         } else {
 
-            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, VERSIONLISTER, UTILITIES, args);
+            regular(APPLICATIONPROPERTIES, LOCALIZATIONMANAGER, VERSIONMETA, UTILITIES, args);
 
         }
     }
 
-    private static void regular(ApplicationProperties APPLICATIONPROPERTIES, LocalizationManager LOCALIZATIONMANAGER, VersionLister VERSIONLISTER, Utilities UTILITIES, String[] args) {
+    private static void regular(ApplicationProperties APPLICATIONPROPERTIES, LocalizationManager LOCALIZATIONMANAGER, VersionMeta VERSIONMETA, Utilities UTILITIES, String[] args) throws IOException {
 
         UpdateChecker UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
+        ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+
         CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(
-                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES
+                LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES
         );
 
         ConfigurationHandler CONFIGURATIONHANDLER = new ConfigurationHandler(
-                LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, UTILITIES
+                LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES
         );
 
         ConfigurationCreator CONFIGURATIONCREATOR = new ConfigurationCreator(
-                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, UTILITIES, CURSECREATEMODPACK, VERSIONLISTER
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, UTILITIES, CURSECREATEMODPACK, VERSIONMETA, CONFIGUTILITIES
         );
 
         ApplicationPlugins APPLICATIONPLUGINS = new ApplicationPlugins();
 
         ServerPackHandler SERVERPACKHANDLER = new ServerPackHandler(
-                LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER,
-                UTILITIES, APPLICATIONPLUGINS
+                LOCALIZATIONMANAGER, CURSECREATEMODPACK, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES
         );
 
         if (Arrays.asList(args).contains("-cgen")) {
@@ -271,7 +272,7 @@ public class Main {
 
             SwingGuiInitializer swingGuiInitializer = new SwingGuiInitializer(
                     LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, SERVERPACKHANDLER, APPLICATIONPROPERTIES,
-                    VERSIONLISTER, UTILITIES, UPDATECHECKER, APPLICATIONPLUGINS
+                    VERSIONMETA, UTILITIES, UPDATECHECKER, APPLICATIONPLUGINS, CONFIGUTILITIES
             );
 
             swingGuiInitializer.mainGUI();

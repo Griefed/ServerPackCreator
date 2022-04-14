@@ -24,11 +24,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.VersionLister;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.commonutilities.BooleanUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.ListUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.StringUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.nio.file.*;
@@ -40,20 +46,19 @@ import java.util.zip.ZipFile;
  * Utility-class revolving around configuration utilities.
  * @author Griefed
  */
+@Component
 public class ConfigUtilities {
 
     private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
+    private final Utilities UTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final VersionLister VERSIONLISTER;
+    private final VersionMeta VERSIONMETA;
 
-    public ConfigUtilities(LocalizationManager injectedLocalizationManager, BooleanUtilities injectedBooleanUtilities,
-                           ListUtilities injectedListUtilities, ApplicationProperties injectedApplicationProperties,
-                           StringUtilities injectedStringUtilities, VersionLister injectedVersionLister) {
+    @Autowired
+    public ConfigUtilities(LocalizationManager injectedLocalizationManager, Utilities injectedUtilities, ApplicationProperties injectedApplicationProperties,
+                           VersionMeta injectedVersionMeta) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -67,28 +72,16 @@ public class ConfigUtilities {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
+        if (injectedVersionMeta == null) {
+            this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-        } else {
-            this.VERSIONLISTER = injectedVersionLister;
+            this.VERSIONMETA = injectedVersionMeta;
         }
     }
 
@@ -216,8 +209,8 @@ public class ConfigUtilities {
                         "%s\njavaArgs = \"%s\"\n\n" +
                         "%s\nserverPackSuffix = \"%s\"",
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"), modpackDir.replace("\\","/"),
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), LISTUTILITIES.encapsulateListElements(LISTUTILITIES.cleanList(clientMods)),
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), LISTUTILITIES.encapsulateListElements(LISTUTILITIES.cleanList(copyDirs)),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"), UTILITIES.ListUtils().encapsulateListElements(UTILITIES.ListUtils().cleanList(clientMods)),
+                LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"), UTILITIES.ListUtils().encapsulateListElements(UTILITIES.ListUtils().cleanList(copyDirs)),
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.icon"), serverIconPath,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.properties"), serverPropertiesPath,
                 LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.includeserverinstallation"), includeServer,
@@ -275,8 +268,8 @@ public class ConfigUtilities {
         List<String> configurationAsList = new ArrayList<>(100);
 
         configurationAsList.add(configurationModel.getModpackDir());
-        configurationAsList.add(STRINGUTILITIES.buildString(configurationModel.getClientMods().toString()));
-        configurationAsList.add(STRINGUTILITIES.buildString(configurationModel.getCopyDirs().toString()));
+        configurationAsList.add(UTILITIES.StringUtils().buildString(configurationModel.getClientMods().toString()));
+        configurationAsList.add(UTILITIES.StringUtils().buildString(configurationModel.getCopyDirs().toString()));
         configurationAsList.add(configurationModel.getJavaPath());
         configurationAsList.add(configurationModel.getMinecraftVersion());
         configurationAsList.add(configurationModel.getModLoader());
@@ -433,7 +426,7 @@ public class ConfigUtilities {
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
 
                 configurationModel.setModLoader("Fabric");
-                configurationModel.setModLoaderVersion(VERSIONLISTER.getFabricReleaseVersion());
+                configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoaderVersion());
 
             }
 
@@ -701,8 +694,10 @@ public class ConfigUtilities {
 
         if (directories.isEmpty()) {
 
-            ZipFile zipFile = new ZipFile(zipURI.toString());
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            Enumeration<? extends ZipEntry> entries;
+            try (ZipFile zipFile = new ZipFile(zipURI.toString())) {
+                entries = zipFile.entries();
+            }
 
             while(entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();

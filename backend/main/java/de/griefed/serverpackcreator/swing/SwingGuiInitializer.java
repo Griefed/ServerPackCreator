@@ -27,8 +27,9 @@ import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.*;
-import de.griefed.serverpackcreator.utilities.Utilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.logging.log4j.LogManager;
@@ -67,11 +68,12 @@ public class SwingGuiInitializer extends JPanel {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final CurseCreateModpack CURSECREATEMODPACK;
     private final ServerPackHandler CREATESERVERPACK;
-    private final VersionLister VERSIONLISTER;
+    private final VersionMeta VERSIONMETA;
     private final Utilities UTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
     private final UpdateChecker UPDATECHECKER;
+    private final ConfigUtilities CONFIGUTILITIES;
 
     private final LightTheme LIGHTTHEME = new LightTheme();
     private final DarkTheme DARKTHEME = new DarkTheme();
@@ -110,15 +112,18 @@ public class SwingGuiInitializer extends JPanel {
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related in the GUI.
-     * @param injectedUtilities Instance of {@link de.griefed.serverpackcreator.utilities.Utilities}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version related in the GUI.
+     * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedUpdateChecker Instance of {@link UpdateChecker}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               ApplicationProperties injectedApplicationProperties, VersionLister injectedVersionLister,
-                               Utilities injectedUtilities, UpdateChecker injectedUpdateChecker, ApplicationPlugins injectedPluginManager) {
+                               ApplicationProperties injectedApplicationProperties, VersionMeta injectedVersionMeta,
+                               Utilities injectedUtilities, UpdateChecker injectedUpdateChecker, ApplicationPlugins injectedPluginManager,
+                               ConfigUtilities injectedConfigUtilities) throws IOException {
 
         super(new GridLayout(1, 1));
 
@@ -133,28 +138,34 @@ public class SwingGuiInitializer extends JPanel {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        if (injectedVersionMeta == null) {
+            this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            this.VERSIONLISTER = injectedVersionLister;
+            this.VERSIONMETA = injectedVersionMeta;
         }
 
         if (injectedUtilities == null) {
-            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER);
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.UTILITIES = injectedUtilities;
         }
 
+        if (injectedConfigUtilities == null) {
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+        } else {
+            this.CONFIGUTILITIES = injectedConfigUtilities;
+        }
+
         if (injectedConfigurationHandler == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER,
-                    UTILITIES);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA,
+                    UTILITIES, CONFIGUTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER,
-                    APPLICATIONPROPERTIES, UTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA,
+                    APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
@@ -166,8 +177,8 @@ public class SwingGuiInitializer extends JPanel {
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER,
-                    APPLICATIONPROPERTIES, VERSIONLISTER, UTILITIES, APPLICATIONPLUGINS);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK,
+                    APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -187,8 +198,8 @@ public class SwingGuiInitializer extends JPanel {
         this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui") + " - " + APPLICATIONPROPERTIES.getServerPackCreatorVersion());
 
         this.TAB_CREATESERVERPACK = new TabCreateServerPack(
-                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, VERSIONLISTER, APPLICATIONPROPERTIES,
-                FRAME_SERVERPACKCREATOR, UTILITIES, APPLICATIONPLUGINS
+                LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, VERSIONMETA, APPLICATIONPROPERTIES,
+                FRAME_SERVERPACKCREATOR, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES
         );
 
         this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(
@@ -329,7 +340,7 @@ public class SwingGuiInitializer extends JPanel {
         FRAME_SERVERPACKCREATOR.pack();
 
         /*
-         * I know this looks stupid. Why update the tree if it isn't even visible yet?
+         * I know this looks stupid. Why initialize the tree if it isn't even visible yet?
          * Because otherwise, when switching from light to dark-theme, the inset for tabs of the tabbed pane suddenly
          * changes, which looks ugly. Calling this does the same, but before the GUI is visible. Dirty hack? Maybe.
          * Does it work? Yeah.
@@ -344,7 +355,7 @@ public class SwingGuiInitializer extends JPanel {
     }
 
     /**
-     * If an update is available for ServerPackCreator, display a dialog asking the user whether
+     * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
      * @author Griefed
      */
     private void displayUpdateDialog() {
