@@ -1,3 +1,47 @@
+## [3.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.1...3.1.0) (2022-04-15)
+
+
+### :scissors: Refactor
+
+* **Plugins:** Simplify some calls to plugin information and execution. Move ApplicationPlugins to package plugins. ([8c8c0d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c8c0d13110a0fc5602a5ef51cdf12153f420ca8))
+* **Utilities:** Combine all utility-classes in one Utilities and allow access of all sub-utility-classes from there. Simplifies constructors and accesses to utilities via a centralized Utilities-class. ([60e20a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/60e20a82c432fe390ebf1be1b4eca0ffeff4071a))
+
+
+### 💎 Improvements
+
+* **File and Folder exclusions:** Allow exclusions of files or folders from the mod-directory, in addition to the clientside-only mods and sideness-detection. ([0d927c2](https://git.griefed.de/Griefed/ServerPackCreator/commit/0d927c2435a354e43e2c6d17aea483f495a9ebca))
+* **Help and HowTo:** Link to my wiki Help and HowTo pages in the menu. Moves the guide on using ServerPackCreator from the README to the wiki. ([8271fa0](https://git.griefed.de/Griefed/ServerPackCreator/commit/8271fa04e24c54d237b8d56e4f50b4bc65c16d5b))
+* **Help:** Open the ServerPackCreator help wiki page in the browser. ([4bc81dd](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bc81dd5d3c7d963e9cae7c318d0e8d53b472c11))
+* **VersionMeta and Utilities:** Rearrange Utility-classes and completely rewrite the VersionMeta, replacing VersionLister. VersionMeta now provides extensive information about available Minecraft, Fabric and Forge versions, Minecraft servers and their Java version, and more. ([57feba2](https://git.griefed.de/Griefed/ServerPackCreator/commit/57feba262348cc68ec0723a525cf42023a64c5dd))
+
+
+### 🚀 Features
+
+* **Update fallback modslist from repository:** Update property de.griefed.serverpackcreator.configuration.fallbackmodslist from repository. Refrain from manually editing this property. Use Main Menu->File->"Update Fallback Clientside Modslist" to trigger update checks for this list. ([7e4b332](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e4b3328b89618faa71f8ef41d150a951df2c869))
+
+
+### 🛠 Fixes
+
+* **Web Modloader Version Selection:** Correctly get, select and present initial modloader version depending on Minecraft version. Also disable modloader server installation which saves space and generation time. Start scripts install the server anyway. ([8bb771b](https://git.griefed.de/Griefed/ServerPackCreator/commit/8bb771bae37a50ec8f6e88f29d5ba97f9335a2a9))
+
+
+### Other
+
+* **Clientside Mod:** Add BisectHosting Server Integration Menu, BH-Menu-, to fallback list of clientside-only mods. ([ba1eed6](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba1eed6b527756bd6aa8e0c14734ac01e9bb78db))
+* **Clientside Mod:** Expand fallback list for clientside-only mods with suggestions from @TheButterbrotman in https://github.com/Griefed/ServerPackCreator/issues/318 ([a7e7a8f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7e7a8fc188887e345e55c5bddeab707de9025bf))
+* **Clientside Mod:** Expand fallback list for clientside-only mods with suggestions from @TheButterbrotman in https://github.com/Griefed/ServerPackCreator/issues/319 ([a5a7cc4](https://git.griefed.de/Griefed/ServerPackCreator/commit/a5a7cc4132367f9629502684c67046b7fa2f1144))
+* **Clientside Mods:** Added Charmonium, Dashloader and Entity Texture Features to the fallback list of clientside-only mods. Thanks to @TheButterbrotMan for reporting these! ([2dab9ad](https://git.griefed.de/Griefed/ServerPackCreator/commit/2dab9ade4f6f87bd2369f8fdf72121c8ec985b80))
+* **deps:** update actions/checkout action to v3 ([abb1f9a](https://git.griefed.de/Griefed/ServerPackCreator/commit/abb1f9a6520b5b8ab2598507bca2bf6483290e80))
+* **deps:** update actions/upload-artifact action to v3 ([be080fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/be080fad4857957f78246e1298bc95b49322705d))
+* **deps:** update dependency @quasar/cli to v1.3.2 ([b9bfdc6](https://git.griefed.de/Griefed/ServerPackCreator/commit/b9bfdc66680d0b95949409f218b859380c7c9dd6))
+* **deps:** update dependency @quasar/extras to v1.13.5 ([cf07eb6](https://git.griefed.de/Griefed/ServerPackCreator/commit/cf07eb6b2374cd4d707238b04347b154d30f82a4))
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.8 ([d5e024b](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5e024b8f09f3d9b24927cc9807e3047c5304b1c))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.0.5 ([37a6d54](https://git.griefed.de/Griefed/ServerPackCreator/commit/37a6d54cba26d81f7c1e2dd6ca5f2cdc93222902))
+* **deps:** update dependency tsparticles to v1.42.4 ([2dfd871](https://git.griefed.de/Griefed/ServerPackCreator/commit/2dfd8718766344c27b54275534a6c12d570edbf6))
+* **deps:** update typescript-eslint monorepo to v5.17.0 ([cd6c87b](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd6c87b6c11f18bcea0c83344ac0c7c8c60d4388))
+* **Misc:** Add configuration for running tests only ([a0b1ba4](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0b1ba4b40c8b82ad8c5dd0d9b84c57aa6bfca2b))
+* **Misc:** Update links in README so they do not point at no longer existing files. Rephrase release text body in release workflows and tell people about the changelog-file. ([801aef1](https://git.griefed.de/Griefed/ServerPackCreator/commit/801aef1485b64a6d5d84146d063d2fc67e6721d7))
+
 ### [3.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0...3.0.1) (2022-03-26)
 
 

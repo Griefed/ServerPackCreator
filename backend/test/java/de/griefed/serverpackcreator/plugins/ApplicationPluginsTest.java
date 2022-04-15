@@ -16,7 +16,7 @@ public class ApplicationPluginsTest {
             FileUtils.mkdir(new File("./plugins"),true);
         } catch (Exception ignored) {}
         try {
-            Files.copy(Paths.get("backend/test/resources/testresources/serverpackcreatorexampleaddon.jar"), Paths.get("./plugins/serverpackcreatorexampleaddon.jar"));
+            Files.copy(Paths.get("backend/test/resources/testresources/ExampleAddon.jar"), Paths.get("./plugins/ExampleAddon.jar"));
         } catch (Exception ignored) {}
         ApplicationPlugins applicationPlugins = new ApplicationPlugins();
         Assertions.assertNotNull(applicationPlugins);

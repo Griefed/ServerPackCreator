@@ -68,7 +68,7 @@ dependencies {
     embed 'com.electronwill.night-config:hocon:3.6.5'
     embed 'commons-io:commons-io:2.11.0'
     embed 'commons-lang:commons-lang:2.6'
-    embed 'net.lingala.zip4j:zip4j:2.9.1'
+    embed 'net.lingala.zip4j:zip4j:2.10.0'
     embed 'com.moandjiezana.toml:toml4j:0.7.2'
     embed 'com.github.TheRandomLabs:CurseAPI:cdc5d48'
     embed 'org.xerial:sqlite-jdbc:3.36.0.3'
@@ -87,21 +87,21 @@ dependencies {
     // WEB
     //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
     //embed 'org.springframework.boot:spring-boot-starter-validation:2.6.4'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.6.5'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.5'
+    embed 'org.springframework.boot:spring-boot-starter-web:2.6.6'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.6'
     //embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.4'
-    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.5'
-    embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.5'
+    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.6'
+    embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.6'
     embed 'org.apache.activemq:artemis-jms-server:2.19.1'
     embed 'com.github.gwenn:sqlite-dialect:0.1.2'
 
     // Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.5'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.6'
 
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.5'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.6'
     testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
