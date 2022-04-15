@@ -33,7 +33,7 @@ jobs:
           release_name: Release ${{steps.tag.outputs.tag}}
           body: |
             Automatic release of version: **${{steps.tag.outputs.tag}}**
-            **Changes in this pre-release:**
+            **Changes in this release:**
             If the changelog has not yet been copy'n'pasted by Griefed, look at [CHANGELOG.md](https://github.com/Griefed/ServerPackCreator/blob/main/CHANGELOG.md)
             and look for the ${{steps.tag.outputs.tag}} tag.
           draft: false
