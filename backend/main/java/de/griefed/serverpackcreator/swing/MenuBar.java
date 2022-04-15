@@ -47,6 +47,7 @@ import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -153,7 +154,8 @@ public class MenuBar extends Component {
     private JMenuItem about_OpenDonationsPageMenuItem;
     private JMenuItem about_OpenReleasesPageMenuItem;
     private JMenuItem about_OpenDiscordLinkMenuItem;
-    private JMenuItem about_OpenHelpInBrowserMenuItem;
+    private JMenuItem about_OpenWikiHelpMenuItem;
+    private JMenuItem about_OpenWikiHowToMenuItem;
 
     private JFileChooser configChooser;
 
@@ -356,7 +358,8 @@ public class MenuBar extends Component {
         about_OpenReleasesPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.releases"));
         about_OpenDiscordLinkMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.discord"));
         about_OpenDonationsPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.donate"));
-        about_OpenHelpInBrowserMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.help"));
+        about_OpenWikiHelpMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.help"));
+        about_OpenWikiHowToMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.howto"));
 
         // create action listeners for items
         file_NewConfigurationMenuItem.addActionListener(this::actionEventNewConfiguration);
@@ -365,7 +368,6 @@ public class MenuBar extends Component {
         file_SaveAsConfigMenuItem.addActionListener(this::actionEventSaveAsConfigToFileMenuItem);
         file_UploadConfigurationToHasteBin.addActionListener(this::actionEventUploadConfigurationToHasteBinMenuItem);
         file_UploadServerPackCreatorLogToHasteBin.addActionListener(this::actionEventUploadServerPackCreatorLogToHasteBinMenuItem);
-        file_UpdateFallbackModslist.addActionListener(this::actionEventUpdateFallbackModslist);
         file_ExitConfigMenuItem.addActionListener(this::actionEventExitMenuItem);
 
         edit_SwitchTheme.addActionListener(this::actionEventSwitchThemeMenuItem);
@@ -385,7 +387,8 @@ public class MenuBar extends Component {
         about_OpenReleasesPageMenuItem.addActionListener(this::actionEventOpenReleaseMenuItem);
         about_OpenDiscordLinkMenuItem.addActionListener(this::actionEventOpenDiscordLinkMenuItem);
         about_OpenDonationsPageMenuItem.addActionListener(this::actionEventOpenDonateMenuItem);
-        about_OpenHelpInBrowserMenuItem.addActionListener(this::actionEventOpenHelpMenuItem);
+        about_OpenWikiHelpMenuItem.addActionListener(this::actionEventOpenWikiHelpMenuItem);
+        about_OpenWikiHowToMenuItem.addActionListener(this::actionEventOpenWikiHowToMenuItem);
 
         // add items to menus
         fileMenu.add(file_NewConfigurationMenuItem);
@@ -416,7 +419,9 @@ public class MenuBar extends Component {
         viewMenu.add(view_ExampleAddonRepositoryMenuItem);
 
         aboutMenu.add(about_OpenAboutWindowMenuItem);
-        aboutMenu.add(about_OpenHelpInBrowserMenuItem);
+        aboutMenu.add(new JSeparator());
+        aboutMenu.add(about_OpenWikiHelpMenuItem);
+        aboutMenu.add(about_OpenWikiHowToMenuItem);
         aboutMenu.add(new JSeparator());
         aboutMenu.add(about_OpenGitHubPageMenuItem);
         aboutMenu.add(about_OpenGitHubIssuesPageMenuItem);
@@ -455,6 +460,43 @@ public class MenuBar extends Component {
     }
 
     /**
+     * Open the given url in a browser.
+     * @author Griefed
+     * @param uri {@link URI} the URI to the website you want to open.
+     */
+    private void openLinkInBrowser(URI uri) {
+        try {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(uri);
+            }
+        } catch (IOException ex) {
+            LOG.error("Error opening browser with link " + uri + ".", ex);
+        }
+    }
+
+    /**
+     * Open the Help-section of the wiki in a browser.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventOpenWikiHelpMenuItem(ActionEvent actionEvent) {
+        LOG.debug("Clicked Help.");
+
+        openLinkInBrowser(URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"));
+    }
+
+    /**
+     * Open the HowTo-section of the wiki in a browser.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventOpenWikiHowToMenuItem(ActionEvent actionEvent) {
+        LOG.debug("Clicked Getting started.");
+
+        openLinkInBrowser(URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo"));
+    }
+
+    /**
      * Upon button-press, load default values for textfields so the user can start with a new configuration. Just as if ServerPackCreator
      * was started without a serverpackcreator.conf being present.
      * @author Griefed
@@ -474,13 +516,7 @@ public class MenuBar extends Component {
     private void actionEventOpenDiscordLinkMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Join Discord.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://discord.griefed.de"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser.", ex);
-        }
+        openLinkInBrowser(URI.create("https://discord.griefed.de"));
     }
 
     /**
@@ -491,13 +527,7 @@ public class MenuBar extends Component {
     private void actionEventOpenIssuesMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Open Issues page on GitHub.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
     }
 
     /**
@@ -534,13 +564,8 @@ public class MenuBar extends Component {
 
                 case 0:
 
-                    try {
-                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                            Desktop.getDesktop().browse(URI.create(urltoHasteBin));
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Error opening browser.", ex);
-                    }
+                    openLinkInBrowser(URI.create(urltoHasteBin));
+
                     break;
 
                 case 1:
@@ -590,13 +615,8 @@ public class MenuBar extends Component {
 
                 case 0:
 
-                    try {
-                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                            Desktop.getDesktop().browse(URI.create(urltoHasteBin));
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Error opening browser.", ex);
-                    }
+                    openLinkInBrowser(URI.create(urltoHasteBin));
+
                     break;
 
                 case 1:
@@ -728,10 +748,8 @@ public class MenuBar extends Component {
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
-                JAVAARGSOPTIONS,
-                JAVAARGSOPTIONS[3]
-        )
-        ) {
+                JAVAARGSOPTIONS,JAVAARGSOPTIONS[3]
+        )) {
             case 0:
 
                 if (JAVAARGS.getText().equals("")) {
@@ -836,7 +854,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
 
                     APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
                     APPLICATIONPROPERTIES.store(outputStream, null);
@@ -859,7 +877,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
 
                     APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
                     APPLICATIONPROPERTIES.store(outputStream, null);
@@ -944,13 +962,7 @@ public class MenuBar extends Component {
     private void actionEventViewExampleAddonMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked view example addon");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for example-addon repository.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
     }
 
     /**
@@ -1034,23 +1046,6 @@ public class MenuBar extends Component {
     }
 
     /**
-     * Upon button-press, open an info-window containing information/help about how to configure ServerPackCreator.
-     * @author Griefed
-     * @param actionEvent The event which triggers this method.
-     */
-    private void actionEventOpenHelpMenuItem(ActionEvent actionEvent) {
-        LOG.debug("Clicked open help window.");
-
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening ServerPackCreator wiki page in browser.", ex);
-        }
-    }
-
-    /**
      * Upon button-press, open the ServerPackCreator repository GitHub page in the users default-browser.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
@@ -1058,13 +1053,7 @@ public class MenuBar extends Component {
     private void actionEventOpenGitHubMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open GitHub repository link.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for ServerPackCreator GitHub repository.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator"));
     }
 
     /**
@@ -1075,13 +1064,7 @@ public class MenuBar extends Component {
     private void actionEventOpenDonateMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open donations link.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/sponsors/Griefed"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for donations page.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/sponsors/Griefed"));
     }
 
     /**
@@ -1092,13 +1075,7 @@ public class MenuBar extends Component {
     private void actionEventOpenReleaseMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open releases link");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for releases page.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
     }
 
     /**
