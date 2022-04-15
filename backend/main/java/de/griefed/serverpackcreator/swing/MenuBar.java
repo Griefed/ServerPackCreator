@@ -134,6 +134,7 @@ public class MenuBar extends Component {
     private JMenuItem file_UploadConfigurationToHasteBin;
     private JMenuItem file_UploadServerPackCreatorLogToHasteBin;
     private JMenuItem file_ExitConfigMenuItem;
+    private JMenuItem file_UpdateFallbackModslist;
 
     private JMenuItem edit_SwitchTheme;
     private JMenuItem edit_ChangeJavaArgs;
@@ -335,6 +336,7 @@ public class MenuBar extends Component {
         file_SaveAsConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveas"));
         file_UploadConfigurationToHasteBin = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadconfig"));
         file_UploadServerPackCreatorLogToHasteBin = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadlog"));
+        file_UpdateFallbackModslist = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback"));
         file_ExitConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.exit"));
 
         edit_SwitchTheme = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.theme"));
@@ -363,6 +365,7 @@ public class MenuBar extends Component {
         file_SaveAsConfigMenuItem.addActionListener(this::actionEventSaveAsConfigToFileMenuItem);
         file_UploadConfigurationToHasteBin.addActionListener(this::actionEventUploadConfigurationToHasteBinMenuItem);
         file_UploadServerPackCreatorLogToHasteBin.addActionListener(this::actionEventUploadServerPackCreatorLogToHasteBinMenuItem);
+        file_UpdateFallbackModslist.addActionListener(this::actionEventUpdateFallbackModslist);
         file_ExitConfigMenuItem.addActionListener(this::actionEventExitMenuItem);
 
         edit_SwitchTheme.addActionListener(this::actionEventSwitchThemeMenuItem);
@@ -393,6 +396,8 @@ public class MenuBar extends Component {
         fileMenu.add(new JSeparator());
         fileMenu.add(file_UploadConfigurationToHasteBin);
         fileMenu.add(file_UploadServerPackCreatorLogToHasteBin);
+        fileMenu.add(new JSeparator());
+        fileMenu.add(file_UpdateFallbackModslist);
         fileMenu.add(new JSeparator());
         fileMenu.add(file_ExitConfigMenuItem);
 
@@ -428,6 +433,25 @@ public class MenuBar extends Component {
         MENUBAR.add(aboutMenu);
 
         return MENUBAR;
+    }
+
+    private void actionEventUpdateFallbackModslist(ActionEvent actionEvent) {
+        LOG.debug("Running update check for fallback modslist...");
+        if (APPLICATIONPROPERTIES.updateFallback()) {
+            JOptionPane.showMessageDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.updated"),
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        } else {
+            JOptionPane.showMessageDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.nochange"),
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
     }
 
     /**
