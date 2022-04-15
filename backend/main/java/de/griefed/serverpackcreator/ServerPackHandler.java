@@ -25,9 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.PreGenExtension;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.PostGenExtension;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.PreZipExtension;
+import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
@@ -204,7 +202,6 @@ public class ServerPackHandler {
                 new File(destination).exists()) {
 
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.overwrite"));
-            return true;
 
         } else {
 
@@ -216,17 +213,17 @@ public class ServerPackHandler {
 
             }
 
-            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART.size() > 0) {
+            if (!APPLICATIONPLUGINS.pluginsPreGenExtension().isEmpty()) {
                 LOG_ADDONS.info("Executing PreGenExtension addons");
-                for (PreGenExtension start : APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART) {
-                    LOG_ADDONS.info("Executing plugin " + start.getName());
+                APPLICATIONPLUGINS.pluginsPreGenExtension().forEach(plugin -> {
+                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
 
                     try {
-                        start.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                        plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(start.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
                     }
-                }
+                });
             } else {
                 LOG.info("No PreGenExtension addons to execute.");
             }
@@ -266,17 +263,17 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
             }
 
-            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED.size() > 0) {
+            if (!APPLICATIONPLUGINS.pluginsPreZipExtension().isEmpty()) {
                 LOG_ADDONS.info("Executing PreZipExtension addons");
-                for (PreZipExtension created : APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED) {
-                    LOG_ADDONS.info("Executing plugin " + created.getName());
+                APPLICATIONPLUGINS.pluginsPreZipExtension().forEach(plugin -> {
+                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
 
                     try {
-                        created.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                        plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(created.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
                     }
-                }
+                });
             } else {
                 LOG.info("No PreZipExtension addons to execute.");
             }
@@ -296,23 +293,23 @@ public class ServerPackHandler {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), destination));
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
-            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED.size() > 0) {
+            if (!APPLICATIONPLUGINS.pluginsPostGenExtension().isEmpty()) {
                 LOG_ADDONS.info("Executing PostGenExtension addons");
-                for (PostGenExtension archive : APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED) {
-                    LOG_ADDONS.info("Executing plugin " + archive.getName());
+                APPLICATIONPLUGINS.pluginsPostGenExtension().forEach(plugin -> {
+                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
 
                     try {
-                        archive.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                        plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(archive.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
                     }
-                }
+                });
             } else {
                 LOG.info("No PostGenExtension addons to execute.");
             }
 
-            return true;
         }
+        return true;
 
     }
 

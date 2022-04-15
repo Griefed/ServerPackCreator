@@ -661,6 +661,7 @@ public class ApplicationProperties extends Properties {
      * Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code> from the main-repository
      * or one of its mirrors.
      * @author Griefed
+     * @return <code>true</code> if the fallback-property was updated.
      */
     public boolean updateFallback() {
 

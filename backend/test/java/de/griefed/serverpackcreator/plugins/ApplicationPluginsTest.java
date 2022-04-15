@@ -1,8 +1,7 @@
-package de.griefed.serverpackcreator;
+package de.griefed.serverpackcreator.plugins;
 
 import org.apache.logging.log4j.core.util.FileUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -11,7 +10,6 @@ import java.nio.file.Paths;
 
 public class ApplicationPluginsTest {
 
-    @Disabled
     @Test
     void test() {
         try {
@@ -22,10 +20,10 @@ public class ApplicationPluginsTest {
         } catch (Exception ignored) {}
         ApplicationPlugins applicationPlugins = new ApplicationPlugins();
         Assertions.assertNotNull(applicationPlugins);
-        Assertions.assertEquals(1,applicationPlugins.PLUGINS_SERVERPACKARCHIVECREATED.size());
-        Assertions.assertEquals(1,applicationPlugins.PLUGINS_SERVERPACKCREATED.size());
-        Assertions.assertEquals(1,applicationPlugins.PLUGINS_SERVERPACKSTART.size());
-        Assertions.assertEquals(1,applicationPlugins.PLUGINS_TABBEDPANE.size());
+        Assertions.assertEquals(1,applicationPlugins.pluginsPostGenExtension().size());
+        Assertions.assertEquals(1,applicationPlugins.pluginsTabExtension().size());
+        Assertions.assertEquals(1,applicationPlugins.pluginsPreGenExtension().size());
+        Assertions.assertEquals(1,applicationPlugins.pluginsPreZipExtension().size());
     }
 
 }

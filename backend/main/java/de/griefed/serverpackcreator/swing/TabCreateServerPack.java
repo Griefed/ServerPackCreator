@@ -25,6 +25,8 @@ import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
+import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import mdlaf.components.textpane.MaterialTextPaneUI;
