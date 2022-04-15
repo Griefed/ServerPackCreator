@@ -368,6 +368,7 @@ public class MenuBar extends Component {
         file_SaveAsConfigMenuItem.addActionListener(this::actionEventSaveAsConfigToFileMenuItem);
         file_UploadConfigurationToHasteBin.addActionListener(this::actionEventUploadConfigurationToHasteBinMenuItem);
         file_UploadServerPackCreatorLogToHasteBin.addActionListener(this::actionEventUploadServerPackCreatorLogToHasteBinMenuItem);
+        file_UpdateFallbackModslist.addActionListener(this::actionEventUpdateFallbackModslist);
         file_ExitConfigMenuItem.addActionListener(this::actionEventExitMenuItem);
 
         edit_SwitchTheme.addActionListener(this::actionEventSwitchThemeMenuItem);
