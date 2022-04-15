@@ -19,10 +19,8 @@
  */
 package de.griefed.serverpackcreator.spring;
 
-import de.griefed.serverpackcreator.VersionLister;
-import de.griefed.serverpackcreator.utilities.ListUtilities;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,21 +34,19 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/versions")
 public class VersionsController {
 
-    private static final Logger LOG = LogManager.getLogger(VersionsController.class);
-
-    private final VersionLister VERSIONLISTER;
-    private final ListUtilities LISTUTILITIES;
+    private final VersionMeta VERSIONMETA;
+    private final Utilities UTILITIES;
 
     /**
      * Constructor for DI.
      * @author Griefed
-     * @param injectedVersionLister Instance of {@link VersionLister} for version acquisition.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta} for version acquisition.
+     * @param injectedUtilities Instance of {@link Utilities}.
      */
     @Autowired
-    public VersionsController(VersionLister injectedVersionLister, ListUtilities injectedListUtilities) {
-        this.VERSIONLISTER = injectedVersionLister;
-        this.LISTUTILITIES = injectedListUtilities;
+    public VersionsController(VersionMeta injectedVersionMeta, Utilities injectedUtilities) {
+        this.VERSIONMETA = injectedVersionMeta;
+        this.UTILITIES = injectedUtilities;
     }
 
     /**
@@ -68,8 +64,9 @@ public class VersionsController {
                 "application/json"
                 ).body(
                         "{\"minecraft\":" +
-                        LISTUTILITIES.encapsulateListElements(VERSIONLISTER.getMinecraftReleaseVersions()) +
-                                "}"
+                        UTILITIES.ListUtils().encapsulateListElements(
+                                VERSIONMETA.minecraft().releaseVersionsDescending()
+                        ) + "}"
                 );
     }
 
@@ -89,10 +86,7 @@ public class VersionsController {
                         "application/json"
                 ).body(
                         "{\"forge\":" +
-                                LISTUTILITIES.encapsulateListElements(
-                                        VERSIONLISTER.reverseOrderList(
-                                                VERSIONLISTER.getForgeVersionsAsList(minecraftVersion)
-                                        )
+                                UTILITIES.ListUtils().encapsulateListElements(VERSIONMETA.forge().forgeVersionsDescending()
                                 ) +
                                 "}"
                 );
@@ -114,10 +108,7 @@ public class VersionsController {
                         "application/json"
                 ).body(
                         "{\"fabric\":" +
-                        LISTUTILITIES.encapsulateListElements(
-                                VERSIONLISTER.reverseOrderList(
-                                        VERSIONLISTER.getFabricVersions()
-                                )
+                                UTILITIES.ListUtils().encapsulateListElements(VERSIONMETA.fabric().loaderVersionsDescending()
                         ) +
                                 "}"
                 );
@@ -138,8 +129,8 @@ public class VersionsController {
                         "application/json"
                 ).body(
                         "{" +
-                        "\"release\":\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"," +
-                        "\"latest\":\"" + VERSIONLISTER.getFabricLatestInstallerVersion() + "\"" +
+                        "\"release\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"," +
+                        "\"latest\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"" +
                         "}"
                 );
     }

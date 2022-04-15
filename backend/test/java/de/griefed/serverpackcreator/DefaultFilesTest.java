@@ -20,10 +20,8 @@ class DefaultFilesTest {
         }
 
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
-        LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.initialize();
-        DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+        this.DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
     }
 
     @Test
@@ -131,6 +129,7 @@ class DefaultFilesTest {
         FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
         FileUtils.deleteQuietly(new File("./work/minecraft-manifest.json"));
         FileUtils.deleteQuietly(new File("./work/fabric-manifest.xml"));
+        FileUtils.deleteQuietly(new File("./work/fabric-installer-manifest.xml"));
         FileUtils.deleteQuietly(new File("./work/forge-manifest.json"));
         DEFAULTFILES.filesSetup();
         Assertions.assertTrue(new File("./server_files").isDirectory());
@@ -142,6 +141,7 @@ class DefaultFilesTest {
         Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
         Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
         Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
+        Assertions.assertTrue(new File("./work/fabric-installer-manifest.xml").exists());
         Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
     }
 

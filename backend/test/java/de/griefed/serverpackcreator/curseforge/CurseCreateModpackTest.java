@@ -5,8 +5,9 @@ import com.therandomlabs.curseapi.CurseException;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.VersionLister;
-import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -25,33 +26,19 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 class CurseCreateModpackTest {
 
     private final CurseCreateModpack CURSECREATEMODPACK;
-    private final LocalizationManager LOCALIZATIONMANAGER;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
 
-    CurseCreateModpackTest() {
+    CurseCreateModpackTest() throws IOException {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
-        this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        LOCALIZATIONMANAGER.initialize();
-        LISTUTILITIES = new ListUtilities();
-        STRINGUTILITIES = new StringUtilities();
-        SYSTEMUTILITIES = new SystemUtilities();
-        BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-        CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
-        this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
+        ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
+        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+        VersionMeta VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
+        Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA));
     }
 
     @Test

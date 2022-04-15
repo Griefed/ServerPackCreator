@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.spring;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.utilities.ListUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,21 +41,21 @@ public class ApplicationPropertiesController {
     private static final Logger LOG = LogManager.getLogger(ApplicationPropertiesController.class);
 
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final ListUtilities LISTUTILITIES;
+    private final Utilities UTILITIES;
 
     /**
      * Constructor for DI.
      * @author Griefed
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties} with the configuration of this ServerPackCreator
      *                                      instance.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      */
     @Autowired
     public ApplicationPropertiesController(ApplicationProperties injectedApplicationProperties,
-                                           ListUtilities injectedListUtilities) {
+                                           Utilities injectedUtilities) {
 
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        this.LISTUTILITIES = injectedListUtilities;
+        this.UTILITIES = injectedUtilities;
     }
 
     @GetMapping(produces = "application/json")
@@ -92,8 +92,8 @@ public class ApplicationPropertiesController {
                 "\"isCurseForgeActivated\": " + APPLICATIONPROPERTIES.isCurseForgeActivated() + "" +
                 "}";*/
         return "{" +
-                "\"listFallbackMods\":" + LISTUTILITIES.encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
-                "\"listDirectoriesExclude\":" + LISTUTILITIES.encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
+                "\"listFallbackMods\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
+                "\"listDirectoriesExclude\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
                 "\"curseControllerRegenerationEnabled\": " + APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled() + "," +
                 "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.getServerPackCreatorVersion() + "\"," +
                 "\"isCurseForgeActivated\": " + APPLICATIONPROPERTIES.isCurseForgeActivated() + "" +

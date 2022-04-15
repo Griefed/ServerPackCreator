@@ -27,7 +27,8 @@ import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.*;
-import de.griefed.serverpackcreator.VersionLister;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,13 +65,8 @@ public class CurseCreateModpack {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
+    private final Utilities UTILITIES;
     private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
-
     private final ReticulatingSplines reticulatingSplines = new ReticulatingSplines();
 
     private final Random randInt = new Random();
@@ -83,18 +79,14 @@ public class CurseCreateModpack {
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
-     * @param injectedVersionLister Instance of {@link VersionLister}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta}.
+     * @param injectedUtilities Instance of {@link Utilities}.
+     * @param injectedConfigUtilities Instance {@link ConfigUtilities}
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     @Autowired
     public CurseCreateModpack(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties,
-                              VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities,
-                              ListUtilities injectedListUtilities, StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities,
-                              SystemUtilities injectedSystemUtilities) {
+                              VersionMeta injectedVersionMeta, Utilities injectedUtilities, ConfigUtilities injectedConfigUtilities) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -108,40 +100,23 @@ public class CurseCreateModpack {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        VersionMeta VERSIONMETA;
+        if (injectedVersionMeta == null) {
+            VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            this.VERSIONLISTER = injectedVersionLister;
+            VERSIONMETA = injectedVersionMeta;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
         }
     }
 
@@ -314,7 +289,7 @@ public class CurseCreateModpack {
 
             CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir));
 
-            SYSTEMUTILITIES.unzipArchive(CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir)).orElseThrow(NullPointerException::new).toString(), modpackDir);
+            UTILITIES.FileUtils().unzipArchive(CurseAPI.downloadFileToDirectory(projectID, fileID, Paths.get(modpackDir)).orElseThrow(NullPointerException::new).toString(), modpackDir);
 
         } catch (NullPointerException | CurseException cex) {
             LOG.error(String.format("Error: Could not download file %s for project %s to directory %s.", configurationModel.getFileName(), configurationModel.getProjectName(), modpackDir));

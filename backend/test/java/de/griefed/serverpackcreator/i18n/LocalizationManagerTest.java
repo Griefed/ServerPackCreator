@@ -21,8 +21,6 @@ public class LocalizationManagerTest {
     @Test
     void newTest() {
         FileUtils.deleteQuietly(new File("lang"));
-
-        LOG.info("newTest() en_us");
         LocalizationManager localizationManager = new LocalizationManager();
         Assertions.assertEquals("English (United States)",localizationManager.getLocalizedString("localeUnlocalizedName"));
     }

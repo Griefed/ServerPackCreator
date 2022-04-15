@@ -47,6 +47,7 @@ import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -85,14 +86,12 @@ public class MenuBar extends Component {
     private final Dimension JAVAARGSDIMENSION = new Dimension(750,25);
     private final Dimension ABOUTDIMENSION = new Dimension(925,520);
     private final Dimension FILETOOLARGEDIMENSION = new Dimension(200,10);
-    private final Dimension HELPDIMENSION = new Dimension(750,300);
 
     private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/help.png")));
     private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/hastebin.png")));
 
     private final JMenuBar MENUBAR = new JMenuBar();
 
-    private final String HELPWINDOWTEXT;
     private final String ABOUTWINDOWTEXT;
     private final String FILETOOLARGETEXT;
     private final String FILETOOLARGETITLE;
@@ -100,24 +99,19 @@ public class MenuBar extends Component {
     private final String[] JAVAARGSOPTIONS = new String[4];
     private final String[] JAVAARGSSELECTIONS = new String[2];
     private final String[] HASTEOPTIONS = new String[3];
-    private final String[] HELPTEXTS = new String[13];
-    private final String[] HELPSELECTIONS = new String[13];
 
     private final JTextField JAVAARGS = new JTextField();
 
-    private final StyledDocument HELPWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument ABOUTWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument CONFIGWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument SPCLOGWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument FILETOOLARGEWINDOWDOCUMENT = new DefaultStyledDocument();
 
     private final SimpleAttributeSet ABOUTATTRIBUTESET = new SimpleAttributeSet();
-    private final SimpleAttributeSet HELPATTRIBUTESET = new SimpleAttributeSet();
     private final SimpleAttributeSet CONFIGATTRIBUTESET = new SimpleAttributeSet();
     private final SimpleAttributeSet SPCLOGATTRIBUTESET = new SimpleAttributeSet();
     private final SimpleAttributeSet FILETOOLARGEATTRIBUTESET = new SimpleAttributeSet();
 
-    private final JTextPane HELPWINDOWTEXTPANE = new JTextPane(HELPWINDOWDOCUMENT);
     private final JTextPane ABOUTWINDOWTEXTPANE = new JTextPane(ABOUTWINDOWDOCUMENT);
     private final JTextPane CONFIGWINDOWTEXTPANE = new JTextPane(CONFIGWINDOWDOCUMENT);
     private final JTextPane SPCLOGWINDOWTEXTPANE = new JTextPane(SPCLOGWINDOWDOCUMENT);
@@ -126,10 +120,6 @@ public class MenuBar extends Component {
     private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
     private final MaterialTextFieldUI MATERIALTEXTFIELDUI = new MaterialTextFieldUI();
     private final MaterialComboBoxUI MATERIALCOMBOBOXUI = new MaterialComboBoxUI();
-
-    private final JTextArea HELPTEXTAREA = new JTextArea();
-
-    private final JPanel HELPPANEL = new JPanel();
 
     private boolean isDarkTheme;
 
@@ -145,6 +135,7 @@ public class MenuBar extends Component {
     private JMenuItem file_UploadConfigurationToHasteBin;
     private JMenuItem file_UploadServerPackCreatorLogToHasteBin;
     private JMenuItem file_ExitConfigMenuItem;
+    private JMenuItem file_UpdateFallbackModslist;
 
     private JMenuItem edit_SwitchTheme;
     private JMenuItem edit_ChangeJavaArgs;
@@ -163,13 +154,10 @@ public class MenuBar extends Component {
     private JMenuItem about_OpenDonationsPageMenuItem;
     private JMenuItem about_OpenReleasesPageMenuItem;
     private JMenuItem about_OpenDiscordLinkMenuItem;
-
-    private JMenuItem help_OpenHelpWindowMenuItem;
+    private JMenuItem about_OpenWikiHelpMenuItem;
+    private JMenuItem about_OpenWikiHowToMenuItem;
 
     private JFileChooser configChooser;
-
-    private DefaultComboBoxModel<String> helpComboBoxModel;
-    private JComboBox<String> helpComboBox;
 
     private File lastLoadedConfigurationFile = null;
 
@@ -238,42 +226,6 @@ public class MenuBar extends Component {
         }
         ABOUTWINDOWTEXTPANE.addHierarchyListener(e1 -> {
             Window window = SwingUtilities.getWindowAncestor(ABOUTWINDOWTEXTPANE);
-            if (window instanceof Dialog) {
-                Dialog dialog = (Dialog) window;
-                if (!dialog.isResizable()) {
-                    dialog.setResizable(true);
-                }
-            }
-        });
-
-        HELPWINDOWTEXT = String.format(
-                "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.directories"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloader"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon"),
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip")
-        );
-        HELPWINDOWTEXTPANE.setEditable(false);
-        HELPWINDOWTEXTPANE.setOpaque(false);
-        StyleConstants.setBold(HELPATTRIBUTESET, true);
-        StyleConstants.setFontSize(HELPATTRIBUTESET, 14);
-        HELPWINDOWTEXTPANE.setCharacterAttributes(HELPATTRIBUTESET, true);
-        StyleConstants.setAlignment(HELPATTRIBUTESET, StyleConstants.ALIGN_LEFT);
-        HELPWINDOWDOCUMENT.setParagraphAttributes(0, HELPWINDOWDOCUMENT.getLength(), HELPATTRIBUTESET, false);
-        try {
-            HELPWINDOWDOCUMENT.insertString(0, HELPWINDOWTEXT, HELPATTRIBUTESET);
-        } catch (BadLocationException ex) {
-            LOG.error("Error inserting text into aboutDocument.", ex);
-        }
-        HELPWINDOWTEXTPANE.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(HELPWINDOWTEXTPANE);
             if (window instanceof Dialog) {
                 Dialog dialog = (Dialog) window;
                 if (!dialog.isResizable()) {
@@ -364,37 +316,6 @@ public class MenuBar extends Component {
         JAVAARGS.setMaximumSize(JAVAARGSDIMENSION);
         JAVAARGS.setPreferredSize(JAVAARGSDIMENSION);
 
-        HELPTEXTS[0] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modpackdir");
-        HELPTEXTS[1] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.clientsidemods");
-        HELPTEXTS[2] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.directories");
-        HELPTEXTS[3] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.pathtojava");
-        HELPTEXTS[4] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.minecraftversion");
-        HELPTEXTS[5] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloader");
-        HELPTEXTS[6] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.modloaderversion");
-        HELPTEXTS[7] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.installserver");
-        HELPTEXTS[8] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copypropertires");
-        HELPTEXTS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.copyicon");
-        HELPTEXTS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.createzip");
-        HELPTEXTS[11] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.javaargs");
-
-        HELPSELECTIONS[0] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir");
-        HELPSELECTIONS[1] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelclientmods");
-        HELPSELECTIONS[2] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs");
-        HELPSELECTIONS[3] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath");
-        HELPSELECTIONS[4] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelminecraft");
-        HELPSELECTIONS[5] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloader");
-        HELPSELECTIONS[6] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodloaderversion");
-        HELPSELECTIONS[7] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver");
-        HELPSELECTIONS[8] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties");
-        HELPSELECTIONS[9] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon");
-        HELPSELECTIONS[10] = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip");
-        HELPSELECTIONS[11] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.javaargs");
-
-        HELPTEXTAREA.setEditable(false);
-        HELPPANEL.setLayout(new BoxLayout(HELPPANEL, BoxLayout.Y_AXIS));
-        HELPPANEL.setMinimumSize(HELPDIMENSION);
-        HELPPANEL.setPreferredSize(HELPDIMENSION);
-        HELPPANEL.setMaximumSize(HELPDIMENSION);
     }
 
     /**
@@ -409,7 +330,6 @@ public class MenuBar extends Component {
         editMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.edit"));
         viewMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.view"));
         aboutMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.about"));
-        help_OpenHelpWindowMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.help"));
 
         // create menu items
         file_NewConfigurationMenuItem = new JMenuItem("New configuration");
@@ -418,6 +338,7 @@ public class MenuBar extends Component {
         file_SaveAsConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveas"));
         file_UploadConfigurationToHasteBin = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadconfig"));
         file_UploadServerPackCreatorLogToHasteBin = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadlog"));
+        file_UpdateFallbackModslist = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback"));
         file_ExitConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.exit"));
 
         edit_SwitchTheme = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.theme"));
@@ -437,6 +358,8 @@ public class MenuBar extends Component {
         about_OpenReleasesPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.releases"));
         about_OpenDiscordLinkMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.discord"));
         about_OpenDonationsPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.donate"));
+        about_OpenWikiHelpMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.help"));
+        about_OpenWikiHowToMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.howto"));
 
         // create action listeners for items
         file_NewConfigurationMenuItem.addActionListener(this::actionEventNewConfiguration);
@@ -445,6 +368,7 @@ public class MenuBar extends Component {
         file_SaveAsConfigMenuItem.addActionListener(this::actionEventSaveAsConfigToFileMenuItem);
         file_UploadConfigurationToHasteBin.addActionListener(this::actionEventUploadConfigurationToHasteBinMenuItem);
         file_UploadServerPackCreatorLogToHasteBin.addActionListener(this::actionEventUploadServerPackCreatorLogToHasteBinMenuItem);
+        file_UpdateFallbackModslist.addActionListener(this::actionEventUpdateFallbackModslist);
         file_ExitConfigMenuItem.addActionListener(this::actionEventExitMenuItem);
 
         edit_SwitchTheme.addActionListener(this::actionEventSwitchThemeMenuItem);
@@ -464,19 +388,8 @@ public class MenuBar extends Component {
         about_OpenReleasesPageMenuItem.addActionListener(this::actionEventOpenReleaseMenuItem);
         about_OpenDiscordLinkMenuItem.addActionListener(this::actionEventOpenDiscordLinkMenuItem);
         about_OpenDonationsPageMenuItem.addActionListener(this::actionEventOpenDonateMenuItem);
-
-        help_OpenHelpWindowMenuItem.addActionListener(this::actionEventOpenHelpMenuItem);
-
-        helpComboBoxModel = new DefaultComboBoxModel<>(HELPSELECTIONS);
-        helpComboBox = new JComboBox<>(helpComboBoxModel);
-
-        helpComboBox.setSelectedIndex(0);
-        HELPTEXTAREA.setText(HELPTEXTS[0]);
-
-        HELPPANEL.add(HELPTEXTAREA);
-        HELPPANEL.add(helpComboBox);
-
-        helpComboBox.addActionListener(this::actionEventSetHelpText);
+        about_OpenWikiHelpMenuItem.addActionListener(this::actionEventOpenWikiHelpMenuItem);
+        about_OpenWikiHowToMenuItem.addActionListener(this::actionEventOpenWikiHowToMenuItem);
 
         // add items to menus
         fileMenu.add(file_NewConfigurationMenuItem);
@@ -487,6 +400,8 @@ public class MenuBar extends Component {
         fileMenu.add(new JSeparator());
         fileMenu.add(file_UploadConfigurationToHasteBin);
         fileMenu.add(file_UploadServerPackCreatorLogToHasteBin);
+        fileMenu.add(new JSeparator());
+        fileMenu.add(file_UpdateFallbackModslist);
         fileMenu.add(new JSeparator());
         fileMenu.add(file_ExitConfigMenuItem);
 
@@ -506,6 +421,9 @@ public class MenuBar extends Component {
 
         aboutMenu.add(about_OpenAboutWindowMenuItem);
         aboutMenu.add(new JSeparator());
+        aboutMenu.add(about_OpenWikiHelpMenuItem);
+        aboutMenu.add(about_OpenWikiHowToMenuItem);
+        aboutMenu.add(new JSeparator());
         aboutMenu.add(about_OpenGitHubPageMenuItem);
         aboutMenu.add(about_OpenGitHubIssuesPageMenuItem);
         aboutMenu.add(about_OpenReleasesPageMenuItem);
@@ -519,9 +437,64 @@ public class MenuBar extends Component {
         MENUBAR.add(editMenu);
         MENUBAR.add(viewMenu);
         MENUBAR.add(aboutMenu);
-        MENUBAR.add(help_OpenHelpWindowMenuItem);
 
         return MENUBAR;
+    }
+
+    private void actionEventUpdateFallbackModslist(ActionEvent actionEvent) {
+        LOG.debug("Running update check for fallback modslist...");
+        if (APPLICATIONPROPERTIES.updateFallback()) {
+            JOptionPane.showMessageDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.updated"),
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        } else {
+            JOptionPane.showMessageDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.nochange"),
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Open the given url in a browser.
+     * @author Griefed
+     * @param uri {@link URI} the URI to the website you want to open.
+     */
+    private void openLinkInBrowser(URI uri) {
+        try {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(uri);
+            }
+        } catch (IOException ex) {
+            LOG.error("Error opening browser with link " + uri + ".", ex);
+        }
+    }
+
+    /**
+     * Open the Help-section of the wiki in a browser.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventOpenWikiHelpMenuItem(ActionEvent actionEvent) {
+        LOG.debug("Clicked Help.");
+
+        openLinkInBrowser(URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"));
+    }
+
+    /**
+     * Open the HowTo-section of the wiki in a browser.
+     * @author Griefed
+     * @param actionEvent The event which triggers this method.
+     */
+    private void actionEventOpenWikiHowToMenuItem(ActionEvent actionEvent) {
+        LOG.debug("Clicked Getting started.");
+
+        openLinkInBrowser(URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo"));
     }
 
     /**
@@ -544,13 +517,7 @@ public class MenuBar extends Component {
     private void actionEventOpenDiscordLinkMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Join Discord.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://discord.griefed.de"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser.", ex);
-        }
+        openLinkInBrowser(URI.create("https://discord.griefed.de"));
     }
 
     /**
@@ -561,13 +528,7 @@ public class MenuBar extends Component {
     private void actionEventOpenIssuesMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Open Issues page on GitHub.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
     }
 
     /**
@@ -604,13 +565,8 @@ public class MenuBar extends Component {
 
                 case 0:
 
-                    try {
-                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                            Desktop.getDesktop().browse(URI.create(urltoHasteBin));
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Error opening browser.", ex);
-                    }
+                    openLinkInBrowser(URI.create(urltoHasteBin));
+
                     break;
 
                 case 1:
@@ -660,13 +616,8 @@ public class MenuBar extends Component {
 
                 case 0:
 
-                    try {
-                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                            Desktop.getDesktop().browse(URI.create(urltoHasteBin));
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Error opening browser.", ex);
-                    }
+                    openLinkInBrowser(URI.create(urltoHasteBin));
+
                     break;
 
                 case 1:
@@ -798,10 +749,8 @@ public class MenuBar extends Component {
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
-                JAVAARGSOPTIONS,
-                JAVAARGSOPTIONS[3]
-                )
-        ) {
+                JAVAARGSOPTIONS,JAVAARGSOPTIONS[3]
+        )) {
             case 0:
 
                 if (JAVAARGS.getText().equals("")) {
@@ -906,7 +855,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = new FileOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
 
                     APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
                     APPLICATIONPROPERTIES.store(outputStream, null);
@@ -929,7 +878,7 @@ public class MenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = new FileOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
 
                     APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
                     APPLICATIONPROPERTIES.store(outputStream, null);
@@ -1014,13 +963,7 @@ public class MenuBar extends Component {
     private void actionEventViewExampleAddonMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked view example addon");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for example-addon repository.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
     }
 
     /**
@@ -1104,33 +1047,6 @@ public class MenuBar extends Component {
     }
 
     /**
-     * Upon button-press, open an info-window containing information/help about how to configure ServerPackCreator.
-     * @author Griefed
-     * @param actionEvent The event which triggers this method.
-     */
-    private void actionEventOpenHelpMenuItem(ActionEvent actionEvent) {
-        LOG.debug("Clicked open help window.");
-
-        MATERIALCOMBOBOXUI.installUI(helpComboBox);
-        //materialPanelUI.installUI(helpPanel);
-        MATERIALTEXTFIELDUI.installUI(HELPTEXTAREA);
-        //materialTextPaneUI.installUI(helpWindowTextPane);
-
-        JOptionPane.showMessageDialog(
-                FRAME_SERVERPACKCREATOR,
-                HELPPANEL,
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
-                JOptionPane.INFORMATION_MESSAGE,
-                HELPICON
-        );
-    }
-
-    private void actionEventSetHelpText(ActionEvent actionEvent) {
-        LOG.debug("Selected helpItem: " + helpComboBox.getSelectedIndex());
-        HELPTEXTAREA.setText(HELPTEXTS[helpComboBox.getSelectedIndex()]);
-    }
-
-    /**
      * Upon button-press, open the ServerPackCreator repository GitHub page in the users default-browser.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
@@ -1138,13 +1054,7 @@ public class MenuBar extends Component {
     private void actionEventOpenGitHubMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open GitHub repository link.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for ServerPackCreator GitHub repository.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator"));
     }
 
     /**
@@ -1155,13 +1065,7 @@ public class MenuBar extends Component {
     private void actionEventOpenDonateMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open donations link.");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/sponsors/Griefed"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for donations page.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/sponsors/Griefed"));
     }
 
     /**
@@ -1172,13 +1076,7 @@ public class MenuBar extends Component {
     private void actionEventOpenReleaseMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open releases link");
 
-        try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
-            }
-        } catch (IOException ex) {
-            LOG.error("Error opening browser for releases page.", ex);
-        }
+        openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
     }
 
     /**

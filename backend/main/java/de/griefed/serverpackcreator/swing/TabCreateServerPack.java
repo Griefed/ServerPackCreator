@@ -23,8 +23,12 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import de.griefed.serverpackcreator.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.Tailer;
@@ -70,14 +74,11 @@ public class TabCreateServerPack extends JComponent {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ServerPackHandler CREATESERVERPACK;
     private final CurseCreateModpack CURSECREATEMODPACK;
-    private final VersionLister VERSIONLISTER;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final VersionMeta VERSIONMETA;
+    private final Utilities UTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
+    private final ConfigUtilities CONFIGUTILITIES;
 
     private final StyledDocument SERVERPACKGENERATEDDOCUMENT = new DefaultStyledDocument();
     private final SimpleAttributeSet SERVERPACKGENERATEDATTRIBUTESET = new SimpleAttributeSet();
@@ -180,22 +181,19 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
-     * @param injectedVersionLister Instance of {@link VersionLister} required for setting/changing comboboxes.
+     * @param injectedVersionMeta Instance of {@link VersionMeta} required for setting/changing comboboxes.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               VersionLister injectedVersionLister, ApplicationProperties injectedApplicationProperties,
-                               JFrame injectedServerPackCreatorFrame, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                               StringUtilities injectedStringUtilities, ConfigUtilities injectedConfigUtilities, SystemUtilities injectedSystemUtilities,
-                               ApplicationPlugins injectedPluginManager) {
+                               VersionMeta injectedVersionMeta, ApplicationProperties injectedApplicationProperties,
+                               JFrame injectedServerPackCreatorFrame, Utilities injectedUtilities, ApplicationPlugins injectedPluginManager,
+                               ConfigUtilities injectedConfigUtilities) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -209,28 +207,16 @@ public class TabCreateServerPack extends JComponent {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedVersionMeta == null) {
+            this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
+            this.VERSIONMETA = injectedVersionMeta;
         }
 
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedPluginManager == null) {
@@ -239,32 +225,26 @@ public class TabCreateServerPack extends JComponent {
             this.APPLICATIONPLUGINS = injectedPluginManager;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
-        } else {
-            this.VERSIONLISTER = injectedVersionLister;
-        }
-
         if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER);
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES);
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, CONFIGURATIONHANDLER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES, APPLICATIONPLUGINS);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }
@@ -543,7 +523,7 @@ public class TabCreateServerPack extends JComponent {
 
         CREATESERVERPACKPANEL.add(labelMinecraftVersion, GRIDBAGCONSTRAINTS);
 
-        COMBOBOX_MINECRAFTVERSIONS.setModel(new DefaultComboBoxModel<>(VERSIONLISTER.getMinecraftReleaseVersionsAsArray()));
+        COMBOBOX_MINECRAFTVERSIONS.setModel(new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending()));
         COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(0);
         COMBOBOX_MINECRAFTVERSIONS.addActionListener(this::actionEventComboBoxMinecraftVersion);
 
@@ -602,12 +582,12 @@ public class TabCreateServerPack extends JComponent {
 
         CREATESERVERPACKPANEL.add(labelModloaderVersion, GRIDBAGCONSTRAINTS);
 
-        COMBOBOX_FABRICVERSIONS.setModel(new DefaultComboBoxModel<>(VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getFabricVersionsAsArray())));
+        COMBOBOX_FABRICVERSIONS.setModel(new DefaultComboBoxModel<>(VERSIONMETA.fabric().loaderVersionsArrayDescending()));
         COMBOBOX_FABRICVERSIONS.setSelectedIndex(0);
         COMBOBOX_FABRICVERSIONS.addActionListener(this::actionEventComboBoxFabricVersions);
         COMBOBOX_FABRICVERSIONS.setVisible(false);
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeMeta().get(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString()));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONMETA.forge().availableForgeVersionsArrayDescending(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()).get());
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -865,7 +845,7 @@ public class TabCreateServerPack extends JComponent {
      */
     void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion));
+        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get());
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -1098,7 +1078,7 @@ public class TabCreateServerPack extends JComponent {
             }
 
             TEXTFIELD_CLIENTSIDEMODS.setText(
-                    STRINGUTILITIES.buildString(
+                    UTILITIES.StringUtils().buildString(
                             Arrays.toString(
                                     clientModsFilenames.toArray(new String[0])))
             );
@@ -1139,7 +1119,7 @@ public class TabCreateServerPack extends JComponent {
                 copyDirsNames.add(directory.getName());
             }
 
-            TEXTFIELD_COPYDIRECTORIES.setText(STRINGUTILITIES.buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+            TEXTFIELD_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
 
             LOG.debug("Selected directories: " + copyDirsNames);
         }
@@ -1355,8 +1335,8 @@ public class TabCreateServerPack extends JComponent {
             javaArgs = "empty";
         }
 
-        List<String> tempClientMods = LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
-        List<String> tempCopyDirs = LISTUTILITIES.cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
+        List<String> tempClientMods = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
+        List<String> tempCopyDirs = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
 
         CONFIGUTILITIES.writeConfigToFile(
                 TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\","/"),
@@ -1373,7 +1353,7 @@ public class TabCreateServerPack extends JComponent {
                 checkBoxProperties.isSelected(),
                 checkBoxZIP.isSelected(),
                 getJavaArgs(),
-                STRINGUTILITIES.pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
+                UTILITIES.StringUtils().pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
                 configFile
         );
     }
@@ -1402,16 +1382,16 @@ public class TabCreateServerPack extends JComponent {
 
             if (config.getOrElse("clientMods", APPLICATIONPROPERTIES.getListFallbackMods()).isEmpty()) {
 
-                TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
+                TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
                 LOG.debug("Set clientMods with fallback list.");
 
             } else {
 
                 try {
-                    TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(config.get("clientMods").toString()));
+                    TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(config.get("clientMods").toString()));
                 } catch (Exception ex) {
                     LOG.error("Couldn't parse clientMods. Using fallback.",ex);
-                    TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
+                    TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
                 }
 
             }
@@ -1423,7 +1403,7 @@ public class TabCreateServerPack extends JComponent {
             } else {
 
                 try {
-                    TEXTFIELD_COPYDIRECTORIES.setText(STRINGUTILITIES.buildString(config.get("copyDirs").toString().replace("\\", "/")));
+                    TEXTFIELD_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(config.get("copyDirs").toString().replace("\\", "/")));
                 } catch (Exception ex) {
                     LOG.error("Couldn't parse copyDirs. Using fallback.",ex);
                     TEXTFIELD_COPYDIRECTORIES.setText("config, mods");
@@ -1435,7 +1415,7 @@ public class TabCreateServerPack extends JComponent {
 
             TEXTFIELD_SERVERPROPERTIESPATH.setText(config.getOrElse("serverPropertiesPath","").replace("\\","/"));
 
-            TEXTFIELD_JAVAPATH.setText(SYSTEMUTILITIES.acquireJavaPathFromSystem());
+            TEXTFIELD_JAVAPATH.setText(UTILITIES.SystemUtils().acquireJavaPathFromSystem());
 
             try {
 
@@ -1443,18 +1423,16 @@ public class TabCreateServerPack extends JComponent {
                     if (!config.getOrElse("minecraftVersion","").equals("")) {
                         chosenMinecraftVersion = config.get("minecraftVersion");
                     } else {
-                        chosenMinecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
+                        chosenMinecraftVersion = VERSIONMETA.minecraft().latestRelease().version();
                     }
 
                 } catch (NullPointerException ignored) {
-                    chosenMinecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
+                    chosenMinecraftVersion = VERSIONMETA.minecraft().latestRelease().version();
                 }
 
-                String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
+                for (int i = 0; i < VERSIONMETA.minecraft().releaseVersionsArrayDescending().length; i++) {
 
-                for (int i = 0; i < mcver.length; i++) {
-
-                    if (mcver[i].equals(chosenMinecraftVersion)) {
+                    if (VERSIONMETA.minecraft().releaseVersionsArrayDescending()[i].equals(chosenMinecraftVersion)) {
 
                         COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
                         break;
@@ -1463,29 +1441,29 @@ public class TabCreateServerPack extends JComponent {
 
             } catch (NullPointerException ex) {
                 LOG.error("Error parsing minecraft-version from configfile: " + configFile, ex);
-                chosenMinecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
+                chosenMinecraftVersion = VERSIONMETA.minecraft().latestRelease().version();
             }
 
             // Set modloader and modloader version
             try {
 
+                String modloaderVersion = config.getOrElse("modLoaderVersion","");
+
                 // Check for Fabric
                 if (config.getOrElse("modLoader","Forge").equalsIgnoreCase("Fabric")) {
 
-                    String[] fabricver = VERSIONLISTER.reverseOrderArray(VERSIONLISTER.getFabricVersionsAsArray());
-
                     updateModloaderGuiComponents(true, false, "Fabric");
 
-                    if (!config.getOrElse("modLoaderVersion","").equals("")) {
+                    if (!modloaderVersion.equals("")) {
 
                         // Go through all Fabric versions and check if specified version matches official version list
-                        for (int i = 0; i < fabricver.length; i++) {
+                        for (int i = 0; i < VERSIONMETA.fabric().loaderVersionsArrayDescending().length; i++) {
 
                             // If match is found, set selected version
-                            if (fabricver[i].equals(config.get("modLoaderVersion").toString())) {
+                            if (VERSIONMETA.fabric().loaderVersionsArrayDescending()[i].equals(modloaderVersion)) {
 
                                 COMBOBOX_FABRICVERSIONS.setSelectedIndex(i);
-                                chosenFabricVersion = config.get("modLoaderVersion").toString();
+                                chosenFabricVersion = modloaderVersion;
 
                             }
 
@@ -1496,20 +1474,20 @@ public class TabCreateServerPack extends JComponent {
                 // If not Fabric, then assume Forge
                 } else {
 
-                    String[] forgever = VERSIONLISTER.getForgeMeta().get(chosenMinecraftVersion);
+                    String[] forgever = VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get();
 
                     changeForgeVersionListDependingOnMinecraftVersion(chosenMinecraftVersion);
 
                     updateModloaderGuiComponents(false, true, "Forge");
 
-                    if (!config.getOrElse("modLoaderVersion","").equals("")) {
+                    if (!modloaderVersion.equals("")) {
 
                         for (int i = 0; i < forgever.length; i++) {
 
-                            if (forgever[i].equals(config.get("modLoaderVersion").toString())) {
+                            if (forgever[i].equals(modloaderVersion)) {
 
                                 COMBOBOX_FORGEVERSIONS.setSelectedIndex(i);
-                                chosenForgeVersion = config.get("modLoaderVersion").toString();
+                                chosenForgeVersion = modloaderVersion;
                             }
 
                         }
@@ -1526,17 +1504,17 @@ public class TabCreateServerPack extends JComponent {
                 changeForgeVersionListDependingOnMinecraftVersion(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
             }
 
-            checkBoxServer.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
+            checkBoxServer.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
 
-            checkBoxIcon.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
+            checkBoxIcon.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
 
-            checkBoxProperties.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
+            checkBoxProperties.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
 
-            checkBoxZIP.setSelected(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
+            checkBoxZIP.setSelected(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
 
             setJavaArgs(config.getOrElse("javaArgs","empty"));
 
-            TEXTFIELD_SERVERPACKSUFFIX.setText(STRINGUTILITIES.pathSecureText(config.getOrElse("serverPackSuffix","")));
+            TEXTFIELD_SERVERPACKSUFFIX.setText(UTILITIES.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix","")));
 
         } catch (NullPointerException ex) {
 
@@ -1570,16 +1548,16 @@ public class TabCreateServerPack extends JComponent {
     protected void clearInterface() {
         TEXTFIELD_MODPACKDIRECTORY.setText("");
         TEXTFIELD_SERVERPACKSUFFIX.setText("");
-        TEXTFIELD_CLIENTSIDEMODS.setText(STRINGUTILITIES.buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
+        TEXTFIELD_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
         TEXTFIELD_COPYDIRECTORIES.setText("");
         TEXTFIELD_SERVERICONPATH.setText("");
         TEXTFIELD_SERVERPROPERTIESPATH.setText("");
-        TEXTFIELD_JAVAPATH.setText(SYSTEMUTILITIES.acquireJavaPathFromSystem());
+        TEXTFIELD_JAVAPATH.setText(UTILITIES.SystemUtils().acquireJavaPathFromSystem());
 
-        String minecraftVersion = VERSIONLISTER.getMinecraftReleaseVersion();
-        String[] mcver = VERSIONLISTER.getMinecraftReleaseVersionsAsArray();
-        for (int i = 0; i < mcver.length; i++) {
-            if (mcver[i].equals(minecraftVersion)) {
+        String minecraftVersion = VERSIONMETA.minecraft().latestRelease().version();
+
+        for (int i = 0; i < VERSIONMETA.minecraft().releaseVersionsArrayDescending().length; i++) {
+            if (VERSIONMETA.minecraft().releaseVersionsArrayDescending()[i].equals(minecraftVersion)) {
                 COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
                 chosenMinecraftVersion = minecraftVersion;
             }

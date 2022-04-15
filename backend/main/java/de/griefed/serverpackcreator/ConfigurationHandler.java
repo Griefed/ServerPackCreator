@@ -28,7 +28,9 @@ import de.griefed.serverpackcreator.curseforge.InvalidFileException;
 import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
-import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,13 +56,10 @@ public class ConfigurationHandler {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
-    private final VersionLister VERSIONLISTER;
+    private final VersionMeta VERSIONMETA;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final BooleanUtilities BOOLEANUTILITIES;
+    private final Utilities UTILITIES;
     private final ConfigUtilities CONFIGUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
 
     /**
      * <strong>Constructor</strong><p>
@@ -74,19 +73,15 @@ public class ConfigurationHandler {
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
      * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedVersionLister Instance of {@link VersionLister} required for everything version-related.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version-related.
+     * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     @Autowired
     public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
-                                VersionLister injectedVersionLister, ApplicationProperties injectedApplicationProperties,
-                                BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                                StringUtilities injectedStringUtilities, SystemUtilities injectedSystemUtilities,
-                                ConfigUtilities injectedConfigUtilities) {
+                                VersionMeta injectedVersionMeta, ApplicationProperties injectedApplicationProperties,
+                                Utilities injectedUtilities, ConfigUtilities injectedConfigUtilities) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -100,49 +95,26 @@ public class ConfigurationHandler {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        if (injectedVersionMeta == null) {
+            this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            this.VERSIONLISTER = injectedVersionLister;
+            this.VERSIONMETA = injectedVersionMeta;
         }
 
-
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(
-                    LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER
-            );
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(
-                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
-            );
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
@@ -305,8 +277,6 @@ public class ConfigurationHandler {
      */
     public boolean checkConfiguration(@NotNull File configFile, @NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean downloadAndCreateModpack, boolean quietCheck) {
 
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
-
         FileConfig config = null;
 
         try {
@@ -336,14 +306,14 @@ public class ConfigurationHandler {
             configurationModel.setModLoaderVersion(config.getOrElse("modLoaderVersion",""));
             configurationModel.setJavaArgs(config.getOrElse("javaArgs","empty"));
 
-            configurationModel.setServerPackSuffix(STRINGUTILITIES.pathSecureText(config.getOrElse("serverPackSuffix","")));
+            configurationModel.setServerPackSuffix(UTILITIES.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix","")));
             configurationModel.setServerIconPath(config.getOrElse("serverIconPath","").replace("\\", "/"));
             configurationModel.setServerPropertiesPath(config.getOrElse("serverPropertiesPath","").replace("\\", "/"));
 
-            configurationModel.setIncludeServerInstallation(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
-            configurationModel.setIncludeServerIcon(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
-            configurationModel.setIncludeServerProperties(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
-            configurationModel.setIncludeZipCreation(BOOLEANUTILITIES.convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
+            configurationModel.setIncludeServerInstallation(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerInstallation","False"))));
+            configurationModel.setIncludeServerIcon(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
+            configurationModel.setIncludeServerProperties(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeServerProperties", "False"))));
+            configurationModel.setIncludeZipCreation(UTILITIES.BooleanUtils().convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation","False"))));
 
         } else {
 
@@ -470,7 +440,7 @@ public class ConfigurationHandler {
 
         if (checkModloader(configurationModel.getModLoader())) {
 
-            if (isMinecraftVersionCorrect(configurationModel.getMinecraftVersion())) {
+            if (VERSIONMETA.minecraft().checkMinecraftVersion(configurationModel.getMinecraftVersion())) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.minecraftversion"));
@@ -513,7 +483,9 @@ public class ConfigurationHandler {
         }
 
 
-        if (quietCheck) CONFIGUTILITIES.printConfigurationModel(configurationModel);
+        if (quietCheck) {
+            CONFIGUTILITIES.printConfigurationModel(configurationModel);
+        }
 
 
         if (!configHasError) {
@@ -616,7 +588,7 @@ public class ConfigurationHandler {
         }
 
         // Extract the archive to the modpack directory.
-        SYSTEMUTILITIES.unzipArchive(configurationModel.getModpackDir(), destination);
+        UTILITIES.FileUtils().unzipArchive(configurationModel.getModpackDir(), destination);
 
         // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
         List<String> newCopyDirs = CONFIGUTILITIES.suggestCopyDirs(destination);
@@ -1168,8 +1140,6 @@ public class ConfigurationHandler {
                         LOG.debug("What? " + fileOrDirectory + " is neither a file nor directory.");
                     }
 
-                    APPLICATIONPROPERTIES.addToListOfDirectoriesToExclude(directory.substring(directory.lastIndexOf("!") + 1));
-
                 // Check if the entry exists
                 } else {
 
@@ -1236,14 +1206,14 @@ public class ConfigurationHandler {
             } else {
 
                 LOG.debug("Acquiring path to Java installation from system properties...");
-                checkedJavaPath = SYSTEMUTILITIES.acquireJavaPathFromSystem();
+                checkedJavaPath = UTILITIES.SystemUtils().acquireJavaPathFromSystem();
 
                 LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
             }
 
         } catch (NullPointerException ex) {
 
-            checkedJavaPath = SYSTEMUTILITIES.acquireJavaPathFromSystem();
+            checkedJavaPath = UTILITIES.SystemUtils().acquireJavaPathFromSystem();
 
             LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
 
@@ -1275,12 +1245,7 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Depending on whether Forge or Fabric was specified as the modloader, this will call the corresponding version check
-     * to verify that the user correctly set their modloader version.<br>
-     * If the user specified Forge as their modloader, {@link #isForgeVersionCorrect(String, String)} is called and the version
-     * the user specified is checked against Forge's version manifest..<br>
-     * If the user specified Fabric as their modloader, {@link #isFabricVersionCorrect(String)} is called and the version
-     * the user specified is checked against Fabric's version manifest.
+     * Check the given Minecraft and modloader versions for the specified modloader.
      * @author Griefed
      * @param modloader String. The passed modloader which determines whether the check for Forge or Fabric is called.
      * @param modloaderVersion String. The version of the modloader which is checked against the corresponding modloaders manifest.
@@ -1289,11 +1254,11 @@ public class ConfigurationHandler {
      */
     public boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
 
-        if (modloader.equalsIgnoreCase("Forge") && isForgeVersionCorrect(modloaderVersion, minecraftVersion)) {
+        if (modloader.equalsIgnoreCase("Forge") && VERSIONMETA.forge().checkForgeAndMinecraftVersion(minecraftVersion,modloaderVersion)) {
 
             return true;
 
-        } else if (modloader.equalsIgnoreCase("Fabric") && isFabricVersionCorrect(modloaderVersion)) {
+        } else if (modloader.equalsIgnoreCase("Fabric") && VERSIONMETA.fabric().checkFabricVersion(modloaderVersion)) {
 
             return true;
 
@@ -1302,94 +1267,8 @@ public class ConfigurationHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloaderversion"));
 
-
-
             return false;
 
-        }
-    }
-
-    /**
-     * Check whether the specified Minecraft version is correct by searching the version list of the Minecraft manifest
-     * for the specified version.
-     * @author Griefed
-     * @param minecraftVersion String. The version to check for in Minecraft's version manifest.
-     * @return Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.
-     */
-    public boolean isMinecraftVersionCorrect(String minecraftVersion) {
-
-        if (!minecraftVersion.equals("")) {
-
-            return VERSIONLISTER.getMinecraftReleaseVersions().contains(minecraftVersion);
-
-        } else {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isminecraftversioncorrect.empty"));
-
-            return false;
-        }
-    }
-
-    /**
-     * Check whether the specified Fabric version is correct by searching the version list of the Fabric manifest
-     * for the specified version.
-     * @author Griefed
-     * @param fabricVersion String. The version to check for in Fabric's version manifest.
-     * @return Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.
-     */
-    public boolean isFabricVersionCorrect(String fabricVersion) {
-
-        if (!fabricVersion.equals("")) {
-
-            return VERSIONLISTER.getFabricVersions().contains(fabricVersion);
-
-        } else {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isfabricversioncorrect.empty"));
-
-            return false;
-        }
-    }
-
-    /**
-     * Check whether the specified Forge version is correct by searching the version list of the Forge manifest
-     * for the specified version.
-     * @author Griefed
-     * @param forgeVersion String. The version to check for in Forge's version manifest.
-     * @param minecraftVersion String. The minecraft version to check the Forge version with.
-     * @return Boolean. Returns true if the specified Forge version could be found in Forge's manifest.
-     */
-    public boolean isForgeVersionCorrect(String forgeVersion, String minecraftVersion) {
-
-        if (!forgeVersion.equals("")) {
-
-            try {
-
-                for (String version : VERSIONLISTER.getForgeMeta().get(minecraftVersion)) {
-
-                    if (version.equals(forgeVersion)) {
-
-                        return true;
-
-                    }
-
-                }
-
-            } catch (NullPointerException ignored) {
-
-                return false;
-
-            }
-
-            return false;
-
-        } else {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isforgeversioncorrect.empty"));
-            return false;
         }
     }
 }

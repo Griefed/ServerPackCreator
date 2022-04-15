@@ -25,11 +25,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.PreGenExtension;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.PostGenExtension;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.PreZipExtension;
+import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
-import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
@@ -45,7 +45,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
@@ -53,7 +52,6 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -73,15 +71,11 @@ public class ServerPackHandler {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final CurseCreateModpack CURSECREATEMODPACK;
-    private final ConfigurationHandler CONFIGURATIONHANDLER;
-    private final VersionLister VERSIONLISTER;
+    private final VersionMeta VERSIONMETA;
     private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final BooleanUtilities BOOLEANUTILITIES;
-    private final ConfigUtilities CONFIGUTILITIES;
-    private final ListUtilities LISTUTILITIES;
-    private final StringUtilities STRINGUTILITIES;
-    private final SystemUtilities SYSTEMUTILITIES;
+    private final Utilities UTILITIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
+    private final ConfigUtilities CONFIGUTILITIES;
 
     /**
      * <strong>Constructor</strong><p>
@@ -91,22 +85,17 @@ public class ServerPackHandler {
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} required for creating a modpack from CurseForge.
-     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required for accessing checks.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedVersionLister Instance of {@link VersionLister} required for everything version related.
-     * @param injectedBooleanUtilities Instance of {@link BooleanUtilities}.
-     * @param injectedListUtilities Instance of {@link ListUtilities}.
-     * @param injectedStringUtilities Instance of {@link StringUtilities}.
-     * @param injectedSystemUtilities Instance of {@link SystemUtilities}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version related.
+     * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
+     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}
+     * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     @Autowired
     public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
-                             ConfigurationHandler injectedConfigurationHandler, ApplicationProperties injectedApplicationProperties,
-                             VersionLister injectedVersionLister, BooleanUtilities injectedBooleanUtilities, ListUtilities injectedListUtilities,
-                             StringUtilities injectedStringUtilities, SystemUtilities injectedSystemUtilities, ConfigUtilities injectedConfigUtilities,
-                             ApplicationPlugins injectedPluginManager) {
+                             ApplicationProperties injectedApplicationProperties, VersionMeta injectedVersionMeta,
+                             Utilities injectedUtilities, ApplicationPlugins injectedPluginManager, ConfigUtilities injectedConfigUtilities) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -120,58 +109,28 @@ public class ServerPackHandler {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
         }
 
-        if (injectedVersionLister == null) {
-            this.VERSIONLISTER = new VersionLister(APPLICATIONPROPERTIES);
+        if (injectedVersionMeta == null) {
+            this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
         } else {
-            this.VERSIONLISTER = injectedVersionLister;
+            this.VERSIONMETA = injectedVersionMeta;
         }
 
-        if (injectedBooleanUtilities == null) {
-            this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        if (injectedUtilities == null) {
+            this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
-            this.BOOLEANUTILITIES = injectedBooleanUtilities;
-        }
-
-        if (injectedListUtilities == null) {
-            this.LISTUTILITIES = new ListUtilities();
-        } else {
-            this.LISTUTILITIES = injectedListUtilities;
-        }
-
-        if (injectedStringUtilities == null) {
-            this.STRINGUTILITIES = new StringUtilities();
-        } else {
-            this.STRINGUTILITIES = injectedStringUtilities;
-        }
-
-        if (injectedSystemUtilities == null) {
-            this.SYSTEMUTILITIES = new SystemUtilities();
-        } else {
-            this.SYSTEMUTILITIES = injectedSystemUtilities;
+            this.UTILITIES = injectedUtilities;
         }
 
         if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(
-                    LOCALIZATIONMANAGER, BOOLEANUTILITIES, LISTUTILITIES, APPLICATIONPROPERTIES, STRINGUTILITIES, VERSIONLISTER
-            );
+            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
         if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(
-                    LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONLISTER, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, CONFIGUTILITIES, SYSTEMUTILITIES
-            );
+            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
-        }
-
-        if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(
-                    LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONLISTER, APPLICATIONPROPERTIES, BOOLEANUTILITIES, LISTUTILITIES, STRINGUTILITIES, SYSTEMUTILITIES, CONFIGUTILITIES
-            );
-        } else {
-            this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedPluginManager == null) {
@@ -179,7 +138,6 @@ public class ServerPackHandler {
         } else {
             this.APPLICATIONPLUGINS = injectedPluginManager;
         }
-
     }
 
     /**
@@ -244,7 +202,6 @@ public class ServerPackHandler {
                 new File(destination).exists()) {
 
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.overwrite"));
-            return true;
 
         } else {
 
@@ -256,17 +213,17 @@ public class ServerPackHandler {
 
             }
 
-            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART.size() > 0) {
+            if (!APPLICATIONPLUGINS.pluginsPreGenExtension().isEmpty()) {
                 LOG_ADDONS.info("Executing PreGenExtension addons");
-                for (PreGenExtension start : APPLICATIONPLUGINS.PLUGINS_SERVERPACKSTART) {
-                    LOG_ADDONS.info("Executing plugin " + start.getName());
+                APPLICATIONPLUGINS.pluginsPreGenExtension().forEach(plugin -> {
+                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
 
                     try {
-                        start.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                        plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(start.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
                     }
-                }
+                });
             } else {
                 LOG.info("No PreGenExtension addons to execute.");
             }
@@ -306,17 +263,17 @@ public class ServerPackHandler {
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.properties"));
             }
 
-            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED.size() > 0) {
+            if (!APPLICATIONPLUGINS.pluginsPreZipExtension().isEmpty()) {
                 LOG_ADDONS.info("Executing PreZipExtension addons");
-                for (PreZipExtension created : APPLICATIONPLUGINS.PLUGINS_SERVERPACKCREATED) {
-                    LOG_ADDONS.info("Executing plugin " + created.getName());
+                APPLICATIONPLUGINS.pluginsPreZipExtension().forEach(plugin -> {
+                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
 
                     try {
-                        created.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                        plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(created.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
                     }
-                }
+                });
             } else {
                 LOG.info("No PreZipExtension addons to execute.");
             }
@@ -336,23 +293,23 @@ public class ServerPackHandler {
             LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.archive"), destination));
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
-            if (APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED.size() > 0) {
+            if (!APPLICATIONPLUGINS.pluginsPostGenExtension().isEmpty()) {
                 LOG_ADDONS.info("Executing PostGenExtension addons");
-                for (PostGenExtension archive : APPLICATIONPLUGINS.PLUGINS_SERVERPACKARCHIVECREATED) {
-                    LOG_ADDONS.info("Executing plugin " + archive.getName());
+                APPLICATIONPLUGINS.pluginsPostGenExtension().forEach(plugin -> {
+                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
 
                     try {
-                        archive.run(APPLICATIONPROPERTIES, configurationModel, destination);
+                        plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(archive.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
                     }
-                }
+                });
             } else {
                 LOG.info("No PostGenExtension addons to execute.");
             }
 
-            return true;
         }
+        return true;
 
     }
 
@@ -360,21 +317,15 @@ public class ServerPackHandler {
      * Download and provide the improved Fabric Server Launcher, if it is available for the given Minecraft and Fabric version.
      * @author Griefed
      * @param minecraftVersion String. The Minecraft version the modpack uses and the Fabric Server Launcher should be downloaded for.
-     * @param modLoaderVersion String. The modloader version the modpack uses and the Fabric Server Launcher should be downloaded for.
+     * @param fabricVersion String. The modloader version the modpack uses and the Fabric Server Launcher should be downloaded for.
      * @param destination String. The destination of the server pack.
      */
-    private void provideImprovedFabricServerLauncher(String minecraftVersion, String modLoaderVersion, String destination) {
+    private void provideImprovedFabricServerLauncher(String minecraftVersion, String fabricVersion, String destination) {
         URL downloadUrl;
         String fileDestination = String.format("%s/fabric-server-launcher.jar", destination);
 
-        try {
-            downloadUrl = new URL(String.format("https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar", minecraftVersion, modLoaderVersion, VERSIONLISTER.getFabricReleaseInstallerVersion()));
-        } catch (Exception ex) {
-            LOG.error("Couldn't create Fabric Server Launcher URL.",ex);
-            downloadUrl = null;
-        }
-
-        if (downloadUrl != null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
+        if (VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).isPresent() &&
+                UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).get())) {
 
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.fabric.improved"));
 
@@ -506,7 +457,7 @@ public class ServerPackHandler {
             writer.write("JAVA=\"java\"\n");
             writer.write("MINECRAFT=\"" + minecraftVersion + "\"\n");
             writer.write("FABRIC=\"" + modloaderVersion + "\"\n");
-            writer.write("INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n");
+            writer.write("INSTALLER=\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"\n");
             writer.write("ARGS=\"" + javaArguments + "\"\n");
             writer.write("OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
             writer.write("\n");
@@ -536,7 +487,7 @@ public class ServerPackHandler {
             writer.write("\n");
             writer.write("if [[ ! -s \"server.jar\" ]];then\n");
             writer.write("  echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
-            writer.write("  wget -O server.jar " + getMinecraftServerJarUrl(minecraftVersion) + ";\n");
+            writer.write("  wget -O server.jar " + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + ";\n");
             writer.write("else\n");
             writer.write("  echo \"server.jar present. Moving on...\";\n");
             writer.write("fi\n");
@@ -602,7 +553,7 @@ public class ServerPackHandler {
             writer.write("SET JAVA=\"java\"\n");
             writer.write("SET MINECRAFT=\"" + minecraftVersion + "\"\n");
             writer.write("SET FABRIC=\"" + modloaderVersion + "\"\n");
-            writer.write("SET INSTALLER=\"" + VERSIONLISTER.getFabricReleaseInstallerVersion() + "\"\n");
+            writer.write("SET INSTALLER=\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"\n");
             writer.write("SET ARGS=" + javaArguments + "\n");
             writer.write("SET OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
             writer.write("\n");
@@ -634,7 +585,7 @@ public class ServerPackHandler {
             writer.write("\n");
             writer.write("IF NOT EXIST server.jar (\n");
             writer.write("  ECHO Minecraft Server JAR-file not found. Downloading...\n");
-            writer.write("  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + getMinecraftServerJarUrl(minecraftVersion) + "', 'server.jar')\"\n");
+            writer.write("  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + "', 'server.jar')\"\n");
             writer.write(") ELSE (\n");
             writer.write("  ECHO server.jar present. Moving on...\n");
             writer.write(")\n");
@@ -768,7 +719,7 @@ public class ServerPackHandler {
             writer.write("\n");
             writer.write("if [[ ! -s \"libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar\" ]];then\n");
             writer.write("  echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
-            writer.write("  wget -O libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar " + getMinecraftServerJarUrl(minecraftVersion) + ";\n");
+            writer.write("  wget -O libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar " + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + ";\n");
             writer.write("else\n");
             writer.write("  echo \"Minecraft server present. Moving on...\"\n");
             writer.write("fi\n");
@@ -884,7 +835,7 @@ public class ServerPackHandler {
             writer.write("\n");
             writer.write("IF NOT EXIST libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar (\n");
             writer.write("  ECHO Minecraft Server JAR-file not found. Downloading...\n");
-            writer.write("  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + getMinecraftServerJarUrl(minecraftVersion) + "', 'libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar')\"\n");
+            writer.write("  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + "', 'libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar')\"\n");
             writer.write(") ELSE (\n");
             writer.write("  ECHO Minecraft server present. Moving on...\n");
             writer.write(")\n");
@@ -1001,7 +952,7 @@ public class ServerPackHandler {
             writer.write("\n");
             writer.write("if [[ ! -s \"minecraft_server.$MINECRAFT.jar\" ]];then\n");
             writer.write("  echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
-            writer.write("  wget -O minecraft_server.$MINECRAFT.jar " + getMinecraftServerJarUrl(minecraftVersion) + ";\n");
+            writer.write("  wget -O minecraft_server.$MINECRAFT.jar " + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + ";\n");
             writer.write("else\n");
             writer.write("  echo \"minecraft_server.$MINECRAFT.jar present. Moving on...\"\n");
             writer.write("fi\n");
@@ -1104,7 +1055,7 @@ public class ServerPackHandler {
             writer.write("\n");
             writer.write("IF NOT EXIST minecraft_server.%MINECRAFT%.jar (\n");
             writer.write("  ECHO Minecraft Server JAR-file not found. Downloading...\n");
-            writer.write("  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + getMinecraftServerJarUrl(minecraftVersion) + "', 'minecraft_server.%MINECRAFT%.jar')\"\n");
+            writer.write("  powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + "', 'minecraft_server.%MINECRAFT%.jar')\"\n");
             writer.write(") ELSE (\n");
             writer.write("  ECHO minecraft_server.%MINECRAFT%.jar present. Moving on...\n");
             writer.write(")\n");
@@ -1167,9 +1118,6 @@ public class ServerPackHandler {
             LOG.error(String.format("Failed to create directory %s", destination));
         }
 
-        // Note to self: What is this? How does this exclude files? What did I do here?
-        directoriesToCopy.removeIf(n -> n.startsWith("!"));
-
         if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"));
@@ -1190,6 +1138,15 @@ public class ServerPackHandler {
             }
 
         } else {
+
+            List<String> exclusions = APPLICATIONPROPERTIES.getListOfDirectoriesToExclude();
+            directoriesToCopy.forEach(entry -> {
+                if (entry.startsWith("!")) {
+                    exclusions.add(entry.substring(1));
+                }
+            });
+            directoriesToCopy.removeIf(n -> n.startsWith("!"));
+
             for (String directory : directoriesToCopy) {
 
                 String clientDir = String.format("%s/%s", modpackDir, directory);
@@ -1275,7 +1232,7 @@ public class ServerPackHandler {
                      * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
                      * user-specified clientside-only mods from the list of mods in the mods-directory.
                      */
-                } else if (directory.startsWith("mods") && clientMods.size() > 0) {
+                } else if (directory.startsWith("mods")) {
 
                     List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
 
@@ -1286,21 +1243,31 @@ public class ServerPackHandler {
                     }
 
                     for (String file : listOfFiles) {
-                        try {
 
-                            Files.copy(
-                                    Paths.get(file),
-                                    Paths.get(String.format("%s/%s", serverDir, new File(file).getName())),
-                                    REPLACE_EXISTING
-                            );
+                        if (excludeFileOrDirectory(file.replace("\\","/"), exclusions)) {
 
-                            LOG.debug(String.format("Copying: %s", file));
+                            LOG.info("Excluding " + file + " from server pack");
 
-                        } catch (IOException ex) {
-                            if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                LOG.error("An error occurred copying files to the serverpack.", ex);
+                        } else {
+
+                            try {
+
+                                Files.copy(
+                                        Paths.get(file),
+                                        Paths.get(String.format("%s/%s", serverDir, new File(file).getName())),
+                                        REPLACE_EXISTING
+                                );
+
+                                LOG.debug(String.format("Copying: %s", file));
+
+                            } catch (IOException ex) {
+                                if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
+                                    LOG.error("An error occurred copying files to the serverpack.", ex);
+                                }
                             }
+
                         }
+
                     }
 
                 } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
@@ -1319,9 +1286,9 @@ public class ServerPackHandler {
                     try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
 
                         files.forEach(file -> {
-                            if (excludeFileOrDirectory(file.toString().replace("\\","/"))) {
+                            if (excludeFileOrDirectory(file.toString().replace("\\","/"), exclusions)) {
 
-                                LOG.debug("Excluding " + file + " from server pack");
+                                LOG.info("Excluding " + file + " from server pack");
 
                             } else {
                                 try {
@@ -1399,7 +1366,7 @@ public class ServerPackHandler {
 
 
         // Exclude user-specified mods from copying.
-        if (!userSpecifiedClientMods.get(0).equals("")) {
+        if (userSpecifiedClientMods.size() > 0) {
             for (int m = 0; m < userSpecifiedClientMods.size(); m++) {
 
                 int i = m;
@@ -1432,9 +1399,9 @@ public class ServerPackHandler {
      * @param fileToCheckFor String. The string to check for.
      * @return Boolean. Returns true if the file is found in the list of directories to exclude, false if not.
      */
-    private boolean excludeFileOrDirectory(String fileToCheckFor) {
+    private boolean excludeFileOrDirectory(String fileToCheckFor, List<String> exclusions) {
         boolean isPresentInList = false;
-        for (String entry : APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) {
+        for (String entry : exclusions) {
             if (fileToCheckFor.contains(entry)) {
                 isPresentInList = true;
                 break;
@@ -1454,7 +1421,7 @@ public class ServerPackHandler {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyicon"));
 
-        File defaultIcon = new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_SERVER_ICON));
+        File iconFile = new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_SERVER_ICON));
 
         if (new File(pathToServerIcon).exists()) {
 
@@ -1469,12 +1436,16 @@ public class ServerPackHandler {
             }
 
             if (originalImage != null) {
+
+                // Scale our image to 64x64
                 scaledImage = originalImage.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
                 BufferedImage outputImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
                 outputImage.getGraphics().drawImage(scaledImage, 0, 0, null);
 
+
+                // Save our scaled image to disk.
                 try {
-                    ImageIO.write(outputImage, "png", defaultIcon);
+                    ImageIO.write(outputImage, "png", iconFile);
                 } catch (IOException ex) {
                     LOG.error("Error scaling image.", ex);
                     LOG.error("Using default icon as fallback.");
@@ -1483,7 +1454,7 @@ public class ServerPackHandler {
 
                         FileUtils.copyFile(
                                 new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)),
-                                defaultIcon
+                                iconFile
                         );
 
                     } catch (IOException e) {
@@ -1502,7 +1473,7 @@ public class ServerPackHandler {
 
                 FileUtils.copyFile(
                         new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)),
-                        defaultIcon
+                        iconFile
                 );
 
             } catch (IOException ex) {
@@ -1560,7 +1531,7 @@ public class ServerPackHandler {
      * @param modLoader String. The modloader for which to install the server software. Either Forge or Fabric.
      * @param minecraftVersion String. The Minecraft version for which to install the modloader and Minecraft server.
      * @param modLoaderVersion String. The modloader version for which to install the modloader and Minecraft server.
-     * @param javaPath String. The path to the Java executable/binary which is needed to execute the Forge/Fabric installers.
+     * @param javaPath String. The path to the Java executable/binary which is needed to execute the Forge/Fabric installersList.
      * @param destination String. The destination where the modloader server should be installed into.
      */
     private void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath, String destination) {
@@ -1569,7 +1540,6 @@ public class ServerPackHandler {
 
         Process process = null;
         BufferedReader bufferedReader = null;
-        URL downloadUrl = null;
         String fileDestination;
 
         if (modLoader.equalsIgnoreCase("Fabric")) {
@@ -1577,15 +1547,9 @@ public class ServerPackHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
 
-            try {
-                downloadUrl = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar", VERSIONLISTER.getFabricReleaseInstallerVersion(), VERSIONLISTER.getFabricReleaseInstallerVersion()));
-            } catch (MalformedURLException ex) {
-                LOG.error("Couldn't create Fabric URL.", ex);
-            }
-
             fileDestination = String.format("%s/fabric-installer.jar", destination);
 
-            if (downloadUrl!= null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
+            if (UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.fabric().releaseInstallerUrl())) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
 
@@ -1609,15 +1573,11 @@ public class ServerPackHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
 
-            try {
-                downloadUrl = new URL(String.format("https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar", minecraftVersion, modLoaderVersion, minecraftVersion, modLoaderVersion));
-            } catch (MalformedURLException ex) {
-                LOG.error("Couldn't create Forge URL.",ex);
-            }
-
             fileDestination = String.format("%s/forge-installer.jar", destination);
 
-            if (downloadUrl != null && SYSTEMUTILITIES.downloadFile(fileDestination, downloadUrl)) {
+            if (VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).isPresent() &&
+                    UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).get().installerUrl())) {
+
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
                 commandArguments.add(javaPath);
@@ -1743,43 +1703,6 @@ public class ServerPackHandler {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.finish"));
-    }
-
-    /**
-     * Retrieves the URL to the Minecraft server for the specified Minecraft version.
-     * @author Griefed
-     * @param minecraftVersion String. The Minecraft version for which to retrieve the URL for the server-jar.
-     * @return String. The URL to the server-jar of the specified Minecraft version as a string.
-     */
-    private String getMinecraftServerJarUrl(String minecraftVersion) {
-        String minecraftVersionJarUrl = null;
-
-        try {
-            JsonNode minecraftJson = getObjectMapper().readTree(Files.readAllBytes(new File("./work/minecraft-manifest.json").toPath()));
-
-            JsonNode versions = minecraftJson.get("versions");
-
-            for (JsonNode version : versions) {
-                try {
-                    if (version.get("id").asText().equals(minecraftVersion)) {
-
-                        try (InputStream inputStream = new URL(version.get("url").asText()).openStream()) {
-                            JsonNode serverNode = getObjectMapper().readTree(inputStream);
-
-                            minecraftVersionJarUrl = serverNode.get("downloads").get("server").get("url").asText();
-                        }
-
-                    }
-                } catch (NullPointerException ignored) {
-
-                }
-            }
-
-        } catch (IOException ex) {
-            LOG.error("Couldn't read Minecraft manifest.", ex);
-        }
-
-        return minecraftVersionJarUrl;
     }
 
     /**
