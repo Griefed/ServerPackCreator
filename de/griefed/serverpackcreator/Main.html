@@ -221,7 +221,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>main</h4>
-<pre>public static&nbsp;void&nbsp;main(java.lang.String[]&nbsp;args)</pre>
+<pre>public static&nbsp;void&nbsp;main(java.lang.String[]&nbsp;args)
+                 throws java.io.IOException</pre>
 <div class="block">Runs dependency injection and decides which mode to enter depending on the arguments with which ServerPackCreator
  is executed. Valid arguments are "-lang", "-cli", "-cgen", "-weh" and "-help".<br>
  Lists a couple of environment variables important for reporting issues.</div>
@@ -229,6 +230,8 @@ extends java.lang.Object</pre>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
  will enter and which locale is used.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
 </dl>
 </li>
 </ul>

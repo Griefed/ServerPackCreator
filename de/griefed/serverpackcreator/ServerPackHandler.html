@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/MainSpringBoot.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/ServerPackHandler.html" target="_top">Frames</a></li>
@@ -132,17 +132,13 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#ServerPackHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.ApplicationPlugins-">ServerPackHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#ServerPackHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-de.griefed.serverpackcreator.plugins.ApplicationPlugins-de.griefed.serverpackcreator.utilities.ConfigUtilities-">ServerPackHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
                  <a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack,
-                 <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
                  <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                 <a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister,
-                 <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
-                 <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
-                 <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
-                 <a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a>&nbsp;injectedSystemUtilities,
-                 <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
-                 <a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator">ApplicationPlugins</a>&nbsp;injectedPluginManager)</code>
+                 <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
+                 <a href="../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">Utilities</a>&nbsp;injectedUtilities,
+                 <a href="../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator.plugins">ApplicationPlugins</a>&nbsp;injectedPluginManager,
+                 <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>
 <div class="block"><strong>Constructor</strong></div>
 </td>
 </tr>
@@ -203,7 +199,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ServerPackHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.ApplicationPlugins-">
+<a name="ServerPackHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-de.griefed.serverpackcreator.plugins.ApplicationPlugins-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -212,15 +208,12 @@ extends java.lang.Object</pre>
 <pre>@Autowired
 public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
                                     <a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack,
-                                    <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
                                     <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                                    <a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister,
-                                    <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
-                                    <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
-                                    <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
-                                    <a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a>&nbsp;injectedSystemUtilities,
-                                    <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
-                                    <a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator">ApplicationPlugins</a>&nbsp;injectedPluginManager)</pre>
+                                    <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
+                                    <a href="../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">Utilities</a>&nbsp;injectedUtilities,
+                                    <a href="../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator.plugins">ApplicationPlugins</a>&nbsp;injectedPluginManager,
+                                    <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)
+                             throws java.io.IOException</pre>
 <div class="block"><strong>Constructor</strong><p>
  Used for Dependency Injection.<p>
  Receives an instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
@@ -229,15 +222,13 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/i18
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedLocalizationManager</code> - Instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> required for localized log messages.</dd>
 <dd><code>injectedCurseCreateModpack</code> - Instance of <a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge"><code>CurseCreateModpack</code></a> required for creating a modpack from CurseForge.</dd>
-<dd><code>injectedConfigurationHandler</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationHandler</code></a> required for accessing checks.</dd>
 <dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various different things.</dd>
-<dd><code>injectedVersionLister</code> - Instance of <a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator"><code>VersionLister</code></a> required for everything version related.</dd>
-<dd><code>injectedBooleanUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>BooleanUtilities</code></a>.</dd>
-<dd><code>injectedListUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ListUtilities</code></a>.</dd>
-<dd><code>injectedStringUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>StringUtilities</code></a>.</dd>
-<dd><code>injectedSystemUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>SystemUtilities</code></a>.</dd>
-<dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a>.</dd>
-<dd><code>injectedPluginManager</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><code>ApplicationPlugins</code></a>.</dd>
+<dd><code>injectedVersionMeta</code> - Instance of <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> required for everything version related.</dd>
+<dd><code>injectedUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><code>Utilities</code></a>.</dd>
+<dd><code>injectedPluginManager</code> - Instance of <a href="../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator.plugins"><code>ApplicationPlugins</code></a>.</dd>
+<dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
 </dl>
 </li>
 </ul>
@@ -330,7 +321,7 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/i18
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/MainSpringBoot.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/ServerPackHandler.html" target="_top">Frames</a></li>

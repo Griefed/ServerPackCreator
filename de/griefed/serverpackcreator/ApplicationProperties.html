@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li>Prev&nbsp;Class</li>
 <li><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -339,6 +339,13 @@ extends java.util.Properties</pre>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#toString--">toString</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#updateFallback--">updateFallback</a></span>()</code>
+<div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code> from the main-repository
+ or one of its mirrors.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -726,6 +733,21 @@ public&nbsp;ApplicationProperties()</pre>
 </dl>
 </li>
 </ul>
+<a name="updateFallback--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateFallback</h4>
+<pre>public&nbsp;boolean&nbsp;updateFallback()</pre>
+<div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code> from the main-repository
+ or one of its mirrors.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the fallback-property was updated.</dd>
+</dl>
+</li>
+</ul>
 <a name="toString--">
 <!--   -->
 </a>
@@ -766,7 +788,7 @@ public&nbsp;ApplicationProperties()</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li>Prev&nbsp;Class</li>
 <li><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

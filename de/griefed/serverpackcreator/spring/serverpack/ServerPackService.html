@@ -129,8 +129,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html#ServerPackService-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.spring.serverpack.ServerPackRepository-">ServerPackService</a></span>(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                 <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html" title="interface in de.griefed.serverpackcreator.spring.serverpack">ServerPackRepository</a>&nbsp;injectedServerPackRepository)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html#ServerPackService-de.griefed.serverpackcreator.spring.serverpack.ServerPackRepository-">ServerPackService</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html" title="interface in de.griefed.serverpackcreator.spring.serverpack">ServerPackRepository</a>&nbsp;injectedServerPackRepository)</code>
 <div class="block">Constructor responsible for our DI.</div>
 </td>
 </tr>
@@ -264,19 +263,17 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ServerPackService-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.spring.serverpack.ServerPackRepository-">
+<a name="ServerPackService-de.griefed.serverpackcreator.spring.serverpack.ServerPackRepository-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ServerPackService</h4>
 <pre>@Autowired
-public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                                    <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html" title="interface in de.griefed.serverpackcreator.spring.serverpack">ServerPackRepository</a>&nbsp;injectedServerPackRepository)</pre>
+public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html" title="interface in de.griefed.serverpackcreator.spring.serverpack">ServerPackRepository</a>&nbsp;injectedServerPackRepository)</pre>
 <div class="block">Constructor responsible for our DI.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.</dd>
 <dd><code>injectedServerPackRepository</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html" title="interface in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackRepository</code></a>.</dd>
 </dl>
 </li>
@@ -426,8 +423,8 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <div class="block">Update a server pack database entry with the given database id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - Integer. The database id of the server pack to update.</dd>
-<dd><code>serverPackModel</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> with which to update the entry in the database.</dd>
+<dd><code>id</code> - Integer. The database id of the server pack to initialize.</dd>
+<dd><code>serverPackModel</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> with which to initialize the entry in the database.</dd>
 </dl>
 </li>
 </ul>
@@ -477,7 +474,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>projectID</code> - The CurseForge project ID.</dd>
 <dd><code>fileID</code> - The CurseForge file ID.</dd>
-<dd><code>serverPackModel</code> - The server pack with which to update the entry in the database.</dd>
+<dd><code>serverPackModel</code> - The server pack with which to initialize the entry in the database.</dd>
 </dl>
 </li>
 </ul>

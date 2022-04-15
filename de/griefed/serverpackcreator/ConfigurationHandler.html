@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -132,14 +132,11 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ConfigurationHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">ConfigurationHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ConfigurationHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">ConfigurationHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
                     <a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack,
-                    <a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister,
+                    <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
                     <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                    <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
-                    <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
-                    <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
-                    <a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a>&nbsp;injectedSystemUtilities,
+                    <a href="../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">Utilities</a>&nbsp;injectedUtilities,
                     <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>
 <div class="block"><strong>Constructor</strong></div>
 </td>
@@ -275,12 +272,7 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-">checkModloaderVersion</a></span>(java.lang.String&nbsp;modloader,
                      java.lang.String&nbsp;modloaderVersion,
                      java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Depending on whether Forge or Fabric was specified as the modloader, this will call the corresponding version check
- to verify that the user correctly set their modloader version.<br>
- If the user specified Forge as their modloader, <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isForgeVersionCorrect-java.lang.String-java.lang.String-"><code>isForgeVersionCorrect(String, String)</code></a> is called and the version
- the user specified is checked against Forge's version manifest..<br>
- If the user specified Fabric as their modloader, <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isFabricVersionCorrect-java.lang.String-"><code>isFabricVersionCorrect(String)</code></a> is called and the version
- the user specified is checked against Fabric's version manifest.</div>
+<div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
@@ -298,28 +290,6 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkZipArchive-java.nio.file.Path-java.util.List-">checkZipArchive</a></span>(java.nio.file.Path&nbsp;pathToZip,
                java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Check a given ZIP-archives contents.</div>
-</td>
-</tr>
-<tr id="i17" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isFabricVersionCorrect-java.lang.String-">isFabricVersionCorrect</a></span>(java.lang.String&nbsp;fabricVersion)</code>
-<div class="block">Check whether the specified Fabric version is correct by searching the version list of the Fabric manifest
- for the specified version.</div>
-</td>
-</tr>
-<tr id="i18" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isForgeVersionCorrect-java.lang.String-java.lang.String-">isForgeVersionCorrect</a></span>(java.lang.String&nbsp;forgeVersion,
-                     java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Check whether the specified Forge version is correct by searching the version list of the Forge manifest
- for the specified version.</div>
-</td>
-</tr>
-<tr id="i19" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isMinecraftVersionCorrect-java.lang.String-">isMinecraftVersionCorrect</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Check whether the specified Minecraft version is correct by searching the version list of the Minecraft manifest
- for the specified version.</div>
 </td>
 </tr>
 </table>
@@ -344,7 +314,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ConfigurationHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.VersionLister-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.BooleanUtilities-de.griefed.serverpackcreator.utilities.ListUtilities-de.griefed.serverpackcreator.utilities.StringUtilities-de.griefed.serverpackcreator.utilities.SystemUtilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
+<a name="ConfigurationHandler-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -353,13 +323,11 @@ extends java.lang.Object</pre>
 <pre>@Autowired
 public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
                                        <a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge">CurseCreateModpack</a>&nbsp;injectedCurseCreateModpack,
-                                       <a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator">VersionLister</a>&nbsp;injectedVersionLister,
+                                       <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
                                        <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities">BooleanUtilities</a>&nbsp;injectedBooleanUtilities,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ListUtilities</a>&nbsp;injectedListUtilities,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities">StringUtilities</a>&nbsp;injectedStringUtilities,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities">SystemUtilities</a>&nbsp;injectedSystemUtilities,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</pre>
+                                       <a href="../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">Utilities</a>&nbsp;injectedUtilities,
+                                       <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)
+                                throws java.io.IOException</pre>
 <div class="block"><strong>Constructor</strong><p>
  Used for Dependency Injection.<p>
  Receives an instance of <a href="../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> or creates one if the received
@@ -372,12 +340,11 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dd><code>injectedCurseCreateModpack</code> - Instance of <a href="../../../de/griefed/serverpackcreator/curseforge/CurseCreateModpack.html" title="class in de.griefed.serverpackcreator.curseforge"><code>CurseCreateModpack</code></a> in case the modpack has to be created from a combination of
  CurseForge projectID and fileID, from which to <em>then</em> create the server pack.</dd>
 <dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various different things.</dd>
-<dd><code>injectedVersionLister</code> - Instance of <a href="../../../de/griefed/serverpackcreator/VersionLister.html" title="class in de.griefed.serverpackcreator"><code>VersionLister</code></a> required for everything version-related.</dd>
-<dd><code>injectedBooleanUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>BooleanUtilities</code></a>.</dd>
-<dd><code>injectedListUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ListUtilities</code></a>.</dd>
-<dd><code>injectedStringUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>StringUtilities</code></a>.</dd>
-<dd><code>injectedSystemUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>SystemUtilities</code></a>.</dd>
+<dd><code>injectedVersionMeta</code> - Instance of <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> required for everything version-related.</dd>
+<dd><code>injectedUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><code>Utilities</code></a>.</dd>
 <dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a>.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
 </dl>
 </li>
 </ul>
@@ -789,18 +756,13 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <a name="checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>checkModloaderVersion</h4>
 <pre>public&nbsp;boolean&nbsp;checkModloaderVersion(java.lang.String&nbsp;modloader,
                                      java.lang.String&nbsp;modloaderVersion,
                                      java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Depending on whether Forge or Fabric was specified as the modloader, this will call the corresponding version check
- to verify that the user correctly set their modloader version.<br>
- If the user specified Forge as their modloader, <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isForgeVersionCorrect-java.lang.String-java.lang.String-"><code>isForgeVersionCorrect(String, String)</code></a> is called and the version
- the user specified is checked against Forge's version manifest..<br>
- If the user specified Fabric as their modloader, <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isFabricVersionCorrect-java.lang.String-"><code>isFabricVersionCorrect(String)</code></a> is called and the version
- the user specified is checked against Fabric's version manifest.</div>
+<div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modloader</code> - String. The passed modloader which determines whether the check for Forge or Fabric is called.</dd>
@@ -808,59 +770,6 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dd><code>minecraftVersion</code> - String. The version of Minecraft used for checking the Forge version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the specified modloader version was found in the corresponding manifest.</dd>
-</dl>
-</li>
-</ul>
-<a name="isMinecraftVersionCorrect-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>isMinecraftVersionCorrect</h4>
-<pre>public&nbsp;boolean&nbsp;isMinecraftVersionCorrect(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Check whether the specified Minecraft version is correct by searching the version list of the Minecraft manifest
- for the specified version.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - String. The version to check for in Minecraft's version manifest.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified Minecraft version could be found in Mojang's manifest.</dd>
-</dl>
-</li>
-</ul>
-<a name="isFabricVersionCorrect-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>isFabricVersionCorrect</h4>
-<pre>public&nbsp;boolean&nbsp;isFabricVersionCorrect(java.lang.String&nbsp;fabricVersion)</pre>
-<div class="block">Check whether the specified Fabric version is correct by searching the version list of the Fabric manifest
- for the specified version.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fabricVersion</code> - String. The version to check for in Fabric's version manifest.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified fabric version could be found in Fabric's manifest.</dd>
-</dl>
-</li>
-</ul>
-<a name="isForgeVersionCorrect-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>isForgeVersionCorrect</h4>
-<pre>public&nbsp;boolean&nbsp;isForgeVersionCorrect(java.lang.String&nbsp;forgeVersion,
-                                     java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Check whether the specified Forge version is correct by searching the version list of the Forge manifest
- for the specified version.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>forgeVersion</code> - String. The version to check for in Forge's version manifest.</dd>
-<dd><code>minecraftVersion</code> - String. The minecraft version to check the Forge version with.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified Forge version could be found in Forge's manifest.</dd>
 </dl>
 </li>
 </ul>
