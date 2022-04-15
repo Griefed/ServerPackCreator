@@ -23,6 +23,7 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import de.griefed.serverpackcreator.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import mdlaf.components.textpane.MaterialTextPaneUI;

@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.*;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.plugins.swinggui.TabExtension;
+import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
@@ -275,15 +275,15 @@ public class SwingGuiInitializer extends JPanel {
 
         TABBEDPANE.setMnemonicAt(3, KeyEvent.VK_4);
 
-        if (APPLICATIONPLUGINS.PLUGINS_TABBEDPANE.size() > 0) {
-            for (TabExtension pane : APPLICATIONPLUGINS.PLUGINS_TABBEDPANE) {
-                TABBEDPANE.addTab(
-                        pane.getTabTitle(),
-                        pane.getTabIcon(),
-                        pane.getTab(),
-                        pane.getTabTooltip()
-                );
-            }
+        if (!APPLICATIONPLUGINS.pluginsTabExtension().isEmpty()) {
+            APPLICATIONPLUGINS.pluginsTabExtension().forEach(plugin ->
+                    TABBEDPANE.addTab(
+                            plugin.getTabTitle(),
+                            plugin.getTabIcon(),
+                            plugin.getTab(),
+                            plugin.getTabTooltip()
+                    )
+            );
         } else {
             LOG.info("No TabbedPane addons to add.");
         }
