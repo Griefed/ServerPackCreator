@@ -119,7 +119,7 @@ Huge shoutout and thank you!**
 
 - A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
 
-- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it! 
+- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it!
 
 - A wiki article containing useful hints, tips & tricks about, for and with ServerPackCreator can be found on [my Wiki's ServerPackCreator Help page](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
@@ -128,26 +128,26 @@ Huge shoutout and thank you!**
 1. **Generate a config step-by-step by running with argument**`-cgen`
 2. **Install a Forge or Fabric modloader server in your server pack**
 3. **Configurable list of clientside-only mods to not include your server pack**
-   1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`.
+    1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`.
 4. **Configurable list of directories from your modpack to include in your server pack**
-   1. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
-   2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
-   3. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
-   4. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
+    1. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
+    2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
+    3. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
+    4. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
 5. **Generate Forge or Fabric start-scripts in your server pack**
-   1. Specify JVM flags / Java Args for your start scripts!
+    1. Specify JVM flags / Java Args for your start scripts!
 6. **Include a server-icon.png-file in your server pack**
-   1. Replace the file in `server-files` with your own!
+    1. Replace the file in `server-files` with your own!
 7. **Include a server.properties-file in your server pack**
-   1. Replace the file in `server-files` with your own!
+    1. Replace the file in `server-files` with your own!
 8. **Create a ZIP-archive of your server pack**
 9. **GUI to fully configure and run ServerPackCreator**
-   1. Load existing config.
-   2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
-   3. Logs from last run in separate tabs.
-   4. Set a suffix for the server pack to be generated.
-   5. And much more!
-10. **Webservice** 
+    1. Load existing config.
+    2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
+    3. Logs from last run in separate tabs.
+    4. Set a suffix for the server pack to be generated.
+    5. And much more!
+10. **Webservice**
     1. Generate a server pack from zipped up modpacks.
     2. All generated server packs available for download to everyone.
 11. **Addons!**
@@ -201,15 +201,15 @@ Some examples for potential addons can be found [in this discussion thread](http
 
 Some excerpts:
 1. Changelog generator, by @TheButterbrotMan at [Feature request]: Changelog generator #198
-   - A changelog generator that checks the differences to the previous version and generates a changelog.
+    - A changelog generator that checks the differences to the previous version and generates a changelog.
 
 2. Bundle Adoptium Java with server packs, by @kreezxil at [Feature request]: Bundle Adoptium Java #199
-   - Because modpacks need one of the either Java 8, 16, or 17, it would be nice to have the corresponding https://adoptium.net java prebundled with the server pack.
+    - Because modpacks need one of the either Java 8, 16, or 17, it would be nice to have the corresponding https://adoptium.net java prebundled with the server pack.
 
 3. Automatic setup of a server pack for [BlueMap](https://www.curseforge.com/minecraft/mc-mods/bluemap)
-   - Check all mods in the specified modpacks mods-directory for textures, and if any are found, add the mod to
-     BlueMap's resourcepack folder `config/bluemap/resourcepacks`, install BlueMap for the specified Minecraft and Forge/Fabric
-     version and voilà!
+    - Check all mods in the specified modpacks mods-directory for textures, and if any are found, add the mod to
+      BlueMap's resourcepack folder `config/bluemap/resourcepacks`, install BlueMap for the specified Minecraft and Forge/Fabric
+      version and voilà!
 
 # 5. Configuration
 
@@ -260,6 +260,7 @@ After checking the configuration, run ServerPackCreator again, and it'll do it's
 ```properties
 de.griefed.serverpackcreator.versioncheck.prerelease=false
 de.griefed.serverpackcreator.language=en_us
+# Do NOT edit de.griefed.serverpackcreator.configuration.fallbackmodslist MANUALLY. You can update this from the menu in the GUI. 
 de.griefed.serverpackcreator.configuration.fallbackmodslist=3dSkinLayers-,AdvancementPlaques-,AmbientSounds_,armorchroma-,backtools-,BetterAdvancements-,BetterAnimationsCollection-,BetterDarkMode-,BetterF3-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,Blur-,catalogue-,cherishedworlds-,classicbar-,clickadv-,ClientTweaks_,configured-,Controlling-,CraftPresence-,CTM-,customdiscordrpc-,CustomMainMenu-,DefaultOptions_,defaultoptions-,desiredservers-,Ding-,drippyloadingscreen_,drippyloadingscreen-,Durability101-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,dynmus-,EiraMoticons_,eiramoticons-,EnchantmentDescriptions-,EquipmentCompare-,extremesoundmuffler-,extremeSoundMuffler-,Fallingleaves-,fallingleaves-,fancymenu_,findme-,flickerfix-,FpsReducer-,FullscreenWindowed-,InventoryEssentials_,InventorySpam-,InventoryTweaks-,invtweaks-,ItemBorders-,itemzoom,itlt-,jeed-,jehc-,jeiintegration_,JEITweaker-,just-enough-harvestcraft-,justenoughbeacons-,JustEnoughCalculation-,JustEnoughProfessions-,JustEnoughProfessions-,JustEnoughResources-,keywizard-,konkrete_,lazydfu-,LegendaryTooltips-,light-overlay-,LightOverlay-,LLOverlayReloaded-,loadmyresources_,lootbeams-,mcbindtype-,medievalmusic-,modnametooltip_,modnametooltip-,moreoverlays-,MouseTweaks-,multihotbar-,MyServerIsCompatible-,Neat ,NotifMod-,OldJavaWarning-,OptiFine,OptiForge,ornaments-,overloadedarmorbar-,PackMenu-,PickUpNotifier-,Ping-,preciseblockplacing-,presencefootsteps-,PresenceFootsteps-,ReAuth-,ResourceLoader-,shutupexperimentalsettings-,SimpleDiscordRichPresence-,smoothboot-,sounddeviceoptions-,SpawnerFix-,spoticraft-,tconplanner-,timestamps-,Tips-,TipTheScales-,Toast Control-,Toast-Control-,ToastControl-,torchoptimizer-,torohealth-,toughnessbar-,TravelersTitles-,WindowedFullscreen-,WorldNameRandomizer-,yisthereautojump-
 de.griefed.serverpackcreator.configuration.hastebinserver=https://haste.zneix.eu/documents
 de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true
@@ -279,29 +280,29 @@ de.griefed.serverpackcreator.configuration.directories.mustinclude=mods,config,d
 de.griefed.serverpackcreator.curseforge.api.token=
 ```
 
-| Property                                                               | Description                                                                                                                  |
-|------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| de.griefed.serverpackcreator.versioncheck.prerelease                   | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                              |
-| de.griefed.serverpackcreator.language                                  | The language in which ServerPackCreator should run.                                                                          |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist            | Comma separated fallback-list of clientside-only mods.                                                                       |
-| de.griefed.serverpackcreator.configuration.hastebinserver              | Address of a HasteBin server to use for config and logs uploading.                                                           |
-| de.griefed.serverpackcreator.serverpack.autodiscoverenabled            | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically.                                 |
-| de.griefed.serverpackcreator.gui.darkmode                              | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                            |
-| de.griefed.serverpackcreator.configuration.directories.serverpacks     | The directory in which server packs will be generated and stored in.                                                         |
-| de.griefed.serverpackcreator.curseforge.cleanup.enabled                | `true` or `false`. Whether to cleanup files after generating a server pack from a CurseForge project.                        |
-| de.griefed.serverpackcreator.serverpack.cleanup.enabled                | `true` or `false`. Whether to cleanup files after generating a server pack.                                                  |
-| de.griefed.serverpackcreator.serverpack.overwrite.enabled              | `true` or `false`. Whether an already existing server pack should be overwritten.                                            |
-| de.griefed.serverpackcreator.configuration.directories.shouldexclude   | List of directories which should not be in a server pack.                                                                    |
-| de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled | `true` or `false`. Web only. Whether regeneration of an already available CurseForge project server pack is allowed/enabled. |
-| de.griefed.serverpackcreator.spring.schedules.database.cleanup         | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                 |
-| de.griefed.serverpackcreator.spring.schedules.files.cleanup            | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                       |
-| de.griefed.serverpackcreator.spring.schedules.versions.refresh         | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                           |
-| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage       | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.   |
-| de.griefed.serverpackcreator.configuration.saveloadedconfig            | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                          |
-| de.griefed.serverpackcreator.configuration.directories.mustinclude     | List of directories which must be included in a server pack.                                                                 |
-| de.griefed.serverpackcreator.curseforge.api.token                      | CurseAPI token used for generating server packs from CurseForge projects.                                                    |
+| Property                                                               | Description                                                                                                                                                                            |
+|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| de.griefed.serverpackcreator.versioncheck.prerelease                   | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                                                                                        |
+| de.griefed.serverpackcreator.language                                  | The language in which ServerPackCreator should run.                                                                                                                                    |
+| de.griefed.serverpackcreator.configuration.fallbackmodslist            | Comma separated fallback-list of clientside-only mods. Do NOT edit de.griefed.serverpackcreator.configuration.fallbackmodslist MANUALLY. You can update this from the menu in the GUI. |
+| de.griefed.serverpackcreator.configuration.hastebinserver              | Address of a HasteBin server to use for config and logs uploading.                                                                                                                     |
+| de.griefed.serverpackcreator.serverpack.autodiscoverenabled            | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically.                                                                                           |
+| de.griefed.serverpackcreator.gui.darkmode                              | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                                                                                      |
+| de.griefed.serverpackcreator.configuration.directories.serverpacks     | The directory in which server packs will be generated and stored in.                                                                                                                   |
+| de.griefed.serverpackcreator.curseforge.cleanup.enabled                | `true` or `false`. Whether to cleanup files after generating a server pack from a CurseForge project.                                                                                  |
+| de.griefed.serverpackcreator.serverpack.cleanup.enabled                | `true` or `false`. Whether to cleanup files after generating a server pack.                                                                                                            |
+| de.griefed.serverpackcreator.serverpack.overwrite.enabled              | `true` or `false`. Whether an already existing server pack should be overwritten.                                                                                                      |
+| de.griefed.serverpackcreator.configuration.directories.shouldexclude   | List of directories which should not be in a server pack.                                                                                                                              |
+| de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled | `true` or `false`. Web only. Whether regeneration of an already available CurseForge project server pack is allowed/enabled.                                                           |
+| de.griefed.serverpackcreator.spring.schedules.database.cleanup         | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                                                                           |
+| de.griefed.serverpackcreator.spring.schedules.files.cleanup            | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                                                                                 |
+| de.griefed.serverpackcreator.spring.schedules.versions.refresh         | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                                                                                     |
+| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage       | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.                                                             |
+| de.griefed.serverpackcreator.configuration.saveloadedconfig            | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                                                                                    |
+| de.griefed.serverpackcreator.configuration.directories.mustinclude     | List of directories which must be included in a server pack.                                                                                                                           |
+| de.griefed.serverpackcreator.curseforge.api.token                      | CurseAPI token used for generating server packs from CurseForge projects.                                                                                                              |
 
-# 5.1.2 Default `application.properties` 
+# 5.1.2 Default `application.properties`
 
 `application.properties`
 ```properties
@@ -421,13 +422,13 @@ A short excerpt:
 >
 > 1. Fork ServerPackCreator
 > 2. Create a new branch in your fork, following one of the following naming schemes:
->     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
->         - griefed_chore_readme
+     >     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
+              >         - griefed_chore_readme
 >         - griefed_perf_curseforgemodpack
 >         - griefed_feat_ziparchive
 >     2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
 >     3. Schemes:
->         1. your_username_breaking_
+         >         1. your_username_breaking_
 >         2. your_username_build_
 >         3. your_username_chore_
 >         4. your_username_ci_
@@ -441,13 +442,13 @@ A short excerpt:
 >         12. your_username_test_
 >         13. your_username_other_
 > 3. Make your changes to your new branch:
->     1. Try to keep the changes atomic, so they best fit the name of the branch.
+     >     1. Try to keep the changes atomic, so they best fit the name of the branch.
 >     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
->         - feat: Allow upload of modpack-export zip-archive to web-frontend
+         >         - feat: Allow upload of modpack-export zip-archive to web-frontend
 >         - refactor: Use apache commons-io for copying, instead of Files
 > 4. Open an issue on the main repository, using the **Pull Request** template:
->     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
->         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
+     >     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
+              >         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
 >     2. Issue description: Fill in the sections the template provide.
 >     3. Submit the new issue
 > 5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
