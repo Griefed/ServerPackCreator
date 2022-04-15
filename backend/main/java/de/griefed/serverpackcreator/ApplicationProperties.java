@@ -640,7 +640,7 @@ public class ApplicationProperties extends Properties {
      * or one of its mirrors.
      * @author Griefed
      */
-    public void updateFallback() {
+    public boolean updateFallback() {
 
         Properties properties;
 
@@ -691,8 +691,11 @@ public class ApplicationProperties extends Properties {
             this.listFallbackMods = new ArrayList<>(Arrays.asList(this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist",this.FALLBACK_MODS_DEFAULT_ASSTRING).split(",")));
             LOG.debug("Fallbackmodslist set to: " + this.listFallbackMods);
             LOG.info("The fallback-list for clientside only mods has been updated.");
+            return true;
+
         } else {
             LOG.info("No fallback-list updates available.");
+            return false;
         }
     }
 

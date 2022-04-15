@@ -531,7 +531,21 @@ public class MenuBar extends Component {
 
     private void actionEventUpdateFallbackModslist(ActionEvent actionEvent) {
         LOG.debug("Running update check for fallback modslist...");
-        APPLICATIONPROPERTIES.updateFallback();
+        if (APPLICATIONPROPERTIES.updateFallback()) {
+            JOptionPane.showMessageDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.updated"),
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        } else {
+            JOptionPane.showMessageDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.nochange"),
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
     }
 
     /**
