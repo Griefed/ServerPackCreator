@@ -39,6 +39,8 @@ public class VersionMeta {
     private final FabricMeta FABRIC_META;
     private final ForgeMeta FORGE_META;
 
+    // TODO add constructor without parameters which fetches information from URL without files on disk.
+
     /**
      * Constructor.
      * @author Griefed
@@ -62,6 +64,8 @@ public class VersionMeta {
 
         update();
     }
+
+
 
     /**
      * Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been refreshed.

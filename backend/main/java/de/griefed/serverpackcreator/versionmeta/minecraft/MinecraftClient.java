@@ -56,15 +56,7 @@ public class MinecraftClient {
         this.TYPE = type;
         this.URL = url;
         this.FORGE_META = forgeMeta;
-
-        MinecraftServer minecraftServer = null;
-        try {
-            minecraftServer = new MinecraftServer(version, type, url);
-        } catch (Exception ex) {
-            LOG.debug("No server available for Minecraft version " + this.VERSION);
-        } finally {
-            this.MINECRAFT_SERVER = minecraftServer;
-        }
+        this.MINECRAFT_SERVER = new MinecraftServer(version, type, url);
     }
 
     /**
@@ -116,10 +108,15 @@ public class MinecraftClient {
      * @author Griefed
      * @return {@link MinecraftServer} wrapped in an {@link Optional}
      */
-    public Optional<MinecraftServer> server() {
-        return Optional.ofNullable(MINECRAFT_SERVER);
+    public MinecraftServer server() {
+        return MINECRAFT_SERVER;
     }
 
+    /**
+     * Get the {@link ForgeInstance} for this client, wrapped in an {@link Optional}.
+     * @author Griefed
+     * @return {@link ForgeInstance} for this client, wrapped in an {@link Optional}.
+     */
     public Optional<List<ForgeInstance>> forge() {
         return FORGE_META.getForgeInstances(VERSION);
     }

@@ -117,14 +117,14 @@ public class MinecraftClientMeta {
                 minecraftManifest.get("latest").get("release").asText(),
                 Type.RELEASE,
                 meta.get(minecraftManifest.get("latest").get("release").asText()).url(),
-                meta.get(minecraftManifest.get("latest").get("release").asText()).server().get(),
+                meta.get(minecraftManifest.get("latest").get("release").asText()).server(),
                 this.FORGE_META
         );
         this.latestSnapshot = new MinecraftClient(
                 minecraftManifest.get("latest").get("snapshot").asText(),
                 Type.SNAPSHOT,
                 meta.get(minecraftManifest.get("latest").get("snapshot").asText()).url(),
-                meta.get(minecraftManifest.get("latest").get("snapshot").asText()).server().get(),
+                meta.get(minecraftManifest.get("latest").get("snapshot").asText()).server(),
                 this.FORGE_META
         );
 

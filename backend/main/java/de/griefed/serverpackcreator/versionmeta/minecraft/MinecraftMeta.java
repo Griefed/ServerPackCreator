@@ -280,7 +280,17 @@ public class MinecraftMeta {
      * @return {@link MinecraftServer} wrapped in an {@link Optional}
      */
     public Optional<MinecraftServer> getServer(String minecraftVersion) {
-        return Optional.ofNullable(MINECRAFT_SERVER_META.meta().get(minecraftVersion));
+        try {
+            if (MINECRAFT_SERVER_META.meta().get(minecraftVersion).url().isPresent() &&
+                    MINECRAFT_SERVER_META.meta().get(minecraftVersion).javaVersion().isPresent()) {
+
+                return Optional.ofNullable(MINECRAFT_SERVER_META.meta().get(minecraftVersion));
+            }
+        } catch (Exception ignored) {
+
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -298,7 +308,7 @@ public class MinecraftMeta {
      * @author Griefed
      * @return {@link MinecraftServer} wrapped in an {@link Optional}
      */
-    public Optional<MinecraftServer> latestReleaseServer() {
+    public MinecraftServer latestReleaseServer() {
         return MINECRAFT_CLIENT_META.latestRelease().server();
     }
 
@@ -307,7 +317,7 @@ public class MinecraftMeta {
      * @author Griefed
      * @return {@link MinecraftServer} wrapped in an {@link Optional}
      */
-    public Optional<MinecraftServer> latestSnapshotServer() {
+    public MinecraftServer latestSnapshotServer() {
         return MINECRAFT_CLIENT_META.latestSnapshot().server();
     }
 

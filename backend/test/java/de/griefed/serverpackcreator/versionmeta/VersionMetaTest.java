@@ -1,5 +1,7 @@
-package de.griefed.serverpackcreator;
+package de.griefed.serverpackcreator.versionmeta;
 
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -9,6 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+
+import static javafx.scene.input.DataFormat.URL;
 
 public class VersionMetaTest {
 
@@ -37,8 +41,7 @@ public class VersionMetaTest {
         Assertions.assertFalse(VERSIONMETA.minecraft().checkMinecraftVersion("1.16.7"));
         Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease());
         Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease().version());
-        Assertions.assertTrue(VERSIONMETA.minecraft().latestRelease().server().isPresent());
-        Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease().server().get());
+        Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease().server());
         Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease().url());
         Assertions.assertEquals(VERSIONMETA.minecraft().latestRelease().type(), Type.RELEASE);
         Assertions.assertNotNull(VERSIONMETA.minecraft().releaseVersionsDescending());
@@ -58,9 +61,14 @@ public class VersionMetaTest {
         VERSIONMETA.minecraft().releasesDescending().forEach(release -> {
             Assertions.assertNotNull(release);
             Assertions.assertNotNull(release.version());
-            if (release.server().isPresent()) {
-                Assertions.assertNotNull(release.server().get());
-                Assertions.assertNotNull(release.server().get());
+            Assertions.assertNotNull(release.server());
+            Assertions.assertNotNull(release.server().version());
+            Assertions.assertSame(Type.RELEASE,release.server().type());
+            if (release.server().url().isPresent()) {
+                Assertions.assertNotNull(release.server().url().get());
+            }
+            if (release.server().javaVersion().isPresent()) {
+                Assertions.assertTrue(release.server().javaVersion().get() > 0);
             }
             Assertions.assertNotNull(release.url());
             Assertions.assertEquals(release.type(), Type.RELEASE);
@@ -122,8 +130,8 @@ public class VersionMetaTest {
         Assertions.assertNotNull(VERSIONMETA.minecraft().getServer("1.16.5").get());
         Assertions.assertTrue(VERSIONMETA.minecraft().checkServerAvailability("1.16.5"));
         Assertions.assertFalse(VERSIONMETA.minecraft().checkServerAvailability("1.16.6"));
-        Assertions.assertNotNull(VERSIONMETA.minecraft().latestReleaseServer().get());
-        Assertions.assertNotNull(VERSIONMETA.minecraft().latestSnapshotServer().get());
+        Assertions.assertNotNull(VERSIONMETA.minecraft().latestReleaseServer());
+        Assertions.assertNotNull(VERSIONMETA.minecraft().latestSnapshotServer());
         Assertions.assertNotNull(VERSIONMETA.minecraft().releasesServersDescending());
         Assertions.assertNotNull(VERSIONMETA.minecraft().releasesServersAscending());
         VERSIONMETA.minecraft().snapshotsDescending().forEach(snapshot -> {

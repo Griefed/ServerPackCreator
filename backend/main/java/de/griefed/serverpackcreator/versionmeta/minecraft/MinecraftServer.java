@@ -24,7 +24,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.versionmeta.Type;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Optional;
 
 /**
  * Representation of a Minecraft server, containing information about its Minecraft-version, release-type, download-url
@@ -33,10 +36,14 @@ import java.net.URL;
  */
 public class MinecraftServer {
 
+    private final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+    private final URL MANIFEST_URL;
     private final String VERSION;
     private final Type TYPE;
-    private final URL URL;
-    private final byte JAVA_VERSION;
+
+    private JsonNode serverJson = null;
 
     /**
      * Constructor
@@ -44,22 +51,19 @@ public class MinecraftServer {
      * @param mcVersion {@link String} The Minecraft version of this server.
      * @param mcType {@link Type} The release-type of this server. Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
      * @param mcUrl {@link URL} The URL to the download of this servers JAR-file.
-     * @throws Exception if the servers manifest could not be acquired, the download URL could not be parsed, or the
-     * Java-version could not be parsed.
      */
-    protected MinecraftServer(String mcVersion, Type mcType, URL mcUrl) throws Exception {
-
+    protected MinecraftServer(String mcVersion, Type mcType, URL mcUrl) {
+        this.MANIFEST_URL = mcUrl;
         this.VERSION = mcVersion;
         this.TYPE = mcType;
+    }
 
-        JsonNode serverJson = new ObjectMapper()
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .readTree(mcUrl.openStream());
-
-        this.URL = new URL(serverJson.get("downloads").get("server").get("url").asText());
-        this.JAVA_VERSION = Byte.parseByte(serverJson.get("javaVersion").get("majorVersion").asText());
-
+    private void setServerJson() {
+        try {
+            this.serverJson = OBJECT_MAPPER.readTree(MANIFEST_URL.openStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -85,8 +89,15 @@ public class MinecraftServer {
      * @author Griefed
      * @return {@link URL}
      */
-    public URL url() {
-        return URL;
+    public Optional<URL> url() {
+        if (serverJson == null) {
+            setServerJson();
+        }
+        try {
+            return Optional.of(new URL(serverJson.get("downloads").get("server").get("url").asText()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -94,7 +105,14 @@ public class MinecraftServer {
      * @author Griefed
      * @return {@link Byte}.
      */
-    public byte javaVersion() {
-        return JAVA_VERSION;
+    public Optional<Byte> javaVersion() {
+        if (serverJson == null) {
+            setServerJson();
+        }
+        try {
+            return Optional.of(Byte.parseByte(serverJson.get("javaVersion").get("majorVersion").asText()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

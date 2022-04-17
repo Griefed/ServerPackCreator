@@ -53,30 +53,14 @@ class MinecraftServerMeta {
     protected MinecraftServerMeta update() {
 
         this.RELEASES.clear();
-        MINECRAFT_CLIENT_META.releases().forEach(client -> {
-            if (client.server().isPresent()) {
-                this.RELEASES.add(client.server().get());
-            }
-        });
+        MINECRAFT_CLIENT_META.releases().forEach(client -> this.RELEASES.add(client.server()));
 
         this.SNAPSHOTS.clear();
-        MINECRAFT_CLIENT_META.snapshots().forEach(client -> {
-            if (client.server().isPresent()) {
-                this.SNAPSHOTS.add(client.server().get());
-            }
-        });
+        MINECRAFT_CLIENT_META.snapshots().forEach(client -> this.SNAPSHOTS.add(client.server()));
 
         this.meta = new HashMap<>();
-        MINECRAFT_CLIENT_META.releases().forEach(client -> {
-            if (client.server().isPresent()) {
-                this.meta.put(client.version(), client.server().get());
-            }
-        });
-        MINECRAFT_CLIENT_META.snapshots().forEach(client -> {
-            if (client.server().isPresent()) {
-                this.meta.put(client.version(), client.server().get());
-            }
-        });
+        MINECRAFT_CLIENT_META.releases().forEach(client -> this.meta.put(client.version(), client.server()));
+        MINECRAFT_CLIENT_META.snapshots().forEach(client -> this.meta.put(client.version(), client.server()));
 
         return this;
     }
