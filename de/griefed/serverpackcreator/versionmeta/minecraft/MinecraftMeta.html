@@ -128,7 +128,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#MinecraftMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">MinecraftMeta</a></span>(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#MinecraftMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">MinecraftMeta</a></span>(java.io.File&nbsp;minecraftManifest,
              <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta)</code>
 <div class="block">Constructor.</div>
 </td>
@@ -179,7 +179,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;</code></td>
+<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#latestReleaseServer--">latestReleaseServer</a></span>()</code>
 <div class="block">Get the latest <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, wrapped in an <code>Optional</code>.</div>
 </td>
@@ -191,7 +191,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;</code></td>
+<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#latestSnapshotServer--">latestSnapshotServer</a></span>()</code>
 <div class="block">Get the latest <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, wrapped in an <code>Optional</code>.</div>
 </td>
@@ -368,18 +368,18 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="MinecraftMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">
+<a name="MinecraftMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>MinecraftMeta</h4>
-<pre>public&nbsp;MinecraftMeta(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+<pre>public&nbsp;MinecraftMeta(java.io.File&nbsp;minecraftManifest,
                      <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta)</pre>
 <div class="block">Constructor.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.</dd>
+<dd><code>minecraftManifest</code> - <code>File</code> Minecraft manifest file.</dd>
 <dd><code>injectedForgeMeta</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeMeta</code></a> to acquire Forge instances for this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> version.</dd>
 </dl>
 </li>
@@ -732,7 +732,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>latestReleaseServer</h4>
-<pre>public&nbsp;java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;&nbsp;latestReleaseServer()</pre>
+<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&nbsp;latestReleaseServer()</pre>
 <div class="block">Get the latest <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -746,7 +746,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>latestSnapshotServer</h4>
-<pre>public&nbsp;java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;&nbsp;latestSnapshotServer()</pre>
+<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&nbsp;latestSnapshotServer()</pre>
 <div class="block">Get the latest <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

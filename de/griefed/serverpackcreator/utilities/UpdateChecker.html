@@ -152,26 +152,26 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>java.util.Optional&lt;de.griefed.versionchecker.Update&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate-java.lang.String-java.lang.Boolean-">checkForUpdate</a></span>(@NotNull java.lang.String&nbsp;version,
               java.lang.Boolean&nbsp;preReleaseCheck)</code>
 <div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>de.griefed.versionchecker.gitlab.GitLabChecker</code></td>
+<td class="colFirst"><code>de.griefed.versionchecker.GitLabChecker</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitGriefed--">getGitGriefed</a></span>()</code>
 <div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitGriefed.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>de.griefed.versionchecker.github.GitHubChecker</code></td>
+<td class="colFirst"><code>de.griefed.versionchecker.GitHubChecker</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitHub--">getGitHub</a></span>()</code>
 <div class="block">Getter for the instance of our <code>GitHubChecker</code>.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>de.griefed.versionchecker.gitlab.GitLabChecker</code></td>
+<td class="colFirst"><code>de.griefed.versionchecker.GitLabChecker</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#getGitLab--">getGitLab</a></span>()</code>
 <div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitLab.</div>
 </td>
@@ -249,7 +249,7 @@ public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n
 <ul class="blockList">
 <li class="blockList">
 <h4>getGitHub</h4>
-<pre>public&nbsp;de.griefed.versionchecker.github.GitHubChecker&nbsp;getGitHub()</pre>
+<pre>public&nbsp;de.griefed.versionchecker.GitHubChecker&nbsp;getGitHub()</pre>
 <div class="block">Getter for the instance of our <code>GitHubChecker</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -263,7 +263,7 @@ public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n
 <ul class="blockList">
 <li class="blockList">
 <h4>getGitLab</h4>
-<pre>public&nbsp;de.griefed.versionchecker.gitlab.GitLabChecker&nbsp;getGitLab()</pre>
+<pre>public&nbsp;de.griefed.versionchecker.GitLabChecker&nbsp;getGitLab()</pre>
 <div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitLab.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -277,7 +277,7 @@ public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n
 <ul class="blockList">
 <li class="blockList">
 <h4>getGitGriefed</h4>
-<pre>public&nbsp;de.griefed.versionchecker.gitlab.GitLabChecker&nbsp;getGitGriefed()</pre>
+<pre>public&nbsp;de.griefed.versionchecker.GitLabChecker&nbsp;getGitGriefed()</pre>
 <div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitGriefed.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -291,9 +291,9 @@ public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n
 <ul class="blockListLast">
 <li class="blockList">
 <h4>checkForUpdate</h4>
-<pre>public&nbsp;java.lang.String&nbsp;checkForUpdate(@NotNull
-                                       @NotNull java.lang.String&nbsp;version,
-                                       java.lang.Boolean&nbsp;preReleaseCheck)</pre>
+<pre>public&nbsp;java.util.Optional&lt;de.griefed.versionchecker.Update&gt;&nbsp;checkForUpdate(@NotNull
+                                                                           @NotNull java.lang.String&nbsp;version,
+                                                                           java.lang.Boolean&nbsp;preReleaseCheck)</pre>
 <div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

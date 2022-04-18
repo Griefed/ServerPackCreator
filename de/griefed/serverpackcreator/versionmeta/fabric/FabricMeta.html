@@ -128,7 +128,8 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#FabricMeta-de.griefed.serverpackcreator.ApplicationProperties-">FabricMeta</a></span>(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#FabricMeta-java.io.File-java.io.File-">FabricMeta</a></span>(java.io.File&nbsp;fabricManifest,
+          java.io.File&nbsp;fabricInstallerManifest)</code>
 <div class="block">Constructor</div>
 </td>
 </tr>
@@ -284,20 +285,19 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="FabricMeta-de.griefed.serverpackcreator.ApplicationProperties-">
+<a name="FabricMeta-java.io.File-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>FabricMeta</h4>
-<pre>public&nbsp;FabricMeta(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)
-           throws java.net.MalformedURLException</pre>
+<pre>public&nbsp;FabricMeta(java.io.File&nbsp;fabricManifest,
+                  java.io.File&nbsp;fabricInstallerManifest)</pre>
 <div class="block">Constructor</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>injectedApplicationProperties</code> - instance of <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.net.MalformedURLException</code> - if the meta could not be updated.</dd>
+<dd><code>fabricManifest</code> - <code>File</code> Fabric manifest file..</dd>
+<dd><code>fabricInstallerManifest</code> - <code>File</code> Fabric-installer manifest file..</dd>
 </dl>
 </li>
 </ul>

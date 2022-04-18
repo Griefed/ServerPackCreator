@@ -153,7 +153,7 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>byte</code></td>
+<td class="colFirst"><code>java.util.Optional&lt;java.lang.Byte&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#javaVersion--">javaVersion</a></span>()</code>
 <div class="block">Get the Java-version of this Minecraft-server.</div>
 </td>
@@ -165,7 +165,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#url--">url</a></span>()</code>
 <div class="block">Get the <code>URL</code> to the download of this Minecraft-servers JAR-file.</div>
 </td>
@@ -206,17 +206,13 @@ extends java.lang.Object</pre>
 <h4>MinecraftServer</h4>
 <pre>protected&nbsp;MinecraftServer(java.lang.String&nbsp;mcVersion,
                           <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;mcType,
-                          java.net.URL&nbsp;mcUrl)
-                   throws java.lang.Exception</pre>
+                          java.net.URL&nbsp;mcUrl)</pre>
 <div class="block">Constructor</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>mcVersion</code> - <code>String</code> The Minecraft version of this server.</dd>
 <dd><code>mcType</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta"><code>Type</code></a> The release-type of this server. Either <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> or <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>.</dd>
 <dd><code>mcUrl</code> - <code>URL</code> The URL to the download of this servers JAR-file.</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if the servers manifest could not be acquired, the download URL could not be parsed, or the
- Java-version could not be parsed.</dd>
 </dl>
 </li>
 </ul>
@@ -262,7 +258,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>url</h4>
-<pre>public&nbsp;java.net.URL&nbsp;url()</pre>
+<pre>public&nbsp;java.util.Optional&lt;java.net.URL&gt;&nbsp;url()</pre>
 <div class="block">Get the <code>URL</code> to the download of this Minecraft-servers JAR-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -276,7 +272,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>javaVersion</h4>
-<pre>public&nbsp;byte&nbsp;javaVersion()</pre>
+<pre>public&nbsp;java.util.Optional&lt;java.lang.Byte&gt;&nbsp;javaVersion()</pre>
 <div class="block">Get the Java-version of this Minecraft-server.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

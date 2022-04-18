@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
+var methods = {"i0":10,"i1":10,"i2":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -180,37 +180,6 @@ extends java.lang.Object</pre>
 <div class="block">Calls individual methods which check for existence of default files.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.net.URL</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricInstallerManifestUrl--">getFabricInstallerManifestUrl</a></span>()</code>
-<div class="block">Getter for the URL to the Fabric Installer Manifest.</div>
-</td>
-</tr>
-<tr id="i4" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getFabricManifestUrl--">getFabricManifestUrl</a></span>()</code>
-<div class="block">Getter for Fabric's version-manifest.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>java.net.URL</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getForgeManifestUrl--">getForgeManifestUrl</a></span>()</code>
-<div class="block">Getter for Forge's version-manifest.</div>
-</td>
-</tr>
-<tr id="i6" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#getMinecraftManifestUrl--">getMinecraftManifestUrl</a></span>()</code>
-<div class="block">Getter for Mojang's Minecraft version-manifest.</div>
-</td>
-</tr>
-<tr id="i7" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#refreshManifestFile-java.net.URL-java.io.File-">refreshManifestFile</a></span>(java.net.URL&nbsp;manifestUrl,
-                   java.io.File&nbsp;manifestToRefresh)</code>
-<div class="block">Deletes the specified manifest if it is found, then downloads the specified manifest file again.</div>
-</td>
-</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -260,62 +229,6 @@ public&nbsp;DefaultFiles(<a href="../../../de/griefed/serverpackcreator/i18n/Loc
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getMinecraftManifestUrl--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getMinecraftManifestUrl</h4>
-<pre>public&nbsp;java.net.URL&nbsp;getMinecraftManifestUrl()</pre>
-<div class="block">Getter for Mojang's Minecraft version-manifest.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>URL. Returns the URL to the JSON-file.</dd>
-</dl>
-</li>
-</ul>
-<a name="getForgeManifestUrl--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getForgeManifestUrl</h4>
-<pre>public&nbsp;java.net.URL&nbsp;getForgeManifestUrl()</pre>
-<div class="block">Getter for Forge's version-manifest.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>URL. Returns the URL to the JSON-file.</dd>
-</dl>
-</li>
-</ul>
-<a name="getFabricManifestUrl--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getFabricManifestUrl</h4>
-<pre>public&nbsp;java.net.URL&nbsp;getFabricManifestUrl()</pre>
-<div class="block">Getter for Fabric's version-manifest.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>URL. Returns the URL to the XML-file.</dd>
-</dl>
-</li>
-</ul>
-<a name="getFabricInstallerManifestUrl--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getFabricInstallerManifestUrl</h4>
-<pre>public&nbsp;java.net.URL&nbsp;getFabricInstallerManifestUrl()</pre>
-<div class="block">Getter for the URL to the Fabric Installer Manifest. Gets the string containing the URL and returns it as a URL.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>URL. Returns the URL to the XML-file.</dd>
-</dl>
-</li>
-</ul>
 <a name="filesSetup--">
 <!--   -->
 </a>
@@ -344,23 +257,6 @@ public&nbsp;DefaultFiles(<a href="../../../de/griefed/serverpackcreator/i18n/Loc
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file was generated, so <a href="../../../de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--"><code>filesSetup()</code></a> can inform the user about
  said newly generated file.</dd>
-</dl>
-</li>
-</ul>
-<a name="refreshManifestFile-java.net.URL-java.io.File-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>refreshManifestFile</h4>
-<pre>public&nbsp;void&nbsp;refreshManifestFile(java.net.URL&nbsp;manifestUrl,
-                                java.io.File&nbsp;manifestToRefresh)</pre>
-<div class="block">Deletes the specified manifest if it is found, then downloads the specified manifest file again. Ensures we always
- have the latest manifest for version validation available.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>manifestUrl</code> - The URL to the file which is to be downloaded.</dd>
-<dd><code>manifestToRefresh</code> - The manifest file to delete and then download, "refreshing" it</dd>
 </dl>
 </li>
 </ul>
