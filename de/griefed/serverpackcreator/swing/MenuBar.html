@@ -277,6 +277,7 @@ extends java.awt.Component</pre>
 <dd><code>injectedTabCreateServerPack</code> - Our tab for configuring ServerPackCreator.</dd>
 <dd><code>injectedTabbedPane</code> - The tabbed pane which holds all our tabs.</dd>
 <dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various different things.</dd>
+<dd><code>injectedUpdateChecker</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities"><code>UpdateChecker</code></a> to check for update-availability.</dd>
 </dl>
 </li>
 </ul>
@@ -310,6 +311,10 @@ extends java.awt.Component</pre>
 <h4>displayUpdateDialog</h4>
 <pre>protected&nbsp;boolean&nbsp;displayUpdateDialog()</pre>
 <div class="block">If an initialize is available for ServerPackCreator, display a dialog asking the user whether</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>Boolean</code> <code>true</code> if an update was found and the dialog displayed.</dd>
+</dl>
 </li>
 </ul>
 </li>
