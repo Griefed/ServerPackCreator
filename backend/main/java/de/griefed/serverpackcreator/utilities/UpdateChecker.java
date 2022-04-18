@@ -174,29 +174,28 @@ public class UpdateChecker {
             LOG.debug("Checking GitGriefed for updates...");
 
             // After checking GitHub, and we did not get a version, check GitGriefed.
-            if (update.isPresent()) {
+            if (update.isPresent() && GITGRIEFED.check(update.get().version(), preReleaseCheck).isPresent()) {
 
                 update = GITGRIEFED.check(update.get().version(), preReleaseCheck);
 
             // Check GitGriefed for a newer version, with the version received from GitHub, if we received a new version from GitHub.
-            } else {
+            } else if (!update.isPresent()) {
 
                 update = GITGRIEFED.check(version, preReleaseCheck);
 
             }
         }
 
-
         if (GITLAB != null) {
             LOG.debug("Checking GitLab for updates...");
 
             // After checking GitGriefed, and we did not get a version, check GitLab.
-            if (update.isPresent()) {
+            if (update.isPresent() && GITLAB.check(update.get().version(), preReleaseCheck).isPresent()) {
 
                 update = GITLAB.check(update.get().version(), preReleaseCheck);
 
             // Check GitLab for a newer version, with the version we received from GitGriefed, if we received a new version from GitGriefed.
-            } else {
+            } else if (!update.isPresent()) {
 
                 update = GITLAB.check(version, preReleaseCheck);
 
