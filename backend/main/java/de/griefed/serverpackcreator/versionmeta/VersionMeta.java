@@ -19,13 +19,13 @@
  */
 package de.griefed.serverpackcreator.versionmeta;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricMeta;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -38,27 +38,26 @@ public class VersionMeta {
     private final MinecraftMeta MINECRAFT_META;
     private final FabricMeta FABRIC_META;
     private final ForgeMeta FORGE_META;
-
-    // TODO add constructor without parameters which fetches information from URL without files on disk.
-
+    
     /**
      * Constructor.
      * @author Griefed
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @param minecraftManifest {@link File} Minecraft manifest file.
+     * @param forgeManifest {@link File} Forge manifest file.
+     * @param fabricManifest {@link File} Fabric manifest file.
+     * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
      * @throws IOException if one of the metas could not be initialized.
      */
     @Autowired
-    public VersionMeta(ApplicationProperties injectedApplicationProperties) throws IOException {
-        ApplicationProperties APPLICATIONPROPERTIES;
-        if (injectedApplicationProperties == null) {
-            APPLICATIONPROPERTIES = new ApplicationProperties();
-        } else {
-            APPLICATIONPROPERTIES = injectedApplicationProperties;
-        }
+    public VersionMeta(File minecraftManifest, File forgeManifest, File fabricManifest, File fabricInstallerManifest) throws IOException {
 
-        this.FORGE_META = new ForgeMeta(APPLICATIONPROPERTIES);
-        this.MINECRAFT_META = new MinecraftMeta(APPLICATIONPROPERTIES, this.FORGE_META);
-        this.FABRIC_META = new FabricMeta(APPLICATIONPROPERTIES);
+        //TODO if files do not exist, download
+        //TODO if files exist, check for newer ones
+        //TODO if no newer ones exist, load
+
+        this.FORGE_META = new ForgeMeta(forgeManifest);
+        this.MINECRAFT_META = new MinecraftMeta(minecraftManifest, this.FORGE_META);
+        this.FABRIC_META = new FabricMeta(fabricManifest, fabricInstallerManifest);
 
         this.FORGE_META.initialize(this.MINECRAFT_META);
 

@@ -20,10 +20,10 @@
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,17 +35,19 @@ import java.util.Optional;
  */
 public class MinecraftMeta {
 
+    private final File MINECRAFT_MANIFEST;
     private final MinecraftClientMeta MINECRAFT_CLIENT_META;
     private final MinecraftServerMeta MINECRAFT_SERVER_META;
 
     /**
      * Constructor.
      * @author Griefed
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @param minecraftManifest {@link File} Minecraft manifest file.
      * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link MinecraftClient} version.
      */
-    public MinecraftMeta(ApplicationProperties injectedApplicationProperties, ForgeMeta injectedForgeMeta) {
-        this.MINECRAFT_CLIENT_META = new MinecraftClientMeta(injectedApplicationProperties, injectedForgeMeta);
+    public MinecraftMeta(File minecraftManifest, ForgeMeta injectedForgeMeta) {
+        this.MINECRAFT_MANIFEST = minecraftManifest;
+        this.MINECRAFT_CLIENT_META = new MinecraftClientMeta(this.MINECRAFT_MANIFEST, injectedForgeMeta);
         this.MINECRAFT_SERVER_META = new MinecraftServerMeta(this.MINECRAFT_CLIENT_META);
     }
 

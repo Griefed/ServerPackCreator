@@ -102,7 +102,12 @@ public class CurseCreateModpack {
 
         VersionMeta VERSIONMETA;
         if (injectedVersionMeta == null) {
-            VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
+            VERSIONMETA = new VersionMeta(
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+            );
         } else {
             VERSIONMETA = injectedVersionMeta;
         }

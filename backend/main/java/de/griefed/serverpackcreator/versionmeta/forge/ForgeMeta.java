@@ -22,10 +22,10 @@ package de.griefed.serverpackcreator.versionmeta.forge;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,28 +38,28 @@ import java.util.Optional;
  */
 public class ForgeMeta {
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final File FORGE_MANIFEST;
     private final ObjectMapper OBJECTMAPPER = new ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
 
     private ForgeLoader forgeLoader;
 
-    public ForgeMeta(ApplicationProperties injectedApplicationProperties) {
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    public ForgeMeta(File forgeManifest) {
+        this.FORGE_MANIFEST = forgeManifest;
     }
 
     /**
      * Update this instances {@link ForgeLoader} with new information. Usually called after the Forge manifest has been
      * refreshed.
      * @author Griefed
-     * @param injectedMinecraftMeta Instance of {@link MinecraftMeta}
+     * @param injectedMinecraftMeta {@link File} Minecraft manifest file.
      * @throws IOException if the manifest could not be parsed into a {@link com.fasterxml.jackson.databind.JsonNode}.
      */
     public void initialize(MinecraftMeta injectedMinecraftMeta) throws IOException {
         if (this.forgeLoader == null) {
             this.forgeLoader = new ForgeLoader(
-                    OBJECTMAPPER.readTree(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE),
+                    OBJECTMAPPER.readTree(this.FORGE_MANIFEST),
                     injectedMinecraftMeta
             );
         }
@@ -73,7 +73,7 @@ public class ForgeMeta {
      * @throws IOException if the manifest could not be parsed into a {@link com.fasterxml.jackson.databind.JsonNode}.
      */
     public ForgeMeta update() throws IOException {
-        this.forgeLoader.update(OBJECTMAPPER.readTree(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE));
+        this.forgeLoader.update(OBJECTMAPPER.readTree(this.FORGE_MANIFEST));
 
         return this;
     }

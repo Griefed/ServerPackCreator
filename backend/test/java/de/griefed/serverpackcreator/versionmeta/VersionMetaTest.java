@@ -27,7 +27,12 @@ public class VersionMetaTest {
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
         LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
+        this.VERSIONMETA = new VersionMeta(
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+        );
     }
 
     @Test

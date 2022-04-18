@@ -112,12 +112,12 @@ public class FabricInstaller {
     /**
      * Acquire the URL for the given Fabric version.
      * @author Griefed
-     * @param fabricVersion {@link String} Fabric version.
+     * @param fabricInstallerVersion {@link String} Fabric version.
      * @return {@link URL} to the installer for the given Fabric version.
      * @throws MalformedURLException if the URL could not be formed.
      */
-    private URL installerUrl(String fabricVersion) throws MalformedURLException {
-        return new URL(String.format(URL_TEMPLATE_INSTALLER, fabricVersion, fabricVersion));
+    private URL installerUrl(String fabricInstallerVersion) throws MalformedURLException {
+        return new URL(String.format(URL_TEMPLATE_INSTALLER, fabricInstallerVersion, fabricInstallerVersion));
     }
 
     /**

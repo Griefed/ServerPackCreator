@@ -110,7 +110,12 @@ public class ServerPackHandler {
         }
 
         if (injectedVersionMeta == null) {
-            this.VERSIONMETA = new VersionMeta(APPLICATIONPROPERTIES);
+            this.VERSIONMETA = new VersionMeta(
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
+                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+            );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
         }

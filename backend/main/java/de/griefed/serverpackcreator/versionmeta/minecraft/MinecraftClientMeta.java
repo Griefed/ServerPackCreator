@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class MinecraftClientMeta {
             .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
 
     private final ForgeMeta FORGE_META;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final File MINECRAFT_MANIFEST;
     private final List<MinecraftClient> RELEASES = new ArrayList<>();
     private final List<MinecraftClient> SNAPSHOTS = new ArrayList<>();
 
@@ -58,10 +59,10 @@ public class MinecraftClientMeta {
      * Constructor.
      * @author Griefed
      * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link MinecraftClient} version.
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @param minecraftManifest {@link File} Minecraft manifest file.
      */
-    protected MinecraftClientMeta(ApplicationProperties injectedApplicationProperties, ForgeMeta injectedForgeMeta) {
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    protected MinecraftClientMeta(File minecraftManifest, ForgeMeta injectedForgeMeta) {
+        this.MINECRAFT_MANIFEST = minecraftManifest;
         this.FORGE_META = injectedForgeMeta;
     }
 
@@ -77,7 +78,7 @@ public class MinecraftClientMeta {
         SNAPSHOTS.clear();
         meta = new HashMap<>();
 
-        JsonNode minecraftManifest = OBJECTMAPPER.readTree(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT);
+        JsonNode minecraftManifest = OBJECTMAPPER.readTree(this.MINECRAFT_MANIFEST);
 
         minecraftManifest.get("versions").forEach(minecraftVersion -> {
 
