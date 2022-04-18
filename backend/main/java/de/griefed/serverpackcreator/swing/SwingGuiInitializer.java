@@ -30,6 +30,7 @@ import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
+import de.griefed.versionchecker.Update;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.logging.log4j.LogManager;
@@ -45,7 +46,9 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -281,7 +284,8 @@ public class SwingGuiInitializer extends JPanel {
                 LAF_DARK,
                 TAB_CREATESERVERPACK,
                 TABBEDPANE,
-                APPLICATIONPROPERTIES
+                APPLICATIONPROPERTIES,
+                UPDATECHECKER
         );
 
         FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
@@ -356,87 +360,7 @@ public class SwingGuiInitializer extends JPanel {
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
 
-        displayUpdateDialog();
+        MENUBAR.displayUpdateDialog();
     }
 
-    /**
-     * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
-     * @author Griefed
-     */
-    private void displayUpdateDialog() {
-
-        String updater = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-
-        if (updater.contains(";")) {
-            String version = updater.split(";")[0];
-            String url = updater.split(";")[1];
-            String textContent = String.format(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.new"), url);
-
-            StyledDocument styledDocument = new DefaultStyledDocument();
-            SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
-            MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
-            JTextPane jTextPane = new JTextPane(styledDocument);
-            StyleConstants.setBold(simpleAttributeSet, true);
-            StyleConstants.setFontSize(simpleAttributeSet, 14);
-            jTextPane.setCharacterAttributes(simpleAttributeSet, true);
-            StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT);
-            styledDocument.setParagraphAttributes(0, styledDocument.getLength(), simpleAttributeSet, false);
-            jTextPane.addHierarchyListener(e1 -> {
-                Window window = SwingUtilities.getWindowAncestor(jTextPane);
-                if (window instanceof Dialog) {
-                    Dialog dialog = (Dialog) window;
-                    if (!dialog.isResizable()) {
-                        dialog.setResizable(true);
-                    }
-                }
-            });
-            jTextPane.setOpaque(false);
-            jTextPane.setEditable(false);
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            String[] options = new String[3];
-
-            options[0] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.yes");
-            options[1] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.no");
-            options[2] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.clipboard");
-
-
-            try {
-                styledDocument.insertString(0, textContent, simpleAttributeSet);
-            } catch (BadLocationException ex) {
-                LOG.error("Error inserting text into aboutDocument.", ex);
-            }
-
-            materialTextPaneUI.installUI(jTextPane);
-
-            switch (JOptionPane.showOptionDialog(
-                    FRAME_SERVERPACKCREATOR,
-                    jTextPane,
-                    LOCALIZATIONMANAGER.getLocalizedString("update.dialog.available"),
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE,
-                    UIManager.getIcon("OptionPane.informationIcon"),
-                    options,
-                    options[0])) {
-
-                case 0:
-
-                    try {
-                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                            Desktop.getDesktop().browse(URI.create(url));
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Error opening browser.", ex);
-                    }
-                    break;
-
-                case 1:
-
-                    clipboard.setContents(new StringSelection(url), null);
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }
 }

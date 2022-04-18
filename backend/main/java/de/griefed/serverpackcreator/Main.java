@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
+import de.griefed.versionchecker.Update;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -322,12 +323,12 @@ public class Main {
 
     private static void checkForUpdate(LocalizationManager LOCALIZATIONMANAGER, UpdateChecker UPDATECHECKER, ApplicationProperties APPLICATIONPROPERTIES) {
 
-        String updater = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+        Optional<Update> update = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
-        if (updater.contains(";")) {
+        if (update.isPresent()) {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.available"));
-            LOG.info("    " + updater.split(";")[0]);
-            LOG.info("    " + updater.split(";")[1]);
+            LOG.info("    " + update.get().version());
+            LOG.info("    " + update.get().url());
         } else {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"));
         }

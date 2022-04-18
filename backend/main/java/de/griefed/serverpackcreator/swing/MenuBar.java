@@ -23,7 +23,9 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
+import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import de.griefed.versionchecker.Update;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.combobox.MaterialComboBoxUI;
 import mdlaf.components.textfield.MaterialTextFieldUI;
@@ -45,10 +47,12 @@ import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.ProtocolException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -67,6 +71,7 @@ public class MenuBar extends Component {
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final UpdateChecker UPDATECHECKER;
 
     private final LightTheme LIGHTTHEME;
     private final DarkTheme DARKTHEME;
@@ -156,6 +161,7 @@ public class MenuBar extends Component {
     private JMenuItem about_OpenDiscordLinkMenuItem;
     private JMenuItem about_OpenWikiHelpMenuItem;
     private JMenuItem about_OpenWikiHowToMenuItem;
+    private JMenuItem about_CheckForUpdates;
 
     private JFileChooser configChooser;
 
@@ -176,7 +182,8 @@ public class MenuBar extends Component {
      */
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
-                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties) {
+                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties,
+                   UpdateChecker injectedUpdateChecker) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -188,6 +195,12 @@ public class MenuBar extends Component {
             this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         } else {
             this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+        }
+
+        if (injectedUpdateChecker == null) {
+            this.UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        } else {
+            this.UPDATECHECKER = injectedUpdateChecker;
         }
 
         this.LIGHTTHEME = injectedLightTheme;
@@ -360,6 +373,7 @@ public class MenuBar extends Component {
         about_OpenDonationsPageMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.donate"));
         about_OpenWikiHelpMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.help"));
         about_OpenWikiHowToMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.howto"));
+        about_CheckForUpdates = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updates"));
 
         // create action listeners for items
         file_NewConfigurationMenuItem.addActionListener(this::actionEventNewConfiguration);
@@ -390,6 +404,7 @@ public class MenuBar extends Component {
         about_OpenDonationsPageMenuItem.addActionListener(this::actionEventOpenDonateMenuItem);
         about_OpenWikiHelpMenuItem.addActionListener(this::actionEventOpenWikiHelpMenuItem);
         about_OpenWikiHowToMenuItem.addActionListener(this::actionEventOpenWikiHowToMenuItem);
+        about_CheckForUpdates.addActionListener(this::actionEventCheckForUpdates);
 
         // add items to menus
         fileMenu.add(file_NewConfigurationMenuItem);
@@ -420,6 +435,7 @@ public class MenuBar extends Component {
         viewMenu.add(view_ExampleAddonRepositoryMenuItem);
 
         aboutMenu.add(about_OpenAboutWindowMenuItem);
+        aboutMenu.add(about_CheckForUpdates);
         aboutMenu.add(new JSeparator());
         aboutMenu.add(about_OpenWikiHelpMenuItem);
         aboutMenu.add(about_OpenWikiHowToMenuItem);
@@ -441,6 +457,107 @@ public class MenuBar extends Component {
         return MENUBAR;
     }
 
+    private void actionEventCheckForUpdates(ActionEvent actionEvent) {
+        LOG.debug("Clicked Check for Updates");
+
+        if (!displayUpdateDialog()) {
+            JOptionPane.showMessageDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updates.none"),
+                    LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updates.none.title"),
+                    JOptionPane.INFORMATION_MESSAGE,
+                    UIManager.getIcon("OptionPane.informationIcon")
+            );
+        }
+    }
+
+    /**
+     * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
+     * @author Griefed
+     */
+    protected boolean displayUpdateDialog() {
+
+        Optional<Update> update = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+
+        if (update.isPresent()) {
+            String textContent = String.format(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.new"), update.get().url());
+
+            StyledDocument styledDocument = new DefaultStyledDocument();
+            SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
+            MaterialTextPaneUI materialTextPaneUI = new MaterialTextPaneUI();
+            JTextPane jTextPane = new JTextPane(styledDocument);
+            StyleConstants.setBold(simpleAttributeSet, true);
+            StyleConstants.setFontSize(simpleAttributeSet, 14);
+            jTextPane.setCharacterAttributes(simpleAttributeSet, true);
+            StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT);
+            styledDocument.setParagraphAttributes(0, styledDocument.getLength(), simpleAttributeSet, false);
+            jTextPane.addHierarchyListener(e1 -> {
+                Window window = SwingUtilities.getWindowAncestor(jTextPane);
+                if (window instanceof Dialog) {
+                    Dialog dialog = (Dialog) window;
+                    if (!dialog.isResizable()) {
+                        dialog.setResizable(true);
+                    }
+                }
+            });
+            jTextPane.setOpaque(false);
+            jTextPane.setEditable(false);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            String[] options = new String[3];
+
+            options[0] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.yes");
+            options[1] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.no");
+            options[2] = LOCALIZATIONMANAGER.getLocalizedString("update.dialog.clipboard");
+
+
+            try {
+                styledDocument.insertString(0, textContent, simpleAttributeSet);
+            } catch (BadLocationException ex) {
+                LOG.error("Error inserting text into aboutDocument.", ex);
+            }
+
+            materialTextPaneUI.installUI(jTextPane);
+
+            switch (JOptionPane.showOptionDialog(
+                    FRAME_SERVERPACKCREATOR,
+                    jTextPane,
+                    LOCALIZATIONMANAGER.getLocalizedString("update.dialog.available"),
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    UIManager.getIcon("OptionPane.informationIcon"),
+                    options,
+                    options[0])) {
+
+                case 0:
+
+                    try {
+                        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                            Desktop.getDesktop().browse(update.get().url().toURI());
+                        }
+                    } catch (IOException | RuntimeException | URISyntaxException ex) {
+                        LOG.error("Error opening browser.", ex);
+                    }
+                    break;
+
+                case 1:
+
+                    clipboard.setContents(new StringSelection(update.get().url().toString()), null);
+                    break;
+
+                default:
+                    break;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Update the fallback clientside-only mods-list from the repositories.
+     * @author Grefed
+     * @param actionEvent The event which triggers this method.
+     */
     private void actionEventUpdateFallbackModslist(ActionEvent actionEvent) {
         LOG.debug("Running update check for fallback modslist...");
         if (APPLICATIONPROPERTIES.updateFallback()) {
@@ -448,14 +565,16 @@ public class MenuBar extends Component {
                     FRAME_SERVERPACKCREATOR,
                     LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.updated"),
                     LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
-                    JOptionPane.INFORMATION_MESSAGE
+                    JOptionPane.INFORMATION_MESSAGE,
+                    UIManager.getIcon("OptionPane.informationIcon")
             );
         } else {
             JOptionPane.showMessageDialog(
                     FRAME_SERVERPACKCREATOR,
                     LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.nochange"),
                     LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
-                    JOptionPane.INFORMATION_MESSAGE
+                    JOptionPane.INFORMATION_MESSAGE,
+                    UIManager.getIcon("OptionPane.informationIcon")
             );
         }
     }

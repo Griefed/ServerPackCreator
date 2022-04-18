@@ -22,8 +22,9 @@ package de.griefed.serverpackcreator.utilities;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
-import de.griefed.versionchecker.github.GitHubChecker;
-import de.griefed.versionchecker.gitlab.GitLabChecker;
+import de.griefed.versionchecker.GitHubChecker;
+import de.griefed.versionchecker.GitLabChecker;
+import de.griefed.versionchecker.Update;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can then run our update
@@ -153,60 +155,54 @@ public class UpdateChecker {
      *                                       as well, <Code>false</Code> to only check with regular releases.
      * @return {@link String} The update, if available, as well as the download URL.
      */
-    public String checkForUpdate(@NotNull String version, Boolean preReleaseCheck) {
+    public Optional<Update> checkForUpdate(@NotNull String version, Boolean preReleaseCheck) {
 
         if (version.equalsIgnoreCase("dev")) {
-            return LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
+            return Optional.empty();
         }
 
-        String updater = null;
+        Optional<Update> update = Optional.empty();
 
         if (GITHUB != null) {
             LOG.debug("Checking GitHub for updates...");
 
             // Check GitHub for the most recent release.
-            updater = GITHUB.checkForUpdate(version, preReleaseCheck);
+            update = GITHUB.check(version, preReleaseCheck);
         }
 
-        if (GITGRIEFED != null && updater != null) {
+        if (GITGRIEFED != null) {
             LOG.debug("Checking GitGriefed for updates...");
 
             // After checking GitHub, and we did not get a version, check GitGriefed.
-            if (!updater.contains(";") && GITGRIEFED.checkForUpdate(version, preReleaseCheck).contains(";")) {
+            if (update.isPresent()) {
 
-                updater = GITGRIEFED.checkForUpdate(version, preReleaseCheck);
+                update = GITGRIEFED.check(update.get().version(), preReleaseCheck);
 
             // Check GitGriefed for a newer version, with the version received from GitHub, if we received a new version from GitHub.
-            } else if (updater.contains(";") && GITGRIEFED.checkForUpdate(updater.split(";")[0], preReleaseCheck).contains(";")) {
+            } else {
 
-                updater = GITGRIEFED.checkForUpdate(updater.split(";")[0], preReleaseCheck);
+                update = GITGRIEFED.check(version, preReleaseCheck);
+
             }
         }
 
 
-        if (GITLAB != null && updater != null) {
+        if (GITLAB != null) {
             LOG.debug("Checking GitLab for updates...");
 
             // After checking GitGriefed, and we did not get a version, check GitLab.
-            if (!updater.contains(";") && GITLAB.checkForUpdate(version, preReleaseCheck).contains(";")) {
+            if (update.isPresent()) {
 
-                updater = GITLAB.checkForUpdate(version, preReleaseCheck);
+                update = GITLAB.check(update.get().version(), preReleaseCheck);
 
             // Check GitLab for a newer version, with the version we received from GitGriefed, if we received a new version from GitGriefed.
-            } else if (updater.contains(";") && GITLAB.checkForUpdate(updater.split(";")[0], preReleaseCheck).contains(";")) {
+            } else {
 
-                updater = GITLAB.checkForUpdate(updater.split(";")[0], preReleaseCheck);
+                update = GITLAB.check(version, preReleaseCheck);
+
             }
         }
 
-
-        LOG.debug("Received " + updater + " from UpdateChecker.");
-
-
-        if (updater == null) {
-            return LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none");
-        } else {
-            return updater;
-        }
+        return update;
     }
 }
