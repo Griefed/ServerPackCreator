@@ -48,7 +48,27 @@ public enum Type {
     /**
      * Sort descending, large to small.
      */
-    DESCENDING("Descending");
+    DESCENDING("Descending"),
+
+    /**
+     * Indicates this operation concerns Minecraft.
+     */
+    MINECRAFT("Minecraft"),
+
+    /**
+     * Indicates this operation concerns Forge.
+     */
+    FORGE("Forge"),
+
+    /**
+     * Indicates this operation concerns Fabric.
+     */
+    FABRIC("Fabric"),
+
+    /**
+     * Indicates this operation concerns Fabric Installer.
+     */
+    FABRIC_INSTALLER("Fabric Installer");
 
     public final String type;
 

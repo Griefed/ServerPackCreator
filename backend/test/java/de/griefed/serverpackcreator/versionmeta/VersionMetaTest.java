@@ -3,27 +3,19 @@ package de.griefed.serverpackcreator.versionmeta;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.versionmeta.Type;
-import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-
-import static javafx.scene.input.DataFormat.URL;
 
 public class VersionMetaTest {
 
     private final VersionMeta VERSIONMETA;
 
     public VersionMetaTest() throws IOException {
-        try {
-            FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
         LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
@@ -33,6 +25,27 @@ public class VersionMetaTest {
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
         );
+    }
+
+    @BeforeAll
+    static void manifestTest() throws IOException {
+        FileUtils.deleteQuietly(new File("./work/minecraft-manifest.json"));
+        FileUtils.deleteQuietly(new File("./work/fabric-manifest.xml"));
+        FileUtils.deleteQuietly(new File("./work/fabric-installer-manifest.xml"));
+        FileUtils.deleteQuietly(new File("./work/forge-manifest.json"));
+
+        ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
+        VersionMeta VERSIONMETA = new VersionMeta(
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
+                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+        );
+
+        Assertions.assertTrue(new File("./work/minecraft-manifest.json").exists());
+        Assertions.assertTrue(new File("./work/fabric-manifest.xml").exists());
+        Assertions.assertTrue(new File("./work/fabric-installer-manifest.xml").exists());
+        Assertions.assertTrue(new File("./work/forge-manifest.json").exists());
     }
 
     @Test
