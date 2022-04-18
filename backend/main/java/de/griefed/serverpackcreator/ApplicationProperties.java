@@ -697,8 +697,8 @@ public class ApplicationProperties extends Properties {
         }
 
         if (properties != null &&
-                getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").hashCode() !=
-                        properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").hashCode()) {
+                getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
+                        .equals(properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"))) {
 
             setProperty(
                     "de.griefed.serverpackcreator.configuration.fallbackmodslist",
