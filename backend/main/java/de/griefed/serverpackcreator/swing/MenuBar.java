@@ -179,6 +179,7 @@ public class MenuBar extends Component {
      * @param injectedTabCreateServerPack Our tab for configuring ServerPackCreator.
      * @param injectedTabbedPane The tabbed pane which holds all our tabs.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
+     * @param injectedUpdateChecker Instance of {@link UpdateChecker} to check for update-availability.
      */
     public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
                    JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
@@ -474,6 +475,7 @@ public class MenuBar extends Component {
     /**
      * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
      * @author Griefed
+     * @return {@link Boolean} <code>true</code> if an update was found and the dialog displayed.
      */
     protected boolean displayUpdateDialog() {
 
