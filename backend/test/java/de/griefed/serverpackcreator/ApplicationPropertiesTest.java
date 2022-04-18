@@ -59,6 +59,7 @@ public class ApplicationPropertiesTest {
                 "backtools-," +
                 "BetterAdvancements-," +
                 "BetterAnimationsCollection-," +
+                "betterbiomeblend-," +
                 "BetterDarkMode-," +
                 "BetterF3-," +
                 "BetterFoliage-," +
@@ -67,6 +68,7 @@ public class ApplicationPropertiesTest {
                 "BetterTaskbar-," +
                 "bhmenu-," +
                 "BH-Menu-," +
+                "blur-," +
                 "Blur-," +
                 "borderless-mining-," +
                 "catalogue-," +
@@ -87,6 +89,7 @@ public class ApplicationPropertiesTest {
                 "dashloader-," +
                 "DefaultOptions_," +
                 "defaultoptions-," +
+                "DefaultSettings-," +
                 "DeleteWorldsToTrash-," +
                 "desiredservers-," +
                 "Ding-," +
@@ -94,11 +97,14 @@ public class ApplicationPropertiesTest {
                 "drippyloadingscreen-," +
                 "DripSounds-," +
                 "Durability101-," +
+                "DurabilityNotifier-," +
+                "dynamic-fps-," +
                 "dynamic-music-," +
                 "DynamicSurroundings-," +
                 "DynamicSurroundingsHuds-," +
                 "dynmus-," +
                 "effective-," +
+                "eggtab-," +
                 "EiraMoticons_," +
                 "eiramoticons-," +
                 "EnchantmentDescriptions-," +
@@ -144,6 +150,8 @@ public class ApplicationPropertiesTest {
                 "lootbeams-," +
                 "mcbindtype-," +
                 "medievalmusic-," +
+                "modcredits-," +
+                "modmenu-," +
                 "modnametooltip_," +
                 "modnametooltip-," +
                 "moreoverlays-," +
@@ -168,6 +176,7 @@ public class ApplicationPropertiesTest {
                 "presencefootsteps-," +
                 "PresenceFootsteps-," +
                 "ReAuth-," +
+                "rebrand-," +
                 "ResourceLoader-," +
                 "shutupexperimentalsettings-," +
                 "SimpleDiscordRichPresence-," +
@@ -190,6 +199,10 @@ public class ApplicationPropertiesTest {
                 "WorldNameRandomizer-," +
                 "yisthereautojump-"
             ).split(","))));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.getListFallbackMods());
+        APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist","bla");
+        APPLICATIONPROPERTIES.updateFallback();
+        Assertions.assertNotEquals(APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"),"bla");
 
         Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_CONFIG);
         Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_CONFIG,new File("serverpackcreator.conf"));
@@ -237,11 +250,6 @@ public class ApplicationPropertiesTest {
     }
 
     @Test
-    void getListFallbackModsTest() {
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.getListFallbackMods());
-    }
-
-    @Test
     void getListOfDirectoriesToExcludeTest() {
         Assertions.assertNotNull(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude());
         APPLICATIONPROPERTIES.addToListOfDirectoriesToExclude("test");
@@ -270,12 +278,5 @@ public class ApplicationPropertiesTest {
     @Test
     void getServerPackCreatorVersionTest() {
         Assertions.assertEquals("dev",APPLICATIONPROPERTIES.getServerPackCreatorVersion());
-    }
-
-    @Test
-    void updateFallbackTest() {
-        APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist","bla");
-        APPLICATIONPROPERTIES.updateFallback();
-        Assertions.assertNotEquals(APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"),"bla");
     }
 }

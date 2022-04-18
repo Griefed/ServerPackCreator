@@ -66,6 +66,7 @@ public class ApplicationProperties extends Properties {
             "backtools-," +
             "BetterAdvancements-," +
             "BetterAnimationsCollection-," +
+            "betterbiomeblend-," +
             "BetterDarkMode-," +
             "BetterF3-," +
             "BetterFoliage-," +
@@ -74,6 +75,7 @@ public class ApplicationProperties extends Properties {
             "BetterTaskbar-," +
             "bhmenu-," +
             "BH-Menu-," +
+            "blur-," +
             "Blur-," +
             "borderless-mining-," +
             "catalogue-," +
@@ -94,6 +96,7 @@ public class ApplicationProperties extends Properties {
             "dashloader-," +
             "DefaultOptions_," +
             "defaultoptions-," +
+            "DefaultSettings-," +
             "DeleteWorldsToTrash-," +
             "desiredservers-," +
             "Ding-," +
@@ -101,11 +104,14 @@ public class ApplicationProperties extends Properties {
             "drippyloadingscreen-," +
             "DripSounds-," +
             "Durability101-," +
+            "DurabilityNotifier-," +
+            "dynamic-fps-," +
             "dynamic-music-," +
             "DynamicSurroundings-," +
             "DynamicSurroundingsHuds-," +
             "dynmus-," +
             "effective-," +
+            "eggtab-," +
             "EiraMoticons_," +
             "eiramoticons-," +
             "EnchantmentDescriptions-," +
@@ -151,6 +157,8 @@ public class ApplicationProperties extends Properties {
             "lootbeams-," +
             "mcbindtype-," +
             "medievalmusic-," +
+            "modcredits-," +
+            "modmenu-," +
             "modnametooltip_," +
             "modnametooltip-," +
             "moreoverlays-," +
@@ -175,6 +183,7 @@ public class ApplicationProperties extends Properties {
             "presencefootsteps-," +
             "PresenceFootsteps-," +
             "ReAuth-," +
+            "rebrand-," +
             "ResourceLoader-," +
             "shutupexperimentalsettings-," +
             "SimpleDiscordRichPresence-," +
@@ -697,8 +706,9 @@ public class ApplicationProperties extends Properties {
         }
 
         if (properties != null &&
-                getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
-                        .equals(properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"))) {
+                !getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
+                        .equals(properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"))
+        ) {
 
             setProperty(
                     "de.griefed.serverpackcreator.configuration.fallbackmodslist",

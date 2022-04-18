@@ -34,6 +34,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +77,7 @@ public class ServerPackHandler {
     private final Utilities UTILITIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
     private final ConfigUtilities CONFIGUTILITIES;
+    private final StopWatch STOPWATCH = new StopWatch();
 
     /**
      * <strong>Constructor</strong><p>
@@ -1335,10 +1337,11 @@ public class ServerPackHandler {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.excludeclientmods"));
 
-        //File[] filesInModsDir = new File(modsDir).listFiles();
-        String[] extensions = new String[] {"jar"};
-
-        Collection<File> filesInModsDir = FileUtils.listFiles(new File(modsDir),extensions,true);
+        Collection<File> filesInModsDir = FileUtils.listFiles(
+                new File(modsDir),
+                new String[] {"jar"} ,
+                true
+        );
 
         List<String> modsInModpack = new ArrayList<>();
         List<String> autodiscoveredClientMods = new ArrayList<>();
@@ -1348,12 +1351,20 @@ public class ServerPackHandler {
 
             String[] split = minecraftVersion.split("\\.");
 
+            //TODO if modloader is Fabric, scan fabric.mod.json
+
+            STOPWATCH.reset();
+            STOPWATCH.start();
             // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
             if (Integer.parseInt(split[1]) > 12) {
                 autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
             } else {
                 autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
             }
+
+            STOPWATCH.stop();
+            LOG.debug("Scan of clientside-only mods took " + STOPWATCH);
+            STOPWATCH.reset();
 
         }
 

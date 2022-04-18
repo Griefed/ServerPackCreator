@@ -61,7 +61,7 @@ public class TaskHandler {
     private final ServerPackHandler SERVERPACKHANDLER;
     private final ServerPackService SERVERPACKSERVICE;
     private final TaskSubmitter TASKSUBMITTER;
-    private final StopWatch STOPWATCH;
+    private final StopWatch STOPWATCH_SCANS;
 
     /**
      * Constructor responsible for our DI.
@@ -83,7 +83,7 @@ public class TaskHandler {
         this.SERVERPACKHANDLER = injectedServerPackHandler;
         this.SERVERPACKSERVICE = injectedServerPackService;
         this.TASKSUBMITTER = injectedTaskSubmitter;
-        this.STOPWATCH = new StopWatch();
+        this.STOPWATCH_SCANS = new StopWatch();
         this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
@@ -185,8 +185,8 @@ public class TaskHandler {
 
             ServerPackModel pack = null;
 
-            STOPWATCH.reset();
-            STOPWATCH.start();
+            STOPWATCH_SCANS.reset();
+            STOPWATCH_SCANS.start();
 
             try {
 
@@ -206,11 +206,11 @@ public class TaskHandler {
 
             } finally {
 
-                STOPWATCH.stop();
+                STOPWATCH_SCANS.stop();
 
-                LOG.info("Generation took " + STOPWATCH);
+                LOG.info("Generation took " + STOPWATCH_SCANS);
 
-                STOPWATCH.reset();
+                STOPWATCH_SCANS.reset();
 
             }
 
@@ -239,8 +239,8 @@ public class TaskHandler {
 
             ServerPackModel pack = null;
 
-            STOPWATCH.reset();
-            STOPWATCH.start();
+            STOPWATCH_SCANS.reset();
+            STOPWATCH_SCANS.start();
 
             List<String> encounteredErrors = new ArrayList<>(100);
 
@@ -285,11 +285,11 @@ public class TaskHandler {
 
                 FileUtils.deleteQuietly(new File("./work/modpacks/" + parameters[0]));
 
-                STOPWATCH.stop();
+                STOPWATCH_SCANS.stop();
 
-                LOG.info("Generation took " + STOPWATCH);
+                LOG.info("Generation took " + STOPWATCH_SCANS);
 
-                STOPWATCH.reset();
+                STOPWATCH_SCANS.reset();
             }
 
         } else {
