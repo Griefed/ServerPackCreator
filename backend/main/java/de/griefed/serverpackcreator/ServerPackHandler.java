@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -236,7 +237,7 @@ public class ServerPackHandler {
             }
 
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion(), destination);
+            copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion(), destination, configurationModel.getModLoader());
 
             // Copy start scripts for specified modloader from server_files to server pack.
             createStartScripts(configurationModel.getModLoader(), configurationModel.getJavaArgs(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), destination);
@@ -1105,7 +1106,7 @@ public class ServerPackHandler {
      * server pack directory.
      * If a <code>source/file;destination/file</code>-combination is provided, the specified source-file is copied to
      * the specified destination-file.
-     * Calls {@link #excludeClientMods(String, List, String)} to generate a list of all mods to copy to server pack, excluding
+     * Calls {@link #excludeClientMods(String, List, String, String)} to generate a list of all mods to copy to server pack, excluding
      * clientside-only mods.
      * @author Griefed
      * @param modpackDir String. Files and directories are copied into the server_pack directory inside the modpack directory.
@@ -1114,7 +1115,7 @@ public class ServerPackHandler {
      * @param minecraftVersion String. The Minecraft version the modpack uses.
      * @param destination String. The destination where the files should be copied to.
      */
-    private void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion, String destination) {
+    private void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion, String destination, String modloader) {
 
         try {
 
@@ -1241,7 +1242,7 @@ public class ServerPackHandler {
                      */
                 } else if (directory.startsWith("mods")) {
 
-                    List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion);
+                    List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion, modloader);
 
                     try {
                         Files.createDirectories(Paths.get(serverDir));
@@ -1333,7 +1334,7 @@ public class ServerPackHandler {
      * @param minecraftVersion String. The Minecraft version the modpack uses. Determines whether mods are scanned for sideness.
      * @return List String. A list of all mods to include in the server pack.
      */
-    private List<String> excludeClientMods(String modsDir, List<String> userSpecifiedClientMods, String minecraftVersion) {
+    private List<String> excludeClientMods(String modsDir, List<String> userSpecifiedClientMods, String minecraftVersion, String modloader) {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.excludeclientmods"));
 
@@ -1351,19 +1352,25 @@ public class ServerPackHandler {
 
             String[] split = minecraftVersion.split("\\.");
 
-            //TODO if modloader is Fabric, scan fabric.mod.json
-
             STOPWATCH.reset();
             STOPWATCH.start();
             // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
-            if (Integer.parseInt(split[1]) > 12) {
-                autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
+            if (modloader.equalsIgnoreCase("Forge")) {
+
+                if (Integer.parseInt(split[1]) > 12) {
+                    autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
+                } else {
+                    autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
+                }
+
             } else {
-                autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
+
+                autodiscoveredClientMods.addAll(scanFabricModJson(filesInModsDir));
+
             }
 
             STOPWATCH.stop();
-            LOG.debug("Scan of clientside-only mods took " + STOPWATCH);
+            LOG.debug("Scanning of " + filesInModsDir.size() + " mods took " + STOPWATCH);
             STOPWATCH.reset();
 
         }
@@ -1843,7 +1850,7 @@ public class ServerPackHandler {
      * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
      * If no sideness can be found for a given mod, it is added to prevent false positives.
      * @author Griefed
-     * @param filesInModsDir A list of in which to check the <code>mods.toml</code>-files.
+     * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
      * @return List String. List of mods not to include in server pack based on mods.toml-configuration.
      */
     private List<String> scanTomls(Collection<File> filesInModsDir) {
@@ -2164,7 +2171,7 @@ public class ServerPackHandler {
      * If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not listed as a dependency
      * for another mod, it is added and therefore later on excluded from the server pack.
      * @author Griefed
-     * @param filesInModsDir A list of in which to check the <code>mods.toml</code>-files.
+     * @param filesInModsDir A list of files in which to check the <code>fml-cache-annotation.json</code>-files.
      * @return List String. List of mods not to include in server pack based on fml-cache-annotation.json-content.
      */
     private List<String> scanAnnotations(Collection<File> filesInModsDir) {
@@ -2377,6 +2384,182 @@ public class ServerPackHandler {
                     if (addToDelta) {
                         modsDelta.add(modToCheck);
 
+                    }
+
+                }
+
+
+            } catch (Exception ex) {
+
+                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+
+            } finally {
+
+                try {
+                    //noinspection ConstantConditions
+                    jarFile.close();
+                } catch (Exception ignored) {
+
+                }
+
+                try {
+                    //noinspection ConstantConditions
+                    inputStream.close();
+                } catch (Exception ignored) {
+
+                }
+
+                jarEntry = null;
+
+            }
+        }
+
+        return modsDelta;
+    }
+
+    /**
+     * Scan the <code>fabric.mod.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
+     * If <code>environment</code> specifies <code>client</code>, and is not listed as a dependency
+     * for another mod, it is added and therefore later on excluded from the server pack.
+     * @author Griefed
+     * @param filesInModsDir A list of files in which to check the <code>fabric.mod.json</code>-files.
+     * @return List String. List of mods not to include in server pack based on fabric.mod.json-content.
+     */
+    private List<String> scanFabricModJson(Collection<File> filesInModsDir) {
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scanfabricmodjson"));
+
+        List<String> modDependencies = new ArrayList<>();
+        List<String> clientMods = new ArrayList<>();
+        List<String> modsDelta = new ArrayList<>();
+
+
+        for (File mod : filesInModsDir) {
+            if (mod.toString().endsWith("jar")) {
+
+                String modId = null;
+
+                JarFile jarFile = null;
+                JarEntry jarEntry = null;
+                InputStream inputStream = null;
+
+                try {
+                    jarFile = new JarFile(mod);
+                    jarEntry = jarFile.getJarEntry("fabric.mod.json");
+                    inputStream = jarFile.getInputStream(jarEntry);
+                } catch (Exception ex) {
+                    LOG.error("Can not scan " + mod);
+                }
+
+                try {
+
+                    if (inputStream != null) {
+
+                        JsonNode modJson = getObjectMapper().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature()).readTree(inputStream);
+
+                        modId = modJson.get("id").asText();
+
+                        //Get this mods id/name
+                        try {
+                            if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
+                                if (!clientMods.contains(modId)) {
+                                    clientMods.add(modId);
+
+                                    LOG.debug("Added clientMod: " + modId);
+                                }
+                            }
+                        } catch (NullPointerException ignored) {
+
+                        }
+
+                        //Get this mods dependencies
+                        try {
+                            modJson.get("depends").fieldNames().forEachRemaining(dependency -> {
+                                if (!modDependencies.contains(dependency)) {
+                                    modDependencies.add(dependency);
+                                }
+                            });
+                        } catch (NullPointerException ignored) {
+
+                        }
+
+                    }
+
+                } catch(IOException ex) {
+
+                    LOG.error("Couldn't acquire sideness for mod " + mod,ex);
+
+                } finally {
+
+                    try {
+                        //noinspection ConstantConditions
+                        jarFile.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    try {
+                        //noinspection ConstantConditions
+                        inputStream.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    jarEntry = null;
+
+                }
+
+            }
+
+        }
+
+        //Remove dependencies from list of clientmods to ensure we do not, well, exclude a dependency of another mod.
+        for (String dependency : modDependencies) {
+
+            clientMods.removeIf(n -> (n.contains(dependency)));
+            LOG.debug("Removing " + dependency + " from list of clientmods as it is a dependency for another mod.");
+        }
+
+        //After removing dependencies from the list of potential clientside mods, we can remove any mod that says it is clientside-only.
+        for (File mod : filesInModsDir) {
+
+            String modToCheck = mod.toString().replace("\\", "/");
+            String modIdTocheck = null;
+
+            boolean addToDelta = false;
+
+            JarFile jarFile = null;
+            JarEntry jarEntry = null;
+            InputStream inputStream = null;
+
+            try {
+                jarFile = new JarFile(mod);
+                jarEntry = jarFile.getJarEntry("fabric.mod.json");
+                inputStream = jarFile.getInputStream(jarEntry);
+            } catch (Exception ex) {
+                LOG.error("Can not scan " + mod);
+            }
+
+            try {
+
+                if (inputStream != null) {
+
+                    JsonNode modJson = getObjectMapper().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature()).readTree(inputStream);
+
+                    // Get the modId
+                    modIdTocheck = modJson.get("id").asText();
+
+                    try {
+                        if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
+                            if (clientMods.contains(modIdTocheck)) {
+                                addToDelta = true;
+                            }
+                        }
+                    } catch (NullPointerException ignored) {
+
+                    }
+
+                    if (addToDelta) {
+                        modsDelta.add(modToCheck);
                     }
 
                 }

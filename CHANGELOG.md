@@ -1,3 +1,10 @@
+## [3.2.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.1.0...3.2.0-beta.1) (2022-04-18)
+
+
+### 💎 Improvements
+
+* **Sideness scanning:** Scan sideness of Fabric mods and automatically excluded any detected clientside-only mods. ([4bb76aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bb76aaa2ab0ba012daddc32dad9b6d3cd87e206))
+
 ## [3.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.1.0...3.2.0) (2022-04-18)
 
 
