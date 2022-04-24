@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -147,13 +147,22 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
+               boolean&nbsp;replace,
+               java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar</a></span>(java.lang.String&nbsp;jarPath,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
+               java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</code>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
                  java.lang.String&nbsp;directoryToCopy,
                  java.lang.String&nbsp;destinationDirectory,
                  java.lang.String&nbsp;jarDirectoryPrefix,
@@ -161,13 +170,13 @@ extends java.lang.Object</pre>
 <div class="block">Copy a folder from inside a JAR-file to the host filesystem.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>org.springframework.boot.system.ApplicationHome</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</code>
 <div class="block">Retrieve the ApplicationHome for a given class.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#systemInformation-org.springframework.boot.system.ApplicationHome-">systemInformation</a></span>(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</code>
 <div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>, stored in a <code>HashMap</code>.<br>
@@ -219,13 +228,15 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="copyFileFromJar-java.io.File-">
+<a name="copyFileFromJar-java.io.File-boolean-java.lang.Class-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>copyFileFromJar</h4>
-<pre>public&nbsp;void&nbsp;copyFileFromJar(java.io.File&nbsp;fileToCopy)</pre>
+<pre>public&nbsp;void&nbsp;copyFileFromJar(java.io.File&nbsp;fileToCopy,
+                            boolean&nbsp;replace,
+                            java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</pre>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as specified in the parameter.
  <br>
  Example:<br>
@@ -234,6 +245,28 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileToCopy</code> - File. The source-file in the JAR you wish to copy outside the JAR.</dd>
+<dd><code>replace</code> - Boolean. Whether to replace the file, if it already exists.</dd>
+<dd><code>classToCopyFrom</code> - Class. The class of the JAR from which you want to copy from.</dd>
+</dl>
+</li>
+</ul>
+<a name="copyFileFromJar-java.io.File-java.lang.Class-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>copyFileFromJar</h4>
+<pre>public&nbsp;void&nbsp;copyFileFromJar(java.io.File&nbsp;fileToCopy,
+                            java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</pre>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as specified in the parameter.
+ <br>
+ Example:<br>
+ <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from inside the JAR-file to be copied
+ to the outside of the JAR-file as <code>log4j2.xml</code></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToCopy</code> - File. The source-file in the JAR you wish to copy outside the JAR.</dd>
+<dd><code>classToCopyFrom</code> - Class. The class of the JAR from which to get the resource.</dd>
 </dl>
 </li>
 </ul>
@@ -276,13 +309,13 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="copyFolderFromJar-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
+<a name="copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>copyFolderFromJar</h4>
-<pre>public&nbsp;void&nbsp;copyFolderFromJar(java.lang.String&nbsp;jarPath,
+<pre>public&nbsp;void&nbsp;copyFolderFromJar(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
                               java.lang.String&nbsp;directoryToCopy,
                               java.lang.String&nbsp;destinationDirectory,
                               java.lang.String&nbsp;jarDirectoryPrefix,
@@ -292,8 +325,8 @@ extends java.lang.Object</pre>
  resources inside it, recursively, to the specified destination.<br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>jarPath</code> - String. Path to either the JAR-file from which to copy a folder from, or to the class when running
-                in a dev-environment. This parameter decides whether <a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(String, String, String)</code></a> or
+<dd><code>classToRetrieveHomeFor</code> - String. Path to either the JAR-file from which to copy a folder from, or to the class when running
+                in a dev-environment. This parameter decides whether <a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(Class,String, String, String)</code></a> or
                 <a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.util.jar.JarFile-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(JarFile, String, String, String, String)</code></a> is called.<br>
                 Example for JAR-file: <code>/home/griefed/serverpackcreator/serverpackcreator.jar</code><br>
                 Example for dev-environment: <code>G:/GitLab/ServerPackCreator/build/classes/java/main</code><br>

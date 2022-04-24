@@ -244,7 +244,7 @@
 <dd>
 <div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by the CurseForge modpack.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/DefaultFiles.html#checkDatabase--">checkDatabase()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator">DefaultFiles</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#checkDatabase--">checkDatabase()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
 <dd>
 <div class="block">Ensures serverpackcreator.db exists.</div>
 </dd>
@@ -259,9 +259,9 @@
  if checks for available PreReleases are enabled, <code>false</code> if no checks for available PreReleases should
  be made.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/DefaultFiles.html#checkForFile-java.io.File-">checkForFile(File)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator">DefaultFiles</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#checkForConfig--">checkForConfig()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
 <dd>
-<div class="block">Checks for existence of defaults files.</div>
+<div class="block">Check for old config file, if found rename to new name.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#checkForgeAndMinecraftVersion-java.lang.String-java.lang.String-">checkForgeAndMinecraftVersion(String, String)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.forge.<a href="de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a></dt>
 <dd>
@@ -310,6 +310,10 @@
 <dd>
 <div class="block">Check whether a <a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> is available for the specified Minecraft-version.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#checkServerFilesFile-java.io.File-">checkServerFilesFile(File)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
+<dd>
+<div class="block">Checks for existence of defaults files.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#checkZipArchive-java.nio.file.Path-java.util.List-">checkZipArchive(Path, List&lt;String&gt;)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
 <dd>
 <div class="block">Check a given ZIP-archives contents.</div>
@@ -326,6 +330,20 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html#clearInterface--">clearInterface()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a></dt>
 <dd>
 <div class="block">Load default values for textfields so the user can start with a new configuration.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html#close--">close()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="de/griefed/serverpackcreator/CommandlineParser.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">CommandlineParser</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
+<dd>
+<div class="block">Check the passed commandline-arguments with which ServerPackCreator was started and return the mode in which to run.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/CommandlineParser.html#CommandlineParser-java.lang.String:A-">CommandlineParser(String[])</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/CommandlineParser.html" title="class in de.griefed.serverpackcreator">CommandlineParser</a></dt>
+<dd>
+<div class="block">Create a new CommandlineParser from the passed commandline-arguments with which ServerPackCreator was started.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">CommandlineParser.Mode</span></a> - Enum in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
+<dd>
+<div class="block">Mode-priorities.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/ConfigurationCreator.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">ConfigurationCreator</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/package-summary.html">de.griefed.serverpackcreator.utilities</a></dt>
 <dd>
@@ -377,11 +395,15 @@
  Language Key <code>cli.input.no</code><br>
  Language Key <code>cli.input.no.short</code><br></div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-">copyFileFromJar(File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.commonutilities.<a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">JarUtilities</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-boolean-java.lang.Class-">copyFileFromJar(File, boolean, Class&lt;?&gt;)</a></span> - Method in class de.griefed.serverpackcreator.utilities.commonutilities.<a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">JarUtilities</a></dt>
 <dd>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar(String, String, String, String, String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.commonutilities.<a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">JarUtilities</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-java.lang.Class-">copyFileFromJar(File, Class&lt;?&gt;)</a></span> - Method in class de.griefed.serverpackcreator.utilities.commonutilities.<a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">JarUtilities</a></dt>
+<dd>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar(Class&lt;?&gt;, String, String, String, String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.commonutilities.<a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">JarUtilities</a></dt>
 <dd>
 <div class="block">Copy a folder from inside a JAR-file to the host filesystem.</div>
 </dd>
@@ -406,7 +428,7 @@
 <dd>
 <div class="block">Check a passed CurseForge project and file ID combination.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/MenuBar.html#createMenuBar--">createMenuBar()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/MenuBar.html" title="class in de.griefed.serverpackcreator.swing">MenuBar</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/MainMenuBar.html#createMenuBar--">createMenuBar()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/MainMenuBar.html" title="class in de.griefed.serverpackcreator.swing">MainMenuBar</a></dt>
 <dd>
 <div class="block">Create the menubar, add all menus, add all menuitems and add actionlisteners for our menuitems.</div>
 </dd>
@@ -575,14 +597,6 @@
 <dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/minecraft/package-summary.html">de.griefed.serverpackcreator.versionmeta.minecraft</a> - package de.griefed.serverpackcreator.versionmeta.minecraft</dt>
 <dd>&nbsp;</dd>
-<dt><a href="de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">DefaultFiles</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
-<dd>
-<div class="block">Requires instances of <a href="de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n"><code>LocalizationManager</code></a> for use of localization, but creates one if injected one is null.</div>
-</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/DefaultFiles.html#DefaultFiles-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">DefaultFiles(LocalizationManager, ApplicationProperties)</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator">DefaultFiles</a></dt>
-<dd>
-<div class="block"><strong>Constructor</strong></div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#deleteAllByProjectID-int-">deleteAllByProjectID(int)</a></span> - Method in interface de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html" title="interface in de.griefed.serverpackcreator.spring.serverpack">ServerPackRepository</a></dt>
 <dd>
 <div class="block">Delete all server packs with a CurseForge project ID.</div>
@@ -607,7 +621,7 @@
 <dd>
 <div class="block">Acquire a list of directories in a ZIP-file.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/MenuBar.html#displayUpdateDialog--">displayUpdateDialog()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/MenuBar.html" title="class in de.griefed.serverpackcreator.swing">MenuBar</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/MainMenuBar.html#displayUpdateDialog--">displayUpdateDialog()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/MainMenuBar.html" title="class in de.griefed.serverpackcreator.swing">MainMenuBar</a></dt>
 <dd>
 <div class="block">If an initialize is available for ServerPackCreator, display a dialog asking the user whether</div>
 </dd>
@@ -715,10 +729,6 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#FILE_WINDOWS">FILE_WINDOWS</a></span> - Variable in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/DefaultFiles.html#filesSetup--">filesSetup()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/DefaultFiles.html" title="class in de.griefed.serverpackcreator">DefaultFiles</a></dt>
-<dd>
-<div class="block">Calls individual methods which check for existence of default files.</div>
-</dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/commonutilities/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">FileUtilities</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/commonutilities/package-summary.html">de.griefed.serverpackcreator.utilities.commonutilities</a></dt>
 <dd>
 <div class="block">Utility-class revolving around various file-interactions.</div>
@@ -727,15 +737,6 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html#FileUtils--">FileUtils()</a></span> - Method in class de.griefed.serverpackcreator.utilities.commonutilities.<a href="de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">Utilities</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="de/griefed/serverpackcreator/utilities/FileWatcher.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">FileWatcher</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/package-summary.html">de.griefed.serverpackcreator.utilities</a></dt>
-<dd>
-<div class="block">Simple FileWatcher which monitors whether <code>serverpackcreator.properties</code>, <code>server.properties</code> or
- <code>server-icon.png</code> were deleted.</div>
-</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/FileWatcher.html#FileWatcher-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.DefaultFiles-">FileWatcher(ApplicationProperties, DefaultFiles)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/FileWatcher.html" title="class in de.griefed.serverpackcreator.utilities">FileWatcher</a></dt>
-<dd>
-<div class="block">Constructor for our FileWatcher ensuring DI and creating our filewatcher.</div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#findAllByProjectID-int-">findAllByProjectID(int)</a></span> - Method in interface de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html" title="interface in de.griefed.serverpackcreator.spring.serverpack">ServerPackRepository</a></dt>
 <dd>
 <div class="block">Find all server packs using a CurseForge project ID.</div>
@@ -1040,6 +1041,10 @@
 <dd>
 <div class="block">Getter for the current text from the currently set Javapath in the Javapath textfield.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/CommandlineParser.html#getLanguageToUse--">getLanguageToUse()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/CommandlineParser.html" title="class in de.griefed.serverpackcreator">CommandlineParser</a></dt>
+<dd>
+<div class="block">Get the locale in which ServerPackCreator should be run in, wrapped in an <code>Optional</code>.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getLastModified--">getLastModified()</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a></dt>
 <dd>
 <div class="block">Getter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
@@ -1059,6 +1064,10 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getMinecraftVersion--">getMinecraftVersion()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Getter for the version of Minecraft used by the modpack.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/CommandlineParser.html#getModeToRunIn--">getModeToRunIn()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/CommandlineParser.html" title="class in de.griefed.serverpackcreator">CommandlineParser</a></dt>
+<dd>
+<div class="block">Get the mode in which ServerPackCreator should be run in.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getModLoader--">getModLoader()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
@@ -1502,35 +1511,30 @@
 <dl>
 <dt><a href="de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Main</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
 <dd>
-<div class="block">Depending on the passed commandline arguments and whether ServerPackCreator is run in a headless environment,
- one of the following modes will be entered:</div>
+<div class="block">The Main-class is only responisble for creating an isntance of <a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator</code></a> with the passed <code>String</code>-array
+ from the commandline and then subsequently running ServerPackCreator in the determined mode, with the determined locale.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/Main.html#Main--">Main()</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator">Main</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-">main(String[])</a></span> - Static method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator">Main</a></dt>
 <dd>
-<div class="block">Runs dependency injection and decides which mode to enter depending on the arguments with which ServerPackCreator
- is executed.</div>
+<div class="block">Initialize ServerPackCreator with the passed commandline-arguments and run.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/MainSpringBoot.html#main-java.lang.String:A-">main(String[])</a></span> - Static method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/MainSpringBoot.html" title="class in de.griefed.serverpackcreator">MainSpringBoot</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/WebService.html#main-java.lang.String:A-">main(String[])</a></span> - Static method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/WebService.html" title="class in de.griefed.serverpackcreator">WebService</a></dt>
 <dd>
-<div class="block">Start Spring Boot app, providing our Apache Tomcat and serving our frontend, enabling it to access the REST API.</div>
+<div class="block">Start Spring Boot app, providing our Apache Tomcat and serving our frontend.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html#mainGUI--">mainGUI()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html" title="class in de.griefed.serverpackcreator.swing">SwingGuiInitializer</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html#mainGUI--">mainGUI()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorGui</a></dt>
 <dd>
-<div class="block">Shows the GUI from the EDT by using SwingUtilities, and it's invokeLater method by calling <a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html#createAndShowGUI--"><code>SwingGuiInitializer.createAndShowGUI()</code></a>.</div>
+<div class="block">Shows the GUI from the EDT by using SwingUtilities, and it's invokeLater method by calling <a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html#createAndShowGUI--"><code>ServerPackCreatorGui.createAndShowGUI()</code></a>.</div>
 </dd>
-<dt><a href="de/griefed/serverpackcreator/MainSpringBoot.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">MainSpringBoot</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
-<dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/MainSpringBoot.html#MainSpringBoot--">MainSpringBoot()</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/MainSpringBoot.html" title="class in de.griefed.serverpackcreator">MainSpringBoot</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="de/griefed/serverpackcreator/swing/MenuBar.html" title="class in de.griefed.serverpackcreator.swing"><span class="typeNameLink">MenuBar</span></a> - Class in <a href="de/griefed/serverpackcreator/swing/package-summary.html">de.griefed.serverpackcreator.swing</a></dt>
+<dt><a href="de/griefed/serverpackcreator/swing/MainMenuBar.html" title="class in de.griefed.serverpackcreator.swing"><span class="typeNameLink">MainMenuBar</span></a> - Class in <a href="de/griefed/serverpackcreator/swing/package-summary.html">de.griefed.serverpackcreator.swing</a></dt>
 <dd>
 <div class="block">This class creates our menubar which will be displayed at the top of the ServerPackCreator frame.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/MenuBar.html#MenuBar-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.swing.themes.LightTheme-de.griefed.serverpackcreator.swing.themes.DarkTheme-javax.swing.JFrame-mdlaf.MaterialLookAndFeel-mdlaf.MaterialLookAndFeel-de.griefed.serverpackcreator.swing.TabCreateServerPack-javax.swing.JTabbedPane-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.UpdateChecker-">MenuBar(LocalizationManager, LightTheme, DarkTheme, JFrame, MaterialLookAndFeel, MaterialLookAndFeel, TabCreateServerPack, JTabbedPane, ApplicationProperties, UpdateChecker)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/MenuBar.html" title="class in de.griefed.serverpackcreator.swing">MenuBar</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/MainMenuBar.html#MainMenuBar-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.swing.themes.LightTheme-de.griefed.serverpackcreator.swing.themes.DarkTheme-javax.swing.JFrame-mdlaf.MaterialLookAndFeel-mdlaf.MaterialLookAndFeel-de.griefed.serverpackcreator.swing.TabCreateServerPack-javax.swing.JTabbedPane-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.UpdateChecker-">MainMenuBar(LocalizationManager, LightTheme, DarkTheme, JFrame, MaterialLookAndFeel, MaterialLookAndFeel, TabCreateServerPack, JTabbedPane, ApplicationProperties, UpdateChecker)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/MainMenuBar.html" title="class in de.griefed.serverpackcreator.swing">MainMenuBar</a></dt>
 <dd>
-<div class="block">Constructor for our MenuBar.</div>
+<div class="block">Constructor for our MainMenuBar.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html#meta--">meta()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricInstaller</a></dt>
 <dd>
@@ -1615,6 +1619,8 @@
 <dd>
 <div class="block">Get the list of Forge supported Minecraft versions, in <a href="de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html#mode">mode</a></span> - Variable in enum de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">CommandlineParser.Mode</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a name="I:N">
 <!--   -->
@@ -1878,6 +1884,14 @@
 <dd>
 <div class="block">Run this plugin with the passed <a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>, <a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> and server pack <code>destination</code></div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#run--">run()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
+<dd>
+<div class="block">Run ServerPackCreator with the mode acquired from <a href="de/griefed/serverpackcreator/CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>CommandlineParser</code></a>.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#run-de.griefed.serverpackcreator.CommandlineParser.Mode-">run(CommandlineParser.Mode)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
+<dd>
+<div class="block">Run ServerPackCreator in a specific <a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>CommandlineParser.Mode</code></a>.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.spring.serverpack.ServerPackModel-">run(ServerPackModel)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></dt>
 <dd>
 <div class="block">Create a server pack from a given instance of <a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> via webUI.</div>
@@ -1915,7 +1929,7 @@
 <dd>
 <div class="block">Schedules to cover all kinds of aspects of ServerPackCreator.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/Schedules.html#Schedules-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.spring.serverpack.ServerPackService-de.griefed.serverpackcreator.DefaultFiles-de.griefed.serverpackcreator.versionmeta.VersionMeta-">Schedules(ApplicationProperties, ServerPackService, DefaultFiles, VersionMeta)</a></span> - Constructor for class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/Schedules.html" title="class in de.griefed.serverpackcreator.spring">Schedules</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/Schedules.html#Schedules-de.griefed.serverpackcreator.spring.serverpack.ServerPackService-de.griefed.serverpackcreator.versionmeta.VersionMeta-">Schedules(ServerPackService, VersionMeta)</a></span> - Constructor for class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/Schedules.html" title="class in de.griefed.serverpackcreator.spring">Schedules</a></dt>
 <dd>
 <div class="block">Constructor for DI.</div>
 </dd>
@@ -1931,6 +1945,31 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackController.html#ServerPackController-de.griefed.serverpackcreator.spring.serverpack.ServerPackService-">ServerPackController(ServerPackService)</a></span> - Constructor for class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackController.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackController</a></dt>
 <dd>
 <div class="block">Constructor responsible for our DI.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">ServerPackCreator</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
+<dd>
+<div class="block">Launch-class of ServerPackCreator which determines the mode to run in, takes care of initialization and dependency
+ injection and, finally, running ServerPackCreator.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#ServerPackCreator-java.lang.String:A-">ServerPackCreator(String[])</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
+<dd>
+<div class="block">Initialize ServerPackCreator and determine the <a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>CommandlineParser.Mode</code></a> to run in.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html" title="class in de.griefed.serverpackcreator.swing"><span class="typeNameLink">ServerPackCreatorGui</span></a> - Class in <a href="de/griefed/serverpackcreator/swing/package-summary.html">de.griefed.serverpackcreator.swing</a></dt>
+<dd>
+<div class="block">This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html#ServerPackCreatorGui-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-de.griefed.serverpackcreator.utilities.UpdateChecker-de.griefed.serverpackcreator.plugins.ApplicationPlugins-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.swing.ServerPackCreatorSplash-">ServerPackCreatorGui(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, ApplicationProperties, VersionMeta, Utilities, UpdateChecker, ApplicationPlugins, ConfigUtilities, ServerPackCreatorSplash)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorGui</a></dt>
+<dd>
+<div class="block"><strong>Constructor</strong></div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing"><span class="typeNameLink">ServerPackCreatorSplash</span></a> - Class in <a href="de/griefed/serverpackcreator/swing/package-summary.html">de.griefed.serverpackcreator.swing</a></dt>
+<dd>
+<div class="block">The ServerPackCreator splashscreen shown when <a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html#GUI"><code>CommandlineParser.Mode.GUI</code></a> is used.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html#ServerPackCreatorSplash-java.lang.String-">ServerPackCreatorSplash(String)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a></dt>
+<dd>
+<div class="block">Create and show our splashscreen.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">ServerPackHandler</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
 <dd>
@@ -2237,14 +2276,6 @@
 <dd>
 <div class="block">Get the Minecraft version for a given Forge version, wrapped in an <code>Optional</code>.</div>
 </dd>
-<dt><a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html" title="class in de.griefed.serverpackcreator.swing"><span class="typeNameLink">SwingGuiInitializer</span></a> - Class in <a href="de/griefed/serverpackcreator/swing/package-summary.html">de.griefed.serverpackcreator.swing</a></dt>
-<dd>
-<div class="block">This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode.</div>
-</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html#SwingGuiInitializer-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.curseforge.CurseCreateModpack-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-de.griefed.serverpackcreator.utilities.UpdateChecker-de.griefed.serverpackcreator.plugins.ApplicationPlugins-de.griefed.serverpackcreator.utilities.ConfigUtilities-">SwingGuiInitializer(LocalizationManager, ConfigurationHandler, CurseCreateModpack, ServerPackHandler, ApplicationProperties, VersionMeta, Utilities, UpdateChecker, ApplicationPlugins, ConfigUtilities)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/SwingGuiInitializer.html" title="class in de.griefed.serverpackcreator.swing">SwingGuiInitializer</a></dt>
-<dd>
-<div class="block"><strong>Constructor</strong></div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#systemInformation-org.springframework.boot.system.ApplicationHome-">systemInformation(ApplicationHome)</a></span> - Method in class de.griefed.serverpackcreator.utilities.commonutilities.<a href="de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">JarUtilities</a></dt>
 <dd>
 <div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>, stored in a <code>HashMap</code>.<br>
@@ -2382,6 +2413,8 @@
 <dd>
 <div class="block">Unzips the downloaded modpack ZIP-archive to the specified directory.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html#update-int-">update(int)</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html#update-org.w3c.dom.Document-">update(Document)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricInstaller</a></dt>
 <dd>
 <div class="block">Update this <a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricInstaller</code></a> with information from the given <code>Document</code>.</div>
@@ -2413,6 +2446,10 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html#update--">update()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></dt>
 <dd>
 <div class="block">Update the Minecraft, Forge and Fabric metas.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#updateCheck--">updateCheck()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
+<dd>
+<div class="block">Check for update-availability and exit with status code 0.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">UpdateChecker</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/package-summary.html">de.griefed.serverpackcreator.utilities</a></dt>
 <dd>
@@ -2487,9 +2524,18 @@
 </a>
 <h2 class="title">V</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html#valueOf-java.lang.String-">valueOf(String)</a></span> - Static method in enum de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">CommandlineParser.Mode</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/Type.html#valueOf-java.lang.String-">valueOf(String)</a></span> - Static method in enum de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html#values--">values()</a></span> - Static method in enum de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">CommandlineParser.Mode</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum type, in
+the order they are declared.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/Type.html#values--">values()</a></span> - Static method in enum de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a></dt>
 <dd>
@@ -2542,6 +2588,10 @@ the order they are declared.</div>
 </a>
 <h2 class="title">W</h2>
 <dl>
+<dt><a href="de/griefed/serverpackcreator/WebService.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">WebService</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/WebService.html#WebService--">WebService()</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/WebService.html" title="class in de.griefed.serverpackcreator">WebService</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/commonutilities/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">WebUtilities</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/commonutilities/package-summary.html">de.griefed.serverpackcreator.utilities.commonutilities</a></dt>
 <dd>
 <div class="block">Utility-class revolving around interactions with web-resources.</div>
