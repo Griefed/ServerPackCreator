@@ -25,8 +25,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -232,13 +234,22 @@ public class LocalizationManager {
 
             try {
 
-                filesystemResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", locale), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+                filesystemResources = ResourceBundle.getBundle(
+                        String.format("de/griefed/resources/lang/lang_%s", locale),
+                        new Locale(
+                                CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
+                                CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)
+                        )
+                );
 
             } catch (Exception ex2) {
 
                 LOG.error("Locale resource for " + locale + " not found in JAR-file. Falling back to en_us.", ex2);
 
-                filesystemResources = ResourceBundle.getBundle("de/griefed/resources/lang/lang_en_us", new Locale("en", "us"));
+                filesystemResources = ResourceBundle.getBundle(
+                        "de/griefed/resources/lang/lang_en_us",
+                        new Locale("en", "us")
+                );
 
                 locale = "en_us";
 
@@ -250,7 +261,13 @@ public class LocalizationManager {
 
             try {
 
-                jarResources = ResourceBundle.getBundle(String.format("de/griefed/resources/lang/lang_%s", locale), new Locale(CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE), CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+                jarResources = ResourceBundle.getBundle(
+                        String.format("de/griefed/resources/lang/lang_%s", locale),
+                        new Locale(
+                                CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
+                                CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)
+                        )
+                );
 
             } catch (Exception ex) {
 
@@ -307,7 +324,10 @@ public class LocalizationManager {
 
             if (value != null) {
 
-                text = new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                // Ukrainian letters are displayed as ???? ?? ?????? and so on. Please help. I have no idea how to fix this
+                // German letters like ö, ä and ü are fine....
+                text = new String(value.getBytes());
+
 
             } else {
 
@@ -330,7 +350,7 @@ public class LocalizationManager {
      * @param locale The locale the user specified when they ran serverpackcreator with -lang -your_locale.
      */
     void writeLocaleToFile(String locale) {
-        try (OutputStream outputStream = new FileOutputStream(PROPERTIESFILE)) {
+        try (OutputStream outputStream = Files.newOutputStream(PROPERTIESFILE.toPath())) {
             APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", locale);
             APPLICATIONPROPERTIES.store(outputStream, null);
         } catch (IOException ex) {
