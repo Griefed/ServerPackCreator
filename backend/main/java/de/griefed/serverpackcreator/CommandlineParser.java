@@ -95,9 +95,7 @@ public class CommandlineParser {
             this.mode = mode;
         }
     }
-
-    private static final Logger LOG = LogManager.getLogger(CommandlineParser.class);
-
+    
     /**
      * The mode in which ServerPackCreator will run in after the commandline arguments have been parsed and checked.
      */

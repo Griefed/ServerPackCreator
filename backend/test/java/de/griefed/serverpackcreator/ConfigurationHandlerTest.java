@@ -34,7 +34,7 @@ class ConfigurationHandlerTest {
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
         LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
-        SERVER_PACK_CREATOR.run();
+        SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
         this.VERSIONMETA = new VersionMeta(
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
