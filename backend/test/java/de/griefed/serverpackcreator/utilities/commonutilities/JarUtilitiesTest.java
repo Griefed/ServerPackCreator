@@ -17,7 +17,7 @@ public class JarUtilitiesTest {
 
     @Test
     void copyFileFromJarTest() {
-        JARUTILITIES.copyFileFromJar(new File("banner.txt"));
+        JARUTILITIES.copyFileFromJar(new File("banner.txt"), JarUtilitiesTest.class);
         Assertions.assertTrue(new File("banner.txt").exists());
     }
 
@@ -48,7 +48,7 @@ public class JarUtilitiesTest {
     void copyFolderFromJarTest() {
         new File("testruns").mkdir();
         try {
-            JARUTILITIES.copyFolderFromJar("main","/de/griefed/resources/lang", "testruns/langTest","", ".properties");
+            JARUTILITIES.copyFolderFromJar(JarUtilitiesTest.class,"/de/griefed/resources/lang", "testruns/langTest","", ".properties");
         } catch (Exception ignored) {}
         Assertions.assertTrue(new File("testruns/langTest").isDirectory());
         Assertions.assertTrue(new File("testruns/langTest/lang_de_de.properties").exists());
