@@ -45,9 +45,10 @@ Use at your own risk! Be aware that data loss is possible.
 
 ## Commandline Interface (CLI)
 
-| Windows                                                            | Linux                                                              | Mac                                                            |
-|--------------------------------------------------------------------|--------------------------------------------------------------------|----------------------------------------------------------------|
-| ![CLI Win](https://i.griefed.de/images/2021/11/20/cli_windows.png) | ![CLI Linux](https://i.griefed.de/images/2021/11/20/cli_linux.png) | ![CLI Mac](https://i.griefed.de/images/2021/11/20/cli_mac.png) |
+| Windows                                                                      | Linux                                                                        | Mac                                                            |
+|------------------------------------------------------------------------------|------------------------------------------------------------------------------|----------------------------------------------------------------|
+| ![CLI Win](https://i.griefed.de/images/2021/11/20/cli_windows.png)           | ![CLI Linux](https://i.griefed.de/images/2021/11/20/cli_linux.png)           | ![CLI Mac](https://i.griefed.de/images/2021/11/20/cli_mac.png) |
+| ![CLI Win Menu](https://i.griefed.de/images/2022/04/24/cli_windows_menu.png) | ![CLI Linux Menu](https://i.griefed.de/images/2022/04/24/cli_linux_menu.png) | ![CLI Mac Menu](https://i.griefed.de/images/2022/04/24/cli_mac_menu.png)                                              |
 
 ## Graphical User Interface (GUI)
 
@@ -355,6 +356,18 @@ Changes to properties not described below are not supported. If you changed a pr
 
 In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
 The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
+
+There are a couple of arguments which may or may not be helpful for you, depending on how you plan on using ServerPackCreator:
+
+| Argument  | Description                                                                                                                                                                                                             |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `-help`   | Print ServerPackCreators help to commandline.                                                                                                                                                                           |
+| `-update` | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                        |
+| `-cgen`   | Run ServerPackCreators configuration generation.                                                                                                                                                                        |
+| `-cli`    | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.         |
+| `-web`    | Run ServerPackCreator as a webservice.                                                                                                                                                                                  |
+| `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
+| `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
 
 ## 6.1 Localization
 

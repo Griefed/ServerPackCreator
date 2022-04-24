@@ -15,15 +15,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ServerPackHandlerTest {
 
     private final ServerPackHandler SERVERPACKHANDLER;
-    private final DefaultFiles DEFAULTFILES;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
+    private final ServerPackCreator SERVERPACKCREATOR;
 
     ServerPackHandlerTest() throws IOException {
         try {
@@ -34,7 +36,8 @@ class ServerPackHandlerTest {
 
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
         LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        this.DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        SERVERPACKCREATOR = new ServerPackCreator(new String[]{"--setup"});
+        SERVERPACKCREATOR.run();
         VersionMeta VERSIONMETA = new VersionMeta(
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
@@ -51,8 +54,8 @@ class ServerPackHandlerTest {
     }
 
     @Test
-    void runTest() {
-        DEFAULTFILES.filesSetup();
+    void runTest() throws IOException {
+        SERVERPACKCREATOR.run();
         ConfigurationModel configurationModel = new ConfigurationModel();
         CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator.conf"), configurationModel, true);
         SERVERPACKHANDLER.run(configurationModel);
@@ -102,7 +105,7 @@ class ServerPackHandlerTest {
     }
 
     @Test
-    void runServerPackTest() {
+    void runServerPackTest() throws IOException {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
@@ -151,14 +154,14 @@ class ServerPackHandlerTest {
         serverPackModel.setModLoaderVersion("0.13.1");
         serverPackModel.setMinecraftVersion("1.18.1");
         serverPackModel.setJavaArgs("");
-        DEFAULTFILES.filesSetup();
+        SERVERPACKCREATOR.run();
         CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
         Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
         Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
     }
 
     @Test
-    void runServerPackTestOldMinecraftVersion() {
+    void runServerPackTestOldMinecraftVersion() throws IOException {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
@@ -207,7 +210,7 @@ class ServerPackHandlerTest {
         serverPackModel.setModLoaderVersion("14.23.5.2855");
         serverPackModel.setMinecraftVersion("1.12.2");
         serverPackModel.setJavaArgs("");
-        DEFAULTFILES.filesSetup();
+        SERVERPACKCREATOR.run();
         CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
         Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
         Assertions.assertTrue(new File("server-packs/forge_tests_copy_server_pack.zip").isFile());

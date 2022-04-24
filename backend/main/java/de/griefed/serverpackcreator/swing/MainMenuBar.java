@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
@@ -61,9 +61,9 @@ import java.util.Properties;
  * @author Griefed
  */
 @Generated
-public class MenuBar extends Component {
+public class MainMenuBar extends Component {
 
-    private static final Logger LOG = LogManager.getLogger(MenuBar.class);
+    private static final Logger LOG = LogManager.getLogger(MainMenuBar.class);
 
     private final ApplicationHome APPLICATIONHOME = new ApplicationHome(de.griefed.serverpackcreator.Main.class);
 
@@ -92,8 +92,8 @@ public class MenuBar extends Component {
     private final Dimension ABOUTDIMENSION = new Dimension(925,520);
     private final Dimension FILETOOLARGEDIMENSION = new Dimension(200,10);
 
-    private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/help.png")));
-    private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/hastebin.png")));
+    private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/help.png")));
+    private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
 
     private final JMenuBar MENUBAR = new JMenuBar();
 
@@ -168,7 +168,7 @@ public class MenuBar extends Component {
     private File lastLoadedConfigurationFile = null;
 
     /**
-     * Constructor for our MenuBar. Prepares various Strings, Arrays, Panels and windows.
+     * Constructor for our MainMenuBar. Prepares various Strings, Arrays, Panels and windows.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedLightTheme Instance of {@link LightTheme} required for theme switching.
@@ -181,10 +181,10 @@ public class MenuBar extends Component {
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedUpdateChecker Instance of {@link UpdateChecker} to check for update-availability.
      */
-    public MenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
-                   JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
-                   TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties,
-                   UpdateChecker injectedUpdateChecker) {
+    public MainMenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
+                       JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
+                       TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties,
+                       UpdateChecker injectedUpdateChecker) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();

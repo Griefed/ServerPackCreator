@@ -10,17 +10,17 @@ import org.springframework.context.annotation.PropertySources;
 import java.io.File;
 import java.io.IOException;
 
-@SpringBootTest(classes = MainSpringBootTest.class)
+@SpringBootTest(classes = WebServiceTest.class)
 @PropertySources({
         @PropertySource("classpath:serverpackcreator.properties")
 })
-public class MainSpringBootTest {
+public class WebServiceTest {
 
-    private final DefaultFiles DEFAULTFILES;
+    private final ServerPackCreator SERVERPACKCREATOR;
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    MainSpringBootTest() {
+    WebServiceTest() throws IOException {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {
@@ -34,8 +34,9 @@ public class MainSpringBootTest {
 
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
         this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        this.DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        this.DEFAULTFILES.checkDatabase();
+        this.SERVERPACKCREATOR = new ServerPackCreator(new String[] {"--setup"});
+        this.SERVERPACKCREATOR.run();
+        this.SERVERPACKCREATOR.checkDatabase();
     }
 
     @Test

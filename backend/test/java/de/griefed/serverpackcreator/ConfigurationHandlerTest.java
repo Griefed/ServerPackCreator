@@ -12,15 +12,17 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 class ConfigurationHandlerTest {
 
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final VersionMeta VERSIONMETA;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     ConfigurationHandlerTest() throws IOException {
         try {
@@ -29,9 +31,10 @@ class ConfigurationHandlerTest {
             e.printStackTrace();
         }
 
-        this.APPLICATIONPROPERTIES = new ApplicationProperties();
+        ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
         LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
+        SERVER_PACK_CREATOR.run();
         this.VERSIONMETA = new VersionMeta(
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,

@@ -1,8 +1,6 @@
 package de.griefed.serverpackcreator.spring.jms;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.DefaultFiles;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.ServerPackCreator;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,22 +34,19 @@ public class ArtemisConfigTest {
     private final String QUEUE_TASKS = "tasks.background";
 
     @Autowired
-    ArtemisConfigTest(JmsTemplate injectedJmsTemplate) {
+    ArtemisConfigTest(JmsTemplate injectedJmsTemplate) throws IOException {
         try {
             FileUtils.copyFile(new File("backend/main/resources/serverpackcreator.properties"),new File("serverpackcreator.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
+        ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
+        SERVER_PACK_CREATOR.run();
+        SERVER_PACK_CREATOR.checkDatabase();
 
         this.jmsTemplate = injectedJmsTemplate;
-
         this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);
-
-        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        DEFAULTFILES.checkDatabase();
     }
 
     @AfterEach

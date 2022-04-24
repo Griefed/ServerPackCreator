@@ -19,36 +19,31 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.*;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.ConfigurationHandler;
+import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
-import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
-import de.griefed.serverpackcreator.utilities.*;
+import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
-import de.griefed.versionchecker.Update;
 import mdlaf.MaterialLookAndFeel;
-import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.text.*;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -59,12 +54,12 @@ import java.util.Properties;
  * @author Griefed
  */
 @Generated
-public class SwingGuiInitializer extends JPanel {
+public class ServerPackCreatorGui extends JPanel {
 
-    private static final Logger LOG = LogManager.getLogger(SwingGuiInitializer.class);
+    private static final Logger LOG = LogManager.getLogger(ServerPackCreatorGui.class);
 
-    private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/banner.png")));
-    private final Image ICON_SERVERPACKCREATOR = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/app.png")));
+    private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/banner.png")));
+    private final Image ICON_SERVERPACKCREATOR = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/app.png")));
     private final Dimension DIMENSION_WINDOW = new Dimension(1050,800);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
@@ -77,6 +72,7 @@ public class SwingGuiInitializer extends JPanel {
     private final ApplicationPlugins APPLICATIONPLUGINS;
     private final UpdateChecker UPDATECHECKER;
     private final ConfigUtilities CONFIGUTILITIES;
+    private final ServerPackCreatorSplash SERVERPACKCREATORSPLASH;
 
     private final LightTheme LIGHTTHEME = new LightTheme();
     private final DarkTheme DARKTHEME = new DarkTheme();
@@ -95,7 +91,7 @@ public class SwingGuiInitializer extends JPanel {
 
     private final JTabbedPane TABBEDPANE;
 
-    private final MenuBar MENUBAR;
+    private final MainMenuBar MENUBAR;
 
     private BufferedImage bufferedImage;
 
@@ -120,15 +116,19 @@ public class SwingGuiInitializer extends JPanel {
      * @param injectedUpdateChecker Instance of {@link UpdateChecker}.
      * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
-    public SwingGuiInitializer(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
-                               CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
-                               ApplicationProperties injectedApplicationProperties, VersionMeta injectedVersionMeta,
-                               Utilities injectedUtilities, UpdateChecker injectedUpdateChecker, ApplicationPlugins injectedPluginManager,
-                               ConfigUtilities injectedConfigUtilities) throws IOException {
+    public ServerPackCreatorGui(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
+                                CurseCreateModpack injectedCurseCreateModpack, ServerPackHandler injectedServerPackHandler,
+                                ApplicationProperties injectedApplicationProperties, VersionMeta injectedVersionMeta,
+                                Utilities injectedUtilities, UpdateChecker injectedUpdateChecker, ApplicationPlugins injectedPluginManager,
+                                ConfigUtilities injectedConfigUtilities, ServerPackCreatorSplash injectedServerPackCreatorSplash) throws IOException {
 
         super(new GridLayout(1, 1));
+
+        this.SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
+        this.SERVERPACKCREATORSPLASH.update(90);
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -275,7 +275,7 @@ public class SwingGuiInitializer extends JPanel {
 
         TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        MENUBAR = new MenuBar(
+        MENUBAR = new MainMenuBar(
                 LOCALIZATIONMANAGER,
                 LIGHTTHEME,
                 DARKTHEME,
@@ -318,6 +318,7 @@ public class SwingGuiInitializer extends JPanel {
                 LOG.error("Error: There was an error setting the look and feel.", ex);
             }
 
+            SERVERPACKCREATORSPLASH.update(95);
             createAndShowGUI();
         });
     }
@@ -357,6 +358,8 @@ public class SwingGuiInitializer extends JPanel {
         SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
 
         TABBEDPANE.setOpaque(true);
+
+        SERVERPACKCREATORSPLASH.close();
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
 

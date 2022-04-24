@@ -1,3 +1,41 @@
+## [3.2.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.1.0...3.2.0-beta.1) (2022-04-18)
+
+
+### 💎 Improvements
+
+* **Sideness scanning:** Scan sideness of Fabric mods and automatically excluded any detected clientside-only mods. ([4bb76aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bb76aaa2ab0ba012daddc32dad9b6d3cd87e206))
+
+## [3.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.1.0...3.2.0) (2022-04-18)
+
+
+### :scissors: Refactor
+
+* **GitHub Release Workflow:** Change text in the release workflow changelog generation. It still mentioned pre-releases.... ([ad90d16](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad90d168aa8c0f453b123807b2e92363b8510edb))
+* **Manifests:** Move manifest acquisition and update checks from DefaultFiles to VersionMeta. Calling VersionMeta.update() will now check for updated manifests and refresh if needed. ([e2a0af0](https://git.griefed.de/Griefed/ServerPackCreator/commit/e2a0af096cdc1cf243fd9dda819bcf82dbeac5f3))
+* **Update Fallback List:** Always update the fallback list if it is different from the one in the repository. Should any server-mod ever make it into this list by accident, this allows remediation of this error from the users side. ([8fd2453](https://git.griefed.de/Griefed/ServerPackCreator/commit/8fd2453604a7c09c29a7b7b0dbbd3b1688541d12))
+* **VersionMeta independance:** Make VersionMeta independant of ApplicationProperties by passing the manifest files to the constructor ([f5bd9c7](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5bd9c7639aa44c007cd84787c20fdee45a413a9))
+
+
+### ⏩ Performance
+
+* **VersionMeta:** Improved startup speed of ServerPackCreator by not gathering all information about Minecraft servers during VersionMeta-instantiation. ([d5986f0](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5986f0ff0cf6344a26063cbda470ab8e1bd6ab5))
+
+
+### 💎 Improvements
+
+* **Update checks:** Update VersionChecker to 1.1.0. Allow users to check for updates from within the GUI via Menu -> About -> Check for updates. ([0c11ed3](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c11ed319cb61687e2eb993a74a552bbf249aee7))
+
+
+### 🛠 Fixes
+
+* **UpdateChecker:** Only overwrite Update if GitLab or GitGriefed actually have a newer version available ([e830cdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/e830cdf0863fefa8114187f4e4929b6ef82a548b))
+
+
+### Other
+
+* **Clientside Mod:** Added mod-credits, durability-notifier, modmenu, defaultsettings-fabric, dynamic-fps, blur, rebrand, better-biome-blend and eggtab-fabric to the fallback list of clientside-only mods. ([f7e7bf4](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7e7bf49baf1a7377df6e85c0c64bb03bfc2d674))
+* **Deps:** Dependency updates and ExampleAddon mod replace with versoin 3.0.7 for Unit Testing ([13addd4](https://git.griefed.de/Griefed/ServerPackCreator/commit/13addd45a03fdececa55873b8a3778e5c894d41b))
+
 ## [3.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.1...3.1.0) (2022-04-15)
 
 

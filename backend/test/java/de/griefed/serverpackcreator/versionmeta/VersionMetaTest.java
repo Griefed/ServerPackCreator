@@ -1,8 +1,7 @@
 package de.griefed.serverpackcreator.versionmeta;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.DefaultFiles;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.ServerPackCreator;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,8 +16,8 @@ public class VersionMetaTest {
 
     public VersionMetaTest() throws IOException {
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-        LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        DefaultFiles DEFAULTFILES = new DefaultFiles(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
+        SERVER_PACK_CREATOR.run();
         this.VERSIONMETA = new VersionMeta(
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
                 APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,

@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.spring;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.DefaultFiles;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackService;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -45,26 +43,19 @@ public class Schedules {
 
     private static final Logger LOG = LogManager.getLogger(Schedules.class);
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ServerPackService SERVERPACKSERVICE;
-    private final DefaultFiles DEFAULTFILES;
     private final VersionMeta VERSIONMETA;
 
     /**
      * Constructor for DI.
      * @author Griefed
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
      * @param injectedServerPackService Instance of {@link ServerPackService}.
-     * @param injectedDefaultFiles Instance of {@link DefaultFiles}.
      * @param injectedVersionMeta Instance of {@link VersionMeta}.
      */
     @Autowired
-    public Schedules(ApplicationProperties injectedApplicationProperties, ServerPackService injectedServerPackService,
-                     DefaultFiles injectedDefaultFiles, VersionMeta injectedVersionMeta) {
+    public Schedules(ServerPackService injectedServerPackService, VersionMeta injectedVersionMeta) {
 
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
         this.SERVERPACKSERVICE = injectedServerPackService;
-        this.DEFAULTFILES = injectedDefaultFiles;
         this.VERSIONMETA = injectedVersionMeta;
     }
 

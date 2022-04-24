@@ -34,15 +34,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         @PropertySource("classpath:application.properties"),
         @PropertySource("classpath:serverpackcreator.properties")
 })
-public class MainSpringBoot {
+public class WebService {
 
     /**
-     * Start Spring Boot app, providing our Apache Tomcat and serving our frontend, enabling it to access the REST API.
+     * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
      * @author Griefed
      * @param args Arguments passed from invocation in {@link Main#main(String[])}.
      */
     public static void main(String[] args) {
-        SpringApplication.run(MainSpringBoot.class, args);
+        SpringApplication.run(WebService.class, args);
     }
 
 }
