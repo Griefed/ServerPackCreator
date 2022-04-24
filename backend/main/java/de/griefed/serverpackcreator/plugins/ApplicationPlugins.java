@@ -20,12 +20,14 @@
 package de.griefed.serverpackcreator.plugins;
 
 import de.griefed.serverpackcreator.plugins.serverpackhandler.PostGenExtension;
-import de.griefed.serverpackcreator.plugins.serverpackhandler.PreZipExtension;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.PreGenExtension;
+import de.griefed.serverpackcreator.plugins.serverpackhandler.PreZipExtension;
 import de.griefed.serverpackcreator.plugins.swinggui.TabExtension;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.pf4j.*;
+import org.pf4j.ExtensionFactory;
+import org.pf4j.JarPluginManager;
+import org.pf4j.SingletonExtensionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.versionmeta.Type;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 

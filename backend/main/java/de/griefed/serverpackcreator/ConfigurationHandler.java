@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.therandomlabs.curseapi.CurseAPI;
 import com.therandomlabs.curseapi.CurseException;
-import com.typesafe.config.*;
+import com.typesafe.config.ConfigException;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.curseforge.InvalidFileException;
 import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
@@ -37,10 +37,15 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.io.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir

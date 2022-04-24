@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.utilities.commonutilities;
 
-import de.griefed.serverpackcreator.utilities.commonutilities.SystemUtilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.utilities.JComponentTailer;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.apache.commons.io.input.Tailer;

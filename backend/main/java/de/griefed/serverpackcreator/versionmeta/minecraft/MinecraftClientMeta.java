@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.versionmeta.minecraft;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import org.apache.logging.log4j.LogManager;

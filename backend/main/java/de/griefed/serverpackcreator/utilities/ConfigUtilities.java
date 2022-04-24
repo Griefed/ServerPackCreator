@@ -25,9 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.utilities.commonutilities.BooleanUtilities;
-import de.griefed.serverpackcreator.utilities.commonutilities.ListUtilities;
-import de.griefed.serverpackcreator.utilities.commonutilities.StringUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.commons.io.FileUtils;
@@ -37,8 +34,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.file.FileSystem;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 

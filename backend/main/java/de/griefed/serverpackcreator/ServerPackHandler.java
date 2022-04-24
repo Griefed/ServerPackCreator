@@ -48,9 +48,11 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
@@ -67,7 +69,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 @Component
 public class ServerPackHandler {
 
-    private static final Logger LOG = LogManager.getLogger(DefaultFiles.class);
+    private static final Logger LOG = LogManager.getLogger(ServerPackHandler.class);
     private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
     private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
@@ -91,14 +93,14 @@ public class ServerPackHandler {
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version related.
      * @param injectedUtilities Instance of {@link Utilities}.
-     * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
+     * @param injectedApplicationPlugins Instance of {@link ApplicationPlugins}.
      * @param injectedConfigUtilities Instance of {@link ConfigUtilities}
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     @Autowired
     public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
                              ApplicationProperties injectedApplicationProperties, VersionMeta injectedVersionMeta,
-                             Utilities injectedUtilities, ApplicationPlugins injectedPluginManager, ConfigUtilities injectedConfigUtilities) throws IOException {
+                             Utilities injectedUtilities, ApplicationPlugins injectedApplicationPlugins, ConfigUtilities injectedConfigUtilities) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -141,10 +143,10 @@ public class ServerPackHandler {
             this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
-        if (injectedPluginManager == null) {
+        if (injectedApplicationPlugins == null) {
             this.APPLICATIONPLUGINS = new ApplicationPlugins();
         } else {
-            this.APPLICATIONPLUGINS = injectedPluginManager;
+            this.APPLICATIONPLUGINS = injectedApplicationPlugins;
         }
     }
 

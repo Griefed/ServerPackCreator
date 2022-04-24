@@ -3,9 +3,6 @@ package de.griefed.serverpackcreator.utilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Random;
-
 public class ReticulatingSplinesTest {
 
     private final ReticulatingSplines RETICULATING_SPLINES = new ReticulatingSplines();

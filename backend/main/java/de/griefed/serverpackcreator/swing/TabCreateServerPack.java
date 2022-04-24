@@ -20,13 +20,15 @@
 package de.griefed.serverpackcreator.swing;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
-import de.griefed.serverpackcreator.*;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.ConfigurationHandler;
+import de.griefed.serverpackcreator.ConfigurationModel;
+import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
-import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
-import de.griefed.serverpackcreator.utilities.*;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import mdlaf.components.textpane.MaterialTextPaneUI;
@@ -44,9 +46,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -88,8 +91,8 @@ public class TabCreateServerPack extends JComponent {
     private final SimpleAttributeSet LAZYMODEATTRIBUTESET = new SimpleAttributeSet();
     private final JTextPane LAZYMODETEXTPANE = new JTextPane(LAZYMODEDOCUMENT);
 
-    private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/folder.png")));
-    private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(SwingGuiInitializer.class.getResource("/de/griefed/resources/gui/start_generation.png")));
+    private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/folder.png")));
+    private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/start_generation.png")));
     private final Dimension FOLDERBUTTONDIMENSION = new Dimension(24,24);
     private final Dimension STARTDIMENSION = new Dimension(64,64);
     private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
