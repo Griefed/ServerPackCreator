@@ -881,46 +881,19 @@ public class ServerPackCreator {
      * @author Griefed
      */
     private void printHelp() {
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help01"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help02"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help03"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help04"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help05"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help06"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help07"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help08"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help09"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help10"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help11"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help12"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help13"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help14"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help15"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help16"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help17"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help18"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help19"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help20"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help21"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help22"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help23"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help24"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help26"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help25"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help27"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help28"));
-        System.out.println("#");
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help29"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help30"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help31"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help32"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help33"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help34"));
-        System.out.println("#");
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help35"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help36"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help37"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help38"));
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("main.console.help39"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.intro"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.intro"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.lang"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.help"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.update"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.cgen"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.cli"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.web"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.gui"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.setup"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.intro"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.issues"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.discord"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.someluv"));
     }
 }
