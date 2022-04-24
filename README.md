@@ -165,6 +165,17 @@ Consider major version incompatible to each other. Meaning, configs from 1.x.x a
 | **2.x.x**    | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.** |
 | **3.x.x**    | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`                      |
 
+## 3.1 Java versions
+
+ServerPackCreator is develop with Java 8, ServerPackCreator is guaranteed to work with that version.
+
+Users have reported the following Java versions to also work with ServerPackCreator. A list of these can be found at the [Wiki help section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
+
+**ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly with any other Java
+version other than version 8. Things may break at **random**, at **any** place, if a **different** Java version is used.
+You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
+when running ServerPackCreator with a more recent Java version.
+
 # 4. Addons
 
 ## 4.1 Why

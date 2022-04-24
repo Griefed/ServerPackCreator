@@ -894,6 +894,7 @@ public class ServerPackCreator {
         System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.intro"));
         System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.issues"));
         System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.discord"));
+        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.wiki"));
         System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.someluv"));
     }
 }
