@@ -35,7 +35,7 @@ public class WebServiceTest {
         this.APPLICATIONPROPERTIES = new ApplicationProperties();
         this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
         this.SERVERPACKCREATOR = new ServerPackCreator(new String[] {"--setup"});
-        this.SERVERPACKCREATOR.run();
+        this.SERVERPACKCREATOR.run(CommandlineParser.Mode.SETUP);
         this.SERVERPACKCREATOR.checkDatabase();
     }
 

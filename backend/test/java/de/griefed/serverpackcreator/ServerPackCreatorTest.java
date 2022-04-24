@@ -13,7 +13,7 @@ public class ServerPackCreatorTest {
 
     ServerPackCreatorTest() throws IOException {
         this.SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
-        this.SERVER_PACK_CREATOR.run();
+        this.SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
     }
 
     @Test

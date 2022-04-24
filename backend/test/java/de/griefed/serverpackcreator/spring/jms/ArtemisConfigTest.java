@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.spring.jms;
 
+import de.griefed.serverpackcreator.CommandlineParser;
 import de.griefed.serverpackcreator.ServerPackCreator;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +43,7 @@ public class ArtemisConfigTest {
         }
 
         ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
-        SERVER_PACK_CREATOR.run();
+        SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
         SERVER_PACK_CREATOR.checkDatabase();
 
         this.jmsTemplate = injectedJmsTemplate;
