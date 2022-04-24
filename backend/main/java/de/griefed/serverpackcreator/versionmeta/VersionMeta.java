@@ -36,7 +36,10 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -93,7 +96,9 @@ public class VersionMeta {
         this.FABRIC_META = new FabricMeta(fabricManifest, fabricInstallerManifest);
         this.FORGE_META.initialize(this.MINECRAFT_META);
 
-        update();
+        this.MINECRAFT_META.update();
+        this.FABRIC_META.update();
+        this.FORGE_META.update();
     }
 
     /**
