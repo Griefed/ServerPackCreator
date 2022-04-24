@@ -25,7 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -321,12 +324,13 @@ public class ApplicationProperties extends Properties {
          * but has the advantage of always providing default values if any property in the applications.properties
          * on the filesystem should be commented out.
          */
-        try (InputStream inputStream = Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
-            new Properties();
-            load(inputStream);
-        } catch (
-        IOException ex) {
-            LOG.error("Couldn't read properties file.", ex);
+        if (new File("serverpackcreator.properties").exists()) {
+            try (InputStream inputStream = Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
+                new Properties();
+                load(inputStream);
+            } catch (IOException ex) {
+                LOG.error("Couldn't read properties file.", ex);
+            }
         }
 
         // Set the directory where the generated server packs will be stored in.
