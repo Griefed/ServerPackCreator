@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.utilities.commonutilities;
 
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +19,6 @@ public class FileUtilities {
     public FileUtilities() {
 
     }
-
 
     /**
      * Move a file from source to destination, and replace the destination file if it exists.
@@ -53,9 +51,13 @@ public class FileUtilities {
     public void unzipArchive(String zipFile, String destinationDirectory) {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info("Extracting ZIP-file: " + zipFile);
-        try {
-            new ZipFile(zipFile).extractAll(destinationDirectory);
-        } catch (ZipException ex) {
+
+        try (ZipFile zip = new ZipFile(zipFile)) {
+
+            zip.extractAll(destinationDirectory);
+
+        } catch (IOException ex) {
+
             LOG.error("Error: There was an error extracting the archive " + zipFile, ex);
         }
     }

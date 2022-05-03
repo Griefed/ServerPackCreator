@@ -8,16 +8,12 @@ plugins {
     id 'idea'
 
     id 'jacoco'
-
-    id "com.github.ben-manes.versions" version '0.42.0'
-
     id 'signing'
     id 'maven-publish'
     id 'java-library'
 
-    id 'edu.sc.seis.launch4j' version '2.5.2'
+    id 'edu.sc.seis.launch4j' version '2.5.3'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
-
     id 'org.springframework.boot' version '2.6.5'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
@@ -130,27 +126,6 @@ frontend {
     }
 }
 
-def isNonStable = { String version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
-}
-tasks.named("dependencyUpdates").configure {
-
-    checkForGradleUpdate = true
-    outputFormatter = "json"
-
-    resolutionStrategy {
-        componentSelection {
-            all {
-                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
-                    reject('Release candidate')
-                }
-            }
-        }
-    }
-}
-
 // Include specific files in resources folder, like the license and readme.
 tasks.register('about', Copy) {
     dependsOn tasks.named('clean')
@@ -245,7 +220,7 @@ jacocoTestReport {
 
 jacoco {
     toolVersion = "0.8.7"
-    reportsDirectory = layout.buildDirectory.dir('jacoco')
+    reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
 }
 
 javadoc {

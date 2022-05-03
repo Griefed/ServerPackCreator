@@ -577,6 +577,8 @@ public class ServerPackCreator {
 
         } while (selection > 7);
 
+        scanner.close();
+
         switch (selection) {
 
             case 5:
@@ -633,6 +635,7 @@ public class ServerPackCreator {
 
         } while (!userLocale.matches(regex));
 
+        scanner.close();
         System.out.println(LOCALIZATIONMANAGER.getLocalizedString("cli.usingLanguage") + " " + LOCALIZATIONMANAGER.getLocalizedString("localeName"));
     }
 
@@ -717,7 +720,7 @@ public class ServerPackCreator {
             Scanner reader = new Scanner(System.in);
 
             LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows"));
-            System.out.print(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.input"),"\"Yes\"", "\"No\""));
+            System.out.print(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.input") + " ");
 
             //noinspection UnusedAssignment
             String answer = "foobar";
@@ -728,16 +731,18 @@ public class ServerPackCreator {
                 if (answer.equals("No")) {
 
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.no"));
+                    reader.close();
                     System.exit(0);
 
                 } else if (answer.equals("Yes")) {
 
                     LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.yes"));
+                    reader.close();
                     WebService.main(ARGS);
 
                 }
 
-            } while (!answer.equals("No") && !answer.equals("Yes"));
+            } while (!answer.matches("^(Yes|No)$"));
 
         } else {
 
@@ -842,12 +847,14 @@ public class ServerPackCreator {
             //statement.executeUpdate("CREATE TABLE server_pack_model (id INTEGER, projectID INTEGER, fileID INTEGER, fileName STRING, size DOUBLE, downloads INTEGER, created DATE, confirmedWorking INTEGER)");
 
         } catch (SQLException ignored) {
+
         } finally {
+
             if (connection != null) {
                 try {
                     connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                } catch (SQLException ex) {
+                    LOG.error("Couldn't close SQL connection",ex);
                 }
             }
         }

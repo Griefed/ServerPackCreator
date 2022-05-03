@@ -44,7 +44,7 @@ import java.util.*;
 @Component
 public class ApplicationProperties extends Properties {
 
-    private final Logger LOG = LogManager.getLogger(ApplicationProperties.class);
+    private static final Logger LOG = LogManager.getLogger(ApplicationProperties.class);
 
     // ServerPackHandler related
     public final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
@@ -737,7 +737,7 @@ public class ApplicationProperties extends Properties {
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         return "ApplicationProperties{" +
                 "FILE_SERVERPACKCREATOR_PROPERTIES=" + FILE_SERVERPACKCREATOR_PROPERTIES +
                 ", FILE_WINDOWS=" + FILE_WINDOWS +

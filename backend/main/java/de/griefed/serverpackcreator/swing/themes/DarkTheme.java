@@ -38,10 +38,16 @@ import java.awt.*;
 public class DarkTheme extends JMarsDarkTheme {
 
     private ColorUIResource selectedBackground = new ColorUIResource(50, 66, 74);
+    private Color textErrorColour;
+
+    public Color getTextErrorColour() {
+        return textErrorColour;
+    }
 
     @Override
     protected void installBorders() {
         super.installBorders();
+        this.buttonBorder = new BorderUIResource(BorderFactory.createEmptyBorder(8, 12, 8, 12));
         this.borderPanel = new BorderUIResource(BorderFactory.createEmptyBorder());
         this.tabInsetsTabbedPane = new InsetsUIResource(6, 10, 10, 10);
         this.selectedTabInsetsTabbedPane = new InsetsUIResource(6, 10, 10, 10);
@@ -59,10 +65,12 @@ public class DarkTheme extends JMarsDarkTheme {
 
     @Override
     protected void installColor() {
+        super.installColor();
         this.backgroundPrimary = new ColorUIResource(45, 48, 56);
         this.highlightBackgroundPrimary = new ColorUIResource(66, 179, 176);
 
         this.textColor = new ColorUIResource(255, 255, 255);
+        this.textErrorColour = Color.cyan;
         this.disableTextColor = new ColorUIResource(170, 170, 170);
 
         this.buttonBackgroundColor = new ColorUIResource(45, 48, 56);
@@ -73,7 +81,7 @@ public class DarkTheme extends JMarsDarkTheme {
 
         this.buttonFocusColor = buttonDefaultBackgroundColor;
         this.buttonDefaultFocusColor = MaterialColors.WHITE;
-        this.buttonBorderColor = MaterialColors.WHITE;
+        this.buttonBorderColor = new ColorUIResource(50, 83, 88);
         this.buttonColorHighlight = buttonBackgroundColorMouseHover;
 
         this.selectedInDropDownBackgroundComboBox = new ColorUIResource(249, 192, 98);
@@ -132,5 +140,15 @@ public class DarkTheme extends JMarsDarkTheme {
         super.foregroundSeparator = MaterialColors.GRAY_300;
 
         super.backgroundToolTip = backgroundPrimary;
+    }
+
+    @Override
+    public boolean getButtonBorderEnableToAll() {
+        return true;
+    }
+
+    @Override
+    public boolean getButtonBorderEnable() {
+        return true;
     }
 }

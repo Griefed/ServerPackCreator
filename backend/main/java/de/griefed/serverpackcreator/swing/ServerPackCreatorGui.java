@@ -45,6 +45,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Random;
 
 /**
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode. Calls {@link #mainGUI()}
@@ -198,7 +199,7 @@ public class ServerPackCreatorGui extends JPanel {
         }
 
         try {
-            bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile.png")));
+            bufferedImage = ImageIO.read(Objects.requireNonNull(getClass().getResource("/de/griefed/resources/gui/tile" + new Random().nextInt(4) + ".jpg")));
         } catch (IOException ex) {
             LOG.error("Could not read image for tiling.", ex);
         }
@@ -207,7 +208,7 @@ public class ServerPackCreatorGui extends JPanel {
 
         this.TAB_CREATESERVERPACK = new TabCreateServerPack(
                 LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CURSECREATEMODPACK, CREATESERVERPACK, VERSIONMETA, APPLICATIONPROPERTIES,
-                FRAME_SERVERPACKCREATOR, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES
+                FRAME_SERVERPACKCREATOR, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES, DARKTHEME, LIGHTTHEME
         );
 
         this.TAB_LOG_SERVERPACKCREATOR = new TabServerPackCreatorLog(
@@ -344,7 +345,7 @@ public class ServerPackCreatorGui extends JPanel {
 
         FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
-        FRAME_SERVERPACKCREATOR.setMinimumSize(DIMENSION_WINDOW);
+        //FRAME_SERVERPACKCREATOR.setMinimumSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setResizable(true);
 
         FRAME_SERVERPACKCREATOR.pack();
@@ -360,6 +361,8 @@ public class ServerPackCreatorGui extends JPanel {
         TABBEDPANE.setOpaque(true);
 
         SERVERPACKCREATORSPLASH.close();
+
+        TAB_CREATESERVERPACK.validateInputFields();
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
 

@@ -213,8 +213,8 @@ class ConfigurationHandlerTest {
         } else {
             javaPath = autoJavaPath;
         }
-        Assertions.assertNotNull(CONFIGURATIONHANDLER.checkJavaPath(javaPath));
-        Assertions.assertTrue(new File(CONFIGURATIONHANDLER.checkJavaPath(javaPath)).exists());
+        Assertions.assertNotNull(CONFIGURATIONHANDLER.getJavaPath(javaPath));
+        Assertions.assertTrue(new File(CONFIGURATIONHANDLER.getJavaPath(javaPath)).exists());
     }
 
     @Test

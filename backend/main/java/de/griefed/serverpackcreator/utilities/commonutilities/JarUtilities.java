@@ -132,26 +132,26 @@ public class JarUtilities {
      */
     public HashMap<String, String> systemInformation(ApplicationHome applicationHome) {
 
-        return new HashMap<String, String>() {
-            {
-                try {
-                    put("jarPath"    ,applicationHome.getSource().toString().replace("\\", "/"));
-                } catch (Exception ex) {
-                    put("jarPath"    ,applicationHome.getDir().toString().replace("\\", "/"));
-                }
+        HashMap<String, String> sysInfo = new HashMap<>();
 
-                try {
-                    put("jarName"    ,applicationHome.getSource().toString().replace("\\", "/").substring(applicationHome.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1));
-                } catch (Exception ex) {
-                    put("jarName"    ,applicationHome.getDir().toString().replace("\\", "/").substring(applicationHome.getDir().toString().replace("\\", "/").lastIndexOf("/") + 1));
-                }
+        try {
+            sysInfo.put("jarPath"    ,applicationHome.getSource().toString().replace("\\", "/"));
+        } catch (Exception ex) {
+            sysInfo.put("jarPath"    ,applicationHome.getDir().toString().replace("\\", "/"));
+        }
 
-                put("javaVersion",System.getProperty("java.version"));
-                put("osArch"     ,System.getProperty("os.arch"));
-                put("osName"     ,System.getProperty("os.name"));
-                put("osVersion"  ,System.getProperty("os.version"));
-            }
-        };
+        try {
+            sysInfo.put("jarName"    ,applicationHome.getSource().toString().replace("\\", "/").substring(applicationHome.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1));
+        } catch (Exception ex) {
+            sysInfo.put("jarName"    ,applicationHome.getDir().toString().replace("\\", "/").substring(applicationHome.getDir().toString().replace("\\", "/").lastIndexOf("/") + 1));
+        }
+
+        sysInfo.put("javaVersion",System.getProperty("java.version"));
+        sysInfo.put("osArch"     ,System.getProperty("os.arch"));
+        sysInfo.put("osName"     ,System.getProperty("os.name"));
+        sysInfo.put("osVersion"  ,System.getProperty("os.version"));
+
+        return sysInfo;
     }
 
     /**
@@ -264,9 +264,22 @@ public class JarUtilities {
 
                         int length = 0;
 
-                        while ((length = inputStream.read(bytes)) > 0) {
-                            fileOutputStream.write(bytes, 0, length);
+                        if (inputStream != null) {
+
+                            while ((length = inputStream.read(bytes)) > 0) {
+
+                                if (fileOutputStream != null) {
+                                    fileOutputStream.write(bytes, 0, length);
+                                } else {
+                                    LOG.error("FileOutputStream is null for " + destination + ".");
+                                }
+
+                            }
+
+                        } else {
+                            LOG.error("InputStream is null for " + destination + ".");
                         }
+
 
                     } catch (IOException ex) {
 
@@ -275,14 +288,18 @@ public class JarUtilities {
                     } finally {
 
                         try {
-                            inputStream.close();
-                        } catch (IOException ignored) {
+                            if (inputStream != null) {
+                                inputStream.close();
+                            }
+                        } catch (Exception ignored) {
 
                         }
 
                         try {
-                            fileOutputStream.close();
-                        } catch (IOException ignored) {
+                            if (fileOutputStream != null) {
+                                fileOutputStream.close();
+                            }
+                        } catch (Exception ignored) {
 
                         }
 

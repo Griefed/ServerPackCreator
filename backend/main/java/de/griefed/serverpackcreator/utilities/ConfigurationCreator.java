@@ -357,7 +357,7 @@ public class ConfigurationCreator {
 
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.cli") + " ");
 
-            javaPath = CONFIGURATIONHANDLER.checkJavaPath(reader.nextLine());
+            javaPath = CONFIGURATIONHANDLER.getJavaPath(reader.nextLine());
 
             //noinspection RedundantStringFormatCall
             System.out.println(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), javaPath));

@@ -32,12 +32,21 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub contributors](https://img.shields.io/github/contributors/Griefed/ServerPackCreator?color=c0ffee&label=Contributors&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/graphs/contributors)
 
-**ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric modpack. Customize the configuration to your liking and off you go.**
-**Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.**
+**ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric modpack. Customize the
+configuration to your liking and off you go.**
+**Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a
+server pack for your new modpack version.**
 
-I am making this in my spare time, therefore progress is slow. I started getting into Java programming in february 2021, and I'm using ServerPackCreator as a way to teach myself Java, but also to create something useful for the Minecraft community.
+ServerPackCreator is a passion project on which I am working in my spare time. It is also the main reason for why I got into programming in the first place.
 
-Use at your own risk! Be aware that data loss is possible.
+I started getting into Java programming in february 2021, when I was working on an update for one of my Minecraft modpacks,
+Survive Create Prosper 4, and got tired and bored with manually creating a server pack everytime I wanted to update and
+test something, or just release a new server pack for the new modpack version.
+
+The thought "*There must be a way to automate this, or at least make it less tedious...*" was the spark which sent me off
+into the world of programming.
+
+And here we are.
 
 [[_TOC_]]
 
@@ -129,7 +138,7 @@ Huge shoutout and thank you!**
 1. **Generate a config step-by-step by running with argument**`-cgen`
 2. **Install a Forge or Fabric modloader server in your server pack**
 3. **Configurable list of clientside-only mods to not include your server pack**
-   1. Allow ServerPackCreator to automatically detect clientside-only mods by setting `de.griefed.serverpackcreator.serverpack.autodiscoverenabled=true` in `serverpackcreator.properties`.
+   1. ServerPackCreator will automatically try and detect as many clientside-only mods as possible and exclude them.
 4. **Configurable list of directories from your modpack to include in your server pack**
    1. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
    2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.

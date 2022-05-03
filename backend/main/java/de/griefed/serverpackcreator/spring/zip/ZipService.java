@@ -93,11 +93,20 @@ public class ZipService {
 
             int incrementation = 0;
 
-            while (new File(zipPath.toString().replace("\\", "/").substring(0, zipPath.toString().replace("\\", "/").length() - 4) + "_" + incrementation + ".zip").isFile()) {
+            String substring = zipPath.toString()
+                    .replace("\\", "/")
+                    .substring(
+                            0,
+                            zipPath.toString()
+                                    .replace("\\", "/")
+                                    .length() - 4
+                    );
+
+            while (new File(substring + "_" + incrementation + ".zip").isFile()) {
                 incrementation++;
             }
 
-            zipPath = Paths.get(zipPath.toString().replace("\\", "/").substring(0, zipPath.toString().replace("\\", "/").length() - 4) + "_" + incrementation + ".zip");
+            zipPath = Paths.get(substring + "_" + incrementation + ".zip");
 
         }
 

@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
 
 import com.google.common.collect.Lists;
 import de.griefed.serverpackcreator.versionmeta.Type;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -39,6 +41,8 @@ import java.util.Optional;
  * @author Griefed
  */
 public class FabricMeta {
+
+    private static final Logger LOG = LogManager.getLogger(FabricMeta.class);
 
     private final File FABRIC_MANIFEST;
     private final File FABRIC_INSTALLER_MANIFEST;
@@ -77,17 +81,24 @@ public class FabricMeta {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = null;
         Document xml = null;
+
         try {
+
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+
+        } catch (ParserConfigurationException ex) {
+            LOG.error("Couldn't read document.",ex);
         }
+
         try {
+
             assert documentBuilder != null;
             xml = documentBuilder.parse(manifest);
-        } catch (SAXException | IOException e) {
-            e.printStackTrace();
+
+        } catch (SAXException | IOException ex) {
+            LOG.error("Couldn't read document.",ex);
         }
+
         assert xml != null;
         xml.normalize();
         return xml;

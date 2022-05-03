@@ -78,6 +78,7 @@ public class ListUtilities {
 
             if (stringArray.isEmpty()) {
 
+                readerArray.close();
                 return result;
 
             } else {

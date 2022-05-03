@@ -368,7 +368,7 @@ public class ConfigurationHandler {
             configurationModel.setClientMods(configurationModel.getClientMods());
         }
 
-        configurationModel.setJavaPath(checkJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
+        configurationModel.setJavaPath(getJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
 
         if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
 
@@ -618,8 +618,12 @@ public class ConfigurationHandler {
 
                 // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
                 try {
+
                     packName = String.format("./work/modpacks/%s",configurationModel.getCurseModpack().get("name").asText());
+
                 } catch (NullPointerException npe) {
+
+                    //noinspection ConstantConditions
                     packName = null;
                 }
 
@@ -639,8 +643,12 @@ public class ConfigurationHandler {
 
                 // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
                 try {
+
                     packName = String.format("./work/modpacks/%s",configurationModel.getCurseModpack().get("name").asText());
                 } catch (NullPointerException npe) {
+
+
+                    //noinspection ConstantConditions
                     packName = null;
                 }
 
@@ -660,8 +668,12 @@ public class ConfigurationHandler {
 
                 // If JSON was acquired, get the name of the modpack and overwrite newDestination using modpack name.
                 try {
+
                     packName = String.format("./work/modpacks/%s",configurationModel.getCurseModpack().get("loader").get("sourceName").asText());
+
                 } catch (NullPointerException npe) {
+
+                    //noinspection ConstantConditions
                     packName = null;
                 }
 
@@ -743,8 +755,6 @@ public class ConfigurationHandler {
                     incrementation++;
                 }
 
-                packName = packName + "_" + incrementation;
-
             // No previous incrementation of the would-be-server-pack.
             } else {
 
@@ -755,9 +765,9 @@ public class ConfigurationHandler {
                     incrementation++;
                 }
 
-                packName = packName + "_" + incrementation;
-
             }
+
+            packName = packName + "_" + incrementation;
 
         // the modpack has not been extracted yet by a previous run. FREEDOOOOOOM!
         } else {
@@ -772,8 +782,6 @@ public class ConfigurationHandler {
                     incrementation++;
                 }
 
-                packName = packName + "_" + incrementation;
-
             // No previous incrementation of the would-be-server-pack.
             } else {
 
@@ -784,9 +792,9 @@ public class ConfigurationHandler {
                     incrementation++;
                 }
 
-                packName = packName + "_" + incrementation;
-
             }
+
+            packName = packName + "_" + incrementation;
         }
 
         // Finally, move to new destination to avoid overwriting of server pack
@@ -1035,6 +1043,16 @@ public class ConfigurationHandler {
     }
 
     /**
+     * Check the passed directory for existence and whether it is a directory, rather than a file.
+     * @author Griefed
+     * @param modpackDir {@link String} The modpack directory.
+     * @return Boolean. Returns true if the directory exists.
+     */
+    public boolean checkModpackDir(String modpackDir) {
+        return checkModpackDir(modpackDir, new ArrayList<>());
+    }
+
+    /**
      * Checks whether the passed String is empty and if it is empty, prints the corresponding message to the console and
      * serverpackcreator.log so the user knows what went wrong.<br>
      * Checks whether the passed String is a directory and if it is not, prints the corresponding message to the console
@@ -1066,6 +1084,24 @@ public class ConfigurationHandler {
 
         }
         return configCorrect;
+    }
+
+    /**
+     * Checks whether the passed list of directories which are supposed to be in the modpack directory is empty, or
+     * whether all directories in the list exist in the modpack directory. If the user specified a
+     * <code>source/file;destination/file</code>-combination, it is checked whether the specified source-file exists
+     * on the host.
+     * @author Griefed
+     * @param directoriesToCopy List String. The list of directories, or <code>source/file;destination/file</code>-combinations,
+     *                         to check for existence. <code>source/file;destination/file</code>-combinations must be
+     *                         absolute paths to the source-file.
+     * @param modpackDir String. The path to the modpack directory in which to check for existence of the passed list
+     *                  of directories.
+     * @return Boolean. Returns true if every directory was found in the modpack directory. If any single one was not
+     * found, false is returned.
+     */
+    public boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir) {
+        return checkCopyDirs(directoriesToCopy, modpackDir, new ArrayList<>());
     }
 
     /**
@@ -1188,12 +1224,22 @@ public class ConfigurationHandler {
     }
 
     /**
+     * Check whether the given path is a valid file.
+     * @author Griefed
+     * @param pathToJava {@link String} Path to the Java executable
+     * @return Boolean. Returns <code>true</code> if the path is valid.
+     */
+    public boolean checkJavaPath(String pathToJava) {
+        return new File(pathToJava).isFile() && (pathToJava.endsWith("java") || pathToJava.endsWith("java.exe"));
+    }
+
+    /**
      * Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.
      * @author Griefed
      * @param pathToJava String. The path to check for java.exe and java.
      * @return String. Returns the path to the java installation. If user input was incorrect, SPC will try to acquire the path automatically.
      */
-    public String checkJavaPath(String pathToJava) {
+    public String getJavaPath(String pathToJava) {
 
         //noinspection UnusedAssignment
         String checkedJavaPath = null;

@@ -1,3 +1,35 @@
+## [3.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.2.0...3.3.0) (2022-04-24)
+
+
+### 💈 Style
+
+* **Formatting:** Make LocalizationManager a bit more readable ([bf851dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/bf851dc277b31504b88d601a62f986e7674326e1))
+
+
+### 💎 Improvements
+
+* **Help text:** Make formatting of help text more easily expandable for future updates. Expand help text with new arguments. ([796328c](https://git.griefed.de/Griefed/ServerPackCreator/commit/796328c31d0552186fc87a1b05ee424850eb1a01))
+* **Sideness scanning:** Scan sideness of Fabric mods and automatically excluded any detected clientside-only mods. ([4bb76aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bb76aaa2ab0ba012daddc32dad9b6d3cd87e206))
+* **Startup Sequence:** Implement priority system in case multiple arguments have been used (see CommandlineParser). When the GUI is used, display a splashscreen whilst SPC is loading (see ServerPackCreatorSplash). CLI menu for an improved user-experience, giving the user more choice when running in commandline (see ServerPackCreator). The Main-class now only initializes ServerPackCreator and runs it with the determined mode. ([a925a76](https://git.griefed.de/Griefed/ServerPackCreator/commit/a925a763adf04cf5926f1187fc534a9f0203c71c))
+
+
+### 🧪 Tests
+
+* Try and fix tests which error in CI pipelines, but not on local ([88fb612](https://git.griefed.de/Griefed/ServerPackCreator/commit/88fb6125ea26b112fdd8f6745037fa67a1d9319d))
+
+
+### 🛠 Fixes
+
+* **ApplicationProperties:** Only load a filesystem properties if it exists. ([417c866](https://git.griefed.de/Griefed/ServerPackCreator/commit/417c8662611517229f08dc655fcb027659a3f28a))
+* **File copying from JAR-files:** Replace old mentions of Main.class and other with passed class. Correctly discern whether a dev or production is being used in order to copy files and folders. Add additional method which allows replacing an already existing file when copying from a JAR-file. ([d5b17c5](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5b17c5c388b69c25cd247fe43655b90f26a1be0))
+* **VersionMeta double loading:** Prevent VersionMeta from running initializations twice some times by explicitly updating the separate metas. ([808379f](https://git.griefed.de/Griefed/ServerPackCreator/commit/808379fe577ba8deba7b1b7e21c7888418ba944d))
+
+
+### Other
+
+* **Help:** Information about supported Java version(s) and link to Wiki articles in `-help`-argument ([c8031ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/c8031cef7938d812cd9e9ccbaf17c916b62881c4))
+* **Optimize imports:** Just a couple of import optimizations. ([f3cf380](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3cf380ea7ff82ccdfc3aed89c2fa24c7035a45d))
+
 ## [3.2.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.1.0...3.2.0-beta.1) (2022-04-18)
 
 
