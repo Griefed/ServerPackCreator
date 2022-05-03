@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10};
+var methods = {"i0":10,"i1":10,"i2":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -177,8 +177,16 @@ extends mdlaf.themes.MaterialLiteTheme</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>java.awt.Color</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/themes/LightTheme.html#getTextErrorColour--">getTextErrorColour</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/themes/LightTheme.html#installBorders--">installBorders</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/themes/LightTheme.html#installColor--">installColor</a></span>()</code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -186,7 +194,7 @@ extends mdlaf.themes.MaterialLiteTheme</pre>
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;mdlaf.themes.MaterialLiteTheme</h3>
-<code>getButtonBorderEnable, getButtonBorderEnableToAll, getName, installColor, installDefaultColor, installUIDefault</code></li>
+<code>getButtonBorderEnable, getButtonBorderEnableToAll, getName, installDefaultColor, installUIDefault</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.mdlaf.themes.AbstractMaterialTheme">
@@ -233,16 +241,38 @@ extends mdlaf.themes.MaterialLiteTheme</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getTextErrorColour--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getTextErrorColour</h4>
+<pre>public&nbsp;java.awt.Color&nbsp;getTextErrorColour()</pre>
+</li>
+</ul>
 <a name="installBorders--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>installBorders</h4>
 <pre>protected&nbsp;void&nbsp;installBorders()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>installBorders</code>&nbsp;in class&nbsp;<code>mdlaf.themes.MaterialLiteTheme</code></dd>
+</dl>
+</li>
+</ul>
+<a name="installColor--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>installColor</h4>
+<pre>protected&nbsp;void&nbsp;installColor()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>installColor</code>&nbsp;in class&nbsp;<code>mdlaf.themes.MaterialLiteTheme</code></dd>
 </dl>
 </li>
 </ul>

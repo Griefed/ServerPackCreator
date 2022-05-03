@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -232,6 +232,14 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkCopyDirs-java.util.List-java.lang.String-">checkCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
+             java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory is empty, or
+ whether all directories in the list exist in the modpack directory.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkCopyDirs-java.util.List-java.lang.String-java.util.List-">checkCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
              java.lang.String&nbsp;modpackDir,
              java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
@@ -241,7 +249,7 @@ extends java.lang.Object</pre>
  and serverpackcreator.log if any one of the directories could not be found.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkCurseForge-java.lang.String-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">checkCurseForge</a></span>(java.lang.String&nbsp;modpackDir,
                <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
@@ -249,25 +257,25 @@ extends java.lang.Object</pre>
 <div class="block">Checks whether the specified modpack directory contains a valid projectID,fileID combination.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkIconAndProperties-java.lang.String-">checkIconAndProperties</a></span>(java.lang.String&nbsp;iconOrPropertiesPath)</code>
 <div class="block">Checks the passed String whether it is an existing file.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkJavaPath-java.lang.String-">checkJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block">Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.</div>
+<div class="block">Check whether the given path is a valid file.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloader-java.lang.String-">checkModloader</a></span>(java.lang.String&nbsp;modloader)</code>
 <div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-">checkModloaderVersion</a></span>(java.lang.String&nbsp;modloader,
                      java.lang.String&nbsp;modloaderVersion,
@@ -275,7 +283,13 @@ extends java.lang.Object</pre>
 <div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-">checkModpackDir</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Check the passed directory for existence and whether it is a directory, rather than a file.</div>
+</td>
+</tr>
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-java.util.List-">checkModpackDir</a></span>(java.lang.String&nbsp;modpackDir,
                java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
@@ -285,11 +299,17 @@ extends java.lang.Object</pre>
  and serverpackcreator.log so the user knows what went wrong.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkZipArchive-java.nio.file.Path-java.util.List-">checkZipArchive</a></span>(java.nio.file.Path&nbsp;pathToZip,
                java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Check a given ZIP-archives contents.</div>
+</td>
+</tr>
+<tr id="i19" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getJavaPath-java.lang.String-">getJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
+<div class="block">Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.</div>
 </td>
 </tr>
 </table>
@@ -654,6 +674,22 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 </dl>
 </li>
 </ul>
+<a name="checkModpackDir-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkModpackDir</h4>
+<pre>public&nbsp;boolean&nbsp;checkModpackDir(java.lang.String&nbsp;modpackDir)</pre>
+<div class="block">Check the passed directory for existence and whether it is a directory, rather than a file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackDir</code> - <code>String</code> The modpack directory.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns true if the directory exists.</dd>
+</dl>
+</li>
+</ul>
 <a name="checkModpackDir-java.lang.String-java.util.List-">
 <!--   -->
 </a>
@@ -672,6 +708,31 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dd><code>encounteredErrors</code> - List String. A list to which all encountered errors are saved to.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the directory exists.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkCopyDirs-java.util.List-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkCopyDirs</h4>
+<pre>public&nbsp;boolean&nbsp;checkCopyDirs(java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
+                             java.lang.String&nbsp;modpackDir)</pre>
+<div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory is empty, or
+ whether all directories in the list exist in the modpack directory. If the user specified a
+ <code>source/file;destination/file</code>-combination, it is checked whether the specified source-file exists
+ on the host.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>directoriesToCopy</code> - List String. The list of directories, or <code>source/file;destination/file</code>-combinations,
+                         to check for existence. <code>source/file;destination/file</code>-combinations must be
+                         absolute paths to the source-file.</dd>
+<dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for existence of the passed list
+                  of directories.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns true if every directory was found in the modpack directory. If any single one was not
+ found, false is returned.</dd>
 </dl>
 </li>
 </ul>
@@ -727,7 +788,23 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <ul class="blockList">
 <li class="blockList">
 <h4>checkJavaPath</h4>
-<pre>public&nbsp;java.lang.String&nbsp;checkJavaPath(java.lang.String&nbsp;pathToJava)</pre>
+<pre>public&nbsp;boolean&nbsp;checkJavaPath(java.lang.String&nbsp;pathToJava)</pre>
+<div class="block">Check whether the given path is a valid file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>pathToJava</code> - <code>String</code> Path to the Java executable</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns <code>true</code> if the path is valid.</dd>
+</dl>
+</li>
+</ul>
+<a name="getJavaPath-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getJavaPath</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getJavaPath(java.lang.String&nbsp;pathToJava)</pre>
 <div class="block">Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
