@@ -1,3 +1,10 @@
+## [3.4.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.3.0...3.4.0) (2022-05-03)
+
+
+### 💎 Improvements
+
+* **GUI:** Live-checks of input-fields in GUI. Allow closing of splash. Improve text colors of light and dark themes. Move Java args configuration from menu bar to Create Server Pack tab. Make Create Server Pack tab scrollable to improve usability for those with smaller screens. More improvements in version 5, milestone 5. ([3337a14](https://git.griefed.de/Griefed/ServerPackCreator/commit/3337a1451299fed199f5c21693cfdb122f7e03b2))
+
 ## [3.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.2.0...3.3.0) (2022-04-24)
 
 

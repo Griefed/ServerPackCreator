@@ -946,24 +946,35 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.insets = FIVE_ZERO_FIVE_ZERO;
 
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new GridBagLayout());
 
-        statusLabelLine0 = new JLabel("..." + RETICULATOR.reticulate());
-        statusLabelLine1 = new JLabel("..." + RETICULATOR.reticulate());
-        statusLabelLine2 = new JLabel("..." + RETICULATOR.reticulate());
-        statusLabelLine3 = new JLabel("..." + RETICULATOR.reticulate());
-        statusLabelLine4 = new JLabel("..." + RETICULATOR.reticulate());
+        statusLabelLine0 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+        statusLabelLine1 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+        statusLabelLine2 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+        statusLabelLine3 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+        statusLabelLine4 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
         statusLabelLine5 = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttongenerateserverpack.ready"));
 
         updateStatusLabelForeground();
 
-        panel.add(statusLabelLine0);
-        panel.add(statusLabelLine1);
-        panel.add(statusLabelLine2);
-        panel.add(statusLabelLine3);
-        panel.add(statusLabelLine4);
-        panel.add(statusLabelLine5);
+        GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
+        GRIDBAGCONSTRAINTS.insets = new Insets(0,0,0,0);
+        GRIDBAGCONSTRAINTS.gridx = 0;
+        GRIDBAGCONSTRAINTS.gridy = 0;
+        panel.add(statusLabelLine0, GRIDBAGCONSTRAINTS);
+        GRIDBAGCONSTRAINTS.gridy = 1;
+        panel.add(statusLabelLine1, GRIDBAGCONSTRAINTS);
+        GRIDBAGCONSTRAINTS.gridy = 2;
+        panel.add(statusLabelLine2, GRIDBAGCONSTRAINTS);
+        GRIDBAGCONSTRAINTS.gridy = 3;
+        panel.add(statusLabelLine3, GRIDBAGCONSTRAINTS);
+        GRIDBAGCONSTRAINTS.gridy = 4;
+        panel.add(statusLabelLine4, GRIDBAGCONSTRAINTS);
+        GRIDBAGCONSTRAINTS.gridy = 5;
+        panel.add(statusLabelLine5, GRIDBAGCONSTRAINTS);
 
+        GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
+        GRIDBAGCONSTRAINTS.insets = FIVE_ZERO_FIVE_ZERO;
         GRIDBAGCONSTRAINTS.gridx = 1;
         GRIDBAGCONSTRAINTS.gridy = 20;
         GRIDBAGCONSTRAINTS.gridwidth = 5;
@@ -1065,13 +1076,13 @@ public class TabCreateServerPack extends JComponent {
      * @param text {@link String} The text to update the status with.
      */
     private void updateStatus(String text) {
-        this.statusLabelLine0.setText(statusLabelLine1.getText());
-        this.statusLabelLine1.setText(statusLabelLine2.getText());
-        this.statusLabelLine2.setText(statusLabelLine3.getText());
-        this.statusLabelLine3.setText(statusLabelLine4.getText());
-        this.statusLabelLine4.setText(statusLabelLine5.getText());
+        this.statusLabelLine0.setText(statusLabelLine1.getText() + "   ");
+        this.statusLabelLine1.setText(statusLabelLine2.getText() + "   ");
+        this.statusLabelLine2.setText(statusLabelLine3.getText() + "   ");
+        this.statusLabelLine3.setText(statusLabelLine4.getText() + "   ");
+        this.statusLabelLine4.setText(statusLabelLine5.getText() + "   ");
         if (text.length() > 100) {
-            this.statusLabelLine5.setText(text.substring(0,100) + "...");
+            this.statusLabelLine5.setText(text.substring(0,100) + "...    ");
         } else {
             this.statusLabelLine5.setText(text);
         }
