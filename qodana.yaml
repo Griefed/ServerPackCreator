@@ -2,6 +2,7 @@ version: "1.0"
 profile:
   name: qodana.recommended
 include:
+  - name: CheckDependencyLicenses
   - name: HardCodedStringLiteral
   - name: IfCanBeSwitch
   - name: StringEqualsEmptyString
