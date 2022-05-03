@@ -27,8 +27,6 @@ import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.Update;
 import mdlaf.MaterialLookAndFeel;
-import mdlaf.components.combobox.MaterialComboBoxUI;
-import mdlaf.components.textfield.MaterialTextFieldUI;
 import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -88,7 +86,6 @@ public class MainMenuBar extends Component {
     private final MaterialLookAndFeel LAF_LIGHT;
 
     private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
-    private final Dimension JAVAARGSDIMENSION = new Dimension(750,25);
     private final Dimension ABOUTDIMENSION = new Dimension(925,520);
     private final Dimension FILETOOLARGEDIMENSION = new Dimension(200,10);
 
@@ -101,11 +98,7 @@ public class MainMenuBar extends Component {
     private final String FILETOOLARGETEXT;
     private final String FILETOOLARGETITLE;
 
-    private final String[] JAVAARGSOPTIONS = new String[4];
-    private final String[] JAVAARGSSELECTIONS = new String[2];
     private final String[] HASTEOPTIONS = new String[3];
-
-    private final JTextField JAVAARGS = new JTextField();
 
     private final StyledDocument ABOUTWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument CONFIGWINDOWDOCUMENT = new DefaultStyledDocument();
@@ -123,8 +116,6 @@ public class MainMenuBar extends Component {
     private final JTextPane FILETOOLARGEWINDOWTEXTPANE = new JTextPane();
 
     private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
-    private final MaterialTextFieldUI MATERIALTEXTFIELDUI = new MaterialTextFieldUI();
-    private final MaterialComboBoxUI MATERIALCOMBOBOXUI = new MaterialComboBoxUI();
 
     private boolean isDarkTheme;
 
@@ -143,7 +134,6 @@ public class MainMenuBar extends Component {
     private JMenuItem file_UpdateFallbackModslist;
 
     private JMenuItem edit_SwitchTheme;
-    private JMenuItem edit_ChangeJavaArgs;
     private JMenuItem edit_OpenInEditorServerProperties;
     private JMenuItem edit_OpenInEditorServerIcon;
 
@@ -312,24 +302,6 @@ public class MainMenuBar extends Component {
                 }
             }
         });
-
-        JAVAARGSOPTIONS[0] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.ok");
-        JAVAARGSOPTIONS[1] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.aikar");
-        JAVAARGSOPTIONS[2] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.empty");
-        JAVAARGSOPTIONS[3] = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.javaargs.cancel");
-
-        JAVAARGSSELECTIONS[0] = "empty";
-        JAVAARGSSELECTIONS[1] = "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 " +
-                "-XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1HeapWastePercent=5 " +
-                "-XX:G1MixedGCCountTarget=4 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 " +
-                "-XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -XX:G1NewSizePercent=30 " +
-                "-XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 " +
-                "-XX:InitiatingHeapOccupancyPercent=15 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true";
-
-        JAVAARGS.setMinimumSize(JAVAARGSDIMENSION);
-        JAVAARGS.setMaximumSize(JAVAARGSDIMENSION);
-        JAVAARGS.setPreferredSize(JAVAARGSDIMENSION);
-
     }
 
     /**
@@ -356,7 +328,6 @@ public class MainMenuBar extends Component {
         file_ExitConfigMenuItem = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.exit"));
 
         edit_SwitchTheme = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.theme"));
-        edit_ChangeJavaArgs = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.javaargs"));
         edit_OpenInEditorServerProperties = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverproperties"));
         edit_OpenInEditorServerIcon = new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.servericon"));
 
@@ -387,7 +358,6 @@ public class MainMenuBar extends Component {
         file_ExitConfigMenuItem.addActionListener(this::actionEventExitMenuItem);
 
         edit_SwitchTheme.addActionListener(this::actionEventSwitchThemeMenuItem);
-        edit_ChangeJavaArgs.addActionListener(this::actionEventChangeJavaArgsMenuItem);
         edit_OpenInEditorServerProperties.addActionListener(this::actionEventOpenInEditorServerProperties);
         edit_OpenInEditorServerIcon.addActionListener(this::actionEventOpenServerIcon);
 
@@ -421,8 +391,6 @@ public class MainMenuBar extends Component {
         fileMenu.add(new JSeparator());
         fileMenu.add(file_ExitConfigMenuItem);
 
-        editMenu.add(edit_ChangeJavaArgs);
-        editMenu.add(new JSeparator());
         editMenu.add(edit_OpenInEditorServerProperties);
         editMenu.add(edit_OpenInEditorServerIcon);
         editMenu.add(new JSeparator());
@@ -846,58 +814,6 @@ public class MainMenuBar extends Component {
     }
 
     /**
-     * Upon button-press, open a dialog which allows the user to specify JVM flags/Java args for the start-scripts which
-     * can be created by ServerPackCreator. Provide options to use Aikars flags, clear the args, confirm the current
-     * configuration and save it as well as simply canceling the dialog.
-     * @author Griefed
-     * @param actionEvent The event which triggers this method.
-     */
-    private void actionEventChangeJavaArgsMenuItem(ActionEvent actionEvent) {
-        LOG.debug("Clicked Edit Start-Scripts Java Args.");
-
-        if (TAB_CREATESERVERPACK.getJavaArgs().equalsIgnoreCase("empty")) {
-            JAVAARGS.setText("");
-        } else {
-            JAVAARGS.setText(TAB_CREATESERVERPACK.getJavaArgs());
-        }
-
-        new MaterialTextFieldUI().installUI(JAVAARGS);
-
-        switch (JOptionPane.showOptionDialog(
-                FRAME_SERVERPACKCREATOR,
-                JAVAARGS,
-                "Java Arguments",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                JAVAARGSOPTIONS,JAVAARGSOPTIONS[3]
-        )) {
-            case 0:
-
-                if (JAVAARGS.getText().equals("")) {
-                    TAB_CREATESERVERPACK.setJavaArgs("empty");
-                } else {
-                    TAB_CREATESERVERPACK.setJavaArgs(JAVAARGS.getText());
-                }
-                break;
-
-            case 1:
-
-                TAB_CREATESERVERPACK.setJavaArgs(JAVAARGSSELECTIONS[1]);
-                break;
-
-            case 2:
-
-                TAB_CREATESERVERPACK.setJavaArgs("empty");
-                break;
-
-            default:
-
-        }
-        LOG.debug("Java args set to: " + TAB_CREATESERVERPACK.getJavaArgs());
-    }
-
-    /**
      * Upon button-press, close ServerPackCreator gracefully.
      * @author Griefed
      * @param actionEvent The event which triggers this method.
@@ -1012,6 +928,9 @@ public class MainMenuBar extends Component {
                 LOG.error("Couldn't change theme.", ex);
             }
         }
+
+        TAB_CREATESERVERPACK.validateInputFields();
+        TAB_CREATESERVERPACK.updateStatusLabelForeground();
     }
 
     /**
@@ -1118,11 +1037,7 @@ public class MainMenuBar extends Component {
     private void actionEventOpenServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open server packs directory.");
 
-        try {
-            Desktop.getDesktop().open(new File(APPLICATIONPROPERTIES.getDirectoryServerPacks()));
-        } catch (IOException ex) {
-            LOG.error("Error opening file explorer for server-packs.", ex);
-        }
+        TAB_CREATESERVERPACK.openServerPacksFolder();
     }
 
     /**
@@ -1247,10 +1162,6 @@ public class MainMenuBar extends Component {
 
         byte[] postData;
 
-        DataOutputStream dataOutputStream;
-
-        BufferedReader bufferedReader;
-
         try {
             url = new URL(requestURL);
         }
@@ -1286,20 +1197,27 @@ public class MainMenuBar extends Component {
         conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
         conn.setUseCaches(false);
 
-        try {
-            dataOutputStream = new DataOutputStream(conn.getOutputStream());
+        try (DataOutputStream dataOutputStream = new DataOutputStream(conn.getOutputStream())) {
+            //dataOutputStream = new DataOutputStream(conn.getOutputStream());
             dataOutputStream.write(postData);
-            bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            response = bufferedReader.readLine();
+
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+
+                response = bufferedReader.readLine();
+
+            } catch (IOException ex) {
+                LOG.error("Error encountered when acquiring HasteBin.", ex);
+            }
+
         } catch (IOException ex) {
-            LOG.error("Error encountered when acquiring curseResponse from URL.", ex);
+            LOG.error("Error encountered when acquiring HasteBin.", ex);
         }
 
         if (Objects.requireNonNull(response).contains("\"key\"")) {
-            response = "https://haste.zneix.eu/" + response.substring(response.indexOf(":") + 2, response.length() - 2);
+            response = requestURL.replace("/documents", "/") + response.substring(response.indexOf(":") + 2, response.length() - 2);
         }
 
-        if (response.contains("https://haste.zneix.eu")) {
+        if (response.contains(requestURL.replace("/documents", ""))) {
             return response;
         } else {
             return LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.abouttab.hastebin.response");

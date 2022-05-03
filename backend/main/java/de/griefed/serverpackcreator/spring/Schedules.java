@@ -144,8 +144,8 @@ public class Schedules {
     private void refreshVersionLister() {
         try {
             VERSIONMETA.update();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            LOG.error("Could not update VersionMeta.",ex);
         }
     }
 }

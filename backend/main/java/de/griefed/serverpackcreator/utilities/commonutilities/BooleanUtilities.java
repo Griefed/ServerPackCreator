@@ -116,10 +116,10 @@ public class BooleanUtilities {
 
         String boolRead;
 
-        while (true) {
-            boolRead = readerBoolean.nextLine();
+        boolRead = readerBoolean.nextLine();
 
-            return convertToBoolean(boolRead);
-        }
+        readerBoolean.close();
+
+        return convertToBoolean(boolRead);
     }
 }

@@ -140,20 +140,18 @@ Gradle Test:
   script:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --full-stacktrace"
-    - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/jacoco/test
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto build/libs
-    - cat build/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
     - echo "**** Renaming files to please the eye ****"
     - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
     - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
+    - echo "**** Fetching jacoco test coverage ****"
+    - cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
   coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
     paths:
       - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.exe
       - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.jar
-      - build/jacoco/test/jacocoTestReport.xml
-      - build/reports/tests/test
+      - build/reports/jacoco/test/jacocoTestReport.xml
+      - build/reports/
     expire_in: 1 week
 
 Docker Test:
@@ -354,25 +352,34 @@ coverage:
     reports:
       cobertura: build/cobertura.xml
 
-Gradle Dependency-Checks:
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.8
+Qodana Expose:
+  stage: Documentation
+  image:
+    name: jetbrains/qodana-jvm
+    entrypoint: [""]
   allow_failure: true
-  stage: Other
-  before_script:
-    - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    - which java
-    - echo "**** Java version ****"
-    - java -version
-    - echo "**** Allowing execution of gradlew ****"
-    - chmod +x gradlew
   script:
-    - echo "**** Checking for dependency updates ****"
-    - ./gradlew dependencyUpdates --info || true
+    - /opt/idea/bin/entrypoint --results-dir=$CI_PROJECT_DIR/qodana --save-report --report-dir=$CI_PROJECT_DIR/qodana/report
+  after_script:
+    - wget -O discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
+    - apt-get update
+    - apt-get install -y --no-install-recommends jq curl
+    - chmod a+x discord.sh
+    - ./discord.sh
+      --webhook-url="$QODANA_WEBHOOK_URL"
+      --username "$CI_PROJECT_TITLE"
+      --avatar "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.png"
+      --text "New Qodana report available for pipeline ID ${CI_PIPELINE_ID}, commit ${CI_COMMIT_SHORT_SHA}, branch ${CI_COMMIT_REF_NAME}."
+      --title "New ${CI_PROJECT_TITLE} Qodana Report"
+      --description "New Qodana report available for pipeline ID ${CI_PIPELINE_ID}, commit ${CI_COMMIT_SHORT_SHA}, branch ${CI_COMMIT_REF_NAME}."
+      --color "0xC0FFEE"
+      --url "${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/file/qodana/report/index.html"
   artifacts:
     paths:
-      - build/dependencyUpdates/report.json
-    expire_in: 1 week
+      - qodana/report/
+    expose_as: 'Qodana report'
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 pages:
   stage: Documentation
@@ -388,11 +395,11 @@ pages:
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto public
   only:
     - main
-    - webservice
   artifacts:
     paths:
       - public
     expire_in: 1 week
+
 
 release_job:
   stage: Release

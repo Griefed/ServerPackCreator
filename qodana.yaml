@@ -1,0 +1,8 @@
+version: "1.0"
+profile:
+  name: qodana.recommended
+include:
+  - name: HardCodedStringLiteral
+  - name: IfCanBeSwitch
+  - name: StringEqualsEmptyString
+  - name: ThreeNegationsPerMethod

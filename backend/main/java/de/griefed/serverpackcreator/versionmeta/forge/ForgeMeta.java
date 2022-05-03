@@ -231,7 +231,16 @@ public class ForgeMeta {
         if (!checkForgeVersion(forgeVersion)) {
             return Optional.empty();
         }
-        return getForgeInstance(supportedMinecraftVersion(forgeVersion).get(),forgeVersion);
+
+        if (supportedMinecraftVersion(forgeVersion).isPresent()) {
+
+            return getForgeInstance(supportedMinecraftVersion(forgeVersion).get(),forgeVersion);
+
+        } else {
+
+            return Optional.empty();
+
+        }
     }
 
     /**
@@ -269,9 +278,18 @@ public class ForgeMeta {
         if (!checkMinecraftVersion(minecraftVersion)) {
             return Optional.empty();
         }
-        return Optional.of(getForgeVersions(minecraftVersion, Type.ASCENDING).get().get(
-                getForgeVersions(minecraftVersion, Type.ASCENDING).get().size() - 1
-        ));
+
+        if (getForgeVersions(minecraftVersion, Type.ASCENDING).isPresent()) {
+
+            return Optional.of(getForgeVersions(minecraftVersion, Type.ASCENDING).get().get(
+                    getForgeVersions(minecraftVersion, Type.ASCENDING).get().size() - 1
+            ));
+
+        } else {
+
+            return Optional.empty();
+
+        }
     }
 
     /**
@@ -284,7 +302,15 @@ public class ForgeMeta {
         if (!checkMinecraftVersion(minecraftVersion)) {
             return Optional.empty();
         }
-        return Optional.ofNullable(getForgeVersions(minecraftVersion, Type.ASCENDING).get().get(0));
+        if (getForgeVersions(minecraftVersion, Type.ASCENDING).isPresent()) {
+
+            return Optional.ofNullable(getForgeVersions(minecraftVersion, Type.ASCENDING).get().get(0));
+
+        } else {
+
+            return Optional.empty();
+
+        }
     }
 
     /**
@@ -409,6 +435,15 @@ public class ForgeMeta {
         if (!checkForgeVersion(forgeVersion)) {
             return Optional.empty();
         }
-        return Optional.ofNullable(getForgeInstance(forgeVersion).get().installerUrl());
+
+        if (getForgeInstance(forgeVersion).isPresent()) {
+
+            return Optional.ofNullable(getForgeInstance(forgeVersion).get().installerUrl());
+
+        } else {
+
+            return Optional.empty();
+
+        }
     }
 }

@@ -22,10 +22,14 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicProgressBarUI;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -34,7 +38,7 @@ import java.util.Random;
 public class ServerPackCreatorSplash {
 
     private final ReticulatingSplines RETICULATING_SPLINES = new ReticulatingSplines();
-    private final JFrame J_FRAME;
+    private final JWindow SPLASH_WINDOW;
     private final JLabel PROGRESS_TEXT = new JLabel(RETICULATING_SPLINES.reticulate());
     private final JProgressBar PROGRESS_BAR = new JProgressBar();
 
@@ -65,13 +69,14 @@ public class ServerPackCreatorSplash {
         Color primary = new Color(50,83,88);
 
         // Construct and prepare JFrame with background image
-        this.J_FRAME = new JFrame();
-        this.J_FRAME.setContentPane(new BackgroundPanel(bufferedImage, BackgroundPanel.ACTUAL, 0.0f, 0.0f));
-        this.J_FRAME.getContentPane().setLayout(null);
-        this.J_FRAME.setUndecorated(true);
-        this.J_FRAME.setSize(splashScreenBackgroundImage.getIconWidth(), splashScreenBackgroundImage.getIconHeight());
-        this.J_FRAME.setLocationRelativeTo(null);
-        this.J_FRAME.getContentPane().setBackground(c0FFEE);
+        //this.J_FRAME = new JFrame();
+        this.SPLASH_WINDOW = new JWindow();
+        this.SPLASH_WINDOW.setContentPane(new BackgroundPanel(bufferedImage, BackgroundPanel.ACTUAL, 0.0f, 0.0f));
+        this.SPLASH_WINDOW.getContentPane().setLayout(null);
+        //this.J_FRAME.setUndecorated(true);
+        this.SPLASH_WINDOW.setSize(splashScreenBackgroundImage.getIconWidth(), splashScreenBackgroundImage.getIconHeight());
+        this.SPLASH_WINDOW.setLocationRelativeTo(null);
+        this.SPLASH_WINDOW.getContentPane().setBackground(c0FFEE);
 
         // Construct and prepare mem progress text
         this.PROGRESS_TEXT.setFont(new Font("arial", Font.BOLD,20));
@@ -83,7 +88,7 @@ public class ServerPackCreatorSplash {
                 40
         );
         this.PROGRESS_TEXT.setForeground(c0FFEE);
-        this.J_FRAME.add(PROGRESS_TEXT);
+        this.SPLASH_WINDOW.add(PROGRESS_TEXT);
 
         // Construct and add progress bar
         float offsetInPercent = 20F;
@@ -111,7 +116,7 @@ public class ServerPackCreatorSplash {
         );
         this.PROGRESS_BAR.setForeground(primary);
         this.PROGRESS_BAR.setValue(0);
-        this.J_FRAME.add(PROGRESS_BAR);
+        this.SPLASH_WINDOW.add(PROGRESS_BAR);
 
         // Construct and add version label
         JLabel versionLabel = new JLabel(version);
@@ -123,7 +128,7 @@ public class ServerPackCreatorSplash {
                 40
         );
         versionLabel.setForeground(c0FFEE);
-        this.J_FRAME.add(versionLabel);
+        this.SPLASH_WINDOW.add(versionLabel);
 
         // Consturct and add sum luv
         JLabel someLuv = new JLabel("By Griefed");
@@ -135,9 +140,32 @@ public class ServerPackCreatorSplash {
                 40
         );
         someLuv.setForeground(c0FFEE);
-        this.J_FRAME.add(someLuv);
+        this.SPLASH_WINDOW.add(someLuv);
 
-        this.J_FRAME.setVisible(true);
+        // Construct and add close button in case SPC was not meant to be started, or hangs
+        JButton EXIT = new JButton();
+        int buttonSize = 16;
+        try {
+            EXIT.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/error.png"))).getScaledInstance(buttonSize,buttonSize,Image.SCALE_SMOOTH)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        EXIT.setBounds(
+                splashScreenBackgroundImage.getIconWidth() - buttonSize,
+                0,
+                buttonSize,
+                buttonSize
+        );
+        EXIT.addActionListener(this::exit);
+        EXIT.setContentAreaFilled(false);
+        EXIT.setOpaque(false);
+        EXIT.setBorder(null);
+        EXIT.setBorderPainted(false);
+        this.SPLASH_WINDOW.add(EXIT);
+
+        this.SPLASH_WINDOW.setIconImage(Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/app.png"))));
+
+        this.SPLASH_WINDOW.setVisible(true);
     }
 
     public void update(int progress) {
@@ -147,6 +175,11 @@ public class ServerPackCreatorSplash {
     }
 
     public void close() {
-        this.J_FRAME.dispose();
+        this.SPLASH_WINDOW.dispose();
+    }
+
+    public void exit(ActionEvent actionEvent) {
+        close();
+        System.exit(0);
     }
 }

@@ -282,17 +282,24 @@ public class VersionMeta {
     private Document getXml(InputStream manifest) {
         DocumentBuilder documentBuilder = null;
         Document xml = null;
+
         try {
+
             documentBuilder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+
+        } catch (ParserConfigurationException ex) {
+            LOG.error("Couldn't read document.",ex);
         }
+
         try {
+
             assert documentBuilder != null;
             xml = documentBuilder.parse(manifest);
-        } catch (SAXException | IOException e) {
-            e.printStackTrace();
+
+        } catch (SAXException | IOException ex) {
+            LOG.error("Couldn't read document.",ex);
         }
+
         assert xml != null;
         xml.normalize();
         return xml;

@@ -205,20 +205,35 @@ public class CurseService {
 
         if (APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled()) {
 
-            ServerPackModel serverPackModel = SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
-            serverPackModel.setModpackDir(modpack);
-            serverPackModel.setStatus("Queued");
-            SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), serverPackModel);
-            TASKSUBMITTER.generateCurseProject(modpack);
+            if (SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).isPresent()) {
 
-            return CURSERESPONSEMODEL.curseResponse(
-                    modpack,
-                    1,
-                    "Regenerating server pack.",
-                    3000,
-                    "done",
-                    "positive"
-            );
+                ServerPackModel serverPackModel = SERVERPACKSERVICE.findByProjectIDAndFileID(Integer.parseInt(modpack.split(",")[0]), Integer.parseInt(modpack.split(",")[1])).get();
+                serverPackModel.setModpackDir(modpack);
+                serverPackModel.setStatus("Queued");
+                SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), serverPackModel);
+                TASKSUBMITTER.generateCurseProject(modpack);
+
+                return CURSERESPONSEMODEL.curseResponse(
+                        modpack,
+                        1,
+                        "Regenerating server pack.",
+                        3000,
+                        "done",
+                        "positive"
+                );
+
+            } else {
+
+                return CURSERESPONSEMODEL.curseResponse(
+                        modpack,
+                        2,
+                        "Server pack can not be regenerated. It doesn't exist.",
+                        4000,
+                        "info",
+                        "warning"
+                );
+
+            }
 
         } else {
 

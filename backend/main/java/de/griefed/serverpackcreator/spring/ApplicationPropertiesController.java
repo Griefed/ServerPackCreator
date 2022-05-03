@@ -96,7 +96,7 @@ public class ApplicationPropertiesController {
                 "\"listDirectoriesExclude\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
                 "\"curseControllerRegenerationEnabled\": " + APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled() + "," +
                 "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.getServerPackCreatorVersion() + "\"," +
-                "\"isCurseForgeActivated\": " + APPLICATIONPROPERTIES.isCurseForgeActivated() + "" +
+                "\"isCurseForgeActivated\": " + APPLICATIONPROPERTIES.isCurseForgeActivated() +
                 "}";
     }
 }

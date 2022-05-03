@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-      - master
-      - webservice
-  workflow_dispatch:
 
 jobs:
   pages:
