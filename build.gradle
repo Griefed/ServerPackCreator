@@ -14,7 +14,7 @@ plugins {
 
     id 'edu.sc.seis.launch4j' version '2.5.3'
     id 'org.siouan.frontend-jdk8' version '6.0.0'
-    id 'org.springframework.boot' version '2.6.5'
+    id 'org.springframework.boot' version '2.6.7'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
@@ -83,21 +83,21 @@ dependencies {
     // WEB
     //embed 'org.springframework.boot:spring-boot-starter-security:2.5.6'
     //embed 'org.springframework.boot:spring-boot-starter-validation:2.6.4'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.6.6'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.6'
+    embed 'org.springframework.boot:spring-boot-starter-web:2.6.7'
+    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.7'
     //embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.4'
-    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.6'
-    embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.6'
+    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.7'
+    embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.7'
     embed 'org.apache.activemq:artemis-jms-server:2.19.1'
     embed 'com.github.gwenn:sqlite-dialect:0.1.2'
 
     // Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.6'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.7'
 
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.6'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.7'
     testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
