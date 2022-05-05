@@ -16,7 +16,7 @@ variables:
   SECRET_DETECTION_EXCLUDED_PATHS: ""
 
 services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.0.5
+  - name: ghcr.io/griefed/gitlab-ci-cd:2.0.6
     alias: docker
 
 sast:
@@ -156,7 +156,7 @@ Gradle Test:
 
 Docker Test:
   stage: Tests
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.5
+  image: ghcr.io/griefed/gitlab-ci-cd:2.0.6
   before_script:
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
@@ -183,7 +183,7 @@ Generate Release:
       artifacts: false
     - job: secret_detection
       artifacts: false
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.5
+  image: ghcr.io/griefed/gitlab-ci-cd:2.0.6
   script:
     - npx semantic-release
   rules:
@@ -267,7 +267,7 @@ Publish Maven Artifacts:
 
 Build Docker Release:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.5
+  image: ghcr.io/griefed/gitlab-ci-cd:2.0.6
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -288,7 +288,7 @@ Build Docker Release:
 
 Build Docker PreRelease:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.5
+  image: ghcr.io/griefed/gitlab-ci-cd:2.0.6
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -307,7 +307,7 @@ Build Docker PreRelease:
 
 Inform About Release:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.5
+  image: ghcr.io/griefed/gitlab-ci-cd:2.0.6
   needs:
     - job: Build Release
       artifacts: false
