@@ -1,4 +1,4 @@
-FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.8 AS builder
+FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.9 AS builder
 
 ARG BRANCH_OR_TAG=webservice
 ARG HOSTER=git.griefed.de
@@ -22,7 +22,7 @@ RUN \
     ./build/libs/serverpackcreator.jar && \
   ls -ahl ./build/libs/
 
-FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.8
+FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.9
 
 ARG VERSION=dev
 
