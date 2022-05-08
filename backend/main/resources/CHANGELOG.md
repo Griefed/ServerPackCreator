@@ -1,3 +1,10 @@
+### [3.4.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.4.0...3.4.1) (2022-05-03)
+
+
+### 🛠 Fixes
+
+* **Status Label texts:** Fix the text in the status labels being cut of at random. Java is awesome. I swear. ([2f1958f](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f1958fda5b91d698c9d4d7e2006c24465787642))
+
 ## [3.4.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.3.0...3.4.0) (2022-05-03)
 
 

@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
+import de.griefed.serverpackcreator.utilities.commonutilities.InvalidFileTypeException;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.Update;
 import mdlaf.MaterialLookAndFeel;
@@ -70,6 +71,7 @@ public class MainMenuBar extends Component {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final UpdateChecker UPDATECHECKER;
+    private final de.griefed.serverpackcreator.utilities.commonutilities.Utilities UTILITIES;
 
     private final LightTheme LIGHTTHEME;
     private final DarkTheme DARKTHEME;
@@ -170,11 +172,20 @@ public class MainMenuBar extends Component {
      * @param injectedTabbedPane The tabbed pane which holds all our tabs.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedUpdateChecker Instance of {@link UpdateChecker} to check for update-availability.
+     * @param injectedUtilities Instance of {@link Utilities} for various things.
      */
-    public MainMenuBar(LocalizationManager injectedLocalizationManager, LightTheme injectedLightTheme, DarkTheme injectedDarkTheme,
-                       JFrame injectedJFrame, MaterialLookAndFeel injectedLAF_Light, MaterialLookAndFeel injectedLAF_Dark,
-                       TabCreateServerPack injectedTabCreateServerPack, JTabbedPane injectedTabbedPane, ApplicationProperties injectedApplicationProperties,
-                       UpdateChecker injectedUpdateChecker) {
+    public MainMenuBar(LocalizationManager injectedLocalizationManager,
+                       LightTheme injectedLightTheme,
+                       DarkTheme injectedDarkTheme,
+                       JFrame injectedJFrame,
+                       MaterialLookAndFeel injectedLAF_Light,
+                       MaterialLookAndFeel injectedLAF_Dark,
+                       TabCreateServerPack injectedTabCreateServerPack,
+                       JTabbedPane injectedTabbedPane,
+                       ApplicationProperties injectedApplicationProperties,
+                       UpdateChecker injectedUpdateChecker,
+                       de.griefed.serverpackcreator.utilities.commonutilities.Utilities injectedUtilities
+    ) {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -192,6 +203,12 @@ public class MainMenuBar extends Component {
             this.UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.UPDATECHECKER = injectedUpdateChecker;
+        }
+
+        if (injectedUtilities == null) {
+            this.UTILITIES = new de.griefed.serverpackcreator.utilities.commonutilities.Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        } else {
+            this.UTILITIES = injectedUtilities;
         }
 
         this.LIGHTTHEME = injectedLightTheme;
@@ -960,8 +977,16 @@ public class MainMenuBar extends Component {
                         configChooser.getSelectedFile().getCanonicalPath()
                 ));
 
-                TAB_CREATESERVERPACK.loadConfig(new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/")));
-                lastLoadedConfigurationFile = new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
+                File specifiedConfigFile;
+                try {
+                    specifiedConfigFile = new File(UTILITIES.FileUtils().resolveLink(configChooser.getSelectedFile()));
+                } catch (InvalidFileTypeException ex) {
+                    LOG.error("Could not resolve link/symlink. Using entry from user input for checks.",ex);
+                    specifiedConfigFile = new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
+                }
+
+                TAB_CREATESERVERPACK.loadConfig(specifiedConfigFile);
+                lastLoadedConfigurationFile = specifiedConfigFile;
 
             } catch (IOException ex) {
                 LOG.error("Error loading configuration from selected file.", ex);

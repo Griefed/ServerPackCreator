@@ -29,8 +29,12 @@ import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.FileUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.InvalidFileTypeException;
+import de.griefed.serverpackcreator.utilities.commonutilities.InvalidLinkException;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
+import mslinks.ShellLinkException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,14 +42,13 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
@@ -397,9 +400,29 @@ public class ConfigurationHandler {
          *
          * Last but by no means least: Run final checks.
          */
-        if (new File(configurationModel.getModpackDir()).isDirectory()) {
+        File modpack = new File(configurationModel.getModpackDir());
+
+        if (modpack.isDirectory()) {
 
             configHasError = isDir(configurationModel, encounteredErrors);
+
+        } else if (UTILITIES.FileUtils().isLink(modpack)) {
+
+            try {
+
+                configurationModel.setModpackDir(
+                        UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir())
+                );
+
+                configHasError = isDir(configurationModel, encounteredErrors);
+
+            } catch (InvalidFileTypeException | IOException ex) {
+
+                configHasError = true;
+                encounteredErrors.add("Could not resolve link to modpack directory. Using an absolute path to an existing directory is recommended.");
+                LOG.error("Could not resolve link to modpack directory.",ex);
+            }
+
 
         } else if (APPLICATIONPROPERTIES.isCurseForgeActivated()) {
 
@@ -432,8 +455,7 @@ public class ConfigurationHandler {
 
             }
 
-        } else if (new File(configurationModel.getModpackDir()).isFile() &&
-                configurationModel.getModpackDir().substring(configurationModel.getModpackDir().length() - 3).equalsIgnoreCase("zip")) {
+        } else if (modpack.isFile() && modpack.getName().endsWith("zip")) {
 
             try {
                 configHasError = isZip(configurationModel, encounteredErrors);
@@ -1156,16 +1178,27 @@ public class ConfigurationHandler {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    File sourceFileToCheck = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+                    String checkMe;
 
-                    if (!new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isFile() &&
-                            !new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isDirectory() &&
-                            !new File(sourceFileDestinationFileCombination[0]).isFile() &&
-                            !new File(sourceFileDestinationFileCombination[0]).isDirectory()
+                    try {
+                        checkMe = UTILITIES.FileUtils().resolveLink(new File(sourceFileDestinationFileCombination[0]));
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Could not resolve link/symlink. Using entry from user input for checks.",ex);
+                        checkMe = sourceFileDestinationFileCombination[0];
+                    }
+
+                    File checkMeFile = new File(String.format("%s/%s", modpackDir, checkMe));
+
+                    if (
+                            !checkMeFile.isFile() &&
+                            !checkMeFile.isDirectory() &&
+                            !new File(checkMe).isFile() &&
+                            !new File(checkMe).isDirectory()
                     ) {
 
                         configCorrect = false;
 
+                        File sourceFileToCheck = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
 
@@ -1189,7 +1222,15 @@ public class ConfigurationHandler {
                 // Check if the entry exists
                 } else {
 
-                    File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
+                    File dirToCheck;
+                    File checkMeFile = new File(String.format("%s/%s", modpackDir, directory));
+                    try {
+                        dirToCheck = new File(UTILITIES.FileUtils().resolveLink(checkMeFile));
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Could not resolve link/symlink. Using entry from user input for checks.",ex);
+                        dirToCheck = checkMeFile;
+                    }
+
 
                     if (!dirToCheck.exists()) {
 
@@ -1220,58 +1261,155 @@ public class ConfigurationHandler {
 
             return true;
 
-        } else return new File(iconOrPropertiesPath).exists();
+        } else {
+            try {
+
+                return new File(
+                        UTILITIES.FileUtils().resolveLink(iconOrPropertiesPath)
+                ).exists();
+
+            } catch (InvalidFileTypeException | IOException ex) {
+
+                LOG.error("Invalid file or link specified.",ex);
+
+            }
+            return false;
+        }
     }
 
     /**
-     * Check whether the given path is a valid file.
+     * Check whether the given path is a valid Java specification.
      * @author Griefed
      * @param pathToJava {@link String} Path to the Java executable
      * @return Boolean. Returns <code>true</code> if the path is valid.
      */
     public boolean checkJavaPath(String pathToJava) {
-        return new File(pathToJava).isFile() && (pathToJava.endsWith("java") || pathToJava.endsWith("java.exe"));
+
+        FileUtilities.FileType type = UTILITIES.FileUtils().checkFileType(new File(pathToJava));
+
+        switch (type) {
+
+            case FILE:
+
+                return testJava(pathToJava);
+
+            case LINK:
+            case SYMLINK:
+                try {
+
+                    return testJava(UTILITIES.FileUtils().resolveLink(new File(pathToJava)));
+
+                } catch (InvalidFileTypeException | IOException ex) {
+                    LOG.error("Could not read link/symlink.", ex);
+                }
+
+                return false;
+
+            case DIRECTORY:
+
+                LOG.error("Directory specified. Path to Java must lead to a lnk, symlink or file.");
+
+            case INVALID:
+            default:
+                return false;
+        }
     }
 
     /**
-     * Checks whether the passed String ends with <code>java.exe</code> or <code>java</code> and whether the files exist.
+     * Test for a valid Java specification by trying to run <code>java -version</code>. If the command goes through without
+     * errors, it is considered a correct specification.
      * @author Griefed
-     * @param pathToJava String. The path to check for java.exe and java.
-     * @return String. Returns the path to the java installation. If user input was incorrect, SPC will try to acquire the path automatically.
+     * @param pathToJava {@link String} Path to the java executable/binary.
+     * @return {@link Boolean} <code>true</code> if the specified file is a valid Java executable/binary.
+     */
+    public boolean testJava(String pathToJava) {
+        boolean testSuccessful;
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    new ArrayList<>(
+                            Arrays.asList(
+                                    pathToJava,
+                                    "-version"
+                            )
+                    )
+            );
+
+            processBuilder.redirectErrorStream(true);
+
+            Process process = processBuilder.start();
+
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            while (bufferedReader.readLine() != null &&
+                    !bufferedReader.readLine().equals("null")
+            ) {
+                System.out.println(bufferedReader.readLine());
+            }
+
+            bufferedReader.close();
+            process.destroyForcibly();
+
+            testSuccessful = true;
+        } catch (IOException e) {
+
+            LOG.error("Invalid Java specified.");
+            testSuccessful = false;
+
+        }
+
+        return testSuccessful;
+    }
+
+    /**
+     * Check the given path to a Java installation for validity and return it, if it is valid. If the passed path is a
+     * UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path is considered invalid, the system
+     * default is acquired and returned.
+     * @author Griefed
+     * @param pathToJava String. The path to check for whether it is a valid Java installation.
+     * @return String. Returns the path to the Java installation. If user input was incorrect, SPC will try to acquire the path automatically.
      */
     public String getJavaPath(String pathToJava) {
 
-        //noinspection UnusedAssignment
-        String checkedJavaPath = null;
+        String checkedJavaPath;
+        File java = new File(pathToJava);
 
         try {
-            if (new File(pathToJava).exists() && pathToJava.endsWith("java.exe")) {
 
-                checkedJavaPath = pathToJava;
+            if (checkJavaPath(pathToJava)) {
 
-            } else if (new File(pathToJava).exists() && pathToJava.endsWith("java")) {
+                if (UTILITIES.FileUtils().isLink(java)) {
+                    return UTILITIES.FileUtils().resolveLink(java);
+                }
 
-                checkedJavaPath = pathToJava;
+                return pathToJava;
 
-            } else if (!new File(pathToJava).exists() && new File(pathToJava + ".exe").exists()) {
-
-                checkedJavaPath = pathToJava + ".exe";
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkjavapath.windows"));
-
-            } else {
-
-                LOG.debug("Acquiring path to Java installation from system properties...");
-                checkedJavaPath = UTILITIES.SystemUtils().acquireJavaPathFromSystem();
-
-                LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
             }
 
-        } catch (NullPointerException ex) {
+            if (checkJavaPath(pathToJava + ".exe")) {
 
+                return pathToJava + ".exe";
+
+            }
+
+            if (checkJavaPath(pathToJava + ".lnk")) {
+
+                return UTILITIES.FileUtils().resolveLink(new File(pathToJava + ".lnk"));
+
+            }
+
+            LOG.info("Java setting invalid or otherwise not usable. Using system default.");
+            LOG.debug("Acquiring path to Java installation from system properties...");
             checkedJavaPath = UTILITIES.SystemUtils().acquireJavaPathFromSystem();
 
             LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
+
+
+        } catch (NullPointerException | InvalidFileTypeException | IOException ex) {
+
+            LOG.info("Java setting invalid or otherwise not usable. using system default.");
+            checkedJavaPath = UTILITIES.SystemUtils().acquireJavaPathFromSystem();
+
+            LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath, ex);
 
         }
 

@@ -286,7 +286,8 @@ public class ServerPackCreatorGui extends JPanel {
                 TAB_CREATESERVERPACK,
                 TABBEDPANE,
                 APPLICATIONPROPERTIES,
-                UPDATECHECKER
+                UPDATECHECKER,
+                UTILITIES
         );
 
         FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
