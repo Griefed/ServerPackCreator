@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.commonutilities.InvalidFileTypeException;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import net.lingala.zip4j.ZipFile;
@@ -191,14 +192,20 @@ public class ServerPackHandler {
      * @return Boolean. Returns true if the server pack was successfully generated.
      */
     public boolean run(@NotNull ConfigurationModel configurationModel) {
+        try {
+            if (UTILITIES.FileUtils().isLink(new File(configurationModel.getModpackDir()))) {
+                configurationModel.setModpackDir(UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir()));
+            }
+        } catch (InvalidFileTypeException | IOException ex) {
+            LOG.error("Couldn't resolve symlink(lnk. Using user input for this run.",ex);
+        }
 
         String destination = new File(
                 String.format(
                         "%s/%s",
                         APPLICATIONPROPERTIES.getDirectoryServerPacks(),
-                        configurationModel.getModpackDir().substring(
-                                configurationModel.getModpackDir().lastIndexOf("/") + 1
-                        ) + configurationModel.getServerPackSuffix()
+                        configurationModel.getModpackDir()
+                                .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1) + configurationModel.getServerPackSuffix()
                 )
         ).getAbsolutePath()
                 .replace("\\","/");
@@ -1187,7 +1194,18 @@ public class ServerPackHandler {
 
             for (String directory : directoriesToCopy) {
 
-                String clientDir = String.format("%s/%s", modpackDir, directory);
+                String clientDir;
+                if (UTILITIES.FileUtils().isLink(directory)) {
+                    try {
+                        clientDir = UTILITIES.FileUtils().resolveLink(directory);
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Could not resolve link. Using default.",ex);
+                        clientDir = String.format("%s/%s", modpackDir, directory);
+                    }
+
+                } else {
+                    clientDir = String.format("%s/%s", modpackDir, directory);
+                }
                 String serverDir = String.format("%s/%s", destination, directory);
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -1201,11 +1219,26 @@ public class ServerPackHandler {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isFile()) {
+                    File copyMeAbsolute;
+                    if (UTILITIES.FileUtils().isLink(sourceFileDestinationFileCombination[0])) {
+                        try {
+                            copyMeAbsolute = new File(UTILITIES.FileUtils().resolveLink(sourceFileDestinationFileCombination[0]));
+                        } catch (InvalidFileTypeException | IOException ex) {
+                            LOG.error("Couldn't parse link. Using default input.",ex);
+                            copyMeAbsolute = new File(sourceFileDestinationFileCombination[0]);
+                        }
+
+                    } else {
+                        copyMeAbsolute = new File(sourceFileDestinationFileCombination[0]);
+                    }
+
+                    File copyMeRelative = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+
+                    if (copyMeRelative.isFile()) {
 
                         try {
                             FileUtils.copyFile(
-                                    new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
+                                    copyMeRelative,
                                     new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1])),
                                     REPLACE_EXISTING
                             );
@@ -1213,22 +1246,22 @@ public class ServerPackHandler {
                             LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                         }
 
-                    } else if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isDirectory()){
+                    } else if (copyMeRelative.isDirectory()){
 
                         try {
                             FileUtils.copyDirectory(
-                                    new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
+                                    copyMeRelative,
                                     new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1]))
                             );
                         } catch (Exception ex) {
                             LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                         }
 
-                    } else if(new File(sourceFileDestinationFileCombination[0]).isFile()) {
+                    } else if(copyMeAbsolute.isFile()) {
 
                         try {
                             FileUtils.copyFile(
-                                    new File(sourceFileDestinationFileCombination[0]),
+                                    copyMeAbsolute,
                                     new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1])),
                                     REPLACE_EXISTING
                             );
@@ -1236,11 +1269,11 @@ public class ServerPackHandler {
                             LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
                         }
 
-                    } else if (new File(sourceFileDestinationFileCombination[0]).isDirectory()) {
+                    } else if (copyMeAbsolute.isDirectory()) {
 
                         try {
                             FileUtils.copyDirectory(
-                                    new File(sourceFileDestinationFileCombination[0]),
+                                    copyMeAbsolute,
                                     new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1]))
                             );
                         } catch (Exception ex) {
@@ -1323,6 +1356,7 @@ public class ServerPackHandler {
 
                     try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
 
+                        String finalClientDir = clientDir;
                         files.forEach(file -> {
                             if (excludeFileOrDirectory(file.toString().replace("\\","/"), exclusions)) {
 
@@ -1333,7 +1367,7 @@ public class ServerPackHandler {
 
                                     Files.copy(
                                             file,
-                                            Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
+                                            Paths.get(serverDir).resolve(Paths.get(finalClientDir).relativize(file)),
                                             REPLACE_EXISTING
                                     );
 
@@ -1476,7 +1510,15 @@ public class ServerPackHandler {
 
         File iconFile = new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_SERVER_ICON));
 
-        if (new File(pathToServerIcon).exists()) {
+        File copyMe;
+        try {
+            copyMe = new File(UTILITIES.FileUtils().resolveLink(pathToServerIcon));
+        } catch (InvalidFileTypeException | IOException ex) {
+            LOG.error("Couldn't resolve link. Using default input.",ex);
+            copyMe = new File(pathToServerIcon);
+        }
+
+        if (copyMe.exists()) {
 
             BufferedImage originalImage = null;
             //noinspection UnusedAssignment
@@ -1550,7 +1592,15 @@ public class ServerPackHandler {
 
         File defaultProperties = new File(String.format("%s/%s",destination, APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES));
 
-        if (new File(pathToServerProperties).exists()) {
+        File copyMe;
+        try {
+            copyMe = new File(UTILITIES.FileUtils().resolveLink(pathToServerProperties));
+        } catch (InvalidFileTypeException | IOException ex) {
+            LOG.error("Couldn't resolve link. Using default input.",ex);
+            copyMe = new File(pathToServerProperties);
+        }
+
+        if (copyMe.exists()) {
             try {
 
                 FileUtils.copyFile(
