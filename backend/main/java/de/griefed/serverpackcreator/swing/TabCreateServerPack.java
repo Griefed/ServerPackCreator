@@ -1081,8 +1081,8 @@ public class TabCreateServerPack extends JComponent {
         this.statusLabelLine2.setText(statusLabelLine3.getText() + "   ");
         this.statusLabelLine3.setText(statusLabelLine4.getText() + "   ");
         this.statusLabelLine4.setText(statusLabelLine5.getText() + "   ");
-        if (text.length() > 100) {
-            this.statusLabelLine5.setText(text.substring(0,100) + "...    ");
+        if (text.length() > 90) {
+            this.statusLabelLine5.setText(text.substring(0,90) + "...    ");
         } else {
             this.statusLabelLine5.setText(text);
         }
@@ -1275,9 +1275,9 @@ public class TabCreateServerPack extends JComponent {
      */
     private void validateJavaPath() {
         if (CONFIGURATIONHANDLER.checkJavaPath(TEXTFIELD_JAVAPATH.getText())) {
+
             TEXTFIELD_JAVAPATH.setIcon(null);
             TEXTFIELD_JAVAPATH.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
-
             TEXTFIELD_JAVAPATH.setForeground(getThemeTextColor());
 
         } else {
