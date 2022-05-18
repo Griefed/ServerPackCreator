@@ -20,8 +20,6 @@
 package de.griefed.serverpackcreator.spring.task;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.spring.curseforge.GenerateCurseProject;
-import de.griefed.serverpackcreator.spring.curseforge.ScanCurseProject;
 import de.griefed.serverpackcreator.spring.zip.GenerateZip;
 import de.griefed.serverpackcreator.spring.zip.ZipController;
 import org.apache.logging.log4j.LogManager;
@@ -44,7 +42,6 @@ public class TaskSubmitter {
     private static final Logger LOG = LogManager.getLogger(TaskSubmitter.class);
 
     private JmsTemplate jmsTemplate;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
 
     /**
      * Constructor responsible for our DI.
@@ -55,34 +52,13 @@ public class TaskSubmitter {
     @Autowired
     public TaskSubmitter(JmsTemplate injectedJmsTemplate, ApplicationProperties injectedApplicationProperties) {
         this.jmsTemplate = injectedJmsTemplate;
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    /**
-     * Submit a task for scanning a CurseForge project and file id combination.
-     * @author Griefed
-     * @param projectIDAndFileID The CurseForge project and file id combination
-     */
-    public void scanCurseProject(String projectIDAndFileID) {
-        LOG.debug("Sending Curse scan task: " + projectIDAndFileID);
-        submitScan(new ScanCurseProject(projectIDAndFileID));
-    }
-
-    /**
-     * Submit a task for the generation of a server pack from a CurseForge project and file id combination.
-     * @author Griefed
-     * @param projectIDAndFileID The CurseForge project and file id combination.
-     */
-    public void generateCurseProject(String projectIDAndFileID) {
-        LOG.debug("Sending Curse generate task: " + projectIDAndFileID);
-        submitGeneration(new GenerateCurseProject(projectIDAndFileID));
     }
 
     /**
      * Submit a task for the generation of a server pack from a ZIP-archive.
      * @author Griefed
      * @param zipGenerationProperties {@link String} containing all information required to generate a server pack from
-     *                                              a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String, boolean)}.
+     *                                              a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
      */
     public void generateZip(String zipGenerationProperties) {
         LOG.debug("Sending ZIP generate task: " + zipGenerationProperties);

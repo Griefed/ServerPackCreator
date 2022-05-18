@@ -254,12 +254,6 @@ public class ApplicationProperties extends Properties {
     );
 
     /**
-     * When running as a webservice: Whether regeneration of server packs, that have already been generated, is enabled.
-     * Default is false.
-     */
-    private boolean curseControllerRegenerationEnabled = false;
-
-    /**
      * List of directories which must not be excluded from server packs.
      * Default is mods, config, defaultconfigs, scripts, saves, seeds, libraries.
      */
@@ -299,12 +293,6 @@ public class ApplicationProperties extends Properties {
      * Set to <code>true</code> to get notified about available PreReleases. Set to <code>false</code> if you only want stable releases.
      */
     private boolean versioncheck_prerelease = false;
-
-    /**
-     * Whether the CurseForge API in ServerPackCreator is activated.
-     * Requires a valid CurseAPI token to be set in <code>de.griefed.serverpackcreator.curseforge.api.token</code>.
-     */
-    private boolean isCurseForgeActivated = false;
 
     /**
      * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
@@ -415,8 +403,6 @@ public class ApplicationProperties extends Properties {
             LOG.debug("Directories which must always be included set to: " + this.listCheckAgainstNewEntry);
         }
 
-        this.curseControllerRegenerationEnabled = Boolean.parseBoolean(this.getProperty("de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled", "false"));
-
         this.queueMaxDiskUsage = Integer.parseInt(getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
 
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
@@ -430,14 +416,6 @@ public class ApplicationProperties extends Properties {
             this.serverPackCreatorVersion = "dev";
         }
 
-        try {
-            this.isCurseForgeActivated = testCurseApiToken();
-        } catch (IOException ex) {
-            LOG.error("CurseAPI check failed.",ex);
-            this.isCurseForgeActivated = false;
-        } finally {
-            LOG.info("CurseForge API enabled: " + this.isCurseForgeActivated);
-        }
     }
 
     /**
@@ -532,42 +510,13 @@ public class ApplicationProperties extends Properties {
             LOG.debug("Directories which must always be included set to: " + this.listCheckAgainstNewEntry);
         }
 
-        this.curseControllerRegenerationEnabled = Boolean.parseBoolean(this.getProperty("de.griefed.serverpackcreator.spring.cursecontroller.regenerate.enabled", "false"));
-
         this.queueMaxDiskUsage = Integer.parseInt(getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
 
         this.saveLoadedConfiguration = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
 
         this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
 
-        try {
-            this.isCurseForgeActivated = testCurseApiToken();
-        } catch (IOException ex) {
-            LOG.error("CurseAPI check failed.",ex);
-            this.isCurseForgeActivated = false;
-        } finally {
-            LOG.info("CurseForge API enabled: " + this.isCurseForgeActivated);
-        }
-
         return this;
-    }
-
-    /**
-     * Test the CurseAPI token for validity.
-     * @author Griefed
-     * @throws IOException Thrown if the requested URL can not be reached or if any other error occurs during the request.
-     * @return boolean. Returns true if the request with the given token returns a code 200, indicating success.
-     */
-    private boolean testCurseApiToken() throws IOException {
-        URL curse = new URL("https://api.curseforge.com/v1/games");
-
-        HttpURLConnection httpURLConnection = (HttpURLConnection) curse.openConnection();
-        httpURLConnection.setRequestMethod("GET");
-
-        httpURLConnection.setRequestProperty("Accept","application/json");
-        httpURLConnection.setRequestProperty("x-api-key",getProperty("de.griefed.serverpackcreator.curseforge.api.token"));
-
-        return httpURLConnection.getResponseCode() == 200;
     }
 
     /**
@@ -610,15 +559,6 @@ public class ApplicationProperties extends Properties {
     }
 
     /**
-     * Getter for whether the regeneration of server packs is enabled.
-     * @author Griefed
-     * @return Boolean. Whether the regeneration of server packs is enabled.
-     */
-    public boolean getCurseControllerRegenerationEnabled() {
-        return curseControllerRegenerationEnabled;
-    }
-
-    /**
      * Getter for whether the last loaded configuration file should be saved to as well.
      * @author Griefed
      * @return Boolean. Whether the last loaded configuration file should be saved to as well.
@@ -657,17 +597,6 @@ public class ApplicationProperties extends Properties {
      */
     public boolean checkForAvailablePreReleases() {
         return versioncheck_prerelease;
-    }
-
-    /**
-     * Getter for whether the CurseForge API in ServerPackCreator is activated. In order for the CurseForge API to be
-     * activated, you need to set the property <code>de.griefed.serverpackcreator.curseforge.api.token</code> with a
-     * valid CurseAPI token in the serverpackcreator.properties-file.
-     * @author Griefed
-     * @return Boolean. Whether the CurseForge API in ServerPackCreator is activated.
-     */
-    public boolean isCurseForgeActivated() {
-        return isCurseForgeActivated;
     }
 
     /**
@@ -760,13 +689,11 @@ public class ApplicationProperties extends Properties {
                 ", directoryServerPacks='" + getDirectoryServerPacks() + '\'' +
                 ", listFallbackMods=" + getListFallbackMods() +
                 ", listDirectoriesExclude=" + getListOfDirectoriesToExclude() +
-                ", curseControllerRegenerationEnabled=" + getCurseControllerRegenerationEnabled() +
                 ", listCheckAgainstNewEntry=" + listCheckAgainstNewEntry +
                 ", queueMaxDiskUsage=" + getQueueMaxDiskUsage() +
                 ", saveLoadedConfiguration=" + getSaveLoadedConfiguration() +
                 ", serverPackCreatorVersion='" + getServerPackCreatorVersion() + '\'' +
                 ", versioncheck_prerelease=" + checkForAvailablePreReleases() +
-                ", isCurseForgeActivated=" + isCurseForgeActivated() +
                 '}';
     }
 }

@@ -66,9 +66,6 @@ public class Schedules {
         LOG.info("Deleting folder " + pack.getPath().replace("\\","/").replace("_server_pack-zip",""));
         FileUtils.deleteQuietly(new File(pack.getPath().replace("\\","/").replace("_server_pack-zip","")));
 
-        LOG.info("Deleting modpack " + "./work/" + pack.getProjectID() + "/" + pack.getFileID());
-        FileUtils.deleteQuietly(new File("./work/" + pack.getProjectID() + "/" + pack.getFileID()));
-
         LOG.info("Cleaned server pack " + pack.getId() + " from database.");
         SERVERPACKSERVICE.deleteServerPack(pack.getId());
     }
@@ -123,11 +120,6 @@ public class Schedules {
 
                     LOG.info("Deleting folder " + pack.getPath().replace("_server_pack-zip","").replace("\\","/"));
                     FileUtils.deleteQuietly(new File(pack.getPath().replace("_server_pack-zip","").replace("\\","/")));
-
-                } else if (pack.getProjectID() >= 10 && pack.getFileID() >= 60018 && new File(pack.getPath()).isFile()) {
-
-                    LOG.info("Deleting modpack " + "./work/" + pack.getProjectID() + "/" + pack.getFileID());
-                    FileUtils.deleteQuietly(new File("./work/" + pack.getProjectID() + "/" + pack.getFileID()));
 
                 } else {
                     LOG.info("No files to clean up.");

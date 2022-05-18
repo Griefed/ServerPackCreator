@@ -1,9 +1,5 @@
 package de.griefed.serverpackcreator;
 
-import com.therandomlabs.curseapi.CurseException;
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
-import de.griefed.serverpackcreator.curseforge.InvalidFileException;
-import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
@@ -43,8 +39,7 @@ class ConfigurationHandlerTest {
         );
         Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES,CONFIGUTILITIES);
-        this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+        this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
 
     }
 
@@ -82,52 +77,6 @@ class ConfigurationHandlerTest {
     @Test
     void isDirTestModLoaderVersion() {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator_modloaderversion.conf"), false));
-    }
-
-    @Disabled
-    @Test
-    void isCurseTest() {
-        // TODO: Check config when re-activating CurseForge module
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator_curseforge.conf"), false));
-    }
-
-    @Disabled
-    @Test
-    void isCurseTestProjectIDFalse() {
-        // TODO: Check config when re-activating CurseForge module
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator_curseforgefalse.conf"), false));
-    }
-
-    @Disabled
-    @Test
-    void isCurseTestProjectFileIDFalse() {
-        // TODO: Check config when re-activating CurseForge module
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator_curseforgefilefalse.conf"), false));
-    }
-
-
-    @Disabled
-    @Test
-    void checkCurseForgeTest() throws InvalidModpackException, InvalidFileException, CurseException {
-        String valid = "430517,3266321";
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertTrue(CONFIGURATIONHANDLER.checkCurseForge(valid, configurationModel, new ArrayList<>(100)));
-    }
-
-    @Disabled
-    @Test
-    void checkCurseForgeTestFalse() throws InvalidModpackException, InvalidFileException, CurseException {
-        String invalid = "1,1234";
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel, new ArrayList<>(100)));
-    }
-
-    @Disabled
-    @Test
-    void checkCurseForgeTestNotMinecraft() {
-        String invalid = "10,60018";
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertThrows(InvalidModpackException.class, () -> CONFIGURATIONHANDLER.checkCurseForge(invalid, configurationModel, new ArrayList<>(100)));
     }
 
     @Test

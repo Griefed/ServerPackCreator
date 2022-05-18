@@ -19,11 +19,8 @@
  */
 package de.griefed.serverpackcreator.spring.task;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
-import de.griefed.serverpackcreator.spring.curseforge.GenerateCurseProject;
-import de.griefed.serverpackcreator.spring.curseforge.ScanCurseProject;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackService;
 import de.griefed.serverpackcreator.spring.zip.GenerateZip;
@@ -36,10 +33,8 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,11 +51,9 @@ public class TaskHandler {
 
     private static final Logger LOG = LogManager.getLogger(TaskHandler.class);
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final ServerPackHandler SERVERPACKHANDLER;
     private final ServerPackService SERVERPACKSERVICE;
-    private final TaskSubmitter TASKSUBMITTER;
     private final StopWatch STOPWATCH_SCANS;
 
     /**
@@ -69,22 +62,16 @@ public class TaskHandler {
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
      * @param injectedServerPackHandler Instance of {@link ServerPackHandler}.
      * @param injectedServerPackService Instance of {@link ServerPackService}.
-     * @param injectedTaskSubmitter Instance of {@link TaskSubmitter}.
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
      */
     @Autowired
     public TaskHandler(ConfigurationHandler injectedConfigurationHandler,
                        ServerPackHandler injectedServerPackHandler,
-                       ServerPackService injectedServerPackService,
-                       TaskSubmitter injectedTaskSubmitter,
-                       ApplicationProperties injectedApplicationProperties) {
-
+                       ServerPackService injectedServerPackService
+    ) {
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.SERVERPACKHANDLER = injectedServerPackHandler;
         this.SERVERPACKSERVICE = injectedServerPackService;
-        this.TASKSUBMITTER = injectedTaskSubmitter;
         this.STOPWATCH_SCANS = new StopWatch();
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
     /**
@@ -93,64 +80,12 @@ public class TaskHandler {
      * If a task is received that matches this type, the CurseForge project and file ID of said task is checked for validity.
      * If the combination is found valid, either a new entry is saved to the database or an already existing one updated,
      * if the existing one has the status <code>Generating</code> and <code>lastModified</code> is bigger than 30 minutes.
-     * In either case, a {@link GenerateCurseProject}-task is sent which will then generate a server pack from the CurseForge project
-     * and file ID combination.
      * @author Griefed
      * @param task The task for which to check the CurseForge project and file ID, as well as status.
      */
     @JmsListener(destination = "tasks.background", selector = "type = 'scan'")
     public void handleScan(Task task) {
         LOG.info("Executing task: " + task);
-        try {
-
-            if (task instanceof ScanCurseProject) {
-
-                LOG.info("Instance of ScanCurseProject " + task.uniqueId());
-
-                String[] project = ((ScanCurseProject) task).getProjectIDAndFileID().split(",");
-                int projectID = Integer.parseInt(project[0]);
-                int fileID = Integer.parseInt(project[1]);
-
-                ServerPackModel serverPackModel = new ServerPackModel();
-
-                try {
-
-                    List<String> encounteredErrors = new ArrayList<>(100);
-
-                    if (!SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent() && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPackModel, encounteredErrors)) {
-
-                        serverPackModel.setModpackDir(projectID + "," + fileID);
-                        serverPackModel.setStatus("Queued");
-                        SERVERPACKSERVICE.insert(serverPackModel);
-                        TASKSUBMITTER.generateCurseProject(projectID + "," + fileID);
-
-                    } else if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
-
-                        serverPackModel = SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
-
-                        if (serverPackModel.getStatus().equals("Generating") && (new Timestamp(new Date().getTime()).getTime() - serverPackModel.getLastModified().getTime()) >= 1800000  && CONFIGURATIONHANDLER.checkCurseForge(projectID + "," + fileID, serverPackModel, encounteredErrors)) {
-                            serverPackModel.setModpackDir(projectID + "," + fileID);
-                            serverPackModel.setStatus("Queued");
-                            SERVERPACKSERVICE.updateServerPackByProjectIDAndFileID(projectID, fileID, serverPackModel);
-                            TASKSUBMITTER.generateCurseProject(projectID + "," + fileID);
-                        }
-
-                    }
-                } catch (Exception ex) {
-                    LOG.error("An error occurred submitting the task for generation for " + projectID + ", " + fileID, ex);
-                    if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
-                        SERVERPACKSERVICE.deleteByProjectIDAndFileID(projectID, fileID);
-                    }
-                }
-
-            } else {
-
-                LOG.info("This is not the queue you are looking for: " + task.uniqueId());
-            }
-
-        } catch (Exception ex) {
-            LOG.error("Error submitting generationTask", ex);
-        }
 
     }
 
@@ -165,56 +100,7 @@ public class TaskHandler {
     public void handleGeneration(Task task) {
         LOG.info("Executing task: " + task);
 
-        if (task instanceof GenerateCurseProject) {
-
-            LOG.info("Instance of GenerateCurseProject: " + task.uniqueId());
-
-            String[] project = ((GenerateCurseProject) task).getProjectIDAndFileID().split(",");
-            int projectID = Integer.parseInt(project[0]);
-            int fileID = Integer.parseInt(project[1]);
-
-            ServerPackModel serverPackModel = SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get();
-
-            serverPackModel.setStatus("Generating");
-            serverPackModel.setDownloads(0);
-            serverPackModel.setConfirmedWorking(0);
-
-            SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), serverPackModel);
-
-            serverPackModel.setModpackDir(projectID + "," + fileID);
-
-            ServerPackModel pack = null;
-
-            STOPWATCH_SCANS.reset();
-            STOPWATCH_SCANS.start();
-
-            try {
-
-                CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, true, true);
-
-                pack = SERVERPACKHANDLER.run(serverPackModel);
-
-                if (pack!=null)
-                    SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), pack);
-
-            } catch (Exception ex) {
-
-                LOG.error("An error occurred generating the server pack for " + projectID + ", " + fileID, ex);
-
-                if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent())
-                    SERVERPACKSERVICE.deleteServerPack(serverPackModel.getId());
-
-            } finally {
-
-                STOPWATCH_SCANS.stop();
-
-                LOG.info("Generation took " + STOPWATCH_SCANS);
-
-                STOPWATCH_SCANS.reset();
-
-            }
-
-        } else if (task instanceof GenerateZip) {
+        if (task instanceof GenerateZip) {
 
             LOG.info("Instance of GenerateZip: " + task.uniqueId());
 
@@ -223,8 +109,6 @@ public class TaskHandler {
             ServerPackModel serverPackModel = new ServerPackModel();
 
             serverPackModel.setStatus("Generating");
-            serverPackModel.setProjectID(0);
-            serverPackModel.setFileID(0);
             serverPackModel.setDownloads(0);
             serverPackModel.setConfirmedWorking(0);
 
@@ -235,7 +119,8 @@ public class TaskHandler {
             serverPackModel.setModLoader(parameters[3]);
             serverPackModel.setModLoaderVersion(parameters[4]);
             serverPackModel.setClientMods(Arrays.asList(parameters[1].split(",")));
-            serverPackModel.setIncludeServerInstallation(Boolean.parseBoolean(parameters[5]));
+            serverPackModel.setJavaPath("");
+            serverPackModel.setIncludeServerInstallation(false);
 
             ServerPackModel pack = null;
 

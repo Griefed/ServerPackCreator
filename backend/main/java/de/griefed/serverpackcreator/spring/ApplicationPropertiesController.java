@@ -94,9 +94,7 @@ public class ApplicationPropertiesController {
         return "{" +
                 "\"listFallbackMods\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
                 "\"listDirectoriesExclude\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
-                "\"curseControllerRegenerationEnabled\": " + APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled() + "," +
-                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.getServerPackCreatorVersion() + "\"," +
-                "\"isCurseForgeActivated\": " + APPLICATIONPROPERTIES.isCurseForgeActivated() +
+                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.getServerPackCreatorVersion() + "\"" +
                 "}";
     }
 }

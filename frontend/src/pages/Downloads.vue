@@ -75,8 +75,6 @@
                 <template v-slot:top-right>
                   <div v-if="this.$q.screen.gt.xs" class="col">
                     <q-toggle v-model="visibleColumns" val="id" label="ID" />
-                    <q-toggle v-model="visibleColumns" val="projectID" label="Project (ID)" />
-                    <q-toggle v-model="visibleColumns" val="fileID" label="File (ID)" />
                     <q-toggle v-model="visibleColumns" val="size" label="Size" />
                     <q-toggle v-model="visibleColumns" val="downloads" label="Downloads" />
                     <q-toggle v-model="visibleColumns" val="fileName" label="File name" />
@@ -129,8 +127,6 @@ export default {
   setup() {
     const columns = [
       { name: 'id',               required: false, label: 'ID',                align: 'left',   field: 'id',                sortable: true },
-      { name: 'projectID',        required: false, label: 'Project (ID)',      align: 'left',   field: 'projectID',         sortable: true },
-      { name: 'fileID',           required: false, label: 'File (ID)',         align: 'left',   field: 'fileID',            sortable: true },
       { name: 'projectName',      required: false, label: 'Project',           align: 'left',   field: 'projectName',       sortable: true },
       { name: 'fileName',         required: true,  label: 'Display name',      align: 'left',   field: 'fileName',          sortable: true },
       { name: 'fileDiskName',     required: true,  label: 'File disk name',    align: 'left',   field: 'fileDiskName',      sortable: true },
@@ -161,7 +157,6 @@ export default {
       });
 
     return {
-      // TODO: Once CurseForge API is back up and running again, add 'projectName' to list of visibleColumns again
       visibleColumns: ref([ 'fileName','fileDiskName', 'size', 'downloads', 'lastModified', 'status' ]),
       columns,
       rows,

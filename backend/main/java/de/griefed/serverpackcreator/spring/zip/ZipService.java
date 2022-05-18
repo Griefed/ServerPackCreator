@@ -119,7 +119,7 @@ public class ZipService {
      * Submit a task for the generation of a server pack from a ZIP-archive.
      * @author Griefed
      * @param zipGenerationProperties {@link String} containing all information required to generate a server pack from
-     * a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String, boolean)}.
+     * a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
      * @return {@link Boolean} Returns true if the task was submitted.
      */
     protected String submitGenerationTask(String zipGenerationProperties) {
@@ -192,18 +192,6 @@ public class ZipService {
 
         } else {
             LOG.info("Modloader " + parameters[3] + " incorrect.");
-            return NOTIFICATIONRESPONSE.zipResponse(
-                    "Modloader incorrect: " + parameters[3],
-                    5000,
-                    "error",
-                    "negative",
-                    null,
-                    false
-            );
-        }
-
-        if (!parameters[5].equalsIgnoreCase("true") && !parameters[5].equalsIgnoreCase("false")) {
-            LOG.info("installModloaderServer is neither true or false.");
             return NOTIFICATIONRESPONSE.zipResponse(
                     "Modloader incorrect: " + parameters[3],
                     5000,

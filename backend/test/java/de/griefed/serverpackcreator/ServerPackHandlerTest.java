@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
@@ -45,10 +44,9 @@ class ServerPackHandlerTest {
         );
         Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-        CurseCreateModpack CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
-        this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+        this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
         ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins();
-        this.SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER, CONFIGUTILITIES);
+        this.SERVERPACKHANDLER = new ServerPackHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER);
 
     }
 

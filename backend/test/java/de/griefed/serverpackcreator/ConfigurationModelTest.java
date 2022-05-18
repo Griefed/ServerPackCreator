@@ -337,22 +337,6 @@ public class ConfigurationModelTest {
     }
 
     @Test
-    void getsetProjectIDTest() {
-        int projectID = 123456;
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        configurationModel.setProjectID(projectID);
-        Assertions.assertEquals(projectID, configurationModel.getProjectID());
-    }
-
-    @Test
-    void getsetProjectFileIDTest() {
-        int fileID = 123456;
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        configurationModel.setFileID(fileID);
-        Assertions.assertEquals(fileID, configurationModel.getFileID());
-    }
-
-    @Test
     void getsetServerPackSuffixTest() {
         ConfigurationModel configurationModel = new ConfigurationModel();
         configurationModel.setServerPackSuffix("foo");

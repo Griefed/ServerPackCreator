@@ -54,8 +54,6 @@ public class ServerPackModel extends ConfigurationModel {
      * @param fileID Integer. The file ID of the CurseForge project file.
      */
     public ServerPackModel(int projectID, int fileID) {
-        this.projectID = projectID;
-        this.fileID = fileID;
         this.projectName = "";
         this.fileName = "";
         this.fileDiskName = "";
@@ -69,8 +67,6 @@ public class ServerPackModel extends ConfigurationModel {
      * Constructor for our ServerPackModel, setting id, projectID, fileID, fileName, displayName, size, downloads, confirmedWorking, status, dateCreated, lastModified manually.
      * @author Griefed
      * @param id The ID of the server pack in our database.
-     * @param projectID The project ID of the CurseForge project.
-     * @param fileID The file ID of the CurseForge project file.
      * @param fileName The disk name of the CurseForge project file.
      * @param displayName The display name of the CurseForge project file.
      * @param size The size of the generated server pack, in MB.
@@ -82,8 +78,6 @@ public class ServerPackModel extends ConfigurationModel {
      */
     public ServerPackModel(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
         this.id = id;
-        this.projectID = projectID;
-        this.fileID = fileID;
         this.fileName = fileName;
         this.fileDiskName = displayName;
         this.size = size;
@@ -99,19 +93,9 @@ public class ServerPackModel extends ConfigurationModel {
     @Column(updatable = false, nullable = false)
     int id;
 
-    // TODO: Expand with foreign key pointing towards project_table
-    @Column
-    int projectID;
-
-    // TODO: Expand with foreign key pointing towards file_table
-    @Column
-    int fileID;
-
-    // TODO: Move to project_table
     @Column
     String projectName;
 
-    // TODO: Move to file_table
     @Column
     String fileName;
 
@@ -156,46 +140,6 @@ public class ServerPackModel extends ConfigurationModel {
      */
     public void setId(int id) {
         this.id = id;
-    }
-
-    /**
-     * Getter for the project id of the server pack.
-     * @author Griefed
-     * @return Integer. Returns the project id with which the server pack was generated.
-     */
-    @Override
-    public int getProjectID() {
-        return projectID;
-    }
-
-    /**
-     * Setter for the project id of the server pack.
-     * @author Griefed
-     * @param projectID Integer. The project id with which the server pack was generated.
-     */
-    @Override
-    public void setProjectID(int projectID) {
-        this.projectID = projectID;
-    }
-
-    /**
-     * Getter for the file id of the server pack.
-     * @author Griefed
-     * @return Integer. Returns the file id with which the server pack was generated.
-     */
-    @Override
-    public int getFileID() {
-        return fileID;
-    }
-
-    /**
-     * Setter for the file id of the server pack.
-     * @author Griefed
-     * @param fileID Integer. The file id with which the server pack was generated.
-     */
-    @Override
-    public void setFileID(int fileID) {
-        this.fileID = fileID;
     }
 
     /**
@@ -390,8 +334,6 @@ public class ServerPackModel extends ConfigurationModel {
     public String repositoryToString() {
         return "ServerPackModel{" +
                 "id=" + id +
-                ", projectID=" + projectID +
-                ", fileID=" + fileID +
                 ", projectName='" + projectName + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", fileDiskName='" + fileDiskName + '\'' +

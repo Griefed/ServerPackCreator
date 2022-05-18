@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.spring;
 
-import com.therandomlabs.curseapi.CurseAPI;
-import com.therandomlabs.curseapi.CurseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
@@ -35,63 +33,6 @@ import java.util.List;
 public class NotificationResponse {
 
     private static final Logger LOG = LogManager.getLogger(NotificationResponse.class);
-
-    /**
-     * Construct a curseResponse with all values manually set.
-     * @author Griefed
-     * @param projectName The name of the CurseForge project.
-     * @param status The statuscode. Status 0: Already exists. Status 1: OK, generating. Status 2: Error occurred.
-     * @param message The message the requester should care about.
-     * @param timeout Timeout in milliseconds after which the notification in our Quasar frontend should disappear.
-     * @param icon The icon to be displayed in the notification.
-     * @param colour The colour of the notification.
-     * @return String. Returns the aforementioned parameters wrapped in JSON.
-     */
-    public String curseResponse(String projectName, int status, String message, int timeout, String icon, String colour) {
-        return "{" +
-                "\"project\": \"" + projectName + "\"," +
-                "\"status\": " + status + "," +
-                "\"message\": \"" + message + "\"," +
-                "\"timeout\": " + timeout + "," +
-                "\"icon\": \"" + icon + "\"," +
-                "\"colour\": \"" + colour + "\"" +
-                "}";
-    }
-
-    /**
-     * Construct a curseResponse with values acquired from the CurseForge API.
-     * @author Griefed
-     * @param projectID The id with which to gather the name of the project.
-     * @param status The statuscode. Status 0: Already exists. Status 1: OK, generating. Status 2: Error occurred.
-     * @param message The message the requester should care about.
-     * @param timeout Timeout in milliseconds after which the notification in our Quasar frontend should disappear.
-     * @param icon The icon to be displayed in the notification.
-     * @param colour The colour of the notification.
-     * @return String. Returns the aforementioned parameters wrapped in JSON.
-     */
-    public String curseResponse(int projectID, int status, String message, int timeout, String icon, String colour) {
-        try {
-            return curseResponse(
-                    CurseAPI.project(projectID).orElseThrow(NullPointerException::new).name(),
-                    status,
-                    message,
-                    timeout,
-                    icon,
-                    colour
-            );
-
-        } catch (NullPointerException | CurseException ex) {
-            LOG.error("Project name could not be acquired", ex);
-            return curseResponse(
-                    String.valueOf(projectID),
-                    status,
-                    message,
-                    timeout,
-                    icon,
-                    colour
-            );
-        }
-    }
 
     /**
      * Construct a zipResponse for replying to a file-upload and display in a quasar notification.

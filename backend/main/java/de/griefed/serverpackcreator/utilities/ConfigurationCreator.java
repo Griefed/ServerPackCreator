@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
@@ -49,9 +48,13 @@ public class ConfigurationCreator {
     private final Utilities UTILITIES;
     private final ConfigUtilities CONFIGUTILITIES;
 
-    public ConfigurationCreator(LocalizationManager injectedLocalizationManager, ConfigurationHandler injectedConfigurationHandler,
-                                ApplicationProperties injectedApplicationProperties, Utilities injectedUtilities, CurseCreateModpack injectedCurseCreateModpack,
-                                VersionMeta injectedVersionMeta, ConfigUtilities injectedConfigUtilities) throws IOException {
+    public ConfigurationCreator(LocalizationManager injectedLocalizationManager,
+                                ConfigurationHandler injectedConfigurationHandler,
+                                ApplicationProperties injectedApplicationProperties,
+                                Utilities injectedUtilities,
+                                VersionMeta injectedVersionMeta,
+                                ConfigUtilities injectedConfigUtilities
+    ) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -88,15 +91,8 @@ public class ConfigurationCreator {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
-        CurseCreateModpack CURSECREATEMODPACK;
-        if (injectedCurseCreateModpack == null) {
-            CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
-        } else {
-            CURSECREATEMODPACK = injectedCurseCreateModpack;
-        }
-
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }

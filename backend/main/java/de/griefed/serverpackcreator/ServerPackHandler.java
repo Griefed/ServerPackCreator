@@ -24,11 +24,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moandjiezana.toml.Toml;
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import net.lingala.zip4j.ZipFile;
@@ -73,12 +71,10 @@ public class ServerPackHandler {
     private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionMeta VERSIONMETA;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final Utilities UTILITIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
-    private final ConfigUtilities CONFIGUTILITIES;
     private final StopWatch STOPWATCH = new StopWatch();
 
     /**
@@ -88,18 +84,19 @@ public class ServerPackHandler {
      * one is null. Required for use of localization.<p>
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} required for creating a modpack from CurseForge.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version related.
      * @param injectedUtilities Instance of {@link Utilities}.
      * @param injectedApplicationPlugins Instance of {@link ApplicationPlugins}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     @Autowired
-    public ServerPackHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
-                             ApplicationProperties injectedApplicationProperties, VersionMeta injectedVersionMeta,
-                             Utilities injectedUtilities, ApplicationPlugins injectedApplicationPlugins, ConfigUtilities injectedConfigUtilities) throws IOException {
+    public ServerPackHandler(LocalizationManager injectedLocalizationManager,
+                             ApplicationProperties injectedApplicationProperties,
+                             VersionMeta injectedVersionMeta,
+                             Utilities injectedUtilities,
+                             ApplicationPlugins injectedApplicationPlugins
+    ) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -128,18 +125,6 @@ public class ServerPackHandler {
             this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.UTILITIES = injectedUtilities;
-        }
-
-        if (injectedConfigUtilities == null) {
-            this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-        } else {
-            this.CONFIGUTILITIES = injectedConfigUtilities;
-        }
-
-        if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
-        } else {
-            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
 
         if (injectedApplicationPlugins == null) {
@@ -174,7 +159,6 @@ public class ServerPackHandler {
         run((ConfigurationModel) serverPackModel);
 
         cleanupEnvironment(false, destination);
-        CURSECREATEMODPACK.cleanupEnvironment(serverPackModel.getModpackDir());
 
         serverPackModel.setStatus("Available");
         serverPackModel.setSize(Double.parseDouble(String.valueOf(FileUtils.sizeOfAsBigInteger(new File(destination + "_server_pack.zip")).divide(BigInteger.valueOf(1048576)))));

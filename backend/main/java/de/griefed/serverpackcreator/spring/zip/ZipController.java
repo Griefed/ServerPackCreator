@@ -20,8 +20,10 @@
 package de.griefed.serverpackcreator.spring.zip;
 
 import com.google.common.net.HttpHeaders;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.spring.NotificationResponse;
+import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +53,8 @@ public class ZipController {
     private final ZipService ZIPSERVICE;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final NotificationResponse NOTIFICATIONRESPONSE;
+    private final ApplicationProperties APPLICATIONPROPERTIES;
+    private final Utilities UTILITIES;
 
     /**
      * Constructor responsible for DI.
@@ -58,14 +62,22 @@ public class ZipController {
      * @param injectedZipService Instance of {@link ZipService}.
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
      * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
+     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @param injectedUtilities Instance of {@link Utilities}.
      */
     @Autowired
-    public ZipController(ZipService injectedZipService, ConfigurationHandler injectedConfigurationHandler,
-                         NotificationResponse injectedNotificationResponse) {
+    public ZipController(ZipService injectedZipService,
+                         ConfigurationHandler injectedConfigurationHandler,
+                         NotificationResponse injectedNotificationResponse,
+                         ApplicationProperties injectedApplicationProperties,
+                         Utilities injectedUtilities
+    ) {
 
         this.ZIPSERVICE = injectedZipService;
         this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         this.NOTIFICATIONRESPONSE = injectedNotificationResponse;
+        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+        this.UTILITIES = injectedUtilities;
     }
 
     /**
@@ -128,25 +140,26 @@ public class ZipController {
      * <code>minecraftVersion</code><br>
      * <code>modLoader</code><br>
      * <code>modLoaderVersion</code><br>
-     * <code>installModloaderServer</code>
      * @author Griefed
      * @param zipName {@link String} The name of the previously uploaded ZIP-archive.
      * @param clientMods {@link String} A comma separated list of clientside-only mods to exclude from the server pack.
      * @param minecraftVersion {@link String} The Minecraft version the modpack, and therefor the server pack, uses.
      * @param modLoader {@link String} The modloader the modpack, and therefor the server pack, uses.
      * @param modLoaderVersion {@link String} The modloader version the modpack, and therefor the server pack, uses.
-     * @param installModloaderServer {@link Boolean} Whether to install the modloader server in the server pack.
      * @return {@link NotificationResponse} with information about the result.
      */
-    @GetMapping("/{zipName}&{clientMods}&{minecraftVersion}&{modLoader}&{modLoaderVersion}&{installModloaderServer}")
+    @GetMapping("/{zipName}&{clientMods}&{minecraftVersion}&{modLoader}&{modLoaderVersion}")
     public ResponseEntity<String> requestGenerationFromZip(
             @PathVariable("zipName") String zipName,
             @PathVariable("clientMods") String clientMods,
             @PathVariable("minecraftVersion") String minecraftVersion,
             @PathVariable("modLoader") String modLoader,
-            @PathVariable("modLoaderVersion") String modLoaderVersion,
-            @PathVariable("installModloaderServer") boolean installModloaderServer
+            @PathVariable("modLoaderVersion") String modLoaderVersion
             ) {
+
+        if (clientMods.length() == 0) {
+            clientMods = UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString());
+        }
 
         return ResponseEntity
                 .ok()
@@ -159,8 +172,7 @@ public class ZipController {
                                 clientMods + "&" +
                                 minecraftVersion + "&" +
                                 modLoader + "&" +
-                                modLoaderVersion + "&" +
-                                installModloaderServer
+                                modLoaderVersion
                 )
                 );
 

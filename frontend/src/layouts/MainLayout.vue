@@ -1,5 +1,5 @@
 <template>
-  <div id="tsparticles"/>
+<!--  <div id="tsparticles"/>-->
   <q-layout view="hHh Lpr lff">
     <q-header class="header" elevated reveal>
       <q-toolbar :class="this.$q.platform.is.mobile ? 'shadow-5 toolbar scroll ' : 'shadow-5 toolbar'">
@@ -138,19 +138,6 @@
               </q-item-section>
             </q-item>
 
-<!--            <q-item
-                v-ripple
-                active-class="tab-active"
-                clickable
-                to="/logs">
-              <q-item-section avatar>
-                <q-icon name="fas fa-history"/>
-              </q-item-section>
-              <q-item-section>
-                Logs
-              </q-item-section>
-            </q-item>-->
-
             <q-item
                 v-ripple
                 active-class="tab-active"
@@ -177,7 +164,7 @@
               <div
                   id="particles-js"
                   :class="this.$q.dark.isActive ? 'dark_gradient' : 'normal_gradient'"
-              ></div>
+              />
               <router-view/>
             </q-scroll-area>
           </div>

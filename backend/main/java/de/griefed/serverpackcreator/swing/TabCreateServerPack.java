@@ -24,7 +24,6 @@ import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.ServerPackHandler;
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
@@ -83,7 +82,6 @@ public class TabCreateServerPack extends JComponent {
     private final ConfigurationHandler CONFIGURATIONHANDLER;
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ServerPackHandler CREATESERVERPACK;
-    private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionMeta VERSIONMETA;
     private final Utilities UTILITIES;
     private final ApplicationProperties APPLICATIONPROPERTIES;
@@ -227,28 +225,24 @@ public class TabCreateServerPack extends JComponent {
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.<p>
      * Receives an instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.<p>
-     * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
-     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * Receives an instance of {@link ServerPackHandler} which is required to generate a server pack.
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.
-     * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
-     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
-     * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the generation of server packs.
-     * @param injectedVersionMeta Instance of {@link VersionMeta} required for setting/changing comboboxes.
-     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
+     *
+     * @param injectedLocalizationManager    Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedConfigurationHandler   Instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.
+     * @param injectedServerPackHandler      Instance of {@link ServerPackHandler} required for the generation of server packs.
+     * @param injectedVersionMeta            Instance of {@link VersionMeta} required for setting/changing comboboxes.
+     * @param injectedApplicationProperties  Instance of {@link Properties} required for various different things.
      * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
-     * @param injectedUtilities Instance of {@link Utilities}.
-     * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
-     * @param injectedDarkTheme Instance of {@link DarkTheme}.
-     * @param injectedLightTheme Instance of {@link LightTheme}.
+     * @param injectedUtilities              Instance of {@link Utilities}.
+     * @param injectedPluginManager          Instance of {@link ApplicationPlugins}.
+     * @param injectedConfigUtilities        Instance of {@link ConfigUtilities}.
+     * @param injectedDarkTheme              Instance of {@link DarkTheme}.
+     * @param injectedLightTheme             Instance of {@link LightTheme}.
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
+     * @author Griefed
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager,
                                ConfigurationHandler injectedConfigurationHandler,
-                               CurseCreateModpack injectedCurseCreateModpack,
                                ServerPackHandler injectedServerPackHandler,
                                VersionMeta injectedVersionMeta,
                                ApplicationProperties injectedApplicationProperties,
@@ -304,20 +298,14 @@ public class TabCreateServerPack extends JComponent {
             this.CONFIGUTILITIES = injectedConfigUtilities;
         }
 
-        if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
-        } else {
-            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
-        }
-
         if (injectedConfigurationHandler == null) {
-            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+            this.CONFIGURATIONHANDLER = new ConfigurationHandler(LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
         } else {
             this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
         }
 
         if (injectedServerPackHandler == null) {
-            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, CURSECREATEMODPACK, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS, CONFIGUTILITIES);
+            this.CREATESERVERPACK = new ServerPackHandler(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS);
         } else {
             this.CREATESERVERPACK = injectedServerPackHandler;
         }

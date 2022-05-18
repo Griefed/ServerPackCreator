@@ -39,37 +39,12 @@ import java.util.Optional;
 public interface ServerPackRepository extends CrudRepository<ServerPackModel, Integer> {
 
     /**
-     * Find all server packs using a CurseForge project ID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID with which to search for server pack.
-     * @return Returns a list of all server packs for the passed CurseForge project ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     */
-    Optional<List<ServerPackModel>> findAllByProjectID(int projectID);
-
-    /**
-     * Find a specific server pack by searching with a CurseForge project and file ID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID.
-     * @param fileID Integer. The CurseForge project file ID.
-     * @return Returns the server pack for the passed project and file ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     */
-    Optional<ServerPackModel> findByProjectIDAndFileID(int projectID, int fileID);
-
-    /**
      * Find all server packs using a CurseForge project name.
      * @author Griefed
      * @param projectName String. The project name with which to search for server packs.
      * @return Returns a list of all server packs for the passed CurseForge project name wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
      */
     Optional<List<ServerPackModel>> findAllByProjectName(String projectName);
-
-    /**
-     * Find a server pack by its database id.
-     * @author Griefed
-     * @param fileID Integer. The database id with which to search for a server pack.
-     * @return Returns a server pack for the passed database id wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     */
-    Optional<ServerPackModel> findByFileID(int fileID);
 
     /**
      * Find a server pack by its CurseForge file display name.
@@ -88,14 +63,6 @@ public interface ServerPackRepository extends CrudRepository<ServerPackModel, In
     Optional<List<ServerPackModel>> findByStatus(String status);
 
     /**
-     * Count all server packs by a CurseForge projectID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID with which to count all server packs.
-     * @return Integer. Returns the amount of server packs for the passed CurseForge projectID.
-     */
-    int countAllByProjectID(int projectID);
-
-    /**
      * Count all server packs by a CurseForge project name.
      * @author Griefed
      * @param projectName String. The CurseForge project name with which to count all server packs.
@@ -103,18 +70,4 @@ public interface ServerPackRepository extends CrudRepository<ServerPackModel, In
      */
     int countAllByProjectName(String projectName);
 
-    /**
-     * Delete all server packs with a CurseForge project ID.
-     * @author Griefed
-     * @param projectID The CurseForge project ID for which to delete all server packs.
-     */
-    void deleteAllByProjectID(int projectID);
-
-    /**
-     * Delete a server pack with a given CurseForge project and file ID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID.
-     * @param fileID Integer. The CurseForge file ID.
-     */
-    void deleteByProjectIDAndFileID(int projectID, int fileID);
 }

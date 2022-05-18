@@ -19,9 +19,6 @@
  */
 package de.griefed.serverpackcreator.spring.task;
 
-import de.griefed.serverpackcreator.spring.curseforge.GenerateCurseProject;
-import de.griefed.serverpackcreator.spring.curseforge.ScanCurseProject;
-
 import java.io.Serializable;
 
 /**
@@ -29,8 +26,6 @@ import java.io.Serializable;
  * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
  * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
  * the necessary changes to fully implement it in ServerPackCreator.<br>
- * Base class from which {@link GenerateCurseProject} and {@link ScanCurseProject} extend. See the aforementioned classes for
- * an example on how a new task class should be implemented. All new task must extend this class.
  * @author Griefed
  */
 public abstract class Task implements Serializable {

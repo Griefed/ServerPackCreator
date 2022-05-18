@@ -20,21 +20,13 @@
 package de.griefed.serverpackcreator;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
-import com.therandomlabs.curseapi.CurseAPI;
-import com.therandomlabs.curseapi.CurseException;
 import com.typesafe.config.ConfigException;
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
-import de.griefed.serverpackcreator.curseforge.InvalidFileException;
-import de.griefed.serverpackcreator.curseforge.InvalidModpackException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.FileUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.InvalidFileTypeException;
-import de.griefed.serverpackcreator.utilities.commonutilities.InvalidLinkException;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
-import mslinks.ShellLinkException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,10 +43,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 /**
- * Requires an instance of {@link CurseCreateModpack} in order to create a modpack from scratch should the specified modpackDir
- * be a combination of a CurseForge projectID and fileID.<p>
- * Requires an instance of {@link LocalizationManager} for use of localization, but creates one if injected one is null.<p>
- * Loads a configuration from a serverpackcreator.conf-file in the same directory in which ServerPackCreator resides in.
+ * This class revolves around checking and adjusting a given instance of {@link ConfigurationModel} so it can safely
+ * be used in {@link ServerPackHandler#run(ConfigurationModel)} later.
  * @author Griefed
  */
 @Component
@@ -63,7 +53,6 @@ public class ConfigurationHandler {
     private static final Logger LOG = LogManager.getLogger(ConfigurationHandler.class);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
-    private final CurseCreateModpack CURSECREATEMODPACK;
     private final VersionMeta VERSIONMETA;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final Utilities UTILITIES;
@@ -73,13 +62,9 @@ public class ConfigurationHandler {
      * <strong>Constructor</strong><p>
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
-     * one is null. Required for use of localization.<p>
-     * Receives an instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
-     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
+     * one is null. Required for use of localization.
      * @author Griefed
      * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedCurseCreateModpack Instance of {@link CurseCreateModpack} in case the modpack has to be created from a combination of
-     * CurseForge projectID and fileID, from which to <em>then</em> create the server pack.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
      * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version-related.
      * @param injectedUtilities Instance of {@link Utilities}.
@@ -87,9 +72,12 @@ public class ConfigurationHandler {
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
     @Autowired
-    public ConfigurationHandler(LocalizationManager injectedLocalizationManager, CurseCreateModpack injectedCurseCreateModpack,
-                                VersionMeta injectedVersionMeta, ApplicationProperties injectedApplicationProperties,
-                                Utilities injectedUtilities, ConfigUtilities injectedConfigUtilities) throws IOException {
+    public ConfigurationHandler(LocalizationManager injectedLocalizationManager,
+                                VersionMeta injectedVersionMeta,
+                                ApplicationProperties injectedApplicationProperties,
+                                Utilities injectedUtilities,
+                                ConfigUtilities injectedConfigUtilities
+    ) throws IOException {
 
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -124,12 +112,6 @@ public class ConfigurationHandler {
             this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
         } else {
             this.CONFIGUTILITIES = injectedConfigUtilities;
-        }
-
-        if (injectedCurseCreateModpack == null) {
-            this.CURSECREATEMODPACK = new CurseCreateModpack(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, CONFIGUTILITIES);
-        } else {
-            this.CURSECREATEMODPACK = injectedCurseCreateModpack;
         }
     }
 
@@ -407,37 +389,6 @@ public class ConfigurationHandler {
         if (modpack.isDirectory()) {
 
             configHasError = isDir(configurationModel, encounteredErrors);
-
-        } else if (APPLICATIONPROPERTIES.isCurseForgeActivated()) {
-
-            try {
-
-                if (checkCurseForge(configurationModel.getModpackDir(), configurationModel, encounteredErrors) && downloadAndCreateModpack) {
-                    configHasError = isCurse(configurationModel, encounteredErrors);
-                } else {
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.skipmodpackcreation"));
-                }
-
-            } catch (InvalidModpackException ex) {
-
-                configHasError = true;
-                encounteredErrors.add("The specified project is not a valid Minecraft modpack!");
-                LOG.error("The specified project is not a valid Minecraft modpack!", ex);
-
-            } catch (InvalidFileException ex) {
-
-                configHasError = true;
-                encounteredErrors.add("The specified file is not a file of this project.");
-                LOG.error("The specified file is not a file of this project.", ex);
-
-            } catch (CurseException ex) {
-
-                configHasError = true;
-                encounteredErrors.add("The specified project does not exist.");
-                LOG.error("The specified project does not exist.", ex);
-
-            }
 
         } else if (modpack.isFile() && modpack.getName().endsWith("zip")) {
 
@@ -868,167 +819,6 @@ public class ConfigurationHandler {
     }
 
     /**
-     * If modpackDir in the configuration file is a CurseForge projectID,fileID combination, then the modpack is first
-     * created from said combination, using {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)},
-     * before proceeding to checking the rest of the configuration. If everything passes and the modpack was created,
-     * a new configuration file is created, replacing the one used to create the modpack in the first place, with the
-     * modpackDir field pointing to the newly created modpack.
-     * @author Griefed
-     * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack.
-     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
-     * @return Boolean. Returns false unless an error was encountered during either the acquisition of the CurseForge
-     * project name and displayname, or when the creation of the modpack fails.
-     */
-    private boolean isCurse(ConfigurationModel configurationModel, List<String> encounteredErrors) {
-        boolean configHasError = false;
-        try {
-            if (CurseAPI.project(configurationModel.getProjectID()).isPresent() && CurseAPI.file(configurationModel.getProjectID(), configurationModel.getFileID()).isPresent()) {
-
-                CURSECREATEMODPACK.curseForgeModpack(configurationModel, configurationModel.getProjectID(), configurationModel.getFileID());
-
-            } else {
-
-                configHasError = true;
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.notfound"));
-
-                encounteredErrors.add(LOCALIZATIONMANAGER.getLocalizedString("cursecreatemodpack.log.error.notfound"));
-
-            }
-
-        } catch (CurseException | IllegalArgumentException ex) {
-
-            configHasError = true;
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), configurationModel.getProjectID()), ex);
-
-            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), configurationModel.getProjectID()));
-
-        }
-
-        return configHasError;
-    }
-
-    /**
-     * Checks whether the specified modpack directory contains a valid projectID,fileID combination.
-     * ProjectIDs must be at least two digits long, fileIDs must be at least 5 digits long.
-     * Must be numbers separated by a ",". If modpackDir successfully matched a projectID,fileID combination, CurseForge
-     * is then checked for existence of said projectID and fileID. If the project can not be found or the file returns null
-     * then false is returned and the check is considered failed.
-     * @author Griefed
-     * @param modpackDir String. The string which to check for a valid projectID,fileID combination.
-     * @param configurationModel or {@link ServerPackModel}. Instance containing
-     *                           all the information about our server pack.
-     * @param encounteredErrors List String. A list to which all encountered errors are saved to.
-     * @throws InvalidModpackException Thrown if the specified IDs do not match a CurseForge modpack.
-     * @throws InvalidFileException Thrown if the specified fileID does not match a file for the projectID.
-     * @throws CurseException Thrown if an error occurs working with the CurseForgeAPI.
-     * @return Boolean. Returns true if the combination is deemed valid, false if not.
-     */
-    public boolean checkCurseForge(String modpackDir, ConfigurationModel configurationModel, List<String> encounteredErrors) throws InvalidModpackException, InvalidFileException, CurseException {
-
-        boolean configCorrect = false;
-
-        if (modpackDir.matches("[0-9]{2,},[0-9]{5,}") &&
-                Integer.parseInt(modpackDir.split(",")[0]) >= 10 &&
-                Integer.parseInt(modpackDir.split(",")[1]) >= 60018) {
-
-            LOG.info("IMPORTANT!!! - Modpack directory matches CurseForge projectID and fileID format. However, the CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.");
-            LOG.info("IMPORTANT!!! - Downloading and installing a modpack is disabled until further notice.");
-            // TODO: Reactivate once custom implementation of CurseForgeAPI has been implemented and CurseForge has provided me with an API key
-            encounteredErrors.add("IMPORTANT!!! - Modpack directory matches CurseForge projectID and fileID format. However, the CurseForge module is currently disabled due to CurseForge changing their API and the way one can access it.");
-            encounteredErrors.add("IMPORTANT!!! - Downloading and installing a modpack is disabled until further notice.");
-
-            return false;
-
-//            String[] curseForgeIDCombination;
-//            curseForgeIDCombination = modpackDir.split(",");
-//
-//            int curseProjectID = Integer.parseInt(curseForgeIDCombination[0]);
-//            int curseFileID = Integer.parseInt(curseForgeIDCombination[1]);
-//
-//            CurseProject curseProject = null;
-//
-//            try {
-//
-//                if (CurseAPI.project(curseProjectID).isPresent()) {
-//
-//                    curseProject = CurseAPI.project(curseProjectID).get();
-//
-//                    if (!curseProject.game().name().equalsIgnoreCase("Minecraft")) {
-//                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
-//                        throw new InvalidModpackException(curseProjectID, curseProject.name());
-//                    }
-//
-//                    if (!curseProject.categorySection().name().equalsIgnoreCase("Modpacks")) {
-//                        LOG.debug("CurseForge game for " + curseProject.name() + " (id: " + curseProjectID + ") is: " + curseProject.game().name());
-//                        throw new InvalidModpackException(curseProjectID, curseProject.name());
-//                    }
-//
-//                    //noinspection UnusedAssignment
-//                    configCorrect = true;
-//
-//                    configurationModel.setProjectID(curseProjectID);
-//                    configurationModel.setProjectName(CURSECREATEMODPACK.retrieveProjectName(curseProjectID));
-//                }
-//
-//            } catch (NoSuchElementException ex) {
-//
-//                //noinspection UnusedAssignment
-//                configCorrect = false;
-//
-//                /* This log is meant to be read by the user, therefore we allow translation. */
-//                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID), ex);
-//                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.project"), curseProjectID));
-//
-//            }
-//
-//            try {
-//                if (curseProject != null) {
-//
-//                    if (curseProject.refreshFiles().fileWithID(curseFileID) != null) {
-//
-//                        configurationModel.setFileID(curseFileID);
-//                        configurationModel.setFileName(CURSECREATEMODPACK.retrieveFileName(curseProjectID, curseFileID));
-//                        configurationModel.setFileDiskName(CURSECREATEMODPACK.retrieveFileDiskName(curseProjectID,curseFileID));
-//
-//                        configCorrect = true;
-//
-//                    } else {
-//
-//                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
-//                        throw new InvalidFileException(curseFileID);
-//                    }
-//                } else {
-//
-//                    encounteredErrors.add("Specified CurseForge project " + curseProjectID + " could not be found.");
-//                    throw new CurseException("Project was null. Does the specified project " + curseProjectID + " exist?");
-//                }
-//
-//            } catch (CurseException | NoSuchElementException ex) {
-//
-//                configCorrect = false;
-//
-//                /* This log is meant to be read by the user, therefore we allow translation. */
-//                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID), ex);
-//                encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.iscurse.file"), curseFileID));
-//
-//            }
-//
-//            /* This log is meant to be read by the user, therefore we allow translation. */
-//            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.info"));
-//            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkcurseforge.return"), configurationModel.getProjectID(), configurationModel.getFileID()));
-//            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkcurseforge.warn"));
-
-        } else {
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkcurseforge.warn2"));
-        }
-
-        return configCorrect;
-    }
-
-    /**
      * Sanitize any and all links in a given instance of {@link ConfigurationModel} modpack-directory, server-icon path,
      * server-properties path, Java path and copy-directories entries.
      * @author Griefed
@@ -1038,7 +828,7 @@ public class ConfigurationHandler {
 
         LOG.info("Checking configuration for links...");
 
-        if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir())) {
+        if (configurationModel.getModpackDir().length() > 0 && UTILITIES.FileUtils().isLink(configurationModel.getModpackDir())) {
             try {
                 configurationModel.setModpackDir(
                         UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir())
@@ -1051,7 +841,7 @@ public class ConfigurationHandler {
             }
         }
 
-        if (UTILITIES.FileUtils().isLink(configurationModel.getServerIconPath())) {
+        if (configurationModel.getServerIconPath().length() > 0 && UTILITIES.FileUtils().isLink(configurationModel.getServerIconPath())) {
             try {
                 configurationModel.setServerIconPath(
                         UTILITIES.FileUtils().resolveLink(configurationModel.getServerIconPath())
@@ -1064,7 +854,7 @@ public class ConfigurationHandler {
             }
         }
 
-        if (UTILITIES.FileUtils().isLink(configurationModel.getServerPropertiesPath())) {
+        if (configurationModel.getServerPropertiesPath().length() > 0 && UTILITIES.FileUtils().isLink(configurationModel.getServerPropertiesPath())) {
             try {
                 configurationModel.setServerPropertiesPath(
                         UTILITIES.FileUtils().resolveLink(configurationModel.getServerPropertiesPath())
@@ -1077,7 +867,7 @@ public class ConfigurationHandler {
             }
         }
 
-        if (UTILITIES.FileUtils().isLink(configurationModel.getJavaPath())) {
+        if (configurationModel.getJavaPath().length() > 0 && UTILITIES.FileUtils().isLink(configurationModel.getJavaPath())) {
             try {
                 configurationModel.setJavaPath(
                         UTILITIES.FileUtils().resolveLink(configurationModel.getJavaPath())
@@ -1090,20 +880,95 @@ public class ConfigurationHandler {
             }
         }
 
-        List<String> copyDirs = configurationModel.getCopyDirs();
-        boolean copyDirChanges = false;
+        if (!configurationModel.getCopyDirs().isEmpty()) {
+            List<String> copyDirs = configurationModel.getCopyDirs();
+            boolean copyDirChanges = false;
 
-        for (int i = 0; i < copyDirs.size(); i++) {
+            for (int i = 0; i < copyDirs.size(); i++) {
 
-            if (copyDirs.get(i).contains(";")) {
+                if (copyDirs.get(i).contains(";")) {
 
-                String[] entries = copyDirs.get(i).split(";");
+                    String[] entries = copyDirs.get(i).split(";");
 
-                if (UTILITIES.FileUtils().isLink(entries[0])) {
+                    if (UTILITIES.FileUtils().isLink(entries[0])) {
+                        try {
+                            copyDirs.set(
+                                    i,
+                                    UTILITIES.FileUtils().resolveLink(entries[0]) + ";" + entries[1]
+                            );
+
+                            LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                            copyDirChanges = true;
+
+                        } catch (InvalidFileTypeException | IOException ex) {
+                            LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                        }
+
+                    } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + entries[0])) {
+                        try {
+                            copyDirs.set(
+                                    i,
+                                    UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir() + "/" + entries[0]) + ";" + entries[1]
+                            );
+
+                            LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                            copyDirChanges = true;
+
+                        } catch (InvalidFileTypeException | IOException ex) {
+                            LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                        }
+                    }
+
+                } else if (copyDirs.get(i).startsWith("!")) {
+
+                    if (UTILITIES.FileUtils().isLink(copyDirs.get(i).substring(1))) {
+                        try {
+                            copyDirs.set(
+                                    i,
+                                    "!" + UTILITIES.FileUtils().resolveLink(copyDirs.get(i).substring(1))
+                            );
+
+                            LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                            copyDirChanges = true;
+
+                        } catch (InvalidFileTypeException | IOException ex) {
+                            LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                        }
+
+                    } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))) {
+                        try {
+                            copyDirs.set(
+                                    i,
+                                    UTILITIES.FileUtils().resolveLink("!" + configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))
+                            );
+
+                            LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                            copyDirChanges = true;
+
+                        } catch (InvalidFileTypeException | IOException ex) {
+                            LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                        }
+                    }
+
+                } else if (UTILITIES.FileUtils().isLink(copyDirs.get(i))) {
                     try {
                         copyDirs.set(
                                 i,
-                                UTILITIES.FileUtils().resolveLink(entries[0]) + ";" + entries[1]
+                                UTILITIES.FileUtils().resolveLink(copyDirs.get(i))
+                        );
+
+                        LOG.info("Resolved modpack directory link to: " + configurationModel.getModpackDir());
+                        copyDirChanges = true;
+
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Couldn't resolve link for modpack directory.",ex);
+                    }
+
+                } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i))) {
+                    try {
+                        copyDirs.set(
+                                i,
+                                UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i))
                         );
 
                         LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
@@ -1112,85 +977,12 @@ public class ConfigurationHandler {
                     } catch (InvalidFileTypeException | IOException ex) {
                         LOG.error("Couldn't resolve link for copy-directories entry.", ex);
                     }
-
-                } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + entries[0])) {
-                    try {
-                        copyDirs.set(
-                                i,
-                                UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir() + "/" + entries[0]) + ";" + entries[1]
-                        );
-
-                        LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
-                        copyDirChanges = true;
-
-                    } catch (InvalidFileTypeException | IOException ex) {
-                        LOG.error("Couldn't resolve link for copy-directories entry.", ex);
-                    }
-                }
-
-            } else if (copyDirs.get(i).startsWith("!")) {
-
-                if (UTILITIES.FileUtils().isLink(copyDirs.get(i).substring(1))) {
-                    try {
-                        copyDirs.set(
-                                i,
-                                "!" + UTILITIES.FileUtils().resolveLink(copyDirs.get(i).substring(1))
-                                );
-
-                        LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
-                        copyDirChanges = true;
-
-                    } catch (InvalidFileTypeException | IOException ex) {
-                        LOG.error("Couldn't resolve link for copy-directories entry.", ex);
-                    }
-
-                } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))) {
-                    try {
-                        copyDirs.set(
-                                i,
-                                UTILITIES.FileUtils().resolveLink("!" + configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))
-                        );
-
-                        LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
-                        copyDirChanges = true;
-
-                    } catch (InvalidFileTypeException | IOException ex) {
-                        LOG.error("Couldn't resolve link for copy-directories entry.", ex);
-                    }
-                }
-
-            } else if (UTILITIES.FileUtils().isLink(copyDirs.get(i))) {
-                try {
-                    copyDirs.set(
-                            i,
-                            UTILITIES.FileUtils().resolveLink(copyDirs.get(i))
-                    );
-
-                    LOG.info("Resolved modpack directory link to: " + configurationModel.getModpackDir());
-                    copyDirChanges = true;
-
-                } catch (InvalidFileTypeException | IOException ex) {
-                    LOG.error("Couldn't resolve link for modpack directory.",ex);
-                }
-
-            } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i))) {
-                try {
-                    copyDirs.set(
-                            i,
-                            UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i))
-                    );
-
-                    LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
-                    copyDirChanges = true;
-
-                } catch (InvalidFileTypeException | IOException ex) {
-                    LOG.error("Couldn't resolve link for copy-directories entry.", ex);
                 }
             }
-        }
 
-        if (copyDirChanges) {
-            configurationModel.setCopyDirs(copyDirs);
+            if (copyDirChanges) {
+                configurationModel.setCopyDirs(copyDirs);
+            }
         }
     }
 
@@ -1408,7 +1200,11 @@ public class ConfigurationHandler {
      */
     public boolean checkJavaPath(String pathToJava) {
 
-        FileUtilities.FileType type = UTILITIES.FileUtils().checkFileType(new File(pathToJava));
+        if (pathToJava.length() == 0) {
+            return false;
+        }
+
+        FileUtilities.FileType type = UTILITIES.FileUtils().checkFileType(pathToJava);
 
         switch (type) {
 
@@ -1494,29 +1290,28 @@ public class ConfigurationHandler {
     public String getJavaPath(String pathToJava) {
 
         String checkedJavaPath;
-        File java = new File(pathToJava);
 
         try {
 
-            if (checkJavaPath(pathToJava)) {
+            if (pathToJava.length() > 0) {
 
-                if (UTILITIES.FileUtils().isLink(java)) {
-                    return UTILITIES.FileUtils().resolveLink(java);
+                if (checkJavaPath(pathToJava)) {
+
+                    return pathToJava;
+
                 }
 
-                return pathToJava;
+                if (checkJavaPath(pathToJava + ".exe")) {
 
-            }
+                    return pathToJava + ".exe";
 
-            if (checkJavaPath(pathToJava + ".exe")) {
+                }
 
-                return pathToJava + ".exe";
+                if (checkJavaPath(pathToJava + ".lnk")) {
 
-            }
+                    return UTILITIES.FileUtils().resolveLink(new File(pathToJava + ".lnk"));
 
-            if (checkJavaPath(pathToJava + ".lnk")) {
-
-                return UTILITIES.FileUtils().resolveLink(new File(pathToJava + ".lnk"));
+                }
 
             }
 

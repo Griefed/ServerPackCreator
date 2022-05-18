@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +62,6 @@ public class ConfigurationModel {
     private String projectName;
     private String fileName;
     private String fileDiskName;
-
-    private int projectID;
-    private int fileID;
 
     /**
      * Getter for the suffix of the server pack to be generated.
@@ -339,42 +335,6 @@ public class ConfigurationModel {
     }
 
     /**
-     * Getter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * @author Griefed
-     * @return Integer. Returns the CurseForge projectID of a modpack.
-     */
-    public int getProjectID() {
-        return projectID;
-    }
-
-    /**
-     * Setter for the CurseForge projectID of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * @author Griefed
-     * @param newProjectID The new projectID to store.
-     */
-    public void setProjectID(int newProjectID) {
-        this.projectID = newProjectID;
-    }
-
-    /**
-     * Getter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * @author Griefed
-     * @return Integer. Returns the CurseForge fileID of a modpack.
-     */
-    public int getFileID() {
-        return fileID;
-    }
-
-    /**
-     * Setter for the CurseForge file of a modpack, which will be created by {@link CurseCreateModpack#curseForgeModpack(ConfigurationModel, Integer, Integer)}.
-     * @author Griefed
-     * @param newFileID The new projectFileID to store.
-     */
-    public void setFileID(int newFileID) {
-        this.fileID = newFileID;
-    }
-
-    /**
      * Getter for the name of the CurseForge project.
      * @author Griefed
      * @return String. The name of the CurseForge project.
@@ -486,8 +446,6 @@ public class ConfigurationModel {
                 ", projectName='" + projectName + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", fileDiskName='" + fileDiskName + '\'' +
-                ", projectID=" + projectID +
-                ", fileID=" + fileID +
                 '}';
     }
 }

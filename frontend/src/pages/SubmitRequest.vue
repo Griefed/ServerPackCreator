@@ -14,9 +14,6 @@
           align="justify"
           narrow-indicator
         >
-          <q-tab :disable="curse" name="curseforge" label="CurseForge">
-            <q-tooltip :disable="this.$q.platform.is.mobile">The CurseForge-module in ServerPackCreator is currently disabled.</q-tooltip>
-          </q-tab>
           <q-tab name="zip" label="zip">
             <q-tooltip :disable="this.$q.platform.is.mobile">Create a server pack from a zipped up modpack.</q-tooltip>
           </q-tab>
@@ -26,66 +23,7 @@
         </q-tabs>
 
         <q-separator/>
-<!--
-
-CREATE FROM CURSEFORGE PROJECTID,FILEID
-
--->
         <q-tab-panels v-model="tab" animated>
-          <q-tab-panel name="curseforge">
-            <q-tooltip :disable="this.$q.platform.is.mobile">The CurseForge-module in ServerPackCreator is currently disabled.</q-tooltip>
-            <div class="column">
-              <div class="text-h6 q-mb-md text-center">Enter your CurseForge projectID and fileID</div>
-              <q-form :disable="curse" @submit="submitCurse(store.state.projectID, store.state.fileID)" @reset="resetForm" class="q-gutter-xs">
-                <div class="row flex-center">
-                  <q-input
-                    :disable="curse"
-                    ref="projectRef"
-                    color="black"
-                    filled
-                    v-model.number="store.state.projectID"
-                    label="CurseForge projectID"
-                    type="number"
-                    maxlength="10"
-                    :rules="projectRules">
-                    <template v-slot:append>
-                      <q-icon name="info" @click="projectInfo = true" class="cursor-pointer" />
-                    </template>
-                    <q-tooltip :disable="this.$q.platform.is.mobile">
-                      The projectID can be found in the top right of a modpacks CurseForge project page.
-                    </q-tooltip>
-                  </q-input>
-                </div>
-
-                <div class="row flex-center">
-                  <q-input
-                    :disable="curse"
-                    ref="fileRef"
-                    color="black"
-                    filled
-                    v-model.number="store.state.fileID"
-                    label="CurseForge fileID"
-                    type="number"
-                    maxlength="10"
-                    :rules="fileRules">
-                    <template v-slot:append>
-                      <q-icon name="info" @click="fileInfo = true" class="cursor-pointer" />
-                    </template>
-                    <q-tooltip :disable="this.$q.platform.is.mobile">
-                      The fileID can be found in the URL-bar after selecting a file of a project.
-                    </q-tooltip>
-                  </q-input>
-                </div>
-
-                <div :class="this.$q.platform.is.mobile ? 'row flex-center' : 'row no-wrap flex-center'">
-                  <div>
-                    <q-btn label="Submit" :disable="disableCurse || curse" :loading="loading" type="submit" color="primary" />
-                    <q-btn label="Reset"  :disable="curse"                                type="reset" color="warning" class="q-ml-sm" />
-                  </div>
-                </div>
-              </q-form>
-            </div>
-          </q-tab-panel>
 <!--
 
 UPLOAD AND CREATE FROM ZIP
@@ -388,76 +326,19 @@ CREATE FROM MODRINTH MODPACK
       </q-card-actions>
     </q-card>
   </q-dialog>
-<!--
-
- CURSEFORGE HELP DIALOGS
-
--->
-  <q-dialog v-model="projectInfo">
-    <q-card style="max-width: 1000px;width:750px">
-      <q-card-section>
-        <div class="text-h6 text-center">How to find the projectID</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none text-center">
-        Browse to the project which you want a server pack of.<br>
-        On the project page on the right hand side, in the <b>About Project</b>-section<br>
-        Check the line starting with <b>Project ID</b>-section.<br>
-        <br>
-        The number on the right of that text is the projectID you are looking for.
-      </q-card-section>
-      <q-card-section class="flex-center">
-        <q-img alt="Where to find the projectID of a CurseForge project." src="~assets/projectID.webp"/>
-      </q-card-section>
-      <q-card-actions align="right">
-        <q-btn flat label="OK" color="primary" v-close-popup />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-
-  <q-dialog v-model="fileInfo">
-    <q-card style="max-width: 1000px;width:750px">
-      <q-card-section>
-        <div class="text-h6 text-center">How to find the file ID</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none text-center">
-        Browse to the project which you want a server pack of.<br>
-        On the project page, browse to the <b>Files</b>-tab of the project.<br>
-        Select the file you want a server pack of.<br>
-        In the URL-field of your browser, check <b>the end</b> of the <b>URL</b>.<br>
-        <br>
-        The digits at the end of the URL is the fileID.
-      </q-card-section>
-      <q-card-section class="flex-center">
-        <q-img alt="Where to find the projectID of a CurseForge project." src="~assets/fileID.webp"/>
-      </q-card-section>
-      <q-card-actions align="right">
-        <q-btn flat label="OK" color="primary" v-close-popup />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
 
 </template>
 
 <script lang="js">
 import { defineComponent, inject, ref } from 'vue';
 import { useQuasar, Cookies, openURL  } from 'quasar';
-import { api } from "boot/axios";
+import { api } from 'boot/axios';
 
 export default defineComponent({
-  name: "SubmitRequest",
+  name: 'SubmitRequest',
   setup() {
 
     const store = inject('store');
-    const projectRef = ref(false);
-    const fileRef = ref(false);
-    const regenerationActivated = ref(false);
-
-    const onRejectedCurse = function(rejectedEntries) {
-      $q.notify({
-        type: 'negative',
-        message: `${rejectedEntries[0].file.name}-file did not pass validation constraints. The file is either too big or not a valid ZIP-archive.`
-      });
-    };
 
     return {
       /*
@@ -466,26 +347,6 @@ export default defineComponent({
       store,
       loading: ref(false),
       tab: ref('zip'),
-      installServer: ref(false),
-      /*
-       * CURSE
-       */
-      projectRef,
-      fileRef,
-      regenerationActivated,
-      disableCurse: ref(false),
-      curse: ref(true),
-      projectInfo: ref(false),
-      fileInfo: ref(false),
-      projectRules: [
-        projectID  => store.state.projectID >= 10 || 'ProjectID should not be smaller than 10!',
-        projectID  => ( store.state.projectID !== null && store.state.projectID !== '' ) || 'Please enter a projectID!'
-      ],
-      fileRules: [
-        fileID  => store.state.fileID >= 60018 || 'FileID should not be smaller than 60018!',
-        projectID  => ( store.state.fileID !== null && store.state.fileID !== '' ) || 'Please enter a fileID!'
-      ],
-      onRejectedCurse,
       /*
        * ZIP
        */
@@ -525,59 +386,12 @@ export default defineComponent({
  *  GENERAL
  *
  */
-/**
-     * Downloads a server pack with a given CurseForge project and fileID combination.
-     * @author Griefed
-     * @param project The CurseForge projectID
-     * @param file The CurseForge fileID
-     */
-    download(project, file) {
-      api.get("/packs/specific/" + project + ',' + file)
-        .then(response => {
-          openURL(
-            '/api/packs/download/' + response.data.id,
-            null,
-            {
-              windowName: window.name,
-              noopener: true,
-              menubar: false,
-              toolbar: false,
-              noreferrer: true,
-            }
-          )
-        })
-        .catch(error => {
 
-          console.log('An error occurred trying to download the server pack for: ' + project + ".");
-          console.log(error);
-
-          this.$q.notify({
-            timeout: 5000,
-            progress: true,
-            icon: 'error',
-            color: 'negative',
-            message: 'An error occurred trying to download the server pack for: ' + project + ". " + error
-          })
-
-        })
-    },
-    /**
-     * Sets cookies for a CurseForge project and fileID if the submitted request was valid.
-     * @author Griefed
-     * @param project The CurseForge projectID
-     * @param file The CurseForge fileID
-     */
-    setProjectCookies(project, file) {
-      this.$q.cookies.set('projectID', project);
-      this.$q.cookies.set('fileID', file);
-    },
     /**
      * Reset the submission form.
      * @author Griefed
      */
     resetForm() {
-      this.store.state.projectID = 10;
-      this.store.state.fileID = 60018;
       this.clientsideMods = this.clientsideModsDefault;
       this.minecraftVersion = this.minecraftVersions[0];
       this.modLoader = 'Forge';
@@ -601,146 +415,6 @@ export default defineComponent({
     },
 /*
  *
- *  CURSEFORGE
- *
- */
-    /**
-     * Submit a CurseForge project and fileID combination for generation. If the combination is invalid, a notification is
-     * shown to the user, telling them what went wrong. If the requested combination already exists, a notification is shown
-     * prompting the user to either regenerate the server pack (if regeneration is enabled on the affected instance), or
-     * download the server pack.
-     * @author Griefed
-     * @param project The CurseForge projectID
-     * @param file The CurseForge fileID
-     */
-    submitCurse(project, file) {
-      this.loading = true;
-      this.disable = true;
-      this.$q.loadingBar.start();
-      console.log(project + "," + file);
-      api.get("/curse/task?modpack=" + project + "," + file)
-          .then(response => {
-            this.curseNotify(response.data.status, response.data.timeout, response.data.icon, response.data.colour, response.data.message, project, file);
-            this.enableCurseButtons();
-            if (response.data.status === 0 || response.data.status === 1) {
-              this.setProjectCookies(project, file);
-            }
-          })
-          .catch(error =>{
-            console.log("An error occurred trying to contact the backend with the requested project.");
-            console.log(error);
-            this.errorNotification(error);
-            this.enableCurseButtons();
-      });
-    },
-    /**
-     * Shows a notification using the input for formatting and information shown.
-     * @author Griefed
-     * @param status
-     * @param timeout
-     * @param icon
-     * @param color
-     * @param message
-     * @param project
-     * @param file
-     */
-    curseNotify(status, timeout, icon, color, message, project, file) {
-      if (status === 0 && this.regenerationActivated) {
-
-        this.$q.notify({
-          position: "center",
-          timeout: timeout,
-          progress: true,
-          multiLine: true,
-          icon: icon,
-          color: color,
-          message: message,
-          actions: [
-            {
-              label: 'Regenerate', color: 'warning', handler: () => {
-                this.regenerate(project, file);
-              }
-            },
-            {
-              label: 'Download', color: 'dark', handler: () => {
-                this.download(project, file);
-              }
-            },
-            {
-              label: 'OK', color: 'dark'
-            }
-          ]
-        })
-
-      } else if (status === 0 && !this.regenerationActivated) {
-
-        this.$q.notify({
-          position: "center",
-          timeout: timeout,
-          progress: true,
-          multiLine: true,
-          icon: icon,
-          color: color,
-          message: message,
-          actions: [
-            {
-              label: 'Download', color: 'white', handler: () => {
-                this.download(project, file);
-              }
-            },
-            {
-              label: 'OK', color: 'dark'
-            }
-          ]
-        })
-
-      } else {
-
-        this.$q.notify({
-          timeout: timeout,
-          progress: true,
-          multiLine: true,
-          icon: icon,
-          color: color,
-          message: message,
-        })
-
-      }
-      this.$q.loadingBar.stop();
-    },
-    /**
-     * Disable buttons for submitting a new request.
-     * @author Griefed
-     */
-    enableCurseButtons() {
-      this.loading = false;
-      this.disableCurse = false;
-    },
-    /**
-     * Submit a request for regenerating a given CurseForge project and fileID combination.
-     * @author Griefed
-     * @param project The CurseForge projectID
-     * @param file The CurseForge fileID
-     */
-    regenerate(project, file) {
-      this.$q.loadingBar.start();
-      api.get("/curse/regenerate?modpack=" + project + "," + file)
-        .then(response => {
-          this.curseNotify(response.data.status, response.data.timeout, response.data.icon, response.data.colour, response.data.message, project, file);
-        })
-        .catch(error =>{
-
-          console.log("An error occurred trying to contact the backend with the requested project.");
-          console.log(error);
-
-          this.errorNotification(error);
-
-          this.$q.loadingBar.stop();
-
-        });
-    },
-/*
- *
  *  ZIP
  *
  */
@@ -752,8 +426,7 @@ export default defineComponent({
           this.clientsideMods,
           this.minecraftVersion,
           this.modLoader,
-          this.modloaderVersion,
-          this.installServer
+          this.modloaderVersion
         ].join('&')
       )
         .then(response => {
@@ -829,10 +502,13 @@ export default defineComponent({
             this.forgeVersions = response.data.forge;
 
             if (this.forgeVersions.length === 0) {
-              console.log('Zero')
+
               this.modloaderVersion = 'None';
+
             } else {
+
               this.modloaderVersion = this.forgeVersions[0];
+
             }
 
             this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
@@ -845,6 +521,7 @@ export default defineComponent({
 
       // Fabric
       } else {
+
         this.modLoader = 'Fabric';
         this.modloaderVersion = this.fabricVersions[0];
 
@@ -915,13 +592,11 @@ export default defineComponent({
   mounted() {
     /*
      * Acquire some settings from our backend.
-     *  - Is CurseForge regeneration of already available server packs enabled?
      *  - Acquire the configured list of clientside-only mods.
      *  - Acquire the fallback list of clientside-only mods.
      */
     api.get("/settings")
       .then(response => {
-        this.regenerationActivated = response.data.curseControllerRegenerationEnabled;
         this.clientsideMods = response.data.listFallbackMods;
         this.clientsideModsDefault = response.data.listFallbackMods;
       })
@@ -972,13 +647,6 @@ export default defineComponent({
         console.log(error);
         this.errorNotification(error);
       });
-
-    /*
-     * Check cookies whether the user has previously generated a server pack from a CurseForge projectID,fileID and set
-     * the GUI accordingly.
-     */
-    if (this.$q.cookies.has('projectID')) this.store.state.projectID = this.$q.cookies.get('projectID');
-    if (this.$q.cookies.has('fileID')) this.store.state.fileID = this.$q.cookies.get('fileID');
   }
 })
 </script>

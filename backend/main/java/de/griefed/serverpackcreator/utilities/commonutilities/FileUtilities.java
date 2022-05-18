@@ -105,6 +105,19 @@ public class FileUtilities {
      * @param file {@link File} The file to check
      * @return {@link FileType} The type of the given file. Either {@link FileType#FILE}, {@link FileType#LINK} or {@link FileType#SYMLINK}
      */
+    public FileType checkFileType(String file) {
+        if (file.length() == 0) {
+            return FileType.INVALID;
+        }
+        return checkFileType(new File(file));
+    }
+
+    /**
+     * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX symlink.
+     * @author Griefed
+     * @param file {@link File} The file to check
+     * @return {@link FileType} The type of the given file. Either {@link FileType#FILE}, {@link FileType#LINK} or {@link FileType#SYMLINK}
+     */
     public FileType checkFileType(File file) {
         if (file.getName().endsWith("lnk")) {
             return FileType.LINK;

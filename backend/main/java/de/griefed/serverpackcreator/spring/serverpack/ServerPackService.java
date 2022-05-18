@@ -60,37 +60,6 @@ public class ServerPackService {
     }
 
     /**
-     * Find a specific server pack by searching with a CurseForge project and file ID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID.
-     * @param fileID Integer. The CurseForge project file ID.
-     * @return Returns the server pack for the passed project and file ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     */
-    public Optional<ServerPackModel> findByProjectIDAndFileID(int projectID, int fileID) {
-        return SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID);
-    }
-
-    /**
-     * Delete a server pack with a given CurseForge project and file ID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID.
-     * @param fileID Integer. The CurseForge file ID.
-     */
-    public void deleteByProjectIDAndFileID(int projectID, int fileID) {
-        SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
-    }
-
-    /**
-     * Find a server pack by its database id.
-     * @author Griefed
-     * @param fileID Integer. The database id with which to search for a server pack.
-     * @return Returns a server pack for the passed database id wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     */
-    public Optional<ServerPackModel> findByFileID(int fileID) {
-        return SERVERPACKREPOSITORY.findByFileID(fileID);
-    }
-
-    /**
      * Download a server pack with the given database id.
      * @author Griefed
      * @param id Integer. The database id of the server pack to download.
@@ -171,21 +140,6 @@ public class ServerPackService {
     }
 
     /**
-     * Get a list of all server packs using a CurseForge project ID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID with which to search for server pack.
-     * @return Returns a list of all server packs for the passed CurseForge project ID wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     */
-    public List<ServerPackModel> getServerPacksByProjectID(int projectID) {
-        if (SERVERPACKREPOSITORY.findAllByProjectID(projectID).isPresent()) {
-            return new ArrayList<ServerPackModel>(SERVERPACKREPOSITORY.findAllByProjectID(projectID).get());
-        } else {
-            return new ArrayList<ServerPackModel>();
-        }
-
-    }
-
-    /**
      * Store a server pack in the database.
      * @author Griefed
      * @param serverPackModel Instance of {@link ServerPackModel} to store in the database.
@@ -246,31 +200,6 @@ public class ServerPackService {
     }
 
     /**
-     * Update a server pack entry in the database identified by a CurseForge project and file ID combination, using a passed
-     * server pack.
-     * @author Griefed
-     * @param projectID The CurseForge project ID.
-     * @param fileID The CurseForge file ID.
-     * @param serverPackModel The server pack with which to initialize the entry in the database.
-     */
-    public void updateServerPackByProjectIDAndFileID(int projectID, int fileID, ServerPackModel serverPackModel) {
-        if (SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
-            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findByProjectIDAndFileID(projectID, fileID).get();
-            LOG.debug("Updating database with: " + serverPackModel.repositoryToString());
-            serverPackModelFromDB.setProjectName(serverPackModel.getProjectName());
-            serverPackModelFromDB.setFileName(serverPackModel.getFileName());
-            serverPackModelFromDB.setFileDiskName(serverPackModel.getFileDiskName());
-            serverPackModelFromDB.setSize(serverPackModel.getSize());
-            serverPackModelFromDB.setDownloads(serverPackModel.getDownloads());
-            serverPackModelFromDB.setConfirmedWorking(serverPackModel.getConfirmedWorking());
-            serverPackModelFromDB.setStatus(serverPackModel.getStatus());
-            serverPackModelFromDB.setLastModified(new Timestamp(new Date().getTime()));
-            serverPackModelFromDB.setPath(serverPackModel.getPath());
-            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
-        }
-    }
-
-    /**
      * Deletes a server pack with the given id.
      * @author Griefed
      * @param id Integer. The database id of the server pack to delete.
@@ -278,16 +207,4 @@ public class ServerPackService {
     public void deleteServerPack(int id) {
         SERVERPACKREPOSITORY.deleteById(id);
     }
-
-    /**
-     * Delete a server pack with a given CurseForge project and file ID.
-     * @author Griefed
-     * @param projectID Integer. The CurseForge project ID.
-     * @param fileID Integer. The CurseForge file ID.
-     */
-    public void deleteServerPack(int projectID, int fileID) {
-        SERVERPACKREPOSITORY.deleteByProjectIDAndFileID(projectID, fileID);
-    }
-
-
 }

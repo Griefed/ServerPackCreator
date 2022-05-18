@@ -79,18 +79,32 @@ public class VersionsController {
     @GetMapping(value = "/forge/{minecraftversion}")
     public ResponseEntity<String> getAvailableForgeVersions(@PathVariable("minecraftversion") String minecraftVersion) {
 
-        return ResponseEntity
-                .ok()
-                .header(
-                        "Content-Type",
-                        "application/json"
-                ).body(
-                        "{\"forge\":" +
-                                UTILITIES.ListUtils().encapsulateListElements(VERSIONMETA.forge().forgeVersionsDescending()
-                                ) +
-                                "}"
-                );
+        if (VERSIONMETA.forge().availableForgeVersionsDescending(minecraftVersion).isPresent()) {
 
+            return ResponseEntity
+                    .ok()
+                    .header(
+                            "Content-Type",
+                            "application/json"
+                    ).body(
+                            "{\"forge\":" +
+                                    UTILITIES.ListUtils().encapsulateListElements(
+                                            VERSIONMETA.forge().availableForgeVersionsDescending(minecraftVersion).get()
+                                    ) +
+                                    "}"
+                    );
+
+        } else {
+
+            return ResponseEntity
+                    .ok()
+                    .header(
+                            "Content-Type",
+                            "application/json"
+                    ).body(
+                            "{\"forge\":[]}"
+                    );
+        }
     }
 
     /**

@@ -264,10 +264,8 @@ public class ApplicationPropertiesTest {
 
     @Test
     void booleanTests() {
-        Assertions.assertFalse(APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled());
         Assertions.assertFalse(APPLICATIONPROPERTIES.getSaveLoadedConfiguration());
         Assertions.assertFalse(APPLICATIONPROPERTIES.checkForAvailablePreReleases());
-        Assertions.assertFalse(APPLICATIONPROPERTIES.isCurseForgeActivated());
     }
 
     @Test

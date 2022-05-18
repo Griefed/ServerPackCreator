@@ -1,20 +1,8 @@
 // Configuration for your app
 // https://quasar.dev/quasar-cli/quasar-conf-js
 
-/* eslint-env node */
-/* eslint-disable @typescript-eslint/no-var-requires */
-const { configure } = require('quasar/wrappers');
-
 module.exports = function (ctx) {
   return {
-    supportTS: {
-      tsCheckerConfig: {
-        eslint: {
-          enabled: false,
-          files: './src/**/*.{ts,tsx,js,jsx,vue}',
-        },
-      }
-    },
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/cli-documentation/boot-files

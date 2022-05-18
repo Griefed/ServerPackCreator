@@ -64,56 +64,6 @@ public class ServerPackController {
     }
 
     /**
-     * GET request for retrieving a list of server packs by CurseForge projectID.
-     * @author Griefed
-     * @param projectID Integer. The id of the CurseForge project.
-     * @return List {@link ServerPackModel}. A list of all server packs, if any, with the given CurseForge projectID.
-     */
-    @GetMapping("project/{projectid}")
-    public ResponseEntity<List<ServerPackModel>> getByProjectID(@PathVariable("projectid") int projectID) {
-        if (SERVERPACKSERVICE.getServerPacksByProjectID(projectID).isEmpty()) {
-
-            return ResponseEntity.notFound().build();
-
-        } else {
-
-            return ResponseEntity
-                    .ok()
-                    .header(
-                            "Content-Type",
-                            "application/json"
-                    ).body(
-                            SERVERPACKSERVICE.getServerPacksByProjectID(projectID)
-                    );
-        }
-
-    }
-
-    /**
-     * GET request for a server pack matching the given CurseForge fileID.
-     * @author Griefed
-     * @param fileID Integer. The fileID of the CurseForge project for which to retrieve the server pack.
-     * @return {@link ServerPackModel}. The server pack for the corresponding CurseForge fileID, if it was found.
-     */
-    @GetMapping("file/{fileid}")
-    public ResponseEntity<ServerPackModel> getByFileID(@PathVariable("fileid") int fileID) {
-        if (SERVERPACKSERVICE.findByFileID(fileID).isPresent()) {
-
-            return ResponseEntity
-                    .ok()
-                    .header(
-                            "Content-Type",
-                            "application/json"
-                    ).body(
-                            SERVERPACKSERVICE.findByFileID(fileID).get()
-                    );
-
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    /**
      * GET request for retrieving a list of all available server packs.
      * @author Griefed
      * @return List {@link ServerPackModel}. A list of all available server packs on this instance.
@@ -134,39 +84,6 @@ public class ServerPackController {
                     ).body(
                             SERVERPACKSERVICE.getServerPacks()
                     );
-
-        }
-
-    }
-
-    /**
-     * GET request for retrieving a server pack for a specific CurseForge projectID and fileID.
-     * @author Griefed
-     * @param specific String. Comma seperated combination of CurseForge projectID and fileID.
-     * @return {@link ServerPackModel}. The server pack for the specified CurseForge projectID and fileID, if it was found.
-     */
-    @GetMapping("specific/{specific}")
-    public ResponseEntity<ServerPackModel> getByFileID(@PathVariable("specific") String specific) {
-
-        String[] project = specific.split(",");
-
-        int projectID = Integer.parseInt(project[0]);
-        int fileID = Integer.parseInt(project[1]);
-
-        if (SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).isPresent()) {
-
-            return ResponseEntity
-                    .ok()
-                    .header(
-                            "Content-Type",
-                            "application/json"
-                    ).body(
-                            SERVERPACKSERVICE.findByProjectIDAndFileID(projectID, fileID).get()
-                    );
-
-        } else {
-
-            return ResponseEntity.notFound().build();
 
         }
 

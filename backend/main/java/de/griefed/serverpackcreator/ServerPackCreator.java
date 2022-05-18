@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.curseforge.CurseCreateModpack;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
@@ -90,7 +89,6 @@ public class ServerPackCreator {
     private Utilities utilities = null;
     private VersionMeta versionMeta = null;
     private ConfigUtilities configUtilities = null;
-    private CurseCreateModpack curseCreateModpack = null;
     private ConfigurationHandler configurationHandler = null;
     private ApplicationPlugins applicationPlugins = null;
     private ServerPackHandler serverPackHandler = null;
@@ -330,7 +328,7 @@ public class ServerPackCreator {
     }
 
     /**
-     * Initialize {@link VersionMeta}, {@link ConfigUtilities}, {@link CurseCreateModpack}, {@link ConfigurationHandler}.
+     * Initialize {@link VersionMeta}, {@link ConfigUtilities}, {@link ConfigurationHandler}.
      * @author Griefed
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
      */
@@ -348,17 +346,9 @@ public class ServerPackCreator {
                 APPLICATIONPROPERTIES,
                 versionMeta);
 
-        this.curseCreateModpack = new CurseCreateModpack(
-                LOCALIZATIONMANAGER,
-                APPLICATIONPROPERTIES,
-                versionMeta,
-                utilities,
-                configUtilities
-        );
 
         this.configurationHandler = new ConfigurationHandler(
                 LOCALIZATIONMANAGER,
-                curseCreateModpack,
                 versionMeta,
                 APPLICATIONPROPERTIES,
                 utilities,
@@ -376,12 +366,10 @@ public class ServerPackCreator {
 
         this.serverPackHandler = new ServerPackHandler(
                 LOCALIZATIONMANAGER,
-                curseCreateModpack,
                 APPLICATIONPROPERTIES,
                 versionMeta,
                 utilities,
-                applicationPlugins,
-                configUtilities
+                applicationPlugins
         );
 
         if (this.updateChecker == null) {
@@ -493,7 +481,6 @@ public class ServerPackCreator {
         new ServerPackCreatorGui(
                 LOCALIZATIONMANAGER,
                 configurationHandler,
-                curseCreateModpack,
                 serverPackHandler,
                 APPLICATIONPROPERTIES,
                 versionMeta,
@@ -703,7 +690,6 @@ public class ServerPackCreator {
                 configurationHandler,
                 APPLICATIONPROPERTIES,
                 utilities,
-                curseCreateModpack,
                 versionMeta,
                 configUtilities
         ).createConfigurationFile();
