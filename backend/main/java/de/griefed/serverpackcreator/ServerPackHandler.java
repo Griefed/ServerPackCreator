@@ -2230,6 +2230,7 @@ public class ServerPackHandler {
             if (mod.toString().endsWith("jar")) {
 
                 String modId = null;
+                List<String> additionalMods = new ArrayList<>();
 
                 JarFile jarFile = null;
                 JarEntry jarEntry = null;
@@ -2256,25 +2257,63 @@ public class ServerPackHandler {
                                 // iterate though annotations
                                 for (JsonNode child : node.get("annotations")) {
 
-                                    // Get the modId
-                                    try {
-                                        if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
-                                            modId = child.get("values").get("modid").get("value").asText();
-                                        }
-                                    } catch (NullPointerException ignored) {
+                                    // Get the mod ID and check for clientside only, if we have not yet received a modID
+                                    if (modId == null) {
 
-                                    }
-
-                                    // Add mod to list of clientmods if clientSideOnly is true
-                                    try {
-                                        if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
-                                            if (!clientMods.contains(modId)) {
-                                                clientMods.add(modId);
-
-                                                LOG.debug("Added clientMod: " + modId);
+                                        try {
+                                            // Get the modId
+                                            if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
+                                                modId = child.get("values").get("modid").get("value").asText();
                                             }
+
+                                            // Add mod to list of clientmods if clientSideOnly is true
+                                            if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
+                                                if (!clientMods.contains(modId)) {
+                                                    clientMods.add(modId);
+
+                                                    LOG.debug("Added clientMod: " + modId);
+                                                }
+                                            }
+                                        } catch (NullPointerException ignored) {
+
                                         }
-                                    } catch (NullPointerException ignored) {
+
+                                    // We already received a modId, perform additional checks to prevent false positives
+                                    } else {
+
+                                        try {
+                                            // Get the second modID
+                                            if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
+
+                                                // ModIDs are the same, so check for clientside-only
+                                                if (modId.equals(child.get("values").get("modid").get("value").asText())) {
+
+                                                    try {
+                                                        // Add mod to list of clientmods if clientSideOnly is true
+                                                        if (child.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")) {
+                                                            if (!clientMods.contains(modId)) {
+                                                                clientMods.add(modId);
+
+                                                                LOG.debug("Added clientMod: " + modId);
+                                                            }
+                                                        }
+                                                    } catch (NullPointerException ignored) {
+
+                                                    }
+
+                                                // ModIDs are different, possibly two mods in one JAR-file.......
+                                                } else {
+
+                                                    // Add additional modId to list so we can check those later
+                                                    additionalMods.add(child.get("values").get("modid").get("value").asText());
+
+                                                }
+                                            }
+
+
+                                        } catch (NullPointerException ignored) {
+
+                                        }
 
                                     }
 
@@ -2288,7 +2327,7 @@ public class ServerPackHandler {
 
                                                 for (String dependency : dependencies) {
 
-                                                    if (dependency.matches("(before:.*|after:.*|)")) {
+                                                    if (dependency.matches("(before:.*|after:.*|required-after:.*|)")) {
 
                                                         dependency = dependency.substring(dependency.lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
 
@@ -2302,7 +2341,7 @@ public class ServerPackHandler {
 
                                                 }
                                             } else {
-                                                if (child.get("values").get("dependencies").get("value").asText().matches("(before:.*|after:.*|)")) {
+                                                if (child.get("values").get("dependencies").get("value").asText().matches("(before:.*|after:.*|required-after:.*|)")) {
 
                                                     String dependency = child.get("values").get("dependencies").get("value").asText().substring(child.get("values").get("dependencies").get("value").asText().lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
 
@@ -2326,6 +2365,103 @@ public class ServerPackHandler {
 
                             }
 
+                        }
+
+                        if (!additionalMods.isEmpty()) {
+                            for (String additionalModId : additionalMods) {
+
+                                //base of json
+                                for (JsonNode node : modJson) {
+
+                                    try {
+                                        // iterate though annotations again but this time for the modID of the second mod
+                                        for (JsonNode child : node.get("annotations")) {
+                                            boolean additionalModDependsOnFirst = false;
+
+                                            // check if second mod depends on first
+                                            try {
+                                                // if the modId is that of our additional mod, check the dependencies whether the first modId is present
+                                                if (child.get("values").get("modid").get("value").asText().equals(additionalModId)) {
+                                                    if (!child.get("values").get("dependencies").get("value").asText().isEmpty()) {
+
+                                                        if (child.get("values").get("dependencies").get("value").asText().contains(";")) {
+
+                                                            String[] dependencies = child.get("values").get("dependencies").get("value").asText().split(";");
+
+                                                            for (String dependency : dependencies) {
+
+                                                                if (dependency.matches("(before:.*|after:.*|required-after:.*|)")) {
+
+                                                                    dependency = dependency.substring(dependency.lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
+
+                                                                    if (dependency.equals(modId)) {
+                                                                        additionalModDependsOnFirst = true;
+                                                                    }
+
+                                                                }
+
+                                                            }
+                                                        } else {
+                                                            if (child.get("values").get("dependencies").get("value").asText().matches("(before:.*|after:.*|required-after:.*|)")) {
+
+                                                                String dependency = child.get("values").get("dependencies").get("value").asText().substring(child.get("values").get("dependencies").get("value").asText().lastIndexOf(":") + 1).replaceAll("(@.*|\\[.*)", "");
+
+                                                                if (dependency.equals(modId)) {
+                                                                    additionalModDependsOnFirst = true;
+                                                                }
+
+                                                            }
+                                                        }
+
+                                                    }
+                                                }
+
+                                            } catch (NullPointerException ignored) {
+
+                                            }
+
+                                            // If the additional mod depends on the first one, check if the additional one is clientside-only
+                                            if (additionalModDependsOnFirst) {
+
+                                                boolean clientSide = false;
+
+                                                try {
+                                                    // iterate though annotations
+                                                    for (JsonNode children : node.get("annotations")) {
+
+                                                        try {
+                                                            if (
+                                                                    children.get("values").get("modid").get("value").asText().equals(additionalModId) &&
+                                                                    children.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")
+                                                            ) {
+
+                                                                clientSide = true;
+                                                            }
+                                                        } catch (NullPointerException ignored) {
+
+                                                        }
+
+
+                                                    }
+                                                } catch (NullPointerException ignored) {
+
+                                                }
+
+                                                // if the additional mod is NOT clientside-only, we have to remove this mod from the list of clientside-only mods
+                                                if (!clientSide) {
+                                                    String finalModId = modId;
+                                                    if (clientMods.removeIf(n -> n.equals(finalModId))) {
+                                                        LOG.info("Removing " + modId + " from list of clientside-only mods. It contains multiple mods at once, and one of them is NOT clientside-only.");
+                                                    }
+                                                }
+                                            }
+
+                                        }
+                                    } catch (NullPointerException ignored) {
+
+                                    }
+                                }
+                            }
                         }
 
                     }
@@ -2361,8 +2497,9 @@ public class ServerPackHandler {
         //Remove dependencies from list of clientmods to ensure we do not, well, exclude a dependency of another mod.
         for (String dependency : modDependencies) {
 
-            clientMods.removeIf(n -> (n.contains(dependency)));
-            LOG.debug("Removing " + dependency + " from list of clientmods as it is a dependency for another mod.");
+            if (clientMods.removeIf(n -> (n.contains(dependency)))) {
+                LOG.debug("Removing " + dependency + " from list of clientmods as it is a dependency for another mod.");
+            }
         }
 
         //After removing dependencies from the list of potential clientside mods, we can remove any mod that says it is clientside-only.
