@@ -347,7 +347,7 @@ public class ServerPackHandler {
                     )
             )) {
 
-                // Fabric Bash file
+                // Improved Fabric server launcher info
                 writer.write("If you are using this server pack on a managed server, meaning you can not execute scripts, please use the fabric-server-launcher.jar instead of the fabric-server-launch.jar. Note the extra \"er\" at the end of \"launcher\".\n");
                 writer.write("This is the improved Fabric Server Launcher, which will take care of downloading and installing the Minecraft server and any and all libraries needed for running the Fabric server.\n");
                 writer.write("\n");
@@ -359,7 +359,7 @@ public class ServerPackHandler {
 
             } catch (IOException ex) {
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.error("Error generating shell-script for Forge.", ex);
+                LOG.error("Error downloading the improved Fabric server launcher.", ex);
             }
         }
     }
