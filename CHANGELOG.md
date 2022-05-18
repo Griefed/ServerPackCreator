@@ -1,3 +1,48 @@
+## [3.5.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.4.1...3.5.0-alpha.1) (2022-05-18)
+
+
+### :scissors: Refactor
+
+* **UNIX symlinks and Windows lnks:** Sanitize links at beginning of config check and resolve any and all links before checks are run. ([2a9ea36](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a9ea364f16c56fe9ddf266eef2d71f8f846f2c7))
+
+
+### 👀 Reverts
+
+* **CurseForge:** Completely remove CurseForge functionality from ServerPackCreator. ([d3de549](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3de549c3c0d420ccf6d47d2c477bf8672e3687a))
+
+
+### 💎 Improvements
+
+* **UNIX symlinks and Windows lnks:** Allow users to work with links/symlinks at certain points. Modpack directory, copy directories, server icon and properties, Java path, config to load shoud now all work with UNIX symlinks or Windows lnks. ([f57686a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f57686af86741126ceb77017151b91638cd984f8))
+* **UNIX symlinks and Windows lnks:** Allow users to work with links/symlinks at certain points. Modpack directory, copy directories, server icon and properties, Java path, config to load shoud now all work with UNIX symlinks or Windows lnks. ([74bea1b](https://git.griefed.de/Griefed/ServerPackCreator/commit/74bea1b87f39514cea8f77c32e8e707d75b0a0e4))
+
+
+### 🛠 Fixes
+
+* **1.12.2 Forge sideness scanning false positives:** If a single mod JAR-file contains multiple mods, check all mods in that JAR-file for sideness and determine whether it is clientside-only correctly. ([f4d1081](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4d1081a5f21adb71c07ee03e83c72a1fbadc6b8))
+* **Copy-directories re-validation:** Upon changing the modpack-directory, re-validate the copy-directories field to prevent false-negatives. ([0ee983c](https://git.griefed.de/Griefed/ServerPackCreator/commit/0ee983cdf49f5dd4d31c63b72468ac089161b1dd))
+* **File-ending:** If a user does not specify .conf as the file ending when SaveAs is used, append it so we always have .conf-files. ([7d87b2f](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d87b2f26885e6e4f696a1d164cc9a6a5a002da0))
+* **Unable to save config when clientside-mods is empty:** Prevent IndexOutOfBounds-exception when the passed list in encapsulateListElements is empty. ([bd620f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd620f8fdba6264110e0a9e5d5e59cc29981f729))
+
+
+### Other
+
+* **deps:** update dependency @quasar/extras to v1.13.6 ([d34f8fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/d34f8fd657a10731584ac0d1b2355229e7d6543b))
+* **deps:** update dependency axios to v0.27.2 ([86f56f5](https://git.griefed.de/Griefed/ServerPackCreator/commit/86f56f57668d0ef7039d7b78f04207e8fa0569b8))
+* **deps:** update dependency core-js to v3.22.4 ([1c4b985](https://git.griefed.de/Griefed/ServerPackCreator/commit/1c4b985529212927f0ac43195b4d2f3d37fffc44))
+* **deps:** update dependency eslint to v8.14.0 ([dbb27fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/dbb27faa7e1d69fb4e4f869ff5f7436431bcfcf6))
+* **deps:** update dependency eslint-plugin-vue to v8.7.1 ([97f86a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/97f86a8809fea915b5e540e1ed8b8d200ba5cb0b))
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.9 ([198aa4f](https://git.griefed.de/Griefed/ServerPackCreator/commit/198aa4f4d7a5df186af45fc3b7ce0c0e2328e17e))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.0.6 ([42b6f7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/42b6f7a1d0f0e42cd7db98aceee58b73c98dd466))
+* **deps:** update dependency gradle to v7.4.2 ([b65f938](https://git.griefed.de/Griefed/ServerPackCreator/commit/b65f9388ab4f11e10a98c4ed0e181bfbed81d129))
+* **deps:** update dependency org.apache.activemq:artemis-jms-server to v2.21.0 ([ebd8add](https://git.griefed.de/Griefed/ServerPackCreator/commit/ebd8adde438f25adc933ab4a0949f9ad9c312e08))
+* **deps:** update dependency tsparticles to v2.0.6 ([ebb78ba](https://git.griefed.de/Griefed/ServerPackCreator/commit/ebb78baef18c8df5d0e59cdd3e07970608338ae7))
+* **deps:** update dependency vue to v3.2.33 ([3adabfc](https://git.griefed.de/Griefed/ServerPackCreator/commit/3adabfcf2a8df8bf5689d56f66e9fa770aa35bfe))
+* **deps:** update jamesives/github-pages-deploy-action action to v4.3.3 ([546cec4](https://git.griefed.de/Griefed/ServerPackCreator/commit/546cec4b237dcb6663eb2981b33f8721c334b10b))
+* **deps:** update spring boot to v2.6.7 ([c61906e](https://git.griefed.de/Griefed/ServerPackCreator/commit/c61906e2a306e91f3bc2a19127ea4bd34f9833c8))
+* **deps:** update typescript-eslint monorepo to v5.22.0 ([f0a5512](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0a5512f86421ebb33d1027bbcad8e06e93051e5))
+* **Status labels:** Reduce max length of entries to reduce amount of component resizing. ([5eed4ad](https://git.griefed.de/Griefed/ServerPackCreator/commit/5eed4ad4e59861b7a6f2444f3df362ad5ecf4435))
+
 ### [3.4.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.4.0...3.4.1) (2022-05-03)
 
 
