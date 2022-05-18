@@ -128,7 +128,7 @@ public class FileUtilities {
     /**
      * Check if the given file is a UNIX symlink or Windows lnk.
      * @author Griefed
-     * @param file {@link File} The file to check.
+     * @param file {@link String} The file to check.
      * @return <code>true</code> if the given file is a UNIX symlink or Windows lnk.
      */
     public boolean isLink(String file) {

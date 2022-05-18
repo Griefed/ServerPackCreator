@@ -360,6 +360,8 @@ public class ConfigurationHandler {
     public boolean checkConfiguration(@NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean downloadAndCreateModpack, boolean quietCheck) {
         boolean configHasError = false;
 
+        sanitizeLinks(configurationModel);
+
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
 
@@ -405,24 +407,6 @@ public class ConfigurationHandler {
         if (modpack.isDirectory()) {
 
             configHasError = isDir(configurationModel, encounteredErrors);
-
-        } else if (UTILITIES.FileUtils().isLink(modpack)) {
-
-            try {
-
-                configurationModel.setModpackDir(
-                        UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir())
-                );
-
-                configHasError = isDir(configurationModel, encounteredErrors);
-
-            } catch (InvalidFileTypeException | IOException ex) {
-
-                configHasError = true;
-                encounteredErrors.add("Could not resolve link to modpack directory. Using an absolute path to an existing directory is recommended.");
-                LOG.error("Could not resolve link to modpack directory.",ex);
-            }
-
 
         } else if (APPLICATIONPROPERTIES.isCurseForgeActivated()) {
 
@@ -1045,6 +1029,172 @@ public class ConfigurationHandler {
     }
 
     /**
+     * Sanitize any and all links in a given instance of {@link ConfigurationModel} modpack-directory, server-icon path,
+     * server-properties path, Java path and copy-directories entries.
+     * @author Griefed
+     * @param configurationModel Instance of {@link ConfigurationModel} in which to sanitize links to their respective destinations.
+     */
+    private void sanitizeLinks(ConfigurationModel configurationModel) {
+
+        LOG.info("Checking configuration for links...");
+
+        if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir())) {
+            try {
+                configurationModel.setModpackDir(
+                        UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir())
+                );
+
+                LOG.info("Resolved modpack directory link to: " + configurationModel.getModpackDir());
+
+            } catch (InvalidFileTypeException | IOException ex) {
+                LOG.error("Couldn't resolve link for modpack directory.",ex);
+            }
+        }
+
+        if (UTILITIES.FileUtils().isLink(configurationModel.getServerIconPath())) {
+            try {
+                configurationModel.setServerIconPath(
+                        UTILITIES.FileUtils().resolveLink(configurationModel.getServerIconPath())
+                );
+
+                LOG.info("Resolved server-icon link to: " + configurationModel.getServerIconPath());
+
+            } catch (InvalidFileTypeException | IOException ex) {
+                LOG.error("Couldn't resolve link for server-icon.",ex);
+            }
+        }
+
+        if (UTILITIES.FileUtils().isLink(configurationModel.getServerPropertiesPath())) {
+            try {
+                configurationModel.setServerPropertiesPath(
+                        UTILITIES.FileUtils().resolveLink(configurationModel.getServerPropertiesPath())
+                );
+
+                LOG.info("Resolved server-properties link to: " + configurationModel.getServerPropertiesPath());
+
+            } catch (InvalidFileTypeException | IOException ex) {
+                LOG.error("Couldn't resolve link for server-properties.",ex);
+            }
+        }
+
+        if (UTILITIES.FileUtils().isLink(configurationModel.getJavaPath())) {
+            try {
+                configurationModel.setJavaPath(
+                        UTILITIES.FileUtils().resolveLink(configurationModel.getJavaPath())
+                );
+
+                LOG.info("Resolved Java link to: " + configurationModel.getJavaPath());
+
+            } catch (InvalidFileTypeException | IOException ex) {
+                LOG.error("Couldn't resolve link for Java path.",ex);
+            }
+        }
+
+        List<String> copyDirs = configurationModel.getCopyDirs();
+        boolean copyDirChanges = false;
+
+        for (int i = 0; i < copyDirs.size(); i++) {
+
+            if (copyDirs.get(i).contains(";")) {
+
+                String[] entries = copyDirs.get(i).split(";");
+
+                if (UTILITIES.FileUtils().isLink(entries[0])) {
+                    try {
+                        copyDirs.set(
+                                i,
+                                UTILITIES.FileUtils().resolveLink(entries[0]) + ";" + entries[1]
+                        );
+
+                        LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                        copyDirChanges = true;
+
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                    }
+
+                } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + entries[0])) {
+                    try {
+                        copyDirs.set(
+                                i,
+                                UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir() + "/" + entries[0]) + ";" + entries[1]
+                        );
+
+                        LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                        copyDirChanges = true;
+
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                    }
+                }
+
+            } else if (copyDirs.get(i).startsWith("!")) {
+
+                if (UTILITIES.FileUtils().isLink(copyDirs.get(i).substring(1))) {
+                    try {
+                        copyDirs.set(
+                                i,
+                                "!" + UTILITIES.FileUtils().resolveLink(copyDirs.get(i).substring(1))
+                                );
+
+                        LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                        copyDirChanges = true;
+
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                    }
+
+                } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))) {
+                    try {
+                        copyDirs.set(
+                                i,
+                                UTILITIES.FileUtils().resolveLink("!" + configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))
+                        );
+
+                        LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                        copyDirChanges = true;
+
+                    } catch (InvalidFileTypeException | IOException ex) {
+                        LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                    }
+                }
+
+            } else if (UTILITIES.FileUtils().isLink(copyDirs.get(i))) {
+                try {
+                    copyDirs.set(
+                            i,
+                            UTILITIES.FileUtils().resolveLink(copyDirs.get(i))
+                    );
+
+                    LOG.info("Resolved modpack directory link to: " + configurationModel.getModpackDir());
+                    copyDirChanges = true;
+
+                } catch (InvalidFileTypeException | IOException ex) {
+                    LOG.error("Couldn't resolve link for modpack directory.",ex);
+                }
+
+            } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i))) {
+                try {
+                    copyDirs.set(
+                            i,
+                            UTILITIES.FileUtils().resolveLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i))
+                    );
+
+                    LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
+                    copyDirChanges = true;
+
+                } catch (InvalidFileTypeException | IOException ex) {
+                    LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+                }
+            }
+        }
+
+        if (copyDirChanges) {
+            configurationModel.setCopyDirs(copyDirs);
+        }
+    }
+
+    /**
      * Print all encountered errors to logs.
      * @author Griefed
      * @param encounteredErrors List String. A list of all errors which were encountered during a configuration check.
@@ -1178,27 +1328,17 @@ public class ConfigurationHandler {
 
                     String[] sourceFileDestinationFileCombination = directory.split(";");
 
-                    String checkMe;
-
-                    try {
-                        checkMe = UTILITIES.FileUtils().resolveLink(new File(sourceFileDestinationFileCombination[0]));
-                    } catch (InvalidFileTypeException | IOException ex) {
-                        LOG.error("Could not resolve link/symlink. Using entry from user input for checks.",ex);
-                        checkMe = sourceFileDestinationFileCombination[0];
-                    }
-
-                    File checkMeFile = new File(String.format("%s/%s", modpackDir, checkMe));
+                    File sourceFileToCheck = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
 
                     if (
-                            !checkMeFile.isFile() &&
-                            !checkMeFile.isDirectory() &&
-                            !new File(checkMe).isFile() &&
-                            !new File(checkMe).isDirectory()
+                            !new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isFile() &&
+                            !new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isDirectory() &&
+                            !new File(sourceFileDestinationFileCombination[0]).isFile() &&
+                            !new File(sourceFileDestinationFileCombination[0]).isDirectory()
                     ) {
 
                         configCorrect = false;
 
-                        File sourceFileToCheck = new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
                         /* This log is meant to be read by the user, therefore we allow translation. */
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
 
@@ -1222,15 +1362,7 @@ public class ConfigurationHandler {
                 // Check if the entry exists
                 } else {
 
-                    File dirToCheck;
-                    File checkMeFile = new File(String.format("%s/%s", modpackDir, directory));
-                    try {
-                        dirToCheck = new File(UTILITIES.FileUtils().resolveLink(checkMeFile));
-                    } catch (InvalidFileTypeException | IOException ex) {
-                        LOG.error("Could not resolve link/symlink. Using entry from user input for checks.",ex);
-                        dirToCheck = checkMeFile;
-                    }
-
+                    File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
 
                     if (!dirToCheck.exists()) {
 
@@ -1262,18 +1394,9 @@ public class ConfigurationHandler {
             return true;
 
         } else {
-            try {
 
-                return new File(
-                        UTILITIES.FileUtils().resolveLink(iconOrPropertiesPath)
-                ).exists();
+            return new File(iconOrPropertiesPath).exists();
 
-            } catch (InvalidFileTypeException | IOException ex) {
-
-                LOG.error("Invalid file or link specified.",ex);
-
-            }
-            return false;
         }
     }
 
