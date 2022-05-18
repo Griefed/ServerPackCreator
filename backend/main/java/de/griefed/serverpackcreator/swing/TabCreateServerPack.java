@@ -1151,6 +1151,8 @@ public class TabCreateServerPack extends JComponent {
             ERROR_ICON_MODPACKDIRECTORY.setDescription(String.join(",", errorsTEXTFIELD_MODPACKDIRECTORY));
             TEXTFIELD_MODPACKDIRECTORY.setToolTipText(String.join(",", errorsTEXTFIELD_MODPACKDIRECTORY));
         }
+
+        validateCopyDirs();
     }
 
     /**
