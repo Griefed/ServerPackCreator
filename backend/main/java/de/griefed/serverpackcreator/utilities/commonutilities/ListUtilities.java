@@ -43,6 +43,10 @@ public class ListUtilities {
      */
     public String encapsulateListElements(List<String> listToEncapsulate) {
 
+        if (listToEncapsulate.isEmpty()) {
+            return "[]";
+        }
+
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("[\"").append(listToEncapsulate.get(0).replace("\\", "/")).append("\"");
