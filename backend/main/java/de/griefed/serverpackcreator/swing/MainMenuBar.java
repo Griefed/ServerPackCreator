@@ -861,9 +861,18 @@ public class MainMenuBar extends Component {
         if (configChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
 
             try {
-                TAB_CREATESERVERPACK.saveConfig(new File(configChooser.getSelectedFile().getCanonicalPath()));
 
-                LOG.debug("Saved configuration to: " + configChooser.getSelectedFile().getCanonicalPath());
+                if (configChooser.getSelectedFile().getCanonicalPath().endsWith(".conf")) {
+
+                    TAB_CREATESERVERPACK.saveConfig(new File(configChooser.getSelectedFile().getCanonicalPath()));
+                    LOG.debug("Saved configuration to: " + configChooser.getSelectedFile().getCanonicalPath());
+
+                } else {
+
+                    TAB_CREATESERVERPACK.saveConfig(new File(configChooser.getSelectedFile().getCanonicalPath() + ".conf"));
+                    LOG.debug("Saved configuration to: " + configChooser.getSelectedFile().getCanonicalPath() + ".conf");
+
+                }
 
             } catch (IOException ex) {
                 LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.buttonloadconfigfromfile"), ex);
