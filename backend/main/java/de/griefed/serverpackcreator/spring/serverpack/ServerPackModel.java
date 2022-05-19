@@ -43,17 +43,7 @@ public class ServerPackModel extends ConfigurationModel {
      * Constructor for our ServerPackModel.
      * @author Griefed
      */
-    public ServerPackModel() {
-
-    }
-
-    /**
-     * Constructor for our ServerPackModel using a project and file ID from a CurseForge project.
-     * @author Griefed
-     * @param projectID Integer. The project ID of the CurseForge project.
-     * @param fileID Integer. The file ID of the CurseForge project file.
-     */
-    public ServerPackModel(int projectID, int fileID) {
+    public ServerPackModel()) {
         this.projectName = "";
         this.fileName = "";
         this.fileDiskName = "";
@@ -76,7 +66,7 @@ public class ServerPackModel extends ConfigurationModel {
      * @param dateCreated The date and time at which this server pack was requested for generation.
      * @param lastModified The date and time this server pack was last modified. Be it either due to regeneration or something else.
      */
-    public ServerPackModel(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
+    public ServerPackModel(int id, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
         this.id = id;
         this.fileName = fileName;
         this.fileDiskName = displayName;
