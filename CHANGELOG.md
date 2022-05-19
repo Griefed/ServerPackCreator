@@ -1,3 +1,10 @@
+## [3.5.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.1...3.5.0-alpha.2) (2022-05-19)
+
+
+### 📔 Docs
+
+* **GenerateZip params:** Remove param in JavaDoc for GenerateZip:44, containing extra, invalid, argument. ([15319af](https://git.griefed.de/Griefed/ServerPackCreator/commit/15319aff5256e076ae7af0756960f2a14211de33))
+
 ## [3.5.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.4.1...3.5.0-alpha.1) (2022-05-18)
 
 
