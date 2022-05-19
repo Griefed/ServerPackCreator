@@ -43,7 +43,7 @@ public class ServerPackModel extends ConfigurationModel {
      * Constructor for our ServerPackModel.
      * @author Griefed
      */
-    public ServerPackModel()) {
+    public ServerPackModel() {
         this.projectName = "";
         this.fileName = "";
         this.fileDiskName = "";
