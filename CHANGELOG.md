@@ -1,3 +1,10 @@
+## [3.5.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.2...3.5.0-alpha.3) (2022-05-19)
+
+
+### 📔 Docs
+
+* **params:** Remove/fix constructors and missing params ([d78e310](https://git.griefed.de/Griefed/ServerPackCreator/commit/d78e3107916cb85699dd06b017a7576eb8968bd1))
+
 ## [3.5.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.1...3.5.0-alpha.2) (2022-05-19)
 
 
