@@ -1,3 +1,26 @@
+## [3.5.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.3...3.5.0-alpha.4) (2022-05-23)
+
+
+### :scissors: Refactor
+
+* **ServerPackModel params:** Remove unsudes params from constructor. ([a341f83](https://git.griefed.de/Griefed/ServerPackCreator/commit/a341f83859c00f6ba397eb7a6289113cf172d0b4))
+
+
+### 👀 Reverts
+
+* **CurseForge:** Remove mentions of CurseForge from i18n ([d876360](https://git.griefed.de/Griefed/ServerPackCreator/commit/d876360860e9eb4b75ce7f856161a9aed41a0378))
+
+
+### 💎 Improvements
+
+* **GUI conf and log upload:** Improve checks and error message when uploading files to HaseBin which are too large. Delete your `lang/lang_en_us.properties` to receive the new message if you're using SPC in english. ([5ac005e](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ac005e667c06af6aaffc0f3aadaecc1590f3043))
+* **Server-icon and properties:** Improve copying of the specified server-icon.png and server.properties as well as logging in case of errors. If the specified image is already 64x64, do not scale it unnecessarily. ([d2cb195](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2cb195cbf9cdd0a1978286ed8181692061694ad))
+
+
+### Other
+
+* **gitignore:** Add some more test resources to the gitignore. ([3481345](https://git.griefed.de/Griefed/ServerPackCreator/commit/34813454de5061899ea3f929965ec3b56a485942))
+
 ## [3.5.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.2...3.5.0-alpha.3) (2022-05-19)
 
 
