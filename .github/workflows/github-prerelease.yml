@@ -36,7 +36,7 @@ jobs:
           body: |
             Automatic pre-release of version: **${{steps.tag.outputs.tag}}**
             **Changes in this pre-release:**
-            If the changelog has not yet been copy'n'pasted by Griefed, look at [CHANGELOG.md](https://github.com/Griefed/ServerPackCreator/blob/main/CHANGELOG.md)
+            If the changelog has not yet been copy'n'pasted by Griefed, look at the CHANGELOG.md in the branch for which this pre-release was generated, either alpha or beta,
             and look for the ${{steps.tag.outputs.tag}} tag.
           draft: false
           prerelease: true
