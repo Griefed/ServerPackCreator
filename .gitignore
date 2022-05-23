@@ -192,3 +192,5 @@ backend/main/resources/VERSION.txt
 /forge_tests/
 /plugins/
 /set_env.ps1
+/backend/test/resources/forge_tests_copy/
+/backend/test/resources/fabric_tests_copy/
