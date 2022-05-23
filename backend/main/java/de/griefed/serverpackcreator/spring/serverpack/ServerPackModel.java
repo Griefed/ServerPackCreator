@@ -76,7 +76,7 @@ public class ServerPackModel extends ConfigurationModel {
      * @param dateCreated The date and time at which this server pack was requested for generation.
      * @param lastModified The date and time this server pack was last modified. Be it either due to regeneration or something else.
      */
-    public ServerPackModel(int id, int projectID, int fileID, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
+    public ServerPackModel(int id, String fileName, String displayName, double size, int downloads, int confirmedWorking, String status, Timestamp dateCreated, Timestamp lastModified) {
         this.id = id;
         this.fileName = fileName;
         this.fileDiskName = displayName;
