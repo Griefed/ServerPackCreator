@@ -44,16 +44,6 @@ public class ServerPackModel extends ConfigurationModel {
      * @author Griefed
      */
     public ServerPackModel() {
-
-    }
-
-    /**
-     * Constructor for our ServerPackModel using a project and file ID from a CurseForge project.
-     * @author Griefed
-     * @param projectID Integer. The project ID of the CurseForge project.
-     * @param fileID Integer. The file ID of the CurseForge project file.
-     */
-    public ServerPackModel(int projectID, int fileID) {
         this.projectName = "";
         this.fileName = "";
         this.fileDiskName = "";
