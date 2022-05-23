@@ -1467,42 +1467,46 @@ public class ServerPackHandler {
             Image scaledImage = null;
 
             try {
+
                 originalImage = ImageIO.read(new File(pathToServerIcon));
-            } catch (IOException ex) {
-                LOG.error("Error reading server-icon image.", ex);
-            }
 
-            if (originalImage != null) {
-
-                // Scale our image to 64x64
-                scaledImage = originalImage.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
-                BufferedImage outputImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-                outputImage.getGraphics().drawImage(scaledImage, 0, 0, null);
-
-
-                // Save our scaled image to disk.
-                try {
-                    ImageIO.write(outputImage, "png", iconFile);
-                } catch (IOException ex) {
-                    LOG.error("Error scaling image.", ex);
-                    LOG.error("Using default icon as fallback.");
+                if (originalImage.getHeight() == 64 && originalImage.getWidth() == 64) {
 
                     try {
 
                         FileUtils.copyFile(
-                                new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)),
+                                new File(pathToServerIcon),
                                 iconFile
                         );
 
                     } catch (IOException e) {
                         LOG.error("An error occurred trying to copy the server-icon.", e);
                     }
+
+                } else {
+
+                    // Scale our image to 64x64
+                    scaledImage = originalImage.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                    BufferedImage outputImage = new BufferedImage(scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+                    outputImage.getGraphics().drawImage(scaledImage, 0, 0, null);
+
+
+                    // Save our scaled image to disk.
+                    try {
+                        ImageIO.write(outputImage, "png", iconFile);
+
+                    } catch (IOException ex) {
+
+                        LOG.error("Error scaling image.", ex);
+                    }
                 }
-            } else {
-                LOG.error("originalImage is null. Check the source file. Was it wrongly converted to it's current file-format? Is it malformed? Corrupted?");
+
+            } catch (Exception ex) {
+                LOG.error("Error reading server-icon image.", ex);
             }
 
-        } else {
+        } else if (pathToServerIcon.length() == 0) {
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.icon"));
 
@@ -1516,9 +1520,12 @@ public class ServerPackHandler {
             } catch (IOException ex) {
                 LOG.error("An error occurred trying to copy the server-icon.", ex);
             }
+
+        } else {
+
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.servericon"), pathToServerIcon));
+
         }
-
-
     }
 
     /**
@@ -1545,7 +1552,9 @@ public class ServerPackHandler {
             } catch (IOException ex) {
                 LOG.error("An error occurred trying to copy the server.properties-file.", ex);
             }
-        } else {
+
+        } else if (pathToServerProperties.length() == 0) {
+
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.properties"));
 
@@ -1559,6 +1568,11 @@ public class ServerPackHandler {
             } catch (IOException ex) {
                 LOG.error("An error occurred trying to copy the server.properties-file.", ex);
             }
+
+        } else {
+
+            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.serverproperties"), pathToServerProperties));
+
         }
     }
 

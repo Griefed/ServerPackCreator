@@ -12,11 +12,13 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -51,7 +53,7 @@ class ServerPackHandlerTest {
     }
 
     @Test
-    void runTest() throws IOException {
+    void runTest() {
         ConfigurationModel configurationModel = new ConfigurationModel();
         CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator.conf"), configurationModel, true);
         SERVERPACKHANDLER.run(configurationModel);
@@ -70,6 +72,56 @@ class ServerPackHandlerTest {
         try {
             Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("server-packs/forge_tests_server_pack.zip"), REPLACE_EXISTING);
         } catch (Exception ignored) {}
+
+        try (InputStream inputStream = Files.newInputStream(Paths.get("server-packs/forge_tests/server.properties"))) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("allow-flight")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("allow-nether")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("broadcast-console-to-ops")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("broadcast-rcon-to-ops")));
+            Assertions.assertEquals("easy",properties.getProperty("difficulty"));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("enable-command-block")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("enable-jmx-monitoring")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("enable-query")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("enable-rcon")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("enable-status")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("enforce-whitelist")));
+            Assertions.assertEquals(100,Integer.parseInt(properties.getProperty("entity-broadcast-range-percentage")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("force-gamemode")));
+            Assertions.assertEquals(2,Integer.parseInt(properties.getProperty("function-permission-level")));
+            Assertions.assertEquals("survival",properties.getProperty("gamemode"));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("generate-structures")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("hardcore")));
+            Assertions.assertEquals("world",properties.getProperty("level-name"));
+            Assertions.assertEquals("skyblockbuilder:custom_skyblock",properties.getProperty("level-type"));
+            Assertions.assertEquals(256,Integer.parseInt(properties.getProperty("max-build-height")));
+            Assertions.assertEquals(10,Integer.parseInt(properties.getProperty("max-players")));
+            Assertions.assertEquals(120000,Integer.parseInt(properties.getProperty("max-tick-time")));
+            Assertions.assertEquals(29999984,Integer.parseInt(properties.getProperty("max-world-size")));
+            Assertions.assertEquals("A Minecraft Server",properties.getProperty("motd"));
+            Assertions.assertEquals(256,Integer.parseInt(properties.getProperty("network-compression-threshold")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("online-mode")));
+            Assertions.assertEquals(4,Integer.parseInt(properties.getProperty("op-permission-level")));
+            Assertions.assertEquals(0,Integer.parseInt(properties.getProperty("player-idle-timeout")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("prevent-proxy-connections")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("pvp")));
+            Assertions.assertEquals(25565,Integer.parseInt(properties.getProperty("query.port")));
+            Assertions.assertEquals(0,Integer.parseInt(properties.getProperty("rate-limit")));
+            Assertions.assertEquals(25575,Integer.parseInt(properties.getProperty("rcon.port")));
+            Assertions.assertEquals(25565,Integer.parseInt(properties.getProperty("server-port")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("snooper-enabled")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("spawn-animals")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("spawn-monsters")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("spawn-npcs")));
+            Assertions.assertEquals(16,Integer.parseInt(properties.getProperty("spawn-protection")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("sync-chunk-writes")));
+            Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("use-native-transport")));
+            Assertions.assertEquals(10,Integer.parseInt(properties.getProperty("view-distance")));
+            Assertions.assertFalse(Boolean.parseBoolean(properties.getProperty("white-list")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -101,7 +153,7 @@ class ServerPackHandlerTest {
     }
 
     @Test
-    void runServerPackTest() throws IOException {
+    void runServerPackTest() {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",
@@ -156,7 +208,7 @@ class ServerPackHandlerTest {
     }
 
     @Test
-    void runServerPackTestOldMinecraftVersion() throws IOException {
+    void runServerPackTestOldMinecraftVersion() {
         List<String> clientMods = new ArrayList<>(Arrays.asList(
                 "AmbientSounds",
                 "BackTools",

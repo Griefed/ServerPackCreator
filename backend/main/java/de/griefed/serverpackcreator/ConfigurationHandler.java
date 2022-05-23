@@ -116,44 +116,6 @@ public class ConfigurationHandler {
     }
 
     /**
-     * Check the passed {@link ConfigurationModel}. If any check returns <code>true</code>
-     * then the server pack will not be created. In order to find out which check failed, the user has to check their
-     * serverpackcreator.log in the logs-directory.<br>
-     * Does not create a modpack if a CurseForge project and file is specified.
-     * @author Griefed
-     * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack. Can be used to further display or use any information within, as it may be changed
-     * or otherwise altered by this method.
-     * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
-     * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
-     */
-    public boolean checkConfiguration(@NotNull ConfigurationModel configurationModel, boolean quietCheck) {
-
-        List<String> encounteredErrors = new ArrayList<>(100);
-
-        return checkConfiguration(configurationModel, encounteredErrors, false, quietCheck);
-    }
-
-    /**
-     * Check the passed configuration-file. If any check returns <code>true</code>
-     * then the server pack will not be created. In order to find out which check failed, the user has to check their
-     * serverpackcreator.log in the logs-directory.<br>
-     * Does not create a modpack if a CurseForge project and file is specified.
-     * @author Griefed
-     * @param configFile File. The configuration file to check. Must either be an existing file to load a configuration
-     *        from or null if you want to use the passed configuration model.
-     * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
-     * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
-     */
-    public boolean checkConfiguration(@NotNull File configFile, boolean quietCheck) {
-
-        List<String> encounteredErrors = new ArrayList<>(100);
-
-        ConfigurationModel configurationModel = new ConfigurationModel();
-
-        return checkConfiguration(configFile, configurationModel, encounteredErrors, false, quietCheck);
-    }
-
-    /**
      * Check the passed configuration-file. If any check returns <code>true</code>
      * then the server pack will not be created. In order to find out which check failed, the user has to check their
      * serverpackcreator.log in the logs-directory.<br>
@@ -172,14 +134,32 @@ public class ConfigurationHandler {
 
         ConfigurationModel configurationModel = new ConfigurationModel();
 
-        return checkConfiguration(configFile, configurationModel, encounteredErrors, false, quietCheck);
+        return checkConfiguration(configFile, configurationModel, encounteredErrors, quietCheck);
     }
 
     /**
      * Check the passed configuration-file. If any check returns <code>true</code>
      * then the server pack will not be created. In order to find out which check failed, the user has to check their
-     * serverpackcreator.log in the logs-directory.<br>
-     * Does not create a modpack if a CurseForge project and file is specified.
+     * serverpackcreator.log in the logs-directory.
+     * @author Griefed
+     * @param configFile File. The configuration file to check. Must either be an existing file to load a configuration
+     *        from or null if you want to use the passed configuration model.
+     * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
+     * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
+     */
+    public boolean checkConfiguration(@NotNull File configFile, boolean quietCheck) {
+
+        List<String> encounteredErrors = new ArrayList<>(100);
+
+        ConfigurationModel configurationModel = new ConfigurationModel();
+
+        return checkConfiguration(configFile, configurationModel, encounteredErrors, quietCheck);
+    }
+
+    /**
+     * Check the passed configuration-file. If any check returns <code>true</code>
+     * then the server pack will not be created. In order to find out which check failed, the user has to check their
+     * serverpackcreator.log in the logs-directory.
      * @author Griefed
      * @param configFile File. The configuration file to check. Must either be an existing file to load a configuration
      *        from or null if you want to use the passed configuration model.
@@ -192,47 +172,7 @@ public class ConfigurationHandler {
 
         List<String> encounteredErrors = new ArrayList<>(100);
 
-        return checkConfiguration(configFile, configurationModel, encounteredErrors, false, quietCheck);
-    }
-
-    /**
-     * Check the passed configuration-file. If any check returns <code>true</code>
-     * then the server pack will not be created. In order to find out which check failed, the user has to check their
-     * serverpackcreator.log in the logs-directory.
-     * @author Griefed
-     * @param configFile File. The configuration file to check. Must either be an existing file to load a configuration
-     *        from or null if you want to use the passed configuration model.
-     * @param downloadAndCreateModpack Boolean. Whether the CurseForge modpack should be downloaded and created.
-     * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
-     * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
-     */
-    public boolean checkConfiguration(@NotNull File configFile, boolean downloadAndCreateModpack, boolean quietCheck) {
-
-        List<String> encounteredErrors = new ArrayList<>(100);
-
-        ConfigurationModel configurationModel = new ConfigurationModel();
-
-        return checkConfiguration(configFile, configurationModel, encounteredErrors, downloadAndCreateModpack, quietCheck);
-    }
-
-    /**
-     * Check the passed configuration-file. If any check returns <code>true</code>
-     * then the server pack will not be created. In order to find out which check failed, the user has to check their
-     * serverpackcreator.log in the logs-directory.
-     * @author Griefed
-     * @param configFile File. The configuration file to check. Must either be an existing file to load a configuration
-     *        from or null if you want to use the passed configuration model.
-     * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack. Can be used to further display or use any information within, as it may be changed
-     * or otherwise altered by this method.
-     * @param downloadAndCreateModpack Boolean. Whether the CurseForge modpack should be downloaded and created.
-     * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
-     * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
-     */
-    public boolean checkConfiguration(@NotNull File configFile, @NotNull ConfigurationModel configurationModel, boolean downloadAndCreateModpack, boolean quietCheck) {
-
-        List<String> encounteredErrors = new ArrayList<>(100);
-
-        return checkConfiguration(configFile, configurationModel, encounteredErrors, downloadAndCreateModpack, quietCheck);
+        return checkConfiguration(configFile, configurationModel, encounteredErrors, quietCheck);
     }
 
     /**
@@ -242,15 +182,14 @@ public class ConfigurationHandler {
      * @author Griefed
      * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack. Can be used to further display or use any information within, as it may be changed
      * or otherwise altered by this method.
-     * @param downloadAndCreateModpack Boolean. Whether the CurseForge modpack should be downloaded and created.
      * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
      * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
      */
-    public boolean checkConfiguration(@NotNull ConfigurationModel configurationModel, boolean downloadAndCreateModpack, boolean quietCheck) {
+    public boolean checkConfiguration(@NotNull ConfigurationModel configurationModel, boolean quietCheck) {
 
         List<String> encounteredErrors = new ArrayList<>(100);
 
-        return checkConfiguration(configurationModel, encounteredErrors, downloadAndCreateModpack, quietCheck);
+        return checkConfiguration(configurationModel, encounteredErrors, quietCheck);
     }
 
     /**
@@ -266,11 +205,10 @@ public class ConfigurationHandler {
      *                          to the console and log after all checks have run. Gives the user more detail on what
      *                          went wrong at which part of their configuration. Can be used to display the errors, if any were encountered,
      *                          in a UI or be printed into the console or whatever have you.
-     * @param downloadAndCreateModpack Boolean. Whether the CurseForge modpack should be downloaded and created.
      * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
      * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
      */
-    public boolean checkConfiguration(@NotNull File configFile, @NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean downloadAndCreateModpack, boolean quietCheck) {
+    public boolean checkConfiguration(@NotNull File configFile, @NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean quietCheck) {
 
         FileConfig config = null;
 
@@ -316,7 +254,7 @@ public class ConfigurationHandler {
 
         }
 
-        return checkConfiguration(configurationModel, encounteredErrors, downloadAndCreateModpack, quietCheck);
+        return checkConfiguration(configurationModel, encounteredErrors, quietCheck);
 
     }
 
@@ -335,11 +273,10 @@ public class ConfigurationHandler {
      *                          to the console and log after all checks have run. Gives the user more detail on what
      *                          went wrong at which part of their configuration. Can be used to display the errors, if any were encountered,
      *                          in a UI or be printed into the console or whatever have you.
-     * @param downloadAndCreateModpack Boolean. Whether the CurseForge modpack, if specified, should be downloaded and created.
      * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs. Pass false to quietly check the configuration.
      * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
-    public boolean checkConfiguration(@NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean downloadAndCreateModpack, boolean quietCheck) {
+    public boolean checkConfiguration(@NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean quietCheck) {
         boolean configHasError = false;
 
         sanitizeLinks(configurationModel);

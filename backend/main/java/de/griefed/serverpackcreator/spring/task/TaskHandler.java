@@ -131,7 +131,7 @@ public class TaskHandler {
 
             try {
 
-                if (!CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, encounteredErrors, false, false)) {
+                if (!CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, encounteredErrors, false)) {
 
                     serverPackModel.setFileName(serverPackModel.getModpackDir().substring(serverPackModel.getModpackDir().lastIndexOf("/") + 1));
 

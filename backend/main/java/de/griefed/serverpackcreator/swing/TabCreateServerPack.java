@@ -1781,7 +1781,7 @@ public class TabCreateServerPack extends JComponent {
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(() -> {
 
-            if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), configurationModel, encounteredErrors, false,  true)) {
+            if (!CONFIGURATIONHANDLER.checkConfiguration(new File("./work/temporaryConfig.conf"), configurationModel, encounteredErrors, true)) {
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.checked"));

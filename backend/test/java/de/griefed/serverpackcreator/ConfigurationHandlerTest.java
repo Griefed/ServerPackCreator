@@ -11,9 +11,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 class ConfigurationHandlerTest {
 
@@ -307,13 +310,13 @@ class ConfigurationHandlerTest {
 
     @Test
     void checkConfigurationFileNoDownloadTest() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"),false,true));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"),true));
     }
 
     @Test
     void checkConfigurationFileAndModelTest() {
         ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), configurationModel, false,true));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), configurationModel,true));
         Assertions.assertEquals("./backend/test/resources/forge_tests", configurationModel.getModpackDir());
         Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
         Assertions.assertEquals("Forge",configurationModel.getModLoader());
@@ -323,7 +326,7 @@ class ConfigurationHandlerTest {
     @Test
     void checkConfigurationFileModelExtendedParamsTest() {
         ConfigurationModel configurationModel = new ConfigurationModel();
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), configurationModel,new ArrayList<>(),false,false));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), configurationModel,new ArrayList<>(),false));
         Assertions.assertEquals("./backend/test/resources/forge_tests", configurationModel.getModpackDir());
         Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
         Assertions.assertEquals("Forge",configurationModel.getModLoader());
@@ -376,7 +379,7 @@ class ConfigurationHandlerTest {
         configurationModel.setModLoader("Forge");
         configurationModel.setModLoaderVersion("36.1.2");
         configurationModel.setMinecraftVersion("1.16.5");
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,new ArrayList<>(),false,true));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,new ArrayList<>(),true));
         Assertions.assertEquals("./backend/test/resources/forge_tests", configurationModel.getModpackDir());
         Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
         Assertions.assertEquals("Forge",configurationModel.getModLoader());
