@@ -314,7 +314,6 @@ public class ApplicationProperties extends Properties {
          */
         if (new File("serverpackcreator.properties").exists()) {
             try (InputStream inputStream = Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
-                new Properties();
                 load(inputStream);
             } catch (IOException ex) {
                 LOG.error("Couldn't read properties file.", ex);
@@ -426,7 +425,6 @@ public class ApplicationProperties extends Properties {
     public ApplicationProperties reload() {
 
         try (InputStream inputStream = Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
-            new Properties();
             load(inputStream);
         } catch (
                 IOException ex) {
