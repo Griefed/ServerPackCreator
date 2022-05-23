@@ -89,7 +89,6 @@ public class MainMenuBar extends Component {
 
     private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
     private final Dimension ABOUTDIMENSION = new Dimension(925,520);
-    private final Dimension FILETOOLARGEDIMENSION = new Dimension(200,10);
 
     private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/help.png")));
     private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
@@ -97,20 +96,16 @@ public class MainMenuBar extends Component {
     private final JMenuBar MENUBAR = new JMenuBar();
 
     private final String ABOUTWINDOWTEXT;
-    private final String FILETOOLARGETEXT;
-    private final String FILETOOLARGETITLE;
 
     private final String[] HASTEOPTIONS = new String[3];
 
     private final StyledDocument ABOUTWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument CONFIGWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument SPCLOGWINDOWDOCUMENT = new DefaultStyledDocument();
-    private final StyledDocument FILETOOLARGEWINDOWDOCUMENT = new DefaultStyledDocument();
 
     private final SimpleAttributeSet ABOUTATTRIBUTESET = new SimpleAttributeSet();
     private final SimpleAttributeSet CONFIGATTRIBUTESET = new SimpleAttributeSet();
     private final SimpleAttributeSet SPCLOGATTRIBUTESET = new SimpleAttributeSet();
-    private final SimpleAttributeSet FILETOOLARGEATTRIBUTESET = new SimpleAttributeSet();
 
     private final JTextPane ABOUTWINDOWTEXTPANE = new JTextPane(ABOUTWINDOWDOCUMENT);
     private final JTextPane CONFIGWINDOWTEXTPANE = new JTextPane(CONFIGWINDOWDOCUMENT);
@@ -285,33 +280,6 @@ public class MainMenuBar extends Component {
         SPCLOGWINDOWDOCUMENT.setParagraphAttributes(0, SPCLOGWINDOWDOCUMENT.getLength(), SPCLOGATTRIBUTESET, false);
         SPCLOGWINDOWTEXTPANE.addHierarchyListener(e1 -> {
             Window window = SwingUtilities.getWindowAncestor(SPCLOGWINDOWTEXTPANE);
-            if (window instanceof Dialog) {
-                Dialog dialog = (Dialog) window;
-                if (!dialog.isResizable()) {
-                    dialog.setResizable(true);
-                }
-            }
-        });
-
-        FILETOOLARGETEXT = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolarge");
-        FILETOOLARGETITLE = LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolargetitle");
-        FILETOOLARGEWINDOWTEXTPANE.setOpaque(false);
-        FILETOOLARGEWINDOWTEXTPANE.setEditable(false);
-        FILETOOLARGEWINDOWTEXTPANE.setMinimumSize(FILETOOLARGEDIMENSION);
-        FILETOOLARGEWINDOWTEXTPANE.setPreferredSize(FILETOOLARGEDIMENSION);
-        FILETOOLARGEWINDOWTEXTPANE.setMaximumSize(FILETOOLARGEDIMENSION);
-        StyleConstants.setBold(FILETOOLARGEATTRIBUTESET, true);
-        StyleConstants.setFontSize(FILETOOLARGEATTRIBUTESET, 14);
-        FILETOOLARGEWINDOWTEXTPANE.setCharacterAttributes(FILETOOLARGEATTRIBUTESET, true);
-        StyleConstants.setAlignment(FILETOOLARGEATTRIBUTESET, StyleConstants.ALIGN_LEFT);
-        FILETOOLARGEWINDOWDOCUMENT.setParagraphAttributes(0, FILETOOLARGEWINDOWDOCUMENT.getLength(), FILETOOLARGEATTRIBUTESET, false);
-        try {
-            FILETOOLARGEWINDOWDOCUMENT.insertString(0, FILETOOLARGETEXT, FILETOOLARGEATTRIBUTESET);
-        } catch (BadLocationException ex) {
-            LOG.error("Error inserting text into aboutDocument.", ex);
-        }
-        FILETOOLARGEWINDOWTEXTPANE.addHierarchyListener(e1 -> {
-            Window window = SwingUtilities.getWindowAncestor(FILETOOLARGEWINDOWTEXTPANE);
             if (window instanceof Dialog) {
                 Dialog dialog = (Dialog) window;
                 if (!dialog.isResizable()) {
@@ -647,7 +615,7 @@ public class MainMenuBar extends Component {
     private void actionEventUploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
 
-        if (checkFileSize(new File("logs/serverpackcreator.log"))) {
+        if (hasteBinPreChecks(new File("logs/serverpackcreator.log"))) {
             String urltoHasteBin = createHasteBinFromFile(new File("logs/serverpackcreator.log"));
             String textContent = String.format("URL: %s", urltoHasteBin);
 
@@ -697,7 +665,7 @@ public class MainMenuBar extends Component {
     private void actionEventUploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Upload Configuration to HasteBin.");
 
-        if (checkFileSize(new File("serverpackcreator.conf"))) {
+        if (hasteBinPreChecks(new File("serverpackcreator.conf"))) {
 
             String urltoHasteBin = createHasteBinFromFile(new File("serverpackcreator.conf"));
             String textContent = String.format("URL: %s", urltoHasteBin);
@@ -747,8 +715,8 @@ public class MainMenuBar extends Component {
         MATERIALTEXTPANEUI.installUI(FILETOOLARGEWINDOWTEXTPANE);
         JOptionPane.showConfirmDialog(
                 FRAME_SERVERPACKCREATOR,
-                FILETOOLARGEWINDOWTEXTPANE,
-                FILETOOLARGETITLE,
+                LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolarge"),
+                LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolargetitle"),
                 JOptionPane.DEFAULT_OPTION,
                 JOptionPane.WARNING_MESSAGE,
                 ICON_HASTEBIN
@@ -1155,16 +1123,22 @@ public class MainMenuBar extends Component {
      * @param fileToCheck The file or directory to check.
      * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
      */
-    private boolean checkFileSize(File fileToCheck) {
+    private boolean hasteBinPreChecks(File fileToCheck) {
         long fileSize = FileUtils.sizeOf(fileToCheck);
 
-        if (fileSize < 10000000) {
-            LOG.debug("Smaller. " + fileSize + " byte.");
-            return true;
-        } else {
-            LOG.debug("Bigger. " + fileSize + " byte.");
-            return false;
+        try {
+            if (fileSize < 10000000 && FileUtils.readFileToString(fileToCheck, StandardCharsets.UTF_8).length() < 400000) {
+                LOG.debug("Smaller. " + fileSize + " byte.");
+                return true;
+            } else {
+                LOG.debug("Bigger. " + fileSize + " byte.");
+                return false;
+            }
+        } catch (IOException ex) {
+            LOG.error("Couldn't read file: " + fileToCheck, ex);
         }
+
+        return false;
     }
 
     /**
