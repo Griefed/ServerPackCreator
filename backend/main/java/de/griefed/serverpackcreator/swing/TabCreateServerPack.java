@@ -43,7 +43,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.*;
 import java.awt.*;
@@ -100,7 +99,7 @@ public class TabCreateServerPack extends JComponent {
     private final JTextPane LAZYMODETEXTPANE = new JTextPane(LAZYMODEDOCUMENT);
 
     private final ImageIcon FOLDERICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/folder.png")));
-    private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/start_generation.png")));
+    //private final ImageIcon STARTGENERATIONICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/start_generation.png")));
     private final BufferedImage GENERATE = ImageIO.read(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/start_generation.png")));
     private final int ERROR_ICON_SIZE = 18;
     private final BufferedImage ERROR_ICON_BASE = ImageIO.read(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/error.png")));
@@ -113,7 +112,7 @@ public class TabCreateServerPack extends JComponent {
     private final ImageIcon ERROR_ICON_SERVERPROPERTIES = new ImageIcon(ERROR_ICON_BASE.getScaledInstance(ERROR_ICON_SIZE, ERROR_ICON_SIZE, Image.SCALE_SMOOTH));
 
     private final Dimension FOLDERBUTTONDIMENSION = new Dimension(24,24);
-    private final Dimension STARTDIMENSION = new Dimension(64,64);
+    //private final Dimension STARTDIMENSION = new Dimension(64,64);
     private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
 
     private final JButton BUTTON_MODPACKDIRECTORY = new JButton();
@@ -174,7 +173,8 @@ public class TabCreateServerPack extends JComponent {
 
     private final File DIRECTORY_CHOOSER = new File(".");
 
-    private JLabel labelGenerateServerPack;
+    private final String[] NONE;
+
     private JLabel labelModpackDir;
     private JLabel labelClientMods;
     private JLabel labelCopyDirs;
@@ -215,9 +215,6 @@ public class TabCreateServerPack extends JComponent {
 
     private JRadioButton forgeRadioButton;
     private JRadioButton fabricRadioButton;
-
-    private final Color PRIMARY = new Color(50,83,88);
-    private final Color SECONDARY = new Color(192, 255, 238);
 
     /**
      * <strong>Constructor</strong><p>
@@ -271,10 +268,10 @@ public class TabCreateServerPack extends JComponent {
 
         if (injectedVersionMeta == null) {
             this.VERSIONMETA = new VersionMeta(
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                    APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
             );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
@@ -343,6 +340,8 @@ public class TabCreateServerPack extends JComponent {
         } catch (BadLocationException ex) {
             LOG.error("Error inserting text into aboutDocument.", ex);
         }
+
+        this.NONE = new String[] {LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.forge.none")};
     }
 
     /**
@@ -446,12 +445,7 @@ public class TabCreateServerPack extends JComponent {
         CREATESERVERPACKPANEL.add(labelModpackDir, GRIDBAGCONSTRAINTS);
 
         TEXTFIELD_MODPACKDIRECTORY.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
-        TEXTFIELD_MODPACKDIRECTORY.addDocumentListener(new SimpleDocumentListener() {
-            @Override
-            public void update(DocumentEvent e) {
-                validateModpackDir();
-            }
-        });
+        TEXTFIELD_MODPACKDIRECTORY.addDocumentListener((SimpleDocumentListener) e -> validateModpackDir());
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 1;
@@ -472,12 +466,7 @@ public class TabCreateServerPack extends JComponent {
 
         TEXTFIELD_SERVERPACKSUFFIX.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelsuffix.tip"));
         ERROR_ICON_SERVERPACK_SUFFIX.setDescription(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textsuffix.error"));
-        TEXTFIELD_SERVERPACKSUFFIX.addDocumentListener(new SimpleDocumentListener() {
-            @Override
-            public void update(DocumentEvent e) {
-                validateSuffix();
-            }
-        });
+        TEXTFIELD_SERVERPACKSUFFIX.addDocumentListener((SimpleDocumentListener) e -> validateSuffix());
 
         GRIDBAGCONSTRAINTS.gridwidth = 1;
         GRIDBAGCONSTRAINTS.gridx = 4;
@@ -502,12 +491,9 @@ public class TabCreateServerPack extends JComponent {
         //TEXTAREA_CLIENTSIDEMODS.setFont(new Font("Arial", Font.PLAIN, 14));
         TEXTAREA_CLIENTSIDEMODS.setFont(new Font("Noto Sans Display Regular", Font.PLAIN, 15));
         ERROR_ICON_CLIENTSIDE_MODS.setDescription(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textclientmods.error"));
-        TEXTAREA_CLIENTSIDEMODS.addDocumentListener(new SimpleDocumentListener() {
-            @Override
-            public void update(DocumentEvent e) {
-                //Must not end with , and not contain illegal characters
-                validateClientMods();
-            }
+        TEXTAREA_CLIENTSIDEMODS.addDocumentListener((SimpleDocumentListener) e -> {
+            //Must not end with , and not contain illegal characters
+            validateClientMods();
         });
         CLIENTSIDEMODS_JPANEL.setLayout(new GridBagLayout());
         TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.anchor = GridBagConstraints.CENTER;
@@ -540,12 +526,7 @@ public class TabCreateServerPack extends JComponent {
         CREATESERVERPACKPANEL.add(labelCopyDirs, GRIDBAGCONSTRAINTS);
 
         TEXTFIELD_COPYDIRECTORIES.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
-        TEXTFIELD_COPYDIRECTORIES.addDocumentListener(new SimpleDocumentListener() {
-            @Override
-            public void update(DocumentEvent e) {
-                validateCopyDirs();
-            }
-        });
+        TEXTFIELD_COPYDIRECTORIES.addDocumentListener((SimpleDocumentListener) e -> validateCopyDirs());
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 5;
@@ -569,12 +550,7 @@ public class TabCreateServerPack extends JComponent {
         TEXTFIELD_SERVERICONPATH.setText("");
         TEXTFIELD_SERVERICONPATH.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textfield.iconpath"));
         ERROR_ICON_SERVERICON.setDescription(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textfield.iconpath.error"));
-        TEXTFIELD_SERVERICONPATH.addDocumentListener(new SimpleDocumentListener() {
-            @Override
-            public void update(DocumentEvent e) {
-                validateServerIcon();
-            }
-        });
+        TEXTFIELD_SERVERICONPATH.addDocumentListener((SimpleDocumentListener) e -> validateServerIcon());
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 7;
@@ -594,12 +570,7 @@ public class TabCreateServerPack extends JComponent {
         TEXTFIELD_SERVERPROPERTIESPATH.setText("");
         TEXTFIELD_SERVERPROPERTIESPATH.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textfield.propertiespath"));
         ERROR_ICON_SERVERPROPERTIES.setDescription(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textfield.propertiespath.error"));
-        TEXTFIELD_SERVERPROPERTIESPATH.addDocumentListener(new SimpleDocumentListener() {
-            @Override
-            public void update(DocumentEvent e) {
-                validateServerProperties();
-            }
-        });
+        TEXTFIELD_SERVERPROPERTIESPATH.addDocumentListener((SimpleDocumentListener) e -> validateServerProperties());
 
         GRIDBAGCONSTRAINTS.gridx = 3;
         GRIDBAGCONSTRAINTS.gridy = 7;
@@ -622,12 +593,7 @@ public class TabCreateServerPack extends JComponent {
 
         TEXTFIELD_JAVAPATH.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
         ERROR_ICON_JAVAPATH.setDescription(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textjavapath.error"));
-        TEXTFIELD_JAVAPATH.addDocumentListener(new SimpleDocumentListener() {
-            @Override
-            public void update(DocumentEvent e) {
-                validateJavaPath();
-            }
-        });
+        TEXTFIELD_JAVAPATH.addDocumentListener((SimpleDocumentListener) e -> validateJavaPath());
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 9;
@@ -711,7 +677,12 @@ public class TabCreateServerPack extends JComponent {
         COMBOBOX_FABRICVERSIONS.addActionListener(this::actionEventComboBoxFabricVersions);
         COMBOBOX_FABRICVERSIONS.setVisible(false);
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONMETA.forge().availableForgeVersionsArrayDescending(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()).get());
+        if (VERSIONMETA.forge().availableForgeVersionsArrayDescending(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()).isPresent()) {
+            forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONMETA.forge().availableForgeVersionsArrayDescending(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()).get());
+        } else {
+            forgeComboBoxModel = new DefaultComboBoxModel<>(this.NONE);
+        }
+
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -962,7 +933,6 @@ public class TabCreateServerPack extends JComponent {
         panel.add(statusLabelLine5, GRIDBAGCONSTRAINTS);
 
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
-        GRIDBAGCONSTRAINTS.insets = FIVE_ZERO_FIVE_ZERO;
         GRIDBAGCONSTRAINTS.gridx = 1;
         GRIDBAGCONSTRAINTS.gridy = 20;
         GRIDBAGCONSTRAINTS.gridwidth = 5;
@@ -972,7 +942,6 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.insets = new Insets(-30,0,0,0);
         GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
 
-        //CREATESERVERPACKPANEL.add(labelGenerateServerPack, GRIDBAGCONSTRAINTS);
         CREATESERVERPACKPANEL.add(panel, GRIDBAGCONSTRAINTS);
 
         GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_TEN;
@@ -1334,7 +1303,7 @@ public class TabCreateServerPack extends JComponent {
      * @param actionEvent The event which triggers this method.
      */
     private void actionEventCheckBoxServer(ActionEvent actionEvent) {
-        if (checkBoxServer.isSelected() && TEXTFIELD_JAVAPATH.getText().equals("")) {
+        if (checkBoxServer.isSelected() && TEXTFIELD_JAVAPATH.getText().isEmpty()) {
             switch (JOptionPane.showConfirmDialog(
                     CREATESERVERPACKPANEL,
                     LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.confirm.message"),
@@ -1390,7 +1359,15 @@ public class TabCreateServerPack extends JComponent {
      */
     void changeForgeVersionListDependingOnMinecraftVersion(String chosenMinecraftVersion) {
 
-        forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get());
+        if (VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).isPresent()) {
+
+            forgeComboBoxModel = new DefaultComboBoxModel<>(VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get());
+
+        } else {
+
+            forgeComboBoxModel = new DefaultComboBoxModel<>(this.NONE);
+
+        }
 
         COMBOBOX_FORGEVERSIONS.setModel(forgeComboBoxModel);
         COMBOBOX_FORGEVERSIONS.setSelectedIndex(0);
@@ -1795,7 +1772,7 @@ public class TabCreateServerPack extends JComponent {
                 //labelGenerateServerPack.setText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
                 updateStatus(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.writing"));
 
-                saveConfig(APPLICATIONPROPERTIES.FILE_CONFIG);
+                saveConfig(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.generating"));
@@ -1969,7 +1946,7 @@ public class TabCreateServerPack extends JComponent {
             try {
 
                 try {
-                    if (!config.getOrElse("minecraftVersion", "").equals("")) {
+                    if (!config.getOrElse("minecraftVersion", "").isEmpty()) {
                         chosenMinecraftVersion = config.get("minecraftVersion");
                     } else {
                         chosenMinecraftVersion = VERSIONMETA.minecraft().latestRelease().version();
@@ -2003,7 +1980,7 @@ public class TabCreateServerPack extends JComponent {
 
                     updateModloaderGuiComponents(true, false, "Fabric");
 
-                    if (!modloaderVersion.equals("")) {
+                    if (!modloaderVersion.isEmpty()) {
 
                         // Go through all Fabric versions and check if specified version matches official version list
                         for (int i = 0; i < VERSIONMETA.fabric().loaderVersionsArrayDescending().length; i++) {
@@ -2023,13 +2000,18 @@ public class TabCreateServerPack extends JComponent {
                     // If not Fabric, then assume Forge
                 } else {
 
-                    String[] forgever = VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get();
+                    String[] forgever;
+                    if (VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).isPresent()) {
+                        forgever = VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get();
+                    } else {
+                        forgever = NONE;
+                    }
 
                     changeForgeVersionListDependingOnMinecraftVersion(chosenMinecraftVersion);
 
                     updateModloaderGuiComponents(false, true, "Forge");
 
-                    if (!modloaderVersion.equals("")) {
+                    if (!modloaderVersion.isEmpty()) {
 
                         for (int i = 0; i < forgever.length; i++) {
 

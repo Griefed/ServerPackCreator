@@ -103,8 +103,7 @@ public class SmartScroller implements AdjustmentListener {
     public final static int START = 0;
     public final static int END = 1;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    private int viewportPosition;
+    private final int viewportPosition;
 
     private boolean adjustScrollBar = true;
 

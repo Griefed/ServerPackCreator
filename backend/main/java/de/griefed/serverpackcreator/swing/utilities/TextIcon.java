@@ -41,9 +41,9 @@ public class TextIcon implements Icon, PropertyChangeListener
         VERTICAL;
     }
 
-    private JComponent component;
+    private final JComponent component;
 
-    private Layout layout;
+    private final Layout layout;
 
     private String text;
 
@@ -70,8 +70,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *  @param component  the component to which the icon will be added
      *  @param text       the text to be rendered on the Icon
      */
-    public TextIcon(JComponent component, String text)
-    {
+    public TextIcon(JComponent component, String text) {
         this(component, text, Layout.HORIZONTAL);
     }
 
@@ -83,8 +82,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *  @param layout     specify the layout of the text. Must be one of
      *	                  the Layout enums: HORIZONTAL or VERTICAL
      */
-    public TextIcon(JComponent component, String text, Layout layout)
-    {
+    public TextIcon(JComponent component, String text, Layout layout) {
         this.component = component;
         this.layout = layout;
         setText( text );
@@ -97,8 +95,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @return the Layout enum
      */
-    public Layout getLayout()
-    {
+    public Layout getLayout() {
         return layout;
     }
 
@@ -107,8 +104,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @return the text of the Icon
      */
-    public String getText()
-    {
+    public String getText() {
         return text;
     }
 
@@ -117,8 +113,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @param text  the text to be rendered on the Icon
      */
-    public void setText(String text)
-    {
+    public void setText(String text) {
         this.text = text;
 
         calculateIconDimensions();
@@ -131,8 +126,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @return the Font used to render the text
      */
-    public Font getFont()
-    {
+    public Font getFont() {
         if (font == null)
             return component.getFont();
         else
@@ -144,8 +138,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @param font  the Font to be used for rendering the text
      */
-    public void setFont(Font font)
-    {
+    public void setFont(Font font) {
         this.font = font;
 
         calculateIconDimensions();
@@ -158,8 +151,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @return the Color used to render the text
      */
-    public Color getForeground()
-    {
+    public Color getForeground() {
         if (foreground == null)
             return component.getForeground();
         else
@@ -171,8 +163,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @param foreground  the foreground Color to be used for rendering the text
      */
-    public void setForeground(Color foreground)
-    {
+    public void setForeground(Color foreground) {
         this.foreground = foreground;
         component.repaint();
     }
@@ -182,8 +173,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @return the padding specified in pixels
      */
-    public int getPadding()
-    {
+    public int getPadding() {
         return padding;
     }
 
@@ -194,8 +184,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *
      *  @param padding  the padding amount in pixels
      */
-    public void setPadding(int padding)
-    {
+    public void setPadding(int padding) {
         this.padding = padding;
 
         calculateIconDimensions();
@@ -204,29 +193,27 @@ public class TextIcon implements Icon, PropertyChangeListener
     /**
      *  Calculate the size of the Icon using the FontMetrics of the Font.
      */
-    private void calculateIconDimensions()
-    {
+    private void calculateIconDimensions() {
         Font font = getFont();
         FontMetrics fm = component.getFontMetrics( font );
 
-        if (layout == Layout.HORIZONTAL)
-        {
+        if (layout == Layout.HORIZONTAL) {
             iconWidth = fm.stringWidth( text ) + (padding * 2);
             iconHeight = fm.getHeight();
-        }
-        else if (layout == Layout.VERTICAL)
-        {
+        } else if (layout == Layout.VERTICAL) {
+
             int maxWidth = 0;
             strings = new String[text.length()];
             stringWidths = new int[text.length()];
 
             //  Find the widest character in the text string
 
-            for (int i = 0; i < text.length(); i++)
-            {
+            for (int i = 0; i < text.length(); i++) {
+
                 strings[i] = text.substring(i, i + 1);
                 stringWidths[i] = fm.stringWidth( strings[i] );
                 maxWidth = Math.max(maxWidth, stringWidths[i]);
+
             }
 
             //  Add a minimum of 2 extra pixels, plus the leading value,
@@ -252,8 +239,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *  @return the width of the icon in pixels.
      */
     @Override
-    public int getIconWidth()
-    {
+    public int getIconWidth() {
         return iconWidth;
     }
 
@@ -263,8 +249,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *  @return the height of the icon in pixels.
      */
     @Override
-    public int getIconHeight()
-    {
+    public int getIconHeight() {
         return iconHeight;
     }
 
@@ -277,8 +262,7 @@ public class TextIcon implements Icon, PropertyChangeListener
      *  @param y the Y coordinate of the icon's top-left corner
      */
     @Override
-    public void paintIcon(Component c, Graphics g, int x, int y)
-    {
+    public void paintIcon(Component c, Graphics g, int x, int y) {
         Graphics2D g2 = (Graphics2D)g.create();
 
         //  The "desktophints" is supported in JDK6
@@ -286,33 +270,38 @@ public class TextIcon implements Icon, PropertyChangeListener
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Map map = (Map)(toolkit.getDesktopProperty("awt.font.desktophints"));
 
-        if (map != null)
-        {
+        if (map != null) {
+
             g2.addRenderingHints(map);
+
+        } else {
+
+            g2.setRenderingHint(
+                    RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+            );
         }
-        else
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
 
         g2.setFont( getFont() );
         g2.setColor( getForeground() );
         FontMetrics fm = g2.getFontMetrics();
 
-        if (layout == Layout.HORIZONTAL)
-        {
+        if (layout == Layout.HORIZONTAL) {
+
             g2.translate(x, y +	fm.getAscent());
             g2.drawString(text, padding, 0);
-        }
-        else if (layout == Layout.VERTICAL)
-        {
+
+        } else if (layout == Layout.VERTICAL) {
+
             int offsetY = fm.getAscent() - fm.getDescent() + padding;
             int incrementY = fm.getHeight() - fm.getDescent();
 
-            for (int i = 0; i < text.length(); i++)
-            {
+            for (int i = 0; i < text.length(); i++) {
+
                 int offsetX = Math.round((getIconWidth() - stringWidths[i]) / 2.0f);
                 g2.drawString(strings[i], x + offsetX, y + offsetY);
                 offsetY += incrementY;
+
             }
         }
 
@@ -321,11 +310,11 @@ public class TextIcon implements Icon, PropertyChangeListener
     //
 //  Implement the PropertyChangeListener interface
 //
-    public void propertyChange(PropertyChangeEvent e)
-    {
+    public void propertyChange(PropertyChangeEvent e) {
         //  Handle font change when using the default font
 
-        if (font == null)
+        if (font == null) {
             calculateIconDimensions();
+        }
     }
 }

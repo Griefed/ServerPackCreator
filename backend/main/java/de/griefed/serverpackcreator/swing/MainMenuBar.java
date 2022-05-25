@@ -886,7 +886,7 @@ public class MainMenuBar extends Component {
 
                 isDarkTheme = true;
 
-                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
+                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES().toPath())) {
 
                     APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
                     APPLICATIONPROPERTIES.store(outputStream, null);
@@ -909,7 +909,7 @@ public class MainMenuBar extends Component {
 
                 isDarkTheme = false;
 
-                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
+                try (OutputStream outputStream = Files.newOutputStream(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES().toPath())) {
 
                     APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
                     APPLICATIONPROPERTIES.store(outputStream, null);

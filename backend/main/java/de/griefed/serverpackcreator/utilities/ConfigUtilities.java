@@ -82,10 +82,10 @@ public class ConfigUtilities {
 
         if (injectedVersionMeta == null) {
             this.VERSIONMETA = new VersionMeta(
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                    APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
             );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
@@ -541,9 +541,9 @@ public class ConfigUtilities {
      */
     public String updateDestinationFromInstanceCfg(File instanceCfg) throws IOException {
 
-        String name = null;
+        String name;
 
-        try (InputStream inputStream = Files.newInputStream(instanceCfg.toPath());) {
+        try (InputStream inputStream = Files.newInputStream(instanceCfg.toPath())) {
 
             Properties properties = new Properties();
             properties.load(inputStream);

@@ -70,10 +70,10 @@ public class ConfigurationCreator {
 
         if (injectedVersionMeta == null) {
             this.VERSIONMETA = new VersionMeta(
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                    APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
             );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
@@ -401,7 +401,7 @@ public class ConfigurationCreator {
             System.out.print(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javaargs.enter"));
             javaArgs = reader.nextLine();
 
-            if (javaArgs.equals("")) {
+            if (javaArgs.isEmpty()) {
                 javaArgs = "empty";
             }
 
@@ -457,7 +457,7 @@ public class ConfigurationCreator {
                 includeZipCreation,
                 javaArgs,
                 serverPackSuffix,
-                APPLICATIONPROPERTIES.FILE_CONFIG
+                APPLICATIONPROPERTIES.DEFAULT_CONFIG()
         )) {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.written"));

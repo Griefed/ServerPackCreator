@@ -19,21 +19,21 @@ public class BeanConfiguration {
 
     @Bean
     public File minecraftManifest() {
-        return APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT;
+        return APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION();
     }
 
     @Bean
     public File forgeManifest() {
-        return APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE;
+        return APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION();
     }
 
     @Bean
     public File fabricManifest() {
-        return APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC;
+        return APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION();
     }
 
     @Bean
     public File fabricInstallerManifest() {
-        return APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER;
+        return APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION();
     }
 }

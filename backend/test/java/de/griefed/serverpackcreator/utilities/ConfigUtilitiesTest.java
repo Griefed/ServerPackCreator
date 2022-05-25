@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
-import de.griefed.serverpackcreator.utilities.commonutilities.BooleanUtilities;
-import de.griefed.serverpackcreator.utilities.commonutilities.ListUtilities;
-import de.griefed.serverpackcreator.utilities.commonutilities.StringUtilities;
 import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.junit.jupiter.api.Assertions;
@@ -29,14 +26,11 @@ public class ConfigUtilitiesTest {
     ConfigUtilitiesTest() throws IOException {
         LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager();
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-        BooleanUtilities BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-        ListUtilities LISTUTILITIES = new ListUtilities();
-        StringUtilities STRINGUTILITIES = new StringUtilities();
         VersionMeta VERSIONMETA = new VersionMeta(
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
         );
         this.CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES), APPLICATIONPROPERTIES, VERSIONMETA);
     }

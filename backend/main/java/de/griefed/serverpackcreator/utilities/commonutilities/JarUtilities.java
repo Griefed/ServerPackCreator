@@ -262,7 +262,7 @@ public class JarUtilities {
 
                         byte[] bytes = new byte[8192];
 
-                        int length = 0;
+                        int length;
 
                         if (inputStream != null) {
 
@@ -323,12 +323,7 @@ public class JarUtilities {
      */
     private void copyFolderFromJar(Class<?> classToCopyFrom, String source, String destination, String fileEnding) {
 
-        FileFilter fileFilter = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.toString().endsWith(fileEnding);
-            }
-        };
+        FileFilter fileFilter = pathname -> pathname.toString().endsWith(fileEnding);
 
         File[] files;
         List<String> filesFromJar = new ArrayList<>(1000);

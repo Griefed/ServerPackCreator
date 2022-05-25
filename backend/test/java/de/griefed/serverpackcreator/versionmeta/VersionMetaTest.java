@@ -12,13 +12,11 @@ public class VersionMetaTest {
 
     public VersionMetaTest() throws IOException {
         ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-/*        ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
-        SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);*/
         this.VERSIONMETA = new VersionMeta(
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
         );
     }
 

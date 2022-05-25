@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,10 +46,11 @@ public class ApplicationProperties extends Properties {
     private static final Logger LOG = LogManager.getLogger(ApplicationProperties.class);
 
     // ServerPackHandler related
-    public final File FILE_SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
-    public final File FILE_WINDOWS = new File("start.bat");
-    public final File FILE_LINUX = new File("start.sh");
-    public final File FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS = new File("user_jvm_args.txt");
+    private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
+    private final File START_SCRIPT_WINDOWS = new File("start.bat");
+    private final File START_SCRIPT_LINUX = new File("start.sh");
+    private final File USER_JVM_ARGS = new File("user_jvm_args.txt");
+
     private final String FALLBACK_MODS_DEFAULT_ASSTRING =
             "3dSkinLayers-," +
             "3dskinlayers-," +
@@ -208,24 +208,24 @@ public class ApplicationProperties extends Properties {
             "WindowedFullscreen-," +
             "WorldNameRandomizer-," +
             "yisthereautojump-";
-    public final List<String> LIST_FALLBACK_MODS_DEFAULT = new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
+    private final List<String> FALLBACK_CLIENTSIDE_MODS = new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
 
     //DefaultFiles related
-    public final File FILE_CONFIG = new File("serverpackcreator.conf");
-    public final File FILE_CONFIG_OLD = new File("creator.conf");
-    public final File FILE_SERVER_PROPERTIES = new File("server.properties");
-    public final File FILE_SERVER_ICON = new File("server-icon.png");
-    public final File FILE_MANIFEST_MINECRAFT = new File("minecraft-manifest.json");
-    public final File FILE_MANIFEST_FORGE = new File("forge-manifest.json");
-    public final File FILE_MANIFEST_FABRIC = new File("fabric-manifest.xml");
-    public final File FILE_MANIFEST_FABRIC_INSTALLER = new File("fabric-installer-manifest.xml");
-    public final File FILE_SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
+    private final File DEFAULT_CONFIG = new File("serverpackcreator.conf");
+    private final File OLD_CONFIG = new File("creator.conf");
+    private final File DEFAULT_SERVER_PROPERTIES = new File("server.properties");
+    private final File DEFAULT_SERVER_ICON = new File("server-icon.png");
+    private final File MINECRAFT_VERSION_MANIFEST = new File("minecraft-manifest.json");
+    private final File FORGE_VERSION_MANIFEST = new File("forge-manifest.json");
+    private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
+    private final File FABRIC_INSTALLER_VERSION_MANIFEST = new File("fabric-installer-manifest.xml");
+    private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
 
     //VersionLister related
-    public final File PATH_FILE_MANIFEST_MINECRAFT = new File("./work/minecraft-manifest.json");
-    public final File PATH_FILE_MANIFEST_FORGE = new File("./work/forge-manifest.json");
-    public final File PATH_FILE_MANIFEST_FABRIC = new File("./work/fabric-manifest.xml");
-    public final File PATH_FILE_MANIFEST_FABRIC_INSTALLER = new File("./work/fabric-installer-manifest.xml");
+    private final File MINECRAFT_VERSION_MANIFEST_LOCATION = new File("./work/minecraft-manifest.json");
+    private final File FORGE_VERSION_MANIFEST_LOCATION = new File("./work/forge-manifest.json");
+    private final File FABRIC_VERSION_MANIFEST_LOCATION = new File("./work/fabric-manifest.xml");
+    private final File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION = new File("./work/fabric-installer-manifest.xml");
 
     /**
      * The directory in which server packs will be generated and stored in, as well as server pack ZIP-archives.
@@ -236,7 +236,7 @@ public class ApplicationProperties extends Properties {
     /**
      * List of mods which should be excluded from server packs.
      */
-    private List<String> listFallbackMods = LIST_FALLBACK_MODS_DEFAULT;
+    private List<String> listFallbackMods = FALLBACK_CLIENTSIDE_MODS;
 
     /**
      * List of directories which should be excluded from server packs.
@@ -336,11 +336,11 @@ public class ApplicationProperties extends Properties {
         } finally {
 
             // Check tempDir for correctness. Set property and directory if it is correct and overwrite serverpackcreator.properties
-            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
+            if (tempDir != null && !tempDir.isEmpty() && new File(tempDir).isDirectory()) {
                 this.setProperty("de.griefed.serverpackcreator.configuration.directories.serverpacks",tempDir);
                 this.directoryServerPacks = tempDir;
 
-                try (OutputStream outputStream = Files.newOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
+                try (OutputStream outputStream = Files.newOutputStream(this.SERVERPACKCREATOR_PROPERTIES.toPath())) {
                     this.store(outputStream, null);
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -354,8 +354,8 @@ public class ApplicationProperties extends Properties {
 
         if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
 
-            this.listFallbackMods = this.LIST_FALLBACK_MODS_DEFAULT;
-            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.LIST_FALLBACK_MODS_DEFAULT);
+            this.listFallbackMods = this.FALLBACK_CLIENTSIDE_MODS;
+            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.FALLBACK_CLIENTSIDE_MODS);
 
         } else if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
 
@@ -443,11 +443,11 @@ public class ApplicationProperties extends Properties {
 
         } finally {
 
-            if (tempDir != null && !tempDir.equals("") && new File(tempDir).isDirectory()) {
+            if (tempDir != null && !tempDir.isEmpty() && new File(tempDir).isDirectory()) {
                 this.setProperty("de.griefed.serverpackcreator.configuration.directories.serverpacks",tempDir);
                 this.directoryServerPacks = tempDir;
 
-                try (OutputStream outputStream = Files.newOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
+                try (OutputStream outputStream = Files.newOutputStream(this.SERVERPACKCREATOR_PROPERTIES.toPath())) {
                     this.store(outputStream, null);
                 } catch (IOException ex) {
                     LOG.error("Couldn't write properties-file.", ex);
@@ -460,8 +460,8 @@ public class ApplicationProperties extends Properties {
 
         if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
 
-            this.listFallbackMods = this.LIST_FALLBACK_MODS_DEFAULT;
-            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.LIST_FALLBACK_MODS_DEFAULT);
+            this.listFallbackMods = this.FALLBACK_CLIENTSIDE_MODS;
+            LOG.debug("Fallbackmodslist property null. Using fallback: " + this.FALLBACK_CLIENTSIDE_MODS);
 
         } else if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist").contains(",")) {
 
@@ -515,6 +515,168 @@ public class ApplicationProperties extends Properties {
         this.versioncheck_prerelease = Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
 
         return this;
+    }
+
+    /**
+     * Properties file used by ServerPackCreator, containing the configuration for this instance of it.
+     * @author Griefed
+     * @return {@link File} serverpackcreator.properties-file.
+     */
+    public File SERVERPACKCREATOR_PROPERTIES() {
+        return SERVERPACKCREATOR_PROPERTIES;
+    }
+
+    /**
+     * Start script for server packs, used by Windows.
+     * @author Griefed
+     * @return {@link File} start.bat-file.
+     */
+    public File START_SCRIPT_WINDOWS() {
+        return START_SCRIPT_WINDOWS;
+    }
+
+    /**
+     * Start script for server packs, used by UNIX/Linux.
+     * @author Griefed
+     * @return {@link File} start.sh-file.
+     */
+    public File START_SCRIPT_LINUX() {
+        return START_SCRIPT_LINUX;
+    }
+
+    /**
+     * JVM args file used by Forge MC 1.17+
+     * @author Griefed
+     * @return {@link File} user_jvm_args.txt-file.
+     */
+    public File USER_JVM_ARGS() {
+        return USER_JVM_ARGS;
+    }
+
+    /**
+     * String-list of fallback clientside-only mods.
+     * @author Griefed
+     * @return {@link String}-list of fallback clientside-only mods.
+     */
+    public List<String> FALLBACK_CLIENTSIDE_MODS() {
+        return FALLBACK_CLIENTSIDE_MODS;
+    }
+
+    /**
+     * Default configuration-file for a server pack generation.
+     * @author Griefed
+     * @return {@link File} serverpackcreator.conf-file.
+     */
+    public File DEFAULT_CONFIG() {
+        return DEFAULT_CONFIG;
+    }
+
+    /**
+     * Old configuration-file used for automated migration in case anyone upgrades from 1.x.
+     * @author Griefed
+     * @return {@link File} creator.conf-file.
+     */
+    public File OLD_CONFIG() {
+        return OLD_CONFIG;
+    }
+
+    /**
+     * Default server.properties-file used by Minecraft servers.
+     * @author Griefed
+     * @return {@link File} server.properties-file.
+     */
+    public File DEFAULT_SERVER_PROPERTIES() {
+        return DEFAULT_SERVER_PROPERTIES;
+    }
+
+    /**
+     * Default server-icon.png-file used by Minecraft servers.
+     * @author Griefed
+     * @return {@link File} server-icon.png-file.
+     */
+    public File DEFAULT_SERVER_ICON() {
+        return DEFAULT_SERVER_ICON;
+    }
+
+    /**
+     * Minecraft version manifest-file.
+     * @author Griefed
+     * @return {@link File} minecraft-manifest.json-file.
+     */
+    public File MINECRAFT_VERSION_MANIFEST() {
+        return MINECRAFT_VERSION_MANIFEST;
+    }
+
+    /**
+     * Forge version manifest-file.
+     * @author Griefed
+     * @return {@link File} forge-manifest.json-file.
+     */
+    public File FORGE_VERSION_MANIFEST() {
+        return FORGE_VERSION_MANIFEST;
+    }
+
+    /**
+     * Fabric version manifest-file.
+     * @author Griefed
+     * @return {@link File} fabric-manifest.xml-file
+     */
+    public File FABRIC_VERSION_MANIFEST() {
+        return FABRIC_VERSION_MANIFEST;
+    }
+
+    /**
+     * Fabric installer version manifest-file.
+     * @author Griefed
+     * @return {@link File} fabric-installer-manifest.xml-file.
+     */
+    public File FABRIC_INSTALLER_VERSION_MANIFEST() {
+        return FABRIC_INSTALLER_VERSION_MANIFEST;
+    }
+
+    /**
+     * ServerPackCreator-database when running as a webservice.
+     * @author Griefed
+     * @return {@link File} serverpackcreator.db-file.
+     */
+    public File SERVERPACKCREATOR_DATABASE() {
+        return SERVERPACKCREATOR_DATABASE;
+    }
+
+    /**
+     * Path to the Minecraft version manifest-file, as a file.
+     * @author Griefed
+     * @return {@link File} ./work/minecraft-manifest.json
+     */
+    public File MINECRAFT_VERSION_MANIFEST_LOCATION() {
+        return MINECRAFT_VERSION_MANIFEST_LOCATION;
+    }
+
+    /**
+     * Path to the Forge version manifest-file, as a file.
+     * @author Griefed
+     * @return {@link File} ./work/forge-manifest.json
+     */
+    public File FORGE_VERSION_MANIFEST_LOCATION() {
+        return FORGE_VERSION_MANIFEST_LOCATION;
+    }
+
+    /**
+     * Path to the Fabric version manifest-file, as a file.
+     * @author Griefed
+     * @return {@link File} ./work/fabric-manifest.xml
+     */
+    public File FABRIC_VERSION_MANIFEST_LOCATION() {
+        return FABRIC_VERSION_MANIFEST_LOCATION;
+    }
+
+    /**
+     * Path to the Fabric installer version manifest-file, as a file.
+     * @author Griefed
+     * @return {@link File} ./work/fabric-installer-manifest.xml
+     */
+    public File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION() {
+        return FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION;
     }
 
     /**
@@ -646,7 +808,7 @@ public class ApplicationProperties extends Properties {
                     properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
             );
 
-            try (OutputStream outputStream = Files.newOutputStream(this.FILE_SERVERPACKCREATOR_PROPERTIES.toPath())) {
+            try (OutputStream outputStream = Files.newOutputStream(this.SERVERPACKCREATOR_PROPERTIES.toPath())) {
                 this.store(outputStream, null);
             } catch (IOException ex) {
                 LOG.error("Couldn't write properties-file.", ex);
@@ -666,24 +828,24 @@ public class ApplicationProperties extends Properties {
     @Override
     public synchronized String toString() {
         return "ApplicationProperties{" +
-                "FILE_SERVERPACKCREATOR_PROPERTIES=" + FILE_SERVERPACKCREATOR_PROPERTIES +
-                ", FILE_WINDOWS=" + FILE_WINDOWS +
-                ", FILE_LINUX=" + FILE_LINUX +
-                ", FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS=" + FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS +
-                ", LIST_FALLBACK_MODS_DEFAULT=" + LIST_FALLBACK_MODS_DEFAULT +
-                ", FILE_CONFIG=" + FILE_CONFIG +
-                ", FILE_CONFIG_OLD=" + FILE_CONFIG_OLD +
-                ", FILE_SERVER_PROPERTIES=" + FILE_SERVER_PROPERTIES +
-                ", FILE_SERVER_ICON=" + FILE_SERVER_ICON +
-                ", FILE_MANIFEST_MINECRAFT=" + FILE_MANIFEST_MINECRAFT +
-                ", FILE_MANIFEST_FORGE=" + FILE_MANIFEST_FORGE +
-                ", FILE_MANIFEST_FABRIC=" + FILE_MANIFEST_FABRIC +
-                ", FILE_MANIFEST_FABRIC_INSTALLER=" + FILE_MANIFEST_FABRIC_INSTALLER +
-                ", FILE_SERVERPACKCREATOR_DATABASE=" + FILE_SERVERPACKCREATOR_DATABASE +
-                ", PATH_FILE_MANIFEST_MINECRAFT=" + PATH_FILE_MANIFEST_MINECRAFT +
-                ", PATH_FILE_MANIFEST_FORGE=" + PATH_FILE_MANIFEST_FORGE +
-                ", PATH_FILE_MANIFEST_FABRIC=" + PATH_FILE_MANIFEST_FABRIC +
-                ", PATH_FILE_MANIFEST_FABRIC_INSTALLER=" + PATH_FILE_MANIFEST_FABRIC_INSTALLER +
+                "SERVERPACKCREATOR_PROPERTIES=" + SERVERPACKCREATOR_PROPERTIES +
+                ", START_SCRIPT_WINDOWS=" + START_SCRIPT_WINDOWS +
+                ", START_SCRIPT_LINUX=" + START_SCRIPT_LINUX +
+                ", USER_JVM_ARGS=" + USER_JVM_ARGS +
+                ", FALLBACK_CLIENTSIDE_MODS=" + FALLBACK_CLIENTSIDE_MODS +
+                ", DEFAULT_CONFIG=" + DEFAULT_CONFIG +
+                ", OLD_CONFIG=" + OLD_CONFIG +
+                ", DEFAULT_SERVER_PROPERTIES=" + DEFAULT_SERVER_PROPERTIES +
+                ", DEFAULT_SERVER_ICON=" + DEFAULT_SERVER_ICON +
+                ", MINECRAFT_VERSION_MANIFEST=" + MINECRAFT_VERSION_MANIFEST +
+                ", FORGE_VERSION_MANIFEST=" + FORGE_VERSION_MANIFEST +
+                ", FABRIC_VERSION_MANIFEST=" + FABRIC_VERSION_MANIFEST +
+                ", FABRIC_INSTALLER_VERSION_MANIFEST=" + FABRIC_INSTALLER_VERSION_MANIFEST +
+                ", SERVERPACKCREATOR_DATABASE=" + SERVERPACKCREATOR_DATABASE +
+                ", MINECRAFT_VERSION_MANIFEST_LOCATION=" + MINECRAFT_VERSION_MANIFEST_LOCATION +
+                ", FORGE_VERSION_MANIFEST_LOCATION=" + FORGE_VERSION_MANIFEST_LOCATION +
+                ", FABRIC_VERSION_MANIFEST_LOCATION=" + FABRIC_VERSION_MANIFEST_LOCATION +
+                ", FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION=" + FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION +
                 ", directoryServerPacks='" + getDirectoryServerPacks() + '\'' +
                 ", listFallbackMods=" + getListFallbackMods() +
                 ", listDirectoriesExclude=" + getListOfDirectoriesToExclude() +

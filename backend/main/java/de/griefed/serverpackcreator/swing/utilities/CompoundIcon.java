@@ -24,14 +24,8 @@ public class CompoundIcon implements Icon
     public enum Axis {
         X_AXIS,
         Y_AXIS,
-        Z_AXIS;
+        Z_AXIS
     }
-
-    public final static float TOP = 0.0f;
-    public final static float LEFT = 0.0f;
-    public final static float CENTER = 0.5f;
-    public final static float BOTTOM = 1.0f;
-    public final static float RIGHT = 1.0f;
 
     private final Icon[] icons;
 
@@ -39,12 +33,12 @@ public class CompoundIcon implements Icon
 
     private final int gap;
 
-    private float alignmentX = CENTER;
-    private float alignmentY = CENTER;
+    private final float alignmentX;
+    private final float alignmentY;
 
     /**
      *  Convenience contructor for creating a CompoundIcon where the
-     *  icons are layed out on on the X-AXIS, the gap is 0 and the
+     *  icons are layed out on the X-AXIS, the gap is 0 and the
      *  X/Y alignments will default to CENTER.
      *
      *  @param icons  the Icons to be painted as part of the CompoundIcon
@@ -54,7 +48,7 @@ public class CompoundIcon implements Icon
     }
 
     /**
-     *  Convenience contructor for creating a CompoundIcon where the
+     *  Convenience constructor for creating a CompoundIcon where the
      *  gap is 0 and the X/Y alignments will default to CENTER.
      *
      *  @param axis   the axis used to lay out the icons for painting.
@@ -66,7 +60,7 @@ public class CompoundIcon implements Icon
     }
 
     /**
-     *  Convenience contructor for creating a CompoundIcon where the
+     *  Convenience constructor for creating a CompoundIcon where the
      *  X/Y alignments will default to CENTER.
      *
      *  @param axis   the axis used to lay out the icons for painting
@@ -75,7 +69,7 @@ public class CompoundIcon implements Icon
      *  @param icons  the Icons to be painted as part of the CompoundIcon
      */
     public CompoundIcon(Axis axis, int gap, Icon... icons) {
-        this(axis, gap, CENTER, CENTER, icons);
+        this(axis, gap, 0.5f, 0.5f, icons);
     }
 
     /**
@@ -91,6 +85,13 @@ public class CompoundIcon implements Icon
      *  @param icons       the Icons to be painted as part of the CompoundIcon
      */
     public CompoundIcon(Axis axis, int gap, float alignmentX, float alignmentY, Icon... icons) {
+        /*
+         * TOP = 0.0f
+         * LEFT = 0.0f
+         * CENTER = 0.5f
+         * BOTTOM = 1.0f
+         * RIGHT = 1.0f
+        */
         this.axis = axis;
         this.gap = gap;
         this.alignmentX = alignmentX > 1.0f ? 1.0f : Math.max(alignmentX, 0.0f);
@@ -163,9 +164,7 @@ public class CompoundIcon implements Icon
     public Icon getIcon(int index) {
         return icons[ index ];
     }
-//
-//  Implement the Icon Interface
-//
+
     /**
      *  Gets the width of this icon.
      *
@@ -177,17 +176,21 @@ public class CompoundIcon implements Icon
 
         //  Add the width of all Icons while also including the gap
 
-        if (axis == Axis.X_AXIS)
-        {
+        if (axis == Axis.X_AXIS) {
+
             width += (icons.length - 1) * gap;
 
-            for (Icon icon : icons)
+            for (Icon icon : icons) {
                 width += icon.getIconWidth();
-        }
-        else  //  Just find the maximum width
-        {
-            for (Icon icon : icons)
+            }
+
+        } else {
+
+            //  Just find the maximum width
+            for (Icon icon : icons) {
                 width = Math.max(width, icon.getIconWidth());
+            }
+
         }
 
         return width;
@@ -204,17 +207,19 @@ public class CompoundIcon implements Icon
 
         //  Add the height of all Icons while also including the gap
 
-        if (axis == Axis.Y_AXIS)
-        {
+        if (axis == Axis.Y_AXIS) {
             height += (icons.length - 1) * gap;
 
-            for (Icon icon : icons)
+            for (Icon icon : icons) {
                 height += icon.getIconHeight();
-        }
-        else  //  Just find the maximum height
-        {
-            for (Icon icon : icons)
+            }
+
+        } else {
+            //  Just find the maximum height
+            for (Icon icon : icons) {
                 height = Math.max(height, icon.getIconHeight());
+            }
+
         }
 
         return height;
@@ -234,22 +239,24 @@ public class CompoundIcon implements Icon
 
             int height = getIconHeight();
 
-            for (Icon icon : icons)
-            {
+            for (Icon icon : icons) {
+
                 int iconY = getOffset(height, icon.getIconHeight(), alignmentY);
                 icon.paintIcon(c, g, x, y + iconY);
                 x += icon.getIconWidth() + gap;
+
             }
 
         } else if (axis == Axis.Y_AXIS) {
 
             int width = getIconWidth();
 
-            for (Icon icon : icons)
-            {
+            for (Icon icon : icons) {
+
                 int iconX = getOffset(width, icon.getIconWidth(), alignmentX);
                 icon.paintIcon(c, g, x + iconX, y);
                 y += icon.getIconHeight() + gap;
+
             }
 
         } else /* must be Z_AXIS */ {
@@ -257,11 +264,12 @@ public class CompoundIcon implements Icon
             int width = getIconWidth();
             int height = getIconHeight();
 
-            for (Icon icon : icons)
-            {
+            for (Icon icon : icons) {
+
                 int iconX = getOffset(width, icon.getIconWidth(), alignmentX);
                 int iconY = getOffset(height, icon.getIconHeight(), alignmentY);
                 icon.paintIcon(c, g, x + iconX, y + iconY);
+
             }
         }
     }

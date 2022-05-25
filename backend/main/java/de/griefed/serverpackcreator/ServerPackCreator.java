@@ -94,9 +94,6 @@ public class ServerPackCreator {
     private ServerPackHandler serverPackHandler = null;
     private ServerPackCreatorSplash serverPackCreatorSplash = null;
     private UpdateChecker updateChecker = null;
-    private FileAlterationObserver fileAlterationObserver = null;
-    private FileAlterationListener fileAlterationListener = null;
-    private FileAlterationMonitor fileAlterationMonitor = null;
 
     private HashMap<String, String> systemInformation;
 
@@ -286,8 +283,8 @@ public class ServerPackCreator {
         }
 
         boolean config = checkForConfig();
-        boolean serverProperties = checkServerFilesFile(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES);
-        boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.FILE_SERVER_ICON);
+        boolean serverProperties = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
+        boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
 
         if (config || serverProperties || serverIcon) {
 
@@ -334,10 +331,10 @@ public class ServerPackCreator {
      */
     private void stageTwo() throws IOException {
         this.versionMeta = new VersionMeta(
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
         );
 
         this.configUtilities = new ConfigUtilities(
@@ -384,45 +381,51 @@ public class ServerPackCreator {
      * @author Griefed
      */
     private void stageFour() {
-        fileAlterationObserver = new FileAlterationObserver(new File("."));
-        fileAlterationListener = new FileAlterationListener() {
+        FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(new File("."));
+        FileAlterationListener fileAlterationListener = new FileAlterationListener() {
             @Override
-            public void onStart(FileAlterationObserver observer) {}
+            public void onStart(FileAlterationObserver observer) {
+            }
 
             @Override
-            public void onDirectoryCreate(File directory) {}
+            public void onDirectoryCreate(File directory) {
+            }
 
             @Override
-            public void onDirectoryChange(File directory) {}
+            public void onDirectoryChange(File directory) {
+            }
 
             @Override
-            public void onDirectoryDelete(File directory) {}
+            public void onDirectoryDelete(File directory) {
+            }
 
             @Override
-            public void onFileCreate(File file) {}
+            public void onFileCreate(File file) {
+            }
 
             @Override
-            public void onFileChange(File file) {}
+            public void onFileChange(File file) {
+            }
 
             @Override
             public void onFileDelete(File file) {
-                if (!file.toString().replace("\\","/").startsWith("./server-packs") &&
-                        !file.toString().replace("\\","/").startsWith("./work/modpacks")) {
+                if (!file.toString().replace("\\", "/").startsWith("./server-packs") &&
+                        !file.toString().replace("\\", "/").startsWith("./work/modpacks")) {
 
-                    if (check(file, APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES)) {
+                    if (check(file, APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES())) {
 
-                        createFile(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES);
+                        createFile(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
                         APPLICATIONPROPERTIES.reload();
                         LOG.info("Restored serverpackcreator.properties and loaded defaults.");
 
-                    } else if (check(file, APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)) {
+                    } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES())) {
 
-                        checkServerFilesFile(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES);
+                        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
                         LOG.info("Restored default server.properties.");
 
-                    } else if (check(file, APPLICATIONPROPERTIES.FILE_SERVER_ICON)) {
+                    } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON())) {
 
-                        checkServerFilesFile(APPLICATIONPROPERTIES.FILE_SERVER_ICON);
+                        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
                         LOG.info("Restored default server-icon.png.");
                     }
                 }
@@ -435,8 +438,8 @@ public class ServerPackCreator {
 
             private boolean check(File watched, File toCreate) {
                 return watched.toString()
-                        .replace("\\","/")
-                        .substring(watched.toString().replace("\\","/").lastIndexOf("/") + 1)
+                        .replace("\\", "/")
+                        .substring(watched.toString().replace("\\", "/").lastIndexOf("/") + 1)
                         .equals(toCreate.toString()
                         );
             }
@@ -454,7 +457,7 @@ public class ServerPackCreator {
         };
 
         fileAlterationObserver.addListener(fileAlterationListener);
-        fileAlterationMonitor = new FileAlterationMonitor(1000);
+        FileAlterationMonitor fileAlterationMonitor = new FileAlterationMonitor(1000);
         fileAlterationMonitor.addObserver(fileAlterationObserver);
 
         try {
@@ -508,7 +511,7 @@ public class ServerPackCreator {
         printMenu();
 
         Scanner scanner = new Scanner(System.in);
-        int selection = 100;
+        int selection;
 
         do {
 
@@ -596,7 +599,7 @@ public class ServerPackCreator {
 
         Scanner scanner = new Scanner(System.in);
         String regex = "^[a-zA-Z]+_[a-zA-Z]+$";
-        String userLocale = "";
+        String userLocale;
 
         // For a list of locales, see https://stackoverflow.com/a/3191729/12537638 or https://stackoverflow.com/a/28357857/12537638
         do {
@@ -671,7 +674,7 @@ public class ServerPackCreator {
 
         ConfigurationModel configurationModel = new ConfigurationModel();
 
-        if (configurationHandler.checkConfiguration(APPLICATIONPROPERTIES.FILE_CONFIG, configurationModel, false) && serverPackHandler.run(configurationModel)) {
+        if (configurationHandler.checkConfiguration(APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false) && serverPackHandler.run(configurationModel)) {
             System.exit(0);
         } else {
             System.exit(1);
@@ -745,11 +748,11 @@ public class ServerPackCreator {
      */
     public boolean checkForConfig() {
         boolean firstRun = false;
-        if (APPLICATIONPROPERTIES.FILE_CONFIG_OLD.exists()) {
+        if (APPLICATIONPROPERTIES.OLD_CONFIG().exists()) {
             try {
-                Files.copy(APPLICATIONPROPERTIES.FILE_CONFIG_OLD.getAbsoluteFile().toPath(), APPLICATIONPROPERTIES.FILE_CONFIG.getAbsoluteFile().toPath());
+                Files.copy(APPLICATIONPROPERTIES.OLD_CONFIG().getAbsoluteFile().toPath(), APPLICATIONPROPERTIES.DEFAULT_CONFIG().getAbsoluteFile().toPath());
 
-                if (APPLICATIONPROPERTIES.FILE_CONFIG_OLD.delete()) {
+                if (APPLICATIONPROPERTIES.OLD_CONFIG().delete()) {
                     /* This log is meant to be read by the user, therefore we allow translation. */
                     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
                 }
@@ -759,12 +762,12 @@ public class ServerPackCreator {
                     LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
                 }
             }
-        } else if (!APPLICATIONPROPERTIES.FILE_CONFIG.exists()) {
+        } else if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
             try {
 
                 FileUtils.copyInputStreamToFile(
-                        Objects.requireNonNull(ServerPackCreator.class.getResourceAsStream(String.format("/de/griefed/resources/%s", APPLICATIONPROPERTIES.FILE_CONFIG.getName()))),
-                        APPLICATIONPROPERTIES.FILE_CONFIG);
+                        Objects.requireNonNull(ServerPackCreator.class.getResourceAsStream(String.format("/de/griefed/resources/%s", APPLICATIONPROPERTIES.DEFAULT_CONFIG().getName()))),
+                        APPLICATIONPROPERTIES.DEFAULT_CONFIG());
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
@@ -821,16 +824,13 @@ public class ServerPackCreator {
     public void checkDatabase() {
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:" + APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_DATABASE);
+            connection = DriverManager.getConnection("jdbc:sqlite:" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE());
 
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             LOG.debug("Database driver name: " + databaseMetaData.getDriverName());
             LOG.debug("Database driver version: " + databaseMetaData.getDriverVersion());
             LOG.debug("Database product name: " + databaseMetaData.getDatabaseProductName());
             LOG.debug("Database product version: " + databaseMetaData.getDatabaseProductVersion());
-
-            //Statement statement = connection.createStatement();
-            //statement.executeUpdate("CREATE TABLE server_pack_model (id INTEGER, projectID INTEGER, fileID INTEGER, fileName STRING, size DOUBLE, downloads INTEGER, created DATE, confirmedWorking INTEGER)");
 
         } catch (SQLException ignored) {
 

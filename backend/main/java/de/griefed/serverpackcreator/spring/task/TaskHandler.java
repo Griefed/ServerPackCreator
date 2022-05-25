@@ -122,7 +122,7 @@ public class TaskHandler {
             serverPackModel.setJavaPath("");
             serverPackModel.setIncludeServerInstallation(false);
 
-            ServerPackModel pack = null;
+            ServerPackModel pack;
 
             STOPWATCH_SCANS.reset();
             STOPWATCH_SCANS.start();

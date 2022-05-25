@@ -201,10 +201,11 @@ public class BackgroundPanel extends JPanel {
      */
     @Override
     public Dimension getPreferredSize() {
-        if (image == null)
+        if (image == null) {
             return super.getPreferredSize();
-        else
+        } else {
             return new Dimension(image.getWidth(null), image.getHeight(null));
+        }
     }
 
     /**
@@ -214,8 +215,7 @@ public class BackgroundPanel extends JPanel {
      * @param constraints Constraints with which the panel should be added.
      */
     public void add(JComponent component, Object constraints) {
-        if (isTransparentAdd)
-        {
+        if (isTransparentAdd) {
             makeComponentTransparent(component);
         }
 
@@ -276,7 +276,9 @@ public class BackgroundPanel extends JPanel {
 
         //  Draw the image
 
-        if (image == null ) return;
+        if (image == null ) {
+            return;
+        }
 
         switch (style) {
             case TILED  :

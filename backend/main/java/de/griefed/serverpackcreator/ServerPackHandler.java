@@ -112,10 +112,10 @@ public class ServerPackHandler {
 
         if (injectedVersionMeta == null) {
             this.VERSIONMETA = new VersionMeta(
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                    APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
             );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
@@ -426,7 +426,7 @@ public class ServerPackHandler {
      * @param javaArguments String. Java arguments with which the server should be started
      * @param minecraftVersion String. Minecraft version of this server pack.
      * @param modloaderVersion String. Modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
      */
     private void fabricShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
@@ -434,7 +434,7 @@ public class ServerPackHandler {
                 new FileWriter(
                         String.valueOf(
                                 Paths.get(
-                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_LINUX)
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())
                                 )
                         )
                 )
@@ -527,7 +527,7 @@ public class ServerPackHandler {
      * @param javaArguments String. Java arguments wich which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
      */
     private void fabricBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
@@ -535,7 +535,7 @@ public class ServerPackHandler {
                 new FileWriter(
                         String.valueOf(
                                 Paths.get(
-                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_WINDOWS)
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())
                                 )
                         )
                 )
@@ -629,14 +629,14 @@ public class ServerPackHandler {
      * Create a Forge JVM args file used by Forge Minecraft 1.17 and newer.
      * @author Griefed
      * @param javaArguments String. Java arguments with which the server should be started.
-     * @param destination String. Where the file should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS)</code>
+     * @param destination String. Where the file should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.USER_JVM_ARGS)</code>
      */
     private void forgeJvmArgsTxt(String javaArguments, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
                                 Paths.get(
-                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS)
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.USER_JVM_ARGS())
                                 )
                         )
                 )
@@ -665,14 +665,14 @@ public class ServerPackHandler {
      * @param javaArguments String. Java arguments with which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
      */
     private void forgeShellScriptNewMC(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
                                 Paths.get(
-                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_LINUX)
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())
                                 )
                         )
                 )
@@ -783,14 +783,14 @@ public class ServerPackHandler {
      * @param javaArguments String. Java arguments with which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_WINDOWS)</code>
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)</code>
      */
     private void forgeBatchScriptNewMC(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
                                 Paths.get(
-                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_WINDOWS)
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())
                                 )
                         )
                 )
@@ -906,14 +906,14 @@ public class ServerPackHandler {
      * @param javaArguments String. The Java arguments with which to start the server.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_LINUX)</code>
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
      */
     private void forgeShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
                                 Paths.get(
-                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_LINUX)
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())
                                 )
                         )
                 )
@@ -1011,14 +1011,14 @@ public class ServerPackHandler {
      * @param javaArguments String. The Java arguments with which to start the server.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_WINDOWS)</code>
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)</code>
      */
     private void forgeBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         String.valueOf(
                                 Paths.get(
-                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_WINDOWS)
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())
                                 )
                         )
                 )
@@ -1458,11 +1458,11 @@ public class ServerPackHandler {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyicon"));
 
-        File iconFile = new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.FILE_SERVER_ICON));
+        File iconFile = new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON()));
 
         if (new File(pathToServerIcon).exists()) {
 
-            BufferedImage originalImage = null;
+            BufferedImage originalImage;
             //noinspection UnusedAssignment
             Image scaledImage = null;
 
@@ -1513,7 +1513,7 @@ public class ServerPackHandler {
             try {
 
                 FileUtils.copyFile(
-                        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_ICON)),
+                        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON())),
                         iconFile
                 );
 
@@ -1539,7 +1539,7 @@ public class ServerPackHandler {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyproperties"));
 
-        File defaultProperties = new File(String.format("%s/%s",destination, APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES));
+        File defaultProperties = new File(String.format("%s/%s",destination, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES()));
 
         if (new File(pathToServerProperties).exists()) {
             try {
@@ -1561,7 +1561,7 @@ public class ServerPackHandler {
             try {
 
                 FileUtils.copyFile(
-                        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES)),
+                        new File(String.format("server_files/%s", APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES())),
                         defaultProperties
                 );
 
@@ -1910,7 +1910,7 @@ public class ServerPackHandler {
             if (mod.toString().endsWith("jar")) {
 
                 JarFile jarFile = null;
-                JarEntry jarEntry = null;
+                JarEntry jarEntry;
                 InputStream inputStream = null;
 
                 try {
@@ -2128,13 +2128,10 @@ public class ServerPackHandler {
                     }
 
                     try {
-                        //noinspection ConstantConditions
                         inputStream.close();
                     } catch (Exception ignored) {
 
                     }
-
-                    jarEntry = null;
 
                 }
 
@@ -2148,7 +2145,7 @@ public class ServerPackHandler {
             boolean addToDelta = true;
 
             JarFile jarFile = null;
-            JarEntry jarEntry = null;
+            JarEntry jarEntry;
             InputStream inputStream = null;
 
             try {
@@ -2199,8 +2196,6 @@ public class ServerPackHandler {
 
                 }
 
-                jarEntry = null;
-
             }
 
         }
@@ -2231,7 +2226,7 @@ public class ServerPackHandler {
                 List<String> additionalMods = new ArrayList<>();
 
                 JarFile jarFile = null;
-                JarEntry jarEntry = null;
+                JarEntry jarEntry;
                 InputStream inputStream = null;
 
                 try {
@@ -2478,13 +2473,10 @@ public class ServerPackHandler {
                     }
 
                     try {
-                        //noinspection ConstantConditions
                         inputStream.close();
                     } catch (Exception ignored) {
 
                     }
-
-                    jarEntry = null;
 
                 }
 
@@ -2509,7 +2501,7 @@ public class ServerPackHandler {
             boolean addToDelta = false;
 
             JarFile jarFile = null;
-            JarEntry jarEntry = null;
+            JarEntry jarEntry;
             InputStream inputStream = null;
 
             try {
@@ -2588,8 +2580,6 @@ public class ServerPackHandler {
 
                 }
 
-                jarEntry = null;
-
             }
         }
 
@@ -2615,10 +2605,10 @@ public class ServerPackHandler {
         for (File mod : filesInModsDir) {
             if (mod.toString().endsWith("jar")) {
 
-                String modId = null;
+                String modId;
 
                 JarFile jarFile = null;
-                JarEntry jarEntry = null;
+                JarEntry jarEntry;
                 InputStream inputStream = null;
 
                 try {
@@ -2683,8 +2673,6 @@ public class ServerPackHandler {
 
                     }
 
-                    jarEntry = null;
-
                 }
 
             }
@@ -2702,12 +2690,12 @@ public class ServerPackHandler {
         for (File mod : filesInModsDir) {
 
             String modToCheck = mod.toString().replace("\\", "/");
-            String modIdTocheck = null;
+            String modIdTocheck;
 
             boolean addToDelta = false;
 
             JarFile jarFile = null;
-            JarEntry jarEntry = null;
+            JarEntry jarEntry;
             InputStream inputStream = null;
 
             try {
@@ -2763,8 +2751,6 @@ public class ServerPackHandler {
                 } catch (Exception ignored) {
 
                 }
-
-                jarEntry = null;
 
             }
         }

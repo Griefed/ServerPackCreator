@@ -93,10 +93,10 @@ public class ConfigurationHandler {
 
         if (injectedVersionMeta == null) {
             this.VERSIONMETA = new VersionMeta(
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,
-                    APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER
+                    APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
             );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
@@ -277,7 +277,7 @@ public class ConfigurationHandler {
      * @return Boolean. Returns <code>false</code> if all checks are passed.
      */
     public boolean checkConfiguration(@NotNull ConfigurationModel configurationModel, @NotNull List<String> encounteredErrors, boolean quietCheck) {
-        boolean configHasError = false;
+        boolean configHasError;
 
         sanitizeLinks(configurationModel);
 
@@ -296,6 +296,7 @@ public class ConfigurationHandler {
 
         if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
 
+            //noinspection UnusedAssignment
             configHasError = true;
 
             encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.servericon"),configurationModel.getServerIconPath()));
@@ -304,6 +305,7 @@ public class ConfigurationHandler {
 
         if (!checkIconAndProperties(configurationModel.getServerPropertiesPath())) {
 
+            //noinspection UnusedAssignment
             configHasError = true;
 
             encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.serverproperties"),configurationModel.getServerPropertiesPath()));
@@ -661,9 +663,7 @@ public class ConfigurationHandler {
 
             }
 
-            packName = packName + "_" + incrementation;
-
-        // the modpack has not been extracted yet by a previous run. FREEDOOOOOOM!
+            // the modpack has not been extracted yet by a previous run. FREEDOOOOOOM!
         } else {
 
             // Has there been a previous incrementation of the would-be-server-pack?
@@ -688,8 +688,9 @@ public class ConfigurationHandler {
 
             }
 
-            packName = packName + "_" + incrementation;
         }
+
+        packName = packName + "_" + incrementation;
 
         // Finally, move to new destination to avoid overwriting of server pack
         FileUtils.moveDirectory(
@@ -966,7 +967,7 @@ public class ConfigurationHandler {
     public boolean checkModpackDir(String modpackDir, List<String> encounteredErrors) {
         boolean configCorrect = false;
 
-        if (modpackDir.equals("")) {
+        if (modpackDir.isEmpty()) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
@@ -1118,7 +1119,7 @@ public class ConfigurationHandler {
      */
     public boolean checkIconAndProperties(String iconOrPropertiesPath) {
 
-        if (iconOrPropertiesPath.equals("")) {
+        if (iconOrPropertiesPath.isEmpty()) {
 
             return true;
 

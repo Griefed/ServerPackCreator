@@ -27,20 +27,20 @@ public class ApplicationPropertiesTest {
 
     @Test
     void finalsTest() {
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_PROPERTIES,new File("serverpackcreator.properties"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES(),new File("serverpackcreator.properties"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_WINDOWS);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_WINDOWS,new File("start.bat"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS(),new File("start.bat"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_LINUX);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_LINUX,new File("start.sh"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.START_SCRIPT_LINUX());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.START_SCRIPT_LINUX(),new File("start.sh"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_FORGE_ONE_SEVEN_USER_JVM_ARGS,new File("user_jvm_args.txt"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.USER_JVM_ARGS());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.USER_JVM_ARGS(),new File("user_jvm_args.txt"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.LIST_FALLBACK_MODS_DEFAULT);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.LIST_FALLBACK_MODS_DEFAULT,new ArrayList<>(
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS(),new ArrayList<>(
             Arrays.asList((
                 "3dSkinLayers-," +
                 "3dskinlayers-," +
@@ -204,44 +204,44 @@ public class ApplicationPropertiesTest {
         APPLICATIONPROPERTIES.updateFallback();
         Assertions.assertNotEquals(APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"),"bla");
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_CONFIG);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_CONFIG,new File("serverpackcreator.conf"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.DEFAULT_CONFIG(),new File("serverpackcreator.conf"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_CONFIG_OLD);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_CONFIG_OLD,new File("creator.conf"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.OLD_CONFIG());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.OLD_CONFIG(),new File("creator.conf"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_SERVER_PROPERTIES,new File("server.properties"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES(),new File("server.properties"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_SERVER_ICON);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_SERVER_ICON,new File("server-icon.png"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON(),new File("server-icon.png"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_MANIFEST_MINECRAFT,new File("minecraft-manifest.json"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST(),new File("minecraft-manifest.json"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_MANIFEST_FORGE,new File("forge-manifest.json"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST(),new File("forge-manifest.json"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC,new File("fabric-manifest.xml"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST(),new File("fabric-manifest.xml"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_MANIFEST_FABRIC_INSTALLER,new File("fabric-installer-manifest.xml"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST(),new File("fabric-installer-manifest.xml"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_DATABASE);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.FILE_SERVERPACKCREATOR_DATABASE,new File ("serverpackcreator.db"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE(),new File ("serverpackcreator.db"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_MINECRAFT,new File("./work/minecraft-manifest.json"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),new File("./work/minecraft-manifest.json"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FORGE,new File("./work/forge-manifest.json"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),new File("./work/forge-manifest.json"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC,new File("./work/fabric-manifest.xml"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),new File("./work/fabric-manifest.xml"));
 
-        Assertions.assertNotNull(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER);
-        Assertions.assertEquals(APPLICATIONPROPERTIES.PATH_FILE_MANIFEST_FABRIC_INSTALLER,new File("./work/fabric-installer-manifest.xml"));
+        Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION());
+        Assertions.assertEquals(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),new File("./work/fabric-installer-manifest.xml"));
     }
 
     @Test

@@ -36,7 +36,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Class revolving around with server packs, like downloading, retrieving, deleting, voting etc.
