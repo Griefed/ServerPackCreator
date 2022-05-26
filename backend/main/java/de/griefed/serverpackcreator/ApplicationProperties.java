@@ -39,7 +39,6 @@ import java.util.*;
  * and allows reloading of said properties if the file has changed.
  * @author Griefed
  */
-@SuppressWarnings("UnusedAssignment")
 @Component
 public class ApplicationProperties extends Properties {
 
@@ -208,6 +207,7 @@ public class ApplicationProperties extends Properties {
             "WindowedFullscreen-," +
             "WorldNameRandomizer-," +
             "yisthereautojump-";
+    private final String SERVERPACKCREATOR_VERSION;
     private final List<String> FALLBACK_CLIENTSIDE_MODS = new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
 
     //DefaultFiles related
@@ -231,68 +231,42 @@ public class ApplicationProperties extends Properties {
      * The directory in which server packs will be generated and stored in, as well as server pack ZIP-archives.
      * Default is ./server-packs
      */
-    private String directoryServerPacks = "server-packs";
+    private String directoryServerPacks;
 
     /**
      * List of mods which should be excluded from server packs.
      */
-    private List<String> listFallbackMods = FALLBACK_CLIENTSIDE_MODS;
+    private List<String> listFallbackMods;
 
     /**
      * List of directories which should be excluded from server packs.
      * Default is overrides, packmenu, resourcepacks, server_pack, fancymenu.
      */
-    private List<String> listDirectoriesExclude = new ArrayList<>(
-            Arrays.asList(
-                    "overrides",
-                    "packmenu",
-                    "resourcepacks",
-                    "server_pack",
-                    "fancymenu",
-                    "downloads"
-            )
-    );
+    private List<String> listDirectoriesExclude;
 
     /**
      * List of directories which must not be excluded from server packs.
      * Default is mods, config, defaultconfigs, scripts, saves, seeds, libraries.
      */
-    private List<String> listCheckAgainstNewEntry = new ArrayList<>(
-            Arrays.asList(
-                    "mods",
-                    "config",
-                    "defaultconfigs",
-                    "scripts",
-                    "saves",
-                    "seeds",
-                    "libraries",
-                    "kubejs"
-            ));
+    private List<String> listCheckAgainstNewEntry;
 
     /**
      * When running as a webservice: Maximum disk usage in % at which JMS/Artemis will stop storing message in the queue saved on disk.
      * Default is 90%.
      */
-    private int queueMaxDiskUsage = 90;
+    private int queueMaxDiskUsage;
 
     /**
      * Whether the manually loaded configuration file should be saved as well as the default serverpackcreator.conf. Setting this to true will make ServerPackCreator save serverpackcreator.conf as well as the last loaded configuration-file.
      * Default is false.
      */
-    private boolean saveLoadedConfiguration = false;
-
-    /**
-     * The version of ServerPackCreator.<br>
-     * If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
-     * If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.
-     */
-    private String serverPackCreatorVersion = "dev";
+    private boolean saveLoadedConfiguration;
 
     /**
      * Whether ServerPackCreator should check for available PreReleases.
      * Set to <code>true</code> to get notified about available PreReleases. Set to <code>false</code> if you only want stable releases.
      */
-    private boolean versioncheck_prerelease = false;
+    private boolean versioncheck_prerelease;
 
     /**
      * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
@@ -410,9 +384,9 @@ public class ApplicationProperties extends Properties {
 
         String version = ApplicationProperties.class.getPackage().getImplementationVersion();
         if (version != null) {
-            this.serverPackCreatorVersion = version;
+            this.SERVERPACKCREATOR_VERSION = version;
         } else {
-            this.serverPackCreatorVersion = "dev";
+            this.SERVERPACKCREATOR_VERSION = "dev";
         }
 
     }
@@ -680,6 +654,17 @@ public class ApplicationProperties extends Properties {
     }
 
     /**
+     * Getter for the version of ServerPackCreator.<br>
+     * If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
+     * If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.
+     * @author Griefed
+     * @return String. Returns the version of ServerPackCreator.
+     */
+    public String SERVERPACKCREATOR_VERSION() {
+        return SERVERPACKCREATOR_VERSION;
+    }
+
+    /**
      * Getter for the directory in which the server packs are stored/generated in.
      * @author Griefed
      * @return String. Returns the directory in which the server packs are stored/generated in.
@@ -737,17 +722,6 @@ public class ApplicationProperties extends Properties {
     }
 
     /**
-     * Getter for the version of ServerPackCreator.<br>
-     * If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
-     * If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.
-     * @author Griefed
-     * @return String. Returns the version of ServerPackCreator.
-     */
-    public String getServerPackCreatorVersion() {
-        return serverPackCreatorVersion;
-    }
-
-    /**
      * Getter for whether the search for available PreReleases is enabled or disabled.<br>
      * Depending on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>true</code>
      * if checks for available PreReleases are enabled, <code>false</code> if no checks for available PreReleases should
@@ -777,7 +751,6 @@ public class ApplicationProperties extends Properties {
         } catch (IOException e) {
 
             LOG.debug("GitHub could not be reached. Checking GitLab.",e);
-            properties = null;
             try (InputStream gitlab = new URL("https://gitlab.com/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties").openStream()) {
 
                 properties = new Properties();
@@ -785,7 +758,6 @@ public class ApplicationProperties extends Properties {
 
             } catch (IOException ex) {
                 LOG.debug("GitLab could not be reached. Checking GitGriefed",ex);
-                properties = null;
                 try (InputStream gitgriefed = new URL("https://git.griefed.de/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties").openStream()) {
 
                     properties = new Properties();
@@ -852,7 +824,7 @@ public class ApplicationProperties extends Properties {
                 ", listCheckAgainstNewEntry=" + listCheckAgainstNewEntry +
                 ", queueMaxDiskUsage=" + getQueueMaxDiskUsage() +
                 ", saveLoadedConfiguration=" + getSaveLoadedConfiguration() +
-                ", serverPackCreatorVersion='" + getServerPackCreatorVersion() + '\'' +
+                ", serverPackCreatorVersion='" + SERVERPACKCREATOR_VERSION() + '\'' +
                 ", versioncheck_prerelease=" + checkForAvailablePreReleases() +
                 '}';
     }

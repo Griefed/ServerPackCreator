@@ -314,7 +314,7 @@ public class ServerPackCreator {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
-        LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.getServerPackCreatorVersion());
+        LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"), systemInformation.get("jarPath")));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"), systemInformation.get("jarName")));
         LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"), systemInformation.get("javaVersion")));
@@ -472,7 +472,7 @@ public class ServerPackCreator {
      * @author Griefed
      */
     private void showSplashScreen() {
-        this.serverPackCreatorSplash = new ServerPackCreatorSplash(APPLICATIONPROPERTIES.getServerPackCreatorVersion());
+        this.serverPackCreatorSplash = new ServerPackCreatorSplash(APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
     }
 
     /**
@@ -857,7 +857,7 @@ public class ServerPackCreator {
             this.updateChecker.refresh();
         }
 
-        Optional<Update> update = updateChecker.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+        Optional<Update> update = updateChecker.checkForUpdate(APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
         System.out.println();
         if (update.isPresent()) {

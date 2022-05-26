@@ -87,14 +87,14 @@ public class ApplicationPropertiesController {
                 "\"curseControllerRegenerationEnabled\": " + APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled() + "," +
                 "\"queueMaxDiskUsage\": " + APPLICATIONPROPERTIES.getQueueMaxDiskUsage() + "," +
                 "\"saveLoadedConfiguration\": " + APPLICATIONPROPERTIES.getSaveLoadedConfiguration() + "," +
-                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.getServerPackCreatorVersion() + "\"," +
+                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION() + "\"," +
                 "\"versioncheck_prerelease\": " + APPLICATIONPROPERTIES.checkForAvailablePreReleases() + "," +
                 "\"isCurseForgeActivated\": " + APPLICATIONPROPERTIES.isCurseForgeActivated() + "" +
                 "}";*/
         return "{" +
                 "\"listFallbackMods\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
                 "\"listDirectoriesExclude\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
-                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.getServerPackCreatorVersion() + "\"" +
+                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION() + "\"" +
                 "}";
     }
 }

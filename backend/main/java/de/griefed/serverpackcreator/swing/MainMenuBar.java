@@ -432,7 +432,7 @@ public class MainMenuBar extends Component {
      */
     protected boolean displayUpdateDialog() {
 
-        Optional<Update> update = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.getServerPackCreatorVersion(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+        Optional<Update> update = UPDATECHECKER.checkForUpdate(APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(), APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
         if (update.isPresent()) {
             String textContent = String.format(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.new"), update.get().url());

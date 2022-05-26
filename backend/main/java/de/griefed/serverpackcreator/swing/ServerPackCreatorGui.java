@@ -198,7 +198,7 @@ public class ServerPackCreatorGui extends JPanel {
             LOG.error("Could not read image for tiling.", ex);
         }
 
-        this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui") + " - " + APPLICATIONPROPERTIES.getServerPackCreatorVersion());
+        this.FRAME_SERVERPACKCREATOR = new JFrame(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui") + " - " + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
 
         this.TAB_CREATESERVERPACK = new TabCreateServerPack(
                 LOCALIZATIONMANAGER, CONFIGURATIONHANDLER, CREATESERVERPACK, VERSIONMETA, APPLICATIONPROPERTIES,

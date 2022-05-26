@@ -275,6 +275,6 @@ public class ApplicationPropertiesTest {
 
     @Test
     void getServerPackCreatorVersionTest() {
-        Assertions.assertEquals("dev",APPLICATIONPROPERTIES.getServerPackCreatorVersion());
+        Assertions.assertEquals("dev",APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
     }
 }
