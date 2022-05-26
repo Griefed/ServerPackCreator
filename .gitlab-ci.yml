@@ -165,8 +165,8 @@ Docker Test:
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
       --build-arg HOSTER=$CI_SERVER_HOST
       --file Dockerfile .
-  rules:
-    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+#  rules:
+#    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
 Generate Release:
   stage: Release
@@ -305,40 +305,40 @@ Build Docker PreRelease:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
-Inform About Release:
-  stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.6
-  needs:
-    - job: Build Release
-      artifacts: false
-    - job: Build Docker Release
-      artifacts: false
-      optional: true
-    - job: Build Docker PreRelease
-      artifacts: false
-      optional: true
-  script:
-    - /discord.sh
-      --webhook-url="$WEBHOOK_URL"
-      --username "$CI_PROJECT_TITLE"
-      --avatar "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.png"
-      --text "There's been a new release for ${CI_PROJECT_TITLE}. The new version is ${CI_COMMIT_TAG} and is available at <${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}>"
-      --title "New ${CI_PROJECT_TITLE} Release"
-      --description "There's been a new release for ${CI_PROJECT_TITLE}. The new version is ${CI_COMMIT_TAG} and is available at ${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}"
-      --color "0xC0FFEE"
-      --url "${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}"
-      --author "Griefed"
-      --author-url "https://${CI_SERVER_HOST}/Griefed"
-      --author-icon "https://i.griefed.de/images/2022/01/21/sam_1500x1500.th.jpg"
-      --image "https://i.griefed.de/images/2021/05/08/app.png"
-      --thumbnail "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.th.png"
-      --field "Author;[Griefed](https://${CI_SERVER_HOST}/Griefed)"
-      --field "Platform;[${CI_SERVER_HOST}](https://${CI_SERVER_HOST})"
-      --footer "Released at $CI_JOB_STARTED_AT"
-      --footer-icon "https://i.griefed.de/images/2022/01/21/start_generation.png"
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/'
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+#Inform About Release:
+#  stage: Build Release
+#  image: ghcr.io/griefed/gitlab-ci-cd:2.0.6
+#  needs:
+#    - job: Build Release
+#      artifacts: false
+#    - job: Build Docker Release
+#      artifacts: false
+#      optional: true
+#    - job: Build Docker PreRelease
+#      artifacts: false
+#      optional: true
+#  script:
+#    - /discord.sh
+#      --webhook-url="$WEBHOOK_URL"
+#      --username "$CI_PROJECT_TITLE"
+#      --avatar "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.png"
+#      --text "There's been a new release for ${CI_PROJECT_TITLE}. The new version is ${CI_COMMIT_TAG} and is available at <${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}>"
+#      --title "New ${CI_PROJECT_TITLE} Release"
+#      --description "There's been a new release for ${CI_PROJECT_TITLE}. The new version is ${CI_COMMIT_TAG} and is available at ${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}"
+#      --color "0xC0FFEE"
+#      --url "${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}"
+#      --author "Griefed"
+#      --author-url "https://${CI_SERVER_HOST}/Griefed"
+#      --author-icon "https://i.griefed.de/images/2022/01/21/sam_1500x1500.th.jpg"
+#      --image "https://i.griefed.de/images/2021/05/08/app.png"
+#      --thumbnail "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.th.png"
+#      --field "Author;[Griefed](https://${CI_SERVER_HOST}/Griefed)"
+#      --field "Platform;[${CI_SERVER_HOST}](https://${CI_SERVER_HOST})"
+#      --footer "Released at $CI_JOB_STARTED_AT"
+#      --footer-icon "https://i.griefed.de/images/2022/01/21/start_generation.png"
+#  rules:
+#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/'
+#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 coverage:
   stage: Other
@@ -350,7 +350,9 @@ coverage:
   needs: ["Gradle Test"]
   artifacts:
     reports:
-      cobertura: build/cobertura.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: build/cobertura.xml
 
 Qodana Expose:
   stage: Documentation
@@ -400,15 +402,14 @@ pages:
       - public
     expire_in: 1 week
 
-
 release_job:
   stage: Release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  rules:
-    - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com"'
   script:
     - echo "Running the release job to mirror release generation from parent repository."
   release:
     tag_name: $CI_COMMIT_TAG
     name: 'Release $CI_COMMIT_TAG'
     description: './CHANGELOG.md'
+  rules:
+    - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com"'
