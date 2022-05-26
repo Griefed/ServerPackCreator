@@ -17,9 +17,6 @@
           <q-tab name="zip" label="zip">
             <q-tooltip :disable="this.$q.platform.is.mobile">Create a server pack from a zipped up modpack.</q-tooltip>
           </q-tab>
-          <q-tab :disable="modrinth" name="modrinth" label="Modrinth">
-            <q-tooltip :disable="this.$q.platform.is.mobile">The Modrinth-module is not yet implemented.</q-tooltip>
-          </q-tab>
         </q-tabs>
 
         <q-separator/>
@@ -79,8 +76,7 @@ UPLOAD AND CREATE FROM ZIP
                   archives with only 'overrides' or the like.
                 </div>
 
-                <q-separator
-                color="transparent"/>
+                <q-separator inset spaced color="accent"/>
                 <!-- CLIENTSIDE MODS -->
                 <div class="row flex-center">
                   <q-input
@@ -98,7 +94,7 @@ UPLOAD AND CREATE FROM ZIP
                     </q-tooltip>
                   </q-input>
                 </div>
-                <!-- TODO refactor and fix modloader version selection to be more reliable -->
+
                 <!-- MINECRAFT VERSION -->
                 <div class="row flex-center">
 
@@ -177,17 +173,6 @@ UPLOAD AND CREATE FROM ZIP
                       </q-btn-dropdown>
                     </div>
                   </div>
-
-<!--                  <div class="column flex-center">
-                    <q-toggle
-                      v-model="installServer"
-                      checked-icon="check"
-                      unchecked-icon="clear"
-                      :color="installServer ? 'positive' : 'negative'"
-                      label="Install modloader server?"
-                    />
-                  </div>-->
-
                 </div>
 
                 <div :class="this.$q.platform.is.mobile ? 'row flex-center' : 'row no-wrap flex-center'" style="margin-top: 20px;">
@@ -200,67 +185,7 @@ UPLOAD AND CREATE FROM ZIP
               </q-form>
             </div>
           </q-tab-panel>
-<!--
-
-CREATE FROM MODRINTH MODPACK
-
--->
-          <q-tab-panel name="modrinth">
-            <div class="column">
-              <div class="text-h6 q-mb-md text-center">Enter your CurseForge projectID and fileID</div>
-              <q-form :disable="modrinth" @submit="submitModrinth()" @reset="resetForm" class="q-gutter-xs">
-
-                <div class="row flex-center">
-                  <q-input
-                    :disable="modrinth"
-                    ref="projectRef"
-                    color="black"
-                    filled
-                    v-model.number="store.state.projectID"
-                    label="CurseForge projectID"
-                    type="number"
-                    maxlength="10"
-                    :rules="projectRules">
-                    <template v-slot:append>
-                      <q-icon name="info" @click="projectInfo = true" class="cursor-pointer" />
-                    </template>
-                    <q-tooltip :disable="this.$q.platform.is.mobile">
-                      The projectID can be found in the top right of a modpacks CurseForge project page.
-                    </q-tooltip>
-                  </q-input>
-                </div>
-
-                <div class="row flex-center">
-                  <q-input
-                    :disable="modrinth"
-                    ref="fileRef"
-                    color="black"
-                    filled
-                    v-model.number="store.state.fileID"
-                    label="CurseForge fileID"
-                    type="number"
-                    maxlength="10"
-                    :rules="fileRules">
-                    <template v-slot:append>
-                      <q-icon name="info" @click="fileInfo = true" class="cursor-pointer" />
-                    </template>
-                    <q-tooltip :disable="this.$q.platform.is.mobile">
-                      The fileID can be found in the URL-bar after selecting a file of a project.
-                    </q-tooltip>
-                  </q-input>
-                </div>
-
-                <div :class="this.$q.platform.is.mobile ? 'row flex-center' : 'row no-wrap flex-center'">
-                  <div>
-                    <q-btn label="Submit" :disable="disable || modrinth" :loading="loading" type="submit" color="primary" />
-                    <q-btn label="Reset"                                                    type="reset" color="warning" class="q-ml-sm" />
-                  </div>
-                </div>
-              </q-form>
-            </div>
-          </q-tab-panel>
         </q-tab-panels>
-
       </q-card>
     </q-intersection>
   </div>
@@ -373,10 +298,6 @@ export default defineComponent({
         "Accepted.",
         "Accepted."
       ],
-      /*
-       * MODRINTH
-       */
-      modrinth: ref(true),
       zipInfo: ref(false)
     }
   },
@@ -579,14 +500,6 @@ export default defineComponent({
         this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
 
       }
-    },
-/*
- *
- *  MODRINTH
- *
- */
-    submitModrinth() {
-
     }
   },
   mounted() {
