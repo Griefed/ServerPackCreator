@@ -165,8 +165,8 @@ Docker Test:
       --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
       --build-arg HOSTER=$CI_SERVER_HOST
       --file Dockerfile .
-#  rules:
-#    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
 Generate Release:
   stage: Release
