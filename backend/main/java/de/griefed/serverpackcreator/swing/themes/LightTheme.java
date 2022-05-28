@@ -61,21 +61,14 @@ public class LightTheme extends MaterialLiteTheme {
                                 BorderFactory.createLineBorder(backgroundTableHeader),
                                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         this.borderToolBar = borderSpinner;
-
         this.borderDialogRootPane = MaterialBorders.LIGHT_SHADOW_BORDER;
-
         this.borderProgressBar = borderSpinner;
-
-        // this.borderComboBox = MaterialBorders.roundedLineColorBorder(MaterialColors.WHITE,
-        // this.getArchBorderComboBox());
         this.borderTable = borderSpinner;
         this.borderTableHeader =
                 new BorderUIResource(
                         new DropShadowBorder(this.backgroundPrimary, 5, 3, 0.4f, 12, true, true, true, true));
-
         super.borderTitledBorder =
                 new BorderUIResource(BorderFactory.createLineBorder(MaterialColors.WHITE));
-
         super.titleColorTaskPane = MaterialColors.BLACK;
     }
 

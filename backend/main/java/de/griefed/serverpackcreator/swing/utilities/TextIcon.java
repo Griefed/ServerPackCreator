@@ -1,3 +1,51 @@
+/* Copyright (C) 2022  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ *
+ * #####################################################################################################################
+ *
+ * Addendum from the Java Tips Weblog's About page:
+ *
+ * It should be noted that none of the code presented here is used in any real application,  (I only do this for a hobby)
+ * and therefore you use it at your own risk. Although I must admit I took about 5-10 minutes to do extensive testing, so
+ * I doubt you will find many bugs :-).
+ *
+ * We assume no responsibility for the code. You are free to use and/or modify and/or distribute any or all code posted
+ * on the Java Tips Weblog without restriction. A credit in the code comments would be nice, but not in any way mandatory.
+ *
+ * "Give somebody a fish, and they eat for a day.
+ * Teach somebody to fish they eat for life!"
+ *
+ * In following the philosophy of the above quote, whenever possible, I will also attempt to provide links for related
+ * reading to help you better understand the suggested solution. These readings may include tips to help solve your next
+ * problem. I may include links to:
+ *
+ * technical articles
+ * tutorials
+ * the Java API
+ * The Java API is huge, and we do not have time to read it from start to finish. If the examples do not solve your problem,
+ * hopefully they can at least give you some ideas and introduce you to new APIs and concepts.
+ *
+ * Rob
+ *
+ * #####################################################################################################################
+ *
+ */
 package de.griefed.serverpackcreator.swing.utilities;
 
 import javax.swing.*;
