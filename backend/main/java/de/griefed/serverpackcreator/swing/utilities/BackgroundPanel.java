@@ -190,8 +190,8 @@ public class BackgroundPanel extends JPanel {
      * @author Rob Camick
      * @param component JComponent to add to the panel.
      */
-    public void add(JComponent component) {
-        add(component, null);
+    public void addComponent(JComponent component) {
+        addComponent(component, null);
     }
 
     /**
@@ -214,7 +214,7 @@ public class BackgroundPanel extends JPanel {
      * @param component JComponent to add to the panel.
      * @param constraints Constraints with which the panel should be added.
      */
-    public void add(JComponent component, Object constraints) {
+    public void addComponent(JComponent component, Object constraints) {
         if (isTransparentAdd) {
             makeComponentTransparent(component);
         }

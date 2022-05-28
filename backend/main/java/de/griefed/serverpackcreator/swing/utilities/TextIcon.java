@@ -86,7 +86,7 @@ public class TextIcon implements Icon, PropertyChangeListener
     public enum Layout
     {
         HORIZONTAL,
-        VERTICAL;
+        VERTICAL
     }
 
     private final JComponent component;
