@@ -40,6 +40,7 @@ import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -1317,7 +1318,7 @@ public class TabCreateServerPack extends JComponent {
      * @author Griefed
      * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list of available Forge versions.
      */
-    private void updateForgeComboBoxVersions(String chosenMinecraftVersion) {
+    private void updateForgeComboBoxVersions(@Nullable String chosenMinecraftVersion) {
 
         if (chosenMinecraftVersion != null && VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).isPresent()) {
 
@@ -1339,16 +1340,14 @@ public class TabCreateServerPack extends JComponent {
 
         chosenMinecraftVersion = Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString();
 
-        updateForgeComboBoxVersions(Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
+        updateModloaderGuiComponents(Objects.requireNonNull(COMBOBOX_MODLOADERS.getSelectedItem()).toString());
 
-        LOG.debug("Selected Minecraft version: " + COMBOBOX_MINECRAFTVERSIONS.getSelectedItem());
     }
 
     private void actionEventComboBoxModloaderVersions(ActionEvent event) {
 
-        chosenModloaderVersion = COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString();
+        chosenModloaderVersion = Objects.requireNonNull(COMBOBOX_MODLOADER_VERSIONS.getSelectedItem()).toString();
 
-        LOG.debug("Selected " + COMBOBOX_MODLOADERS.getSelectedItem().toString() + " version " + COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString());
     }
 
     /**
@@ -1405,6 +1404,9 @@ public class TabCreateServerPack extends JComponent {
         COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(0);
         chosenModloaderVersion = COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString();
         chosenModloader = modloader;
+
+        LOG.debug("Minecraft version: " + COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString() + "; Modloader: " + COMBOBOX_MODLOADERS.getSelectedItem().toString() + "; Modloader version " + COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString());
+
     }
 
     /**
@@ -1811,8 +1813,8 @@ public class TabCreateServerPack extends JComponent {
                 checkBoxServer.isSelected(),
                 TEXTFIELD_JAVAPATH.getText().replace("\\","/"),
                 chosenMinecraftVersion,
-                getChosenModloader(),
-                getSelectedModloaderVersion(),
+                chosenModloader,
+                chosenModloaderVersion,
                 checkBoxIcon.isSelected(),
                 checkBoxProperties.isSelected(),
                 checkBoxZIP.isSelected(),
