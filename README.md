@@ -32,7 +32,7 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub contributors](https://img.shields.io/github/contributors/Griefed/ServerPackCreator?color=c0ffee&label=Contributors&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/graphs/contributors)
 
-**ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric modpack. Customize the
+**ServerPackCreator is a Java-program which creates a server pack from any given Forge, Fabric or Quilt modpack. Customize the
 configuration to your liking and off you go.**
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a
 server pack for your new modpack version.**
@@ -136,7 +136,7 @@ Huge shoutout and thank you!**
 # 2. Features
 
 1. **Generate a config step-by-step by running with argument**`-cgen`
-2. **Install a Forge or Fabric modloader server in your server pack**
+2. **Install a Forge, Fabric or Quilt modloader server in your server pack**
 3. **Configurable list of clientside-only mods to not include your server pack**
    1. ServerPackCreator will automatically try and detect as many clientside-only mods as possible and exclude them.
 4. **Configurable list of directories from your modpack to include in your server pack**
@@ -144,7 +144,7 @@ Huge shoutout and thank you!**
    2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
    3. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
    4. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
-5. **Generate Forge or Fabric start-scripts in your server pack**
+5. **Generate Forge, Fabric or Quilt start-scripts in your server pack**
    1. Specify JVM flags / Java Args for your start scripts!
 6. **Include a server-icon.png-file in your server pack**
    1. Replace the file in `server-files` with your own!
@@ -259,10 +259,10 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 | modpackDir                | The path to the directory/ZIP-archive where your modpack resides in.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | clientMods                | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look. |
 | copyDirs                  | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`.                                                                                                                                                                                                                                     |
-| includeServerInstallation | Whether to install a Forge/Fabric server for the serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| includeServerInstallation | Whether to install a Forge, Fabric or Quilt server for the serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | javaPath                  | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.                                                                                                                                                                                                                                                                                                                                                  |
 | minecraftVersion          | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses.                                                                                                                                                                                                                                                                                                                                                                                                  |
-| modLoader                 | Which modloader to install. Must be either "Forge" or "Fabric". The same modloader your modpack uses.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| modLoader                 | Which modloader to install. Must be either "Forge", "Fabric" or "Quilt". The same modloader your modpack uses.                                                                                                                                                                                                                                                                                                                                                                                                        |
 | modLoaderVersion          | Specific Modloader version to install the server in the serverpack. The same version your modpack uses.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | includeServerIcon         | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | includeServerProperties   | Whether to include server.properties in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -298,7 +298,6 @@ de.griefed.serverpackcreator.spring.schedules.versions.refresh=0 0 0 * * *
 de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage=90
 de.griefed.serverpackcreator.configuration.saveloadedconfig=false
 de.griefed.serverpackcreator.configuration.directories.mustinclude=mods,config,defaultconfigs,scripts,saves,seeds,libraries
-de.griefed.serverpackcreator.curseforge.api.token=
 ```
 
 | Property                                                               | Description                                                                                                                                                                            |
@@ -321,7 +320,6 @@ de.griefed.serverpackcreator.curseforge.api.token=
 | de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage       | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.                                                             |
 | de.griefed.serverpackcreator.configuration.saveloadedconfig            | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                                                                                    |
 | de.griefed.serverpackcreator.configuration.directories.mustinclude     | List of directories which must be included in a server pack.                                                                                                                           |
-| de.griefed.serverpackcreator.curseforge.api.token                      | CurseAPI token used for generating server packs from CurseForge projects.                                                                                                              |
 
 # 5.1.2 Default `application.properties` 
 

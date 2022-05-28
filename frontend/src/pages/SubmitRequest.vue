@@ -156,15 +156,22 @@ UPLOAD AND CREATE FROM ZIP
                         :label="modloaderVersion"
                         no-caps
                         size="100%">
-                        <q-list v-if="modLoader === modloaders[0]">
+                        <q-list v-if="modLoader === 'Forge'">
                           <q-item v-for="version in forgeVersions" v-bind:key="version" clickable v-close-popup @click="modloaderVersion = version">
                             <q-item-section>
                               {{version}}
                             </q-item-section>
                           </q-item>
                         </q-list>
-                        <q-list v-else>
+                        <q-list v-else-if="modLoader === 'Fabric'">
                           <q-item v-for="version in fabricVersions" v-bind:key="version" clickable v-close-popup @click="modloaderVersion = version">
+                            <q-item-section>
+                              {{version}}
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
+                        <q-list v-else-if="modLoader === 'Quilt'">
+                          <q-item v-for="version in quiltVersions" v-bind:key="version" clickable v-close-popup @click="modloaderVersion = version">
                             <q-item-section>
                               {{version}}
                             </q-item-section>
@@ -278,14 +285,12 @@ export default defineComponent({
       minecraftVersion: ref("1.18.1"),
       minecraftVersions: ref([]),
       modLoader: ref("Forge"),
-      modloaders: [
-        "Forge",
-        "Fabric"
-      ],
+      modloaders: ref([]),
       clientsideMods: ref([]),
       clientsideModsDefault: ref([]),
       forgeVersions: ref([]),
       fabricVersions: ref([]),
+      quiltVersions: ref([]),
       modloaderVersion: ref(""),
       zipName: ref(""),
       disableZip: ref(true),
@@ -412,43 +417,54 @@ export default defineComponent({
      * @param loader The selected modloader.
      */
     modLoaderSelected(loader) {
-      //Forge
-      if (loader === this.modloaders[0]) {
 
-        this.modLoader = 'Forge';
+      switch (loader) {
+        case "Forge":
 
-        api.get("/versions/forge/" + this.minecraftVersion)
-          .then(response => {
+          this.modLoader = 'Forge';
+          api.get("/versions/forge/" + this.minecraftVersion)
+            .then(response => {
 
-            this.forgeVersions = response.data.forge;
+              this.forgeVersions = response.data.forge;
 
-            if (this.forgeVersions.length === 0) {
+              if (this.forgeVersions.length === 0) {
 
-              this.modloaderVersion = 'None';
+                this.modloaderVersion = 'None';
 
-            } else {
+              } else {
 
-              this.modloaderVersion = this.forgeVersions[0];
+                this.modloaderVersion = this.forgeVersions[0];
 
-            }
+              }
 
-            this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
+              this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
 
-          })
-          .catch(error => {
-            console.log(error);
-            this.errorNotification(error);
-          });
+            })
+            .catch(error => {
+              console.log(error);
+              this.errorNotification(error);
+            });
+          break;
 
-      // Fabric
-      } else {
+        case "Fabric":
 
-        this.modLoader = 'Fabric';
-        this.modloaderVersion = this.fabricVersions[0];
+          this.modLoader = 'Fabric';
+          this.modloaderVersion = this.fabricVersions[0];
 
-        if (this.modloaderVersion !== 'None' && this.zipName !== "") {
-          this.disableZip = false;
-        }
+          if (this.modloaderVersion !== 'None' && this.zipName !== "") {
+            this.disableZip = false;
+          }
+
+          break;
+
+        case "Quilt":
+
+          this.modLoader = 'Quilt';
+          this.modloaderVersion = this.quiltVersions[0];
+
+          if (this.modloaderVersion !== 'None' && this.zipName !== "") {
+            this.disableZip = false;
+          }
       }
     },
     /**
@@ -512,6 +528,7 @@ export default defineComponent({
       .then(response => {
         this.clientsideMods = response.data.listFallbackMods;
         this.clientsideModsDefault = response.data.listFallbackMods;
+        this.modloaders = response.data.supportedModloaders;
       })
       .catch(error => {
         console.log(error);
@@ -548,13 +565,27 @@ export default defineComponent({
       });
 
     /*
- * Acquire a list of available Fabric versions from our backend.
- * We do not get this list from Fabric directly because we need to make sure we only submit request to the backend
- * with versions that are available to the backend, too.
- */
+     * Acquire a list of available Fabric versions from our backend.
+     * We do not get this list from Fabric directly because we need to make sure we only submit request to the backend
+     * with versions that are available to the backend, too.
+     */
     api.get("/versions/fabric")
       .then(response => {
         this.fabricVersions = response.data.fabric;
+      })
+      .catch(error => {
+        console.log(error);
+        this.errorNotification(error);
+      });
+
+    /*
+     * Acquire a list of available Quilt versions from our backend.
+     * We do not get this list from Quilt directly because we need to make sure we only submit request to the backend
+     * with versions that are available to the backend, too.
+     */
+    api.get("/versions/quilt")
+      .then(response => {
+        this.quiltVersions = response.data.quilt;
       })
       .catch(error => {
         console.log(error);

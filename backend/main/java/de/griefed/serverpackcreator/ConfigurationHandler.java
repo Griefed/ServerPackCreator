@@ -96,7 +96,9 @@ public class ConfigurationHandler {
                     APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
                     APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
                     APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
+                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION()
             );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
@@ -463,8 +465,9 @@ public class ConfigurationHandler {
                         )
         );
 
-
-        if (checkZipArchive(Paths.get(configurationModel.getModpackDir()), encounteredErrors)) return true;
+        if (checkZipArchive(Paths.get(configurationModel.getModpackDir()), encounteredErrors)) {
+            return true;
+        }
 
         // Does the modpack extracted from the ZIP-archive already exist?
         if (new File(destination).isDirectory()) {
@@ -1281,16 +1284,17 @@ public class ConfigurationHandler {
      */
     public boolean checkModloader(String modloader) {
 
-        if (modloader.toLowerCase().contains("forge") || modloader.toLowerCase().contains("fabric")) {
+        if (modloader.toLowerCase().contains("forge") || modloader.toLowerCase().contains("fabric") || modloader.toLowerCase().contains("quilt")) {
 
             return true;
 
+        } else {
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
+
+            return false;
         }
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
-
-        return false;
 
     }
 
@@ -1304,21 +1308,26 @@ public class ConfigurationHandler {
      */
     public boolean checkModloaderVersion(String modloader, String modloaderVersion, String minecraftVersion) {
 
-        if (modloader.equalsIgnoreCase("Forge") && VERSIONMETA.forge().checkForgeAndMinecraftVersion(minecraftVersion,modloaderVersion)) {
+        switch (modloader) {
+            case "Forge":
 
-            return true;
+                return VERSIONMETA.forge().checkForgeAndMinecraftVersion(minecraftVersion,modloaderVersion);
 
-        } else if (modloader.equalsIgnoreCase("Fabric") && VERSIONMETA.fabric().checkFabricVersion(modloaderVersion)) {
+            case "Fabric":
 
-            return true;
+                return VERSIONMETA.fabric().checkFabricVersion(modloaderVersion);
 
-        } else {
+            case "Quilt":
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloaderversion"));
+                return VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion);
 
-            return false;
+            default:
 
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloaderversion"));
+
+                return false;
         }
+
     }
 }

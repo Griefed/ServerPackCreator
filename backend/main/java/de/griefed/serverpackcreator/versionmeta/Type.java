@@ -68,7 +68,17 @@ public enum Type {
     /**
      * Indicates this operation concerns Fabric Installer.
      */
-    FABRIC_INSTALLER("Fabric Installer");
+    FABRIC_INSTALLER("Fabric Installer"),
+
+    /**
+     * Indicates this operation concerns Quilt.
+     */
+    QUILT("Quilt"),
+
+    /**
+     * Indicates this operation concerns Quilt Installer.
+     */
+    QUILT_INSTALLER("Quilt Installer");
 
     public final String type;
 

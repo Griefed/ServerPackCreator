@@ -75,7 +75,7 @@ public class ServerPackHandler {
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final Utilities UTILITIES;
     private final ApplicationPlugins APPLICATIONPLUGINS;
-    private final StopWatch STOPWATCH = new StopWatch();
+    private final StopWatch STOPWATCH_SCANS = new StopWatch();
 
     /**
      * <strong>Constructor</strong><p>
@@ -115,7 +115,9 @@ public class ServerPackHandler {
                     APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
                     APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
                     APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
+                    APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+                    APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION()
             );
         } else {
             this.VERSIONMETA = injectedVersionMeta;
@@ -224,9 +226,10 @@ public class ServerPackHandler {
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
             copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(), configurationModel.getClientMods(), configurationModel.getMinecraftVersion(), destination, configurationModel.getModLoader());
 
-            // Copy start scripts for specified modloader from server_files to server pack.
+            // Create the start scripts for this server pack.
             createStartScripts(configurationModel.getModLoader(), configurationModel.getJavaArgs(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), destination);
 
+            // TODO move the modloader server installation so it is run AFTER the ZIP-archive is created.
             // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
             if (configurationModel.getIncludeServerInstallation()) {
                 installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath(), destination);
@@ -238,7 +241,6 @@ public class ServerPackHandler {
             if (configurationModel.getModLoader().equalsIgnoreCase("Fabric")) {
                 provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),configurationModel.getModLoaderVersion(), destination);
             }
-
 
             // If true, copy the server-icon.png from server_files to the server pack.
             if (configurationModel.getIncludeServerIcon()) {
@@ -271,7 +273,7 @@ public class ServerPackHandler {
                 LOG.info("No PreZipExtension addons to execute.");
             }
 
-
+            // TODO Move the ZIP-archive creation so it is run BEFORE the modloader server is installed.
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (configurationModel.getIncludeZipCreation()) {
                 zipBuilder(configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation(), destination);
@@ -386,42 +388,53 @@ public class ServerPackHandler {
             javaArguments = "";
         }
 
-        if (modLoader.equalsIgnoreCase("Forge")) {
+        switch (modLoader) {
+            case "Forge":
 
-            String[] minecraft = minecraftVersion.split("\\.");
+                String[] minecraft = minecraftVersion.split("\\.");
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.forge"));
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.forge"));
 
-            if (Integer.parseInt(minecraft[1]) < 17) {
+                if (Integer.parseInt(minecraft[1]) < 17) {
 
-                forgeBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-                forgeShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
+                    forgeBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
+                    forgeShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
 
-            } else {
+                } else {
 
-                forgeBatchScriptNewMC(javaArguments, minecraftVersion, modloaderVersion, destination);
-                forgeShellScriptNewMC(javaArguments, minecraftVersion, modloaderVersion, destination);
-                forgeJvmArgsTxt(javaArguments, destination);
-            }
+                    forgeBatchScriptNewMC(javaArguments, minecraftVersion, modloaderVersion, destination);
+                    forgeShellScriptNewMC(javaArguments, minecraftVersion, modloaderVersion, destination);
+                    forgeJvmArgsTxt(javaArguments, destination);
+                }
 
-        } else if (modLoader.equalsIgnoreCase("Fabric")) {
+                break;
+            case "Fabric":
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.fabric"));
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.fabric"));
 
-            fabricBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-            fabricShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
+                fabricBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
+                fabricShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
 
-        } else {
+                break;
+            case "Quilt":
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copystartscripts.quilt"));
+
+                quiltBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
+                quiltShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
+
+                break;
+            default:
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
         }
     }
 
     /**
-     * Create a fabric shell start script
+     * Create a Fabric shell start script
      * @author Griefed
      * @param javaArguments String. Java arguments with which the server should be started
      * @param minecraftVersion String. Minecraft version of this server pack.
@@ -448,7 +461,8 @@ public class ServerPackHandler {
             // Fabric Bash file
             writer.write("#!/usr/bin/env bash\n");
             writer.write("# Start script generated by ServerPackCreator.\n");
-            writer.write("# This script checks for the Minecraft and Forge JAR-Files, and if they are not found, they are downloaded and installed.\n");
+            writer.write("# This script checks for the Minecraft and Fabric JAR-Files, and if they are not found, they are downloaded and installed.\n");
+            writer.write("# Should this server pack come with the improved Fabric Server Launcher, then it is used instead of the old one.\n");
             writer.write("# If everything is in order, the server is started.\n");
             writer.write("\n");
             writer.write("JAVA=\"java\"\n");
@@ -473,7 +487,7 @@ public class ServerPackHandler {
             writer.write("  if [[ -s \"fabric-installer.jar\" ]];then\n");
             writer.write("\n");
             writer.write("    echo \"Installer downloaded. Installing...\";\n");
-            writer.write("    java -jar fabric-installer.jar server -mcversion $MINECRAFT -loader $FABRIC -downloadMinecraft;\n");
+            writer.write("    $JAVA -jar fabric-installer.jar server -mcversion $MINECRAFT -loader $FABRIC -downloadMinecraft;\n");
             writer.write("\n");
             writer.write("    if [[ -s \"fabric-server-launch.jar\" ]];then\n");
             writer.write("      rm -rf .fabric-installer;\n");
@@ -482,7 +496,7 @@ public class ServerPackHandler {
             writer.write("    fi\n");
             writer.write("\n");
             writer.write("  else\n");
-            writer.write("    echo \"fabric-installer.jar not found. Maybe the Fabric server are having trouble.\";\n");
+            writer.write("    echo \"fabric-installer.jar not found. Maybe the Fabric servers are having trouble.\";\n");
             writer.write("    echo \"Please try again in a couple of minutes.\";\n");
             writer.write("  fi\n");
             writer.write("else\n");
@@ -531,12 +545,12 @@ public class ServerPackHandler {
 
         } catch (IOException ex) {
             /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error("Error generating shell-script for Forge.", ex);
+            LOG.error("Error generating shell-script for Fabric.", ex);
         }
     }
 
     /**
-     * Create a fabric batch start script.
+     * Create a Fabric batch start script.
      * @author Griefed
      * @param javaArguments String. Java arguments wich which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
@@ -562,7 +576,8 @@ public class ServerPackHandler {
 
             // Fabric Batch file
             writer.write(":: Start script generated by ServerPackCreator.\n");
-            writer.write(":: This script checks for the Minecraft and Fabric JAR-files, and if they are not found, they are downloaded and installed.\n");
+            writer.write(":: This script checks for the Minecraft and Fabric JAR-Files, and if they are not found, they are downloaded and installed.\n");
+            writer.write(":: Should this server pack come with the improved Fabric Server Launcher, then it is used instead of the old one.\n");
             writer.write(":: If everything is in order, the server is started.\n");
             writer.write("@ECHO off\n");
             writer.write("\n");
@@ -591,7 +606,7 @@ public class ServerPackHandler {
             writer.write("    IF EXIST fabric-installer.jar (\n");
             writer.write("\n");
             writer.write("      ECHO Installer downloaded. Installing...\n");
-            writer.write("      java -jar fabric-installer.jar server -mcversion %MINECRAFT% -loader %FABRIC% -downloadMinecraft\n");
+            writer.write("      %JAVA% -jar fabric-installer.jar server -mcversion %MINECRAFT% -loader %FABRIC% -downloadMinecraft\n");
             writer.write("\n");
             writer.write("      IF EXIST fabric-server-launch.jar (\n");
             writer.write("        RMDIR /S /Q .fabric-installer\n");
@@ -652,7 +667,224 @@ public class ServerPackHandler {
             writer.write("PAUSE");
 
         } catch (IOException ex) {
-            LOG.error("Error generating batch-script for Forge.", ex);
+            LOG.error("Error generating batch-script for Fabric.", ex);
+        }
+    }
+
+    /**
+     * Create a Quilt shell start script
+     * @author Griefed
+     * @param javaArguments String. Java arguments with which the server should be started
+     * @param minecraftVersion String. Minecraft version of this server pack.
+     * @param modloaderVersion String. Modloader version of this server pack.
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     */
+    private void quiltShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
+
+        try (BufferedWriter writer = new BufferedWriter(
+                new FileWriter(
+                        String.valueOf(
+                                Paths.get(
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())
+                                )
+                        )
+                )
+        )) {
+
+            if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
+                LOG.error("A server is not available for the specified Minecraft version.");
+                return;
+            }
+
+            // Quilt Bash file
+            writer.write("#!/usr/bin/env bash\n");
+            writer.write("# Start script generated by ServerPackCreator.\n");
+            writer.write("# This script checks for the Minecraft and Quilt JAR-Files, and if they are not found, they are downloaded and installed.\n");
+            writer.write("# If everything is in order, the server is started.\n");
+            writer.write("\n");
+            writer.write("JAVA=\"java\"\n");
+            writer.write("MINECRAFT=\"" + minecraftVersion + "\"\n");
+            writer.write("QUILT=\"" + modloaderVersion + "\"\n");
+            writer.write("INSTALLER=\"" + VERSIONMETA.quilt().releaseInstallerVersion() + "\"\n");
+            writer.write("ARGS=\"" + javaArguments + "\"\n");
+            writer.write("OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
+            writer.write("\n");
+            writer.write("if [[ ! -s \"quilt-server-launch.jar\" ]];then\n");
+            writer.write("\n");
+            writer.write("  echo \"Quilt Server JAR-file not found. Downloading installer...\";\n");
+            writer.write("  wget -O quilt-installer.jar https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/$INSTALLER/quilt-installer-$INSTALLER.jar;\n");
+            writer.write("\n");
+            writer.write("  if [[ -s \"quilt-installer.jar\" ]];then\n");
+            writer.write("\n");
+            writer.write("    echo \"Installer downloaded. Installing...\";\n");
+            writer.write("    $JAVA -jar quilt-installer.jar install server $MINECRAFT --download-server --install-dir=.;\n");
+            writer.write("    mv server/* .\n");
+            writer.write("\n");
+            writer.write("    if [[ -s \"quilt-server-launch.jar\" ]];then\n");
+            writer.write("      rm quilt-installer.jar;\n");
+            writer.write("      rm -r server;\n");
+            writer.write("      echo \"Installation complete. quilt-installer.jar deleted.\";\n");
+            writer.write("    fi\n");
+            writer.write("\n");
+            writer.write("  else\n");
+            writer.write("    echo \"quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble.\";\n");
+            writer.write("    echo \"Please try again in a couple of minutes.\";\n");
+            writer.write("  fi\n");
+            writer.write("else\n");
+            writer.write("  echo \"quilt-server-launch.jar present. Moving on...\";\n");
+            writer.write("\n");
+            writer.write("  if [[ ! -s \"server.jar\" ]];then\n");
+            writer.write("    echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
+            writer.write("    wget -O server.jar " + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + ";\n");
+            writer.write("  else\n");
+            writer.write("    echo \"server.jar present. Moving on...\";\n");
+            writer.write("  fi\n");
+            writer.write("\n");
+            writer.write("fi\n");
+            writer.write("\n");
+            writer.write("if [[ ! -s \"eula.txt\" ]];then\n");
+            writer.write("\n");
+            writer.write("  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n");
+            writer.write("  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
+            writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
+            writer.write("\n");
+            writer.write("  read ANSWER\n");
+            writer.write("\n");
+            writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
+            writer.write("\n");
+            writer.write("    echo \"User agreed to Mojang's EULA.\"\n");
+            writer.write("    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n");
+            writer.write("    echo \"eula=true\" >> eula.txt;\n");
+            writer.write("\n");
+            writer.write("  else\n");
+            writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
+            writer.write("  fi\n");
+            writer.write("\n");
+            writer.write("else\n");
+            writer.write("  echo \"eula.txt present. Moving on...\";\n");
+            writer.write("fi\n");
+            writer.write("\n");
+            writer.write("echo \"Starting server...\";\n");
+            writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
+            writer.write("echo \"Quilt version: $QUILT\";\n");
+            writer.write("echo \"Java version:\"\n");
+            // Bash, Linux, we must use -version
+            writer.write("$JAVA -version\n");
+            writer.write("echo \"Java args: $ARGS\";\n");
+            writer.write("\n");
+            writer.write("$JAVA $OTHERARGS $ARGS -jar quilt-server-launch.jar nogui");
+
+        } catch (IOException ex) {
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            LOG.error("Error generating shell-script for Quilt.", ex);
+        }
+    }
+
+    /**
+     * Create a Quilt batch start script.
+     * @author Griefed
+     * @param javaArguments String. Java arguments wich which the server should be started.
+     * @param minecraftVersion String. The Minecraft version of this server pack.
+     * @param modloaderVersion String. The modloader version of this server pack.
+     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     */
+    private void quiltBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
+
+        try (BufferedWriter writer = new BufferedWriter(
+                new FileWriter(
+                        String.valueOf(
+                                Paths.get(
+                                        String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())
+                                )
+                        )
+                )
+        )) {
+
+            if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
+                LOG.error("A server is not available for the specified Minecraft version.");
+                return;
+            }
+
+            // Quilt Batch file
+            writer.write(":: Start script generated by ServerPackCreator.\n");
+            writer.write(":: This script checks for the Minecraft and Quilt JAR-Files, and if they are not found, they are downloaded and installed.\n");
+            writer.write(":: If everything is in order, the server is started.\n");
+            writer.write("@ECHO off\n");
+            writer.write("\n");
+            writer.write("SET JAVA=\"java\"\n");
+            writer.write("SET MINECRAFT=\"" + minecraftVersion + "\"\n");
+            writer.write("SET QUILT=\"" + modloaderVersion + "\"\n");
+            writer.write("SET INSTALLER=\"" + VERSIONMETA.quilt().releaseInstallerVersion() + "\"\n");
+            writer.write("SET ARGS=" + javaArguments + "\n");
+            writer.write("SET OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
+            writer.write("SET AGREE=\"I agree\"\n");
+            writer.write("\n");
+            writer.write("IF NOT EXIST quilt-server-launch.jar (\n");
+            writer.write("\n");
+            writer.write("  ECHO Quilt Server JAR-file not found. Downloading installer...\n");
+            writer.write("  powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%INSTALLER%/quilt-installer-%INSTALLER%.jar', 'quilt-installer.jar')\"\n");
+            writer.write("\n");
+            writer.write("  IF EXIST quilt-installer.jar (\n");
+            writer.write("\n");
+            writer.write("    ECHO Installer downloaded. Installing...\n");
+            writer.write("    %JAVA% -jar quilt-installer.jar install server %MINECRAFT% --download-server --install-dir=.\n");
+            writer.write("\n");
+            writer.write("    IF EXIST quilt-server-launch.jar (\n");
+            writer.write("      DEL quilt-installer.jar\n");
+            writer.write("      ECHO Installation complete. quilt-installer.jar deleted.\n");
+            writer.write("    )\n");
+            writer.write("\n");
+            writer.write("  ) ELSE (\n");
+            writer.write("    ECHO quilt-installer.jar not found. Maybe the Quilt servers are having trouble.\n");
+            writer.write("    ECHO Please try again in a couple of minutes.\n");
+            writer.write("  )\n");
+            writer.write(") ELSE (\n");
+            writer.write("  ECHO quilt-server-launch.jar present. Moving on...\n");
+            writer.write("\n");
+            writer.write("  IF NOT EXIST server.jar (\n");
+            writer.write("    ECHO Minecraft Server JAR-file not found. Downloading...\n");
+            writer.write("    powershell -Command \"(New-Object Net.WebClient).DownloadFile('" + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url() + "', 'server.jar')\"\n");
+            writer.write("  ) ELSE (\n");
+            writer.write("    ECHO server.jar present. Moving on...\n");
+            writer.write("  )\n");
+            writer.write("\n");
+            writer.write(")\n");
+            writer.write("\n");
+            writer.write("IF NOT EXIST eula.txt (\n");
+            writer.write("\n");
+            writer.write("  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n");
+            writer.write("  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
+            writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
+            writer.write("\n");
+            writer.write("  set /P \"Response=\"\n");
+            writer.write("\n");
+            writer.write("  IF \"%Response%\" == \"%AGREE%\" (\n");
+            writer.write("\n");
+            writer.write("    ECHO User agreed to Mojang's EULA.\n");
+            writer.write("    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n");
+            writer.write("    ECHO eula=true>> eula.txt\n");
+            writer.write("\n");
+            writer.write("  ) else (\n");
+            writer.write("    ECHO User did not agree to Mojang's EULA. \n");
+            writer.write("  )\n");
+            writer.write("\n");
+            writer.write(") ELSE (\n");
+            writer.write("  ECHO eula.txt present. Moving on...\n");
+            writer.write(")\n");
+            writer.write("\n");
+            writer.write("ECHO Starting server...\n");
+            writer.write("ECHO Minecraft version: %MINECRAFT%\n");
+            writer.write("ECHO Quilt version: %QUILT%\n");
+            writer.write("ECHO Java version:\n");
+            writer.write("%JAVA% --version\n");
+            writer.write("ECHO Java args: %ARGS%\n");
+            writer.write("\n");
+            writer.write("%JAVA% \"%OTHERARGS%\" %ARGS% -jar quilt-server-launch.jar nogui\n");
+            writer.write("\n");
+            writer.write("PAUSE");
+
+        } catch (IOException ex) {
+            LOG.error("Error generating batch-script for Quilt.", ex);
         }
     }
 
@@ -740,7 +972,7 @@ public class ServerPackHandler {
             writer.write("  if [[ -s \"forge-installer.jar\" ]]; then\n");
             writer.write("\n");
             writer.write("    echo \"Installer downloaded. Installing...\";\n");
-            writer.write("    java -jar forge-installer.jar --installServer;\n");
+            writer.write("    $JAVA -jar forge-installer.jar --installServer;\n");
             writer.write("\n");
             writer.write("    if [[ -s \"libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-server.jar\" ]];then\n");
             writer.write("      rm -f forge-installer.jar;\n");
@@ -748,7 +980,7 @@ public class ServerPackHandler {
             writer.write("    fi\n");
             writer.write("\n");
             writer.write("  else\n");
-            writer.write("    echo \"forge-installer.jar not found. Maybe the Forges servers are having trouble.\";\n");
+            writer.write("    echo \"forge-installer.jar not found. Maybe the Forge servers are having trouble.\";\n");
             writer.write("    echo \"Please try again in a couple of minutes.\";\n");
             writer.write("  fi\n");
             writer.write("else\n");
@@ -861,7 +1093,7 @@ public class ServerPackHandler {
             writer.write("  IF EXIST forge-installer.jar (\n");
             writer.write("\n");
             writer.write("    ECHO Installer downloaded. Installing...\n");
-            writer.write("    java -jar forge-installer.jar --installServer\n");
+            writer.write("    %JAVA% -jar forge-installer.jar --installServer\n");
             writer.write("\n");
             writer.write("    IF EXIST libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-server.jar (\n");
             writer.write("      DEL forge-installer.jar\n");
@@ -869,7 +1101,7 @@ public class ServerPackHandler {
             writer.write("    )\n");
             writer.write("\n");
             writer.write("  ) ELSE (\n");
-            writer.write("    ECHO forge-installer.jar not found. Maybe the Forges servers are having trouble.\n");
+            writer.write("    ECHO forge-installer.jar not found. Maybe the Forge servers are having trouble.\n");
             writer.write("    ECHO Please try again in a couple of minutes.\n");
             writer.write("  )\n");
             writer.write(") ELSE (\n");
@@ -982,7 +1214,7 @@ public class ServerPackHandler {
             writer.write("  if [[ -s \"forge-installer.jar\" ]]; then\n");
             writer.write("\n");
             writer.write("    echo \"Installer downloaded. Installing...\";\n");
-            writer.write("    java -jar forge-installer.jar --installServer;\n");
+            writer.write("    $JAVA -jar forge-installer.jar --installServer;\n");
             writer.write("    mv forge-$MINECRAFT-$FORGE.jar forge.jar;\n");
             writer.write("\n");
             writer.write("    if [[ -s \"forge.jar\" ]];then\n");
@@ -991,7 +1223,7 @@ public class ServerPackHandler {
             writer.write("    fi\n");
             writer.write("\n");
             writer.write("  else\n");
-            writer.write("    echo \"forge-installer.jar not found. Maybe the Forges servers are having trouble.\";\n");
+            writer.write("    echo \"forge-installer.jar not found. Maybe the Forge servers are having trouble.\";\n");
             writer.write("    echo \"Please try again in a couple of minutes.\";\n");
             writer.write("  fi\n");
             writer.write("else\n");
@@ -1090,7 +1322,7 @@ public class ServerPackHandler {
             writer.write("  IF EXIST forge-installer.jar (\n");
             writer.write("\n");
             writer.write("    ECHO Installer downloaded. Installing...\n");
-            writer.write("    java -jar forge-installer.jar --installServer\n");
+            writer.write("    %JAVA% -jar forge-installer.jar --installServer\n");
             writer.write("    MOVE forge-%MINECRAFT%-%FORGE%.jar forge.jar\n");
             writer.write("\n");
             writer.write("    IF EXIST forge.jar (\n");
@@ -1099,7 +1331,7 @@ public class ServerPackHandler {
             writer.write("    )\n");
             writer.write("\n");
             writer.write("  ) ELSE (\n");
-            writer.write("    ECHO forge-installer.jar not found. Maybe the Forges servers are having trouble.\n");
+            writer.write("    ECHO forge-installer.jar not found. Maybe the Forge servers are having trouble.\n");
             writer.write("    ECHO Please try again in a couple of minutes.\n");
             writer.write("  )\n");
             writer.write(") ELSE (\n");
@@ -1397,26 +1629,39 @@ public class ServerPackHandler {
 
             String[] split = minecraftVersion.split("\\.");
 
-            STOPWATCH.reset();
-            STOPWATCH.start();
+            STOPWATCH_SCANS.reset();
+            STOPWATCH_SCANS.start();
             // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
-            if (modloader.equalsIgnoreCase("Forge")) {
 
-                if (Integer.parseInt(split[1]) > 12) {
-                    autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
-                } else {
-                    autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
-                }
+            switch (modloader) {
+                case "Fabric":
 
-            } else {
+                    autodiscoveredClientMods.addAll(scanFabricModJson(filesInModsDir));
+                    break;
 
-                autodiscoveredClientMods.addAll(scanFabricModJson(filesInModsDir));
+                case "Forge":
+
+                    if (Integer.parseInt(split[1]) > 12) {
+                        autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
+                    } else {
+                        autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
+                    }
+                    break;
+
+                case "Quilt":
+
+                    autodiscoveredClientMods.addAll(scanFabricModJson(filesInModsDir));
+                    scanQuiltModJson(filesInModsDir).forEach(quiltMod -> {
+                        if (!autodiscoveredClientMods.contains(quiltMod)) {
+                            autodiscoveredClientMods.add(quiltMod);
+                        }
+                    });
 
             }
 
-            STOPWATCH.stop();
-            LOG.debug("Scanning of " + filesInModsDir.size() + " mods took " + STOPWATCH);
-            STOPWATCH.reset();
+            STOPWATCH_SCANS.stop();
+            LOG.debug("Scanning of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
+            STOPWATCH_SCANS.reset();
 
         }
 
@@ -1624,58 +1869,88 @@ public class ServerPackHandler {
         BufferedReader bufferedReader = null;
         String fileDestination;
 
-        if (modLoader.equalsIgnoreCase("Fabric")) {
+        switch (modLoader) {
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
-
-            fileDestination = String.format("%s/fabric-installer.jar", destination);
-
-            if (UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.fabric().releaseInstallerUrl())) {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
-
-                commandArguments.add(javaPath);
-                commandArguments.add("-jar");
-                commandArguments.add("fabric-installer.jar");
-                commandArguments.add("server");
-                commandArguments.add("-mcversion");
-                commandArguments.add(minecraftVersion);
-                commandArguments.add("-loader");
-                commandArguments.add(modLoaderVersion);
-                commandArguments.add("-downloadMinecraft");
-
-            } else {
-
-                LOG.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
-            }
-
-        } else if (modLoader.equalsIgnoreCase("Forge")) {
-
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
-
-            fileDestination = String.format("%s/forge-installer.jar", destination);
-
-            if (VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).isPresent() &&
-                    UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).get().installerUrl())) {
+            case "Fabric":
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
-                commandArguments.add(javaPath);
-                commandArguments.add("-jar");
-                commandArguments.add("forge-installer.jar");
-                commandArguments.add("--installServer");
+                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter"));
 
-            } else {
+                fileDestination = String.format("%s/fabric-installer.jar", destination);
 
-                LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
-            }
+                if (UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.fabric().releaseInstallerUrl())) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.download"));
 
-        } else {
+                    commandArguments.add(javaPath);
+                    commandArguments.add("-jar");
+                    commandArguments.add("fabric-installer.jar");
+                    commandArguments.add("server");
+                    commandArguments.add("-mcversion");
+                    commandArguments.add(minecraftVersion);
+                    commandArguments.add("-loader");
+                    commandArguments.add(modLoaderVersion);
+                    commandArguments.add("-downloadMinecraft");
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
+                } else {
+
+                    LOG.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
+                }
+                break;
+
+            case "Forge":
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"));
+
+                fileDestination = String.format("%s/forge-installer.jar", destination);
+
+                if (VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).isPresent() &&
+                        UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).get().installerUrl())) {
+
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.download"));
+                    commandArguments.add(javaPath);
+                    commandArguments.add("-jar");
+                    commandArguments.add("forge-installer.jar");
+                    commandArguments.add("--installServer");
+
+                } else {
+
+                    LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
+                }
+                break;
+
+            case "Quilt":
+
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG_INSTALLER.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.quilt.enter"));
+
+                fileDestination = String.format("%s/quilt-installer.jar", destination);
+
+                if (UTILITIES.WebUtils().downloadFile(fileDestination, VERSIONMETA.quilt().releaseInstallerUrl())) {
+                    /* This log is meant to be read by the user, therefore we allow translation. */
+                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.quilt.download"));
+
+                    commandArguments.add(javaPath);
+                    commandArguments.add("-jar");
+                    commandArguments.add("quilt-installer.jar");
+                    commandArguments.add("install");
+                    commandArguments.add("server");
+                    commandArguments.add(minecraftVersion);
+                    commandArguments.add("--download-server");
+                    commandArguments.add("--install-dir=.");
+
+                } else {
+
+                    LOG.error("Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
+                }
+                break;
+
+            default:
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
+
         }
 
         try {
@@ -1729,9 +2004,6 @@ public class ServerPackHandler {
 
         if (APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled").equalsIgnoreCase("true")) {
             cleanUpServerPack(
-                    new File(String.format("%s/fabric-installer.jar", destination)),
-                    new File(String.format("%s/forge-installer.jar", destination)),
-                    modLoader,
                     minecraftVersion,
                     modLoaderVersion,
                     destination);
@@ -1790,130 +2062,40 @@ public class ServerPackHandler {
     /**
      * Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.
      * @author Griefed
-     * @param fabricInstaller File. The Fabric installer file which is to be deleted.
-     * @param forgeInstaller File. The Forge installer file which is to be deleted.
-     * @param modLoader String. Whether Forge or Fabric files are to be deleted.
      * @param minecraftVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
      * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
      * @param destination String. The destination where we should clean up in.
      */
-    private void cleanUpServerPack(File fabricInstaller, File forgeInstaller, String modLoader, String minecraftVersion, String modLoaderVersion, String destination) {
+    private void cleanUpServerPack(String minecraftVersion, String modLoaderVersion, String destination) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.enter"));
 
-        if (modLoader.equalsIgnoreCase("Fabric")) {
+        FileUtils.deleteQuietly(new File(String.format("%s/fabric-installer.jar", destination)));
+        FileUtils.deleteQuietly(new File(String.format("%s/forge-installer.jar", destination)));
+        FileUtils.deleteQuietly(new File(String.format("%s/quilt-installer.jar", destination)));
+        FileUtils.deleteQuietly(new File(String.format("%s/installer.log", destination)));
+        FileUtils.deleteQuietly(new File(String.format("%s/forge-installer.jar.log", destination)));
 
-            try {
-                if (Files.deleteIfExists(fabricInstaller.toPath())) {
+        Path path = Paths.get(String.format("%s/forge-%s-%s.jar", destination, minecraftVersion, modLoaderVersion));
 
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), fabricInstaller.getName()));
+        try {
 
-                } else {
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.cleanupserverpack.delete"), fabricInstaller.getName()));
-
-                }
-            } catch (IOException ex) {
-                LOG.error("Couldn't delete Fabric installer.");
+            if (new File(String.format("%s/forge-%s-%s.jar", destination, minecraftVersion, modLoaderVersion)).exists()) {
+                Files.copy(
+                        path,
+                        Paths.get(String.format("%s/forge.jar", destination)),
+                        REPLACE_EXISTING);
             }
 
-        } else if (modLoader.equalsIgnoreCase("Forge")) {
+        } catch (IOException ignored) {
 
-            String[] minecraft = minecraftVersion.split("\\.");
-
-            try {
-                if (Files.deleteIfExists(forgeInstaller.toPath())) {
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.deleted"), forgeInstaller.getName()));
-
-                } else {
-
-                    LOG.error(String.format("Could not delete %s.", forgeInstaller.getName()));
-                }
-
-            } catch (IOException ex) {
-                LOG.error("Couldn't delete Forge installer.");
-            }
-
-            try {
-                if (Files.deleteIfExists(Paths.get(String.format("%s/installer.log", destination)))) {
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.forgelog"));
-
-                } else if (Files.deleteIfExists(Paths.get(String.format("%s/forge-installer.jar.log", destination)))) {
-
-                    /* This log is meant to be read by the user, therefore we allow translation. */
-                    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.forgelog"));
-
-                }
-            } catch (IOException ex) {
-                LOG.error("Couldn't delete Forge server installation log.");
-            }
-
-            if (Integer.parseInt(minecraft[1]) < 17) {
-
-                Path path = Paths.get(String.format("%s/forge-%s-%s.jar", destination, minecraftVersion, modLoaderVersion));
-
-                try {
-
-                    Files.copy(
-                            path,
-                            Paths.get(String.format("%s/forge.jar", destination)),
-                            REPLACE_EXISTING);
-
-                } catch (IOException ex) {
-                    LOG.error("Error during Forge cleanup.", ex);
-                }
-
-                try {
-                    if (Files.deleteIfExists(path) &&
-                            (new File(String.format("%s/forge.jar", destination)).exists())) {
-
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.cleanupserverpack.rename"));
-
-                    } else {
-                        LOG.error("There was an error during renaming or deletion of the forge server jar.");
-                    }
-                } catch(IOException ex) {
-                    LOG.error("Couldn't delete old Forge jar.");
-                }
-
-            } else {
-
-                try {
-                    if (Files.deleteIfExists(Paths.get(String.format("%s/run.bat", destination)))) {
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.bat.delete"));
-                    } else {
-                        LOG.error("Could not delete run.bat.");
-                    }
-                } catch (IOException ex) {
-                    LOG.error("An error occurred during the deletion of run.bat.", ex);
-                }
-
-                try {
-                    if (Files.deleteIfExists(Paths.get(String.format("%s/run.sh", destination)))) {
-                        /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.sh.delete"));
-                    } else {
-                        LOG.error("Could not delete run.sh.");
-                    }
-                } catch (IOException ex) {
-                    LOG.error("An error occurred during the deletion of run.sh.", ex);
-                }
-
-            }
-
-        } else {
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"), modLoader));
         }
+
+        FileUtils.deleteQuietly(path.toFile());
+        FileUtils.deleteQuietly(Paths.get(String.format("%s/run.bat", destination)).toFile());
+        FileUtils.deleteQuietly(Paths.get(String.format("%s/run.sh", destination)).toFile());
+
     }
 
     /**
@@ -2748,6 +2930,188 @@ public class ServerPackHandler {
 
                     try {
                         if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
+                            if (clientMods.contains(modIdTocheck)) {
+                                addToDelta = true;
+                            }
+                        }
+                    } catch (NullPointerException ignored) {
+
+                    }
+
+                    if (addToDelta) {
+                        modsDelta.add(modToCheck);
+                    }
+
+                }
+
+
+            } catch (Exception ex) {
+
+                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+
+            } finally {
+
+                try {
+                    //noinspection ConstantConditions
+                    jarFile.close();
+                } catch (Exception ignored) {
+
+                }
+
+                try {
+                    //noinspection ConstantConditions
+                    inputStream.close();
+                } catch (Exception ignored) {
+
+                }
+
+            }
+        }
+
+        return modsDelta;
+    }
+
+    /**
+     * Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
+     * If <code>minecraft.environment</code> specifies <code>client</code>, and is not listed as a dependency
+     * for another mod, it is added and therefore later on excluded from the server pack.
+     * @author Griefed
+     * @param filesInModsDir A list of files in which to check the <code>fabric.mod.json</code>-files.
+     * @return List String. List of mods not to include in server pack based on fabric.mod.json-content.
+     */
+    private List<String> scanQuiltModJson(Collection<File> filesInModsDir) {
+        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scanquiltmodjson"));
+
+        List<String> modDependencies = new ArrayList<>();
+        List<String> clientMods = new ArrayList<>();
+        List<String> modsDelta = new ArrayList<>();
+
+
+        for (File mod : filesInModsDir) {
+            if (mod.toString().endsWith("jar")) {
+
+                String modId;
+
+                JarFile jarFile = null;
+                JarEntry jarEntry;
+                InputStream inputStream = null;
+
+                try {
+                    jarFile = new JarFile(mod);
+                    jarEntry = jarFile.getJarEntry("quilt.mod.json");
+                    inputStream = jarFile.getInputStream(jarEntry);
+                } catch (Exception ex) {
+                    LOG.error("Can not scan " + mod);
+                }
+
+                try {
+
+                    if (inputStream != null) {
+
+                        JsonNode modJson = getObjectMapper().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature()).readTree(inputStream);
+
+                        modId = modJson.get("quilt_loader").get("id").asText();
+
+                        //Get this mods id/name
+                        try {
+                            if (modJson.get("minecraft").get("environment").asText().equalsIgnoreCase("client")) {
+                                if (!clientMods.contains(modId)) {
+                                    clientMods.add(modId);
+
+                                    LOG.debug("Added clientMod: " + modId);
+                                }
+                            }
+                        } catch (NullPointerException ignored) {
+
+                        }
+
+                        //Get this mods dependencies
+                        try {
+
+                            for (JsonNode dependency : modJson.get("quilt_loader").get("depends")) {
+
+                                if (dependency.isContainerNode()) {
+                                    if (!modDependencies.contains(dependency.get("id").asText())) {
+                                        modDependencies.add(dependency.get("id").asText());
+                                    }
+                                } else {
+                                    if (!modDependencies.contains(dependency.asText())) {
+                                        modDependencies.add(dependency.asText());
+                                    }
+                                }
+
+                            }
+
+                        } catch (NullPointerException ignored) {
+
+                        }
+
+                    }
+
+                } catch(IOException ex) {
+
+                    LOG.error("Couldn't acquire sideness for mod " + mod,ex);
+
+                } finally {
+
+                    try {
+                        //noinspection ConstantConditions
+                        jarFile.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    try {
+                        //noinspection ConstantConditions
+                        inputStream.close();
+                    } catch (Exception ignored) {
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        //Remove dependencies from list of clientmods to ensure we do not, well, exclude a dependency of another mod.
+        for (String dependency : modDependencies) {
+
+            clientMods.removeIf(n -> (n.contains(dependency)));
+            LOG.debug("Removing " + dependency + " from list of clientmods as it is a dependency for another mod.");
+        }
+
+        //After removing dependencies from the list of potential clientside mods, we can remove any mod that says it is clientside-only.
+        for (File mod : filesInModsDir) {
+
+            String modToCheck = mod.toString().replace("\\", "/");
+            String modIdTocheck;
+
+            boolean addToDelta = false;
+
+            JarFile jarFile = null;
+            JarEntry jarEntry;
+            InputStream inputStream = null;
+
+            try {
+                jarFile = new JarFile(mod);
+                jarEntry = jarFile.getJarEntry("quilt.mod.json");
+                inputStream = jarFile.getInputStream(jarEntry);
+            } catch (Exception ex) {
+                LOG.error("Can not scan " + mod);
+            }
+
+            try {
+
+                if (inputStream != null) {
+
+                    JsonNode modJson = getObjectMapper().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature()).readTree(inputStream);
+
+                    // Get the modId
+                    modIdTocheck = modJson.get("quilt_loader").get("id").asText();
+
+                    try {
+                        if (modJson.get("minecraft").get("environment").asText().equalsIgnoreCase("client")) {
                             if (clientMods.contains(modIdTocheck)) {
                                 addToDelta = true;
                             }

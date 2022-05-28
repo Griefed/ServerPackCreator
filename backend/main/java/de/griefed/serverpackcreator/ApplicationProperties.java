@@ -208,6 +208,11 @@ public class ApplicationProperties extends Properties {
             "WorldNameRandomizer-," +
             "yisthereautojump-";
     private final String SERVERPACKCREATOR_VERSION;
+    private final String[] SUPPORTED_MODLOADERS = new String[] {
+            "Fabric",
+            "Forge",
+            "Quilt"
+    };
     private final List<String> FALLBACK_CLIENTSIDE_MODS = new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
 
     //DefaultFiles related
@@ -219,6 +224,8 @@ public class ApplicationProperties extends Properties {
     private final File FORGE_VERSION_MANIFEST = new File("forge-manifest.json");
     private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
     private final File FABRIC_INSTALLER_VERSION_MANIFEST = new File("fabric-installer-manifest.xml");
+    private final File QUILT_VERSION_MANIFEST = new File("quilt-manifest.xml");
+    private final File QUILT_INSTALLER_VERSION_MANIFEST = new File("quilt-installer-manifest.xml");
     private final File SERVERPACKCREATOR_DATABASE = new File ("serverpackcreator.db");
 
     //VersionLister related
@@ -226,6 +233,8 @@ public class ApplicationProperties extends Properties {
     private final File FORGE_VERSION_MANIFEST_LOCATION = new File("./work/forge-manifest.json");
     private final File FABRIC_VERSION_MANIFEST_LOCATION = new File("./work/fabric-manifest.xml");
     private final File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION = new File("./work/fabric-installer-manifest.xml");
+    private final File QUILT_VERSION_MANIFEST_LOCATION = new File("./work/quilt-manifest.xml");
+    private final File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION = new File("./work/quilt-installer-manifest.xml");
 
     /**
      * The directory in which server packs will be generated and stored in, as well as server pack ZIP-archives.
@@ -609,6 +618,24 @@ public class ApplicationProperties extends Properties {
     }
 
     /**
+     * Quilt version manifest-file.
+     * @author Griefed
+     * @return {@link File} quilt-manifest.xml-file
+     */
+    public File QUILT_VERSION_MANIFEST() {
+        return QUILT_VERSION_MANIFEST;
+    }
+
+    /**
+     * Quilt installer version manifest-file.
+     * @author Griefed
+     * @return {@link File} quilt-installer-manifest.xml-file.
+     */
+    public File QUILT_INSTALLER_VERSION_MANIFEST() {
+        return QUILT_INSTALLER_VERSION_MANIFEST;
+    }
+
+    /**
      * ServerPackCreator-database when running as a webservice.
      * @author Griefed
      * @return {@link File} serverpackcreator.db-file.
@@ -654,6 +681,24 @@ public class ApplicationProperties extends Properties {
     }
 
     /**
+     * Path to the Quilt version manifest-file, as a file.
+     * @author Griefed
+     * @return {@link File} ./work/quilt-manifest.xml
+     */
+    public File QUILT_VERSION_MANIFEST_LOCATION() {
+        return QUILT_VERSION_MANIFEST_LOCATION;
+    }
+
+    /**
+     * Path to the Quilt installer version manifest-file, as a file.
+     * @author Griefed
+     * @return {@link File} ./work/quilt-installer-manifest.xml
+     */
+    public File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION() {
+        return QUILT_INSTALLER_VERSION_MANIFEST_LOCATION;
+    }
+
+    /**
      * Getter for the version of ServerPackCreator.<br>
      * If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of said release.
      * If a non-release-version is used, from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.
@@ -662,6 +707,15 @@ public class ApplicationProperties extends Properties {
      */
     public String SERVERPACKCREATOR_VERSION() {
         return SERVERPACKCREATOR_VERSION;
+    }
+
+    /**
+     * String-array of modloaders supported by ServerPackCreator.
+     * @author Griefed
+     * @return {@link String}-array of modloaders supported by ServerPackCreator.
+     */
+    public String[] SUPPORTED_MODLOADERS() {
+        return SUPPORTED_MODLOADERS;
     }
 
     /**

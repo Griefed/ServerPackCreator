@@ -122,8 +122,8 @@ public class VersionsController {
                         "application/json"
                 ).body(
                         "{\"fabric\":" +
-                                UTILITIES.ListUtils().encapsulateListElements(VERSIONMETA.fabric().loaderVersionsDescending()
-                        ) +
+                                UTILITIES.ListUtils().encapsulateListElements(
+                                        VERSIONMETA.fabric().loaderVersionsDescending()) +
                                 "}"
                 );
     }
@@ -146,6 +146,48 @@ public class VersionsController {
                         "\"release\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"," +
                         "\"latest\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"" +
                         "}"
+                );
+    }
+
+    /**
+     * Get a list of all available Fabric versions.
+     * @author Griefed
+     * @return String List. Returns a list of all available Fabric versions.
+     */
+    @GetMapping(value= "/quilt")
+    public ResponseEntity<String> getAvailableQuiltVersions() {
+
+        return ResponseEntity
+                .ok()
+                .header(
+                        "Content-Type",
+                        "application/json"
+                ).body(
+                        "{\"quilt\":" +
+                                UTILITIES.ListUtils().encapsulateListElements(
+                                        VERSIONMETA.quilt().loaderVersionsDescending()) +
+                                "}"
+                );
+    }
+
+    /**
+     * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
+     * @author Griefed
+     * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
+     */
+    @GetMapping(value = "/quilt/installer", produces = "application/json")
+    public ResponseEntity<String> getAvailableQuiltInstallerVersions() {
+
+        return ResponseEntity
+                .ok()
+                .header(
+                        "Content-Type",
+                        "application/json"
+                ).body(
+                        "{" +
+                                "\"release\":\"" + VERSIONMETA.quilt().releaseInstallerVersion() + "\"," +
+                                "\"latest\":\"" + VERSIONMETA.quilt().releaseInstallerVersion() + "\"" +
+                                "}"
                 );
     }
 }

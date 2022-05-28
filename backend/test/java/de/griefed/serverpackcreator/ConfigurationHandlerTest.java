@@ -34,7 +34,9 @@ class ConfigurationHandlerTest {
                 APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
                 APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
                 APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
+                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION()
         );
         Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
@@ -168,76 +170,55 @@ class ConfigurationHandlerTest {
     @Test
     void checkModloaderTestForge() {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Forge"));
-    }
-
-    @Test
-    void checkModloaderTestForgeCase() {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fOrGe"));
-    }
-
-    @Test
-    void checkModloaderTestFabric() {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Fabric"));
-    }
-
-    @Test
-    void checkModloaderTestFabricCase() {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("fAbRiC"));
-    }
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("Quilt"));
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloader("qUiLt"));
 
-    @Test
-    void checkModLoaderTestFalse() {
         Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloader("modloader"));
     }
 
     @Test
     void checkModloaderVersionTestForge() {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "36.1.2", "1.16.5"));
-    }
-
-    @Test
-    void checkModloaderVersionTestForgeFalse() {
         Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Forge", "90.0.0", "1.16.5"));
     }
 
     @Test
     void checkModloaderVersionTestFabric() {
         Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.11.3", "1.16.5"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
     }
 
     @Test
-    void checkModloaderVersionTestFabricFalse() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
+    void checkModloaderVersionTestQuilt() {
+        Assertions.assertTrue(CONFIGURATIONHANDLER.checkModloaderVersion("Quilt", "0.16.1", "1.16.5"));
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkModloaderVersion("Quilt", "0.90.3", "1.16.5"));
     }
 
     @Test
     void isMinecraftVersionCorrectTest() {
         Assertions.assertTrue(VERSIONMETA.minecraft().checkMinecraftVersion("1.16.5"));
-    }
-
-    @Test
-    void isMinecraftVersionCorrectTestFalse() {
         Assertions.assertFalse(VERSIONMETA.minecraft().checkMinecraftVersion("1.99.5"));
     }
 
     @Test
     void isFabricVersionCorrectTest() {
         Assertions.assertTrue(VERSIONMETA.fabric().checkFabricVersion("0.11.3"));
-    }
-
-    @Test
-    void isFabricVersionCorrectTestFalse() {
         Assertions.assertFalse(VERSIONMETA.fabric().checkFabricVersion("0.90.3"));
     }
 
     @Test
     void isForgeVersionCorrectTest() {
         Assertions.assertTrue(VERSIONMETA.forge().checkForgeAndMinecraftVersion("1.16.5","36.1.2"));
+        Assertions.assertFalse(VERSIONMETA.forge().checkForgeAndMinecraftVersion("1.16.5","99.0.0"));
     }
 
     @Test
-    void isForgeVersionCorrectTestFalse() {
-        Assertions.assertFalse(VERSIONMETA.forge().checkForgeAndMinecraftVersion("1.16.5","99.0.0"));
+    void isQuiltVersionCorrectTest() {
+        Assertions.assertTrue(VERSIONMETA.quilt().checkQuiltVersion("0.16.1"));
+        Assertions.assertFalse(VERSIONMETA.quilt().checkQuiltVersion("0.90.3"));
     }
 
     @Test
@@ -301,11 +282,6 @@ class ConfigurationHandlerTest {
 
     @Test
     void checkConfigurationFileTest() {
-        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), new ArrayList<>(),true));
-    }
-
-    @Test
-    void checkConfigurationFileNoDownloadTest() {
         Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"),true));
     }
 
@@ -317,11 +293,8 @@ class ConfigurationHandlerTest {
         Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
         Assertions.assertEquals("Forge",configurationModel.getModLoader());
         Assertions.assertEquals("36.1.2",configurationModel.getModLoaderVersion());
-    }
 
-    @Test
-    void checkConfigurationFileModelExtendedParamsTest() {
-        ConfigurationModel configurationModel = new ConfigurationModel();
+        configurationModel = new ConfigurationModel();
         Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(new File("backend/test/resources/testresources/serverpackcreator.conf"), configurationModel,new ArrayList<>(),false));
         Assertions.assertEquals("./backend/test/resources/forge_tests", configurationModel.getModpackDir());
         Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
@@ -380,6 +353,18 @@ class ConfigurationHandlerTest {
         Assertions.assertEquals("1.16.5",configurationModel.getMinecraftVersion());
         Assertions.assertEquals("Forge",configurationModel.getModLoader());
         Assertions.assertEquals("36.1.2",configurationModel.getModLoaderVersion());
+
+        configurationModel.setModLoader("Fabric");
+        configurationModel.setModLoaderVersion("0.14.6");
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,new ArrayList<>(),true));
+        Assertions.assertEquals("Fabric",configurationModel.getModLoader());
+        Assertions.assertEquals("0.14.6",configurationModel.getModLoaderVersion());
+
+        configurationModel.setModLoader("Quilt");
+        configurationModel.setModLoaderVersion("0.16.1");
+        Assertions.assertFalse(CONFIGURATIONHANDLER.checkConfiguration(configurationModel,new ArrayList<>(),true));
+        Assertions.assertEquals("Quilt",configurationModel.getModLoader());
+        Assertions.assertEquals("0.16.1",configurationModel.getModLoaderVersion());
     }
 
     @Test

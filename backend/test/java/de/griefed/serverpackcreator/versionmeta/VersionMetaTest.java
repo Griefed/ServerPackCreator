@@ -16,7 +16,9 @@ public class VersionMetaTest {
                 APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
                 APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
                 APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
+                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION()
         );
     }
 
@@ -294,5 +296,42 @@ public class VersionMetaTest {
         Assertions.assertFalse(VERSIONMETA.fabric().installerUrl("0.13123.3").isPresent());
         Assertions.assertTrue(VERSIONMETA.fabric().checkFabricVersion("0.13.3"));
         Assertions.assertFalse(VERSIONMETA.fabric().checkFabricVersion("0.12313.3"));
+    }
+
+    @Test
+    void quilt() {
+        Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsAscending());
+        Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsDescending());
+        Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsArrayAscending());
+        Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsArrayDescending());
+        Assertions.assertNotNull(VERSIONMETA.quilt().latestLoaderVersion());
+        Assertions.assertNotNull(VERSIONMETA.quilt().releaseLoaderVersion());
+        Assertions.assertNotNull(VERSIONMETA.quilt().latestInstallerVersion());
+        Assertions.assertNotNull(VERSIONMETA.quilt().releaseInstallerVersion());
+        Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsAscending());
+        Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsDescending());
+        Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsAscending());
+        Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsArrayAscending());
+        Assertions.assertEquals(VERSIONMETA.quilt().installerVersionsArrayAscending().length,VERSIONMETA.quilt().installerVersionsAscending().size());
+        Assertions.assertEquals(
+                VERSIONMETA.quilt().installerVersionsArrayAscending()[0],
+                VERSIONMETA.quilt().installerVersionsArrayDescending()[VERSIONMETA.quilt().installerVersionsArrayDescending().length-1]
+        );
+        Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsArrayDescending());
+        Assertions.assertEquals(VERSIONMETA.quilt().installerVersionsArrayDescending().length,VERSIONMETA.quilt().installerVersionsDescending().size());
+        Assertions.assertEquals(
+                VERSIONMETA.quilt().installerVersionsArrayDescending()[0],
+                VERSIONMETA.quilt().installerVersionsArrayAscending()[VERSIONMETA.quilt().installerVersionsArrayAscending().length-1]
+        );
+        Assertions.assertNotNull(VERSIONMETA.quilt().latestInstallerUrl());
+        Assertions.assertNotNull(VERSIONMETA.quilt().releaseInstallerUrl());
+        VERSIONMETA.quilt().installerVersionsAscending().forEach(version -> {
+            Assertions.assertTrue(VERSIONMETA.quilt().isInstallerUrlAvailable(version));
+            Assertions.assertNotNull(VERSIONMETA.quilt().installerUrl(version).get());
+        });
+        Assertions.assertFalse(VERSIONMETA.quilt().isInstallerUrlAvailable("0.11233.3"));
+        Assertions.assertFalse(VERSIONMETA.quilt().installerUrl("0.13123.3").isPresent());
+        Assertions.assertTrue(VERSIONMETA.quilt().checkQuiltVersion("0.16.1"));
+        Assertions.assertFalse(VERSIONMETA.quilt().checkQuiltVersion("0.12313.3"));
     }
 }

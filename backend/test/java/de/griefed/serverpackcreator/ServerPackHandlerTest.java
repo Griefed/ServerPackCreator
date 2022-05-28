@@ -42,7 +42,9 @@ class ServerPackHandlerTest {
                 APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
                 APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
                 APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION()
+                APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+                APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION()
         );
         Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         ConfigUtilities CONFIGUTILITIES = new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
@@ -56,7 +58,7 @@ class ServerPackHandlerTest {
     void runTest() {
         ConfigurationModel configurationModel = new ConfigurationModel();
         CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator.conf"), configurationModel, true);
-        SERVERPACKHANDLER.run(configurationModel);
+        Assertions.assertTrue(SERVERPACKHANDLER.run(configurationModel));
         Assertions.assertTrue(new File("server-packs/forge_tests/libraries").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/config").isDirectory());
         Assertions.assertTrue(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
@@ -122,34 +124,12 @@ class ServerPackHandlerTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
 
-    @Test
-    void zipBuilderFabricTest() {
-        try {
-            Files.createDirectories(Paths.get("server-packs/fabric_tests"));
-        } catch (Exception ignored) {}
-        String minecraftVersion = "1.16.5";
-        String modpackDir = "./backend/test/resources/fabric_tests";
-        SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
-        Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
-        try {
-            Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
-        } catch (Exception ignored) {}
-    }
+        CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator_quilt.conf"), configurationModel, true);
+        Assertions.assertTrue(SERVERPACKHANDLER.run(configurationModel));
 
-    @Test
-    void zipBuilderForgeTest() {
-        try {
-            Files.createDirectories(Paths.get("server-packs/forge_tests"));
-        } catch (Exception ignored) {}
-        String minecraftVersion = "1.16.5";
-        String modpackDir = "./backend/test/resources/forge_tests";
-        SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
-        Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
-        try {
-            Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
-        } catch (Exception ignored) {}
+        CONFIGURATIONHANDLER.checkConfiguration(new File("./backend/test/resources/testresources/serverpackcreator_fabric.conf"), configurationModel, true);
+        Assertions.assertTrue(SERVERPACKHANDLER.run(configurationModel));
     }
 
     @Test
@@ -199,49 +179,35 @@ class ServerPackHandlerTest {
         serverPackModel.setIncludeServerProperties(true);
         serverPackModel.setIncludeZipCreation(true);
         serverPackModel.setModLoader("Fabric");
-        serverPackModel.setModLoaderVersion("0.13.1");
-        serverPackModel.setMinecraftVersion("1.18.1");
+        serverPackModel.setModLoaderVersion("0.14.6");
+        serverPackModel.setMinecraftVersion("1.18.2");
         serverPackModel.setJavaArgs("");
         CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
         Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
         Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
-    }
 
-    @Test
-    void runServerPackTestOldMinecraftVersion() {
-        List<String> clientMods = new ArrayList<>(Arrays.asList(
-                "AmbientSounds",
-                "BackTools",
-                "BetterAdvancement",
-                "BetterPing",
-                "cherished",
-                "ClientTweaks",
-                "Controlling",
-                "DefaultOptions",
-                "durability",
-                "DynamicSurroundings",
-                "itemzoom",
-                "jei-professions",
-                "jeiintegration",
-                "JustEnoughResources",
-                "MouseTweaks",
-                "Neat",
-                "OldJavaWarning",
-                "PackMenu",
-                "preciseblockplacing",
-                "SimpleDiscordRichPresence",
-                "SpawnerFix",
-                "TipTheScales",
-                "WorldNameRandomizer"
-        ));
-        List<String> copyDirs = new ArrayList<>(Arrays.asList(
-                "config",
-                "mods",
-                "scripts",
-                "seeds",
-                "defaultconfigs"
-        ));
-        ServerPackModel serverPackModel = new ServerPackModel();
+
+        try {
+            FileUtils.copyDirectory(new File("./backend/test/resources/quilt_tests"), new File("./backend/test/resources/quilt_tests_copy"));
+        } catch (Exception ignored) {}
+        serverPackModel.setModpackDir("./backend/test/resources/quilt_tests_copy");
+        serverPackModel.setClientMods(clientMods);
+        serverPackModel.setCopyDirs(copyDirs);
+        serverPackModel.setJavaPath("");
+        serverPackModel.setIncludeServerInstallation(true);
+        serverPackModel.setIncludeServerIcon(true);
+        serverPackModel.setIncludeServerProperties(true);
+        serverPackModel.setIncludeZipCreation(true);
+        serverPackModel.setModLoader("Quilt");
+        serverPackModel.setModLoaderVersion("0.16.1");
+        serverPackModel.setMinecraftVersion("1.18.2");
+        serverPackModel.setJavaArgs("");
+        CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
+        Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
+        Assertions.assertTrue(new File("server-packs/quilt_tests_copy_server_pack.zip").isFile());
+
+
+        serverPackModel = new ServerPackModel();
         try {
             FileUtils.copyDirectory(new File("./backend/test/resources/forge_tests"), new File("./backend/test/resources/forge_tests_copy"));
         } catch (Exception ignored) {}
@@ -260,5 +226,47 @@ class ServerPackHandlerTest {
         CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
         Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
         Assertions.assertTrue(new File("server-packs/forge_tests_copy_server_pack.zip").isFile());
+    }
+
+    @Test
+    void zipBuilderFabricTest() {
+        try {
+            Files.createDirectories(Paths.get("server-packs/fabric_tests"));
+        } catch (Exception ignored) {}
+        String minecraftVersion = "1.16.5";
+        String modpackDir = "./backend/test/resources/fabric_tests";
+        SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
+        Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
+        try {
+            Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/fabric_tests/server_pack.zip"), REPLACE_EXISTING);
+        } catch (Exception ignored) {}
+    }
+
+    @Test
+    void zipBuilderForgeTest() {
+        try {
+            Files.createDirectories(Paths.get("server-packs/forge_tests"));
+        } catch (Exception ignored) {}
+        String minecraftVersion = "1.16.5";
+        String modpackDir = "./backend/test/resources/forge_tests";
+        SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
+        Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
+        try {
+            Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/forge_tests/server_pack.zip"), REPLACE_EXISTING);
+        } catch (Exception ignored) {}
+    }
+
+    @Test
+    void zipBuilderQuiltTest() {
+        try {
+            Files.createDirectories(Paths.get("server-packs/quilt_tests"));
+        } catch (Exception ignored) {}
+        String minecraftVersion = "1.16.5";
+        String modpackDir = "./backend/test/resources/quilt_tests";
+        SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
+        Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
+        try {
+            Files.copy(Paths.get("./backend/test/resources/testresources/server_pack.zip"), Paths.get("./backend/test/resources/quilt_tests/server_pack.zip"), REPLACE_EXISTING);
+        } catch (Exception ignored) {}
     }
 }

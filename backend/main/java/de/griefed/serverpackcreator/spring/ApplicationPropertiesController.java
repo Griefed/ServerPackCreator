@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+
 /**
  * RestController for acquiring the configuration of this ServerPackCreator instance.
  * @author Griefed
@@ -94,7 +96,8 @@ public class ApplicationPropertiesController {
         return "{" +
                 "\"listFallbackMods\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
                 "\"listDirectoriesExclude\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
-                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION() + "\"" +
+                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION() + "\"," +
+                "\"supportedModloaders\":" + UTILITIES.ListUtils().encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS())) +
                 "}";
     }
 }

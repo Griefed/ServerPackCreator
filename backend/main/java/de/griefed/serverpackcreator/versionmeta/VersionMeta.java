@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricMeta;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
+import de.griefed.serverpackcreator.versionmeta.quilt.QuiltMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,13 +65,18 @@ public class VersionMeta {
     private final File FORGE_MANIFEST;
     private final File FABRIC_MANIFEST;
     private final File FABRIC_INSTALLER_MANIFEST;
+    private final File QUILT_MANIFEST;
+    private final File QUILT_INSTALLER_MANIFEST;
     private final URL MINECRAFT_MANIFEST_URL = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
     private final URL FORGE_MANIFEST_URL = new URL("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json");
     private final URL FABRIC_MANIFEST_URL = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml");
     private final URL FABRIC_INSTALLER_MANIFEST_URL = new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
+    private final URL QUILT_MANIFEST_URL = new URL("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml");
+    private final URL QUILT_INSTALLER_MANIFEST_URL = new URL("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml");
     private final MinecraftMeta MINECRAFT_META;
     private final FabricMeta FABRIC_META;
     private final ForgeMeta FORGE_META;
+    private final QuiltMeta QUIL_META;
 
     /**
      * Constructor.
@@ -79,15 +85,25 @@ public class VersionMeta {
      * @param forgeManifest {@link File} Forge manifest file.
      * @param fabricManifest {@link File} Fabric manifest file.
      * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
+     * @param quiltManifest {@link File} Quilt manifest file.
+     * @param quiltInstallerManifest {@link File} Quilt-installer manifest file.
      * @throws IOException if one of the metas could not be initialized.
      */
     @Autowired
-    public VersionMeta(File minecraftManifest, File forgeManifest, File fabricManifest, File fabricInstallerManifest) throws IOException {
+    public VersionMeta(File minecraftManifest,
+                       File forgeManifest,
+                       File fabricManifest,
+                       File fabricInstallerManifest,
+                       File quiltManifest,
+                       File quiltInstallerManifest
+    ) throws IOException {
 
         this.MINECRAFT_MANIFEST = minecraftManifest;
         this.FORGE_MANIFEST = forgeManifest;
         this.FABRIC_MANIFEST = fabricManifest;
         this.FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
+        this.QUILT_MANIFEST = quiltManifest;
+        this.QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
 
         checkManifests();
 
@@ -95,10 +111,12 @@ public class VersionMeta {
         this.MINECRAFT_META = new MinecraftMeta(minecraftManifest, this.FORGE_META);
         this.FABRIC_META = new FabricMeta(fabricManifest, fabricInstallerManifest);
         this.FORGE_META.initialize(this.MINECRAFT_META);
+        this.QUIL_META = new QuiltMeta(quiltManifest, quiltInstallerManifest);
 
         this.MINECRAFT_META.update();
         this.FABRIC_META.update();
         this.FORGE_META.update();
+        this.QUIL_META.update();
     }
 
     /**
@@ -113,6 +131,8 @@ public class VersionMeta {
         checkManifest(FORGE_MANIFEST, FORGE_MANIFEST_URL, Type.FORGE);
         checkManifest(FABRIC_MANIFEST, FABRIC_MANIFEST_URL, Type.FABRIC);
         checkManifest(FABRIC_INSTALLER_MANIFEST, FABRIC_INSTALLER_MANIFEST_URL, Type.FABRIC_INSTALLER);
+        checkManifest(QUILT_MANIFEST, QUILT_MANIFEST_URL, Type.QUILT);
+        checkManifest(QUILT_INSTALLER_MANIFEST, QUILT_INSTALLER_MANIFEST_URL, Type.QUILT_INSTALLER);
     }
 
     /**
@@ -155,8 +175,9 @@ public class VersionMeta {
                         break;
 
                     case FABRIC:
-
                     case FABRIC_INSTALLER:
+                    case QUILT:
+                    case QUILT_INSTALLER:
 
                         countOldFile = getXml(existing).getElementsByTagName("version").getLength();
                         countNewFile = getXml(newManifest).getElementsByTagName("version").getLength();
@@ -329,7 +350,7 @@ public class VersionMeta {
     }
 
     /**
-     * The FabricMeta instance for working with Fabric versions and information about them.
+     * The QuiltMeta-instance for working with Fabric versions and information about them.
      * @author Griefed
      * @return Instance of {@link FabricMeta}.
      */
@@ -338,11 +359,20 @@ public class VersionMeta {
     }
 
     /**
-     * The ForgeMeta instance for working with Forge versions and information about them.
+     * The ForgeMeta-instance for working with Forge versions and information about them.
      * @author Griefed
      * @return Instance of {@link ForgeMeta}.
      */
     public ForgeMeta forge() {
         return FORGE_META;
+    }
+
+    /**
+     * The QuiltMeta-instance for working with Quilt versions and information about them.
+     * @author Griefed
+     * @return Instance of {@link QuiltMeta}.
+     */
+    public QuiltMeta quilt() {
+        return QUIL_META;
     }
 }

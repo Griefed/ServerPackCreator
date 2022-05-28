@@ -189,23 +189,19 @@ public class ConfigurationModel {
      * @param newModLoader The new modloader to store.
      */
     public void setModLoader(String newModLoader) {
-        if (newModLoader.equalsIgnoreCase("Forge")) {
+        if (newModLoader.toLowerCase().contains("forge")) {
 
-            newModLoader = "Forge";
-
-        } else if (newModLoader.equalsIgnoreCase("Fabric")) {
-
-            newModLoader = "Fabric";
-
-        } else if (newModLoader.toLowerCase().contains("forge")) {
-
-            newModLoader = "Forge";
+            this.modLoader = "Forge";
 
         } else if (newModLoader.toLowerCase().contains("fabric")) {
 
-            newModLoader = "Fabric";
+            this.modLoader = "Fabric";
+
+        } else if (newModLoader.toLowerCase().contains("quilt")) {
+
+            this.modLoader = "Quilt";
+
         }
-        this.modLoader = newModLoader;
     }
 
     /**
