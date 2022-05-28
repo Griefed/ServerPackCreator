@@ -1,3 +1,22 @@
+## [3.5.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.4...3.5.0-alpha.5) (2022-05-26)
+
+
+### :scissors: Refactor
+
+* **Code Quality & Style:** Several code quality and style changes. ([bd9c0f6](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd9c0f6a1cb8e6bf44ada3bcefbf4c492ccd33dc))
+* **Code Quality & Style:** Several code quality and style changes. ([0def7aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/0def7aa74f73f3932dc216de0cbe00e9b0e3d0af))
+
+
+### 👀 Reverts
+
+* **Modrinth:** Remove Modrinth preperations from backend and tab from frontend ([eeafa78](https://git.griefed.de/Griefed/ServerPackCreator/commit/eeafa78e90b1468687e67cbdf5cfe168dd0747e4))
+
+
+### 🧪 Tests
+
+* **GitLab:** Fix coverage-job artifacts so it works on GitLab.com again. Deactivate Inform About Release job, as GitHub is the main distribution platform for releases. ([13e0d3e](https://git.griefed.de/Griefed/ServerPackCreator/commit/13e0d3e3b412fb84d13449e5d0bcf32acac739c9))
+* **GitLab:** SSL still broken with GitLab.com. ([bcc0ff3](https://git.griefed.de/Griefed/ServerPackCreator/commit/bcc0ff30e7f8162a8278517f06ee12ab144516cd))
+
 ## [3.5.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.3...3.5.0-alpha.4) (2022-05-23)
 
 
