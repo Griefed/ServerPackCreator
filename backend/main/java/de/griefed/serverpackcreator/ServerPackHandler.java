@@ -229,14 +229,6 @@ public class ServerPackHandler {
             // Create the start scripts for this server pack.
             createStartScripts(configurationModel.getModLoader(), configurationModel.getJavaArgs(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), destination);
 
-            // TODO move the modloader server installation so it is run AFTER the ZIP-archive is created.
-            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
-            if (configurationModel.getIncludeServerInstallation()) {
-                installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath(), destination);
-            } else {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
-            }
             // If modloader is fabric, try and replace the old server-launch.jar with the new and improved one which also downloads the Minecraft server.
             if (configurationModel.getModLoader().equalsIgnoreCase("Fabric")) {
                 provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),configurationModel.getModLoaderVersion(), destination);
@@ -273,13 +265,20 @@ public class ServerPackHandler {
                 LOG.info("No PreZipExtension addons to execute.");
             }
 
-            // TODO Move the ZIP-archive creation so it is run BEFORE the modloader server is installed.
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
             if (configurationModel.getIncludeZipCreation()) {
                 zipBuilder(configurationModel.getMinecraftVersion(), configurationModel.getIncludeServerInstallation(), destination);
             } else {
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
+            }
+
+            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
+            if (configurationModel.getIncludeServerInstallation()) {
+                installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), configurationModel.getJavaPath(), destination);
+            } else {
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.server"));
             }
 
             // Inform user about location of newly generated server pack.
