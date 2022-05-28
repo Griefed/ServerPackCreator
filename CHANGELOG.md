@@ -1,3 +1,15 @@
+## [3.5.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.6...3.5.0-alpha.7) (2022-05-28)
+
+
+### :scissors: Refactor
+
+* **Code Quality & Style:** Several code quality and style changes. ([486ea43](https://git.griefed.de/Griefed/ServerPackCreator/commit/486ea43f71fe404aa6e561365a67c693d1ff8f2c))
+
+
+### 🛠 Fixes
+
+* **GUI Forge versions selection box:** Update the list of Forge versions when the selected Minecraft version is changed ([02f6004](https://git.griefed.de/Griefed/ServerPackCreator/commit/02f60040a77e30d8ed2da7bfc18b30b991f2d353))
+
 ## [3.5.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.5...3.5.0-alpha.6) (2022-05-28)
 
 
