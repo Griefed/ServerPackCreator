@@ -28,62 +28,55 @@ public enum Type {
     /**
      * Indicates that an object is a full release, meaning no snapshot, alpha, or beta.
      */
-    RELEASE("Release"),
+    RELEASE,
     /**
      * Indicates that an object is a pre-release, so either a snapshot (duh..), alpha, beta etc.
      */
-    SNAPSHOT("Snapshot"),
+    SNAPSHOT,
     /**
      * Minecraft client, so that which a users runs on their gaming machine.
      */
-    CLIENT("MinecraftClient"),
+    CLIENT,
     /**
      * Minecraft server, usually run on a dedicated server.
      */
-    SERVER("MinecraftServer"),
+    SERVER,
     /**
      * Sort ascending, small to large.
      */
-    ASCENDING("Ascending"),
+    ASCENDING,
     /**
      * Sort descending, large to small.
      */
-    DESCENDING("Descending"),
+    DESCENDING,
 
     /**
      * Indicates this operation concerns Minecraft.
      */
-    MINECRAFT("Minecraft"),
+    MINECRAFT,
 
     /**
      * Indicates this operation concerns Forge.
      */
-    FORGE("Forge"),
+    FORGE,
 
     /**
      * Indicates this operation concerns Fabric.
      */
-    FABRIC("Fabric"),
+    FABRIC,
 
     /**
      * Indicates this operation concerns Fabric Installer.
      */
-    FABRIC_INSTALLER("Fabric Installer"),
+    FABRIC_INSTALLER,
 
     /**
      * Indicates this operation concerns Quilt.
      */
-    QUILT("Quilt"),
+    QUILT,
 
     /**
      * Indicates this operation concerns Quilt Installer.
      */
-    QUILT_INSTALLER("Quilt Installer");
-
-    public final String type;
-
-    Type(String type) {
-        this.type = type;
-    }
-
+    QUILT_INSTALLER
 }

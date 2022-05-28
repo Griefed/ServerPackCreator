@@ -84,12 +84,26 @@ public class CommandlineParser {
          * Priority 7.
          * Exit ServerPackCreator.
          */
-        EXIT("exit");
+        EXIT("exit"),
 
-        public final String mode;
+        /**
+         * Used when the user wants to change the language of ServerPackCreator.
+         */
+        LANG("-lang");
 
-        Mode(String mode) {
-            this.mode = mode;
+        private final String ARGUMENT;
+
+        Mode(String cliArg) {
+            this.ARGUMENT = cliArg;
+        }
+
+        /**
+         * Textual representation of this mode.
+         * @author Griefed
+         * @return {@link String} Textual representation of this mode.
+         */
+        public String argument() {
+            return ARGUMENT;
         }
     }
     
@@ -121,8 +135,8 @@ public class CommandlineParser {
          * If none was specified, set LANG to null so the Optional returns false for isPresent(),
          * thus allowing us to use the locale set in the ApplicationProperties later on.
          */
-        if (argsList.contains("-lang")) {
-            this.LANG = argsList.get(argsList.indexOf("-lang") + 1);
+        if (argsList.contains(Mode.LANG.argument())) {
+            this.LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
         } else {
             this.LANG = null;
         }
@@ -130,7 +144,7 @@ public class CommandlineParser {
         /*
          * Check whether the user wanted us to print the help-text.
          */
-        if (argsList.contains("-help")) {
+        if (argsList.contains(Mode.HELP.argument())) {
             this.MODE = Mode.HELP;
             return;
         }
@@ -138,7 +152,7 @@ public class CommandlineParser {
         /*
          * Check whether the user wants to check for update availability.
          */
-        if (argsList.contains("-update")) {
+        if (argsList.contains(Mode.UPDATE.argument())) {
             this.MODE = Mode.UPDATE;
             return;
         }
@@ -146,7 +160,7 @@ public class CommandlineParser {
         /*
          * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
          */
-        if (argsList.contains("-cgen")) {
+        if (argsList.contains(Mode.CGEN.argument())) {
             this.MODE = Mode.CGEN;
             return;
         }
@@ -154,7 +168,7 @@ public class CommandlineParser {
         /*
          * Check whether the user wants to run in commandline-mode or whether a GUI would not be supported.
          */
-        if (argsList.contains("-cli")) {
+        if (argsList.contains(Mode.CLI.argument())) {
             this.MODE = Mode.CLI;
             return;
         } else if (GraphicsEnvironment.isHeadless()) {
@@ -165,7 +179,7 @@ public class CommandlineParser {
         /*
          * Check whether the user wants ServerPackCreator to run as a webservice.
          */
-        if (argsList.contains("-web")) {
+        if (argsList.contains(Mode.WEB.argument())) {
             this.MODE = Mode.WEB;
             return;
         }
@@ -173,7 +187,7 @@ public class CommandlineParser {
         /*
          * Check whether the user wants to use ServerPackCreators GUI.
          */
-        if (argsList.contains("-gui")) {
+        if (argsList.contains(Mode.GUI.argument())) {
             this.MODE = Mode.GUI;
             return;
         }
@@ -181,7 +195,7 @@ public class CommandlineParser {
         /*
          * Check whether the user wants to set up and prepare the environment for subsequent runs.
          */
-        if (argsList.contains("--setup")) {
+        if (argsList.contains(Mode.SETUP.argument())) {
             this.MODE = Mode.SETUP;
             return;
         }
