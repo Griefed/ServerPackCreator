@@ -1,3 +1,22 @@
+## [3.5.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.5...3.5.0-alpha.6) (2022-05-28)
+
+
+### :scissors: Refactor
+
+* **Code Quality & Style:** Several code quality and style changes. ([75b1ad7](https://git.griefed.de/Griefed/ServerPackCreator/commit/75b1ad77f841d83d450794bb1ad4ed75763bca14))
+* **Enums:** Change the way enums are used in the CommandlineParser and VersionMeta. Remove / use values where appropriate. ([fea95a2](https://git.griefed.de/Griefed/ServerPackCreator/commit/fea95a27fac3ae6180d3725384a260361b1820b2))
+
+
+### 💎 Improvements
+
+* **Fabric start scripts:** If the improved Fabric server launcher is present, use it. Otherwise the old-fashoned way of downloading and installing a classic Fabric server is used. ([0283d34](https://git.griefed.de/Griefed/ServerPackCreator/commit/0283d34402a5f6ec1285494b7b4a65619b462972))
+* **Modloader server installation:** Move the installation of the modloader server AFTER the generation of the server packs ZIP-archive. This ensures the ZIP-archive contains NO files which would result in a refection from CurseForge or other services. It ensures the ZIP-archive is as lightweight as possible. ([39eb24f](https://git.griefed.de/Griefed/ServerPackCreator/commit/39eb24fcf182b71eb773e2f90aad6aab28002829))
+
+
+### 🚀 Features
+
+* **Quilt Modloader Support:** Fully fledged Quilt support! Including start scripts, modloader server installation, automated clientside-only mod exclusions and webservice support! Please delete your `lang/lang_en_us.properties`-file to receive language updates. ([849e0bc](https://git.griefed.de/Griefed/ServerPackCreator/commit/849e0bcc1709530e9670a29244d546d6a59b88a3))
+
 ## [3.5.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.4...3.5.0-alpha.5) (2022-05-26)
 
 
