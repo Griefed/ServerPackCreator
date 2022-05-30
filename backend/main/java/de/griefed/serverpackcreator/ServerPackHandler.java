@@ -209,18 +209,18 @@ public class ServerPackHandler {
             }
 
             if (!APPLICATIONPLUGINS.pluginsPreGenExtension().isEmpty()) {
-                LOG_ADDONS.info("Executing PreGenExtension addons");
+                LOG_ADDONS.info(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.pregen"));
                 APPLICATIONPLUGINS.pluginsPreGenExtension().forEach(plugin -> {
-                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
+                    LOG_ADDONS.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.addon"), plugin.getName()));
 
                     try {
                         plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("addons.log.error"), plugin.getName()), ex);
                     }
                 });
             } else {
-                LOG.info("No PreGenExtension addons to execute.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.pregen.none"));
             }
 
             // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
@@ -251,18 +251,18 @@ public class ServerPackHandler {
             }
 
             if (!APPLICATIONPLUGINS.pluginsPreZipExtension().isEmpty()) {
-                LOG_ADDONS.info("Executing PreZipExtension addons");
+                LOG_ADDONS.info(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.prezip"));
                 APPLICATIONPLUGINS.pluginsPreZipExtension().forEach(plugin -> {
-                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
+                    LOG_ADDONS.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.addon"), plugin.getName()));
 
                     try {
                         plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("addons.log.error"), plugin.getName()), ex);
                     }
                 });
             } else {
-                LOG.info("No PreZipExtension addons to execute.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.prezip.none"));
             }
 
             // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
@@ -288,18 +288,18 @@ public class ServerPackHandler {
             LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.finish"));
 
             if (!APPLICATIONPLUGINS.pluginsPostGenExtension().isEmpty()) {
-                LOG_ADDONS.info("Executing PostGenExtension addons");
+                LOG_ADDONS.info(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.postgen"));
                 APPLICATIONPLUGINS.pluginsPostGenExtension().forEach(plugin -> {
-                    LOG_ADDONS.info("Executing plugin " + plugin.getName());
+                    LOG_ADDONS.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.addon"), plugin.getName()));
 
                     try {
                         plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                     } catch (Exception ex) {
-                        LOG_ADDONS.error(plugin.getName() + " encountered an error.", ex);
+                        LOG_ADDONS.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("addons.log.error"), plugin.getName()), ex);
                     }
                 });
             } else {
-                LOG.info("No PostGenExtension addons to execute.");
+                LOG.info(LOCALIZATIONMANAGER.getLocalizedString("addons.log.info.execute.postgen.none"));
             }
 
         }
@@ -343,7 +343,6 @@ public class ServerPackHandler {
                 writer.write("    there is no good reason to use anything but the latest. I.e. the latest loader on any Minecraft version works with the new server launcher.");
 
             } catch (IOException ex) {
-                /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.error("Error downloading the improved Fabric server launcher.", ex);
             }
         }
@@ -453,7 +452,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
@@ -543,7 +543,6 @@ public class ServerPackHandler {
             writer.write("$JAVA $OTHERARGS $ARGS -jar $LAUNCHER nogui");
 
         } catch (IOException ex) {
-            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error("Error generating shell-script for Fabric.", ex);
         }
     }
@@ -569,7 +568,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
@@ -691,7 +691,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
@@ -774,7 +775,6 @@ public class ServerPackHandler {
             writer.write("$JAVA $OTHERARGS $ARGS -jar quilt-server-launch.jar nogui");
 
         } catch (IOException ex) {
-            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error("Error generating shell-script for Quilt.", ex);
         }
     }
@@ -800,7 +800,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
@@ -941,7 +942,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
@@ -1059,7 +1061,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
@@ -1182,7 +1185,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
@@ -1287,7 +1291,8 @@ public class ServerPackHandler {
         )) {
 
             if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()) {
-                LOG.error("A server is not available for the specified Minecraft version.");
+                /* This log is meant to be read by the user, therefore we allow translation. */
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.minecraft.server"));
                 return;
             }
 
