@@ -568,7 +568,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridwidth = 5;
 
         labelJavaPath = new JLabel(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath"));
-        labelJavaPath.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip"));
+        labelJavaPath.setToolTipText("<html>" + LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labeljavapath.tip") + "</html>");
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 8;
