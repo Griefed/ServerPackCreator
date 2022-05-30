@@ -49,6 +49,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Launch-class of ServerPackCreator which determines the mode to run in, takes care of initialization and dependency
@@ -160,7 +163,7 @@ public class ServerPackCreator {
                 serverPackCreatorSplash.update(40);
                 stageThree();
                 serverPackCreatorSplash.update(60);
-                stageFour();
+                Executors.newSingleThreadExecutor().execute(this::stageFour);
                 serverPackCreatorSplash.update(80);
                 runGui();
                 break;
@@ -383,6 +386,9 @@ public class ServerPackCreator {
      * @author Griefed
      */
     private void stageFour() {
+
+        LOG.debug("Setting up FileWatcher...");
+
         FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(new File("."));
         FileAlterationListener fileAlterationListener = new FileAlterationListener() {
             @Override
@@ -467,6 +473,8 @@ public class ServerPackCreator {
         } catch (Exception ex) {
             LOG.error("Error starting the FileWatcher Monitor.", ex);
         }
+
+        LOG.debug("File-watcher started...");
     }
 
     /**
