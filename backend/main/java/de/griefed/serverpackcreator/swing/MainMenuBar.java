@@ -95,15 +95,12 @@ public class MainMenuBar extends Component {
 
     private final JMenuBar MENUBAR = new JMenuBar();
 
-    private final String ABOUTWINDOWTEXT;
-
     private final String[] HASTEOPTIONS = new String[3];
 
     private final StyledDocument ABOUTWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument CONFIGWINDOWDOCUMENT = new DefaultStyledDocument();
     private final StyledDocument SPCLOGWINDOWDOCUMENT = new DefaultStyledDocument();
 
-    private final SimpleAttributeSet ABOUTATTRIBUTESET = new SimpleAttributeSet();
     private final SimpleAttributeSet CONFIGATTRIBUTESET = new SimpleAttributeSet();
     private final SimpleAttributeSet SPCLOGATTRIBUTESET = new SimpleAttributeSet();
 
@@ -224,12 +221,13 @@ public class MainMenuBar extends Component {
 
         CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
 
-        ABOUTWINDOWTEXT = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.text");
+        String ABOUTWINDOWTEXT = LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.text");
         ABOUTWINDOWTEXTPANE.setEditable(false);
         ABOUTWINDOWTEXTPANE.setOpaque(false);
         ABOUTWINDOWTEXTPANE.setMinimumSize(ABOUTDIMENSION);
         ABOUTWINDOWTEXTPANE.setPreferredSize(ABOUTDIMENSION);
         ABOUTWINDOWTEXTPANE.setMaximumSize(ABOUTDIMENSION);
+        SimpleAttributeSet ABOUTATTRIBUTESET = new SimpleAttributeSet();
         StyleConstants.setBold(ABOUTATTRIBUTESET, true);
         StyleConstants.setFontSize(ABOUTATTRIBUTESET, 14);
         ABOUTWINDOWTEXTPANE.setCharacterAttributes(ABOUTATTRIBUTESET, true);
@@ -1073,12 +1071,15 @@ public class MainMenuBar extends Component {
     private void actionEventOpenAboutSPCMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open about window.");
 
-        MATERIALTEXTPANEUI.installUI(ABOUTWINDOWTEXTPANE);
+        JScrollPane ABOUTWINDOWSCROLLPANE = new JScrollPane(ABOUTWINDOWTEXTPANE, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        ABOUTWINDOWSCROLLPANE.setMinimumSize(ABOUTDIMENSION);
+        ABOUTWINDOWSCROLLPANE.setPreferredSize(ABOUTDIMENSION);
+        ABOUTWINDOWSCROLLPANE.setMaximumSize(ABOUTDIMENSION);
 
         JOptionPane.showMessageDialog(
                 FRAME_SERVERPACKCREATOR,
-                ABOUTWINDOWTEXTPANE,
-                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.help.title"),
+                ABOUTWINDOWSCROLLPANE,
+                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.about.title"),
                 JOptionPane.INFORMATION_MESSAGE,
                 HELPICON
         );
