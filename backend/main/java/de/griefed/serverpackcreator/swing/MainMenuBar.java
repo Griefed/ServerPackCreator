@@ -24,7 +24,7 @@ import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
-import de.griefed.serverpackcreator.utilities.commonutilities.InvalidFileTypeException;
+import de.griefed.serverpackcreator.utilities.common.InvalidFileTypeException;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.Update;
 import mdlaf.MaterialLookAndFeel;
@@ -71,7 +71,7 @@ public class MainMenuBar extends Component {
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final UpdateChecker UPDATECHECKER;
-    private final de.griefed.serverpackcreator.utilities.commonutilities.Utilities UTILITIES;
+    private final de.griefed.serverpackcreator.utilities.common.Utilities UTILITIES;
 
     private final LightTheme LIGHTTHEME;
     private final DarkTheme DARKTHEME;
@@ -176,7 +176,7 @@ public class MainMenuBar extends Component {
                        JTabbedPane injectedTabbedPane,
                        ApplicationProperties injectedApplicationProperties,
                        UpdateChecker injectedUpdateChecker,
-                       de.griefed.serverpackcreator.utilities.commonutilities.Utilities injectedUtilities
+                       de.griefed.serverpackcreator.utilities.common.Utilities injectedUtilities
     ) {
 
         if (injectedApplicationProperties == null) {
@@ -198,7 +198,7 @@ public class MainMenuBar extends Component {
         }
 
         if (injectedUtilities == null) {
-            this.UTILITIES = new de.griefed.serverpackcreator.utilities.commonutilities.Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+            this.UTILITIES = new de.griefed.serverpackcreator.utilities.common.Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
         } else {
             this.UTILITIES = injectedUtilities;
         }

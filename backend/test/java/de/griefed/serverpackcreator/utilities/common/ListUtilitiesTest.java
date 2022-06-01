@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.utilities.commonutilities;
+package de.griefed.serverpackcreator.utilities.common;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

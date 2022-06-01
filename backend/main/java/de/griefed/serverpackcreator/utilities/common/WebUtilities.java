@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.utilities.commonutilities;
+package de.griefed.serverpackcreator.utilities.common;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;

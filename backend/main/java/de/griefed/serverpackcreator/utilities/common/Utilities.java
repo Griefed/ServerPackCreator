@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.utilities.commonutilities;
+package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;

@@ -27,7 +27,7 @@ import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ConfigurationCreator;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
-import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import de.griefed.versionchecker.Update;
 import org.apache.commons.io.FileUtils;
@@ -49,9 +49,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Launch-class of ServerPackCreator which determines the mode to run in, takes care of initialization and dependency

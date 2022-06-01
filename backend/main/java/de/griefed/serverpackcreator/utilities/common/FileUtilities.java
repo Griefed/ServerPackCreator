@@ -1,4 +1,23 @@
-package de.griefed.serverpackcreator.utilities.commonutilities;
+/* Copyright (C) 2022  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.utilities.common;
 
 import mslinks.ShellLink;
 import mslinks.ShellLinkException;
@@ -21,33 +40,27 @@ public class FileUtilities {
         /**
          * A regular file.
          */
-        FILE("File"),
+        FILE,
 
         /**
          * A regular directory.
          */
-        DIRECTORY("Directory"),
+        DIRECTORY,
 
         /**
          * A Windows link.
          */
-        LINK("Link"),
+        LINK,
 
         /**
          * A UNIX symlink.
          */
-        SYMLINK("SymLink"),
+        SYMLINK,
 
         /**
          * Not a valid file.
          */
-        INVALID("Invalid");
-
-        public final String fileType;
-
-        FileType(String fileType) {
-            this.fileType = fileType;
-        }
+        INVALID
 
     }
 
@@ -159,7 +172,7 @@ public class FileUtilities {
             return true;
         }
 
-        return FileUtils.isSymlink(file);
+        return !file.toString().matches("[A-Za-z]:.*") && FileUtils.isSymlink(file);
     }
 
     /**

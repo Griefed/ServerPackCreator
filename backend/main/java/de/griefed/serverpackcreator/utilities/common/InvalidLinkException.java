@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.utilities.commonutilities;
+package de.griefed.serverpackcreator.utilities.common;
 
 /**
  * Exceptions thrown if a specified {@link FileUtilities.FileType} is considered invalid.

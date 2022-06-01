@@ -23,7 +23,7 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.spring.NotificationResponse;
 import de.griefed.serverpackcreator.spring.task.TaskSubmitter;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
-import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
