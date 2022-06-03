@@ -125,17 +125,18 @@ public class TabCreateServerPack extends JComponent {
 
     private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20,10,0,0);
     private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0,10,0,0);
-    private final Insets ZERO_ONEHUNDRET_ZERO_ZERO = new Insets(0,100,0,0);
     private final Insets TEN_TEN_ZERO_ZERO = new Insets(10,10,0,0);
     private final Insets ZERO_TEN_ZERO_TEN = new Insets(0,10,0,10);
     private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5,0,5,0);
 
     private final GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
     private final GridBagConstraints TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS = new GridBagConstraints();
+    private final GridBagConstraints TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS = new GridBagConstraints();
     private final GridBagConstraints TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS = new GridBagConstraints();
 
     private final JPanel CREATESERVERPACKPANEL = new JPanel(false);
     private final JPanel CLIENTSIDEMODS_JPANEL = new JPanel(false);
+    private final JPanel COPYDIRECTORIES_JPANEL = new JPanel(false);
     private final JPanel JAVAARGS_JPANEL = new JPanel(false);
     private final JPanel CONTENT_PANE = new JPanel(new BorderLayout());
 
@@ -152,9 +153,9 @@ public class TabCreateServerPack extends JComponent {
 
     private final IconTextArea TEXTAREA_CLIENTSIDEMODS = new IconTextArea("");
     private final IconTextArea TEXTAREA_JAVAARGS = new IconTextArea("");
+    private final IconTextArea TEXTAREA_COPYDIRECTORIES = new IconTextArea("");
 
     private final IconTextField TEXTFIELD_MODPACKDIRECTORY = new IconTextField("");
-    private final IconTextField TEXTFIELD_COPYDIRECTORIES = new IconTextField("");
     private final IconTextField TEXTFIELD_JAVAPATH = new IconTextField("");
     private final IconTextField TEXTFIELD_SERVERPACKSUFFIX = new IconTextField("");
     private final IconTextField TEXTFIELD_SERVERICONPATH = new IconTextField("");
@@ -162,6 +163,11 @@ public class TabCreateServerPack extends JComponent {
 
     private final JScrollPane SCROLL_PANEL_CLIENTSIDEMODS = new JScrollPane(
             TEXTAREA_CLIENTSIDEMODS,
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    );
+    private final JScrollPane SCROLL_PANEL_COPYDIRECTORIES = new JScrollPane(
+            TEXTAREA_COPYDIRECTORIES,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
     );
@@ -341,9 +347,9 @@ public class TabCreateServerPack extends JComponent {
 
         this.NONE = new String[] {LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.forge.none")};
 
-        this.MINECRAFT_VERSIONS = new DefaultComboBoxModel<String>(VERSIONMETA.minecraft().releaseVersionsArrayDescending());
-        this.FABRIC_VERSIONS = new DefaultComboBoxModel<String>(VERSIONMETA.fabric().loaderVersionsArrayDescending());
-        this.QUILT_VERSIONS = new DefaultComboBoxModel<String>(VERSIONMETA.quilt().loaderVersionsArrayDescending());
+        this.MINECRAFT_VERSIONS = new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending());
+        this.FABRIC_VERSIONS = new DefaultComboBoxModel<>(VERSIONMETA.fabric().loaderVersionsArrayDescending());
+        this.QUILT_VERSIONS = new DefaultComboBoxModel<>(VERSIONMETA.quilt().loaderVersionsArrayDescending());
         this.NO_VERSIONS = new DefaultComboBoxModel<>(NONE);
     }
 
@@ -510,14 +516,29 @@ public class TabCreateServerPack extends JComponent {
 
         CREATESERVERPACKPANEL.add(labelCopyDirs, GRIDBAGCONSTRAINTS);
 
-        TEXTFIELD_COPYDIRECTORIES.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
-        TEXTFIELD_COPYDIRECTORIES.addDocumentListener((SimpleDocumentListener) e -> validateCopyDirs());
+        TEXTAREA_COPYDIRECTORIES.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
+        TEXTAREA_COPYDIRECTORIES.setFont(new Font("Noto Sans Display Regular", Font.PLAIN, 15));
+        ERROR_ICON_COPYDIRECTORIES.setDescription(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.textclientmods.error"));
+        TEXTAREA_COPYDIRECTORIES.addDocumentListener((SimpleDocumentListener) e -> validateCopyDirs());
+        COPYDIRECTORIES_JPANEL.setLayout(new GridBagLayout());
+        TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.anchor = GridBagConstraints.CENTER;
+        TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.fill = GridBagConstraints.BOTH;
+        TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.gridx = 0;
+        TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.gridy = 0;
+        TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.weighty = 1;
+        TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.weightx = 1;
+
+        COPYDIRECTORIES_JPANEL.add(SCROLL_PANEL_COPYDIRECTORIES,TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS);
+        COPYDIRECTORIES_JPANEL.setSize(100,100);
+        COPYDIRECTORIES_JPANEL.setPreferredSize(new Dimension(100,100));
+        COPYDIRECTORIES_JPANEL.setMaximumSize(new Dimension(100,100));
+        COPYDIRECTORIES_JPANEL.setMinimumSize(new Dimension(100,100));
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 5;
         GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_ZERO;
 
-        CREATESERVERPACKPANEL.add(TEXTFIELD_COPYDIRECTORIES, GRIDBAGCONSTRAINTS);
+        CREATESERVERPACKPANEL.add(COPYDIRECTORIES_JPANEL, GRIDBAGCONSTRAINTS);
 
         //Labels and textfields server-icon.png and server.properties paths
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
@@ -1121,12 +1142,12 @@ public class TabCreateServerPack extends JComponent {
      */
     private void validateCopyDirs() {
         List<String> errorsTEXTFIELD_COPYDIRECTORIES = new ArrayList<>();
-        if (!TEXTFIELD_COPYDIRECTORIES.getText().matches("^.*,\\s*\\\\*$") &&
+        if (!TEXTAREA_COPYDIRECTORIES.getText().matches("^.*,\\s*\\\\*$") &&
                 CONFIGURATIONHANDLER.checkCopyDirs(
                         UTILITIES.ListUtils().cleanList(
                                 new ArrayList<>(
                                         Arrays.asList(
-                                                TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(",")
+                                                TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")
                                         )
                                 )
                         ),
@@ -1135,17 +1156,17 @@ public class TabCreateServerPack extends JComponent {
                 )
         ) {
 
-            TEXTFIELD_COPYDIRECTORIES.setIcon(null);
-            TEXTFIELD_COPYDIRECTORIES.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
+            TEXTAREA_COPYDIRECTORIES.setIcon(null);
+            TEXTAREA_COPYDIRECTORIES.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.labelcopydirs.tip"));
 
-            TEXTFIELD_COPYDIRECTORIES.setForeground(getThemeTextColor());
+            TEXTAREA_COPYDIRECTORIES.setForeground(getThemeTextColor());
 
         } else {
 
-            TEXTFIELD_COPYDIRECTORIES.setForeground(getThemeErrorColor());
-            TEXTFIELD_COPYDIRECTORIES.setIcon(ERROR_ICON_COPYDIRECTORIES);
+            TEXTAREA_COPYDIRECTORIES.setForeground(getThemeErrorColor());
+            TEXTAREA_COPYDIRECTORIES.setIcon(ERROR_ICON_COPYDIRECTORIES);
             ERROR_ICON_COPYDIRECTORIES.setDescription(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
-            TEXTFIELD_COPYDIRECTORIES.setToolTipText(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
+            TEXTAREA_COPYDIRECTORIES.setToolTipText(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
 
         }
     }
@@ -1387,6 +1408,7 @@ public class TabCreateServerPack extends JComponent {
             //Forge
             case "Forge":
 
+                //noinspection ConstantConditions
                 updateForgeComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString());
                 COMBOBOX_MODLOADERS.setSelectedIndex(1);
                 COMBOBOX_MODLOADER_VERSIONS.setModel(forgeComboBoxModel);
@@ -1402,9 +1424,11 @@ public class TabCreateServerPack extends JComponent {
         }
 
         COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(0);
+        //noinspection ConstantConditions
         chosenModloaderVersion = COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString();
         chosenModloader = modloader;
 
+        //noinspection ConstantConditions
         LOG.debug("Minecraft version: " + COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString() + "; Modloader: " + COMBOBOX_MODLOADERS.getSelectedItem().toString() + "; Modloader version " + COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString());
 
     }
@@ -1588,7 +1612,7 @@ public class TabCreateServerPack extends JComponent {
                 copyDirsNames.add(directory.getName());
             }
 
-            TEXTFIELD_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
+            TEXTAREA_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(Arrays.toString(copyDirsNames.toArray(new String[0]))));
 
             LOG.debug("Selected directories: " + copyDirsNames);
         }
@@ -1653,7 +1677,7 @@ public class TabCreateServerPack extends JComponent {
 
         MATERIALTEXTPANEUI.installUI(LAZYMODETEXTPANE);
 
-        if (TEXTFIELD_COPYDIRECTORIES.getText().equals("lazy_mode")) {
+        if (TEXTAREA_COPYDIRECTORIES.getText().equals("lazy_mode")) {
             decision = JOptionPane.showConfirmDialog(
                     FRAME_SERVERPACKCREATOR,
                     LAZYMODETEXTPANE,
@@ -1802,7 +1826,7 @@ public class TabCreateServerPack extends JComponent {
      */
     void saveConfig(File configFile) {
         List<String> tempClientMods = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTAREA_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
-        List<String> tempCopyDirs = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTFIELD_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
+        List<String> tempCopyDirs = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
 
         CONFIGUTILITIES.writeConfigToFile(
                 TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\","/"),
@@ -1865,19 +1889,19 @@ public class TabCreateServerPack extends JComponent {
 
             if (config.getOrElse("copyDirs", Arrays.asList("config", "mods")).isEmpty()) {
 
-                TEXTFIELD_COPYDIRECTORIES.setText("config, mods");
+                TEXTAREA_COPYDIRECTORIES.setText("config, mods");
 
             } else {
 
                 try {
 
-                    if (!TEXTFIELD_COPYDIRECTORIES.getText().equals(UTILITIES.StringUtils().buildString(config.get("copyDirs").toString().replace("\\", "/")))) {
-                        TEXTFIELD_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(config.get("copyDirs").toString().replace("\\", "/")));
+                    if (!TEXTAREA_COPYDIRECTORIES.getText().equals(UTILITIES.StringUtils().buildString(config.get("copyDirs").toString().replace("\\", "/")))) {
+                        TEXTAREA_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(config.get("copyDirs").toString().replace("\\", "/")));
                     }
 
                 } catch (Exception ex) {
                     LOG.error("Couldn't parse copyDirs. Using fallback.", ex);
-                    TEXTFIELD_COPYDIRECTORIES.setText("config, mods");
+                    TEXTAREA_COPYDIRECTORIES.setText("config, mods");
                 }
 
             }
@@ -2033,7 +2057,7 @@ public class TabCreateServerPack extends JComponent {
         TEXTFIELD_MODPACKDIRECTORY.setText("");
         TEXTFIELD_SERVERPACKSUFFIX.setText("");
         TEXTAREA_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString()));
-        TEXTFIELD_COPYDIRECTORIES.setText("");
+        TEXTAREA_COPYDIRECTORIES.setText("");
         TEXTFIELD_SERVERICONPATH.setText("");
         TEXTFIELD_SERVERPROPERTIESPATH.setText("");
         TEXTFIELD_JAVAPATH.setText(UTILITIES.SystemUtils().acquireJavaPathFromSystem());
