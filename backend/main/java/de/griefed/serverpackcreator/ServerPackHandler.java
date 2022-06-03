@@ -1496,35 +1496,20 @@ public class ServerPackHandler {
 
                     }
 
-                } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
+                } else if (new File(directory).isFile()) {
 
                     serverPackFiles.add(new ServerPackFile(
-                            String.format("%s/%s", modpackDir, directory),
-                            String.format("%s/%s", destination, directory)
+                            directory,
+                            String.format("%s/%s", destination, new File(directory).getName())
                     ));
 
+                } else if (new File(directory).isDirectory()) {
+
+                    serverPackFiles.addAll(getDirectoryFiles(directory,destination));
 
                 } else {
 
-                    try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
-
-                        files.forEach(file -> {
-                            if (excludeFileOrDirectory(file.toString().replace("\\","/"), exclusions)) {
-
-                                LOG.info("Excluding " + file + " from server pack");
-
-                            } else {
-
-                                serverPackFiles.add(new ServerPackFile(
-                                        file,
-                                        Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file))
-                                ));
-                            }
-                        });
-
-                    } catch (IOException ex) {
-                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                    }
+                    serverPackFiles.addAll(getDirectoryFiles(clientDir,destination));
 
                 }
             }
@@ -1563,35 +1548,9 @@ public class ServerPackHandler {
             ));
 
 
-        } else if (new File(String.format("%s/%s", modpackDir, combination[0])).isDirectory()){
+        } else if (new File(String.format("%s/%s", modpackDir, combination[0])).isDirectory()) {
 
-            try (Stream<Path> files = Files.walk(Paths.get(String.format("%s/%s", modpackDir, combination[0])))) {
-
-                files.forEach(file ->
-                        {
-                            try {
-
-                                serverPackFiles.add(new ServerPackFile(
-                                        file,
-                                        Paths.get(String.format("%s/%s", destination, combination[1])).resolve(Paths.get(String.format("%s/%s", modpackDir, combination[0])).relativize(file))
-                                ));
-                            } catch (UnsupportedOperationException ex) {
-
-                                LOG.error(
-                                        String.format(
-                                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
-                                            file,
-                                            String.format("%s/%s", modpackDir, combination[0])
-                                        ),ex
-                                );
-                            }
-                        }
-                );
-
-            } catch (IOException ex) {
-
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy"), ex);
-            }
+            serverPackFiles.addAll(getDirectoryFiles(String.format("%s/%s", modpackDir, combination[0]), destination));
 
         } else if(new File(combination[0]).isFile()) {
 
@@ -1602,34 +1561,48 @@ public class ServerPackHandler {
 
         } else if (new File(combination[0]).isDirectory()) {
 
-            try (Stream<Path> files = Files.walk(Paths.get(combination[0]))) {
+            serverPackFiles.addAll(getDirectoryFiles(combination[0], destination));
 
-                files.forEach(file ->
-                        {
-                            try {
+        }
 
-                                serverPackFiles.add(new ServerPackFile(
-                                        file,
-                                        Paths.get(String.format("%s/%s", destination, combination[1])).resolve(Paths.get(combination[0]).relativize(file))
-                                ));
-                            } catch (UnsupportedOperationException ex) {
+        return serverPackFiles;
+    }
 
-                                LOG.error(
-                                        String.format(
-                                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
-                                                file,
-                                                combination[0]
-                                        ),ex
-                                );
-                            }
+    /**
+     * Gather {@link ServerPackFile}s for a given directory, recursively.
+     * @author Griefed
+     * @param source {@link String} The source-directory.
+     * @param destination{@link String} The server pack-directory.
+     * @return {@link ServerPackFile}-list.
+     */
+    private List<ServerPackFile> getDirectoryFiles(String source, String destination) {
+        List<ServerPackFile> serverPackFiles = new ArrayList<>();
+        try (Stream<Path> files = Files.walk(Paths.get(source))) {
+
+            files.forEach(file ->
+                    {
+                        try {
+
+                            serverPackFiles.add(new ServerPackFile(
+                                    file,
+                                    Paths.get(String.format("%s/%s", destination, new File(source).getName())).resolve(Paths.get(source).relativize(file))
+                            ));
+                        } catch (UnsupportedOperationException ex) {
+
+                            LOG.error(
+                                    String.format(
+                                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
+                                            file,
+                                            source
+                                    ),ex
+                            );
                         }
-                );
+                    }
+            );
 
-            } catch (IOException ex) {
+        } catch (IOException ex) {
 
-                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy"), ex);
-            }
-
+            LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy"), ex);
         }
 
         return serverPackFiles;
@@ -1656,15 +1629,20 @@ public class ServerPackHandler {
                                     file,
                                     Paths.get(String.format("%s/%s", destination, directory.substring(6))).resolve(Paths.get(clientDir).relativize(file))
                             ));
-                        } catch (UnsupportedOperationException e) {
-                            //TODO improve logging
-                            throw new RuntimeException(e);
+                        } catch (UnsupportedOperationException ex) {
+                            LOG.error(
+                                    String.format(
+                                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
+                                            file,
+                                            clientDir
+                                    ),ex
+                            );
                         }
                     }
             );
 
         } catch (IOException ex) {
-            //TODO improve logging
+
             LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
         }
 

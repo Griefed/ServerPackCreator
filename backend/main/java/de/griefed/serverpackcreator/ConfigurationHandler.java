@@ -1082,7 +1082,7 @@ public class ConfigurationHandler {
                 // Add an entry to the list of directories/files to exclude if it starts with !
                 } else if (directory.startsWith("!")) {
 
-                    File fileOrDirectory = new File(String.format("%s/%s",modpackDir, directory.substring(1)));
+                    File fileOrDirectory = new File(String.format("%s/%s", modpackDir, directory.substring(1)));
 
                     if (fileOrDirectory.isFile()) {
                         LOG.warn("File " + directory.substring(1) + " will be ignored.");
@@ -1097,14 +1097,14 @@ public class ConfigurationHandler {
 
                     File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
 
-                    if (!dirToCheck.exists()) {
+                    if (!dirToCheck.exists() && !new File(directory).exists() && !new File(directory).isFile() && !new File(directory).isDirectory()) {
 
                         configCorrect = false;
 
                         /* This log is meant to be read by the user, therefore we allow translation. */
-                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
+                        LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), directory));
 
-                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), dirToCheck.getAbsolutePath()));
+                        encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), directory));
 
                     }
                 }
