@@ -1,3 +1,30 @@
+## [3.5.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.7...3.5.0-alpha.8) (2022-06-03)
+
+
+### :scissors: Refactor
+
+* **File copying:** Gather a list of all files to be copied to the server pack and THEN copy them. Improves readibility of the copyFiles(...)-method. Delete your `lang/lang_en_us.properties`-file to receive the new text. ([640ba07](https://git.griefed.de/Griefed/ServerPackCreator/commit/640ba071cef5ce19ca9fde76b4ac0d3210e80f20))
+
+
+### ⏩ Performance
+
+* **FileWatcher setup:** Setup FileWatcher off-thread when running GUI, to improve startup-time of ServerPackCreator. ([087bed5](https://git.griefed.de/Griefed/ServerPackCreator/commit/087bed58fb3a255bb544dbee6bab4491d05c2a62))
+
+
+### 💎 Improvements
+
+* **About window:** Improve display of About text and improve the text itself. Delete your `lang/lang_en_us.properties`-file to receive the new text. ([0d4193d](https://git.griefed.de/Griefed/ServerPackCreator/commit/0d4193d42b0dcf30ad5dd4ae54b06f1cb9e8ab86))
+* **Copy directories textfield:** Turn textfield into a textarea much like clientside-only mods and JVM args. ([9dfc606](https://git.griefed.de/Griefed/ServerPackCreator/commit/9dfc6066a71af723b7862e32d84b01fc9fefa748))
+* **Copy Files and Directories:** Allow specifying absolute paths to files and directories to include in the server pack. Example `C:/`foo/bar` will result in `bar` being copied to the server pack as `bar`, and `C:/`foo/bar.file` will result in `bar.file` being copied to the server pack as `bar.file`. ([5978347](https://git.griefed.de/Griefed/ServerPackCreator/commit/59783475400d73d5f13505fb0ba7c5361a942458))
+* **i18n:** Provide more language-keys for i18n. ([1b5c695](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b5c6955a456b93802605ae3d100f9127792f6de))
+* **Java-path label and tooltip:** Improve wording to reduce confusion as to what this setting is for. Please delete your `lang/lang_en_us.properties`-file. ([f87537f](https://git.griefed.de/Griefed/ServerPackCreator/commit/f87537f9a7539ebf456e4f4fa4f70b1b67dd20b5))
+* **SPC Window:** Open ServerPackCreator in the center of the main display. ([2020ca6](https://git.griefed.de/Griefed/ServerPackCreator/commit/2020ca6874531fab71d3ec356c825abc3a55492e))
+
+
+### 🛠 Fixes
+
+* **Symlink check:** Prevent IllegalCharacterException in FileUtilities.isLink(...) when checking the given file whether it is a symlink but said file having a Windows-path. Rename commonutilities package to common. ([a6c5c59](https://git.griefed.de/Griefed/ServerPackCreator/commit/a6c5c59ae445ea7fdd0d84d3267d7e53ab6278ac))
+
 ## [3.5.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-alpha.6...3.5.0-alpha.7) (2022-05-28)
 
 
