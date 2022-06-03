@@ -27,7 +27,7 @@ import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
-import de.griefed.serverpackcreator.utilities.commonutilities.Utilities;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
@@ -1430,99 +1430,47 @@ public class ServerPackHandler {
 
             List<String> exclusions = APPLICATIONPROPERTIES.getListOfDirectoriesToExclude();
             directoriesToCopy.forEach(entry -> {
-                if (entry.startsWith("!")) {
+                if (entry.startsWith("!") && !exclusions.contains(entry.substring(1))) {
                     exclusions.add(entry.substring(1));
                 }
             });
             directoriesToCopy.removeIf(n -> n.startsWith("!"));
 
+            List<ServerPackFile> serverPackFiles = new ArrayList<>(100000);
+
             for (String directory : directoriesToCopy) {
 
-                String clientDir = String.format("%s/%s", modpackDir, directory);
-                String serverDir = String.format("%s/%s", destination, directory);
+                String clientDir = String.format("%s/%s", modpackDir, directory).replace("\\","/");
+                String serverDir = String.format("%s/%s", destination, directory).replace("\\","/");
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), directory));
 
-                /*
-                 * Check for semicolon. If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
-                 * for a file they specifically want to include in their server pack.
-                 */
+
                 if (directory.contains(";")) {
 
-                    String[] sourceFileDestinationFileCombination = directory.split(";");
+                    /*
+                     * If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
+                     * for a file they specifically want to include in their server pack.
+                     */
+                    serverPackFiles.addAll(getExplicitFiles(directory.split(";"), modpackDir,destination));
 
-                    if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isFile()) {
-
-                        try {
-                            FileUtils.copyFile(
-                                    new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
-                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1])),
-                                    REPLACE_EXISTING
-                            );
-                        } catch (IOException ex) {
-                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                        }
-
-                    } else if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isDirectory()){
-
-                        try {
-                            FileUtils.copyDirectory(
-                                    new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])),
-                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1]))
-                            );
-                        } catch (Exception ex) {
-                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                        }
-
-                    } else if(new File(sourceFileDestinationFileCombination[0]).isFile()) {
-
-                        try {
-                            FileUtils.copyFile(
-                                    new File(sourceFileDestinationFileCombination[0]),
-                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1])),
-                                    REPLACE_EXISTING
-                            );
-                        } catch (IOException ex) {
-                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                        }
-
-                    } else if (new File(sourceFileDestinationFileCombination[0]).isDirectory()) {
-
-                        try {
-                            FileUtils.copyDirectory(
-                                    new File(sourceFileDestinationFileCombination[0]),
-                                    new File(String.format("%s/%s", destination, sourceFileDestinationFileCombination[1]))
-                            );
-                        } catch (Exception ex) {
-                            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                        }
-
-                    }
+                } else if (directory.startsWith("saves/")) {
 
                     /*
                      * Check whether the entry starts with saves, and if it does, change the destination path to NOT include
                      * saves in it, so when a world is specified inside the saves-directory, it is copied to the base-directory
                      * of the server pack, instead of a saves-directory inside the modpack.
                      */
-                } else if (directory.startsWith("saves/")) {
+                    serverPackFiles.addAll(getSaveFiles(clientDir,directory,destination));
 
-                    try {
 
-                        FileUtils.copyDirectory(
-                                new File(clientDir),
-                                new File(String.format("%s/%s", destination, directory.substring(6))));
-
-                    } catch (IOException ex) {
-                        LOG.error("An error occurred copying the specified world.", ex);
-                    }
+                } else if (directory.startsWith("mods")) {
 
                     /*
                      * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
                      * user-specified clientside-only mods from the list of mods in the mods-directory.
                      */
-                } else if (directory.startsWith("mods")) {
-
                     List<String> listOfFiles = excludeClientMods(clientDir, clientMods, minecraftVersion, modloader);
 
                     try {
@@ -1539,21 +1487,10 @@ public class ServerPackHandler {
 
                         } else {
 
-                            try {
-
-                                Files.copy(
-                                        Paths.get(file),
-                                        Paths.get(String.format("%s/%s", serverDir, new File(file).getName())),
-                                        REPLACE_EXISTING
-                                );
-
-                                LOG.debug(String.format("Copying: %s", file));
-
-                            } catch (IOException ex) {
-                                if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                    LOG.error("An error occurred copying files to the serverpack.", ex);
-                                }
-                            }
+                            serverPackFiles.add(new ServerPackFile(
+                                    file,
+                                    String.format("%s/%s", serverDir, new File(file).getName())
+                            ));
 
                         }
 
@@ -1561,14 +1498,11 @@ public class ServerPackHandler {
 
                 } else if (new File(directory).isFile() && !new File(directory).isDirectory()) {
 
-                    File sourceFile = new File(String.format("%s/%s", modpackDir, directory));
-                    File destinationFile = new File(String.format("%s/%s", destination, directory));
+                    serverPackFiles.add(new ServerPackFile(
+                            String.format("%s/%s", modpackDir, directory),
+                            String.format("%s/%s", destination, directory)
+                    ));
 
-                    try {
-                        FileUtils.copyFile(sourceFile, destinationFile, REPLACE_EXISTING);
-                    } catch (IOException ex) {
-                        LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-                    }
 
                 } else {
 
@@ -1580,20 +1514,11 @@ public class ServerPackHandler {
                                 LOG.info("Excluding " + file + " from server pack");
 
                             } else {
-                                try {
 
-                                    Files.copy(
-                                            file,
-                                            Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file)),
-                                            REPLACE_EXISTING
-                                    );
-
-                                    LOG.debug(String.format("Copying: %s", file.toAbsolutePath()));
-                                } catch (IOException ex) {
-                                    if (!ex.toString().startsWith("java.nio.file.DirectoryNotEmptyException")) {
-                                        LOG.error("An error occurred copying files to the serverpack.", ex);
-                                    }
-                                }
+                                serverPackFiles.add(new ServerPackFile(
+                                        file,
+                                        Paths.get(serverDir).resolve(Paths.get(clientDir).relativize(file))
+                                ));
                             }
                         });
 
@@ -1603,7 +1528,147 @@ public class ServerPackHandler {
 
                 }
             }
+
+            LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.copy"));
+
+            serverPackFiles.forEach(serverPackFile -> {
+                try {
+                    serverPackFile.copy();
+                } catch (IOException ex) {
+                    LOG.error("An error occurred trying to copy " + serverPackFile.source() + " to " + serverPackFile.destination() + ".", ex);
+                }
+            });
+
         }
+    }
+
+    /**
+     * Gather a list of all files from an explicit source;destination-combination. If the source is a file, a singular
+     * {@link ServerPackFile} is returned. If the source is a directory, then {@link ServerPackFile}s for all files in
+     * said directory are returned.
+     * @author Griefed
+     * @param combination {@link String}-array containing a source-file/directory;destination-file/directory combination.
+     * @param modpackDir {@link String} the modpack-directory.
+     * @param destination {@link String} the destination, normally the server pack-directory.
+     * @return List of {@link ServerPackFile}.
+     */
+    private List<ServerPackFile> getExplicitFiles(String[] combination, String modpackDir, String destination) {
+        List<ServerPackFile> serverPackFiles = new ArrayList<>();
+
+        if (new File(String.format("%s/%s", modpackDir, combination[0])).isFile()) {
+
+            serverPackFiles.add(new ServerPackFile(
+                    String.format("%s/%s", modpackDir, combination[0]),
+                    String.format("%s/%s", destination, combination[1])
+            ));
+
+
+        } else if (new File(String.format("%s/%s", modpackDir, combination[0])).isDirectory()){
+
+            try (Stream<Path> files = Files.walk(Paths.get(String.format("%s/%s", modpackDir, combination[0])))) {
+
+                files.forEach(file ->
+                        {
+                            try {
+
+                                serverPackFiles.add(new ServerPackFile(
+                                        file,
+                                        Paths.get(String.format("%s/%s", destination, combination[1])).resolve(Paths.get(String.format("%s/%s", modpackDir, combination[0])).relativize(file))
+                                ));
+                            } catch (UnsupportedOperationException ex) {
+
+                                LOG.error(
+                                        String.format(
+                                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
+                                            file,
+                                            String.format("%s/%s", modpackDir, combination[0])
+                                        ),ex
+                                );
+                            }
+                        }
+                );
+
+            } catch (IOException ex) {
+
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy"), ex);
+            }
+
+        } else if(new File(combination[0]).isFile()) {
+
+            serverPackFiles.add(new ServerPackFile(
+                    combination[0],
+                    String.format("%s/%s", destination, combination[1])
+            ));
+
+        } else if (new File(combination[0]).isDirectory()) {
+
+            try (Stream<Path> files = Files.walk(Paths.get(combination[0]))) {
+
+                files.forEach(file ->
+                        {
+                            try {
+
+                                serverPackFiles.add(new ServerPackFile(
+                                        file,
+                                        Paths.get(String.format("%s/%s", destination, combination[1])).resolve(Paths.get(combination[0]).relativize(file))
+                                ));
+                            } catch (UnsupportedOperationException ex) {
+
+                                LOG.error(
+                                        String.format(
+                                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
+                                                file,
+                                                combination[0]
+                                        ),ex
+                                );
+                            }
+                        }
+                );
+
+            } catch (IOException ex) {
+
+                LOG.error(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy"), ex);
+            }
+
+        }
+
+        return serverPackFiles;
+    }
+
+    /**
+     * Gather all files in the specified save-directory and create {@link ServerPackFile}s from it.
+     * @author Griefed
+     * @param clientDir {@link String} Target directory in the server pack. Usually the name of the world.
+     * @param directory {@link String} The save-directory.
+     * @param destination {@link String} The destination of the server pack.
+     * @return List of {@link ServerPackFile}.
+     */
+    private List<ServerPackFile> getSaveFiles(String clientDir, String directory, String destination) {
+        List<ServerPackFile> serverPackFiles = new ArrayList<>();
+
+        try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
+
+            files.forEach(file ->
+                    {
+                        try {
+
+                            serverPackFiles.add(new ServerPackFile(
+                                    file,
+                                    Paths.get(String.format("%s/%s", destination, directory.substring(6))).resolve(Paths.get(clientDir).relativize(file))
+                            ));
+                        } catch (UnsupportedOperationException e) {
+                            //TODO improve logging
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+
+        } catch (IOException ex) {
+            //TODO improve logging
+            LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+        }
+
+        return serverPackFiles;
     }
 
     /**
