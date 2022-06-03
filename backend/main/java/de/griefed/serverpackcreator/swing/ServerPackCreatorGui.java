@@ -342,7 +342,7 @@ public class ServerPackCreatorGui extends JPanel {
 
         FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
         FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
-        //FRAME_SERVERPACKCREATOR.setMinimumSize(DIMENSION_WINDOW);
+
         FRAME_SERVERPACKCREATOR.setResizable(true);
 
         FRAME_SERVERPACKCREATOR.pack();
@@ -360,6 +360,8 @@ public class ServerPackCreatorGui extends JPanel {
         SERVERPACKCREATORSPLASH.close();
 
         TAB_CREATESERVERPACK.validateInputFields();
+
+        FRAME_SERVERPACKCREATOR.setLocationRelativeTo(null);
 
         FRAME_SERVERPACKCREATOR.setVisible(true);
 
