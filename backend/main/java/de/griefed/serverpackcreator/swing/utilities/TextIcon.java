@@ -79,6 +79,7 @@ import java.util.Map;
  * be used to renderer the text. For versions not supporting the rendering
  * hints antialiasing will be turned on.
  * <p>
+ *
  * @author Rob Camick
  */
 public class TextIcon implements Icon, PropertyChangeListener {
@@ -97,6 +98,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
     //  Used for Layout.VERTICAL to save reparsing the text every time the
     //  icon is repainted
     private int[] stringWidths;
+
     /**
      * Convenience constructor to create a TextIcon with a HORIZONTAL layout.
      *

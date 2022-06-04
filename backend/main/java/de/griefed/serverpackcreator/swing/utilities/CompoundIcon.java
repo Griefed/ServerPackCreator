@@ -73,6 +73,7 @@ public class CompoundIcon implements Icon {
     private final int gap;
     private final float alignmentX;
     private final float alignmentY;
+
     /**
      * Convenience contructor for creating a CompoundIcon where the
      * icons are layed out on the X-AXIS, the gap is 0 and the

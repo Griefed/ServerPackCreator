@@ -51,6 +51,7 @@ public class ConfigurationModel {
     private String projectName;
     private String fileName;
     private String fileDiskName;
+
     /**
      * Constructor for our ConfigurationModel.
      *

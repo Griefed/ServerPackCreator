@@ -74,6 +74,7 @@ public class RotatedIcon implements Icon {
     private Rotate rotate;
     private double degrees;
     private boolean circularIcon;
+
     /**
      * Convenience constructor to create a RotatedIcon that is rotated DOWN.
      *
