@@ -24,7 +24,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -38,7 +37,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,10 +246,12 @@ public class LocalizationManager {
       throw new IncorrectLanguageException();
     }
 
-    try (InputStream inputStream =
-        FileUtils.openInputStream(new File(String.format("lang/lang_%s.properties", locale)))) {
+    try (FileInputStream fileInputStream =
+        new FileInputStream(String.format("lang/lang_%s.properties", locale))) {
 
-      filesystemResources = new PropertyResourceBundle(inputStream);
+      filesystemResources =
+          new PropertyResourceBundle(
+              new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
 
       LOG.debug("Using language-definitions from file on filesystem.");
 
@@ -267,7 +267,8 @@ public class LocalizationManager {
                 String.format("de/griefed/resources/lang/lang_%s", locale),
                 new Locale(
                     CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)),
+                new UTF8Control());
 
       } catch (Exception ex2) {
 
@@ -277,7 +278,7 @@ public class LocalizationManager {
 
         filesystemResources =
             ResourceBundle.getBundle(
-                "de/griefed/resources/lang/lang_en_us", new Locale("en", "us"));
+                "de/griefed/resources/lang/lang_en_us", new Locale("en", "US"), new UTF8Control());
 
         locale = "en_us";
       }
@@ -292,7 +293,8 @@ public class LocalizationManager {
                 String.format("de/griefed/resources/lang/lang_%s", locale),
                 new Locale(
                     CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)));
+                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)),
+                new UTF8Control());
 
       } catch (Exception ex) {
 
@@ -365,7 +367,13 @@ public class LocalizationManager {
         // Ukrainian letters are displayed as ???? ?? ?????? and so on. Please help. I have no idea
         // how to fix this
         // German letters like ö, ä and ü are fine....
-        text = new String(value.getBytes());
+        text = value;
+        /*try {
+          text = decodeText(value);
+        } catch (IOException ex) {
+          LOG.error("Couldn't decode text.", ex);
+          text = value;
+        }*/
 
       } else {
 

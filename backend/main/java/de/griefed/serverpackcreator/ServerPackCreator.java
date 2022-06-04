@@ -35,6 +35,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -185,12 +187,17 @@ public class ServerPackCreator {
    */
   private void stageOne() {
 
+    System.setProperty("log4j2.formatMsgNoLookups","true");
+    System.setProperty("file.encoding",StandardCharsets.UTF_8.name());
+
     this.utilities = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
     this.systemInformation =
         utilities.JarUtils()
             .systemInformation(
                 utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
+
+    utilities.SystemUtils().println(LOCALIZATIONMANAGER.getLocalizedString("encoding.check"));
 
     LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
     LOG.debug("System information jarName: " + systemInformation.get("jarName"));
@@ -311,14 +318,19 @@ public class ServerPackCreator {
             .substring(0, systemInformation.get("jarPath").replace("\\", "/").lastIndexOf("/"))
             .replace("\\", "/"));
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
-    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
-    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
-    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
-    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip3"));
-    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip4"));
-    LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+    if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("dev")
+        || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("alpha")
+        || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("beta")) {
+
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
+      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
+      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
+      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip3"));
+      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip4"));
+      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+    }
 
     /* This log is meant to be read by the user, therefore we allow translation. */
     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));

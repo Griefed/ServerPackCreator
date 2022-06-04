@@ -242,6 +242,15 @@ public class ApplicationPropertiesTest {
         APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST(),
         new File("fabric-installer-manifest.xml"));
 
+    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST());
+    Assertions.assertEquals(
+        APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST(), new File("quilt-manifest.xml"));
+
+    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertEquals(
+        APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST(),
+        new File("quilt-installer-manifest.xml"));
+
     Assertions.assertNotNull(APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE());
     Assertions.assertEquals(
         APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE(), new File("serverpackcreator.db"));
@@ -265,6 +274,16 @@ public class ApplicationPropertiesTest {
     Assertions.assertEquals(
         APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
         new File("./work/fabric-installer-manifest.xml"));
+
+    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION());
+    Assertions.assertEquals(
+        APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+        new File("./work/quilt-manifest.xml"));
+
+    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
+    Assertions.assertEquals(
+        APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
+        new File("./work/quilt-installer-manifest.xml"));
   }
 
   @Test
