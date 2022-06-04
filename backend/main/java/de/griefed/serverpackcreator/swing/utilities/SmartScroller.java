@@ -67,32 +67,33 @@ import java.awt.event.AdjustmentListener;
  * and resumes autoscrolling when you've scrolled to the bottom again. It's beautiful!<br>
  * Rob, you absolute madlad. You did it again.<br>
  * Links:<br>
- *  See <a href="https://tips4java.wordpress.com/2013/03/03/smart-scrolling/">Smart Scrolling</a><br>
- *  And <a href="https://www.camick.com/java/source/SmartScroller.java">SmartScroller.java</a>
+ * See <a href="https://tips4java.wordpress.com/2013/03/03/smart-scrolling/">Smart Scrolling</a><br>
+ * And <a href="https://www.camick.com/java/source/SmartScroller.java">SmartScroller.java</a>
  * Seriously, give this man an award, because this class is a <strong>BEAST</strong>.<p>
  * Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank you, thank you, thank you
  * so very much! You seriously made my day here.<br>
  * Rob, you rule.<br>
  * <br>
- *  The SmartScroller will attempt to keep the viewport positioned based on<br>
- *  the users interaction with the scrollbar. The normal behaviour is to keep<br>
- *  the viewport positioned to see new data as it is dynamically added.<br>
- *<br>
- *  Assuming vertical scrolling and data is added to the bottom:<br>
- *<br>
- *  - when the viewport is at the bottom and new data is added,<br>
- *    then automatically scroll the viewport to the bottom<br>
- *  - when the viewport is not at the bottom and new data is added,<br>
- *    then do nothing with the viewport<br>
- *<br>
- *  Assuming vertical scrolling and data is added to the top:<br>
- *<br>
- *  - when the viewport is at the top and new data is added,<br>
- *    then do nothing with the viewport<br>
- *  - when the viewport is not at the top and new data is added, then adjust<br>
- *    the viewport to the relative position it was at before the data was added<br>
- *<br>
- *  Similar logic would apply for horizontal scrolling.
+ * The SmartScroller will attempt to keep the viewport positioned based on<br>
+ * the users interaction with the scrollbar. The normal behaviour is to keep<br>
+ * the viewport positioned to see new data as it is dynamically added.<br>
+ * <br>
+ * Assuming vertical scrolling and data is added to the bottom:<br>
+ * <br>
+ * - when the viewport is at the bottom and new data is added,<br>
+ * then automatically scroll the viewport to the bottom<br>
+ * - when the viewport is not at the bottom and new data is added,<br>
+ * then do nothing with the viewport<br>
+ * <br>
+ * Assuming vertical scrolling and data is added to the top:<br>
+ * <br>
+ * - when the viewport is at the top and new data is added,<br>
+ * then do nothing with the viewport<br>
+ * - when the viewport is not at the top and new data is added, then adjust<br>
+ * the viewport to the relative position it was at before the data was added<br>
+ * <br>
+ * Similar logic would apply for horizontal scrolling.
+ *
  * @author Rob Camick
  */
 @Generated
@@ -111,43 +112,46 @@ public class SmartScroller implements AdjustmentListener {
     private int previousMaximum = -1;
 
     /**
-     *  Convenience constructor.<br>
-     *  Scroll direction is VERTICAL and viewport position is at the END.
-     *  @author Rob Camick
-     *  @param scrollPane the scroll pane to monitor
+     * Convenience constructor.<br>
+     * Scroll direction is VERTICAL and viewport position is at the END.
+     *
+     * @param scrollPane the scroll pane to monitor
+     * @author Rob Camick
      */
     public SmartScroller(JScrollPane scrollPane) {
         this(scrollPane, VERTICAL, END);
     }
 
     /**
-     *  Convenience constructor.<br>
-     *  Scroll direction is VERTICAL.
-     *  @author Rob Camick
-     *  @param scrollPane the scroll pane to monitor
-     *  @param viewportPosition valid values are START and END
+     * Convenience constructor.<br>
+     * Scroll direction is VERTICAL.
+     *
+     * @param scrollPane       the scroll pane to monitor
+     * @param viewportPosition valid values are START and END
+     * @author Rob Camick
      */
     public SmartScroller(JScrollPane scrollPane, int viewportPosition) {
         this(scrollPane, VERTICAL, viewportPosition);
     }
 
     /**
-     *  Specify how the SmartScroller will function.
-     *  @author Rob Camick
-     *  @param scrollPane the scroll pane to monitor
-     *  @param scrollDirection indicates which JScrollBar to monitor.
+     * Specify how the SmartScroller will function.
+     *
+     * @param scrollPane       the scroll pane to monitor
+     * @param scrollDirection  indicates which JScrollBar to monitor.
      *                         Valid values are HORIZONTAL and VERTICAL.
-     *  @param viewportPosition indicates where the viewport will normally be
-     *                          positioned as data is added.
-     *                          Valid values are START and END
+     * @param viewportPosition indicates where the viewport will normally be
+     *                         positioned as data is added.
+     *                         Valid values are START and END
+     * @author Rob Camick
      */
     public SmartScroller(JScrollPane scrollPane, int scrollDirection, int viewportPosition) {
         if (scrollDirection != HORIZONTAL
-                &&  scrollDirection != VERTICAL) {
+                && scrollDirection != VERTICAL) {
             throw new IllegalArgumentException("invalid scroll direction specified");
         }
         if (viewportPosition != START
-                &&  viewportPosition != END) {
+                && viewportPosition != END) {
             throw new IllegalArgumentException("invalid viewport position specified");
         }
 
@@ -160,7 +164,7 @@ public class SmartScroller implements AdjustmentListener {
             scrollBar = scrollPane.getVerticalScrollBar();
         }
 
-        scrollBar.addAdjustmentListener( this );
+        scrollBar.addAdjustmentListener(this);
 
         //  Turn off automatic scrolling for text components
 
@@ -168,8 +172,8 @@ public class SmartScroller implements AdjustmentListener {
 
         if (view instanceof JTextComponent) {
 
-            JTextComponent textComponent = (JTextComponent)view;
-            DefaultCaret caret = (DefaultCaret)textComponent.getCaret();
+            JTextComponent textComponent = (JTextComponent) view;
+            DefaultCaret caret = (DefaultCaret) textComponent.getCaret();
             caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         }
     }
@@ -180,9 +184,10 @@ public class SmartScroller implements AdjustmentListener {
     }
 
     /**
-     *  Analyze every adjustment event to determine when the viewport needs to be repositioned.
-     *  @author Rob Camick
-     *  @param e Adjustment event to analyse
+     * Analyze every adjustment event to determine when the viewport needs to be repositioned.
+     *
+     * @param e Adjustment event to analyse
+     * @author Rob Camick
      */
     private void checkScrollBar(AdjustmentEvent e) {
         /*
@@ -190,7 +195,7 @@ public class SmartScroller implements AdjustmentListener {
          * whether the viewport should be repositioned or not.
          */
 
-        JScrollBar scrollBar = (JScrollBar)e.getSource();
+        JScrollBar scrollBar = (JScrollBar) e.getSource();
         BoundedRangeModel listModel = scrollBar.getModel();
         int value = listModel.getValue();
         int extent = listModel.getExtent();
@@ -216,18 +221,18 @@ public class SmartScroller implements AdjustmentListener {
 
         if (adjustScrollBar && viewportPosition == END) {
             //  Scroll the viewport to the end.
-            scrollBar.removeAdjustmentListener( this );
+            scrollBar.removeAdjustmentListener(this);
             value = maximum - extent;
-            scrollBar.setValue( value );
-            scrollBar.addAdjustmentListener( this );
+            scrollBar.setValue(value);
+            scrollBar.addAdjustmentListener(this);
         }
 
         if (adjustScrollBar && viewportPosition == START) {
             //  Keep the viewport at the same relative viewportPosition
-            scrollBar.removeAdjustmentListener( this );
+            scrollBar.removeAdjustmentListener(this);
             value = value + maximum - previousMaximum;
-            scrollBar.setValue( value );
-            scrollBar.addAdjustmentListener( this );
+            scrollBar.setValue(value);
+            scrollBar.addAdjustmentListener(this);
         }
 
         previousValue = value;

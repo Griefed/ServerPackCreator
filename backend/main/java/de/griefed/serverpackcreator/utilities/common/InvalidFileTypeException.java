@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.utilities.common;
 
 /**
  * Exceptions thrown if a specified {@link de.griefed.serverpackcreator.utilities.common.FileUtilities.FileType} is considered invalid.
+ *
  * @author Griefed
  */
 public class InvalidFileTypeException extends Exception {

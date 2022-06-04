@@ -57,6 +57,7 @@ import java.util.Properties;
 /**
  * This class creates our menubar which will be displayed at the top of the ServerPackCreator frame. It contains various
  * menus and menuitems to execute, change, open and edit various different aspects of ServerPackCreator.
+ *
  * @author Griefed
  */
 @Generated
@@ -87,8 +88,8 @@ public class MainMenuBar extends Component {
     private final MaterialLookAndFeel LAF_DARK;
     private final MaterialLookAndFeel LAF_LIGHT;
 
-    private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
-    private final Dimension ABOUTDIMENSION = new Dimension(925,520);
+    private final Dimension CHOOSERDIMENSION = new Dimension(750, 450);
+    private final Dimension ABOUTDIMENSION = new Dimension(925, 520);
 
     private final ImageIcon HELPICON = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/help.png")));
     private final ImageIcon ICON_HASTEBIN = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
@@ -153,18 +154,19 @@ public class MainMenuBar extends Component {
 
     /**
      * Constructor for our MainMenuBar. Prepares various Strings, Arrays, Panels and windows.
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedLightTheme Instance of {@link LightTheme} required for theme switching.
-     * @param injectedDarkTheme Instance of {@link DarkTheme} required for theme switching.
-     * @param injectedJFrame The parent from in which everything ServerPackCreator is displayed in.
-     * @param injectedLAF_Light Instance of {@link MaterialLookAndFeel} with our {@link LightTheme}.
-     * @param injectedLAF_Dark Instance of {@link MaterialLookAndFeel} with our {@link DarkTheme}.
-     * @param injectedTabCreateServerPack Our tab for configuring ServerPackCreator.
-     * @param injectedTabbedPane The tabbed pane which holds all our tabs.
+     *
+     * @param injectedLocalizationManager   Instance of {@link LocalizationManager} required for localized log messages.
+     * @param injectedLightTheme            Instance of {@link LightTheme} required for theme switching.
+     * @param injectedDarkTheme             Instance of {@link DarkTheme} required for theme switching.
+     * @param injectedJFrame                The parent from in which everything ServerPackCreator is displayed in.
+     * @param injectedLAF_Light             Instance of {@link MaterialLookAndFeel} with our {@link LightTheme}.
+     * @param injectedLAF_Dark              Instance of {@link MaterialLookAndFeel} with our {@link DarkTheme}.
+     * @param injectedTabCreateServerPack   Our tab for configuring ServerPackCreator.
+     * @param injectedTabbedPane            The tabbed pane which holds all our tabs.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedUpdateChecker Instance of {@link UpdateChecker} to check for update-availability.
-     * @param injectedUtilities Instance of {@link Utilities} for various things.
+     * @param injectedUpdateChecker         Instance of {@link UpdateChecker} to check for update-availability.
+     * @param injectedUtilities             Instance of {@link Utilities} for various things.
+     * @author Griefed
      */
     public MainMenuBar(LocalizationManager injectedLocalizationManager,
                        LightTheme injectedLightTheme,
@@ -289,8 +291,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Create the menubar, add all menus, add all menuitems and add actionlisteners for our menuitems.
-     * @author Griefed
+     *
      * @return JMenuBar. Returns the menubar containing all elements we need to control various aspects of our app.
+     * @author Griefed
      */
     public JMenuBar createMenuBar() {
 
@@ -425,8 +428,9 @@ public class MainMenuBar extends Component {
 
     /**
      * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
-     * @author Griefed
+     *
      * @return {@link Boolean} <code>true</code> if an update was found and the dialog displayed.
+     * @author Griefed
      */
     protected boolean displayUpdateDialog() {
 
@@ -508,8 +512,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Update the fallback clientside-only mods-list from the repositories.
-     * @author Grefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Grefed
      */
     private void actionEventUpdateFallbackModslist(ActionEvent actionEvent) {
         LOG.debug("Running update check for fallback modslist...");
@@ -534,8 +539,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Open the given url in a browser.
-     * @author Griefed
+     *
      * @param uri {@link URI} the URI to the website you want to open.
+     * @author Griefed
      */
     private void openLinkInBrowser(URI uri) {
         try {
@@ -549,8 +555,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Open the Help-section of the wiki in a browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenWikiHelpMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Help.");
@@ -560,8 +567,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Open the HowTo-section of the wiki in a browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenWikiHowToMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Getting started.");
@@ -572,8 +580,9 @@ public class MainMenuBar extends Component {
     /**
      * Upon button-press, load default values for textfields so the user can start with a new configuration. Just as if ServerPackCreator
      * was started without a serverpackcreator.conf being present.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventNewConfiguration(ActionEvent actionEvent) {
         LOG.debug("Clearing GUI...");
@@ -583,8 +592,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the Discord invite-link to Griefed's Discord server in the users default browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenDiscordLinkMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Join Discord.");
@@ -594,8 +604,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open ServerPackCreators issue-page on GitHub in the users default browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenIssuesMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Open Issues page on GitHub.");
@@ -607,8 +618,9 @@ public class MainMenuBar extends Component {
      * Upon button-press, uploads the serverpackcreator.log-file to HasteBin and display a dialog asking the user whether
      * they want to open the URL in their default browser or copy the link to their clipboard. If the filesize exceeds 10 MB,
      * a warning is displayed, telling the user about filesize limitations of HasteBin.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventUploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
@@ -657,8 +669,9 @@ public class MainMenuBar extends Component {
     /**
      * Upon button-press, uploads the serverpackcreator.conf-file to HasteBin and display a dialog asking the user whether
      * they want to open the URL in their default browser or copy the link to their clipboard.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventUploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Upload Configuration to HasteBin.");
@@ -707,6 +720,7 @@ public class MainMenuBar extends Component {
 
     /**
      * Opens a dialog informing the user that a file exceeds 10 MB in size.
+     *
      * @author Griefed
      */
     private void fileTooLargeDialog() {
@@ -723,8 +737,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the server.properties-file, in the server-files directory, in the users default text-editor.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenInEditorServerProperties(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server.properties in Editor.");
@@ -744,11 +759,11 @@ public class MainMenuBar extends Component {
                 if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
                     Desktop.getDesktop().open(
                             new File(
-                                    APPLICATIONHOME.getSource().toString().replace("\\","/")
+                                    APPLICATIONHOME.getSource().toString().replace("\\", "/")
                                             .replace(APPLICATIONHOME.getSource().toString()
                                                     .substring(
-                                                            APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                            .replace("\\","/")
+                                                            APPLICATIONHOME.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1), "")
+                                            .replace("\\", "/")
                                             + "/server_files/server.properties")
                     );
                 }
@@ -760,8 +775,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the server-icon.png-file, in the server-files directory, in the users default picture-viewer.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenServerIcon(ActionEvent actionEvent) {
         LOG.debug("Clicked Open server-icon.png in Editor.");
@@ -781,11 +797,11 @@ public class MainMenuBar extends Component {
                 if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
                     Desktop.getDesktop().open(
                             new File(
-                                    APPLICATIONHOME.getSource().toString().replace("\\","/")
+                                    APPLICATIONHOME.getSource().toString().replace("\\", "/")
                                             .replace(APPLICATIONHOME.getSource().toString()
                                                     .substring(
-                                                            APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                            .replace("\\","/")
+                                                            APPLICATIONHOME.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1), "")
+                                            .replace("\\", "/")
                                             + "/server_files/server-icon.png")
                     );
                 }
@@ -798,8 +814,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, close ServerPackCreator gracefully.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventExitMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Exit.");
@@ -809,8 +826,9 @@ public class MainMenuBar extends Component {
     /**
      * Upon button-press, open a Filechooser dialog which allows the user to specify a file in which the current configuration
      * in the GUI will be saved to.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventSaveAsConfigToFileMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Save As...");
@@ -819,7 +837,7 @@ public class MainMenuBar extends Component {
         configChooser.setCurrentDirectory(new File("."));
         configChooser.setDialogTitle("Store current configuration");
         configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        configChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),"conf"));
+        configChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"), "conf"));
         configChooser.setAcceptAllFileFilterUsed(false);
         configChooser.setMultiSelectionEnabled(false);
         configChooser.setPreferredSize(CHOOSERDIMENSION);
@@ -850,8 +868,9 @@ public class MainMenuBar extends Component {
      * Upon button-press, save the current configuration in the GUI to the serverpackcreator.conf-file in ServerPackCreators
      * base directory. if <code>de.griefed.serverpackcreator.configuration.saveloadedconfig</code> is set to <code>true</code> and
      * the field <code>lastLoadedConfigurationFile</code> is not null, the last loaded configuration-file is also saved to.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventSaveConfigToFileMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Save.");
@@ -867,8 +886,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, change the current theme to either light or dark-mode, depending on which theme is currently active.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventSwitchThemeMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked Toggle light/dark-mode.");
@@ -927,8 +947,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open a file-selector to load a serverpackcreator.conf-file into ServerPackCreator.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventLoadConfigurationFromFileMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked load configuration from file.");
@@ -937,7 +958,7 @@ public class MainMenuBar extends Component {
         configChooser.setCurrentDirectory(new File("."));
         configChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.title"));
         configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        configChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),"conf"));
+        configChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"), "conf"));
         configChooser.setAcceptAllFileFilterUsed(false);
         configChooser.setMultiSelectionEnabled(false);
         configChooser.setPreferredSize(CHOOSERDIMENSION);
@@ -956,8 +977,8 @@ public class MainMenuBar extends Component {
                 try {
                     specifiedConfigFile = new File(UTILITIES.FileUtils().resolveLink(configChooser.getSelectedFile()));
                 } catch (InvalidFileTypeException ex) {
-                    LOG.error("Could not resolve link/symlink. Using entry from user input for checks.",ex);
-                    specifiedConfigFile = new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
+                    LOG.error("Could not resolve link/symlink. Using entry from user input for checks.", ex);
+                    specifiedConfigFile = new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
                 }
 
                 TAB_CREATESERVERPACK.loadConfig(specifiedConfigFile);
@@ -974,8 +995,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the folder containing installed addons for ServerPackCreator in the users file-explorer.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenAddonsDirectoryMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open addons directory.");
@@ -983,11 +1005,11 @@ public class MainMenuBar extends Component {
         try {
             Desktop.getDesktop().open(
                     new File(
-                            APPLICATIONHOME.getSource().toString().replace("\\","/")
+                            APPLICATIONHOME.getSource().toString().replace("\\", "/")
                                     .replace(APPLICATIONHOME.getSource().toString()
                                             .substring(
-                                                    APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                    .replace("\\","/")
+                                                    APPLICATIONHOME.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1), "")
+                                    .replace("\\", "/")
                                     + "/addons")
             );
         } catch (IOException ex) {
@@ -997,8 +1019,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the example addons repository-page on GitHub in the users default browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventViewExampleAddonMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked view example addon");
@@ -1008,8 +1031,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the base directory of ServerPackCreator in the users file-explorer.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenSPCDirectoryMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open installation directory.");
@@ -1017,11 +1041,11 @@ public class MainMenuBar extends Component {
         try {
             Desktop.getDesktop().open(
                     new File(
-                            APPLICATIONHOME.getSource().toString().replace("\\","/")
+                            APPLICATIONHOME.getSource().toString().replace("\\", "/")
                                     .replace(APPLICATIONHOME.getSource().toString()
                                             .substring(
-                                                    APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                    .replace("\\","/")
+                                                    APPLICATIONHOME.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1), "")
+                                    .replace("\\", "/")
                                     + "/")
             );
         } catch (IOException ex) {
@@ -1031,8 +1055,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the folder containing generated server packs in the users file-explorer.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open server packs directory.");
@@ -1042,8 +1067,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the folder containing the server-icon.png and server.properties files in the users file-explorer.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open server files directory.");
@@ -1051,11 +1077,11 @@ public class MainMenuBar extends Component {
         try {
             Desktop.getDesktop().open(
                     new File(
-                            APPLICATIONHOME.getSource().toString().replace("\\","/")
+                            APPLICATIONHOME.getSource().toString().replace("\\", "/")
                                     .replace(APPLICATIONHOME.getSource().toString()
                                             .substring(
-                                                    APPLICATIONHOME.getSource().toString().replace("\\","/").lastIndexOf("/") + 1),"")
-                                    .replace("\\","/")
+                                                    APPLICATIONHOME.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1), "")
+                                    .replace("\\", "/")
                                     + "/server_files")
             );
         } catch (IOException ex) {
@@ -1065,8 +1091,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open an About-window containing information about ServerPackCreator.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenAboutSPCMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open about window.");
@@ -1087,8 +1114,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the ServerPackCreator repository GitHub page in the users default-browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenGitHubMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open GitHub repository link.");
@@ -1098,8 +1126,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the GitHub Sponsors page in the users default-browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenDonateMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open donations link.");
@@ -1109,8 +1138,9 @@ public class MainMenuBar extends Component {
 
     /**
      * Upon button-press, open the GitHub releases page in the users default-browser.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventOpenReleaseMenuItem(ActionEvent actionEvent) {
         LOG.debug("Clicked open releases link");
@@ -1120,9 +1150,10 @@ public class MainMenuBar extends Component {
 
     /**
      * Checks the filesize of the given file whether it is smaller or bigger than 10 MB.
-     * @author Griefed
+     *
      * @param fileToCheck The file or directory to check.
      * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
+     * @author Griefed
      */
     private boolean hasteBinPreChecks(File fileToCheck) {
         long fileSize = FileUtils.sizeOf(fileToCheck);
@@ -1149,10 +1180,11 @@ public class MainMenuBar extends Component {
      * Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's hastebin.java (MIT License)</a>
      * and edited to use HasteBin fork <a href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork
      * of kaimu-kun's hastebin.java is available at <a href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.
-     * @author <a href="https://github.com/kaimu-kun">kaimu-kun/hastebin.java</a>
-     * @author Griefed
+     *
      * @param textFile The file which will be read into a String of which then to create a HasteBin post of.
      * @return String. Returns a String containing the URL to the newly created HasteBin post.
+     * @author <a href="https://github.com/kaimu-kun">kaimu-kun/hastebin.java</a>
+     * @author Griefed
      */
     private String createHasteBinFromFile(File textFile) {
         String text = null;
@@ -1173,15 +1205,14 @@ public class MainMenuBar extends Component {
 
         try {
             url = new URL(requestURL);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             LOG.error("Error during acquisition of request URL.", ex);
         }
 
         try {
             text = FileUtils.readFileToString(textFile, "UTF-8");
         } catch (IOException ex) {
-            LOG.error("Error reading text from file.",ex);
+            LOG.error("Error reading text from file.", ex);
         }
 
         postData = Objects.requireNonNull(text).getBytes(StandardCharsets.UTF_8);

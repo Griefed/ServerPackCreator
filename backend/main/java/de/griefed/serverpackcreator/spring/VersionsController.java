@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * RestController for acquiring all available Minecraft, Forge, Fabric and Fabric Installer versions.
+ *
  * @author Griefed
  */
 @RestController
@@ -39,9 +40,10 @@ public class VersionsController {
 
     /**
      * Constructor for DI.
-     * @author Griefed
+     *
      * @param injectedVersionMeta Instance of {@link VersionMeta} for version acquisition.
-     * @param injectedUtilities Instance of {@link Utilities}.
+     * @param injectedUtilities   Instance of {@link Utilities}.
+     * @author Griefed
      */
     @Autowired
     public VersionsController(VersionMeta injectedVersionMeta, Utilities injectedUtilities) {
@@ -51,8 +53,9 @@ public class VersionsController {
 
     /**
      * Get a list of all available Minecraft versions.
-     * @author Griefed
+     *
      * @return String List. Returns a list of all available Minecraft verions.
+     * @author Griefed
      */
     @GetMapping(value = "/minecraft")
     public ResponseEntity<String> getAvailableMinecraftVersions() {
@@ -60,21 +63,22 @@ public class VersionsController {
         return ResponseEntity
                 .ok()
                 .header(
-                "Content-Type",
-                "application/json"
+                        "Content-Type",
+                        "application/json"
                 ).body(
                         "{\"minecraft\":" +
-                        UTILITIES.ListUtils().encapsulateListElements(
-                                VERSIONMETA.minecraft().releaseVersionsDescending()
-                        ) + "}"
+                                UTILITIES.ListUtils().encapsulateListElements(
+                                        VERSIONMETA.minecraft().releaseVersionsDescending()
+                                ) + "}"
                 );
     }
 
     /**
      * Get a list of all available Forge versions for a specific Minecraft version.
-     * @author Griefed
+     *
      * @param minecraftVersion String. The Minecraft version you want to get a list of Forge versions for.
      * @return String List. Returns a list of all available Forge versions for the specified Minecraft version.
+     * @author Griefed
      */
     @GetMapping(value = "/forge/{minecraftversion}")
     public ResponseEntity<String> getAvailableForgeVersions(@PathVariable("minecraftversion") String minecraftVersion) {
@@ -109,10 +113,11 @@ public class VersionsController {
 
     /**
      * Get a list of all available Fabric versions.
-     * @author Griefed
+     *
      * @return String List. Returns a list of all available Fabric versions.
+     * @author Griefed
      */
-    @GetMapping(value= "/fabric")
+    @GetMapping(value = "/fabric")
     public ResponseEntity<String> getAvailableFabricVersions() {
 
         return ResponseEntity
@@ -130,8 +135,9 @@ public class VersionsController {
 
     /**
      * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
-     * @author Griefed
+     *
      * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
+     * @author Griefed
      */
     @GetMapping(value = "/fabric/installer", produces = "application/json")
     public ResponseEntity<String> getAvailableFabricInstallerVersions() {
@@ -143,18 +149,19 @@ public class VersionsController {
                         "application/json"
                 ).body(
                         "{" +
-                        "\"release\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"," +
-                        "\"latest\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"" +
-                        "}"
+                                "\"release\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"," +
+                                "\"latest\":\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"" +
+                                "}"
                 );
     }
 
     /**
      * Get a list of all available Fabric versions.
-     * @author Griefed
+     *
      * @return String List. Returns a list of all available Fabric versions.
+     * @author Griefed
      */
-    @GetMapping(value= "/quilt")
+    @GetMapping(value = "/quilt")
     public ResponseEntity<String> getAvailableQuiltVersions() {
 
         return ResponseEntity
@@ -172,8 +179,9 @@ public class VersionsController {
 
     /**
      * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
-     * @author Griefed
+     *
      * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
+     * @author Griefed
      */
     @GetMapping(value = "/quilt/installer", produces = "application/json")
     public ResponseEntity<String> getAvailableQuiltInstallerVersions() {

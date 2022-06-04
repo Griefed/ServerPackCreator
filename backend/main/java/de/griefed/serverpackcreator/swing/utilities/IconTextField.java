@@ -74,8 +74,7 @@ public class IconTextField extends JTextField {
         resetBorder();
     }
 
-    private void resetBorder()
-    {
+    private void resetBorder() {
         setBorder(mBorder);
     }
 

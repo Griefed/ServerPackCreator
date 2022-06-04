@@ -37,6 +37,7 @@ import java.util.Optional;
 /**
  * Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can then run our update
  * checks later on.
+ *
  * @author Griefed
  */
 @Generated
@@ -53,9 +54,10 @@ public class UpdateChecker {
 
     /**
      * Constructor for Dependency Injection.
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager}.
+     *
+     * @param injectedLocalizationManager   Instance of {@link LocalizationManager}.
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @author Griefed
      */
     @Autowired
     public UpdateChecker(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
@@ -95,8 +97,9 @@ public class UpdateChecker {
 
     /**
      * Refresh the GitHub, GitLab and GitGriefed instances, so we get the most current releases.
-     * @author Griefed
+     *
      * @return {@link UpdateChecker} reference.
+     * @author Griefed
      */
     public UpdateChecker refresh() {
         try {
@@ -122,8 +125,9 @@ public class UpdateChecker {
 
     /**
      * Getter for the instance of our {@link GitHubChecker}.
-     * @author Griefed
+     *
      * @return {@link GitHubChecker}.
+     * @author Griefed
      */
     public GitHubChecker getGitHub() {
         return GITHUB;
@@ -131,8 +135,9 @@ public class UpdateChecker {
 
     /**
      * Getter for the instance of our {@link GitLabChecker} for GitLab.
-     * @author Griefed
+     *
      * @return {@link GitLabChecker}.
+     * @author Griefed
      */
     public GitLabChecker getGitLab() {
         return GITLAB;
@@ -140,8 +145,9 @@ public class UpdateChecker {
 
     /**
      * Getter for the instance of our {@link GitLabChecker} for GitGriefed.
-     * @author Griefed
+     *
      * @return {@link GitLabChecker}.
+     * @author Griefed
      */
     public GitLabChecker getGitGriefed() {
         return GITGRIEFED;
@@ -149,11 +155,12 @@ public class UpdateChecker {
 
     /**
      * Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.
-     * @author Griefed
-     * @param version {@link String} The version for which to check for updates.
+     *
+     * @param version         {@link String} The version for which to check for updates.
      * @param preReleaseCheck {@link Boolean} Whether to check pre-releasesDescending as well. Use <code>true</code> to check pre-releasesDescending
-     *                                       as well, <Code>false</Code> to only check with regular releases.
+     *                        as well, <Code>false</Code> to only check with regular releases.
      * @return {@link String} The update, if available, as well as the download URL.
+     * @author Griefed
      */
     public Optional<Update> checkForUpdate(@NotNull String version, Boolean preReleaseCheck) {
 
@@ -178,7 +185,7 @@ public class UpdateChecker {
 
                 update = GITGRIEFED.check(update.get().version(), preReleaseCheck);
 
-            // Check GitGriefed for a newer version, with the version received from GitHub, if we received a new version from GitHub.
+                // Check GitGriefed for a newer version, with the version received from GitHub, if we received a new version from GitHub.
             } else if (!update.isPresent()) {
 
                 update = GITGRIEFED.check(version, preReleaseCheck);
@@ -194,7 +201,7 @@ public class UpdateChecker {
 
                 update = GITLAB.check(update.get().version(), preReleaseCheck);
 
-            // Check GitLab for a newer version, with the version we received from GitGriefed, if we received a new version from GitGriefed.
+                // Check GitLab for a newer version, with the version we received from GitGriefed, if we received a new version from GitGriefed.
             } else if (!update.isPresent()) {
 
                 update = GITLAB.check(version, preReleaseCheck);

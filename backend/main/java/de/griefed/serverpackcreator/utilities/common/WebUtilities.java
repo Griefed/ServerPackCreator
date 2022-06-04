@@ -14,6 +14,7 @@ import java.nio.channels.ReadableByteChannel;
 
 /**
  * Utility-class revolving around interactions with web-resources.
+ *
  * @author Griefed
  */
 public class WebUtilities {
@@ -27,22 +28,24 @@ public class WebUtilities {
     /**
      * Download the file from the specified URL to the specified destination, replacing the file if it already exists.
      * The destination should end in a valid filename. Any directories up to the specified file will be created.
-     * @author Griefed
+     *
      * @param destinationFile File. The file to store the web-resource in. Examples:<br>/tmp/some_folder/foo.bar<br>C:/temp/some_folder/bar.foo
-     * @param downloadURL URL. The URL to the file you want to download.
+     * @param downloadURL     URL. The URL to the file you want to download.
      * @return Boolean. Returns true if the file could be found on the hosts filesystem.
+     * @author Griefed
      */
     public boolean downloadAndReplaceFile(File destinationFile, URL downloadURL) {
-        return downloadAndReplaceFile(destinationFile.getAbsoluteFile().toString().replace("\\","/"),downloadURL);
+        return downloadAndReplaceFile(destinationFile.getAbsoluteFile().toString().replace("\\", "/"), downloadURL);
     }
 
     /**
      * Download the file from the specified URL to the specified destination, replacing the file if it already exists.
      * The destination should end in a valid filename. Any directories up to the specified file will be created.
-     * @author Griefed
+     *
      * @param fileDestination String. The file to store the web-resource in. Examples:<br>/tmp/some_folder/foo.bar<br>C:/temp/some_folder/bar.foo
-     * @param downloadURL URL. The URL to the file you want to download.
+     * @param downloadURL     URL. The URL to the file you want to download.
      * @return Boolean. Returns true if the file could be found on the hosts filesystem.
+     * @author Griefed
      */
     public boolean downloadAndReplaceFile(String fileDestination, URL downloadURL) {
         FileUtils.deleteQuietly(new File(fileDestination));
@@ -52,23 +55,25 @@ public class WebUtilities {
     /**
      * Download the file from the specified URL to the specified destination. The destination should end in a valid filename.
      * Any directories up to the specified file will be created.
-     * @author Griefed
+     *
      * @param destinationFile File. The file to store the web-resource in. Examples:<br>/tmp/some_folder/foo.bar<br>C:/temp/some_folder/bar.foo
-     * @param downloadURL URL. The URL to the file you want to download.
+     * @param downloadURL     URL. The URL to the file you want to download.
      * @return Boolean. Returns true if the file could be found on the hosts filesystem.
+     * @author Griefed
      */
     public boolean downloadFile(File destinationFile, URL downloadURL) {
-        return downloadFile(destinationFile.getAbsoluteFile().toString().replace("\\","/"),downloadURL);
+        return downloadFile(destinationFile.getAbsoluteFile().toString().replace("\\", "/"), downloadURL);
     }
 
     /**
      * Download the file from the specified URL to the specified destination. The destination should end in a valid filename.
      * Any directories up to the specified file will be created.
-     * @author Griefed
+     *
      * @param fileDestination String. The destination where the file should be stored. Must include the filename as well.
-     *                    Examples:<br>/tmp/some_folder/foo.bar<br>C:/temp/some_folder/bar.foo
-     * @param downloadURL URL. The URL to the file you want to download.
+     *                        Examples:<br>/tmp/some_folder/foo.bar<br>C:/temp/some_folder/bar.foo
+     * @param downloadURL     URL. The URL to the file you want to download.
      * @return Boolean. Returns true if the file could be found on the hosts filesystem.
+     * @author Griefed
      */
     public boolean downloadFile(String fileDestination, URL downloadURL) {
 
@@ -86,15 +91,15 @@ public class WebUtilities {
 
             readableByteChannel = Channels.newChannel(downloadURL.openStream());
 
-            fileOutputStream = new FileOutputStream(fileDestination.replace("\\","/"));
+            fileOutputStream = new FileOutputStream(fileDestination.replace("\\", "/"));
 
             fileChannel = fileOutputStream.getChannel();
 
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
         } catch (IOException ex) {
-            LOG.error("An error occurred downloading " + fileDestination.replace("\\","/") + ".", ex);
-            FileUtils.deleteQuietly(new File(fileDestination.replace("\\","/")));
+            LOG.error("An error occurred downloading " + fileDestination.replace("\\", "/") + ".", ex);
+            FileUtils.deleteQuietly(new File(fileDestination.replace("\\", "/")));
         } finally {
 
             try {

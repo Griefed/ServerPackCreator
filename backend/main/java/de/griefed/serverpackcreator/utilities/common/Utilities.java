@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Parent-class for all utilities, giving access to any and all utility-classes we may have.
+ *
  * @author Griefed
  */
 @Component

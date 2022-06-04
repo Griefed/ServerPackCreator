@@ -23,6 +23,7 @@ import java.util.Arrays;
 
 /**
  * Utility-class revolving around Strings.
+ *
  * @author Griefed
  */
 public class StringUtilities {
@@ -33,9 +34,10 @@ public class StringUtilities {
 
     /**
      * Converts a sequence of Strings, for example from a list, into a concatenated String.
-     * @author whitebear60
+     *
      * @param args Strings that will be concatenated into one string
      * @return String. Returns concatenated string that contains all provided values.
+     * @author whitebear60
      */
     public String buildString(String... args) {
 
@@ -43,7 +45,7 @@ public class StringUtilities {
 
         stringBuilder.append(Arrays.toString(args));
 
-        stringBuilder.delete(0, 2).reverse().delete(0,2).reverse();
+        stringBuilder.delete(0, 2).reverse().delete(0, 2).reverse();
 
         return stringBuilder.toString();
     }
@@ -76,39 +78,40 @@ public class StringUtilities {
      *     <li><b>&#96;</b></li>
      *     <li><b>&#61;</b></li>
      * </ul><br>
-     * @author Griefed
+     *
      * @param text {@link String} The text which you want to be made safe.
      * @return {@link String} The passed String safe for use for files, paths, directories etc.
+     * @author Griefed
      */
     public String pathSecureText(String text) {
 
         while (text.endsWith(".") || text.endsWith(" ")) {
-            text = text.replace(text.substring(text.length() - 1),"");
+            text = text.replace(text.substring(text.length() - 1), "");
         }
 
         return text
-                .replace("/","")
-                .replace("<","")
-                .replace(">","")
-                .replace(":","")
-                .replace("\"","")
-                .replace("\\","")
-                .replace("|","")
-                .replace("?","")
-                .replace("*","")
-                .replace("#","")
-                .replace("%","")
-                .replace("&","")
-                .replace("{","")
-                .replace("}","")
-                .replace("$","")
-                .replace("!","")
-                .replace("'","")
-                .replace("@","")
-                .replace("+","")
-                .replace("´","")
-                .replace("`","")
-                .replace("=","");
+                .replace("/", "")
+                .replace("<", "")
+                .replace(">", "")
+                .replace(":", "")
+                .replace("\"", "")
+                .replace("\\", "")
+                .replace("|", "")
+                .replace("?", "")
+                .replace("*", "")
+                .replace("#", "")
+                .replace("%", "")
+                .replace("&", "")
+                .replace("{", "")
+                .replace("}", "")
+                .replace("$", "")
+                .replace("!", "")
+                .replace("'", "")
+                .replace("@", "")
+                .replace("+", "")
+                .replace("´", "")
+                .replace("`", "")
+                .replace("=", "");
     }
 
     /**
@@ -137,9 +140,10 @@ public class StringUtilities {
      *     <li><b>&#96;</b></li>
      *     <li><b>&#61;</b></li>
      * </ul><br>
-     * @author Griefed
+     *
      * @param text {@link String} The text you want to check.
      * @return <code>true</code> if none of these characters were found.
+     * @author Griefed
      */
     public boolean checkForIllegalCharacters(String text) {
         return !text.contains("/") &&

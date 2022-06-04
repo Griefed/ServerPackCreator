@@ -38,6 +38,7 @@ import java.util.Optional;
 
 /**
  * Quilt meta containing information about available Quilt releases and installers.
+ *
  * @author Griefed
  */
 public class QuiltMeta {
@@ -51,9 +52,10 @@ public class QuiltMeta {
 
     /**
      * Constructor
-     * @author Griefed
-     * @param quiltManifest {@link File} Quilt manifest file..
+     *
+     * @param quiltManifest          {@link File} Quilt manifest file..
      * @param quiltInstallerManifest {@link File} Quilt-installer manifest file..
+     * @author Griefed
      */
     public QuiltMeta(File quiltManifest, File quiltInstallerManifest) {
         this.QUILT_MANIFEST = quiltManifest;
@@ -65,9 +67,10 @@ public class QuiltMeta {
 
     /**
      * Update the {@link QuiltLoader} and {@link QuiltInstaller} information.
-     * @author Griefed
+     *
      * @return This instance of {@link QuiltMeta}.
      * @throws MalformedURLException if a URL could not be constructed
+     * @author Griefed
      */
     public QuiltMeta update() throws MalformedURLException {
 
@@ -87,7 +90,7 @@ public class QuiltMeta {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
         } catch (ParserConfigurationException ex) {
-            LOG.error("Couldn't read document.",ex);
+            LOG.error("Couldn't read document.", ex);
         }
 
         try {
@@ -96,7 +99,7 @@ public class QuiltMeta {
             xml = documentBuilder.parse(manifest);
 
         } catch (SAXException | IOException ex) {
-            LOG.error("Couldn't read document.",ex);
+            LOG.error("Couldn't read document.", ex);
         }
 
         assert xml != null;
@@ -106,8 +109,9 @@ public class QuiltMeta {
 
     /**
      * Get the latest Quilt loader version.
-     * @author Griefed
+     *
      * @return {@link String} The latest version of the Quilt loader.
+     * @author Griefed
      */
     public String latestLoaderVersion() {
         return QUILT_LOADER.latestLoaderVersion();
@@ -115,8 +119,9 @@ public class QuiltMeta {
 
     /**
      * Get the release Quilt loader version.
-     * @author Griefed
+     *
      * @return {@link String} The release version of the Quilt loader.
+     * @author Griefed
      */
     public String releaseLoaderVersion() {
         return QUILT_LOADER.releaseLoaderVersion();
@@ -124,8 +129,9 @@ public class QuiltMeta {
 
     /**
      * Get a list of available Quilt loader versions, in {@link Type#ASCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-list of available Quilt loader versions, in {@link Type#ASCENDING} order.
+     * @author Griefed
      */
     public List<String> loaderVersionsAscending() {
         return QUILT_LOADER.loaders();
@@ -133,8 +139,9 @@ public class QuiltMeta {
 
     /**
      * Get a list of available Quilt loader versions, in {@link Type#DESCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-list of available Quilt loader versions, in {@link Type#DESCENDING} order.
+     * @author Griefed
      */
     public List<String> loaderVersionsDescending() {
         return Lists.reverse(QUILT_LOADER.loaders());
@@ -142,8 +149,9 @@ public class QuiltMeta {
 
     /**
      * Get an array of available Quilt loader versions, in {@link Type#ASCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-array of available Quilt loader versions, in {@link Type#ASCENDING} order.
+     * @author Griefed
      */
     public String[] loaderVersionsArrayAscending() {
         return QUILT_LOADER.loaders().toArray(new String[0]);
@@ -151,8 +159,9 @@ public class QuiltMeta {
 
     /**
      * Get an array of available Quilt loader versions, in {@link Type#DESCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-array of available Quilt loader versions, in {@link Type#DESCENDING} order.
+     * @author Griefed
      */
     public String[] loaderVersionsArrayDescending() {
         return Lists.reverse(QUILT_LOADER.loaders()).toArray(new String[0]);
@@ -160,8 +169,9 @@ public class QuiltMeta {
 
     /**
      * Get the latest Quilt installer version.
-     * @author Griefed
+     *
      * @return {@link String} The latest Quilt installer version.
+     * @author Griefed
      */
     public String latestInstallerVersion() {
         return QUILT_INSTALLER.latestInstallerVersion();
@@ -169,8 +179,9 @@ public class QuiltMeta {
 
     /**
      * Get the release Quilt installer version.
-     * @author Griefed
+     *
      * @return {@link String} The release Quilt installer version.
+     * @author Griefed
      */
     public String releaseInstallerVersion() {
         return QUILT_INSTALLER.releaseInstallerVersion();
@@ -178,8 +189,9 @@ public class QuiltMeta {
 
     /**
      * Get the list of available Quilt installer version, in {@link Type#ASCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-list of available Quilt installer version, in {@link Type#ASCENDING} order.
+     * @author Griefed
      */
     public List<String> installerVersionsAscending() {
         return QUILT_INSTALLER.installers();
@@ -187,8 +199,9 @@ public class QuiltMeta {
 
     /**
      * Get the list of available Quilt installer version, in {@link Type#DESCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-list of available Quilt installer version, in {@link Type#DESCENDING} order.
+     * @author Griefed
      */
     public List<String> installerVersionsDescending() {
         return Lists.reverse(QUILT_INSTALLER.installers());
@@ -196,8 +209,9 @@ public class QuiltMeta {
 
     /**
      * Get the array of available Quilt installer version, in {@link Type#ASCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-array of available Quilt installer version, in {@link Type#ASCENDING} order.
+     * @author Griefed
      */
     public String[] installerVersionsArrayAscending() {
         return QUILT_INSTALLER.installers().toArray(new String[0]);
@@ -205,8 +219,9 @@ public class QuiltMeta {
 
     /**
      * Get the array of available Quilt installer version, in {@link Type#DESCENDING} order.
-     * @author Griefed
+     *
      * @return {@link String}-array of available Quilt installer version, in {@link Type#DESCENDING} order.
+     * @author Griefed
      */
     public String[] installerVersionsArrayDescending() {
         return Lists.reverse(QUILT_INSTALLER.installers()).toArray(new String[0]);
@@ -214,8 +229,9 @@ public class QuiltMeta {
 
     /**
      * Get the {@link URL} to the latest Quilt installer.
-     * @author Griefed
+     *
      * @return {@link URL} to the latest Quilt installer.
+     * @author Griefed
      */
     public URL latestInstallerUrl() {
         return QUILT_INSTALLER.latestInstallerUrl();
@@ -223,8 +239,9 @@ public class QuiltMeta {
 
     /**
      * Get the {@link URL} to the release Quilt installer.
-     * @author Griefed
+     *
      * @return {@link URL} to the release Quilt installer.
+     * @author Griefed
      */
     public URL releaseInstallerUrl() {
         return QUILT_INSTALLER.releaseInstallerUrl();
@@ -232,9 +249,10 @@ public class QuiltMeta {
 
     /**
      * Check whether a {@link URL} to the specified Quilt installer version is available.
-     * @author Griefed
+     *
      * @param quiltVersion {@link String} Quilt version.
      * @return {@link Boolean} <code>true</code> if a {@link URL} to the specified Quilt installer version is available.
+     * @author Griefed
      */
     public boolean isInstallerUrlAvailable(String quiltVersion) {
         return Optional.ofNullable(QUILT_INSTALLER.meta().get(quiltVersion)).isPresent();
@@ -242,9 +260,10 @@ public class QuiltMeta {
 
     /**
      * Get the {@link URL} to the Quilt installer for the specified version.
-     * @author Griefed
+     *
      * @param quiltVersion {@link String} Quilt version.
      * @return {@link URL} to the Quilt installer for the specified version.
+     * @author Griefed
      */
     public Optional<URL> installerUrl(String quiltVersion) {
         return Optional.ofNullable(QUILT_INSTALLER.meta().get(quiltVersion));
@@ -252,9 +271,10 @@ public class QuiltMeta {
 
     /**
      * Check whether the specified Quilt version is available/correct/valid.
-     * @author Griefed
+     *
      * @param quiltVersion {@link String} Quilt version.
      * @return {@link Boolean} <code>true</code> if the specified version is available/correct/valid.
+     * @author Griefed
      */
     public boolean checkQuiltVersion(String quiltVersion) {
         return QUILT_LOADER.loaders().contains(quiltVersion);

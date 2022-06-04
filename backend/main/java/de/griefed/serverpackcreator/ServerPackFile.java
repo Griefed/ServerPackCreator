@@ -33,6 +33,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 /**
  * A ServerPackFile represents a source-destination-combination of two files/directories. The source is the file/directory, usually in the modpack,
  * whilst the destination is the file to which the source is supposed to be copied to in the server pack.
+ *
  * @author Griefed
  */
 public class ServerPackFile {
@@ -46,9 +47,10 @@ public class ServerPackFile {
 
     /**
      * Construct a new ServerPackFile from two {@link File}-objects, a source and a destination.
-     * @author Griefed
-     * @param sourceFile {@link File} The source file/directory. Usually a file/directory in a modpack.
+     *
+     * @param sourceFile      {@link File} The source file/directory. Usually a file/directory in a modpack.
      * @param destinationFile {@link File} The destination file/directory in the server pack.
+     * @author Griefed
      */
     public ServerPackFile(File sourceFile, File destinationFile) throws InvalidPathException {
         this.SOURCE_FILE = sourceFile;
@@ -59,9 +61,10 @@ public class ServerPackFile {
 
     /**
      * Construct a new ServerPackFile from two {@link String}-objects, a source and a destination.
-     * @author Griefed
-     * @param sourceFile {@link String} The source file/directory. Usually a file/directory in a modpack.
+     *
+     * @param sourceFile      {@link String} The source file/directory. Usually a file/directory in a modpack.
      * @param destinationFile {@link String} The destination file/directory in the server pack.
+     * @author Griefed
      */
     public ServerPackFile(String sourceFile, String destinationFile) throws NullPointerException, InvalidPathException {
         this.SOURCE_FILE = new File(sourceFile);
@@ -72,9 +75,10 @@ public class ServerPackFile {
 
     /**
      * Construct a new ServerPackFile from two {@link Path}-objects, a source and a destination.
-     * @author Griefed
-     * @param sourcePath {@link Path} The source file/directory. Usually a file/directory in a modpack.
+     *
+     * @param sourcePath      {@link Path} The source file/directory. Usually a file/directory in a modpack.
      * @param destinationPath {@link Path} The destination file/directory in the server pack.
+     * @author Griefed
      */
     public ServerPackFile(Path sourcePath, Path destinationPath) throws UnsupportedOperationException {
         this.SOURCE_FILE = sourcePath.toFile();
@@ -85,8 +89,9 @@ public class ServerPackFile {
 
     /**
      * The source-file.
-     * @author Griefed
+     *
      * @return {@link File} The source-file.
+     * @author Griefed
      */
     public File source() {
         return SOURCE_FILE;
@@ -94,8 +99,9 @@ public class ServerPackFile {
 
     /**
      * The destination-file.
-     * @author Griefed
+     *
      * @return {@link File} The destination-file.
+     * @author Griefed
      */
     public File destination() {
         return DESTINATION_FILE;
@@ -103,8 +109,9 @@ public class ServerPackFile {
 
     /**
      * The path to the source-file.
-     * @author Griefed
+     *
      * @return {@link Path} The path to the source-file.
+     * @author Griefed
      */
     public Path sourcePath() {
         return SOURCE_PATH;
@@ -112,8 +119,9 @@ public class ServerPackFile {
 
     /**
      * The path to the destination-file.
-     * @author Griefed
+     *
      * @return {@link Path} The path to the destination-file.
+     * @author Griefed
      */
     public Path destinationPath() {
         return DESTINATION_PATH;
@@ -126,13 +134,14 @@ public class ServerPackFile {
      * on how to copy entire directories, or use {@link org.apache.commons.io.FileUtils#copyDirectory(File, File)}.<br><br>
      * This method specifically does NOT copy recursively, because we would potentially copy previously EXCLUDED files,
      * too. We do not want that. At all.
-     * @author Griefed
-     * @throws SecurityException In the case of the default provider, and a security manager is installed, the
-     * {@link SecurityManager#checkRead(String) checkRead} method is invoked to check read access to the source file,
-     * the {@link SecurityManager#checkWrite(String) checkWrite} is invoked to check write access to the target file.
-     * If a symbolic link is copied the security manager is invoked to check {@link LinkPermission}{@code ("symbolic")}.
+     *
+     * @throws SecurityException             In the case of the default provider, and a security manager is installed, the
+     *                                       {@link SecurityManager#checkRead(String) checkRead} method is invoked to check read access to the source file,
+     *                                       the {@link SecurityManager#checkWrite(String) checkWrite} is invoked to check write access to the target file.
+     *                                       If a symbolic link is copied the security manager is invoked to check {@link LinkPermission}{@code ("symbolic")}.
      * @throws UnsupportedOperationException if the array contains a copy option that is not supported.
-     * @throws IOException if an I/O error occurs
+     * @throws IOException                   if an I/O error occurs
+     * @author Griefed
      */
     public void copy() throws SecurityException, UnsupportedOperationException, IOException {
         try {
@@ -167,8 +176,9 @@ public class ServerPackFile {
 
     /**
      * This ServerPackFiles source-file and destination-file as a {@link String}-combination, separated by a <code>;</code>
-     * @author Griefed
+     *
      * @return {@link String} This ServerPackFiles source-file and destination-file as a {@link String}-combination, separated by a <code>;</code>
+     * @author Griefed
      */
     @Override
     public String toString() {

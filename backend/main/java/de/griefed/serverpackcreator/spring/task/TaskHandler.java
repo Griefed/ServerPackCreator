@@ -44,6 +44,7 @@ import java.util.List;
  * the necessary changes to fully implement it in ServerPackCreator.<br>
  * TaskHandler class which determines what to do with all message in our JMS, depending on their task type and content of
  * the message.
+ *
  * @author Griefed
  */
 @Service
@@ -58,10 +59,11 @@ public class TaskHandler {
 
     /**
      * Constructor responsible for our DI.
-     * @author Griefed
+     *
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-     * @param injectedServerPackHandler Instance of {@link ServerPackHandler}.
-     * @param injectedServerPackService Instance of {@link ServerPackService}.
+     * @param injectedServerPackHandler    Instance of {@link ServerPackHandler}.
+     * @param injectedServerPackService    Instance of {@link ServerPackService}.
+     * @author Griefed
      */
     @Autowired
     public TaskHandler(ConfigurationHandler injectedConfigurationHandler,
@@ -80,8 +82,9 @@ public class TaskHandler {
      * If a task is received that matches this type, the CurseForge project and file ID of said task is checked for validity.
      * If the combination is found valid, either a new entry is saved to the database or an already existing one updated,
      * if the existing one has the status <code>Generating</code> and <code>lastModified</code> is bigger than 30 minutes.
-     * @author Griefed
+     *
      * @param task The task for which to check the CurseForge project and file ID, as well as status.
+     * @author Griefed
      */
     @JmsListener(destination = "tasks.background", selector = "type = 'scan'")
     public void handleScan(Task task) {
@@ -93,8 +96,9 @@ public class TaskHandler {
      * {@link JmsListener} listening to the destination <code>tasks.background</code> and selector <code>type = 'generation'</code>, so only task
      * that match the <code>generation</code>-type are worked with in this method.<br>
      * If a task is received that matches this type, the generation of a new server pack is started.
-     * @author Griefed
+     *
      * @param task The task with which to generate a server pack from a CurseForge project and file ID.
+     * @author Griefed
      */
     @JmsListener(destination = "tasks.background", selector = "type = 'generation'")
     public void handleGeneration(Task task) {
@@ -146,17 +150,17 @@ public class TaskHandler {
 
                     LOG.error("Configuration check for ZIP-archive " + parameters[0] + " failed.");
 
-                     if (!encounteredErrors.isEmpty()) {
-                         LOG.error("Encountered errors: ");
-                         for (String error : encounteredErrors)
-                             LOG.error(error);
-                     }
+                    if (!encounteredErrors.isEmpty()) {
+                        LOG.error("Encountered errors: ");
+                        for (String error : encounteredErrors)
+                            LOG.error(error);
+                    }
 
                 }
 
             } catch (Exception ex) {
 
-                LOG.error("An error occurred generating the server pack for ZIP-archive: " + parameters[0],ex);
+                LOG.error("An error occurred generating the server pack for ZIP-archive: " + parameters[0], ex);
 
                 SERVERPACKSERVICE.deleteServerPack(serverPackModel.getId());
 

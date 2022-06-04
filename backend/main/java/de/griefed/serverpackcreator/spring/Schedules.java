@@ -36,6 +36,7 @@ import java.util.Date;
 
 /**
  * Schedules to cover all kinds of aspects of ServerPackCreator.
+ *
  * @author Griefed
  */
 @Service
@@ -48,9 +49,10 @@ public class Schedules {
 
     /**
      * Constructor for DI.
-     * @author Griefed
+     *
      * @param injectedServerPackService Instance of {@link ServerPackService}.
-     * @param injectedVersionMeta Instance of {@link VersionMeta}.
+     * @param injectedVersionMeta       Instance of {@link VersionMeta}.
+     * @author Griefed
      */
     @Autowired
     public Schedules(ServerPackService injectedServerPackService, VersionMeta injectedVersionMeta) {
@@ -60,11 +62,11 @@ public class Schedules {
     }
 
     private void deletePack(ServerPackModel pack) {
-        LOG.info("Deleting archive " + pack.getPath().replace("\\","/"));
-        FileUtils.deleteQuietly(new File(pack.getPath().replace("\\","/")));
+        LOG.info("Deleting archive " + pack.getPath().replace("\\", "/"));
+        FileUtils.deleteQuietly(new File(pack.getPath().replace("\\", "/")));
 
-        LOG.info("Deleting folder " + pack.getPath().replace("\\","/").replace("_server_pack-zip",""));
-        FileUtils.deleteQuietly(new File(pack.getPath().replace("\\","/").replace("_server_pack-zip","")));
+        LOG.info("Deleting folder " + pack.getPath().replace("\\", "/").replace("_server_pack-zip", ""));
+        FileUtils.deleteQuietly(new File(pack.getPath().replace("\\", "/").replace("_server_pack-zip", "")));
 
         LOG.info("Cleaned server pack " + pack.getId() + " from database.");
         SERVERPACKSERVICE.deleteServerPack(pack.getId());
@@ -75,6 +77,7 @@ public class Schedules {
      * <br>Deletes entries from the database which are older than 1 week and have 0 downloads.
      * <br>Deletes entries whose status is <code>Available</code> but no server pack ZIP-archive can be found.
      * <br>
+     *
      * @author Griefed
      */
     @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
@@ -116,10 +119,10 @@ public class Schedules {
 
             for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
 
-                if (new File(pack.getPath()).isFile() && new File(pack.getPath().replace("_server_pack-zip","")).isDirectory()) {
+                if (new File(pack.getPath()).isFile() && new File(pack.getPath().replace("_server_pack-zip", "")).isDirectory()) {
 
-                    LOG.info("Deleting folder " + pack.getPath().replace("_server_pack-zip","").replace("\\","/"));
-                    FileUtils.deleteQuietly(new File(pack.getPath().replace("_server_pack-zip","").replace("\\","/")));
+                    LOG.info("Deleting folder " + pack.getPath().replace("_server_pack-zip", "").replace("\\", "/"));
+                    FileUtils.deleteQuietly(new File(pack.getPath().replace("_server_pack-zip", "").replace("\\", "/")));
 
                 } else {
                     LOG.info("No files to clean up.");
@@ -137,7 +140,7 @@ public class Schedules {
         try {
             VERSIONMETA.update();
         } catch (IOException ex) {
-            LOG.error("Could not update VersionMeta.",ex);
+            LOG.error("Could not update VersionMeta.", ex);
         }
     }
 }

@@ -26,18 +26,20 @@ import java.util.List;
 
 /**
  * Information about releases of the Quilt loader.
+ *
  * @author Griefed
  */
 public class QuiltLoader {
 
+    private final List<String> loaders = new ArrayList<>();
     private String latest;
     private String release;
-    private final List<String> loaders = new ArrayList<>();
 
     /**
      * Constructor
-     * @author Griefed
+     *
      * @param loaderManifest {@link Document} containing Quilts manifest.
+     * @author Griefed
      */
     protected QuiltLoader(Document loaderManifest) {
 
@@ -51,9 +53,10 @@ public class QuiltLoader {
 
     /**
      * Update the latest, release and releases information.
-     * @author Griefed
+     *
      * @param loaderManifest {@link Document} containing Quilts manifest.
      * @return This instance of {@link QuiltLoader}.
+     * @author Griefed
      */
     protected QuiltLoader update(Document loaderManifest) {
         this.latest = loaderManifest.getElementsByTagName("latest").item(0).getChildNodes().item(0).getNodeValue();
@@ -68,8 +71,9 @@ public class QuiltLoader {
 
     /**
      * Get the latest Quilt loader version.
-     * @author Griefed
+     *
      * @return {@link String} The latest Quilt loader version.
+     * @author Griefed
      */
     protected String latestLoaderVersion() {
         return latest;
@@ -77,8 +81,9 @@ public class QuiltLoader {
 
     /**
      * Get the release Quilt loader version.
-     * @author Griefed
+     *
      * @return {@link String} The release Quilt loader version.
+     * @author Griefed
      */
     protected String releaseLoaderVersion() {
         return release;
@@ -86,8 +91,9 @@ public class QuiltLoader {
 
     /**
      * Get the list of available Quilt loader versions.
-     * @author Griefed
+     *
      * @return {@link String}-list of the available Quilt loader versions.
+     * @author Griefed
      */
     protected List<String> loaders() {
         return loaders;

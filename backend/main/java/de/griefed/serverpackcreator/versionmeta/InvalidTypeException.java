@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.versionmeta;
 
 /**
  * Exceptions thrown if a specified {@link Type} is considered invalid.
+ *
  * @author Griefed
  */
 public class InvalidTypeException extends Exception {

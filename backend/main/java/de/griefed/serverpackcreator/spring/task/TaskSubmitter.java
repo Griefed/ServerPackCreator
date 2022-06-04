@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
  * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
  * the necessary changes to fully implement it in ServerPackCreator.<br>
  * Class responsible for submitting tasks to our JMS.
+ *
  * @author Griefed
  */
 @Service
@@ -45,9 +46,10 @@ public class TaskSubmitter {
 
     /**
      * Constructor responsible for our DI.
-     * @author Griefed
-     * @param injectedJmsTemplate Instance of {@link JmsTemplate}.
+     *
+     * @param injectedJmsTemplate           Instance of {@link JmsTemplate}.
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @author Griefed
      */
     @Autowired
     public TaskSubmitter(JmsTemplate injectedJmsTemplate, ApplicationProperties injectedApplicationProperties) {
@@ -56,9 +58,10 @@ public class TaskSubmitter {
 
     /**
      * Submit a task for the generation of a server pack from a ZIP-archive.
-     * @author Griefed
+     *
      * @param zipGenerationProperties {@link String} containing all information required to generate a server pack from
-     *                                              a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
+     *                                a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
+     * @author Griefed
      */
     public void generateZip(String zipGenerationProperties) {
         LOG.debug("Sending ZIP generate task: " + zipGenerationProperties);
@@ -68,8 +71,9 @@ public class TaskSubmitter {
     /**
      * Convert and send a scan-task to our JMS. Set the <code>type</code> to <code>scan</code> and the <code>unique id</code>
      * to tasks unique id which contains the CurseForge project and file id combination.
-     * @author Griefed
+     *
      * @param task The task to be submitted to the scan-queue.
+     * @author Griefed
      */
     private void submitScan(Task task) {
         LOG.info("Submitting scan " + task);
@@ -84,8 +88,9 @@ public class TaskSubmitter {
     /**
      * Convert and send a generation-task to our JMS. Set the <code>type</code> to <code>generation</code> and the <code>unique id</code>
      * to tasks unique id which contains the CurseForge project and file id combination.
-     * @author Griefed
+     *
      * @param task The task to be submitted to the generation-queue.
+     * @author Griefed
      */
     private void submitGeneration(Task task) {
         LOG.info("Submitting generation " + task);

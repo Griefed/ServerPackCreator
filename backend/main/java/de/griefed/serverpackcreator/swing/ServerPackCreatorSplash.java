@@ -44,8 +44,9 @@ public class ServerPackCreatorSplash {
 
     /**
      * Create and show our splashscreen.
-     * @author Griefed
+     *
      * @param version {@link String} The version of ServerPackCreator being run.
+     * @author Griefed
      */
     public ServerPackCreatorSplash(String version) {
 
@@ -62,11 +63,11 @@ public class ServerPackCreatorSplash {
                 BufferedImage.TYPE_INT_ARGB
         );
         Graphics graphics = bufferedImage.createGraphics();
-        splashScreenBackgroundImage.paintIcon(null, graphics,0,0);
+        splashScreenBackgroundImage.paintIcon(null, graphics, 0, 0);
         graphics.dispose();
 
         Color c0FFEE = new Color(192, 255, 238);
-        Color primary = new Color(50,83,88);
+        Color primary = new Color(50, 83, 88);
 
         // Construct and prepare JFrame with background image
         //this.J_FRAME = new JFrame();
@@ -79,7 +80,7 @@ public class ServerPackCreatorSplash {
         this.SPLASH_WINDOW.getContentPane().setBackground(c0FFEE);
 
         // Construct and prepare mem progress text
-        this.PROGRESS_TEXT.setFont(new Font("arial", Font.BOLD,20));
+        this.PROGRESS_TEXT.setFont(new Font("arial", Font.BOLD, 20));
         this.PROGRESS_TEXT.setHorizontalAlignment(SwingConstants.CENTER);
         this.PROGRESS_TEXT.setBounds(
                 0,
@@ -108,6 +109,7 @@ public class ServerPackCreatorSplash {
                     protected Color getSelectionBackground() {
                         return primary;
                     }
+
                     //Text-colour when the bar IS covering the loading-text
                     protected Color getSelectionForeground() {
                         return c0FFEE;
@@ -120,7 +122,7 @@ public class ServerPackCreatorSplash {
 
         // Construct and add version label
         JLabel versionLabel = new JLabel(version);
-        versionLabel.setFont(new Font("arial", Font.BOLD,15));
+        versionLabel.setFont(new Font("arial", Font.BOLD, 15));
         versionLabel.setBounds(
                 15,
                 splashScreenBackgroundImage.getIconHeight() - 40,
@@ -132,7 +134,7 @@ public class ServerPackCreatorSplash {
 
         // Consturct and add sum luv
         JLabel someLuv = new JLabel("By Griefed");
-        someLuv.setFont(new Font("arial", Font.BOLD,15));
+        someLuv.setFont(new Font("arial", Font.BOLD, 15));
         someLuv.setBounds(
                 splashScreenBackgroundImage.getIconWidth() - 100,
                 splashScreenBackgroundImage.getIconHeight() - 40,
@@ -146,7 +148,7 @@ public class ServerPackCreatorSplash {
         JButton EXIT = new JButton();
         int buttonSize = 16;
         try {
-            EXIT.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/error.png"))).getScaledInstance(buttonSize,buttonSize,Image.SCALE_SMOOTH)));
+            EXIT.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/error.png"))).getScaledInstance(buttonSize, buttonSize, Image.SCALE_SMOOTH)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

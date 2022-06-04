@@ -21,8 +21,6 @@ package de.griefed.serverpackcreator.spring;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +31,7 @@ import java.util.Arrays;
 
 /**
  * RestController for acquiring the configuration of this ServerPackCreator instance.
+ *
  * @author Griefed
  */
 @RestController
@@ -40,17 +39,16 @@ import java.util.Arrays;
 @RequestMapping("/api/v1/settings")
 public class ApplicationPropertiesController {
 
-    private static final Logger LOG = LogManager.getLogger(ApplicationPropertiesController.class);
-
     private final ApplicationProperties APPLICATIONPROPERTIES;
     private final Utilities UTILITIES;
 
     /**
      * Constructor for DI.
-     * @author Griefed
+     *
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties} with the configuration of this ServerPackCreator
      *                                      instance.
-     * @param injectedUtilities Instance of {@link Utilities}.
+     * @param injectedUtilities             Instance of {@link Utilities}.
+     * @author Griefed
      */
     @Autowired
     public ApplicationPropertiesController(ApplicationProperties injectedApplicationProperties,
@@ -62,37 +60,6 @@ public class ApplicationPropertiesController {
 
     @GetMapping(produces = "application/json")
     public String getConfiguration() {
-        // TODO: Fix formatting and content
-        /*return "{" +
-                "\"SERVERPACKCREATOR_PROPERTIES\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES + "\"," +
-                "\"START_SCRIPT_WINDOWS\":\"" + APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS + "\"," +
-                "\"START_SCRIPT_LINUX\":\"" + APPLICATIONPROPERTIES.START_SCRIPT_LINUX + "\"," +
-                "\"USER_JVM_ARGS\":\"" + APPLICATIONPROPERTIES.USER_JVM_ARGS + "\"," +
-                "\"PLUGINS_DIRECTORY\":\"" + APPLICATIONPROPERTIES.PLUGINS_DIRECTORY.toString().replace("\\","/") + "\"," +
-                "\"FALLBACK_CLIENTSIDE_MODS\":" + LISTUTILITIES.encapsulateListElements(APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS) + "," +
-                "\"DEFAULT_CONFIG\":\"" + APPLICATIONPROPERTIES.DEFAULT_CONFIG + "\"," +
-                "\"OLD_CONFIG\":\"" + APPLICATIONPROPERTIES.OLD_CONFIG + "\"," +
-                "\"DEFAULT_SERVER_PROPERTIES\":\"" + APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES + "\"," +
-                "\"DEFAULT_SERVER_ICON\":\"" + APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON + "\"," +
-                "\"MINECRAFT_VERSION_MANIFEST\":\"" + APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST + "\"," +
-                "\"FORGE_VERSION_MANIFEST\":\"" + APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST + "\"," +
-                "\"FABRIC_VERSION_MANIFEST\":\"" + APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST + "\"," +
-                "\"FABRIC_INSTALLER_VERSION_MANIFEST\":\"" + APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST + "\"," +
-                "\"SERVERPACKCREATOR_DATABASE\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE + "\"," +
-                "\"MINECRAFT_VERSION_MANIFEST_LOCATION\":\"" + APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION.toString().replace("\\","/") + "\"," +
-                "\"FORGE_VERSION_MANIFEST_LOCATION\":\"" + APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION.toString().replace("\\","/") + "\"," +
-                "\"FABRIC_VERSION_MANIFEST_LOCATION\":\"" + APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION.toString().replace("\\","/") + "\"," +
-                "\"FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION\":\"" + APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION.toString().replace("\\","/") + "\"," +
-                "\"directoryServerPacks\":\"" + APPLICATIONPROPERTIES.getDirectoryServerPacks() + "\"," +
-                "\"listFallbackMods\":" + LISTUTILITIES.encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
-                "\"listDirectoriesExclude\":" + LISTUTILITIES.encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
-                "\"curseControllerRegenerationEnabled\": " + APPLICATIONPROPERTIES.getCurseControllerRegenerationEnabled() + "," +
-                "\"queueMaxDiskUsage\": " + APPLICATIONPROPERTIES.getQueueMaxDiskUsage() + "," +
-                "\"saveLoadedConfiguration\": " + APPLICATIONPROPERTIES.getSaveLoadedConfiguration() + "," +
-                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION() + "\"," +
-                "\"versioncheck_prerelease\": " + APPLICATIONPROPERTIES.checkForAvailablePreReleases() + "," +
-                "\"isCurseForgeActivated\": " + APPLICATIONPROPERTIES.isCurseForgeActivated() + "" +
-                "}";*/
         return "{" +
                 "\"listFallbackMods\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
                 "\"listDirectoriesExclude\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +

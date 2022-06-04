@@ -28,10 +28,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Interface to exclude classes or methods from JaCoCo test coverage
+ *
  * @author Griefed
  */
 @Documented
 @Retention(RUNTIME)
-@Target({ElementType.TYPE,ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Generated {
 }

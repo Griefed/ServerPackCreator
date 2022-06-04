@@ -51,6 +51,7 @@ import java.util.Random;
  * which then calls {@link #createAndShowGUI()} in order to create and show the GUI of ServerPackCreator. Instances of
  * the {@link TabCreateServerPack}, {@link TabServerPackCreatorLog}, {@link TabModloaderInstallerLog}
  * are created in the constructor of this class to make sure they are ready when the GUI is created and shown to the user.
+ *
  * @author Griefed
  */
 @Generated
@@ -60,7 +61,7 @@ public class ServerPackCreatorGui extends JPanel {
 
     private final ImageIcon ICON_SERVERPACKCREATOR_BANNER = new ImageIcon(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/banner.png")));
     private final Image ICON_SERVERPACKCREATOR = Toolkit.getDefaultToolkit().getImage(Objects.requireNonNull(ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/app.png")));
-    private final Dimension DIMENSION_WINDOW = new Dimension(1050,800);
+    private final Dimension DIMENSION_WINDOW = new Dimension(1050, 800);
 
     private final LocalizationManager LOCALIZATIONMANAGER;
     private final ConfigurationHandler CONFIGURATIONHANDLER;
@@ -293,6 +294,7 @@ public class ServerPackCreatorGui extends JPanel {
      * Shows the GUI from the EDT by using SwingUtilities, and it's invokeLater method by calling {@link #createAndShowGUI()}.
      * Sets the font to bold, which may be overridden by the LookAndFeel which gets automatically determined and depends
      * on the OS ServerPackCreator is run on.
+     *
      * @author Griefed
      */
     public void mainGUI() {
@@ -323,6 +325,7 @@ public class ServerPackCreatorGui extends JPanel {
 
     /**
      * Creates the frame in which the banner, tabbed pane with all the tabs, icon and title are displayed and shows it.
+     *
      * @author Griefed
      */
     private void createAndShowGUI() {

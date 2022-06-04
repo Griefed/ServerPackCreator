@@ -25,6 +25,7 @@ import java.util.Random;
  * Just something fun to brighten the mood. This class provides a list of messages which some of you may know from the
  * SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained.
  * Additional thanks to Larsz for providing a list of all these messages <a href=https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135>on GameFAQs </a>
+ *
  * @author Griefed
  */
 public class ReticulatingSplines {
@@ -32,7 +33,7 @@ public class ReticulatingSplines {
     /**
      * The list of messages as they were available in SimCity, plus Reticulating Splines added by myself, for good measure.
      */
-    public final String[] RETICULATING = new String[] {
+    public final String[] RETICULATING = new String[]{
             "Adding Hidden Agendas",
             "Adjusting Bell Curves",
             "Aesthesizing Industrial Areas",
@@ -141,7 +142,7 @@ public class ReticulatingSplines {
             "Reticulating Splines"
     };
 
-    public final String[] SPLINES = new String[] {
+    public final String[] SPLINES = new String[]{
             "Adding",
             "Hidden",
             "Agendas",
@@ -495,8 +496,9 @@ public class ReticulatingSplines {
 
     /**
      * Retrieves the index of a random message in {@link #RETICULATING}.
-     * @author Griefed
+     *
      * @return Integer. Returns a randomly generated index.
+     * @author Griefed
      */
     private int getRandomIntReticulating() {
         Random randInt = new Random();
@@ -505,8 +507,9 @@ public class ReticulatingSplines {
 
     /**
      * Retrieve the index of a random string in {@link #SPLINES}.
-     * @author Griefed
+     *
      * @return Integer. Returns a randomly generated index.
+     * @author Griefed
      */
     private int getRandomIntSplines() {
         Random randInt = new Random();
@@ -515,8 +518,9 @@ public class ReticulatingSplines {
 
     /**
      * Retrieves a message from {@link #RETICULATING} using a randomly generated index from {@link #getRandomIntReticulating()}.
-     * @author Griefed
+     *
      * @return String. Returns the message at the index provided by the randomizer.
+     * @author Griefed
      */
     private String getReticulation() {
         return RETICULATING[getRandomIntReticulating()];
@@ -524,9 +528,10 @@ public class ReticulatingSplines {
 
     /**
      * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
-     * @author Griefed
+     *
      * @param wordCount The number of words the resulting string should be made up of.
      * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
+     * @author Griefed
      */
     private String getSplines(int wordCount) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -538,8 +543,9 @@ public class ReticulatingSplines {
 
     /**
      * Retrieve a random message from {@link #RETICULATING}.
-     * @author Griefed
+     *
      * @return String. Returns a random message.
+     * @author Griefed
      */
     public String reticulate() {
         return getReticulation();
@@ -547,9 +553,10 @@ public class ReticulatingSplines {
 
     /**
      * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
-     * @author Griefed
+     *
      * @param wordCount The number of words the resulting string should be made up of.
      * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
+     * @author Griefed
      */
     public String spline(int wordCount) {
         return getSplines(wordCount);

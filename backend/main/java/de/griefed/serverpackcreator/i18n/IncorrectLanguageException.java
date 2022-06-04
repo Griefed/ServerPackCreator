@@ -26,6 +26,7 @@ package de.griefed.serverpackcreator.i18n;
  * {@link #IncorrectLanguageException(Throwable)}<br>
  * {@link #IncorrectLanguageException(String, Throwable)}<p>
  * Provides exceptions to {@link LocalizationManager}
+ *
  * @author whitebear60
  */
 public class IncorrectLanguageException extends Exception {
@@ -38,25 +39,25 @@ public class IncorrectLanguageException extends Exception {
     }
 
     /**
-     * @author whitebear60
      * @param message The exception message.
+     * @author whitebear60
      */
     public IncorrectLanguageException(String message) {
         super(message);
     }
 
     /**
-     * @author whitebear60
      * @param message The exception message.
-     * @param cause The cause of the exception.
+     * @param cause   The cause of the exception.
+     * @author whitebear60
      */
     public IncorrectLanguageException(String message, Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * @author whitebear60
      * @param cause The cause of the exception.
+     * @author whitebear60
      */
     public IncorrectLanguageException(Throwable cause) {
         super(cause);

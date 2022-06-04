@@ -37,10 +37,11 @@ public class Main {
 
     /**
      * Initialize ServerPackCreator with the passed commandline-arguments and run.
-     * @author Griefed
+     *
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
-     * will enter and which locale is used.
+     *             will enter and which locale is used.
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
+     * @author Griefed
      */
     public static void main(String[] args) throws IOException {
 

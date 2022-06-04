@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 
 /**
  * Service class for backend tasks related to storing ZIP-archives uploaded through {@link ZipController}.
+ *
  * @author Griefed
  */
 @Service
@@ -55,13 +56,14 @@ public class ZipService {
 
     /**
      * Constructor responsible for DI.
-     * @author Griefed
-     * @param injectedTaskSubmitter Instance of {@link TaskSubmitter}.
+     *
+     * @param injectedTaskSubmitter        Instance of {@link TaskSubmitter}.
      * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-     * @param injectedUtilities Instance of {@link Utilities}.
+     * @param injectedUtilities            Instance of {@link Utilities}.
      * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
-     * @param injectedVersionMeta Instance of {@link VersionMeta}.
-     * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+     * @param injectedVersionMeta          Instance of {@link VersionMeta}.
+     * @param injectedConfigUtilities      Instance of {@link ConfigUtilities}.
+     * @author Griefed
      */
     @Autowired
     public ZipService(TaskSubmitter injectedTaskSubmitter, ConfigurationHandler injectedConfigurationHandler,
@@ -78,10 +80,11 @@ public class ZipService {
 
     /**
      * Store an uploaded ZIP-archive to disk.
-     * @author Griefed
+     *
      * @param uploadedFile {@link File} The file which was uploaded which you want to store on disk.
      * @return {@link Path} The path to the saved file.
      * @throws IOException If an I/O error occurs writing to or creating the file.
+     * @author Griefed
      */
     protected Path saveUploadedFile(final MultipartFile uploadedFile) throws IOException {
         final byte[] fileBytes = uploadedFile.getBytes();
@@ -110,17 +113,18 @@ public class ZipService {
 
         }
 
-        Files.write(zipPath,fileBytes);
+        Files.write(zipPath, fileBytes);
 
         return zipPath;
     }
 
     /**
      * Submit a task for the generation of a server pack from a ZIP-archive.
-     * @author Griefed
+     *
      * @param zipGenerationProperties {@link String} containing all information required to generate a server pack from
-     * a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
+     *                                a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
      * @return {@link Boolean} Returns true if the task was submitted.
+     * @author Griefed
      */
     protected String submitGenerationTask(String zipGenerationProperties) {
 
@@ -130,7 +134,7 @@ public class ZipService {
         if (!parameters[0].substring(parameters[0].length() - 4).equalsIgnoreCase(".zip") ||
                 !new File("work/modpacks/" + parameters[0]).isFile()) {
 
-            LOG.info("ZIP-archive work/modpacks/"+ parameters[0] + " not found.");
+            LOG.info("ZIP-archive work/modpacks/" + parameters[0] + " not found.");
 
             return NOTIFICATIONRESPONSE.zipResponse(
                     "ZIP-archive not found.",
@@ -162,7 +166,7 @@ public class ZipService {
             // Check Forge
             if (CONFIGUTILITIES.getModLoaderCase(parameters[3]).equals("Forge")) {
 
-                if (!VERSIONMETA.forge().checkForgeAndMinecraftVersion(parameters[2],parameters[4])) {
+                if (!VERSIONMETA.forge().checkForgeAndMinecraftVersion(parameters[2], parameters[4])) {
                     LOG.info(parameters[3] + " version " + parameters[2] + "-" + parameters[4] + " incorrect.");
                     return NOTIFICATIONRESPONSE.zipResponse(
                             "Incorrect Forge version: " + parameters[2],
@@ -174,7 +178,7 @@ public class ZipService {
                     );
                 }
 
-            // Check Fabric
+                // Check Fabric
             } else {
 
                 if (!VERSIONMETA.fabric().checkFabricVersion(parameters[4])) {

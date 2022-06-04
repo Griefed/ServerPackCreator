@@ -54,6 +54,7 @@ import java.util.concurrent.Executors;
 /**
  * Launch-class of ServerPackCreator which determines the mode to run in, takes care of initialization and dependency
  * injection and, finally, running ServerPackCreator.
+ *
  * @author Griefed
  */
 public class ServerPackCreator {
@@ -68,12 +69,22 @@ public class ServerPackCreator {
 
     private final File LOG4J2XML = new File("log4j2.xml");
     private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
+    private Utilities utilities = null;
+    private VersionMeta versionMeta = null;
+    private ConfigUtilities configUtilities = null;
+    private ConfigurationHandler configurationHandler = null;
+    private ApplicationPlugins applicationPlugins = null;
+    private ServerPackHandler serverPackHandler = null;
+    private ServerPackCreatorSplash serverPackCreatorSplash = null;
+    private UpdateChecker updateChecker = null;
+    private HashMap<String, String> systemInformation;
 
     /**
      * Initialize ServerPackCreator and determine the {@link CommandlineParser.Mode} to run in.
-     * @author Griefed
+     *
      * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
-     * will enter and which locale is used.
+     *             will enter and which locale is used.
+     * @author Griefed
      */
     public ServerPackCreator(String[] args) {
         this.ARGS = args;
@@ -87,21 +98,11 @@ public class ServerPackCreator {
         }
     }
 
-    private Utilities utilities = null;
-    private VersionMeta versionMeta = null;
-    private ConfigUtilities configUtilities = null;
-    private ConfigurationHandler configurationHandler = null;
-    private ApplicationPlugins applicationPlugins = null;
-    private ServerPackHandler serverPackHandler = null;
-    private ServerPackCreatorSplash serverPackCreatorSplash = null;
-    private UpdateChecker updateChecker = null;
-
-    private HashMap<String, String> systemInformation;
-
     /**
      * Run ServerPackCreator with the mode acquired from {@link CommandlineParser}.
-     * @author Griefed
+     *
      * @throws IOException if the run fails.
+     * @author Griefed
      */
     public void run() throws IOException {
         run(COMMANDLINE_PARSER.getModeToRunIn());
@@ -109,9 +110,10 @@ public class ServerPackCreator {
 
     /**
      * Run ServerPackCreator in a specific {@link de.griefed.serverpackcreator.CommandlineParser.Mode}.
-     * @author Griefed
+     *
      * @param modeToRunIn {@link de.griefed.serverpackcreator.CommandlineParser.Mode} to run in.
      * @throws IOException if the run fails.
+     * @author Griefed
      */
     public void run(CommandlineParser.Mode modeToRunIn) throws IOException {
 
@@ -180,6 +182,7 @@ public class ServerPackCreator {
     /**
      * Stage one of starting ServerPackCreator. Initialize {@link Utilities} and create/copy the default-files required
      * by ServerPackCreator.
+     *
      * @author Griefed
      */
     private void stageOne() {
@@ -197,7 +200,7 @@ public class ServerPackCreator {
         LOG.debug("System information jarName: " + systemInformation.get("jarName"));
 
         if (!utilities.FileUtils().checkPermissions(new File(systemInformation.get("jarPath")).getParentFile())) {
-            // TODO replace with i18n logging
+
             LOG.error("One or more file or directory has no read- or write-permission. This may lead to corrupted server packs! Check the permissions of the ServerPackCreator base directory!");
         }
 
@@ -333,8 +336,9 @@ public class ServerPackCreator {
 
     /**
      * Initialize {@link VersionMeta}, {@link ConfigUtilities}, {@link ConfigurationHandler}.
-     * @author Griefed
+     *
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
+     * @author Griefed
      */
     private void stageTwo() throws IOException {
         this.versionMeta = new VersionMeta(
@@ -364,8 +368,9 @@ public class ServerPackCreator {
 
     /**
      * Initialize {@link ApplicationPlugins}, {@link ServerPackHandler}.
-     * @author Griefed
+     *
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
+     * @author Griefed
      */
     private void stageThree() throws IOException {
         this.applicationPlugins = new ApplicationPlugins();
@@ -387,6 +392,7 @@ public class ServerPackCreator {
 
     /**
      * Initialize our FileWatcher
+     *
      * @author Griefed
      */
     private void stageFour() {
@@ -483,6 +489,7 @@ public class ServerPackCreator {
 
     /**
      * Show the splashscreen of ServerPackCreator, indicating that things are loading.
+     *
      * @author Griefed
      */
     private void showSplashScreen() {
@@ -491,8 +498,9 @@ public class ServerPackCreator {
 
     /**
      * Run ServerPackCreator with our GUI.
-     * @author Griefed
+     *
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
+     * @author Griefed
      */
     private void runGui() throws IOException {
         new ServerPackCreatorGui(
@@ -514,11 +522,12 @@ public class ServerPackCreator {
 
     /**
      * Offer the user to continue using ServerPackCreator.
-     * @author Griefed
+     *
      * @throws IOException if an error occurs trying to run ServerPackCreator in
-     * {@link de.griefed.serverpackcreator.CommandlineParser.Mode#GUI},
-     * {@link de.griefed.serverpackcreator.CommandlineParser.Mode#CLI} or
-     * {@link de.griefed.serverpackcreator.CommandlineParser.Mode#WEB}
+     *                     {@link de.griefed.serverpackcreator.CommandlineParser.Mode#GUI},
+     *                     {@link de.griefed.serverpackcreator.CommandlineParser.Mode#CLI} or
+     *                     {@link de.griefed.serverpackcreator.CommandlineParser.Mode#WEB}
+     * @author Griefed
      */
     private void continuedRunOptions() throws IOException {
 
@@ -531,48 +540,48 @@ public class ServerPackCreator {
 
             try {
 
-              selection = scanner.nextInt();
+                selection = scanner.nextInt();
 
-              if (selection == 7 && GraphicsEnvironment.isHeadless()) {
-                  System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.gui"));
-                  selection = 100;
-              }
+                if (selection == 7 && GraphicsEnvironment.isHeadless()) {
+                    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.gui"));
+                    selection = 100;
+                }
 
-              switch (selection) {
-                  case 1:
+                switch (selection) {
+                    case 1:
 
-                      printHelp();
-                      printMenu();
-                      selection = 100;
-                      break;
+                        printHelp();
+                        printMenu();
+                        selection = 100;
+                        break;
 
-                  case 2:
+                    case 2:
 
-                      updateCheck();
-                      printMenu();
-                      selection = 100;
-                      break;
+                        updateCheck();
+                        printMenu();
+                        selection = 100;
+                        break;
 
-                  case 3:
+                    case 3:
 
-                      changeLocale();
-                      printMenu();
-                      selection = 100;
-                      break;
+                        changeLocale();
+                        printMenu();
+                        selection = 100;
+                        break;
 
-                  case 4:
+                    case 4:
 
-                      createConfig();
-                      printMenu();
-                      selection = 100;
-                      break;
+                        createConfig();
+                        printMenu();
+                        selection = 100;
+                        break;
 
-                  default:
-                      if (selection > 7) {
-                          System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.selection"));
-                          printMenu();
-                      }
-              }
+                    default:
+                        if (selection > 7) {
+                            System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.selection"));
+                            printMenu();
+                        }
+                }
 
             } catch (InputMismatchException ex) {
                 System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.selection"));
@@ -645,6 +654,7 @@ public class ServerPackCreator {
 
     /**
      * Print the text-menu so the user may decide what they would like to do next.
+     *
      * @author Griefed
      */
     private void printMenu() {
@@ -678,8 +688,9 @@ public class ServerPackCreator {
     /**
      * Run ServerPackCreator in headless, CLI, mode. If no serverpackcreator.conf-file exists, it is created through
      * {@link ConfigurationCreator#createConfigurationFile()} and subsequently used by a ServerPackCreator headless-run.
-     * @author Griefed
+     *
      * @throws IOException if the {@link ConfigurationCreator} could not be instantiated.
+     * @author Griefed
      */
     private void runHeadless() throws IOException {
         if (!new File("serverpackcreator.conf").exists()) {
@@ -697,8 +708,9 @@ public class ServerPackCreator {
 
     /**
      * Create a new serverpackcreator.conf-file.
-     * @author Griefed
+     *
      * @throws IOException if the {@link ConfigurationCreator} could not be instantiated.
+     * @author Griefed
      */
     private void createConfig() throws IOException {
 
@@ -714,6 +726,7 @@ public class ServerPackCreator {
 
     /**
      * Run ServerPackCreator as a webservice.
+     *
      * @author Griefed
      */
     private void runWebservice() {
@@ -757,6 +770,7 @@ public class ServerPackCreator {
     /**
      * Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new
      * config file is generated.
+     *
      * @return Boolean. Returns true if the file was generated, so we can inform the user about said newly generated file.
      * @author Griefed
      */
@@ -799,10 +813,11 @@ public class ServerPackCreator {
 
     /**
      * Checks for existence of defaults files. If it is not found, it is generated.
-     * @author Griefed
+     *
      * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't, should be created.
      * @return Boolean. Returns true if the file was generated, so we can inform the user about
      * said newly generated file.
+     * @author Griefed
      */
     public boolean checkServerFilesFile(File fileToCheckFor) {
         boolean firstRun = false;
@@ -833,6 +848,7 @@ public class ServerPackCreator {
 
     /**
      * Ensures serverpackcreator.db exists. If the database does not exist, it is created.
+     *
      * @author Griefed
      */
     public void checkDatabase() {
@@ -854,7 +870,7 @@ public class ServerPackCreator {
                 try {
                     connection.close();
                 } catch (SQLException ex) {
-                    LOG.error("Couldn't close SQL connection",ex);
+                    LOG.error("Couldn't close SQL connection", ex);
                 }
             }
         }
@@ -862,6 +878,7 @@ public class ServerPackCreator {
 
     /**
      * Check for update-availability and exit with status code 0.
+     *
      * @author Griefed
      */
     public void updateCheck() {
@@ -885,6 +902,7 @@ public class ServerPackCreator {
 
     /**
      * Print the help to console and exit with status code 0.
+     *
      * @author Griefed
      */
     private void printHelp() {

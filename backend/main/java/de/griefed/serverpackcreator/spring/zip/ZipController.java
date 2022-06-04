@@ -41,6 +41,7 @@ import java.util.List;
 
 /**
  * RestController responsible for handling ZIP-archive uploads and server pack generation from the very same.
+ *
  * @author Griefed
  */
 @RestController
@@ -58,12 +59,13 @@ public class ZipController {
 
     /**
      * Constructor responsible for DI.
-     * @author Griefed
-     * @param injectedZipService Instance of {@link ZipService}.
-     * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-     * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
+     *
+     * @param injectedZipService            Instance of {@link ZipService}.
+     * @param injectedConfigurationHandler  Instance of {@link ConfigurationHandler}.
+     * @param injectedNotificationResponse  Instance of {@link NotificationResponse}.
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
-     * @param injectedUtilities Instance of {@link Utilities}.
+     * @param injectedUtilities             Instance of {@link Utilities}.
+     * @author Griefed
      */
     @Autowired
     public ZipController(ZipService injectedZipService,
@@ -82,10 +84,11 @@ public class ZipController {
 
     /**
      * Upload a file and check whether it is a ServerPackCreator valid ZIP-archive.
-     * @author Griefed
+     *
      * @param file {@link MultipartFile} The file uploaded to ServerPackCreator.
      * @return String List. A list on encountered errors, if any.
      * @throws IOException if an errors occurred saving or reading the file.
+     * @author Griefed
      */
     @PostMapping("/upload")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") final MultipartFile file) throws IOException {
@@ -93,7 +96,7 @@ public class ZipController {
 
         Path pathToZip = ZIPSERVICE.saveUploadedFile(file);
 
-        if (CONFIGURATIONHANDLER.checkZipArchive(Paths.get(pathToZip.toString().replace("\\","/")), encounteredErrors)) {
+        if (CONFIGURATIONHANDLER.checkZipArchive(Paths.get(pathToZip.toString().replace("\\", "/")), encounteredErrors)) {
 
             FileUtils.deleteQuietly(new File(pathToZip.toString()));
 
@@ -140,13 +143,14 @@ public class ZipController {
      * <code>minecraftVersion</code><br>
      * <code>modLoader</code><br>
      * <code>modLoaderVersion</code><br>
-     * @author Griefed
-     * @param zipName {@link String} The name of the previously uploaded ZIP-archive.
-     * @param clientMods {@link String} A comma separated list of clientside-only mods to exclude from the server pack.
+     *
+     * @param zipName          {@link String} The name of the previously uploaded ZIP-archive.
+     * @param clientMods       {@link String} A comma separated list of clientside-only mods to exclude from the server pack.
      * @param minecraftVersion {@link String} The Minecraft version the modpack, and therefor the server pack, uses.
-     * @param modLoader {@link String} The modloader the modpack, and therefor the server pack, uses.
+     * @param modLoader        {@link String} The modloader the modpack, and therefor the server pack, uses.
      * @param modLoaderVersion {@link String} The modloader version the modpack, and therefor the server pack, uses.
      * @return {@link NotificationResponse} with information about the result.
+     * @author Griefed
      */
     @GetMapping("/{zipName}&{clientMods}&{minecraftVersion}&{modLoader}&{modLoaderVersion}")
     public ResponseEntity<String> requestGenerationFromZip(
@@ -155,7 +159,7 @@ public class ZipController {
             @PathVariable("minecraftVersion") String minecraftVersion,
             @PathVariable("modLoader") String modLoader,
             @PathVariable("modLoaderVersion") String modLoaderVersion
-            ) {
+    ) {
 
         if (clientMods.length() == 0) {
             clientMods = UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString());
@@ -166,14 +170,14 @@ public class ZipController {
                 .header(
                         HttpHeaders.CONTENT_TYPE,
                         "application/json"
-        ).body(
-                ZIPSERVICE.submitGenerationTask(
-                        zipName + "&" +
-                                clientMods + "&" +
-                                minecraftVersion + "&" +
-                                modLoader + "&" +
-                                modLoaderVersion
-                )
+                ).body(
+                        ZIPSERVICE.submitGenerationTask(
+                                zipName + "&" +
+                                        clientMods + "&" +
+                                        minecraftVersion + "&" +
+                                        modLoader + "&" +
+                                        modLoaderVersion
+                        )
                 );
 
     }

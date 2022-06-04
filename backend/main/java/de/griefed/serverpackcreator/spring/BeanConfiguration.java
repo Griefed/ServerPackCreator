@@ -29,6 +29,7 @@ import java.io.File;
 /**
  * Bean configuration for running ServerPackCreator as a webservice. This class provides beans for a couple or properties
  * which can not otherwise be provided.
+ *
  * @author Groefed
  */
 @Configuration
@@ -43,8 +44,9 @@ public class BeanConfiguration {
 
     /**
      * Bean for the location of the Minecraft version manifest-file.
-     * @author Griefed
+     *
      * @return {@link File}
+     * @author Griefed
      */
     @Bean
     public File minecraftManifest() {
@@ -53,8 +55,9 @@ public class BeanConfiguration {
 
     /**
      * Bean for the location of the Forge version manifest-file.
-     * @author Griefed
+     *
      * @return {@link File}
+     * @author Griefed
      */
     @Bean
     public File forgeManifest() {
@@ -63,8 +66,9 @@ public class BeanConfiguration {
 
     /**
      * Bean for the location of the Fabric version manifest-file.
-     * @author Griefed
+     *
      * @return {@link File}
+     * @author Griefed
      */
     @Bean
     public File fabricManifest() {
@@ -73,8 +77,9 @@ public class BeanConfiguration {
 
     /**
      * Bean for the location of the Fabric installer version manifest-file.
-     * @author Griefed
+     *
      * @return {@link File}
+     * @author Griefed
      */
     @Bean
     public File fabricInstallerManifest() {
@@ -83,8 +88,9 @@ public class BeanConfiguration {
 
     /**
      * Bean for the location of the Quilt version manifest-file.
-     * @author Griefed
+     *
      * @return {@link File}
+     * @author Griefed
      */
     @Bean
     public File quiltManifest() {
@@ -93,8 +99,9 @@ public class BeanConfiguration {
 
     /**
      * Bean for the location of the Quilt installer version manifest-file.
-     * @author Griefed
+     *
      * @return {@link File}
+     * @author Griefed
      */
     @Bean
     public File quiltInstallerManifest() {

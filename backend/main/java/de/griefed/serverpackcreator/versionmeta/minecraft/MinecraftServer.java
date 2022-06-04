@@ -31,6 +31,7 @@ import java.util.Optional;
 /**
  * Representation of a Minecraft server, containing information about its Minecraft-version, release-type, download-url
  * and the java-version.
+ *
  * @author Griefed
  */
 public class MinecraftServer {
@@ -46,10 +47,11 @@ public class MinecraftServer {
 
     /**
      * Constructor
-     * @author Griefed
+     *
      * @param mcVersion {@link String} The Minecraft version of this server.
-     * @param mcType {@link Type} The release-type of this server. Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-     * @param mcUrl {@link URL} The URL to the download of this servers JAR-file.
+     * @param mcType    {@link Type} The release-type of this server. Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+     * @param mcUrl     {@link URL} The URL to the download of this servers JAR-file.
+     * @author Griefed
      */
     protected MinecraftServer(String mcVersion, Type mcType, URL mcUrl) {
         this.MANIFEST_URL = mcUrl;
@@ -67,8 +69,9 @@ public class MinecraftServer {
 
     /**
      * Get the Minecraft-version of this {@link MinecraftServer}.
-     * @author Griefed
+     *
      * @return {@link String}
+     * @author Griefed
      */
     public String version() {
         return VERSION;
@@ -76,8 +79,9 @@ public class MinecraftServer {
 
     /**
      * Get the release-type of this Minecraft-server. Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-     * @author Griefed
+     *
      * @return {@link Type}
+     * @author Griefed
      */
     public Type type() {
         return TYPE;
@@ -85,8 +89,9 @@ public class MinecraftServer {
 
     /**
      * Get the {@link URL} to the download of this Minecraft-servers JAR-file.
-     * @author Griefed
+     *
      * @return {@link URL}
+     * @author Griefed
      */
     public Optional<URL> url() {
         if (serverJson == null) {
@@ -101,8 +106,9 @@ public class MinecraftServer {
 
     /**
      * Get the Java-version of this Minecraft-server.
-     * @author Griefed
+     *
      * @return {@link Byte}.
+     * @author Griefed
      */
     public Optional<Byte> javaVersion() {
         if (serverJson == null) {

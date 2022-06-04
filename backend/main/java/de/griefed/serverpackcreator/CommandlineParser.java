@@ -26,92 +26,15 @@ import java.util.Optional;
 
 /**
  * Check the passed commandline-arguments with which ServerPackCreator was started and return the mode in which to run.
+ *
  * @author Griefed
  */
 public class CommandlineParser {
 
     /**
-     * Mode-priorities. Highest to lowest.
-     */
-    public enum Mode {
-
-        /**
-         * Priority 0.
-         * Print ServerPackCreators help to commandline.
-         */
-        HELP("-help"),
-
-        /**
-         * Priority 1.
-         * Check whether a newer version of ServerPackCreator is available.
-         */
-        UPDATE("-update"),
-
-        /**
-         * Priority 2.
-         * Run ServerPackCreators configuration generation.
-         */
-        CGEN("-cgen"),
-
-        /**
-         * Priority 3.
-         * Run ServerPackCreator in commandline-mode. If no graphical environment is supported, this is the default
-         * ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.
-         */
-        CLI("-cli"),
-
-        /**
-         * Priority 4.
-         * Run ServerPackCreator as a webservice.
-         */
-        WEB("-web"),
-
-        /**
-         * Priority 5.
-         * Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default
-         * ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.
-         */
-        GUI("-gui"),
-
-        /**
-         * Priority 6
-         * Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files
-         * needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too.
-         */
-        SETUP("--setup"),
-
-        /**
-         * Priority 7.
-         * Exit ServerPackCreator.
-         */
-        EXIT("exit"),
-
-        /**
-         * Used when the user wants to change the language of ServerPackCreator.
-         */
-        LANG("-lang");
-
-        private final String ARGUMENT;
-
-        Mode(String cliArg) {
-            this.ARGUMENT = cliArg;
-        }
-
-        /**
-         * Textual representation of this mode.
-         * @author Griefed
-         * @return {@link String} Textual representation of this mode.
-         */
-        public String argument() {
-            return ARGUMENT;
-        }
-    }
-    
-    /**
      * The mode in which ServerPackCreator will run in after the commandline arguments have been parsed and checked.
      */
     private final Mode MODE;
-
     /**
      * The language ServerPackCreator should use if any was specified. Null if none was specified, so we can use the
      * default language <code>en_us</code>.
@@ -123,8 +46,9 @@ public class CommandlineParser {
      * The mode and language in which ServerPackCreator should run will thus be determined and available to you via
      * {@link #getModeToRunIn()} and {@link #getLanguageToUse()}.<br>
      * {@link #getLanguageToUse()} is wrapped in an {@link Optional} to quickly determine whether a language was specified.
-     * @author Griefed
+     *
      * @param args {@link String}-array of commandline-arguments with which ServerPackCreator was started. Typically passed from {@link Main}.
+     * @author Griefed
      */
     public CommandlineParser(String[] args) {
 
@@ -216,8 +140,9 @@ public class CommandlineParser {
 
     /**
      * Get the mode in which ServerPackCreator should be run in.
-     * @author Griefed
+     *
      * @return {@link Mode} in which ServerPackCreator should be run in.
+     * @author Griefed
      */
     protected Mode getModeToRunIn() {
         return MODE;
@@ -225,10 +150,89 @@ public class CommandlineParser {
 
     /**
      * Get the locale in which ServerPackCreator should be run in, wrapped in an {@link Optional}.
-     * @author Griefed
+     *
      * @return {@link String} The locale in which ServerPackCreator should be run in, wrapped in an {@link Optional}.
+     * @author Griefed
      */
     protected Optional<String> getLanguageToUse() {
         return Optional.ofNullable(LANG);
+    }
+
+    /**
+     * Mode-priorities. Highest to lowest.
+     */
+    public enum Mode {
+
+        /**
+         * Priority 0.
+         * Print ServerPackCreators help to commandline.
+         */
+        HELP("-help"),
+
+        /**
+         * Priority 1.
+         * Check whether a newer version of ServerPackCreator is available.
+         */
+        UPDATE("-update"),
+
+        /**
+         * Priority 2.
+         * Run ServerPackCreators configuration generation.
+         */
+        CGEN("-cgen"),
+
+        /**
+         * Priority 3.
+         * Run ServerPackCreator in commandline-mode. If no graphical environment is supported, this is the default
+         * ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.
+         */
+        CLI("-cli"),
+
+        /**
+         * Priority 4.
+         * Run ServerPackCreator as a webservice.
+         */
+        WEB("-web"),
+
+        /**
+         * Priority 5.
+         * Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default
+         * ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.
+         */
+        GUI("-gui"),
+
+        /**
+         * Priority 6
+         * Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files
+         * needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too.
+         */
+        SETUP("--setup"),
+
+        /**
+         * Priority 7.
+         * Exit ServerPackCreator.
+         */
+        EXIT("exit"),
+
+        /**
+         * Used when the user wants to change the language of ServerPackCreator.
+         */
+        LANG("-lang");
+
+        private final String ARGUMENT;
+
+        Mode(String cliArg) {
+            this.ARGUMENT = cliArg;
+        }
+
+        /**
+         * Textual representation of this mode.
+         *
+         * @return {@link String} Textual representation of this mode.
+         * @author Griefed
+         */
+        public String argument() {
+            return ARGUMENT;
+        }
     }
 }

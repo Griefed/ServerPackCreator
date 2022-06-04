@@ -39,6 +39,7 @@ import java.util.List;
 
 /**
  * Class revolving around with server packs, like downloading, retrieving, deleting, voting etc.
+ *
  * @author Griefed
  */
 @Service
@@ -50,8 +51,9 @@ public class ServerPackService {
 
     /**
      * Constructor responsible for our DI.
-     * @author Griefed
+     *
      * @param injectedServerPackRepository Instance of {@link ServerPackRepository}.
+     * @author Griefed
      */
     @Autowired
     public ServerPackService(ServerPackRepository injectedServerPackRepository) {
@@ -60,9 +62,10 @@ public class ServerPackService {
 
     /**
      * Download a server pack with the given database id.
-     * @author Griefed
+     *
      * @param id Integer. The database id of the server pack to download.
      * @return Returns a curseResponse entity with either the server pack as a downloadable file, or a curseResponse entity with a not found body.
+     * @author Griefed
      */
     public ResponseEntity<Resource> downloadServerPackById(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Available")) {
@@ -85,7 +88,7 @@ public class ServerPackService {
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(
                             HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + serverPackModel.getFileDiskName().replace(".zip","") + "_server_pack.zip" + "\""
+                            "attachment; filename=\"" + serverPackModel.getFileDiskName().replace(".zip", "") + "_server_pack.zip" + "\""
                     )
                     .body(resource);
         } else {
@@ -97,9 +100,10 @@ public class ServerPackService {
 
     /**
      * Either upvote or downvote a given server pack.
-     * @author Griefed
+     *
      * @param voting String. The database id of the server pack and whether it should be up- or downvoted.
      * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or not found if the server pack could not be found.
+     * @author Griefed
      */
     public ResponseEntity<Object> voteForServerPack(String voting) {
         String[] vote = voting.split(",");
@@ -129,8 +133,9 @@ public class ServerPackService {
 
     /**
      * Get a list of all available server packs.
-     * @author Griefed
+     *
      * @return List ServerPackModel. Returns a list of all available server packs.
+     * @author Griefed
      */
     public List<ServerPackModel> getServerPacks() {
         List<ServerPackModel> serverPackModels = new ArrayList<>();
@@ -140,8 +145,9 @@ public class ServerPackService {
 
     /**
      * Store a server pack in the database.
-     * @author Griefed
+     *
      * @param serverPackModel Instance of {@link ServerPackModel} to store in the database.
+     * @author Griefed
      */
     public void insert(ServerPackModel serverPackModel) {
         SERVERPACKREPOSITORY.save(serverPackModel);
@@ -149,9 +155,10 @@ public class ServerPackService {
 
     /**
      * Update a server pack database entry with the given database id.
-     * @author Griefed
-     * @param id Integer. The database id of the server pack to initialize.
+     *
+     * @param id              Integer. The database id of the server pack to initialize.
      * @param serverPackModel Instance of {@link ServerPackModel} with which to initialize the entry in the database.
+     * @author Griefed
      */
     public void updateServerPackByID(int id, ServerPackModel serverPackModel) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
@@ -172,8 +179,9 @@ public class ServerPackService {
 
     /**
      * Increment the download counter for a given server pack entry in the database identified by the database id.
-     * @author Griefed
+     *
      * @param id Integer. The database id of the server pack.
+     * @author Griefed
      */
     public void updateDownloadCounter(int id) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
@@ -186,9 +194,10 @@ public class ServerPackService {
     /**
      * Either increment or decrement the confirmed working value of a given server pack entry in the database, identified by the
      * database id.
-     * @author Griefed
-     * @param id Integer. The database id of the server pack.
+     *
+     * @param id   Integer. The database id of the server pack.
      * @param vote Integer. Positive for upvote, negative for downvote
+     * @author Griefed
      */
     public void updateConfirmedCounter(int id, int vote) {
         if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
@@ -200,8 +209,9 @@ public class ServerPackService {
 
     /**
      * Deletes a server pack with the given id.
-     * @author Griefed
+     *
      * @param id Integer. The database id of the server pack to delete.
+     * @author Griefed
      */
     public void deleteServerPack(int id) {
         SERVERPACKREPOSITORY.deleteById(id);

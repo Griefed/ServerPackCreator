@@ -38,6 +38,7 @@ import java.util.List;
  * Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all available extensions for
  * {@link TabExtension},{@link PreGenExtension},{@link PreZipExtension} and {@link PostGenExtension} so they can then be
  * run during server pack generation and during initialization of the GUI.
+ *
  * @author Griefed
  */
 @Component
@@ -52,6 +53,7 @@ public class ApplicationPlugins extends JarPluginManager {
 
     /**
      * Constructor
+     *
      * @author Griefed
      */
     @Autowired
@@ -77,6 +79,7 @@ public class ApplicationPlugins extends JarPluginManager {
 
     /**
      * Print information about available plugins to our logs.
+     *
      * @author Griefed
      */
     private void availablePluginsAndExtensions() {
@@ -141,8 +144,9 @@ public class ApplicationPlugins extends JarPluginManager {
 
     /**
      * List of available {@link PreGenExtension}-plugins.
-     * @author Griefed
+     *
      * @return List of available {@link PreGenExtension}-plugins.
+     * @author Griefed
      */
     public List<PreGenExtension> pluginsPreGenExtension() {
         return PLUGINS_PreGenExtension;
@@ -150,8 +154,9 @@ public class ApplicationPlugins extends JarPluginManager {
 
     /**
      * List of available {@link PreZipExtension}-plugins.
-     * @author Griefed
+     *
      * @return List of available {@link PreZipExtension}-plugins.
+     * @author Griefed
      */
     public List<PreZipExtension> pluginsPreZipExtension() {
         return PLUGINS_PreZipExtension;
@@ -159,8 +164,9 @@ public class ApplicationPlugins extends JarPluginManager {
 
     /**
      * List of available {@link PostGenExtension}-plugins.
-     * @author Griefed
+     *
      * @return List of available {@link PostGenExtension}-plugins.
+     * @author Griefed
      */
     public List<PostGenExtension> pluginsPostGenExtension() {
         return PLUGINS_PostGenExtension;
@@ -168,8 +174,9 @@ public class ApplicationPlugins extends JarPluginManager {
 
     /**
      * List of available {@link TabExtension}-plugins.
-     * @author Griefed
+     *
      * @return List of available {@link TabExtension}-plugins.
+     * @author Griefed
      */
     public List<TabExtension> pluginsTabExtension() {
         return PLUGINS_TabExtension;

@@ -29,6 +29,7 @@ import java.util.List;
 
 /**
  * Utility-class revolving around the system we are running on.
+ *
  * @author Griefed
  */
 public class SystemUtilities {
@@ -36,7 +37,7 @@ public class SystemUtilities {
     private static final Logger LOG = LogManager.getLogger(SystemUtilities.class);
 
     private final List<String> DRIVES = new ArrayList<>(Arrays.asList(
-            "A:","B:","C:","D:","E:","F:","G:","H:","I:","J:","K:","L:","M:","N:","O:","P:","Q:","R:","S:","T:","U:","V:","W:","X:","Y:","Z:"
+            "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:", "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"
     ));
 
     public SystemUtilities() {
@@ -45,8 +46,9 @@ public class SystemUtilities {
 
     /**
      * Automatically acquire the path to the systems default Java installation.
-     * @author Griefed
+     *
      * @return String. The path to the systems default Java installation.
+     * @author Griefed
      */
     public String acquireJavaPathFromSystem() {
 
@@ -55,7 +57,7 @@ public class SystemUtilities {
         String javaPath = "Couldn't acquire JavaPath";
 
         if (new File(System.getProperty("java.home")).exists()) {
-            javaPath = String.format("%s/bin/java",System.getProperty("java.home").replace("\\", "/"));
+            javaPath = String.format("%s/bin/java", System.getProperty("java.home").replace("\\", "/"));
 
             if (!javaPath.startsWith("/")) {
                 for (String letter : DRIVES) {

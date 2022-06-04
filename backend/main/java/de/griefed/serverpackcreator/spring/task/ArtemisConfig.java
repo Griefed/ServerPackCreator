@@ -33,6 +33,7 @@ import org.springframework.context.annotation.Configuration;
  * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
  * the necessary changes to fully implement it in ServerPackCreator.<br>
  * Configuration for our Artemis JMS.
+ *
  * @author Griefed
  */
 @Configuration
@@ -42,8 +43,9 @@ public class ArtemisConfig implements ArtemisConfigurationCustomizer {
 
     /**
      * Constructor responsible for our DI.
-     * @author Griefed
+     *
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+     * @author Griefed
      */
     @Autowired
     public ArtemisConfig(ApplicationProperties injectedApplicationProperties) {
@@ -64,8 +66,9 @@ public class ArtemisConfig implements ArtemisConfigurationCustomizer {
      * be processed in parallel. Whilst working on them in parallel would increase the speed at which multiple serer packs are generated,
      * we want to make sure neither the CurseForge API, nor the system our webservice is running on receives a heavy load.
      * Economically speaking, we are trying to be nice neighbours and not claim too many resources for ourselves.
-     * @author Griefed
+     *
      * @param configuration Artemis configuration.
+     * @author Griefed
      */
     @Override
     public void customize(org.apache.activemq.artemis.core.config.Configuration configuration) {
@@ -83,7 +86,7 @@ public class ArtemisConfig implements ArtemisConfigurationCustomizer {
             queueConfiguration.setName("tasks.background");
             queueConfiguration.setLastValueKey("unique_id");
             queueConfiguration.setRoutingType(RoutingType.ANYCAST);
-            
+
             configuration.addQueueConfiguration(queueConfiguration);
 
         }

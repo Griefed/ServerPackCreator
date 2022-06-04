@@ -27,6 +27,7 @@ import java.util.Scanner;
 
 /**
  * Utility-class revolving around Lists.
+ *
  * @author Griefed
  */
 public class ListUtilities {
@@ -37,9 +38,10 @@ public class ListUtilities {
 
     /**
      * Encapsulate every element of the passed String List in quotes. Returns the list as <code>["element1","element2","element3"</code> etc.
-     * @author Griefed
+     *
      * @param listToEncapsulate The String List of which to encapsulate every element in.
      * @return String. Returns a concatenated String with all elements of the passed list encapsulated.
+     * @author Griefed
      */
     public String encapsulateListElements(List<String> listToEncapsulate) {
 
@@ -64,8 +66,9 @@ public class ListUtilities {
      * Prompts the user to enter the values which will make up
      * a String List in the new configuration file. If the user enters an empty line, the method is exited and the
      * String List returned.
-     * @author whitebear60
+     *
      * @return String List. Returns the list of values entered by the user.
+     * @author whitebear60
      */
     @Generated
     public List<String> readStringArray() {
@@ -94,10 +97,11 @@ public class ListUtilities {
 
     /**
      * Clean a given String List of any entry consisting only of whitespace or a length of <code>0</code>.
-     * @author Griefed
+     *
      * @param listToCleanUp List String. The list from which to delete all entries consisting only of whitespace or with
      *                      a length of zero.
      * @return List String. Returns the cleaned up list.
+     * @author Griefed
      */
     public List<String> cleanList(List<String> listToCleanUp) {
         listToCleanUp.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);

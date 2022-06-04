@@ -26,6 +26,7 @@ import java.io.Serializable;
  * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
  * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
  * the necessary changes to fully implement it in ServerPackCreator.<br>
+ *
  * @author Griefed
  */
 public abstract class Task implements Serializable {

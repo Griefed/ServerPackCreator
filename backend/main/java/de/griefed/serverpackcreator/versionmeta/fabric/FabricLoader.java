@@ -26,18 +26,20 @@ import java.util.List;
 
 /**
  * Information about releases of the Fabric loader.
+ *
  * @author Griefed
  */
 public class FabricLoader {
 
+    private final List<String> loaders = new ArrayList<>();
     private String latest;
     private String release;
-    private final List<String> loaders = new ArrayList<>();
 
     /**
      * Constructor
-     * @author Griefed
+     *
      * @param loaderManifest {@link Document} containing Fabrics manifest.
+     * @author Griefed
      */
     protected FabricLoader(Document loaderManifest) {
 
@@ -51,9 +53,10 @@ public class FabricLoader {
 
     /**
      * Update the latest, release and releases information.
-     * @author Griefed
+     *
      * @param loaderManifest {@link Document} containing Fabrics manifest.
      * @return This instance of {@link FabricLoader}.
+     * @author Griefed
      */
     protected FabricLoader update(Document loaderManifest) {
         this.latest = loaderManifest.getElementsByTagName("latest").item(0).getChildNodes().item(0).getNodeValue();
@@ -68,8 +71,9 @@ public class FabricLoader {
 
     /**
      * Get the latest Fabric loader version.
-     * @author Griefed
+     *
      * @return {@link String} The latest Fabric loader version.
+     * @author Griefed
      */
     protected String latestLoaderVersion() {
         return latest;
@@ -77,8 +81,9 @@ public class FabricLoader {
 
     /**
      * Get the release Fabric loader version.
-     * @author Griefed
+     *
      * @return {@link String} The release Fabric loader version.
+     * @author Griefed
      */
     protected String releaseLoaderVersion() {
         return release;
@@ -86,8 +91,9 @@ public class FabricLoader {
 
     /**
      * Get the list of available Fabric loader versions.
-     * @author Griefed
+     *
      * @return {@link String}-list of the available Fabric loader versions.
+     * @author Griefed
      */
     protected List<String> loaders() {
         return loaders;

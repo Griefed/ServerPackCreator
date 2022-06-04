@@ -38,8 +38,9 @@ public class WebService {
 
     /**
      * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
-     * @author Griefed
+     *
      * @param args Arguments passed from invocation in {@link Main#main(String[])}.
+     * @author Griefed
      */
     public static void main(String[] args) {
         SpringApplication.run(WebService.class, args);

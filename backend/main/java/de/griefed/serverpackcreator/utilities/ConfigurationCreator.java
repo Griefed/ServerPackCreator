@@ -34,6 +34,7 @@ import java.util.*;
 
 /**
  * Utility-class revolving around the creation of a new configuration file.
+ *
  * @author Griefed
  */
 @Generated
@@ -111,6 +112,7 @@ public class ConfigurationCreator {
      * <br>
      * Most user-input is checked after entry to ensure the configuration is already in working-condition after completion
      * of this method.
+     *
      * @author whitebear60
      * @author Griefed
      */
@@ -216,7 +218,7 @@ public class ConfigurationCreator {
             List<String> dirList = Arrays.asList(Objects.requireNonNull(new File(modpackDir).list((current, name) -> new File(current, name).isDirectory())));
 
             /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.dirsinmodpack"), dirList.toString().replace("[","").replace("]","")));
+            LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.dirsinmodpack"), dirList.toString().replace("[", "").replace("]", "")));
             do {
                 do {
                     copyDirs.clear();
@@ -359,7 +361,6 @@ public class ConfigurationCreator {
 
             //noinspection RedundantStringFormatCall
             System.out.println(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"), javaPath));
-
 
 
             System.out.println();

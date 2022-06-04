@@ -36,6 +36,7 @@ import java.util.List;
 
 /**
  * Minecraft client meta containing informatiom about available Minecraft releases.
+ *
  * @author Griefed
  */
 public class MinecraftClientMeta {
@@ -56,9 +57,10 @@ public class MinecraftClientMeta {
 
     /**
      * Constructor.
-     * @author Griefed
+     *
      * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link MinecraftClient} version.
      * @param minecraftManifest {@link File} Minecraft manifest file.
+     * @author Griefed
      */
     protected MinecraftClientMeta(File minecraftManifest, ForgeMeta injectedForgeMeta) {
         this.MINECRAFT_MANIFEST = minecraftManifest;
@@ -67,9 +69,10 @@ public class MinecraftClientMeta {
 
     /**
      * Update the meta information.
-     * @author Griefed
+     *
      * @return This instance of {@link MinecraftClientMeta}
      * @throws IOException if the manifest could not be read.
+     * @author Griefed
      */
     protected MinecraftClientMeta update() throws IOException {
 
@@ -133,8 +136,9 @@ public class MinecraftClientMeta {
 
     /**
      * Get a list of {@link MinecraftClient} of the {@link Type#RELEASE}.
-     * @author Griefed
+     *
      * @return {@link MinecraftClient}-list of the {@link Type#RELEASE}.
+     * @author Griefed
      */
     protected List<MinecraftClient> releases() {
         return RELEASES;
@@ -142,8 +146,9 @@ public class MinecraftClientMeta {
 
     /**
      * Get a list of {@link MinecraftClient} of the {@link Type#SNAPSHOT}.
-     * @author Griefed
+     *
      * @return {@link MinecraftClient}-list of the {@link Type#SNAPSHOT}.
+     * @author Griefed
      */
     protected List<MinecraftClient> snapshots() {
         return SNAPSHOTS;
@@ -151,8 +156,9 @@ public class MinecraftClientMeta {
 
     /**
      * Get the latest Minecraft {@link Type#RELEASE} as a {@link MinecraftClient}.
-     * @author Griefed
+     *
      * @return {@link MinecraftClient} {@link Type#RELEASE} as a {@link MinecraftClient}
+     * @author Griefed
      */
     protected MinecraftClient latestRelease() {
         return latestRelease;
@@ -160,8 +166,9 @@ public class MinecraftClientMeta {
 
     /**
      * Get the latest Minecraft {@link Type#SNAPSHOT} as a {@link MinecraftClient}.
-     * @author Griefed
+     *
      * @return {@link MinecraftClient} {@link Type#SNAPSHOT} as a {@link MinecraftClient}
+     * @author Griefed
      */
     protected MinecraftClient latestSnapshot() {
         return latestSnapshot;
@@ -171,8 +178,9 @@ public class MinecraftClientMeta {
      * Get the {@link MinecraftClient} meta.<br>
      * key: {@link String} Minecraft version<br>
      * value: {@link MinecraftClient} for said Minecraft version
-     * @author Griefed
+     *
      * @return {@link HashMap} containing the {@link MinecraftClientMeta}.
+     * @author Griefed
      */
     protected HashMap<String, MinecraftClient> meta() {
         return meta;

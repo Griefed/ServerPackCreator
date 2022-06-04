@@ -27,21 +27,13 @@ import java.util.List;
 /**
  * Class containing all fields and therefore all information either gathered from a configuration file, stored by the creation
  * of a modpack from CurseForge or passed otherwise.
+ *
  * @author Griefed
  */
 public class ConfigurationModel {
 
-    /**
-     * Constructor for our ConfigurationModel.
-     * @author Griefed
-     */
-    public ConfigurationModel() {
-
-    }
-
     private List<String> clientMods = new ArrayList<>();
     private List<String> copyDirs = new ArrayList<>();
-
     private String modpackDir = "";
     private String javaPath = "";
     private String minecraftVersion = "";
@@ -51,22 +43,28 @@ public class ConfigurationModel {
     private String serverPackSuffix = "";
     private String serverIconPath = "";
     private String serverPropertiesPath = "";
-
     private Boolean includeServerInstallation = true;
     private Boolean includeServerIcon = true;
     private Boolean includeServerProperties = true;
     private Boolean includeZipCreation = true;
-
     private JsonNode curseModpack = null;
-
     private String projectName;
     private String fileName;
     private String fileDiskName;
+    /**
+     * Constructor for our ConfigurationModel.
+     *
+     * @author Griefed
+     */
+    public ConfigurationModel() {
+
+    }
 
     /**
      * Getter for the suffix of the server pack to be generated.
-     * @author Griefed
+     *
      * @return String. Returns the suffix for the server pack to be generated.
+     * @author Griefed
      */
     public String getServerPackSuffix() {
         return serverPackSuffix;
@@ -74,8 +72,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the suffix of the server pack to be generated
-     * @author Griefed
+     *
      * @param serverPackSuffix String. The suffix of the server pack to be generated.
+     * @author Griefed
      */
     public void setServerPackSuffix(String serverPackSuffix) {
         this.serverPackSuffix = serverPackSuffix;
@@ -83,8 +82,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for a list of clientside-only mods to exclude from server pack.
-     * @author Griefed
+     *
      * @return List String. Returns the list of clientside-only mods.
+     * @author Griefed
      */
     public List<String> getClientMods() {
         return clientMods;
@@ -92,8 +92,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the list of clientside-only mods to exclude from server pack.
-     * @author Griefed
+     *
      * @param newClientMods The new list of clientside-only mods to store.
+     * @author Griefed
      */
     public void setClientMods(List<String> newClientMods) {
         newClientMods.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
@@ -102,8 +103,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the list of directories in the modpack to copy to the server pack.
-     * @author Griefed
+     *
      * @return List String. Returns the list of directories to copy to the server pack.
+     * @author Griefed
      */
     public List<String> getCopyDirs() {
         return copyDirs;
@@ -111,19 +113,21 @@ public class ConfigurationModel {
 
     /**
      * Setter for the list of directories in the modpack to copy to the server pack.
-     * @author Griefed
+     *
      * @param newCopyDirs The new list of directories to include in server pack to store.
+     * @author Griefed
      */
     public void setCopyDirs(List<String> newCopyDirs) {
         newCopyDirs.removeIf(entry -> entry.equalsIgnoreCase("server_pack") || entry.matches("\\s+") || entry.length() == 0);
-        newCopyDirs.replaceAll(entry -> entry.replace("\\","/"));
+        newCopyDirs.replaceAll(entry -> entry.replace("\\", "/"));
         this.copyDirs = newCopyDirs;
     }
 
     /**
      * Getter for the path to the modpack directory.
-     * @author Griefed
+     *
      * @return String. Returns the path to the modpack directory.
+     * @author Griefed
      */
     public String getModpackDir() {
         return modpackDir;
@@ -131,17 +135,19 @@ public class ConfigurationModel {
 
     /**
      * Setter for the path to the modpack directory. Replaces any occurrences of \ with /.
-     * @author Griefed
+     *
      * @param newModpackDir The new modpack directory path to store.
+     * @author Griefed
      */
     public void setModpackDir(String newModpackDir) {
-        this.modpackDir = newModpackDir.replace("\\","/");
+        this.modpackDir = newModpackDir.replace("\\", "/");
     }
 
     /**
      * Getter for the path to the Java executable/binary.
-     * @author Griefed
+     *
      * @return String. Returns the path to the Java executable/binary.
+     * @author Griefed
      */
     public String getJavaPath() {
         return javaPath;
@@ -149,8 +155,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.
-     * @author Griefed
+     *
      * @param newJavaPath The new Java path to store.
+     * @author Griefed
      */
     public void setJavaPath(String newJavaPath) {
         this.javaPath = newJavaPath.replace("\\", "/");
@@ -158,8 +165,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the version of Minecraft used by the modpack.
-     * @author Griefed
+     *
      * @return String. Returns the Minecraft version used in the modpack.
+     * @author Griefed
      */
     public String getMinecraftVersion() {
         return minecraftVersion;
@@ -167,8 +175,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the Minecraft version used by the modpack.
-     * @author Griefed
+     *
      * @param newMinecraftVersion The new Minecraft version to store.
+     * @author Griefed
      */
     public void setMinecraftVersion(String newMinecraftVersion) {
         this.minecraftVersion = newMinecraftVersion;
@@ -176,8 +185,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the modloader used by the modpack.
-     * @author Griefed
+     *
      * @return String. Returns the modloader used by the modpack.
+     * @author Griefed
      */
     public String getModLoader() {
         return modLoader;
@@ -185,8 +195,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the modloader used by the modpack.
-     * @author Griefed
+     *
      * @param newModLoader The new modloader to store.
+     * @author Griefed
      */
     public void setModLoader(String newModLoader) {
         if (newModLoader.toLowerCase().contains("forge")) {
@@ -206,8 +217,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the version of the modloader used by the modpack.
-     * @author Griefed
+     *
      * @return String. Returns the version of the modloader used by the modpack.
+     * @author Griefed
      */
     public String getModLoaderVersion() {
         return modLoaderVersion;
@@ -215,8 +227,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the version of the modloader used by the modpack.
-     * @author Griefed
+     *
      * @param newModLoaderVersion The new modloader version to store.
+     * @author Griefed
      */
     public void setModLoaderVersion(String newModLoaderVersion) {
         this.modLoaderVersion = newModLoaderVersion;
@@ -224,8 +237,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for whether the modloader server installation should be included.
-     * @author Griefed
+     *
      * @return Boolean. Returns whether the server installation should be included.
+     * @author Griefed
      */
     public boolean getIncludeServerInstallation() {
         return includeServerInstallation;
@@ -233,8 +247,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for whether the modloader server installation should be included.
-     * @author Griefed
+     *
      * @param newIncludeServerInstallation The new boolean to store.
+     * @author Griefed
      */
     public void setIncludeServerInstallation(boolean newIncludeServerInstallation) {
         this.includeServerInstallation = newIncludeServerInstallation;
@@ -242,8 +257,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for whether the server-icon.png should be included in the server pack.
-     * @author Griefed
+     *
      * @return Boolean. Returns whether the server-icon.png should be included in the server pack.
+     * @author Griefed
      */
     public boolean getIncludeServerIcon() {
         return includeServerIcon;
@@ -251,8 +267,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for whether the server-icon.png should be included in the server pack.
-     * @author Griefed
+     *
      * @param newIncludeServerIcon The new boolean to store.
+     * @author Griefed
      */
     public void setIncludeServerIcon(boolean newIncludeServerIcon) {
         this.includeServerIcon = newIncludeServerIcon;
@@ -260,8 +277,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for whether the server.properties should be included in the server pack.
-     * @author Griefed
+     *
      * @return Boolean. Returns whether the server.properties should be included in the server pack.
+     * @author Griefed
      */
     public boolean getIncludeServerProperties() {
         return includeServerProperties;
@@ -269,8 +287,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for whether the server.properties should be included in the server pack.
-     * @author Griefed
+     *
      * @param newIncludeServerProperties The new boolean to store.
+     * @author Griefed
      */
     public void setIncludeServerProperties(boolean newIncludeServerProperties) {
         this.includeServerProperties = newIncludeServerProperties;
@@ -278,8 +297,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for whether a ZIP-archive of the server pack should be created.
-     * @author Griefed
+     *
      * @return Boolean. Returns whether a ZIP-archive of the server pack should be created.
+     * @author Griefed
      */
     public boolean getIncludeZipCreation() {
         return includeZipCreation;
@@ -287,8 +307,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for whether a ZIP-archive of the server pack should be created.
-     * @author Griefed
+     *
      * @param newIncludeZipCreation The new boolean to store.
+     * @author Griefed
      */
     public void setIncludeZipCreation(boolean newIncludeZipCreation) {
         this.includeZipCreation = newIncludeZipCreation;
@@ -296,8 +317,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the Java arguments with which the start-scripts will be generated.
-     * @author Griefed
+     *
      * @return String. Returns the Java arguments with which the start-scripts will be generated.
+     * @author Griefed
      */
     public String getJavaArgs() {
         return javaArgs;
@@ -305,8 +327,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the Java arguments with which the start-scripts will be generated.
-     * @author Griefed
+     *
      * @param javaArgs String. Sets the Java arguments with which the start-scripts will be generated.
+     * @author Griefed
      */
     public void setJavaArgs(String javaArgs) {
         this.javaArgs = javaArgs;
@@ -314,8 +337,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the JsonNode containing all information about the CurseForge modpack.
-     * @author Griefed
+     *
      * @return JsonNode. The JsonNode containing all information about the CurseForge modpack.
+     * @author Griefed
      */
     public JsonNode getCurseModpack() {
         return curseModpack;
@@ -323,8 +347,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the JsonNode containing all information about the CurseForge modpack.
-     * @author Griefed
+     *
      * @param curseModpack JsonNode. The JsonNode containing all information about the CurseForge modpack.
+     * @author Griefed
      */
     public void setCurseModpack(JsonNode curseModpack) {
         this.curseModpack = curseModpack;
@@ -332,8 +357,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the name of the CurseForge project.
-     * @author Griefed
+     *
      * @return String. The name of the CurseForge project.
+     * @author Griefed
      */
     public String getProjectName() {
         return projectName;
@@ -341,8 +367,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the name of the CurseForge project.
-     * @author Griefed
+     *
      * @param projectName String. The name of the CurseForge project.
+     * @author Griefed
      */
     public void setProjectName(String projectName) {
         this.projectName = projectName;
@@ -350,8 +377,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the name of the CurseForge project file.
-     * @author Griefed
+     *
      * @return String. The name of the CurseForge project file.
+     * @author Griefed
      */
     public String getFileName() {
         return fileName;
@@ -359,8 +387,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the name of the CurseForge project file.
-     * @author Griefed
+     *
      * @param fileName String. The name of the CurseForge project file.
+     * @author Griefed
      */
     public void setFileName(String fileName) {
         this.fileName = fileName;
@@ -368,8 +397,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the disk-name of the CurseForge project file.
-     * @author Griefed
+     *
      * @return String. The disk-name of the CurseForge project file.
+     * @author Griefed
      */
     public String getFileDiskName() {
         return fileDiskName;
@@ -377,8 +407,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the disk-name of the CurseForge project file.
-     * @author Griefed
+     *
      * @param fileName String. The disk-name of the CurseForge project file.
+     * @author Griefed
      */
     public void setFileDiskName(String fileName) {
         this.fileDiskName = fileName;
@@ -386,8 +417,9 @@ public class ConfigurationModel {
 
     /**
      * Getter for the path to the server-icon.png to include in the server pack.
-     * @author Griefed
+     *
      * @return String. Returns the path to the server-icon.png.
+     * @author Griefed
      */
     public String getServerIconPath() {
         return serverIconPath;
@@ -395,17 +427,19 @@ public class ConfigurationModel {
 
     /**
      * Setter for the path of the server-icon.png to include in the server pack.
-     * @author Griefed
+     *
      * @param serverIconPath String. The path to the server-icon.png to include in the server pack.
+     * @author Griefed
      */
     public void setServerIconPath(String serverIconPath) {
-        this.serverIconPath = serverIconPath.replace("\\","/");
+        this.serverIconPath = serverIconPath.replace("\\", "/");
     }
 
     /**
      * Getter for the path of the server.properties to include in the server pack.
-     * @author Griefed
+     *
      * @return String. Returns the path to the server.properties to include in the server pack.
+     * @author Griefed
      */
     public String getServerPropertiesPath() {
         return serverPropertiesPath;
@@ -413,8 +447,9 @@ public class ConfigurationModel {
 
     /**
      * Setter for the path of the server.properties to include in the server pack.
-     * @author Griefed
+     *
      * @param serverPropertiesPath String. The path to the server.properties to include in the server pack.
+     * @author Griefed
      */
     public void setServerPropertiesPath(String serverPropertiesPath) {
         this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");

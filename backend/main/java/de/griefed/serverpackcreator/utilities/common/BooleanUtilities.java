@@ -29,6 +29,7 @@ import java.util.Scanner;
 
 /**
  * Utility-class revolving around Booleans.
+ *
  * @author Griefed
  */
 public class BooleanUtilities {
@@ -70,30 +71,31 @@ public class BooleanUtilities {
      * Language Key <code>cli.input.false</code><br>
      * Language Key <code>cli.input.no</code><br>
      * Language Key <code>cli.input.no.short</code><br>
-     * @author Griefed
+     *
      * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
      * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
+     * @author Griefed
      */
     public boolean convertToBoolean(String stringBoolean) {
 
-        if (stringBoolean.matches("[Tt]rue")    ||
-                stringBoolean.matches("1")      ||
+        if (stringBoolean.matches("[Tt]rue") ||
+                stringBoolean.matches("1") ||
                 stringBoolean.matches("[Yy]es") ||
-                stringBoolean.matches("[Yy]")   ||
+                stringBoolean.matches("[Yy]") ||
                 stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.true")) ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes"))  ||
+                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes")) ||
                 stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes.short"))
-        ){
+        ) {
             return true;
 
         } else if (stringBoolean.matches("[Ff]alse") ||
-                stringBoolean.matches("0")           ||
-                stringBoolean.matches("[Nn]o")       ||
-                stringBoolean.matches("[Nn]" )       ||
+                stringBoolean.matches("0") ||
+                stringBoolean.matches("[Nn]o") ||
+                stringBoolean.matches("[Nn]") ||
                 stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.false")) ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no"))    ||
+                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no")) ||
                 stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no.short"))
-        ){
+        ) {
             return false;
 
         } else {
@@ -106,8 +108,9 @@ public class BooleanUtilities {
     /**
      * Prompts the user to enter values which will then be converted to booleans, either <code>TRUE</code> or <code>FALSE</code>.
      * This prevents any non-boolean values from being written to the new configuration file.
-     * @author whitebear60
+     *
      * @return Boolean. True or False, depending on user input.
+     * @author whitebear60
      */
     @Generated
     public boolean readBoolean() {

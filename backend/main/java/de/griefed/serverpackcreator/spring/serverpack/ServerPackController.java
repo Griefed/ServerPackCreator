@@ -31,6 +31,7 @@ import java.util.List;
 /**
  * RestController for everything server pack related, like downloads.<br>
  * All requests are in <code>/api/v1/packs</code>.
+ *
  * @author Griefed
  */
 @RestController
@@ -44,8 +45,9 @@ public class ServerPackController {
 
     /**
      * Constructor responsible for our DI.
-     * @author Griefed
+     *
      * @param injectedServerPackService Instance of {@link ServerPackService}
+     * @author Griefed
      */
     @Autowired
     public ServerPackController(ServerPackService injectedServerPackService) {
@@ -54,9 +56,10 @@ public class ServerPackController {
 
     /**
      * GET request for downloading a server pack by the id in the database.
-     * @author Griefed
+     *
      * @param id Integer. The id of the server pack in the database.
      * @return ResponseEntity Resource. Gives the requester the requested file as a download, if it was found.
+     * @author Griefed
      */
     @GetMapping(value = "/download/{id}", produces = "application/zip")
     public ResponseEntity<Resource> downloadServerPack(@PathVariable int id) {
@@ -65,8 +68,9 @@ public class ServerPackController {
 
     /**
      * GET request for retrieving a list of all available server packs.
-     * @author Griefed
+     *
      * @return List {@link ServerPackModel}. A list of all available server packs on this instance.
+     * @author Griefed
      */
     @GetMapping("all")
     public ResponseEntity<List<ServerPackModel>> getAllServerPacks() {
@@ -91,9 +95,10 @@ public class ServerPackController {
 
     /**
      * GET request for voting whether a server pack works or not.
-     * @author Griefed
+     *
      * @param voting String. The vote, consisting of the id of the server pack and whether the vote should be incremented or decremented. Example <code>42,up</code> or <code>23,down</code>.
      * @return ResponseEntity OK/BadRequest/NotFound
+     * @author Griefed
      */
     @GetMapping("vote/{voting}")
     // TODO: Secure with Captcha so vote spamming is somewhat prevented

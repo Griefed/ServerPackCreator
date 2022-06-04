@@ -26,6 +26,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Custom error controller which redirects to our /#/error page in case of 404 etc.
+ *
  * @author Griefed
  */
 @RestController
@@ -33,8 +34,9 @@ public class CustomErrorController implements ErrorController {
 
     /**
      * Redirect all unknown paths to our 404-page.
-     * @author Griefed
+     *
      * @return Redirects the requester to our error page.
+     * @author Griefed
      */
     @RequestMapping(value = "/error")
     public ModelAndView error() {

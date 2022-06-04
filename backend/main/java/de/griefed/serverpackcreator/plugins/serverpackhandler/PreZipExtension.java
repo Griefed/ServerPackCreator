@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.utilities.misc.Generated;
 /**
  * Plugin interface for plugins which are to be executed after a server pack has been generated, but before the ZIP-archive
  * is created.
+ *
  * @author Griefed
  */
 @Generated

@@ -32,6 +32,7 @@ import java.util.NoSuchElementException;
 
 /**
  * Information about available Forge loader versions in correlation to Minecraft versions.
+ *
  * @author Griefed
  */
 public class ForgeLoader {
@@ -65,9 +66,10 @@ public class ForgeLoader {
 
     /**
      * Constructor
-     * @author Griefed
-     * @param forgemanifest {@link JsonNode} containing information about available Forge versions.
+     *
+     * @param forgemanifest         {@link JsonNode} containing information about available Forge versions.
      * @param injectedMinecraftMeta {@link MinecraftMeta} for retroactively updating the previously passed meta.
+     * @author Griefed
      */
     protected ForgeLoader(JsonNode forgemanifest, MinecraftMeta injectedMinecraftMeta) {
         this.MINECRAFT_META = injectedMinecraftMeta;
@@ -76,9 +78,10 @@ public class ForgeLoader {
 
     /**
      * Update the available Forge loader information.
-     * @author Griefed
+     *
      * @param forgeManifest {@link JsonNode} containing information about available Forge versions.
      * @return This instance of {@link ForgeLoader}.
+     * @author Griefed
      */
     protected ForgeLoader update(JsonNode forgeManifest) {
 
@@ -101,9 +104,9 @@ public class ForgeLoader {
              * 1.7.10_pre4 AND 1.7.10-pre4.
              */
             String mcVersion;
-            if (MINECRAFT_META.getClient(field.replace("_","-")).isPresent()) {
-                mcVersion = field.replace("_","-");
-                minecraftVersions.add(field.replace("_","-"));
+            if (MINECRAFT_META.getClient(field.replace("_", "-")).isPresent()) {
+                mcVersion = field.replace("_", "-");
+                minecraftVersions.add(field.replace("_", "-"));
             } else {
                 mcVersion = field;
                 minecraftVersions.add(field);
@@ -152,15 +155,19 @@ public class ForgeLoader {
 
     /**
      * Get a list of available Minecraft versions for Forge.
-     * @author Griefed
+     *
      * @return {@link String}-list of the available Minecraft versions for Forge.
+     * @author Griefed
      */
-    protected List<String> minecraftVersions() { return minecraftVersions; }
+    protected List<String> minecraftVersions() {
+        return minecraftVersions;
+    }
 
     /**
      * Get a list of available Forge versions.
-     * @author Griefed
+     *
      * @return {@link String}-list of the available Forge versions.
+     * @author Griefed
      */
     protected List<String> forgeVersions() {
         return forgeVersions;
@@ -170,8 +177,9 @@ public class ForgeLoader {
      * Get the {@link ForgeLoader} version-meta.<br>
      * key: {@link String} Minecraft version<br>
      * value: {@link String}-list of Forge versions available for the given Minecraft version.
-     * @author Griefed
+     *
      * @return {@link HashMap} containing the version meta.
+     * @author Griefed
      */
     protected HashMap<String, List<String>> versionMeta() {
         return versionMeta;
@@ -181,8 +189,9 @@ public class ForgeLoader {
      * Get the Forge version to Minecraft version meta.<br>
      * key: {@link String} Forge version.<br>
      * version: {@link String} Minecraft version for the given Forge version.
-     * @author Griefed
+     *
      * @return {@link HashMap} with Forge-to-Minecraft-version mappings.
+     * @author Griefed
      */
     protected HashMap<String, String> forgeToMinecraftMeta() {
         return forgeToMinecraftMeta;
@@ -192,8 +201,9 @@ public class ForgeLoader {
      * Get the Minecraft-Forge-version meta.<br>
      * key: {@link String} Minecraft version + Forge version concatenation.<br>
      * value: {@link ForgeInstance} for the given Minecraft version + Forge version concatenation.
-     * @author Griefed
+     *
      * @return {@link HashMap} with Minecraft-Forge-version-to-ForgeInstance mapping.
+     * @author Griefed
      */
     protected HashMap<String, ForgeInstance> instanceMeta() {
         return instanceMeta;

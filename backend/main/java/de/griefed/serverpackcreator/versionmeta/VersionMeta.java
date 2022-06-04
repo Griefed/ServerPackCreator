@@ -49,6 +49,7 @@ import java.nio.file.Files;
 
 /**
  * VersionMeta containing available versions and important details for Minecraft, Fabric and Forge.
+ *
  * @author Griefed
  */
 @Service
@@ -57,8 +58,8 @@ public class VersionMeta {
     private static final Logger LOG = LogManager.getLogger(VersionMeta.class);
 
     private final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
     private final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
 
     private final File MINECRAFT_MANIFEST;
@@ -80,14 +81,15 @@ public class VersionMeta {
 
     /**
      * Constructor.
-     * @author Griefed
-     * @param minecraftManifest {@link File} Minecraft manifest file.
-     * @param forgeManifest {@link File} Forge manifest file.
-     * @param fabricManifest {@link File} Fabric manifest file.
+     *
+     * @param minecraftManifest       {@link File} Minecraft manifest file.
+     * @param forgeManifest           {@link File} Forge manifest file.
+     * @param fabricManifest          {@link File} Fabric manifest file.
      * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
-     * @param quiltManifest {@link File} Quilt manifest file.
-     * @param quiltInstallerManifest {@link File} Quilt-installer manifest file.
+     * @param quiltManifest           {@link File} Quilt manifest file.
+     * @param quiltInstallerManifest  {@link File} Quilt-installer manifest file.
      * @throws IOException if one of the metas could not be initialized.
+     * @author Griefed
      */
     @Autowired
     public VersionMeta(File minecraftManifest,
@@ -124,6 +126,7 @@ public class VersionMeta {
      * are available, by comparing their locally stored ones against freshly downloaded ones.
      * If a manifest does not exist yet, it is downloaded to the specified file with which this instance of {@link VersionMeta}
      * was created.
+     *
      * @author Griefed
      */
     private void checkManifests() {
@@ -140,11 +143,12 @@ public class VersionMeta {
      * If it does not exist, it is downloaded and stored.<br>
      * If it exists, it is compared to the online manifest.<br>
      * If the online version contains more versions, the local manifests are replaced by the online ones.
-     * @author Griefed
+     *
      * @param manifestToCheck {@link File} The manifest to check.
-     * @param urlToManifest {@link URL} The URL to the manifest.
-     * @param manifestType {@link Type} The type of the manifest, either {@link Type#MINECRAFT}, {@link Type#FORGE},
-     * {@link Type#FABRIC} or {@link Type#FABRIC_INSTALLER}.
+     * @param urlToManifest   {@link URL} The URL to the manifest.
+     * @param manifestType    {@link Type} The type of the manifest, either {@link Type#MINECRAFT}, {@link Type#FORGE},
+     *                        {@link Type#FABRIC} or {@link Type#FABRIC_INSTALLER}.
+     * @author Griefed
      */
     private void checkManifest(File manifestToCheck, URL urlToManifest, Type manifestType) {
         if (manifestToCheck.exists()) {
@@ -218,9 +222,10 @@ public class VersionMeta {
     /**
      * Deletes the specified manifest if it is found, then downloads the specified manifest file again. Ensures we always
      * have the latest manifest for version validation available.
-     * @author whitebear60
+     *
      * @param manifestToRefresh The manifest file to delete and then download, updating it.
-     * @param urlToManifest The URL to the file which is to be downloaded.
+     * @param urlToManifest     The URL to the file which is to be downloaded.
+     * @author whitebear60
      * @author Griefed
      */
     private void updateManifest(File manifestToRefresh, URL urlToManifest) {
@@ -285,10 +290,11 @@ public class VersionMeta {
 
     /**
      * Acquire a {@link JsonNode} from the given json file.
-     * @author Griefed
+     *
      * @param inputStream {@link InputStream}. The file to read.
      * @return {@link JsonNode} containing the files json data.
      * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+     * @author Griefed
      */
     private JsonNode getJson(InputStream inputStream) throws IOException {
         return OBJECT_MAPPER.readTree(inputStream);
@@ -296,9 +302,10 @@ public class VersionMeta {
 
     /**
      * Reads the Fabric manifest-file into a {@link Document} and {@link Document#normalize()} it.
-     * @author Griefed
+     *
      * @param manifest The xml-file to parse into a Document.
      * @return Document. Returns the file parsed into a Document.
+     * @author Griefed
      */
     private Document getXml(InputStream manifest) {
         DocumentBuilder documentBuilder = null;
@@ -309,7 +316,7 @@ public class VersionMeta {
             documentBuilder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
 
         } catch (ParserConfigurationException ex) {
-            LOG.error("Couldn't read document.",ex);
+            LOG.error("Couldn't read document.", ex);
         }
 
         try {
@@ -318,7 +325,7 @@ public class VersionMeta {
             xml = documentBuilder.parse(manifest);
 
         } catch (SAXException | IOException ex) {
-            LOG.error("Couldn't read document.",ex);
+            LOG.error("Couldn't read document.", ex);
         }
 
         assert xml != null;
@@ -328,9 +335,10 @@ public class VersionMeta {
 
     /**
      * Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been refreshed.
-     * @author Griefed
+     *
      * @return Instance of {@link VersionMeta}.
      * @throws IOException if any of the metas could not be updated.
+     * @author Griefed
      */
     public VersionMeta update() throws IOException {
         checkManifests();
@@ -342,8 +350,9 @@ public class VersionMeta {
 
     /**
      * The MinecraftMeta instance for working with Minecraft versions and information about them.
-     * @author Griefed
+     *
      * @return Instance of {@link MinecraftMeta}.
+     * @author Griefed
      */
     public MinecraftMeta minecraft() {
         return MINECRAFT_META;
@@ -351,8 +360,9 @@ public class VersionMeta {
 
     /**
      * The QuiltMeta-instance for working with Fabric versions and information about them.
-     * @author Griefed
+     *
      * @return Instance of {@link FabricMeta}.
+     * @author Griefed
      */
     public FabricMeta fabric() {
         return FABRIC_META;
@@ -360,8 +370,9 @@ public class VersionMeta {
 
     /**
      * The ForgeMeta-instance for working with Forge versions and information about them.
-     * @author Griefed
+     *
      * @return Instance of {@link ForgeMeta}.
+     * @author Griefed
      */
     public ForgeMeta forge() {
         return FORGE_META;
@@ -369,8 +380,9 @@ public class VersionMeta {
 
     /**
      * The QuiltMeta-instance for working with Quilt versions and information about them.
-     * @author Griefed
+     *
      * @return Instance of {@link QuiltMeta}.
+     * @author Griefed
      */
     public QuiltMeta quilt() {
         return QUIL_META;

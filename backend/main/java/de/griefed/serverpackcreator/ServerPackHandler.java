@@ -61,6 +61,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * as well as installing the modloader server for the specified modloader, modloader version and Minecraft version.
  * Create a ZIP-archive of the server pack, excluding the Minecraft server JAR, for immediate upload to CurseForge or
  * other platforms.
+ *
  * @author Griefed
  */
 @Component
@@ -82,13 +83,14 @@ public class ServerPackHandler {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.<p>
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     *
+     * @param injectedLocalizationManager   Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version related.
-     * @param injectedUtilities Instance of {@link Utilities}.
-     * @param injectedApplicationPlugins Instance of {@link ApplicationPlugins}.
+     * @param injectedVersionMeta           Instance of {@link VersionMeta} required for everything version related.
+     * @param injectedUtilities             Instance of {@link Utilities}.
+     * @param injectedApplicationPlugins    Instance of {@link ApplicationPlugins}.
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
+     * @author Griefed
      */
     @Autowired
     public ServerPackHandler(LocalizationManager injectedLocalizationManager,
@@ -138,8 +140,9 @@ public class ServerPackHandler {
 
     /**
      * Getter for the object-mapper used for working with JSON-data.
-     * @author Griefed
+     *
      * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
+     * @author Griefed
      */
     private ObjectMapper getObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -150,9 +153,10 @@ public class ServerPackHandler {
 
     /**
      * Create a server pack from a given instance of {@link ServerPackModel} via webUI.
-     * @author Griefed
+     *
      * @param serverPackModel An instance of {@link ServerPackModel} which contains the configuration of the modpack.
      * @return Returns the passed {@link ServerPackModel} which got altered during the creation of said server pack.
+     * @author Griefed
      */
     public ServerPackModel run(@NotNull ServerPackModel serverPackModel) {
 
@@ -171,10 +175,11 @@ public class ServerPackHandler {
 
     /**
      * Create a server pack from a given instance of {@link ConfigurationModel}.
-     * @author Griefed
+     *
      * @param configurationModel An instance of {@link ConfigurationModel} which contains the configuration of the modpack
      *                           from which the server pack is to be created.
      * @return Boolean. Returns true if the server pack was successfully generated.
+     * @author Griefed
      */
     public boolean run(@NotNull ConfigurationModel configurationModel) {
 
@@ -187,7 +192,7 @@ public class ServerPackHandler {
                         ) + configurationModel.getServerPackSuffix()
                 )
         ).getAbsolutePath()
-                .replace("\\","/");
+                .replace("\\", "/");
 
         /*
          * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
@@ -203,7 +208,8 @@ public class ServerPackHandler {
             // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(true, destination);
 
-            try { Files.createDirectories(Paths.get(destination));
+            try {
+                Files.createDirectories(Paths.get(destination));
             } catch (IOException ignored) {
 
             }
@@ -231,7 +237,7 @@ public class ServerPackHandler {
 
             // If modloader is fabric, try and replace the old server-launch.jar with the new and improved one which also downloads the Minecraft server.
             if (configurationModel.getModLoader().equalsIgnoreCase("Fabric")) {
-                provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),configurationModel.getModLoaderVersion(), destination);
+                provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(), configurationModel.getModLoaderVersion(), destination);
             }
 
             // If true, copy the server-icon.png from server_files to the server pack.
@@ -309,10 +315,11 @@ public class ServerPackHandler {
 
     /**
      * Download and provide the improved Fabric Server Launcher, if it is available for the given Minecraft and Fabric version.
-     * @author Griefed
+     *
      * @param minecraftVersion String. The Minecraft version the modpack uses and the Fabric Server Launcher should be downloaded for.
-     * @param fabricVersion String. The modloader version the modpack uses and the Fabric Server Launcher should be downloaded for.
-     * @param destination String. The destination of the server pack.
+     * @param fabricVersion    String. The modloader version the modpack uses and the Fabric Server Launcher should be downloaded for.
+     * @param destination      String. The destination of the server pack.
+     * @author Griefed
      */
     private void provideImprovedFabricServerLauncher(String minecraftVersion, String fabricVersion, String destination) {
         String fileDestination = String.format("%s/fabric-server-launcher.jar", destination);
@@ -326,7 +333,7 @@ public class ServerPackHandler {
                     new FileWriter(
                             String.valueOf(
                                     Paths.get(
-                                            String.format("%s/SERVER_PACK_INFO.txt",destination)
+                                            String.format("%s/SERVER_PACK_INFO.txt", destination)
                                     )
                             )
                     )
@@ -351,9 +358,10 @@ public class ServerPackHandler {
     /**
      * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated
      * server pack is as clean as possible.
-     * @author Griefed
-     * @param deleteZip Boolean. Whether to delete the server pack ZIP-archive.
+     *
+     * @param deleteZip   Boolean. Whether to delete the server pack ZIP-archive.
      * @param destination String. The destination at which to clean up in.
+     * @author Griefed
      */
     private void cleanupEnvironment(boolean deleteZip, String destination) {
 
@@ -373,12 +381,13 @@ public class ServerPackHandler {
 
     /**
      * Create start-scripts for the generated server pack.
-     * @author Griefed
-     * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
-     * @param javaArguments String. Java arguments to write the start-scripts with.
+     *
+     * @param modLoader        String. Whether to copy the Forge or Fabric scripts into the server pack.
+     * @param javaArguments    String. Java arguments to write the start-scripts with.
      * @param minecraftVersion String. The Minecraft version the modpack uses.
      * @param modloaderVersion String. The modloader version the modpack uses.
-     * @param destination String. The destination where the scripts should be created in.
+     * @param destination      String. The destination where the scripts should be created in.
+     * @author Griefed
      */
     private void createStartScripts(String modLoader, String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
@@ -433,11 +442,12 @@ public class ServerPackHandler {
 
     /**
      * Create a Fabric shell start script
-     * @author Griefed
-     * @param javaArguments String. Java arguments with which the server should be started
+     *
+     * @param javaArguments    String. Java arguments with which the server should be started
      * @param minecraftVersion String. Minecraft version of this server pack.
      * @param modloaderVersion String. Modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @author Griefed
      */
     private void fabricShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
@@ -549,11 +559,12 @@ public class ServerPackHandler {
 
     /**
      * Create a Fabric batch start script.
-     * @author Griefed
-     * @param javaArguments String. Java arguments wich which the server should be started.
+     *
+     * @param javaArguments    String. Java arguments wich which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @author Griefed
      */
     private void fabricBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
@@ -672,11 +683,12 @@ public class ServerPackHandler {
 
     /**
      * Create a Quilt shell start script
-     * @author Griefed
-     * @param javaArguments String. Java arguments with which the server should be started
+     *
+     * @param javaArguments    String. Java arguments with which the server should be started
      * @param minecraftVersion String. Minecraft version of this server pack.
      * @param modloaderVersion String. Modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @author Griefed
      */
     private void quiltShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
@@ -781,11 +793,12 @@ public class ServerPackHandler {
 
     /**
      * Create a Quilt batch start script.
-     * @author Griefed
-     * @param javaArguments String. Java arguments wich which the server should be started.
+     *
+     * @param javaArguments    String. Java arguments wich which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @author Griefed
      */
     private void quiltBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
 
@@ -890,9 +903,10 @@ public class ServerPackHandler {
 
     /**
      * Create a Forge JVM args file used by Forge Minecraft 1.17 and newer.
-     * @author Griefed
+     *
      * @param javaArguments String. Java arguments with which the server should be started.
-     * @param destination String. Where the file should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.USER_JVM_ARGS)</code>
+     * @param destination   String. Where the file should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.USER_JVM_ARGS)</code>
+     * @author Griefed
      */
     private void forgeJvmArgsTxt(String javaArguments, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
@@ -924,11 +938,12 @@ public class ServerPackHandler {
 
     /**
      * Create a Forge shell start script for Minecraft 1.17 and newer.
-     * @author Griefed
-     * @param javaArguments String. Java arguments with which the server should be started.
+     *
+     * @param javaArguments    String. Java arguments with which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @author Griefed
      */
     private void forgeShellScriptNewMC(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
@@ -1043,11 +1058,12 @@ public class ServerPackHandler {
 
     /**
      * Create a Forge batch script for Minecraft 1.17 and newer.
-     * @author Griefed
-     * @param javaArguments String. Java arguments with which the server should be started.
+     *
+     * @param javaArguments    String. Java arguments with which the server should be started.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)</code>
+     * @author Griefed
      */
     private void forgeBatchScriptNewMC(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
@@ -1167,11 +1183,12 @@ public class ServerPackHandler {
 
     /**
      * Create a Forge shell script for Minecraft 1.16 and older.
-     * @author Griefed
-     * @param javaArguments String. The Java arguments with which to start the server.
+     *
+     * @param javaArguments    String. The Java arguments with which to start the server.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
+     * @author Griefed
      */
     private void forgeShellScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
@@ -1273,11 +1290,12 @@ public class ServerPackHandler {
 
     /**
      * Create a forge batch script for Minecraft 1.16 and older.
-     * @author Griefed
-     * @param javaArguments String. The Java arguments with which to start the server.
+     *
+     * @param javaArguments    String. The Java arguments with which to start the server.
      * @param minecraftVersion String. The Minecraft version of this server pack.
      * @param modloaderVersion String. The modloader version of this server pack.
-     * @param destination String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)</code>
+     * @param destination      String. Where the script should be written to. Result is a combination of <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)</code>
+     * @author Griefed
      */
     private void forgeBatchScript(String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
         try (BufferedWriter writer = new BufferedWriter(
@@ -1389,12 +1407,13 @@ public class ServerPackHandler {
      * the specified destination-file.
      * Calls {@link #excludeClientMods(String, List, String, String)} to generate a list of all mods to copy to server pack, excluding
      * clientside-only mods.
-     * @author Griefed
-     * @param modpackDir String. Files and directories are copied into the server_pack directory inside the modpack directory.
+     *
+     * @param modpackDir        String. Files and directories are copied into the server_pack directory inside the modpack directory.
      * @param directoriesToCopy String List. All directories and files therein to copy to the server pack.
-     * @param clientMods String List. List of clientside-only mods to exclude from the server pack.
-     * @param minecraftVersion String. The Minecraft version the modpack uses.
-     * @param destination String. The destination where the files should be copied to.
+     * @param clientMods        String List. List of clientside-only mods to exclude from the server pack.
+     * @param minecraftVersion  String. The Minecraft version the modpack uses.
+     * @param destination       String. The destination where the files should be copied to.
+     * @author Griefed
      */
     private void copyFiles(String modpackDir, List<String> directoriesToCopy, List<String> clientMods, String minecraftVersion, String destination, String modloader) {
 
@@ -1440,8 +1459,8 @@ public class ServerPackHandler {
 
             for (String directory : directoriesToCopy) {
 
-                String clientDir = String.format("%s/%s", modpackDir, directory).replace("\\","/");
-                String serverDir = String.format("%s/%s", destination, directory).replace("\\","/");
+                String clientDir = String.format("%s/%s", modpackDir, directory).replace("\\", "/");
+                String serverDir = String.format("%s/%s", destination, directory).replace("\\", "/");
 
                 /* This log is meant to be read by the user, therefore we allow translation. */
                 LOG.info(String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyfiles.setup"), directory));
@@ -1453,7 +1472,7 @@ public class ServerPackHandler {
                      * If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
                      * for a file they specifically want to include in their server pack.
                      */
-                    serverPackFiles.addAll(getExplicitFiles(directory.split(";"), modpackDir,destination));
+                    serverPackFiles.addAll(getExplicitFiles(directory.split(";"), modpackDir, destination));
 
                 } else if (directory.startsWith("saves/")) {
 
@@ -1462,7 +1481,7 @@ public class ServerPackHandler {
                      * saves in it, so when a world is specified inside the saves-directory, it is copied to the base-directory
                      * of the server pack, instead of a saves-directory inside the modpack.
                      */
-                    serverPackFiles.addAll(getSaveFiles(clientDir,directory,destination));
+                    serverPackFiles.addAll(getSaveFiles(clientDir, directory, destination));
 
 
                 } else if (directory.startsWith("mods")) {
@@ -1481,7 +1500,7 @@ public class ServerPackHandler {
 
                     for (String file : listOfFiles) {
 
-                        if (excludeFileOrDirectory(file.replace("\\","/"), exclusions)) {
+                        if (excludeFileOrDirectory(file.replace("\\", "/"), exclusions)) {
 
                             LOG.info("Excluding " + file + " from server pack");
 
@@ -1505,11 +1524,11 @@ public class ServerPackHandler {
 
                 } else if (new File(directory).isDirectory()) {
 
-                    serverPackFiles.addAll(getDirectoryFiles(directory,destination));
+                    serverPackFiles.addAll(getDirectoryFiles(directory, destination));
 
                 } else {
 
-                    serverPackFiles.addAll(getDirectoryFiles(clientDir,destination));
+                    serverPackFiles.addAll(getDirectoryFiles(clientDir, destination));
 
                 }
             }
@@ -1531,11 +1550,12 @@ public class ServerPackHandler {
      * Gather a list of all files from an explicit source;destination-combination. If the source is a file, a singular
      * {@link ServerPackFile} is returned. If the source is a directory, then {@link ServerPackFile}s for all files in
      * said directory are returned.
-     * @author Griefed
+     *
      * @param combination {@link String}-array containing a source-file/directory;destination-file/directory combination.
-     * @param modpackDir {@link String} the modpack-directory.
+     * @param modpackDir  {@link String} the modpack-directory.
      * @param destination {@link String} the destination, normally the server pack-directory.
      * @return List of {@link ServerPackFile}.
+     * @author Griefed
      */
     private List<ServerPackFile> getExplicitFiles(String[] combination, String modpackDir, String destination) {
         List<ServerPackFile> serverPackFiles = new ArrayList<>();
@@ -1552,7 +1572,7 @@ public class ServerPackHandler {
 
             serverPackFiles.addAll(getDirectoryFiles(String.format("%s/%s", modpackDir, combination[0]), destination));
 
-        } else if(new File(combination[0]).isFile()) {
+        } else if (new File(combination[0]).isFile()) {
 
             serverPackFiles.add(new ServerPackFile(
                     combination[0],
@@ -1570,10 +1590,11 @@ public class ServerPackHandler {
 
     /**
      * Gather {@link ServerPackFile}s for a given directory, recursively.
-     * @author Griefed
-     * @param source {@link String} The source-directory.
+     *
+     * @param source            {@link String} The source-directory.
      * @param destination{@link String} The server pack-directory.
      * @return {@link ServerPackFile}-list.
+     * @author Griefed
      */
     private List<ServerPackFile> getDirectoryFiles(String source, String destination) {
         List<ServerPackFile> serverPackFiles = new ArrayList<>();
@@ -1594,7 +1615,7 @@ public class ServerPackHandler {
                                             LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
                                             file,
                                             source
-                                    ),ex
+                                    ), ex
                             );
                         }
                     }
@@ -1610,11 +1631,12 @@ public class ServerPackHandler {
 
     /**
      * Gather all files in the specified save-directory and create {@link ServerPackFile}s from it.
-     * @author Griefed
-     * @param clientDir {@link String} Target directory in the server pack. Usually the name of the world.
-     * @param directory {@link String} The save-directory.
+     *
+     * @param clientDir   {@link String} Target directory in the server pack. Usually the name of the world.
+     * @param directory   {@link String} The save-directory.
      * @param destination {@link String} The destination of the server pack.
      * @return List of {@link ServerPackFile}.
+     * @author Griefed
      */
     private List<ServerPackFile> getSaveFiles(String clientDir, String directory, String destination) {
         List<ServerPackFile> serverPackFiles = new ArrayList<>();
@@ -1635,7 +1657,7 @@ public class ServerPackHandler {
                                             LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.error.copy.directory"),
                                             file,
                                             clientDir
-                                    ),ex
+                                    ), ex
                             );
                         }
                     }
@@ -1652,11 +1674,12 @@ public class ServerPackHandler {
     /**
      * Generates a list of all mods to include in the server pack excluding clientside-only mods. Automatically detects
      * clientside-only mods for Minecraft 1.13+, if the mods <code>mods.toml</code>-file is correctly set up.
-     * @author Griefed
-     * @param modsDir String. The mods-directory of the modpack of which to generate a list of all it's contents.
+     *
+     * @param modsDir                 String. The mods-directory of the modpack of which to generate a list of all it's contents.
      * @param userSpecifiedClientMods List String. A list of all clientside-only mods.
-     * @param minecraftVersion String. The Minecraft version the modpack uses. Determines whether mods are scanned for sideness.
+     * @param minecraftVersion        String. The Minecraft version the modpack uses. Determines whether mods are scanned for sideness.
      * @return List String. A list of all mods to include in the server pack.
+     * @author Griefed
      */
     private List<String> excludeClientMods(String modsDir, List<String> userSpecifiedClientMods, String minecraftVersion, String modloader) {
         /* This log is meant to be read by the user, therefore we allow translation. */
@@ -1664,7 +1687,7 @@ public class ServerPackHandler {
 
         Collection<File> filesInModsDir = FileUtils.listFiles(
                 new File(modsDir),
-                new String[] {"jar"} ,
+                new String[]{"jar"},
                 true
         );
 
@@ -1755,9 +1778,10 @@ public class ServerPackHandler {
 
     /**
      * Check whether the given file is present in the list of directories to exclude from the server pack.
-     * @author Griefed
+     *
      * @param fileToCheckFor String. The string to check for.
      * @return Boolean. Returns true if the file is found in the list of directories to exclude, false if not.
+     * @author Griefed
      */
     private boolean excludeFileOrDirectory(String fileToCheckFor, List<String> exclusions) {
         boolean isPresentInList = false;
@@ -1772,9 +1796,10 @@ public class ServerPackHandler {
 
     /**
      * Copies the server-icon.png into server_pack.
-     * @author Griefed
-     * @param destination String. The destination where the icon should be copied to.
+     *
+     * @param destination      String. The destination where the icon should be copied to.
      * @param pathToServerIcon String. The path to the custom server-icon.
+     * @author Griefed
      */
     private void copyIcon(String destination, String pathToServerIcon) {
 
@@ -1853,16 +1878,17 @@ public class ServerPackHandler {
 
     /**
      * Copies the server.properties into server_pack.
-     * @author Griefed
-     * @param destination String. The destination where the properties should be copied to.
+     *
+     * @param destination            String. The destination where the properties should be copied to.
      * @param pathToServerProperties String. The path to the custom server.properties.
+     * @author Griefed
      */
     private void copyProperties(String destination, String pathToServerProperties) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.copyproperties"));
 
-        File defaultProperties = new File(String.format("%s/%s",destination, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES()));
+        File defaultProperties = new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES()));
 
         if (new File(pathToServerProperties).exists()) {
             try {
@@ -1901,12 +1927,13 @@ public class ServerPackHandler {
 
     /**
      * Installs the modloader server for the specified modloader, modloader version and Minecraft version.
-     * @author Griefed
-     * @param modLoader String. The modloader for which to install the server software. Either Forge or Fabric.
+     *
+     * @param modLoader        String. The modloader for which to install the server software. Either Forge or Fabric.
      * @param minecraftVersion String. The Minecraft version for which to install the modloader and Minecraft server.
      * @param modLoaderVersion String. The modloader version for which to install the modloader and Minecraft server.
-     * @param javaPath String. The path to the Java executable/binary which is needed to execute the Forge/Fabric installersList.
-     * @param destination String. The destination where the modloader server should be installed into.
+     * @param javaPath         String. The path to the Java executable/binary which is needed to execute the Forge/Fabric installersList.
+     * @param destination      String. The destination where the modloader server should be installed into.
+     * @author Griefed
      */
     private void installServer(String modLoader, String minecraftVersion, String modLoaderVersion, String javaPath, String destination) {
 
@@ -2015,7 +2042,9 @@ public class ServerPackHandler {
 
             while (true) {
                 line = bufferedReader.readLine();
-                if (line == null) { break; }
+                if (line == null) {
+                    break;
+                }
                 LOG_INSTALLER.info(line);
             }
 
@@ -2028,7 +2057,7 @@ public class ServerPackHandler {
 
         } catch (IOException ex) {
 
-            LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...",ex);
+            LOG.error("Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...", ex);
 
         } finally {
 
@@ -2061,10 +2090,11 @@ public class ServerPackHandler {
 
     /**
      * Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.<p>
-     * @author Griefed
-     * @param minecraftVersion String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.
+     *
+     * @param minecraftVersion          String. Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is Forge.
      * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR info should be printed.
-     * @param destination String. The destination where the ZIP-archive should be created in.
+     * @param destination               String. The destination where the ZIP-archive should be created in.
+     * @author Griefed
      */
     public void zipBuilder(String minecraftVersion, boolean includeServerInstallation, String destination) {
 
@@ -2108,10 +2138,11 @@ public class ServerPackHandler {
 
     /**
      * Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.
-     * @author Griefed
+     *
      * @param minecraftVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
      * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch scripts provided by ServerPackCreator.
-     * @param destination String. The destination where we should clean up in.
+     * @param destination      String. The destination where we should clean up in.
+     * @author Griefed
      */
     private void cleanUpServerPack(String minecraftVersion, String modLoaderVersion, String destination) {
 
@@ -2151,9 +2182,10 @@ public class ServerPackHandler {
      * If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER</code>, it is added.<br>
      * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
      * If no sideness can be found for a given mod, it is added to prevent false positives.
-     * @author Griefed
+     *
      * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
      * @return List String. List of mods not to include in server pack based on mods.toml-configuration.
+     * @author Griefed
      */
     private List<String> scanTomls(Collection<File> filesInModsDir) {
 
@@ -2376,7 +2408,7 @@ public class ServerPackHandler {
 
                 } catch (Exception ex) {
 
-                    LOG.error("Error acquiring sideness from mod " + mod,ex);
+                    LOG.error("Error acquiring sideness from mod " + mod, ex);
 
                 } finally {
 
@@ -2438,7 +2470,7 @@ public class ServerPackHandler {
 
             } catch (Exception ex) {
 
-                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+                LOG.error("Couldn't acquire modId for mod " + mod, ex);
 
             } finally {
 
@@ -2467,9 +2499,10 @@ public class ServerPackHandler {
      * Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
      * If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not listed as a dependency
      * for another mod, it is added and therefore later on excluded from the server pack.
-     * @author Griefed
+     *
      * @param filesInModsDir A list of files in which to check the <code>fml-cache-annotation.json</code>-files.
      * @return List String. List of mods not to include in server pack based on fml-cache-annotation.json-content.
+     * @author Griefed
      */
     private List<String> scanAnnotations(Collection<File> filesInModsDir) {
 
@@ -2531,7 +2564,7 @@ public class ServerPackHandler {
 
                                         }
 
-                                    // We already received a modId, perform additional checks to prevent false positives
+                                        // We already received a modId, perform additional checks to prevent false positives
                                     } else {
 
                                         try {
@@ -2554,7 +2587,7 @@ public class ServerPackHandler {
 
                                                     }
 
-                                                // ModIDs are different, possibly two mods in one JAR-file.......
+                                                    // ModIDs are different, possibly two mods in one JAR-file.......
                                                 } else {
 
                                                     // Add additional modId to list so we can check those later
@@ -2576,7 +2609,7 @@ public class ServerPackHandler {
 
                                             if (child.get("values").get("dependencies").get("value").asText().contains(";")) {
 
-                                                String [] dependencies = child.get("values").get("dependencies").get("value").asText().split(";");
+                                                String[] dependencies = child.get("values").get("dependencies").get("value").asText().split(";");
 
                                                 for (String dependency : dependencies) {
 
@@ -2685,7 +2718,7 @@ public class ServerPackHandler {
                                                         try {
                                                             if (
                                                                     children.get("values").get("modid").get("value").asText().equals(additionalModId) &&
-                                                                    children.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")
+                                                                            children.get("values").get("clientSideOnly").get("value").asText().equalsIgnoreCase("true")
                                                             ) {
 
                                                                 clientSide = true;
@@ -2719,9 +2752,9 @@ public class ServerPackHandler {
 
                     }
 
-                } catch(IOException ex) {
+                } catch (IOException ex) {
 
-                    LOG.error("Couldn't acquire sideness for mod " + mod,ex);
+                    LOG.error("Couldn't acquire sideness for mod " + mod, ex);
 
                 } finally {
 
@@ -2822,7 +2855,7 @@ public class ServerPackHandler {
 
             } catch (Exception ex) {
 
-                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+                LOG.error("Couldn't acquire modId for mod " + mod, ex);
 
             } finally {
 
@@ -2850,9 +2883,10 @@ public class ServerPackHandler {
      * Scan the <code>fabric.mod.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
      * If <code>environment</code> specifies <code>client</code>, and is not listed as a dependency
      * for another mod, it is added and therefore later on excluded from the server pack.
-     * @author Griefed
+     *
      * @param filesInModsDir A list of files in which to check the <code>fabric.mod.json</code>-files.
      * @return List String. List of mods not to include in server pack based on fabric.mod.json-content.
+     * @author Griefed
      */
     private List<String> scanFabricModJson(Collection<File> filesInModsDir) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scanfabricmodjson"));
@@ -2913,9 +2947,9 @@ public class ServerPackHandler {
 
                     }
 
-                } catch(IOException ex) {
+                } catch (IOException ex) {
 
-                    LOG.error("Couldn't acquire sideness for mod " + mod,ex);
+                    LOG.error("Couldn't acquire sideness for mod " + mod, ex);
 
                 } finally {
 
@@ -2994,7 +3028,7 @@ public class ServerPackHandler {
 
             } catch (Exception ex) {
 
-                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+                LOG.error("Couldn't acquire modId for mod " + mod, ex);
 
             } finally {
 
@@ -3022,9 +3056,10 @@ public class ServerPackHandler {
      * Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their sideness.<br>
      * If <code>minecraft.environment</code> specifies <code>client</code>, and is not listed as a dependency
      * for another mod, it is added and therefore later on excluded from the server pack.
-     * @author Griefed
+     *
      * @param filesInModsDir A list of files in which to check the <code>fabric.mod.json</code>-files.
      * @return List String. List of mods not to include in server pack based on fabric.mod.json-content.
+     * @author Griefed
      */
     private List<String> scanQuiltModJson(Collection<File> filesInModsDir) {
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.scanquiltmodjson"));
@@ -3095,9 +3130,9 @@ public class ServerPackHandler {
 
                     }
 
-                } catch(IOException ex) {
+                } catch (IOException ex) {
 
-                    LOG.error("Couldn't acquire sideness for mod " + mod,ex);
+                    LOG.error("Couldn't acquire sideness for mod " + mod, ex);
 
                 } finally {
 
@@ -3176,7 +3211,7 @@ public class ServerPackHandler {
 
             } catch (Exception ex) {
 
-                LOG.error("Couldn't acquire modId for mod " + mod,ex);
+                LOG.error("Couldn't acquire modId for mod " + mod, ex);
 
             } finally {
 

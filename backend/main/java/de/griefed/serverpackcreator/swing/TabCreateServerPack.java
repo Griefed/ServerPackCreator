@@ -69,6 +69,7 @@ import java.util.concurrent.Executors;
  * The label under the button to start the generation of a new server pack, which displays the latest log entry of the
  * serverpackcreator.log <em>during</em> the creation of a new server pack.<br>
  * If a configuration file is found during startup of ServerPackCreator, it is automatically loaded into the GUI.
+ *
  * @author Griefed
  */
 @Generated
@@ -110,8 +111,8 @@ public class TabCreateServerPack extends JComponent {
     private final ImageIcon ERROR_ICON_SERVERICON = new ImageIcon(ERROR_ICON_BASE.getScaledInstance(ERROR_ICON_SIZE, ERROR_ICON_SIZE, Image.SCALE_SMOOTH));
     private final ImageIcon ERROR_ICON_SERVERPROPERTIES = new ImageIcon(ERROR_ICON_BASE.getScaledInstance(ERROR_ICON_SIZE, ERROR_ICON_SIZE, Image.SCALE_SMOOTH));
 
-    private final Dimension FOLDERBUTTONDIMENSION = new Dimension(24,24);
-    private final Dimension CHOOSERDIMENSION = new Dimension(750,450);
+    private final Dimension FOLDERBUTTONDIMENSION = new Dimension(24, 24);
+    private final Dimension CHOOSERDIMENSION = new Dimension(750, 450);
 
     private final JButton BUTTON_MODPACKDIRECTORY = new JButton();
     private final JButton BUTTON_CLIENTSIDEMODS = new JButton();
@@ -123,11 +124,11 @@ public class TabCreateServerPack extends JComponent {
     private final JButton BUTTON_AIKARS_FLAGS = new JButton();
     private final JButton BUTTON_SERVER_PACKS = new JButton();
 
-    private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20,10,0,0);
-    private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0,10,0,0);
-    private final Insets TEN_TEN_ZERO_ZERO = new Insets(10,10,0,0);
-    private final Insets ZERO_TEN_ZERO_TEN = new Insets(0,10,0,10);
-    private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5,0,5,0);
+    private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20, 10, 0, 0);
+    private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0, 10, 0, 0);
+    private final Insets TEN_TEN_ZERO_ZERO = new Insets(10, 10, 0, 0);
+    private final Insets ZERO_TEN_ZERO_TEN = new Insets(0, 10, 0, 10);
+    private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5, 0, 5, 0);
 
     private final GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
     private final GridBagConstraints TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS = new GridBagConstraints();
@@ -226,7 +227,7 @@ public class TabCreateServerPack extends JComponent {
      * one is null. Required for use of localization.<p>
      * Receives an instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.<p>
      * Receives an instance of {@link ServerPackHandler} which is required to generate a server pack.
-     * @author Griefed
+     *
      * @param injectedLocalizationManager    Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedConfigurationHandler   Instance of {@link ConfigurationHandler} required to successfully and correctly create the server pack.
      * @param injectedServerPackHandler      Instance of {@link ServerPackHandler} required for the generation of server packs.
@@ -239,6 +240,7 @@ public class TabCreateServerPack extends JComponent {
      * @param injectedDarkTheme              Instance of {@link DarkTheme}.
      * @param injectedLightTheme             Instance of {@link LightTheme}.
      * @throws IOException if the {@link VersionMeta} could not be instantiated.
+     * @author Griefed
      */
     public TabCreateServerPack(LocalizationManager injectedLocalizationManager,
                                ConfigurationHandler injectedConfigurationHandler,
@@ -336,16 +338,16 @@ public class TabCreateServerPack extends JComponent {
         try {
             LAZYMODEDOCUMENT.insertString(0,
                     LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0") + "\n\n" +
-                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode1") + "\n" +
-                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode2") + "\n" +
-                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode3") + "\n\n" +
-                        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"),
+                            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode1") + "\n" +
+                            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode2") + "\n" +
+                            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode3") + "\n\n" +
+                            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.copydirs.lazymode0"),
                     LAZYMODEATTRIBUTESET);
         } catch (BadLocationException ex) {
             LOG.error("Error inserting text into aboutDocument.", ex);
         }
 
-        this.NONE = new String[] {LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.forge.none")};
+        this.NONE = new String[]{LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.forge.none")};
 
         this.MINECRAFT_VERSIONS = new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending());
         this.FABRIC_VERSIONS = new DefaultComboBoxModel<>(VERSIONMETA.fabric().loaderVersionsArrayDescending());
@@ -355,8 +357,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Getter for the chosen modloader from the JRadioButtons.
-     * @author Griefed
+     *
      * @return String. Returns either Fabric or Forge.
+     * @author Griefed
      */
     public String getChosenModloader() {
         return chosenModloader;
@@ -364,8 +367,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Getter for the selected modloader version depending on which modloader is currently selected.
-     * @author Griefed
+     *
      * @return String. Returns the modloader version depending on which modloader is currently selected.
+     * @author Griefed
      */
     private String getSelectedModloaderVersion() {
         return chosenModloaderVersion;
@@ -373,35 +377,39 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Getter for the currently set JVM flags / Java args.
-     * @author Griefed
+     *
      * @return String. Returns the currently set JVM flags / Java args.
+     * @author Griefed
      */
     public String getJavaArgs() {
         return javaArgs;
     }
 
     /**
-     * Getter for the current text from the currently set Javapath in the Javapath textfield.
-     * @author Griefed
-     * @return String. Returns the current text from the currently set Javapath in the Javapath textfield.
-     */
-    public String getJavaPath() {
-        return TEXTFIELD_JAVAPATH.getText();
-    }
-
-    /**
      * Setter for the JVM flags / Java args.
-     * @author Griefed
+     *
      * @param javaArgs String. The javaargs to set.
+     * @author Griefed
      */
     public void setJavaArgs(String javaArgs) {
         this.javaArgs = javaArgs;
     }
 
     /**
-     * Getter for the text in the custom server-icon textfield.
+     * Getter for the current text from the currently set Javapath in the Javapath textfield.
+     *
+     * @return String. Returns the current text from the currently set Javapath in the Javapath textfield.
      * @author Griefed
+     */
+    public String getJavaPath() {
+        return TEXTFIELD_JAVAPATH.getText();
+    }
+
+    /**
+     * Getter for the text in the custom server-icon textfield.
+     *
      * @return String. Returns the text in the server-icon textfield.
+     * @author Griefed
      */
     public String getServerIconPath() {
         return TEXTFIELD_SERVERICONPATH.getText();
@@ -409,8 +417,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Getter for the text in the custom server.properties textfield
-     * @author Griefed
+     *
      * @return String. Returns the text in the server.properties textfield.
+     * @author Griefed
      */
     public String getServerPropertiesPath() {
         return TEXTFIELD_SERVERPROPERTIESPATH.getText();
@@ -418,9 +427,10 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Create the tab which displays every component related to configuring ServerPackCreator and creating a server pack.
-     * @author Griefed
+     *
      * @return JComponent. Returns a JPanel everything needed for displaying the TabCreateServerPack.
-     * */
+     * @author Griefed
+     */
     public JComponent createServerPackTab() {
 
         CREATESERVERPACKPANEL.setLayout(new GridBagLayout());
@@ -455,7 +465,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridwidth = 2;
         GRIDBAGCONSTRAINTS.gridx = 4;
         GRIDBAGCONSTRAINTS.gridy = 0;
-        GRIDBAGCONSTRAINTS.insets =  new Insets(20,-140,0,0);
+        GRIDBAGCONSTRAINTS.insets = new Insets(20, -140, 0, 0);
 
         CREATESERVERPACKPANEL.add(labelServerPackSuffix, GRIDBAGCONSTRAINTS);
 
@@ -466,7 +476,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridwidth = 1;
         GRIDBAGCONSTRAINTS.gridx = 4;
         GRIDBAGCONSTRAINTS.gridy = 1;
-        GRIDBAGCONSTRAINTS.insets = new Insets(0,-140,0,0);
+        GRIDBAGCONSTRAINTS.insets = new Insets(0, -140, 0, 0);
 
         CREATESERVERPACKPANEL.add(TEXTFIELD_SERVERPACKSUFFIX, GRIDBAGCONSTRAINTS);
 
@@ -494,11 +504,11 @@ public class TabCreateServerPack extends JComponent {
         TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.weighty = 1;
         TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.weightx = 1;
 
-        CLIENTSIDEMODS_JPANEL.add(SCROLL_PANEL_CLIENTSIDEMODS,TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS);
-        CLIENTSIDEMODS_JPANEL.setSize(100,100);
-        CLIENTSIDEMODS_JPANEL.setPreferredSize(new Dimension(100,100));
-        CLIENTSIDEMODS_JPANEL.setMaximumSize(new Dimension(100,100));
-        CLIENTSIDEMODS_JPANEL.setMinimumSize(new Dimension(100,100));
+        CLIENTSIDEMODS_JPANEL.add(SCROLL_PANEL_CLIENTSIDEMODS, TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS);
+        CLIENTSIDEMODS_JPANEL.setSize(100, 100);
+        CLIENTSIDEMODS_JPANEL.setPreferredSize(new Dimension(100, 100));
+        CLIENTSIDEMODS_JPANEL.setMaximumSize(new Dimension(100, 100));
+        CLIENTSIDEMODS_JPANEL.setMinimumSize(new Dimension(100, 100));
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 3;
@@ -528,11 +538,11 @@ public class TabCreateServerPack extends JComponent {
         TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.weighty = 1;
         TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.weightx = 1;
 
-        COPYDIRECTORIES_JPANEL.add(SCROLL_PANEL_COPYDIRECTORIES,TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS);
-        COPYDIRECTORIES_JPANEL.setSize(100,100);
-        COPYDIRECTORIES_JPANEL.setPreferredSize(new Dimension(100,100));
-        COPYDIRECTORIES_JPANEL.setMaximumSize(new Dimension(100,100));
-        COPYDIRECTORIES_JPANEL.setMinimumSize(new Dimension(100,100));
+        COPYDIRECTORIES_JPANEL.add(SCROLL_PANEL_COPYDIRECTORIES, TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS);
+        COPYDIRECTORIES_JPANEL.setSize(100, 100);
+        COPYDIRECTORIES_JPANEL.setPreferredSize(new Dimension(100, 100));
+        COPYDIRECTORIES_JPANEL.setMaximumSize(new Dimension(100, 100));
+        COPYDIRECTORIES_JPANEL.setMinimumSize(new Dimension(100, 100));
 
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 5;
@@ -569,7 +579,7 @@ public class TabCreateServerPack extends JComponent {
 
         GRIDBAGCONSTRAINTS.gridx = 3;
         GRIDBAGCONSTRAINTS.gridy = 6;
-        GRIDBAGCONSTRAINTS.insets = new Insets(20,-190,0,0);
+        GRIDBAGCONSTRAINTS.insets = new Insets(20, -190, 0, 0);
 
         CREATESERVERPACKPANEL.add(labelServerPropertiesPath, GRIDBAGCONSTRAINTS);
 
@@ -580,7 +590,7 @@ public class TabCreateServerPack extends JComponent {
 
         GRIDBAGCONSTRAINTS.gridx = 3;
         GRIDBAGCONSTRAINTS.gridy = 7;
-        GRIDBAGCONSTRAINTS.insets = new Insets(0,-190,0,0);
+        GRIDBAGCONSTRAINTS.insets = new Insets(0, -190, 0, 0);
 
         CREATESERVERPACKPANEL.add(TEXTFIELD_SERVERPROPERTIESPATH, GRIDBAGCONSTRAINTS);
 
@@ -687,7 +697,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
 
         //Checkbox installServer
-        checkBoxServer = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver"),true);
+        checkBoxServer = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver"), true);
         checkBoxServer.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxserver.tip"));
         checkBoxServer.addActionListener(this::actionEventCheckBoxServer);
 
@@ -697,7 +707,7 @@ public class TabCreateServerPack extends JComponent {
         CREATESERVERPACKPANEL.add(checkBoxServer, GRIDBAGCONSTRAINTS);
 
         //Checkbox copyIcon
-        checkBoxIcon = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon"),true);
+        checkBoxIcon = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon"), true);
         checkBoxIcon.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxicon.tip"));
 
         GRIDBAGCONSTRAINTS.gridx = 1;
@@ -706,7 +716,7 @@ public class TabCreateServerPack extends JComponent {
         CREATESERVERPACKPANEL.add(checkBoxIcon, GRIDBAGCONSTRAINTS);
 
         //Checkbox copyProperties
-        checkBoxProperties = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties"),true);
+        checkBoxProperties = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties"), true);
         checkBoxProperties.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxproperties.tip"));
 
         GRIDBAGCONSTRAINTS.gridx = 2;
@@ -715,7 +725,7 @@ public class TabCreateServerPack extends JComponent {
         CREATESERVERPACKPANEL.add(checkBoxProperties, GRIDBAGCONSTRAINTS);
 
         //Checkbox createZIP
-        checkBoxZIP = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip"),true);
+        checkBoxZIP = new JCheckBox(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip"), true);
         checkBoxZIP.setToolTipText(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.checkboxzip.tip"));
 
         GRIDBAGCONSTRAINTS.gridx = 3;
@@ -729,7 +739,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 15;
         GRIDBAGCONSTRAINTS.gridwidth = 5;
-        GRIDBAGCONSTRAINTS.insets = new Insets(20,10,-19,0);
+        GRIDBAGCONSTRAINTS.insets = new Insets(20, 10, -19, 0);
 
         CREATESERVERPACKPANEL.add(labelJavaArgs, GRIDBAGCONSTRAINTS);
 
@@ -743,11 +753,11 @@ public class TabCreateServerPack extends JComponent {
         TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS.weighty = 1;
         TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS.weightx = 1;
 
-        JAVAARGS_JPANEL.add(SCROLL_PANEL_JAVAARGS,TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS);
-        JAVAARGS_JPANEL.setSize(100,100);
-        JAVAARGS_JPANEL.setPreferredSize(new Dimension(100,100));
-        JAVAARGS_JPANEL.setMaximumSize(new Dimension(100,100));
-        JAVAARGS_JPANEL.setMinimumSize(new Dimension(100,100));
+        JAVAARGS_JPANEL.add(SCROLL_PANEL_JAVAARGS, TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS);
+        JAVAARGS_JPANEL.setSize(100, 100);
+        JAVAARGS_JPANEL.setPreferredSize(new Dimension(100, 100));
+        JAVAARGS_JPANEL.setMaximumSize(new Dimension(100, 100));
+        JAVAARGS_JPANEL.setMinimumSize(new Dimension(100, 100));
 
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
         GRIDBAGCONSTRAINTS.gridwidth = 4;
@@ -862,17 +872,17 @@ public class TabCreateServerPack extends JComponent {
         BUTTON_AIKARS_FLAGS.setContentAreaFilled(false);
         BUTTON_AIKARS_FLAGS.setIcon(
                 new RotatedIcon(
-                    new TextIcon(
-                            BUTTON_AIKARS_FLAGS,
-                            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.javaargs.aikar"),
-                            TextIcon.Layout.HORIZONTAL
-                    ),
-                    RotatedIcon.Rotate.UP
+                        new TextIcon(
+                                BUTTON_AIKARS_FLAGS,
+                                LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.javaargs.aikar"),
+                                TextIcon.Layout.HORIZONTAL
+                        ),
+                        RotatedIcon.Rotate.UP
                 )
         );
         BUTTON_AIKARS_FLAGS.setMultiClickThreshhold(1000);
         //BUTTON_AIKARS_FLAGS.setBorder(BorderFactory.createLineBorder(PRIMARY, 1));
-        BUTTON_AIKARS_FLAGS.setMargin(new Insets(20,20,20,20));
+        BUTTON_AIKARS_FLAGS.setMargin(new Insets(20, 20, 20, 20));
         BUTTON_AIKARS_FLAGS.addActionListener(this::setAikarsFlags);
         addMouseListenerContentAreaFilledToButton(BUTTON_AIKARS_FLAGS);
 
@@ -901,7 +911,7 @@ public class TabCreateServerPack extends JComponent {
         updateStatusLabelForeground();
 
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
-        GRIDBAGCONSTRAINTS.insets = new Insets(0,0,0,0);
+        GRIDBAGCONSTRAINTS.insets = new Insets(0, 0, 0, 0);
         GRIDBAGCONSTRAINTS.gridx = 0;
         GRIDBAGCONSTRAINTS.gridy = 0;
         panel.add(statusLabelLine0, GRIDBAGCONSTRAINTS);
@@ -923,7 +933,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridheight = 2;
         GRIDBAGCONSTRAINTS.weightx = 0;
         GRIDBAGCONSTRAINTS.weighty = 0;
-        GRIDBAGCONSTRAINTS.insets = new Insets(-30,0,0,0);
+        GRIDBAGCONSTRAINTS.insets = new Insets(-30, 0, 0, 0);
         GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
 
         CREATESERVERPACKPANEL.add(panel, GRIDBAGCONSTRAINTS);
@@ -956,7 +966,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridwidth = 1;
         GRIDBAGCONSTRAINTS.weightx = 0;
         GRIDBAGCONSTRAINTS.weighty = 0;
-        GRIDBAGCONSTRAINTS.insets = new Insets(50,20,50,20);
+        GRIDBAGCONSTRAINTS.insets = new Insets(50, 20, 50, 20);
         GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
@@ -982,7 +992,7 @@ public class TabCreateServerPack extends JComponent {
         GRIDBAGCONSTRAINTS.gridwidth = 1;
         GRIDBAGCONSTRAINTS.weightx = 0;
         GRIDBAGCONSTRAINTS.weighty = 0;
-        GRIDBAGCONSTRAINTS.insets = new Insets(50,20,50,20);
+        GRIDBAGCONSTRAINTS.insets = new Insets(50, 20, 50, 20);
         GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
         GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
@@ -1000,6 +1010,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Update the status labels with the current themes font-color and alpha.
+     *
      * @author Griefed
      */
     protected void updateStatusLabelForeground() {
@@ -1013,8 +1024,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Update the labels in the status panel.
-     * @author Griefed
+     *
      * @param text {@link String} The text to update the status with.
+     * @author Griefed
      */
     private void updateStatus(String text) {
         this.statusLabelLine0.setText(statusLabelLine1.getText() + "   ");
@@ -1023,7 +1035,7 @@ public class TabCreateServerPack extends JComponent {
         this.statusLabelLine3.setText(statusLabelLine4.getText() + "   ");
         this.statusLabelLine4.setText(statusLabelLine5.getText() + "   ");
         if (text.length() > 90) {
-            this.statusLabelLine5.setText(text.substring(0,90) + "...    ");
+            this.statusLabelLine5.setText(text.substring(0, 90) + "...    ");
         } else {
             this.statusLabelLine5.setText(text);
         }
@@ -1031,8 +1043,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Upon button-press, open the folder containing generated server packs in the users file-explorer.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     protected void openServerPacksFolder(ActionEvent actionEvent) {
         openServerPacksFolder();
@@ -1040,6 +1053,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Open the folder containing generated server packs in the users file-explorer.
+     *
      * @author Griefed
      */
     protected void openServerPacksFolder() {
@@ -1052,6 +1066,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate all text-based inputfields.
+     *
      * @author Griefed
      */
     public void validateInputFields() {
@@ -1072,6 +1087,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate the inputfield for modpack directory.
+     *
      * @author Griefed
      */
     private void validateModpackDir() {
@@ -1096,6 +1112,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate the inputfield for server pack suffix
+     *
      * @author Griefed
      */
     private void validateSuffix() {
@@ -1117,6 +1134,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate the inputfield for client mods.
+     *
      * @author Griefed
      */
     private void validateClientMods() {
@@ -1138,6 +1156,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate the inputfield for copy directories.
+     *
      * @author Griefed
      */
     private void validateCopyDirs() {
@@ -1173,6 +1192,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate the inputfield for server icon.
+     *
      * @author Griefed
      */
     private void validateServerIcon() {
@@ -1193,6 +1213,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate the inputfield for server properties.
+     *
      * @author Griefed
      */
     private void validateServerProperties() {
@@ -1212,6 +1233,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Validate the inputfield for Java path.
+     *
      * @author Griefed
      */
     private void validateJavaPath() {
@@ -1232,8 +1254,9 @@ public class TabCreateServerPack extends JComponent {
     /**
      * Check the current content of the Java args textarea. If it is empty, set it to Aikars flags, else ask the user
      * whether they want to overwrite the current setting with Aikars flags.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void setAikarsFlags(ActionEvent actionEvent) {
         if (TEXTAREA_JAVAARGS.getText().length() > 0 && !TEXTAREA_JAVAARGS.getText().equalsIgnoreCase("empty")) {
@@ -1263,16 +1286,17 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Sets the text of the Java args textarea to the popular Aikar flags.
+     *
      * @author Griefed
      */
     private void setAikarsFlags() {
         TEXTAREA_JAVAARGS.setText(
                 "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 " +
-                "-XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 " +
-                "-XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 " +
-                "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 " +
-                "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem " +
-                "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true"
+                        "-XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 " +
+                        "-XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 " +
+                        "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 " +
+                        "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem " +
+                        "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true"
         );
     }
 
@@ -1281,8 +1305,9 @@ public class TabCreateServerPack extends JComponent {
      * is defined. If true and empty, a message is displayed, warning the user that Javapath needs to be defined for the
      * modloader-server installation to work. If "Yes" is clicked, a filechooser will open where the user can select their
      * Java-executable/binary. If "No" is selected, the user is warned about the consequences of not setting the Javapath.
-     * @author Griefed
+     *
      * @param actionEvent The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventCheckBoxServer(ActionEvent actionEvent) {
         if (checkBoxServer.isSelected() && TEXTFIELD_JAVAPATH.getText().isEmpty()) {
@@ -1318,8 +1343,9 @@ public class TabCreateServerPack extends JComponent {
     /**
      * Adds a mouse listener to the passed button which sets the content area of said button filled|not-filled when the
      * mouse enters|leaves the button.
-     * @author Griefed
+     *
      * @param buttonToAddMouseListenerTo JButton. The button to add the mouse listener to.
+     * @author Griefed
      */
     private void addMouseListenerContentAreaFilledToButton(JButton buttonToAddMouseListenerTo) {
 
@@ -1336,8 +1362,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Setter for the list of available Forge versions depending on the passed Minecraft version.
-     * @author Griefed
+     *
      * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list of available Forge versions.
+     * @author Griefed
      */
     private void updateForgeComboBoxVersions(@Nullable String chosenMinecraftVersion) {
 
@@ -1354,8 +1381,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Setter for the Minecraft version depending on which one is selected in the GUI.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventComboBoxMinecraftVersion(ActionEvent event) {
 
@@ -1373,8 +1401,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Setter for the modloader depending on which one is selected in the GUI.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void actionEventComboBoxModloaders(ActionEvent event) {
 
@@ -1391,8 +1420,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Helper method which changes various states of GUI components.
-     * @author Griefed
+     *
      * @param modloader String. The modloader to set.
+     * @author Griefed
      */
     private void updateModloaderGuiComponents(String modloader) {
 
@@ -1435,8 +1465,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Upon button-press, open a file-selector for the modpack-directory.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void selectModpackDirectory(ActionEvent event) {
 
@@ -1475,8 +1506,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Upon button-press, open a file-selector for the server-icon.png.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void selectServerIcon(ActionEvent event) {
 
@@ -1485,7 +1517,7 @@ public class TabCreateServerPack extends JComponent {
         serverIconChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
         serverIconChooser.setDialogTitle(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.chooser.icon.title"));
         serverIconChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        serverIconChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.chooser.icon.filter"), "png","jpg","jpeg","bmp"));
+        serverIconChooser.setFileFilter(new FileNameExtensionFilter(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.chooser.icon.filter"), "png", "jpg", "jpeg", "bmp"));
         serverIconChooser.setAcceptAllFileFilterUsed(false);
         serverIconChooser.setMultiSelectionEnabled(false);
         serverIconChooser.setPreferredSize(CHOOSERDIMENSION);
@@ -1493,7 +1525,7 @@ public class TabCreateServerPack extends JComponent {
         if (serverIconChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
             try {
 
-                TEXTFIELD_SERVERICONPATH.setText(serverIconChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
+                TEXTFIELD_SERVERICONPATH.setText(serverIconChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
             } catch (IOException ex) {
                 LOG.error("Error getting the icon-file for the server pack.", ex);
@@ -1503,8 +1535,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Upon button-press, open a file-selector for the server.properties.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void selectServerProperties(ActionEvent event) {
 
@@ -1521,7 +1554,7 @@ public class TabCreateServerPack extends JComponent {
         if (serverPropertiesChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
             try {
 
-                TEXTFIELD_SERVERPROPERTIESPATH.setText(serverPropertiesChooser.getSelectedFile().getCanonicalPath().replace("\\","/"));
+                TEXTFIELD_SERVERPROPERTIESPATH.setText(serverPropertiesChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
             } catch (IOException ex) {
                 LOG.error("Error getting the properties-file for the server pack.", ex);
@@ -1533,8 +1566,9 @@ public class TabCreateServerPack extends JComponent {
     /**
      * Upon button-press, open a file-selector for clientside-only mods. If the modpack-directory is specified, the file-selector
      * will open in the mods-directory in the modpack-directory.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void selectClientMods(ActionEvent event) {
 
@@ -1583,8 +1617,9 @@ public class TabCreateServerPack extends JComponent {
     /**
      * Upon button-press, open a file-selector for directories which are to be copied to the server pack. If the modpack-directory
      * is specified, the file-selector will be opened in the modpack-directory.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void selectCopyDirs(ActionEvent event) {
 
@@ -1620,8 +1655,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Upon button-press, open a file-selector to select the Java-executable.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void selectJavaInstallation(ActionEvent event) {
         chooseJava();
@@ -1629,6 +1665,7 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Opens a filechooser to select the Java-executable/binary.
+     *
      * @author Griefed
      */
     void chooseJava() {
@@ -1665,8 +1702,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Upon button-press, check the entered configuration and if successfull, generate a server pack.
-     * @author Griefed
+     *
      * @param event The event which triggers this method.
+     * @author Griefed
      */
     private void generateServerpack(ActionEvent event) {
 
@@ -1778,7 +1816,7 @@ public class TabCreateServerPack extends JComponent {
 
                 } catch (Exception ex) {
 
-                    LOG.error("An error occurred when generating the server pack.",ex);
+                    LOG.error("An error occurred when generating the server pack.", ex);
 
                 }
 
@@ -1799,7 +1837,7 @@ public class TabCreateServerPack extends JComponent {
                     JOptionPane.showMessageDialog(
                             FRAME_SERVERPACKCREATOR,
                             errors,
-                            String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.errors.encountered"),encounteredErrors.size()),
+                            String.format(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.errors.encountered"), encounteredErrors.size()),
                             JOptionPane.ERROR_MESSAGE,
                             UIManager.getIcon("OptionPane.errorIcon")
                     );
@@ -1821,21 +1859,22 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * Save the current configuration to a specified file.
-     * @author Griefed
+     *
      * @param configFile File. The file to store the configuration under.
+     * @author Griefed
      */
     void saveConfig(File configFile) {
         List<String> tempClientMods = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTAREA_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
         List<String> tempCopyDirs = UTILITIES.ListUtils().cleanList(new ArrayList<>(Arrays.asList(TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
 
         CONFIGUTILITIES.writeConfigToFile(
-                TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\","/"),
+                TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\", "/"),
                 tempClientMods,
                 tempCopyDirs,
-                TEXTFIELD_SERVERICONPATH.getText().replace("\\","/"),
-                TEXTFIELD_SERVERPROPERTIESPATH.getText().replace("\\","/"),
+                TEXTFIELD_SERVERICONPATH.getText().replace("\\", "/"),
+                TEXTFIELD_SERVERPROPERTIESPATH.getText().replace("\\", "/"),
                 checkBoxServer.isSelected(),
-                TEXTFIELD_JAVAPATH.getText().replace("\\","/"),
+                TEXTFIELD_JAVAPATH.getText().replace("\\", "/"),
                 chosenMinecraftVersion,
                 chosenModloader,
                 chosenModloaderVersion,
@@ -1850,8 +1889,9 @@ public class TabCreateServerPack extends JComponent {
 
     /**
      * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into ServerPackCreator.
-     * @author Griefed
+     *
      * @param configFile File. The configuration file to parse and load into the GUI.
+     * @author Griefed
      */
     protected void loadConfig(File configFile) {
 
@@ -2051,6 +2091,7 @@ public class TabCreateServerPack extends JComponent {
     /**
      * Load default values for textfields so the user can start with a new configuration. Just as if ServerPackCreator
      * was started without a serverpackcreator.conf being present.
+     *
      * @author Griefed
      */
     protected void clearInterface() {

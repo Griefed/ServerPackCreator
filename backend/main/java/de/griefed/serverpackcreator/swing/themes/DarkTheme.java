@@ -32,6 +32,7 @@ import java.awt.*;
 /**
  * This is the dark-theme which ServerPackCreator uses. It is based on {@link JMarsDarkTheme} via <code>extends</code>
  * which allows us to use the base dark-theme as a starting point but changing every aspect of it in whatever way we like.
+ *
  * @author Griefed
  */
 @Generated

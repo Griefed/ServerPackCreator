@@ -29,6 +29,7 @@ import java.util.Optional;
 /**
  * An instance of a complete Forge combination, containing a Minecraft version, related Forge version and the URL to the
  * server installer.
+ *
  * @author Griefed
  */
 public class ForgeInstance {
@@ -40,11 +41,12 @@ public class ForgeInstance {
 
     /**
      * Constructor.
-     * @author Griefed
+     *
      * @param minecraftVersion {@link String} Minecraft version.
-     * @param forgeVersion {@link String} Forge version.
-     * @param minecraftMeta {@link MinecraftMeta} The corresponding Minecraft client for this Forge version.
+     * @param forgeVersion     {@link String} Forge version.
+     * @param minecraftMeta    {@link MinecraftMeta} The corresponding Minecraft client for this Forge version.
      * @throws MalformedURLException if the URL to the download of the Forge server installer could not be created.
+     * @author Griefed
      */
     public ForgeInstance(String minecraftVersion, String forgeVersion, MinecraftMeta minecraftMeta) throws MalformedURLException {
         this.MINECRAFT_VERSION = minecraftVersion;
@@ -55,8 +57,9 @@ public class ForgeInstance {
 
     /**
      * Get the Minecraft version of this Forge instance.
-     * @author Griefed
+     *
      * @return {@link String} Minecraft version.
+     * @author Griefed
      */
     public String minecraftVersion() {
         return MINECRAFT_VERSION;
@@ -64,8 +67,9 @@ public class ForgeInstance {
 
     /**
      * Get the Forge version of this Forge instance.
-     * @author Griefed
+     *
      * @return {@link String} Forge version.
+     * @author Griefed
      */
     public String forgeVersion() {
         return FORGE_VERSION;
@@ -73,8 +77,9 @@ public class ForgeInstance {
 
     /**
      * Get the URL to the Forge server installer for this instances Minecraft and Forge version.
-     * @author Griefed
+     *
      * @return Download {@link URL} to the Forge server installer JAR-file.
+     * @author Griefed
      */
     public URL installerUrl() {
         return INSTALLER_URL;
@@ -82,8 +87,9 @@ public class ForgeInstance {
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an {@link Optional}
-     * @author Griefed
+     *
      * @return {@link MinecraftClient} wrapped in an {@link Optional}.
+     * @author Griefed
      */
     public Optional<MinecraftClient> minecraftClient() {
         return MINECRAFT_META.getClient(this.MINECRAFT_VERSION);

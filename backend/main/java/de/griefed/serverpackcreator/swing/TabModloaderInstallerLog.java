@@ -32,6 +32,7 @@ import java.util.Properties;
 
 /**
  * This class creates the tab which display the latest modloader_installer.log tailer.
+ *
  * @author Griefed
  */
 @Generated
@@ -47,9 +48,10 @@ public class TabModloaderInstallerLog extends JComponentTailer {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     *
+     * @param injectedLocalizationManager   Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
+     * @author Griefed
      */
     public TabModloaderInstallerLog(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
         if (injectedApplicationProperties == null) {
@@ -66,7 +68,6 @@ public class TabModloaderInstallerLog extends JComponentTailer {
     }
 
     /**
-     *
      * @author Griefed
      */
     @Override
@@ -79,7 +80,7 @@ public class TabModloaderInstallerLog extends JComponentTailer {
                     i = 0;
                 }
                 if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.fabric.enter")) ||
-                    line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"))) {
+                        line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.installserver.forge.enter"))) {
 
                     textArea.setText("");
                 }

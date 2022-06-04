@@ -44,6 +44,7 @@ import java.util.*;
  * If no file can be found for the specified locale, ServerPackCreator tries to load language definitions from inside the JAR-file,
  * from the resource bundles. If the specified key can not be retrieved when calling {@link #getLocalizedString(String)}, a default
  * is retrieved from the lang_en_us-bundle inside the JAR-file by default.
+ *
  * @author whitebear60
  * @author Griefed
  */
@@ -60,9 +61,9 @@ public class LocalizationManager {
     private final String MAP_PATH_COUNTRY = "country";
     private final List<String> SUPPORTED_LANGUAGES = new ArrayList<>(
             Arrays.asList(
-                "en_us",
-                "uk_ua",
-                "de_de"
+                    "en_us",
+                    "uk_ua",
+                    "de_de"
             )
     );
 
@@ -74,8 +75,9 @@ public class LocalizationManager {
      * Constructor for our LocalizationManager using the locale set in the {@link ApplicationProperties}-instance passed
      * to this constructor. If initialization with the provided {@link ApplicationProperties}-instance fails, the
      * LocalizationManager is initialized with the default locale <code>en_us</code>.
-     * @author Griefed
+     *
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for various different things.
+     * @author Griefed
      */
     @Autowired
     public LocalizationManager(ApplicationProperties injectedApplicationProperties) {
@@ -96,11 +98,12 @@ public class LocalizationManager {
      * Constructor for our LocalizationManager with a given locale. If initialization with the provided locale fails, the
      * LocalizationManager is initialized with the locale set in the instance of {@link ApplicationProperties}. If this
      * also fails, the default locale <code>en_us</code> is used.
-     * @author Griefed
+     *
      * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for various different things.
-     * @param locale String. The locale to initialize with.
+     * @param locale                        String. The locale to initialize with.
+     * @author Griefed
      */
-    public LocalizationManager(ApplicationProperties injectedApplicationProperties,String locale) {
+    public LocalizationManager(ApplicationProperties injectedApplicationProperties, String locale) {
         if (injectedApplicationProperties == null) {
             this.APPLICATIONPROPERTIES = new ApplicationProperties();
         } else {
@@ -122,6 +125,7 @@ public class LocalizationManager {
 
     /**
      * Constructor for our LocalizationManager using the default locale en_us.
+     *
      * @author Griefed
      */
     public LocalizationManager() {
@@ -132,6 +136,7 @@ public class LocalizationManager {
 
     /**
      * Initialize the LocalizationManager with en_us as the locale.
+     *
      * @author whitebear60
      */
     public void initialize() {
@@ -144,17 +149,18 @@ public class LocalizationManager {
 
     /**
      * Initializes the LocalizationManager with a provided localePropertiesFile.
-     * @author whitebear60
-     * @author Griefed
+     *
      * @param propertiesFile Path to the locale properties file which specifies the language to use.
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
-     * ServerPackCreator or specified in the invalid format.
+     *                                    ServerPackCreator or specified in the invalid format.
+     * @author whitebear60
+     * @author Griefed
      */
-    public void initialize(File propertiesFile) throws IncorrectLanguageException{
+    public void initialize(File propertiesFile) throws IncorrectLanguageException {
 
         ApplicationProperties applicationProperties = new ApplicationProperties();
 
-        try (FileInputStream fileInputStream = new FileInputStream(propertiesFile)){
+        try (FileInputStream fileInputStream = new FileInputStream(propertiesFile)) {
 
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
             applicationProperties.load(bufferedReader);
@@ -162,7 +168,7 @@ public class LocalizationManager {
             LOG.debug("Properties-file used for i18n: " + applicationProperties);
 
         } catch (Exception ex) {
-            LOG.error("Couldn't load properties-file for i18n: " + applicationProperties,ex);
+            LOG.error("Couldn't load properties-file for i18n: " + applicationProperties, ex);
         }
 
         initialize(applicationProperties);
@@ -170,23 +176,25 @@ public class LocalizationManager {
 
     /**
      * Initializes the LocalizationManager with a provided localePropertiesFile.
-     * @author whitebear60
-     * @author Griefed
+     *
      * @param applicationProperties Instance of {@link ApplicationProperties} containing the locale to use.
      * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
-     * ServerPackCreator or specified in the invalid format.
+     *                                    ServerPackCreator or specified in the invalid format.
+     * @author whitebear60
+     * @author Griefed
      */
-    public void initialize(ApplicationProperties applicationProperties) throws IncorrectLanguageException{
+    public void initialize(ApplicationProperties applicationProperties) throws IncorrectLanguageException {
         initialize(applicationProperties.getProperty("de.griefed.serverpackcreator.language", "en_us"));
     }
 
     /**
      * Initializes the LocalizationManager with a provided locale.
+     *
+     * @param locale Locale to be used by application in this run.
+     * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
+     *                                    ServerPackCreator or specified in the invalid format.
      * @author whitebear60
      * @author Griefed
-     * @throws IncorrectLanguageException Thrown if the language specified in the properties file is not supported by
-     * ServerPackCreator or specified in the invalid format.
-     * @param locale Locale to be used by application in this run.
      */
     public void initialize(String locale) throws IncorrectLanguageException {
 
@@ -282,10 +290,11 @@ public class LocalizationManager {
     /**
      * Acquires a localized String for the provided language key from the initialized locale resource.
      * If the specified langkey can not be found in the lang-file loaded, a fallback from the en_us-definitions is used.
-     * @author whitebear60
-     * @author Griefed
+     *
      * @param languageKey The language key to search for.
      * @return Localized string that is referred to by the language key.
+     * @author whitebear60
+     * @author Griefed
      */
     public String getLocalizedString(String languageKey) {
 
@@ -295,7 +304,7 @@ public class LocalizationManager {
 
         try {
 
-            value =  filesystemResources.getString(languageKey);
+            value = filesystemResources.getString(languageKey);
 
         } catch (MissingResourceException ex) {
 
@@ -346,8 +355,9 @@ public class LocalizationManager {
      * of serverpackcreator is executed using said locale. This method should <strong>not</strong> call
      * {@link #getLocalizedString(String)}, as the initialization of said manager is called from here. Therefore,
      * localized strings are not yet available.
-     * @author Griefed
+     *
      * @param locale The locale the user specified when they ran serverpackcreator with -lang -your_locale.
+     * @author Griefed
      */
     void writeLocaleToFile(String locale) {
         try (OutputStream outputStream = Files.newOutputStream(PROPERTIESFILE.toPath())) {

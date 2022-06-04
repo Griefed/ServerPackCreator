@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.spring.task.Task;
 
 /**
  * Task for generating a server pack from a modpack ZIP-archive.
+ *
  * @author Griefed
  */
 public class GenerateZip extends Task {
@@ -31,9 +32,10 @@ public class GenerateZip extends Task {
 
     /**
      * Create a message with a task for a Zip generation.
-     * @author Griefed
+     *
      * @param zipGenerationProperties {@link String} The concatenated String which contains all information with which a server pack will be
-     * generated from. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
+     *                                generated from. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
+     * @author Griefed
      */
     public GenerateZip(String zipGenerationProperties) {
         this.zipGenerationProperties = zipGenerationProperties;
@@ -42,15 +44,19 @@ public class GenerateZip extends Task {
     /**
      * Getter for the concatenated String which contains all information with which a server pack will be
      * generated from. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
-     * @author Griefed
+     *
      * @return {@link String}. The String from which to generate a server pack.
+     * @author Griefed
      */
-    public String getZipGenerationProperties() { return zipGenerationProperties; }
+    public String getZipGenerationProperties() {
+        return zipGenerationProperties;
+    }
 
     /**
      * Getter for the unique id of the submitted task.
-     * @author Griefed
+     *
      * @return String. Returns the unique id of the submitted task.
+     * @author Griefed
      */
     @Override
     public String uniqueId() {

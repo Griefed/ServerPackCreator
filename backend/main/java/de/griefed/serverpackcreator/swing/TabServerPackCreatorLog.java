@@ -32,6 +32,7 @@ import java.util.Properties;
 
 /**
  * This class creates the tab which display the latest serverpackcreator.log tailer.
+ *
  * @author Griefed
  */
 @Generated
@@ -45,9 +46,10 @@ public class TabServerPackCreatorLog extends JComponentTailer {
      * Used for Dependency Injection.<p>
      * Receives an instance of {@link LocalizationManager} or creates one if the received
      * one is null. Required for use of localization.
-     * @author Griefed
-     * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for localized log messages.
+     *
+     * @param injectedLocalizationManager   Instance of {@link LocalizationManager} required for localized log messages.
      * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
+     * @author Griefed
      */
     public TabServerPackCreatorLog(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
         if (injectedApplicationProperties == null) {
@@ -64,7 +66,6 @@ public class TabServerPackCreatorLog extends JComponentTailer {
     }
 
     /**
-     *
      * @author Griefed
      */
     @Override

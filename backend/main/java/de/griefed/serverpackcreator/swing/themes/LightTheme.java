@@ -33,6 +33,7 @@ import java.awt.*;
 /**
  * This is the light-theme which ServerPackCreator uses. It is based on {@link MaterialLiteTheme} via <code>extends</code>
  * which allows us to use the base light-theme as a starting point but changing every aspect of it in whatever way we like.
+ *
  * @author Griefed
  */
 @Generated
@@ -83,7 +84,7 @@ public class LightTheme extends MaterialLiteTheme {
         this.backgroundPrimary = new ColorUIResource(240, 240, 240);
         this.highlightBackgroundPrimary = new ColorUIResource(0, 188, 212);
 
-        this.textColor = new ColorUIResource(0,0,0);
+        this.textColor = new ColorUIResource(0, 0, 0);
         this.textErrorColour = Color.magenta;
         this.disableTextColor = new ColorUIResource(148, 167, 176);
 

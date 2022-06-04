@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.versionmeta;
 
 /**
  * Enums for various aspects of the VersionMeta.
+ *
  * @author Griefed
  */
 public enum Type {

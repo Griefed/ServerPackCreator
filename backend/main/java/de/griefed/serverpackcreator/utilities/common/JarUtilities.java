@@ -35,6 +35,7 @@ import java.util.jar.JarFile;
 
 /**
  * Some utilities used across ServerPackCreator, revolving around interacting with JAR-files.
+ *
  * @author Griefed
  */
 public class JarUtilities {
@@ -51,10 +52,11 @@ public class JarUtilities {
      * Example:<br>
      * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from inside the JAR-file to be copied
      * to the outside of the JAR-file as <code>log4j2.xml</code>
-     * @author Griefed
-     * @param fileToCopy File. The source-file in the JAR you wish to copy outside the JAR.
-     * @param replace Boolean. Whether to replace the file, if it already exists.
+     *
+     * @param fileToCopy      File. The source-file in the JAR you wish to copy outside the JAR.
+     * @param replace         Boolean. Whether to replace the file, if it already exists.
      * @param classToCopyFrom Class. The class of the JAR from which you want to copy from.
+     * @author Griefed
      */
     public void copyFileFromJar(File fileToCopy, boolean replace, Class<?> classToCopyFrom) {
 
@@ -81,9 +83,10 @@ public class JarUtilities {
      * Example:<br>
      * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from inside the JAR-file to be copied
      * to the outside of the JAR-file as <code>log4j2.xml</code>
-     * @author Griefed
-     * @param fileToCopy File. The source-file in the JAR you wish to copy outside the JAR.
+     *
+     * @param fileToCopy      File. The source-file in the JAR you wish to copy outside the JAR.
      * @param classToCopyFrom Class. The class of the JAR from which to get the resource.
+     * @author Griefed
      */
     public void copyFileFromJar(File fileToCopy, Class<?> classToCopyFrom) {
 
@@ -109,9 +112,10 @@ public class JarUtilities {
 
     /**
      * Retrieve the ApplicationHome for a given class.
-     * @author Griefed
+     *
      * @param classToRetrieveHomeFor Class. The class to retrieve the {@link ApplicationHome} for.
      * @return ApplicationHome. An instance of {@link ApplicationHome} for the given class.
+     * @author Griefed
      */
     public ApplicationHome getApplicationHomeForClass(Class<?> classToRetrieveHomeFor) {
         return new ApplicationHome(classToRetrieveHomeFor);
@@ -126,46 +130,48 @@ public class JarUtilities {
      * osArch - Architecture of the system.<br>
      * osName - Name of the operating system.<br>
      * osVersion - Version of the operating system.<br>
-     * @author Griefed
+     *
      * @param applicationHome Instance of {@link ApplicationHome} from which to gather information about the JAR-file and system.
      * @return HashMap String-String. A hashmap containing key-value-pairs with information about the JAR-file and system.
+     * @author Griefed
      */
     public HashMap<String, String> systemInformation(ApplicationHome applicationHome) {
 
         HashMap<String, String> sysInfo = new HashMap<>();
 
         try {
-            sysInfo.put("jarPath"    ,applicationHome.getSource().toString().replace("\\", "/"));
+            sysInfo.put("jarPath", applicationHome.getSource().toString().replace("\\", "/"));
         } catch (Exception ex) {
-            sysInfo.put("jarPath"    ,applicationHome.getDir().toString().replace("\\", "/"));
+            sysInfo.put("jarPath", applicationHome.getDir().toString().replace("\\", "/"));
         }
 
         try {
-            sysInfo.put("jarName"    ,applicationHome.getSource().toString().replace("\\", "/").substring(applicationHome.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1));
+            sysInfo.put("jarName", applicationHome.getSource().toString().replace("\\", "/").substring(applicationHome.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1));
         } catch (Exception ex) {
-            sysInfo.put("jarName"    ,applicationHome.getDir().toString().replace("\\", "/").substring(applicationHome.getDir().toString().replace("\\", "/").lastIndexOf("/") + 1));
+            sysInfo.put("jarName", applicationHome.getDir().toString().replace("\\", "/").substring(applicationHome.getDir().toString().replace("\\", "/").lastIndexOf("/") + 1));
         }
 
-        sysInfo.put("javaVersion",System.getProperty("java.version"));
-        sysInfo.put("osArch"     ,System.getProperty("os.arch"));
-        sysInfo.put("osName"     ,System.getProperty("os.name"));
-        sysInfo.put("osVersion"  ,System.getProperty("os.version"));
+        sysInfo.put("javaVersion", System.getProperty("java.version"));
+        sysInfo.put("osArch", System.getProperty("os.arch"));
+        sysInfo.put("osName", System.getProperty("os.name"));
+        sysInfo.put("osVersion", System.getProperty("os.version"));
 
         return sysInfo;
     }
 
     /**
      * Retrieve the JAR-file for a given class.
-     * @author Griefed
+     *
      * @param classToRetrieveJarFor The class to retrieve the JAR-file path for.
      * @return JarFile. Returns the JarFile for the given class.
      * @throws IOException Thrown if the JAR-file could not be determined or otherwise accessed.
+     * @author Griefed
      */
     private JarFile retrieveJarFromClass(Class<?> classToRetrieveJarFor) throws IOException {
         return new JarFile(
                 new File(
                         new ApplicationHome(classToRetrieveJarFor)
-                                .getSource().toString().replace("\\","/")
+                                .getSource().toString().replace("\\", "/")
                 )
         );
     }
@@ -173,32 +179,33 @@ public class JarUtilities {
     /**
      * Copy a folder from inside a JAR-file to the host filesystem. The specified folder will be copied, along with all
      * resources inside it, recursively, to the specified destination.<br>
-     * @author Griefed
+     *
      * @param classToRetrieveHomeFor String. Path to either the JAR-file from which to copy a folder from, or to the class when running
-     *                in a dev-environment. This parameter decides whether {@link #copyFolderFromJar(Class,String, String, String)} or
-     *                {@link #copyFolderFromJar(JarFile, String, String, String, String)} is called.<br>
-     *                Example for JAR-file: <code>/home/griefed/serverpackcreator/serverpackcreator.jar</code><br>
-     *                Example for dev-environment: <code>G:/GitLab/ServerPackCreator/build/classes/java/main</code><br>
-     *                See {@link Main#main(String[])} source code for an example on how this is acquired automatically.
-     * @param directoryToCopy String. Path to the directory inside the JAR-file you want to copy.
-     * @param destinationDirectory String. Path to the destination directory you want to copy source to.
-     * @param jarDirectoryPrefix String. A prefix to remove when checking for existence of source inside the JAR-file. For example,
-     *                           the ServerPackCreator files inside it's JAR-File are located in <code>BOOT-INF/classes</code> due
-     *                           to SpringBoot. In order to correctly scan for source, we need to remove that prefix, so we receive
-     *                           a path that looks like a regular path inside a JAR-file.
-     * @param fileEnding String. The file-ending to filter for.
+     *                               in a dev-environment. This parameter decides whether {@link #copyFolderFromJar(Class, String, String, String)} or
+     *                               {@link #copyFolderFromJar(JarFile, String, String, String, String)} is called.<br>
+     *                               Example for JAR-file: <code>/home/griefed/serverpackcreator/serverpackcreator.jar</code><br>
+     *                               Example for dev-environment: <code>G:/GitLab/ServerPackCreator/build/classes/java/main</code><br>
+     *                               See {@link Main#main(String[])} source code for an example on how this is acquired automatically.
+     * @param directoryToCopy        String. Path to the directory inside the JAR-file you want to copy.
+     * @param destinationDirectory   String. Path to the destination directory you want to copy source to.
+     * @param jarDirectoryPrefix     String. A prefix to remove when checking for existence of source inside the JAR-file. For example,
+     *                               the ServerPackCreator files inside it's JAR-File are located in <code>BOOT-INF/classes</code> due
+     *                               to SpringBoot. In order to correctly scan for source, we need to remove that prefix, so we receive
+     *                               a path that looks like a regular path inside a JAR-file.
+     * @param fileEnding             String. The file-ending to filter for.
      * @throws IOException Exception thrown if a file can not be accessed, found or otherwise worked with.
+     * @author Griefed
      */
     public void copyFolderFromJar(Class<?> classToRetrieveHomeFor, String directoryToCopy, String destinationDirectory, String jarDirectoryPrefix,
                                   String fileEnding) throws IOException {
 
-        HashMap<String,String> systemInformation = systemInformation(
+        HashMap<String, String> systemInformation = systemInformation(
                 getApplicationHomeForClass(classToRetrieveHomeFor)
         );
 
         if (!new File(systemInformation.get("jarName")).isFile()) {
             // Dev environment
-            copyFolderFromJar(classToRetrieveHomeFor,directoryToCopy, destinationDirectory, fileEnding);
+            copyFolderFromJar(classToRetrieveHomeFor, directoryToCopy, destinationDirectory, fileEnding);
         } else {
             // Production
             copyFolderFromJar(retrieveJarFromClass(classToRetrieveHomeFor), directoryToCopy, destinationDirectory, jarDirectoryPrefix, fileEnding);
@@ -210,28 +217,29 @@ public class JarUtilities {
      * Copy a folder from inside a JAR-file to the host filesystem. The specified folder will be copied, along with all
      * resources inside it, recursively, to the specified destination.<br>
      * This method is used when we are running in a JAR-file.
-     * @author Griefed
-     * @param jarToCopyFrom JarFile. The JAR-file to copy directoryToCopy to destinationDirectory from.
-     * @param directoryToCopy String. Path to the directory inside the JAR-file you want to copy.
+     *
+     * @param jarToCopyFrom        JarFile. The JAR-file to copy directoryToCopy to destinationDirectory from.
+     * @param directoryToCopy      String. Path to the directory inside the JAR-file you want to copy.
      * @param destinationDirectory String. Path to the destination directory you want to copy source to.
-     * @param jarDirectoryPrefix String. A prefix to remove when checking for existence of source inside the JAR-file. For example,
-     *                           the ServerPackCreator files inside it's JAR-File are located in <code>BOOT-INF/classes</code> due
-     *                           to SpringBoot. In order to correctly scan for source, we need to remove that prefix, so we receive
-     *                           a path that looks like a regular path inside a JAR-file.
-     * @param fileEnding String. The file-ending to filter for.
+     * @param jarDirectoryPrefix   String. A prefix to remove when checking for existence of source inside the JAR-file. For example,
+     *                             the ServerPackCreator files inside it's JAR-File are located in <code>BOOT-INF/classes</code> due
+     *                             to SpringBoot. In order to correctly scan for source, we need to remove that prefix, so we receive
+     *                             a path that looks like a regular path inside a JAR-file.
+     * @param fileEnding           String. The file-ending to filter for.
      * @throws IOException Thrown if no streams of the files can be created, indicating that they are inaccessible for some reason.
+     * @author Griefed
      */
     private void copyFolderFromJar(JarFile jarToCopyFrom, String directoryToCopy, String destinationDirectory, String jarDirectoryPrefix, String fileEnding) throws IOException {
 
-        for (Enumeration<JarEntry> entries = jarToCopyFrom.entries(); entries.hasMoreElements();) {
+        for (Enumeration<JarEntry> entries = jarToCopyFrom.entries(); entries.hasMoreElements(); ) {
 
             JarEntry entry = entries.nextElement();
 
             String entryName = entry.getName();
 
-            if (entryName.replace(jarDirectoryPrefix,"").startsWith(directoryToCopy + "/") && !entry.isDirectory() && entryName.endsWith(fileEnding)) {
+            if (entryName.replace(jarDirectoryPrefix, "").startsWith(directoryToCopy + "/") && !entry.isDirectory() && entryName.endsWith(fileEnding)) {
 
-                File destination = new File(destinationDirectory + "/" + entryName.substring(entryName.replace("\\","/").lastIndexOf("/") + 1));
+                File destination = new File(destinationDirectory + "/" + entryName.substring(entryName.replace("\\", "/").lastIndexOf("/") + 1));
 
                 if (!destination.exists()) {
 
@@ -315,11 +323,12 @@ public class JarUtilities {
      * Copy a folder from inside our dev-resources to the host filesystem, using a source and a destination.<br>
      * This method is used in case we are running in a dev environment, where files are not wrapped in a JAR-file, but instead
      * exist as regular files on the host filesystem, thus enabling us to iterate through 'em.
-     * @author Griefed
+     *
      * @param classToCopyFrom {@link Class}
-     * @param source {@link File} The source-file in the JAR you wish to copy outside the JAR.
-     * @param destination {@link File} The destination where the source-file should be copied to.
-     * @param fileEnding {@link String} The file-ending to filter for.
+     * @param source          {@link File} The source-file in the JAR you wish to copy outside the JAR.
+     * @param destination     {@link File} The destination where the source-file should be copied to.
+     * @param fileEnding      {@link String} The file-ending to filter for.
+     * @author Griefed
      */
     private void copyFolderFromJar(Class<?> classToCopyFrom, String source, String destination, String fileEnding) {
 

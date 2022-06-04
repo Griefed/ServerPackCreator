@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * Meta containing information about Minecraft servers.
+ *
  * @author Griefed
  */
 class MinecraftServerMeta {
@@ -38,8 +39,9 @@ class MinecraftServerMeta {
 
     /**
      * Constructor.
-     * @author Griefed
+     *
      * @param minecraftClientMeta Instance of {@link MinecraftClientMeta}.
+     * @author Griefed
      */
     protected MinecraftServerMeta(MinecraftClientMeta minecraftClientMeta) {
         this.MINECRAFT_CLIENT_META = minecraftClientMeta;
@@ -47,8 +49,9 @@ class MinecraftServerMeta {
 
     /**
      * Update this instance of {@link MinecraftServerMeta} with new information.
-     * @author Griefed
+     *
      * @return This instance of {@link MinecraftServerMeta}.
+     * @author Griefed
      */
     protected MinecraftServerMeta update() {
 
@@ -67,8 +70,9 @@ class MinecraftServerMeta {
 
     /**
      * Get a list of {@link MinecraftServer} of the {@link Type#RELEASE}.
-     * @author Griefed
+     *
      * @return {@link MinecraftServer}-list of the {@link Type#RELEASE}.
+     * @author Griefed
      */
     protected List<MinecraftServer> releases() {
         return RELEASES;
@@ -76,8 +80,9 @@ class MinecraftServerMeta {
 
     /**
      * Get a list of {@link MinecraftServer} of the {@link Type#SNAPSHOT}.
-     * @author Griefed
+     *
      * @return {@link MinecraftServer}-list of the {@link Type#SNAPSHOT}.
+     * @author Griefed
      */
     protected List<MinecraftServer> snapshots() {
         return SNAPSHOTS;
@@ -87,8 +92,9 @@ class MinecraftServerMeta {
      * Get the {@link MinecraftServer} meta.<br>
      * key: {@link String} Minecraft version<br>
      * value: {@link MinecraftServer} for said Minecraft version
-     * @author Griefed
+     *
      * @return {@link HashMap} containing the {@link MinecraftServerMeta}.
+     * @author Griefed
      */
     protected HashMap<String, MinecraftServer> meta() {
         return meta;
