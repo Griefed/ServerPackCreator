@@ -114,6 +114,7 @@ public class ServerPackCreator {
      * @throws IOException if the run fails.
      */
     public void run(CommandlineParser.Mode modeToRunIn) throws IOException {
+
         switch (modeToRunIn) {
 
             case HELP:
@@ -194,6 +195,11 @@ public class ServerPackCreator {
 
         LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
         LOG.debug("System information jarName: " + systemInformation.get("jarName"));
+
+        if (!utilities.FileUtils().checkPermissions(new File(systemInformation.get("jarPath")).getParentFile())) {
+            // TODO replace with i18n logging
+            LOG.error("One or more file or directory has no read- or write-permission. This may lead to corrupted server packs! Check the permissions of the ServerPackCreator base directory!");
+        }
 
         utilities.JarUtils().copyFileFromJar(LOG4J2XML, ServerPackCreator.class);
 

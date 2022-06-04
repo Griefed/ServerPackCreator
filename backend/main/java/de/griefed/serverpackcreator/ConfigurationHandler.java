@@ -303,6 +303,18 @@ public class ConfigurationHandler {
 
             encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.servericon"),configurationModel.getServerIconPath()));
 
+        } else if (
+                configurationModel.getServerIconPath().length() > 0 &&
+                new File(configurationModel.getServerIconPath()).exists() &&
+                !UTILITIES.FileUtils().checkReadPermission(configurationModel.getServerIconPath())
+        ) {
+
+            //noinspection UnusedAssignment
+            configHasError = true;
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), configurationModel.getServerIconPath()));
+
         }
 
         if (!checkIconAndProperties(configurationModel.getServerPropertiesPath())) {
@@ -312,8 +324,19 @@ public class ConfigurationHandler {
 
             encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.serverproperties"),configurationModel.getServerPropertiesPath()));
 
-        }
+        } else if (
+                configurationModel.getServerPropertiesPath().length() > 0 &&
+                new File(configurationModel.getServerPropertiesPath()).exists() &&
+                !UTILITIES.FileUtils().checkReadPermission(configurationModel.getServerPropertiesPath())
+        ) {
 
+            //noinspection UnusedAssignment
+            configHasError = true;
+
+            /* This log is meant to be read by the user, therefore we allow translation. */
+            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), configurationModel.getServerPropertiesPath()));
+
+        }
 
         /*
          * Run checks on the specified modpack directory.
@@ -828,6 +851,7 @@ public class ConfigurationHandler {
             for (int i = 0; i < copyDirs.size(); i++) {
 
                 if (copyDirs.get(i).contains(";")) {
+                    // Source;Destination-combination
 
                     String[] entries = copyDirs.get(i).split(";");
 
@@ -861,8 +885,10 @@ public class ConfigurationHandler {
                     }
 
                 } else if (copyDirs.get(i).startsWith("!")) {
+                    // File exclusion
 
                     if (UTILITIES.FileUtils().isLink(copyDirs.get(i).substring(1))) {
+
                         try {
                             copyDirs.set(
                                     i,
@@ -877,6 +903,7 @@ public class ConfigurationHandler {
                         }
 
                     } else if (UTILITIES.FileUtils().isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))) {
+
                         try {
                             copyDirs.set(
                                     i,
@@ -892,13 +919,15 @@ public class ConfigurationHandler {
                     }
 
                 } else if (UTILITIES.FileUtils().isLink(copyDirs.get(i))) {
+                    // Regular entry, may be absolute path or relative one
+
                     try {
                         copyDirs.set(
                                 i,
                                 UTILITIES.FileUtils().resolveLink(copyDirs.get(i))
                         );
 
-                        LOG.info("Resolved modpack directory link to: " + configurationModel.getModpackDir());
+                        LOG.info("Resolved to: " + configurationModel.getModpackDir());
                         copyDirChanges = true;
 
                     } catch (InvalidFileTypeException | IOException ex) {
@@ -1077,6 +1106,57 @@ public class ConfigurationHandler {
 
                         encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.filenotfound"), sourceFileToCheck));
 
+                    } else {
+
+                        if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).exists() && !UTILITIES.FileUtils().checkReadPermission(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))) {
+
+                            configCorrect = false;
+
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
+
+                        } else if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).exists() && !UTILITIES.FileUtils().checkReadPermission(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))) {
+
+                            configCorrect = false;
+
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
+
+                        } else if (new File(sourceFileDestinationFileCombination[0]).exists() && !UTILITIES.FileUtils().checkReadPermission(sourceFileDestinationFileCombination[0])) {
+
+                            configCorrect = false;
+
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), sourceFileDestinationFileCombination[0]));
+
+                        }
+
+                        if (new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).isDirectory()) {
+
+                            //noinspection ConstantConditions
+                            for (File file : new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])).listFiles()) {
+                                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                                    configCorrect = false;
+
+                                    /* This log is meant to be read by the user, therefore we allow translation. */
+                                    encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), file));
+                                }
+                            }
+
+                        } else if (new File(sourceFileDestinationFileCombination[0]).isDirectory()) {
+
+                            //noinspection ConstantConditions
+                            for (File file : new File(sourceFileDestinationFileCombination[0]).listFiles()) {
+                                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                                    configCorrect = false;
+
+                                    /* This log is meant to be read by the user, therefore we allow translation. */
+                                    encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), file));
+                                }
+                            }
+
+                        }
+
                     }
 
                 // Add an entry to the list of directories/files to exclude if it starts with !
@@ -1085,10 +1165,15 @@ public class ConfigurationHandler {
                     File fileOrDirectory = new File(String.format("%s/%s", modpackDir, directory.substring(1)));
 
                     if (fileOrDirectory.isFile()) {
+
                         LOG.warn("File " + directory.substring(1) + " will be ignored.");
+
                     } else if (fileOrDirectory.isDirectory()) {
+
                         LOG.warn("Directory " + directory.substring(1) + " will be ignored.");
+
                     } else {
+
                         LOG.debug("What? " + fileOrDirectory + " is neither a file nor directory.");
                     }
 
@@ -1097,7 +1182,12 @@ public class ConfigurationHandler {
 
                     File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
 
-                    if (!dirToCheck.exists() && !new File(directory).exists() && !new File(directory).isFile() && !new File(directory).isDirectory()) {
+                    if (
+                            !dirToCheck.exists() &&
+                            !new File(directory).exists() &&
+                            !new File(directory).isFile() &&
+                            !new File(directory).isDirectory()
+                    ) {
 
                         configCorrect = false;
 
@@ -1105,6 +1195,50 @@ public class ConfigurationHandler {
                         LOG.error(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), directory));
 
                         encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.notfound"), directory));
+
+                    } else {
+
+                        if (dirToCheck.exists() && !UTILITIES.FileUtils().checkReadPermission(dirToCheck)) {
+
+                            configCorrect = false;
+
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), dirToCheck));
+
+                        } else if (new File(directory).exists() && !UTILITIES.FileUtils().checkReadPermission(directory)) {
+
+                            configCorrect = false;
+
+                            /* This log is meant to be read by the user, therefore we allow translation. */
+                            encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), directory));
+
+                        }
+
+                        if (dirToCheck.isDirectory()) {
+
+                            //noinspection ConstantConditions
+                            for (File file : dirToCheck.listFiles()) {
+                                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                                    configCorrect = false;
+
+                                    /* This log is meant to be read by the user, therefore we allow translation. */
+                                    encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), file));
+                                }
+                            }
+
+                        } else if (new File(directory).isDirectory()) {
+
+                            //noinspection ConstantConditions
+                            for (File file : new File(directory).listFiles()) {
+                                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                                    configCorrect = false;
+
+                                    /* This log is meant to be read by the user, therefore we allow translation. */
+                                    encounteredErrors.add(String.format(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"), file));
+                                }
+                            }
+
+                        }
 
                     }
                 }
