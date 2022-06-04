@@ -58,8 +58,6 @@ import javax.swing.Icon;
  * Heya, Griefed here. This is yet another miracle by Rob Camick. This man is a godsend.<br>
  * See <a href="https://tips4java.wordpress.com/2009/04/06/rotated-icon/">Rotated Icon</a><br>
  *
- * <p>
- *
  * <p>The RotatedIcon allows you to change the orientation of an Icon by rotating the Icon before it
  * is painted. This class supports the following orientations:
  *
@@ -73,8 +71,8 @@ import javax.swing.Icon;
  * @author Rob Camick
  */
 public class RotatedIcon implements Icon {
-  private Icon icon;
-  private Rotate rotate;
+  private final Icon icon;
+  private final Rotate rotate;
   private double degrees;
   private boolean circularIcon;
 
@@ -194,8 +192,7 @@ public class RotatedIcon implements Icon {
         double radians = Math.toRadians(degrees);
         double sin = Math.abs(Math.sin(radians));
         double cos = Math.abs(Math.cos(radians));
-        int width = (int) Math.floor(icon.getIconWidth() * cos + icon.getIconHeight() * sin);
-        return width;
+        return (int) Math.floor(icon.getIconWidth() * cos + icon.getIconHeight() * sin);
       }
     } else if (rotate == Rotate.UPSIDE_DOWN) return icon.getIconWidth();
     else return icon.getIconHeight();
@@ -218,8 +215,7 @@ public class RotatedIcon implements Icon {
         double radians = Math.toRadians(degrees);
         double sin = Math.abs(Math.sin(radians));
         double cos = Math.abs(Math.cos(radians));
-        int height = (int) Math.floor(icon.getIconHeight() * cos + icon.getIconWidth() * sin);
-        return height;
+        return (int) Math.floor(icon.getIconHeight() * cos + icon.getIconWidth() * sin);
       }
     } else if (rotate == Rotate.UPSIDE_DOWN) return icon.getIconHeight();
     else return icon.getIconWidth();

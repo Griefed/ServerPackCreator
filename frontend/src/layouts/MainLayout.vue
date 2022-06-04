@@ -1,74 +1,91 @@
 <template>
-<!--  <div id="tsparticles"/>-->
+  <!--  <div id="tsparticles"/>-->
   <q-layout view="hHh Lpr lff">
     <q-header class="header" elevated reveal>
-      <q-toolbar :class="this.$q.platform.is.mobile ? 'shadow-5 toolbar scroll ' : 'shadow-5 toolbar'">
+      <q-toolbar
+          :class="this.$q.platform.is.mobile ? 'shadow-5 toolbar scroll ' : 'shadow-5 toolbar'">
 
         <q-btn
-          class="q-mr-sm"
-          dense
-          flat
-          icon="menu"
-          round
-          v-if="!this.$q.platform.is.mobile"
-          @click="miniState = !miniState"/>
+            v-if="!this.$q.platform.is.mobile"
+            class="q-mr-sm"
+            dense
+            flat
+            icon="menu"
+            round
+            @click="miniState = !miniState"/>
 
         <q-btn
-          class="q-mr-sm"
-          dense
-          flat
-          icon="menu"
-          round
-          v-if="this.$q.platform.is.mobile"
-          @click="drawer = !drawer"/>
+            v-if="this.$q.platform.is.mobile"
+            class="q-mr-sm"
+            dense
+            flat
+            icon="menu"
+            round
+            @click="drawer = !drawer"/>
 
-        <q-item to="/" v-if="!this.$q.platform.is.mobile">
-          <q-img alt="header" src="~assets/serverpackcreator.webp" :ratio="323/54" :width="this.$q.platform.is.mobile ? '256px' : '256px'" fit="contain"/>
+        <q-item v-if="!this.$q.platform.is.mobile" to="/">
+          <q-img :ratio="323/54" :width="this.$q.platform.is.mobile ? '256px' : '256px'"
+                 alt="header"
+                 fit="contain" src="~assets/serverpackcreator.webp"/>
         </q-item>
 
-        <q-item class="flex-center"><b>Version {{version}}</b></q-item>
+        <q-item class="flex-center"><b>Version {{ version }}</b></q-item>
 
         <q-toolbar-title></q-toolbar-title>
 
-        <q-btn v-if="!this.$q.platform.is.mobile" label="News" style="color: #C0FFEE" type="a" target="_blank" href="https://blog.griefed.de">
+        <q-btn v-if="!this.$q.platform.is.mobile" href="https://blog.griefed.de" label="News"
+               style="color: #C0FFEE"
+               target="_blank" type="a">
           <q-tooltip>
             Visit my blog!
           </q-tooltip>
         </q-btn>
 
-        <q-btn v-if="!this.$q.platform.is.mobile" label="GitHub" style="color: #C0FFEE" type="a" target="_blank" href="https://github.com/Griefed/ServerPackCreator">
+        <q-btn v-if="!this.$q.platform.is.mobile"
+               href="https://github.com/Griefed/ServerPackCreator" label="GitHub"
+               style="color: #C0FFEE"
+               target="_blank" type="a">
           <q-tooltip>
             Visit the project on GitHub!
           </q-tooltip>
         </q-btn>
 
-        <q-btn v-if="!this.$q.platform.is.mobile" label="Support" style="color: #C0FFEE" type="a" target="_blank" href="https://github.com/Griefed/ServerPackCreator/issues">
+        <q-btn v-if="!this.$q.platform.is.mobile"
+               href="https://github.com/Griefed/ServerPackCreator/issues" label="Support"
+               style="color: #C0FFEE"
+               target="_blank" type="a">
           <q-tooltip>
             Report an issue!
           </q-tooltip>
         </q-btn>
 
-        <q-btn v-if="!this.$q.platform.is.mobile" label="Discord" style="color: #C0FFEE" type="a" target="_blank" href="https://discord.griefed.de">
+        <q-btn v-if="!this.$q.platform.is.mobile" href="https://discord.griefed.de" label="Discord"
+               style="color: #C0FFEE"
+               target="_blank" type="a">
           <q-tooltip>
             Chat and support on Discord!
           </q-tooltip>
         </q-btn>
 
-        <q-btn-dropdown label="Info" v-if="this.$q.platform.is.mobile">
+        <q-btn-dropdown v-if="this.$q.platform.is.mobile" label="Info">
           <q-item>
-            <q-btn label="News" flat type="a" target="_blank" href="https://blog.griefed.de">
+            <q-btn flat href="https://blog.griefed.de" label="News" target="_blank" type="a">
             </q-btn>
           </q-item>
           <q-item>
-            <q-btn label="GitHub" flat type="a" target="_blank" href="https://github.com/Griefed/ServerPackCreator">
+            <q-btn flat href="https://github.com/Griefed/ServerPackCreator" label="GitHub"
+                   target="_blank"
+                   type="a">
             </q-btn>
           </q-item>
           <q-item>
-            <q-btn label="Support" flat type="a" target="_blank" href="https://github.com/Griefed/ServerPackCreator/issues">
+            <q-btn flat href="https://github.com/Griefed/ServerPackCreator/issues" label="Support"
+                   target="_blank"
+                   type="a">
             </q-btn>
           </q-item>
           <q-item>
-            <q-btn label="Discord" flat type="a" target="_blank" href="https://discord.griefed.de">
+            <q-btn flat href="https://discord.griefed.de" label="Discord" target="_blank" type="a">
             </q-btn>
           </q-item>
         </q-btn-dropdown>
@@ -84,10 +101,10 @@
         </q-btn>
 
         <q-btn
+            v-if="!this.$q.platform.is.mobile"
             :icon="this.$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
             class="q-mr-xs"
             dense
-            v-if="!this.$q.platform.is.mobile"
             @click="this.$q.fullscreen.toggle()">
           <q-tooltip :disable="this.$q.platform.is.mobile">
             {{ this.$q.fullscreen.isActive ? 'Exit Fullscreen' : 'Toggle Fullscreen' }}
@@ -100,11 +117,11 @@
     <q-drawer
         v-model="drawer"
         :breakpoint="500"
+        :mini="miniState"
         :width="this.$q.platform.is.mobile ? 165 : 200"
         bordered
-        :mini="miniState"
-        mini-to-overlay
         class="left-navigation text-white drawer"
+        mini-to-overlay
         side="left">
       <div
           class="full-height">
@@ -112,11 +129,11 @@
           <q-list padding>
 
             <q-item
-              v-ripple
-              active-class="tab-active"
-              clickable
-              exact
-              to="/request">
+                v-ripple
+                active-class="tab-active"
+                clickable
+                exact
+                to="/request">
               <q-item-section avatar>
                 <q-icon name="mdi-webpack"/>
               </q-item-section>
@@ -176,10 +193,9 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue';
-import { useQuasar, Cookies } from 'quasar';
-import { tsParticles } from 'tsparticles';
-import { api } from "boot/axios";
+import {defineComponent, ref} from 'vue';
+import {tsParticles} from 'tsparticles';
+import {api} from "boot/axios";
 
 export default defineComponent({
   name: 'MainLayout',
@@ -190,17 +206,19 @@ export default defineComponent({
       version: ref("dev")
     }
   },
-  methods : {
+  methods: {
     toggleDarkMode() {
       this.$q.dark.toggle();
       this.$q.cookies.set('dark.isActive', this.$q.dark.isActive)
     }
   },
   mounted() {
-    api.get("/settings").then(response => {this.version = response.data.serverPackCreatorVersion});
+    api.get("/settings").then(response => {
+      this.version = response.data.serverPackCreatorVersion
+    });
     this.$q.platform.is.mobile ? this.drawer = false : this.drawer = true;
     this.$q.dark.set(this.$q.cookies.get('dark.isActive'));
-    tsParticles.load("particles-js",{
+    tsParticles.load("particles-js", {
       "fpsLimit": 30,
       "particles": {
         "number": {
@@ -211,13 +229,13 @@ export default defineComponent({
           }
         },
         "color": {
-          "value": ["#325358","#C0FFEE","#31CCEC","#6A1A78"]
+          "value": ["#325358", "#C0FFEE", "#31CCEC", "#6A1A78"]
         },
         "shape": {
-          "type": ["circle","triangle","edge","polygon"],
+          "type": ["circle", "triangle", "edge", "polygon"],
           "stroke": {
             "width": 0,
-            "color": ["#325358","#C0FFEE","#31CCEC","#6A1A78"]
+            "color": ["#325358", "#C0FFEE", "#31CCEC", "#6A1A78"]
           },
           "polygon": {
             "nb_sides": 6
@@ -271,7 +289,7 @@ export default defineComponent({
         "events": {
           "onhover": {
             "enable": true,
-            "mode": ["bubble","grab"]
+            "mode": ["bubble", "grab"]
           },
           "onclick": {
             "enable": true,
@@ -315,101 +333,99 @@ export default defineComponent({
 }
 
 .normal_gradient {
-  background:
-      radial-gradient(circle at 0% 0%,
-      rgba(161, 232, 213, 0.4),
-        rgba(50, 83, 88, 0.1),
-        rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 100% 0%,
+  background: radial-gradient(circle at 0% 0%,
+  rgba(161, 232, 213, 0.4),
+  rgba(50, 83, 88, 0.1),
+  rgba(50, 83, 88, 0.05) 100%
+  ),
+  radial-gradient(circle at 100% 0%,
       rgba(133, 213, 212, 0.4),
-        rgba(50, 83, 88, 0.1),
-        rgba(50, 83, 88, 0.1) 100%
-      ),
-      radial-gradient(circle at 0% 100%,
+      rgba(50, 83, 88, 0.1),
+      rgba(50, 83, 88, 0.1) 100%
+  ),
+  radial-gradient(circle at 0% 100%,
       rgba(197, 142, 248, 0.4),
-        rgba(50, 83, 88, 0.1),
-        rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 100% 100%,
+      rgba(50, 83, 88, 0.1),
+      rgba(50, 83, 88, 0.05) 100%
+  ),
+  radial-gradient(circle at 100% 100%,
       rgba(171, 115, 224, 0.56),
-        rgba(50, 83, 88, 0.1),
-        rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 50% 50%,
+      rgba(50, 83, 88, 0.1),
+      rgba(50, 83, 88, 0.05) 100%
+  ),
+  radial-gradient(circle at 50% 50%,
       rgba(143, 147, 196, 0.4),
-        rgba(50, 83, 88, 0.1),
-        rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 25% 50%,
+      rgba(50, 83, 88, 0.1),
+      rgba(50, 83, 88, 0.05) 100%
+  ),
+  radial-gradient(circle at 25% 50%,
       rgba(96, 168, 151, 0.9),
-        rgba(50, 83, 88, 0),
-        rgba(50, 83, 88, 0) 100%
-      ),
-      radial-gradient(circle at 75% 50%,
+      rgba(50, 83, 88, 0),
+      rgba(50, 83, 88, 0) 100%
+  ),
+  radial-gradient(circle at 75% 50%,
       rgba(107, 67, 190, 0.9),
-        rgba(50, 83, 88, 0),
-        rgba(50, 83, 88, 0) 100%
-      ),
-      radial-gradient(circle at 50% 25%,
+      rgba(50, 83, 88, 0),
+      rgba(50, 83, 88, 0) 100%
+  ),
+  radial-gradient(circle at 50% 25%,
       rgba(97, 166, 176, 0.9),
-        rgba(50, 83, 88, 0),
-        rgba(50, 83, 88, 0) 100%
-      ),
-      radial-gradient(circle at 50% 75%,
+      rgba(50, 83, 88, 0),
+      rgba(50, 83, 88, 0) 100%
+  ),
+  radial-gradient(circle at 50% 75%,
       rgba(137, 200, 210, 0.9),
-        rgba(50, 83, 88, 0),
-        rgba(50, 83, 88, 0) 100%
-      );
+      rgba(50, 83, 88, 0),
+      rgba(50, 83, 88, 0) 100%
+  );
 }
 
 .dark_gradient {
-  background:
-      radial-gradient(circle at 0% 0%,
-      rgba(34, 81, 114, 0.6),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 100% 0%,
+  background: radial-gradient(circle at 0% 0%,
+  rgba(34, 81, 114, 0.6),
+  rgba(50, 83, 88, 0.1),
+  rgba(50, 83, 88, 0.05) 100%
+  ),
+  radial-gradient(circle at 100% 0%,
       rgba(17, 87, 85, 0.4),
       rgba(50, 83, 88, 0.1),
       rgba(50, 83, 88, 0.1) 100%
-      ),
-      radial-gradient(circle at 0% 100%,
+  ),
+  radial-gradient(circle at 0% 100%,
       rgb(49, 26, 133),
       rgba(50, 83, 88, 0.1),
       rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 100% 100%,
+  ),
+  radial-gradient(circle at 100% 100%,
       rgba(80, 20, 136, 0.6),
       rgba(50, 83, 88, 0.1),
       rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 50% 50%,
+  ),
+  radial-gradient(circle at 50% 50%,
       rgba(128, 134, 204, 0.4),
       rgba(50, 83, 88, 0.1),
       rgba(50, 83, 88, 0.05) 100%
-      ),
-      radial-gradient(circle at 25% 50%,
+  ),
+  radial-gradient(circle at 25% 50%,
       rgba(66, 117, 105, 0.9),
       rgba(50, 83, 88, 0),
       rgba(50, 83, 88, 0) 100%
-      ),
-      radial-gradient(circle at 75% 50%,
+  ),
+  radial-gradient(circle at 75% 50%,
       rgba(98, 69, 157, 0.9),
       rgba(50, 83, 88, 0),
       rgba(50, 83, 88, 0) 100%
-      ),
-      radial-gradient(circle at 50% 25%,
+  ),
+  radial-gradient(circle at 50% 25%,
       rgba(26, 79, 87, 0.9),
       rgba(50, 83, 88, 0),
       rgba(50, 83, 88, 0) 100%
-      ),
-      radial-gradient(circle at 50% 75%,
+  ),
+  radial-gradient(circle at 50% 75%,
       rgba(18, 35, 89, 1),
       rgba(50, 83, 88, 0),
       rgba(50, 83, 88, 0) 100%
-      );
+  );
 }
 
 .toolbar {

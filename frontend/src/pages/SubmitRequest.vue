@@ -1,73 +1,81 @@
 <template>
   <div class="row no-wrap q-pa-md absolute-center">
     <q-intersection
-      class="intersection"
-      once
-      transition="scale">
-      <q-card :style="this.$q.platform.is.mobile ? 'max-width: 300px;width:300px' : 'max-width: 600px;width:600px'">
+        class="intersection"
+        once
+        transition="scale">
+      <q-card
+          :style="this.$q.platform.is.mobile ? 'max-width: 300px;width:300px' : 'max-width: 600px;width:600px'">
 
         <q-tabs
-          v-model="tab"
-          active-bg-color="primary"
-          active-color="secondary"
-          indicator-color="accent"
-          align="justify"
-          narrow-indicator
+            v-model="tab"
+            active-bg-color="primary"
+            active-color="secondary"
+            align="justify"
+            indicator-color="accent"
+            narrow-indicator
         >
-          <q-tab name="zip" label="zip">
-            <q-tooltip :disable="this.$q.platform.is.mobile">Create a server pack from a zipped up modpack.</q-tooltip>
+          <q-tab label="zip" name="zip">
+            <q-tooltip :disable="this.$q.platform.is.mobile">Create a server pack from a zipped up
+              modpack.
+            </q-tooltip>
           </q-tab>
         </q-tabs>
 
         <q-separator/>
         <q-tab-panels v-model="tab" animated>
-<!--
+          <!--
 
-UPLOAD AND CREATE FROM ZIP
+          UPLOAD AND CREATE FROM ZIP
 
--->
+          -->
           <q-tab-panel name="zip">
             <div class="column">
               <div class="text-h6 q-mb-md text-center">Upload a modpack ZIP-archive</div>
-              <q-form @submit="submitZip" @reset="resetForm" class="q-gutter-xs">
+              <q-form class="q-gutter-xs" @reset="resetForm" @submit="submitZip">
                 <q-uploader
-                  class="full-width"
-                  url="/api/v1/zip/upload"
-                  method="POST"
-                  field-name="file"
-                  auto-upload
-                  label="Only ZIP-archives (max 500Mb)"
-                  accept=".zip,application/zip"
-                  max-file-size="512000000"
-                  ref="zipUploader"
-                  @uploaded="uploadZipSuccess"
-                  @failed="uploadZipFailed"
-                  @added="currentlyUploading = true"
-                  v-model="zipName"
+                    ref="zipUploader"
+                    v-model="zipName"
+                    accept=".zip,application/zip"
+                    auto-upload
+                    class="full-width"
+                    field-name="file"
+                    label="Only ZIP-archives (max 500Mb)"
+                    max-file-size="512000000"
+                    method="POST"
+                    url="/api/v1/zip/upload"
+                    @added="currentlyUploading = true"
+                    @failed="uploadZipFailed"
+                    @uploaded="uploadZipSuccess"
                 >
                   <template v-slot:header="scope">
                     <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
 
-                      <q-btn v-if="scope.queuedFiles.length > 0" icon="clear_all" @click="scope.removeQueuedFiles" round dense flat >
+                      <q-btn v-if="scope.queuedFiles.length > 0" dense
+                             flat icon="clear_all" round @click="scope.removeQueuedFiles">
                         <q-tooltip>Clear All</q-tooltip>
                       </q-btn>
 
-                      <q-btn v-if="scope.uploadedFiles.length > 0" icon="done_all" @click="scope.removeUploadedFiles" round dense flat >
+                      <q-btn v-if="scope.uploadedFiles.length > 0" dense
+                             flat icon="done_all" round @click="scope.removeUploadedFiles">
                         <q-tooltip>Remove Uploaded Files</q-tooltip>
                       </q-btn>
 
-                      <q-spinner v-if="scope.isUploading" class="q-uploader__spinner" />
+                      <q-spinner v-if="scope.isUploading" class="q-uploader__spinner"/>
 
                       <div class="col">
                         <div class="q-uploader__title">Only ZIP-archives (max 500Mb)</div>
                       </div>
 
-                      <q-btn v-if="scope.uploadedFiles.length < 1" :disable="currentlyUploading" type="a" icon="add_box" @click="scope.pickFiles" round dense flat>
+                      <q-btn v-if="scope.uploadedFiles.length < 1" :disable="currentlyUploading"
+                             dense flat icon="add_box" round type="a" @click="scope.pickFiles">
                         <q-uploader-add-trigger/>
-                        <q-tooltip :disable="currentlyUploading || this.$q.platform.is.mobile" >Pick ZIP-archive</q-tooltip>
+                        <q-tooltip :disable="currentlyUploading || this.$q.platform.is.mobile">Pick
+                          ZIP-archive
+                        </q-tooltip>
                       </q-btn>
 
-                      <q-btn icon="help_outline" @click="zipInfo = true" round dense flat/>
+                      <q-btn dense flat icon="help_outline" round @click="zipInfo = true"/>
                     </div>
                   </template>
                 </q-uploader>
@@ -76,20 +84,21 @@ UPLOAD AND CREATE FROM ZIP
                   archives with only 'overrides' or the like.
                 </div>
 
-                <q-separator inset spaced color="accent"/>
+                <q-separator color="accent" inset spaced/>
                 <!-- CLIENTSIDE MODS -->
                 <div class="row flex-center">
                   <q-input
-                    class="full-width"
-                    ref="clientMods"
-                    color="black"
-                    type="textarea"
-                    filled
-                    v-model="clientsideMods"
-                    label="Clientside-only Mods"
+                      ref="clientMods"
+                      v-model="clientsideMods"
+                      class="full-width"
+                      color="black"
+                      filled
+                      label="Clientside-only Mods"
+                      type="textarea"
                   >
                     <q-tooltip :disable="this.$q.platform.is.mobile">
-                      Comma separated. Clientside-only mods which must not be in the server pack.<br>
+                      Comma separated. Clientside-only mods which must not be in the server
+                      pack.<br>
                       If left blank, default values will be used.
                     </q-tooltip>
                   </q-input>
@@ -104,14 +113,16 @@ UPLOAD AND CREATE FROM ZIP
                     </div>
                     <div class="row flex-center">
                       <q-btn-dropdown
-                        align="center"
-                        :label="minecraftVersion"
-                        no-caps
-                        size="100%">
+                          :label="minecraftVersion"
+                          align="center"
+                          no-caps
+                          size="100%">
                         <q-list>
-                          <q-item v-for="version in minecraftVersions" v-bind:key="version" clickable v-close-popup @click="minecraftVersionSelected(version)">
+                          <q-item v-for="version in minecraftVersions" v-bind:key="version"
+                                  v-close-popup clickable
+                                  @click="minecraftVersionSelected(version)">
                             <q-item-section>
-                              {{version}}
+                              {{ version }}
                             </q-item-section>
                           </q-item>
                         </q-list>
@@ -119,7 +130,7 @@ UPLOAD AND CREATE FROM ZIP
                     </div>
                   </div>
 
-                  <q-separator vertical size="15px" color="transparent"/>
+                  <q-separator color="transparent" size="15px" vertical/>
 
                   <!-- MODLOADER -->
                   <div class="column flex-center">
@@ -128,14 +139,15 @@ UPLOAD AND CREATE FROM ZIP
                     </div>
                     <div class="row flex-center">
                       <q-btn-dropdown
-                        align="center"
-                        :label="modLoader"
-                        no-caps
-                        size="100%">
+                          :label="modLoader"
+                          align="center"
+                          no-caps
+                          size="100%">
                         <q-list>
-                          <q-item v-for="loader in modloaders" v-bind:key="loader" clickable v-close-popup @click="modLoaderSelected(loader)">
+                          <q-item v-for="loader in modloaders" v-bind:key="loader" v-close-popup
+                                  clickable @click="modLoaderSelected(loader)">
                             <q-item-section>
-                              {{loader}}
+                              {{ loader }}
                             </q-item-section>
                           </q-item>
                         </q-list>
@@ -143,7 +155,7 @@ UPLOAD AND CREATE FROM ZIP
                     </div>
                   </div>
 
-                  <q-separator vertical size="15px" color="transparent"/>
+                  <q-separator color="transparent" size="15px" vertical/>
 
                   <!-- MODLOADER VERSION -->
                   <div class="column flex-center">
@@ -152,28 +164,34 @@ UPLOAD AND CREATE FROM ZIP
                     </div>
                     <div class="row flex-center">
                       <q-btn-dropdown
-                        align="center"
-                        :label="modloaderVersion"
-                        no-caps
-                        size="100%">
+                          :label="modloaderVersion"
+                          align="center"
+                          no-caps
+                          size="100%">
                         <q-list v-if="modLoader === 'Forge'">
-                          <q-item v-for="version in forgeVersions" v-bind:key="version" clickable v-close-popup @click="modloaderVersion = version">
+                          <q-item v-for="version in forgeVersions" v-bind:key="version"
+                                  v-close-popup
+                                  clickable @click="modloaderVersion = version">
                             <q-item-section>
-                              {{version}}
+                              {{ version }}
                             </q-item-section>
                           </q-item>
                         </q-list>
                         <q-list v-else-if="modLoader === 'Fabric'">
-                          <q-item v-for="version in fabricVersions" v-bind:key="version" clickable v-close-popup @click="modloaderVersion = version">
+                          <q-item v-for="version in fabricVersions" v-bind:key="version"
+                                  v-close-popup
+                                  clickable @click="modloaderVersion = version">
                             <q-item-section>
-                              {{version}}
+                              {{ version }}
                             </q-item-section>
                           </q-item>
                         </q-list>
                         <q-list v-else-if="modLoader === 'Quilt'">
-                          <q-item v-for="version in quiltVersions" v-bind:key="version" clickable v-close-popup @click="modloaderVersion = version">
+                          <q-item v-for="version in quiltVersions" v-bind:key="version"
+                                  v-close-popup
+                                  clickable @click="modloaderVersion = version">
                             <q-item-section>
-                              {{version}}
+                              {{ version }}
                             </q-item-section>
                           </q-item>
                         </q-list>
@@ -182,10 +200,13 @@ UPLOAD AND CREATE FROM ZIP
                   </div>
                 </div>
 
-                <div :class="this.$q.platform.is.mobile ? 'row flex-center' : 'row no-wrap flex-center'" style="margin-top: 20px;">
+                <div
+                    :class="this.$q.platform.is.mobile ? 'row flex-center' : 'row no-wrap flex-center'"
+                    style="margin-top: 20px;">
                   <div>
-                    <q-btn label="Submit" :disable="disableZip" :loading="loading" type="submit" color="primary" />
-                    <q-btn label="Reset"                                           type="reset" color="warning" class="q-ml-sm" />
+                    <q-btn :disable="disableZip" :loading="loading" color="primary" label="Submit"
+                           type="submit"/>
+                    <q-btn class="q-ml-sm" color="warning" label="Reset" type="reset"/>
                   </div>
                 </div>
 
@@ -196,46 +217,47 @@ UPLOAD AND CREATE FROM ZIP
       </q-card>
     </q-intersection>
   </div>
-<!--
+  <!--
 
- ZIP HELP DIALOGS
+   ZIP HELP DIALOGS
 
--->
-  <q-dialog style="max-width: 1000px;width:750px" v-model="zipInfo">
+  -->
+  <q-dialog v-model="zipInfo" style="max-width: 1000px;width:750px">
     <q-card class="full-width">
       <q-card-section>
         <div class="text-h6">ZIP requirements in detail:</div>
       </q-card-section>
 
       <q-card-section class="q-pt-none text-center flex-center">
-          <q-carousel
-            animated
+        <q-carousel
             v-model="zipSlide"
+            :arrows="autoplay"
+            :autoplay="autoplay"
             :navigation="autoplay"
+            animated
+            control-color="accent"
             infinite
             swipeable
-            :autoplay="autoplay"
-            :arrows="autoplay"
-            transition-prev="slide-right"
             transition-next="slide-left"
+            transition-prev="slide-right"
             @mouseenter="autoplay = false"
             @mouseleave="autoplay = true"
-            control-color="accent"
-          >
-            <q-carousel-slide :name="1" img-src="~assets/invalid_minecraft.webp"/>
-            <q-carousel-slide :name="2" img-src="~assets/invalid_overrides.webp"/>
-            <q-carousel-slide :name="3" img-src="~assets/valid1.webp"/>
-            <q-carousel-slide :name="4" img-src="~assets/valid2.webp"/>
-          </q-carousel>
+        >
+          <q-carousel-slide :name="1" img-src="~assets/invalid_minecraft.webp"/>
+          <q-carousel-slide :name="2" img-src="~assets/invalid_overrides.webp"/>
+          <q-carousel-slide :name="3" img-src="~assets/valid1.webp"/>
+          <q-carousel-slide :name="4" img-src="~assets/valid2.webp"/>
+        </q-carousel>
         <q-chip outline>
-          {{zipSlideInfo[zipSlide-1]}}
+          {{ zipSlideInfo[zipSlide - 1] }}
         </q-chip>
 
       </q-card-section>
 
       <q-card-section>
         <div>
-          All modpack contents must be in the root of the ZIP-archive. Having either of the following in your modpack will
+          All modpack contents must be in the root of the ZIP-archive. Having either of the
+          following in your modpack will
           help ServerPackCreator determine some configurations:
           <ul>
             <li>manifest.json (Overwolf's CurseForge or GDLauncher export)</li>
@@ -254,7 +276,7 @@ UPLOAD AND CREATE FROM ZIP
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="OK" color="primary" v-close-popup />
+        <q-btn v-close-popup color="primary" flat label="OK"/>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -262,9 +284,8 @@ UPLOAD AND CREATE FROM ZIP
 </template>
 
 <script lang="js">
-import { defineComponent, inject, ref } from 'vue';
-import { useQuasar, Cookies, openURL  } from 'quasar';
-import { api } from 'boot/axios';
+import {defineComponent, inject, ref} from 'vue';
+import {api} from 'boot/axios';
 
 export default defineComponent({
   name: 'SubmitRequest',
@@ -307,11 +328,11 @@ export default defineComponent({
     }
   },
   methods: {
-/*
- *
- *  GENERAL
- *
- */
+    /*
+     *
+     *  GENERAL
+     *
+     */
 
     /**
      * Reset the submission form.
@@ -339,43 +360,43 @@ export default defineComponent({
         message: 'Communication with the backend failed. ' + error
       })
     },
-/*
- *
- *  ZIP
- *
- */
+    /*
+     *
+     *  ZIP
+     *
+     */
     submitZip() {
       console.log(this.zipName);
       api.get("/zip/" +
-        [
-          this.zipName,
-          this.clientsideMods,
-          this.minecraftVersion,
-          this.modLoader,
-          this.modloaderVersion
-        ].join('&')
+          [
+            this.zipName,
+            this.clientsideMods,
+            this.minecraftVersion,
+            this.modLoader,
+            this.modloaderVersion
+          ].join('&')
       )
-        .then(response => {
-          if (response.data.success) {
-            this.$q.notify({
-              timeout: response.data.timeout,
-              progress: true,
-              icon: response.data.icon,
-              color: response.data.color,
-              message: response.data.message
-            })
-          } else {
-            this.$q.notify({
-              timeout: response.data.timeout,
-              progress: true,
-              icon: response.data.icon,
-              color: response.data.color,
-              message: response.data.message
-            })
-          }
+      .then(response => {
+        if (response.data.success) {
+          this.$q.notify({
+            timeout: response.data.timeout,
+            progress: true,
+            icon: response.data.icon,
+            color: response.data.color,
+            message: response.data.message
+          })
+        } else {
+          this.$q.notify({
+            timeout: response.data.timeout,
+            progress: true,
+            icon: response.data.icon,
+            color: response.data.color,
+            message: response.data.message
+          })
+        }
       })
-        .catch(error => {
-          this.errorNotification(error);
+      .catch(error => {
+        this.errorNotification(error);
       });
     },
     /**
@@ -387,29 +408,29 @@ export default defineComponent({
       this.minecraftVersion = version;
 
       api.get("/versions/forge/" + version)
-        .then(response => {
-          this.forgeVersions = response.data.forge;
+      .then(response => {
+        this.forgeVersions = response.data.forge;
 
-          if (this.modLoader === this.modloaders[0]) {
+        if (this.modLoader === this.modloaders[0]) {
 
-            if (this.forgeVersions.length === 0) {
-              console.log('Zero')
-              this.modloaderVersion = 'None';
-            } else {
-              this.modloaderVersion = this.forgeVersions[0];
-            }
-
+          if (this.forgeVersions.length === 0) {
+            console.log('Zero')
+            this.modloaderVersion = 'None';
           } else {
-            this.modloaderVersion = this.fabricVersions[0];
+            this.modloaderVersion = this.forgeVersions[0];
           }
 
-          this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
+        } else {
+          this.modloaderVersion = this.fabricVersions[0];
+        }
 
-        })
-        .catch(error => {
-          console.log(error);
-          this.errorNotification(error);
-        });
+        this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
+
+      })
+      .catch(error => {
+        console.log(error);
+        this.errorNotification(error);
+      });
     },
     /**
      * Set selected modloader and modloader versions.
@@ -423,27 +444,27 @@ export default defineComponent({
 
           this.modLoader = 'Forge';
           api.get("/versions/forge/" + this.minecraftVersion)
-            .then(response => {
+          .then(response => {
 
-              this.forgeVersions = response.data.forge;
+            this.forgeVersions = response.data.forge;
 
-              if (this.forgeVersions.length === 0) {
+            if (this.forgeVersions.length === 0) {
 
-                this.modloaderVersion = 'None';
+              this.modloaderVersion = 'None';
 
-              } else {
+            } else {
 
-                this.modloaderVersion = this.forgeVersions[0];
+              this.modloaderVersion = this.forgeVersions[0];
 
-              }
+            }
 
-              this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
+            this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
 
-            })
-            .catch(error => {
-              console.log(error);
-              this.errorNotification(error);
-            });
+          })
+          .catch(error => {
+            console.log(error);
+            this.errorNotification(error);
+          });
           break;
 
         case "Fabric":
@@ -525,44 +546,44 @@ export default defineComponent({
      *  - Acquire the fallback list of clientside-only mods.
      */
     api.get("/settings")
-      .then(response => {
-        this.clientsideMods = response.data.listFallbackMods;
-        this.clientsideModsDefault = response.data.listFallbackMods;
-        this.modloaders = response.data.supportedModloaders;
-      })
-      .catch(error => {
-        console.log(error);
-        this.errorNotification(error);
-      });
+    .then(response => {
+      this.clientsideMods = response.data.listFallbackMods;
+      this.clientsideModsDefault = response.data.listFallbackMods;
+      this.modloaders = response.data.supportedModloaders;
+    })
+    .catch(error => {
+      console.log(error);
+      this.errorNotification(error);
+    });
     /*
      * Acquire a list of available Minecraft versions from our backend.
      * We do not get this list from Mojang directly because we need to make sure we only submit request to the backend
      * with versions that are available to the backend, too.
      */
     api.get("/versions/minecraft")
-      .then(mcResponse => {
-        this.minecraftVersions = mcResponse.data.minecraft;
-        this.minecraftVersion = this.minecraftVersions[0];
-        /*
-         * Acquire a list of available Forge versions for a given Minecraft version from our backend.
-         * We do not get this list from Forge directly because we need to make sure we only submit request to the backend
-         * with versions that are available to the backend, too.
-         */
-        api.get("/versions/forge/" + this.minecraftVersion)
-          .then(forgeResponse => {
-            this.forgeVersions = forgeResponse.data.forge;
-            this.modloaderVersion = this.forgeVersions[0];
-          })
-          .catch(error => {
-            console.log(error);
-            this.errorNotification(error);
-          });
-
+    .then(mcResponse => {
+      this.minecraftVersions = mcResponse.data.minecraft;
+      this.minecraftVersion = this.minecraftVersions[0];
+      /*
+       * Acquire a list of available Forge versions for a given Minecraft version from our backend.
+       * We do not get this list from Forge directly because we need to make sure we only submit request to the backend
+       * with versions that are available to the backend, too.
+       */
+      api.get("/versions/forge/" + this.minecraftVersion)
+      .then(forgeResponse => {
+        this.forgeVersions = forgeResponse.data.forge;
+        this.modloaderVersion = this.forgeVersions[0];
       })
       .catch(error => {
         console.log(error);
         this.errorNotification(error);
       });
+
+    })
+    .catch(error => {
+      console.log(error);
+      this.errorNotification(error);
+    });
 
     /*
      * Acquire a list of available Fabric versions from our backend.
@@ -570,13 +591,13 @@ export default defineComponent({
      * with versions that are available to the backend, too.
      */
     api.get("/versions/fabric")
-      .then(response => {
-        this.fabricVersions = response.data.fabric;
-      })
-      .catch(error => {
-        console.log(error);
-        this.errorNotification(error);
-      });
+    .then(response => {
+      this.fabricVersions = response.data.fabric;
+    })
+    .catch(error => {
+      console.log(error);
+      this.errorNotification(error);
+    });
 
     /*
      * Acquire a list of available Quilt versions from our backend.
@@ -584,13 +605,13 @@ export default defineComponent({
      * with versions that are available to the backend, too.
      */
     api.get("/versions/quilt")
-      .then(response => {
-        this.quiltVersions = response.data.quilt;
-      })
-      .catch(error => {
-        console.log(error);
-        this.errorNotification(error);
-      });
+    .then(response => {
+      this.quiltVersions = response.data.quilt;
+    })
+    .catch(error => {
+      console.log(error);
+      this.errorNotification(error);
+    });
   }
 })
 </script>

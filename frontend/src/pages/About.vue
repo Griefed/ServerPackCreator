@@ -1,8 +1,8 @@
 <template>
   <q-intersection
-    class="intersection"
-    once
-    transition="scale">
+      class="intersection"
+      once
+      transition="scale">
     <q-page>
       <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
         <q-card bordered flat>
@@ -11,10 +11,12 @@
               <div class="text-h5 q-mt-sm q-mb-xs">About ServerPackCreator</div>
               <div class="text-caption">
                 <br>
-                ServerPackCreator is a Java-program which creates a server pack from any given Forge or Fabric
+                ServerPackCreator is a Java-program which creates a server pack from any given Forge
+                or Fabric
                 modpack.<br>
                 Customize the configuration to your liking and off you go.<br>
-                Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM!<br>
+                Whenever you are working on an update to your modpack, you simply run
+                ServerPackCreator and BAM!<br>
                 You've got yourself a server pack for your new modpack version.
               </div>
             </q-card-section>
@@ -33,15 +35,20 @@
 
           <q-card-section>
             <p>
-              <strong>ServerPackCreator</strong> was made as a training ground for Java and because I wanted an easier way
+              <strong>ServerPackCreator</strong> was made as a training ground for Java and because
+              I wanted an easier way
               to update/make server packs for updates to my modpack.<br>
-              It has grown substantially since the first release, which was when it was CLI only.<br>
+              It has grown substantially since the first release, which was when it was CLI
+              only.<br>
               Now it provides a GUI as well!
             </p>
             <p>
-              The fact that this is, and always will be, a playground for me, in Java, still remains though.<br>
-              As with every application, bugs are bound to appear, and I will try to fix them whenever I can.<br>
-              I am working on this program in my spare time, please keep that in mind when reporting issues or requesting
+              The fact that this is, and always will be, a playground for me, in Java, still remains
+              though.<br>
+              As with every application, bugs are bound to appear, and I will try to fix them
+              whenever I can.<br>
+              I am working on this program in my spare time, please keep that in mind when reporting
+              issues or requesting
               new features to be added.
             </p>
             <p>
@@ -65,12 +72,12 @@
               </template>
               <template v-slot:default>
                 <q-btn
-                  icon="fab fa-github"
-                  round
-                  style="margin-bottom: 18px; background:radial-gradient(circle, #325358 0%, #45a395 100%);color: floralwhite;"
-                  type="a"
-                  target="_blank"
-                  href="https://github.com/Griefed/ServerPackCreator"/>
+                    href="https://github.com/Griefed/ServerPackCreator"
+                    icon="fab fa-github"
+                    round
+                    style="margin-bottom: 18px; background:radial-gradient(circle, #325358 0%, #45a395 100%);color: floralwhite;"
+                    target="_blank"
+                    type="a"/>
               </template>
             </q-field>
 
@@ -82,12 +89,12 @@
               </template>
               <template v-slot:default>
                 <q-btn
-                  icon="fas fa-bug"
-                  round
-                  style="margin-bottom: 18px; background:radial-gradient(circle, #325358 0%, #45a395 100%);color: floralwhite;"
-                  type="a"
-                  target="_blank"
-                  href="https://github.com/Griefed/ServerPackCreator/issues"/>
+                    href="https://github.com/Griefed/ServerPackCreator/issues"
+                    icon="fas fa-bug"
+                    round
+                    style="margin-bottom: 18px; background:radial-gradient(circle, #325358 0%, #45a395 100%);color: floralwhite;"
+                    target="_blank"
+                    type="a"/>
               </template>
             </q-field>
 
@@ -99,12 +106,12 @@
               </template>
               <template v-slot:default>
                 <q-btn
-                  icon="fab fa-discord"
-                  round
-                  style="margin-bottom: 18px; background:radial-gradient(circle, #325358 0%, #45a395 100%);color: floralwhite;"
-                  type="a"
-                  target="_blank"
-                  href="https://discord.griefed.de"/>
+                    href="https://discord.griefed.de"
+                    icon="fab fa-discord"
+                    round
+                    style="margin-bottom: 18px; background:radial-gradient(circle, #325358 0%, #45a395 100%);color: floralwhite;"
+                    target="_blank"
+                    type="a"/>
               </template>
             </q-field>
           </q-card>
