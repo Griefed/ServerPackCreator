@@ -1,404 +1,408 @@
 //file:noinspection GroovyAssignabilityCheck
 //file:noinspection GrUnresolvedAccess
-import java.text.SimpleDateFormat
+
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
 
+import java.text.SimpleDateFormat
+
 plugins {
-    id 'java'
-    id 'idea'
+  id 'java'
+  id 'idea'
 
-    id 'jacoco'
-    id 'signing'
-    id 'maven-publish'
-    id 'java-library'
+  id 'jacoco'
+  id 'signing'
+  id 'maven-publish'
+  id 'java-library'
 
-    id 'edu.sc.seis.launch4j' version '2.5.3'
-    id 'org.siouan.frontend-jdk8' version '6.0.0'
-    id 'org.springframework.boot' version '2.6.7'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+  id 'edu.sc.seis.launch4j' version '2.5.3'
+  id 'org.siouan.frontend-jdk8' version '6.0.0'
+  id 'org.springframework.boot' version '2.6.7'
+  id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 sourceCompatibility = targetCompatibility = '1.8'
 group = 'de.griefed'
 
 repositories {
-    mavenCentral()
-    maven { url "https://jitpack.io" }
-    maven { url 'https://repo.spring.io/release' }
+  mavenCentral()
+  maven { url "https://jitpack.io" }
+  maven { url 'https://repo.spring.io/release' }
 }
 
 sourceSets {
-    main {
-        java {
-            srcDirs = ['backend/main/java']
-        }
-        resources {
-            srcDirs = ['backend/main/resources']
-        }
+  main {
+    java {
+      srcDirs = ['backend/main/java']
     }
-    test {
-        java {
-            srcDirs = ['backend/test/java']
-        }
-        resources {
-            srcDirs = ['backend/test/resources']
-        }
+    resources {
+      srcDirs = ['backend/main/resources']
     }
+  }
+  test {
+    java {
+      srcDirs = ['backend/test/java']
+    }
+    resources {
+      srcDirs = ['backend/test/resources']
+    }
+  }
 }
 
 configurations {
-    all {
-        // Exclude logging from dependencies because we already have logging set up
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+  all {
+    // Exclude logging from dependencies because we already have logging set up
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 
-    }
+  }
 
-    embed
-    implementation.extendsFrom(embed)
+  embed
+  implementation.extendsFrom(embed)
 }
 
 dependencies {
-    // Backend
-    embed 'de.griefed:versionchecker:1.1.0'
-    embed 'com.electronwill.night-config:hocon:3.6.5'
-    embed 'commons-io:commons-io:2.11.0'
-    embed 'commons-lang:commons-lang:2.6'
-    embed 'net.lingala.zip4j:zip4j:2.10.0'
-    embed 'com.moandjiezana.toml:toml4j:0.7.2'
-    embed 'org.xerial:sqlite-jdbc:3.36.0.3'
-    embed 'org.pf4j:pf4j:3.6.0'
-    embed 'com.github.vatbub:mslinks:1.0.5'
 
-    embed 'org.apache.logging.log4j:log4j-core:2.17.2'
-    embed 'org.apache.logging.log4j:log4j-api:2.17.2'
-    embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.2'
-    embed 'org.apache.logging.log4j:log4j-web:2.17.2'
-    embed 'org.apache.logging.log4j:log4j-jul:2.17.2'
-    embed 'org.jgroups:jgroups:5.2.2.Final'
 
-    // GUI
-    embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
+  // Backend
+  embed 'de.griefed:versionchecker:1.1.0'
+  embed 'com.electronwill.night-config:hocon:3.6.5'
+  embed 'commons-io:commons-io:2.11.0'
+  embed 'commons-lang:commons-lang:2.6'
+  embed 'net.lingala.zip4j:zip4j:2.10.0'
+  embed 'com.moandjiezana.toml:toml4j:0.7.2'
+  embed 'org.xerial:sqlite-jdbc:3.36.0.3'
+  embed 'org.pf4j:pf4j:3.6.0'
+  embed 'com.github.vatbub:mslinks:1.0.5'
 
-    // WEB
-    //embed 'org.springframework.boot:spring-boot-starter-security:2.6.7'
-    //embed 'org.springframework.boot:spring-boot-starter-validation:2.6.7'
-    embed 'org.springframework.boot:spring-boot-starter-web:2.6.7'
-    embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.7'
-    //embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.7'
-    embed 'org.apache.activemq:artemis-jms-server:2.19.1'
-    embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.7'
-    embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.7'
-    embed 'com.github.gwenn:sqlite-dialect:0.1.2'
+  embed 'org.apache.logging.log4j:log4j-core:2.17.2'
+  embed 'org.apache.logging.log4j:log4j-api:2.17.2'
+  embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.2'
+  embed 'org.apache.logging.log4j:log4j-web:2.17.2'
+  embed 'org.apache.logging.log4j:log4j-jul:2.17.2'
+  embed 'org.jgroups:jgroups:5.2.2.Final'
 
-    // Dev tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.7'
+  // GUI
+  embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
 
-    // Testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.7'
-    testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
+  // WEB
+  //embed 'org.springframework.boot:spring-boot-starter-security:2.6.7'
+  //embed 'org.springframework.boot:spring-boot-starter-validation:2.6.7'
+  embed 'org.springframework.boot:spring-boot-starter-web:2.6.7'
+  embed 'org.springframework.boot:spring-boot-starter-log4j2:2.6.7'
+  //embed 'org.springframework.boot:spring-boot-starter-quartz:2.6.7'
+  embed 'org.apache.activemq:artemis-jms-server:2.19.1'
+  embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.7'
+  embed 'org.springframework.boot:spring-boot-starter-artemis:2.6.7'
+  embed 'com.github.gwenn:sqlite-dialect:0.1.2'
+
+  // Dev tools
+  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.6.7'
+
+  // Testing
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.7'
+  testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
 }
 
 // Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
 frontend {
-    packageJsonDirectory = file("${projectDir}/frontend")
+  packageJsonDirectory = file("${projectDir}/frontend")
 
-    nodeVersion = '16.9.1'
-    nodeInstallDirectory = file("${projectDir}/frontend/node")
+  nodeVersion = '16.9.1'
+  nodeInstallDirectory = file("${projectDir}/frontend/node")
 
-    yarnEnabled = false
-    //yarnVersion = "1.22.11"
-    //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
+  yarnEnabled = false
+  //yarnVersion = "1.22.11"
+  //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
 
-    cleanScript = 'run clean'
-    assembleScript = 'run build'
+  cleanScript = 'run clean'
+  assembleScript = 'run build'
 
-    // Print the architecture we are running on.
-    System.out.println(String.format("I am running on: %s", System.getProperty("os.arch")))
+  // Print the architecture we are running on.
+  System.out.println(String.format("I am running on: %s", System.getProperty("os.arch")))
 
-    // If we are running on arm, specify Node path pattern so arm-builds succeed.
-    if (System.getProperty("os.arch").equals("arm")) {
-        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
-    } else if (System.getProperty("os.arch").equals("aarch64")) {
-        nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-arm64.TYPE'
-    }
+  // If we are running on arm, specify Node path pattern so arm-builds succeed.
+  if (System.getProperty("os.arch").equals("arm")) {
+    nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-armv7l.TYPE'
+  } else if (System.getProperty("os.arch").equals("aarch64")) {
+    nodeDistributionUrlPathPattern = 'vVERSION/node-vVERSION-linux-arm64.TYPE'
+  }
 }
 
 // Include specific files in resources folder, like the license and readme.
 tasks.register('about', Copy) {
-    dependsOn tasks.named('clean')
+  dependsOn tasks.named('clean')
 
-    from layout.projectDirectory.file("LICENSE") into layout.projectDirectory.dir("backend/main/resources")
-    from layout.projectDirectory.file("README.md") into layout.projectDirectory.dir("backend/main/resources")
-    from layout.projectDirectory.file("CHANGELOG.md") into layout.projectDirectory.dir("backend/main/resources")
-    from layout.projectDirectory.file("CONTRIBUTING.md") into layout.projectDirectory.dir("backend/main/resources")
-    from layout.projectDirectory.file("CODE_OF_CONDUCT.md") into layout.projectDirectory.dir("backend/main/resources")
+  from layout.projectDirectory.file("LICENSE") into layout.projectDirectory.dir("backend/main/resources")
+  from layout.projectDirectory.file("README.md") into layout.projectDirectory.dir("backend/main/resources")
+  from layout.projectDirectory.file("CHANGELOG.md") into layout.projectDirectory.dir("backend/main/resources")
+  from layout.projectDirectory.file("CONTRIBUTING.md") into layout.projectDirectory.dir("backend/main/resources")
+  from layout.projectDirectory.file("CODE_OF_CONDUCT.md") into layout.projectDirectory.dir("backend/main/resources")
 }
 
 // Make sure quasar is installed
 tasks.register('installQuasar', RunNpm) {
-    dependsOn tasks.named('installNode')
-    script = 'install -g @quasar/cli'
+  dependsOn tasks.named('installNode')
+  script = 'install -g @quasar/cli'
 }
 
 // Custom task to build and copy an up-to-date version of our frontend to SpringBoot.
 tasks.register('copyDist', Copy) {
-    dependsOn tasks.named('assembleFrontend')
-    // Delete old frontend files from SpringBoot.
-    def dirName = "backend/main/resources/static"
-    file( dirName ).list().each{
-        f ->
-            delete "${dirName}/${f}"
-    }
+  dependsOn tasks.named('assembleFrontend')
+  // Delete old frontend files from SpringBoot.
+  def dirName = "backend/main/resources/static"
+  file(dirName).list().each {
+    f ->
+      delete "${dirName}/${f}"
+  }
 
-    // Copy new frontend files to SpringBoot.
-    from layout.projectDirectory.dir("frontend/dist/spa")
-    into layout.projectDirectory.dir("backend/main/resources/static")
+  // Copy new frontend files to SpringBoot.
+  from layout.projectDirectory.dir("frontend/dist/spa")
+  into layout.projectDirectory.dir("backend/main/resources/static")
 }
 
 // Make sure everything is included in our JavaDoc.
 // Since this project is open source, we can include private etc. classes and methods docs.
 tasks.withType(Javadoc) {
-    options.addStringOption('encoding', 'UTF-8')
+  options.addStringOption('encoding', 'UTF-8')
 }
 
 // Launch4j builds our ServerPackCreator.exe.
 launch4j {
-    mainClassName = 'de.griefed.serverpackcreator.Main'
-    jarTask = project.tasks.jar
-    fileDescription = "Create server packs from Minecraft modpacks."
-    version = project.version
-    textVersion = project.version
-    windowTitle = "ServerPackCreator"
-    copyright = "GNU Lesser General Public License v2.1"
-    downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
-    supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
-    libraryDir = 'libraries'
-    outputDir = 'libs'
-    icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
+  mainClassName = 'de.griefed.serverpackcreator.Main'
+  jarTask = project.tasks.jar
+  fileDescription = "Create server packs from Minecraft modpacks."
+  version = project.version
+  textVersion = project.version
+  windowTitle = "ServerPackCreator"
+  copyright = "GNU Lesser General Public License v2.1"
+  downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
+  supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
+  libraryDir = 'libraries'
+  outputDir = 'libs'
+  icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
 task cleanUp(type: Delete) {
-    //dependsOn task.named('test')
+  //dependsOn task.named('test')
 
-    delete 'logs',
-            'plugins',
-            'server-packs',
-            'server_files',
-            'work',
-            'banner.txt',
-            'serverpackcreator.conf',
-            'serverpackcreator.db',
-            'serverpackcreator.properties',
-            'somefile.conf'
+  delete 'logs',
+      'plugins',
+      'server-packs',
+      'server_files',
+      'work',
+      'banner.txt',
+      'serverpackcreator.conf',
+      'serverpackcreator.db',
+      'serverpackcreator.properties',
+      'somefile.conf'
 }
 
 test {
-    useJUnitPlatform()
+  useJUnitPlatform()
 
-    // Mention test result in logs
-    testLogging {
-        events "passed",
-                "skipped",
-                "failed"
-    }
+  // Mention test result in logs
+  testLogging {
+    events "passed",
+        "skipped",
+        "failed"
+  }
 
-    finalizedBy jacocoTestReport, cleanUp
+  finalizedBy jacocoTestReport, cleanUp
 }
 
 jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
+  dependsOn test // tests are required to run before generating the report
 
-    reports {
-        xml.required = true
-        //csv.required = false
-        //html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
-    }
+  reports {
+    xml.required = true
+    //csv.required = false
+    //html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+  }
 }
 
 jacoco {
-    toolVersion = "0.8.7"
-    reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
+  toolVersion = "0.8.7"
+  reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
 }
 
 javadoc {
-    if(JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption('html5', true)
-    }
-    classpath = sourceSets.main.runtimeClasspath
+  if (JavaVersion.current().isJava9Compatible()) {
+    options.addBooleanOption('html5', true)
+  }
+  classpath = sourceSets.main.runtimeClasspath
 }
 
 // Build JavaDoc and JavaSources JARs.
 java {
-    withSourcesJar()
-    withJavadocJar()
+  withSourcesJar()
+  withJavadocJar()
 }
 
 bootJar {
-    // Customize MANIFEST to include relevant information.
-    manifest {
-        attributes  "Start-Class"    : "de.griefed.serverpackcreator.Main",
-                    "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
-                    "Description"    : "Create server packs from Minecraft modpacks.",
-                    "Built-By"       : System.getProperty("user.name"),
-                    "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                    "Created-By"     : "Gradle ${gradle.gradleVersion}",
-                    "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
-                    "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
-                    "Implementation-Version" : "${project.version}",
-                    "Implementation-Title"   : "serverpackcreator",
-                    "Application-Name": "ServerPackCreator"
+  // Customize MANIFEST to include relevant information.
+  manifest {
+    attributes "Start-Class": "de.griefed.serverpackcreator.Main",
+        "Class-Path": configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
+        "Description": "Create server packs from Minecraft modpacks.",
+        "Built-By": System.getProperty("user.name"),
+        "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+        "Created-By": "Gradle ${gradle.gradleVersion}",
+        "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
+        "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+        "Implementation-Version": "${project.version}",
+        "Implementation-Title": "serverpackcreator",
+        "Application-Name": "ServerPackCreator"
 
-    }
-    exclude (
-            'META-INF/org',
-            'META-INF/org/**',
-            'META-INF/versions',
-            'META-INF/versions/**',
-            'META-INF/DEPENDENCIES',
-            'META-INF/LICENSE',
-            'META-INF/NOTICE',
-            'META-INF/CHANGES',
-            'META-INF/LICENSE.txt',
-            'META-INF/NOTICE.txt',
-            'META-INF/README.md',
-            'Log4j-**',
-            'icon.png',
-            'profile_icon.png'
-    )
+  }
+  exclude(
+      'META-INF/org',
+      'META-INF/org/**',
+      'META-INF/versions',
+      'META-INF/versions/**',
+      'META-INF/DEPENDENCIES',
+      'META-INF/LICENSE',
+      'META-INF/NOTICE',
+      'META-INF/CHANGES',
+      'META-INF/LICENSE.txt',
+      'META-INF/NOTICE.txt',
+      'META-INF/README.md',
+      'Log4j-**',
+      'icon.png',
+      'profile_icon.png'
+  )
 }
 
 
 // JAR configuration still needed for Launch4j.
 jar {
-    // No duplicates
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  // No duplicates
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    // Include all libraries in our JAR-file.
-    from {
-        configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
-    }
+  // Include all libraries in our JAR-file.
+  from {
+    configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+  }
 
-    // Customize MANIFEST to include relevant information.
-    manifest {
-        attributes(
-                "Main-Class"     : "de.griefed.serverpackcreator.Main",
-                "Class-Path"     : configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
-                "Description"    : "Create server packs from Minecraft Forge or Fabric modpacks.",
-                "Built-By"       : System.getProperty("user.name"),
-                "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
-                "Created-By"     : "Gradle ${gradle.gradleVersion}",
-                "Build-Jdk"      : "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
-                "Build-OS"       : "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
-                "Implementation-Version" : "${project.version}",
-                "Implementation-Title"   : "serverpackcreator",
-                "Application-Name": "ServerPackCreator"
-        )
-    }
-    // Exclude files and folders which would otherwise bloat our JAR-file up.
-    exclude (
-            'META-INF/org',
-            'META-INF/org/**',
-            'META-INF/versions',
-            'META-INF/versions/**',
-            'META-INF/DEPENDENCIES',
-            'META-INF/LICENSE',
-            'META-INF/NOTICE',
-            'META-INF/CHANGES',
-            'META-INF/LICENSE.txt',
-            'META-INF/NOTICE.txt',
-            'META-INF/README.md',
-            'Log4j-**',
-            'icon.png',
-            'profile_icon.png'
+  // Customize MANIFEST to include relevant information.
+  manifest {
+    attributes(
+        "Main-Class": "de.griefed.serverpackcreator.Main",
+        "Class-Path": configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
+        "Description": "Create server packs from Minecraft Forge or Fabric modpacks.",
+        "Built-By": System.getProperty("user.name"),
+        "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+        "Created-By": "Gradle ${gradle.gradleVersion}",
+        "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
+        "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+        "Implementation-Version": "${project.version}",
+        "Implementation-Title": "serverpackcreator",
+        "Application-Name": "ServerPackCreator"
     )
+  }
+  // Exclude files and folders which would otherwise bloat our JAR-file up.
+  exclude(
+      'META-INF/org',
+      'META-INF/org/**',
+      'META-INF/versions',
+      'META-INF/versions/**',
+      'META-INF/DEPENDENCIES',
+      'META-INF/LICENSE',
+      'META-INF/NOTICE',
+      'META-INF/CHANGES',
+      'META-INF/LICENSE.txt',
+      'META-INF/NOTICE.txt',
+      'META-INF/README.md',
+      'Log4j-**',
+      'icon.png',
+      'profile_icon.png'
+  )
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
+  publications {
+    mavenJava(MavenPublication) {
 
-            groupId = 'de.griefed'
-            artifactId = 'serverpackcreator'
-            from components.java
-            version = project.version
+      groupId = 'de.griefed'
+      artifactId = 'serverpackcreator'
+      from components.java
+      version = project.version
 
-            pom {
-                name = 'ServerPackCreator'
-                description = 'Create server packs from Minecraft Forge or Fabric modpacks.'
-                url = 'https://git.griefed.de/Griefed/ServerPackCreator'
+      pom {
+        name = 'ServerPackCreator'
+        description = 'Create server packs from Minecraft Forge or Fabric modpacks.'
+        url = 'https://git.griefed.de/Griefed/ServerPackCreator'
 
-                licenses {
-                    license {
-                        name = 'GNU Lesser General Public License v2.1'
-                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'griefed'
-                        name = 'Griefed'
-                        email = 'griefed@griefed.de'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git'
-                    developerConnection = 'scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git'
-                    url = 'https://git.griefed.de/Griefed/ServerPackCreator'
-                }
-
-            }
+        licenses {
+          license {
+            name = 'GNU Lesser General Public License v2.1'
+            url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html'
+          }
         }
+
+        developers {
+          developer {
+            id = 'griefed'
+            name = 'Griefed'
+            email = 'griefed@griefed.de'
+          }
+        }
+
+        scm {
+          connection = 'scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git'
+          developerConnection = 'scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git'
+          url = 'https://git.griefed.de/Griefed/ServerPackCreator'
+        }
+
+      }
     }
+  }
 
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/Griefed/serverpackcreator"
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-        maven {
-            url = "https://git.griefed.de/api/v4/projects/63/packages/maven"
-            credentials(HttpHeaderCredentials) {
-                name = "Private-Token"
-                value = System.getenv("GITLAB_TOKEN")
-            }
-            authentication {
-                header(HttpHeaderAuthentication)
-            }
-        }
-        maven {
-            url = "https://gitlab.com/api/v4/projects/32677538/packages/maven"
-            credentials(HttpHeaderCredentials) {
-                name = "Private-Token"
-                value = System.getenv("GITLABCOM_TOKEN")
-            }
-            authentication {
-                header(HttpHeaderAuthentication)
-            }
-        }
-        maven {
-            name = "OSSRH"
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      url = "https://maven.pkg.github.com/Griefed/serverpackcreator"
+      credentials {
+        username = System.getenv("GITHUB_ACTOR")
+        password = System.getenv("GITHUB_TOKEN")
+      }
     }
+    maven {
+      url = "https://git.griefed.de/api/v4/projects/63/packages/maven"
+      credentials(HttpHeaderCredentials) {
+        name = "Private-Token"
+        value = System.getenv("GITLAB_TOKEN")
+      }
+      authentication {
+        header(HttpHeaderAuthentication)
+      }
+    }
+    maven {
+      url = "https://gitlab.com/api/v4/projects/32677538/packages/maven"
+      credentials(HttpHeaderCredentials) {
+        name = "Private-Token"
+        value = System.getenv("GITLABCOM_TOKEN")
+      }
+      authentication {
+        header(HttpHeaderAuthentication)
+      }
+    }
+    maven {
+      name = "OSSRH"
+      url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+      credentials {
+        username = System.getenv("OSSRH_USERNAME")
+        password = System.getenv("OSSRH_PASSWORD")
+      }
+    }
+  }
 }
 
 signing {
-    def signingKey = findProperty("signingKey")
-    def signingPassword = findProperty("signingPassword")
+  def signingKey = findProperty("signingKey")
+  def signingPassword = findProperty("signingPassword")
 
-    useInMemoryPgpKeys(signingKey,signingPassword)
-    sign publishing.publications.mavenJava
+  useInMemoryPgpKeys(signingKey, signingPassword)
+  sign publishing.publications.mavenJava
 }
