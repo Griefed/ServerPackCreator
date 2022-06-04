@@ -19,14 +19,13 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
-import org.w3c.dom.Document;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import org.w3c.dom.Document;
 
 /**
  * Information about the Fabric installer.
@@ -35,176 +34,223 @@ import java.util.Optional;
  */
 public class FabricInstaller {
 
-    private final String URL_TEMPLATE_INSTALLER = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
-    private final List<String> installers = new ArrayList<>();
-    private String latestInstaller;
-    private String releaseInstaller;
-    private URL latestInstallerUrl;
-    private URL releaseInstallerUrl;
-    private HashMap<String, URL> installerUrlMeta;
+  private final String URL_TEMPLATE_INSTALLER =
+      "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
+  private final List<String> installers = new ArrayList<>();
+  private String latestInstaller;
+  private String releaseInstaller;
+  private URL latestInstallerUrl;
+  private URL releaseInstallerUrl;
+  private HashMap<String, URL> installerUrlMeta;
 
-    /**
-     * Constructor
-     *
-     * @param installerManifest {@link Document} containing Fabric installer information
-     * @author Griefed
-     */
-    protected FabricInstaller(Document installerManifest) {
-        this.latestInstaller = installerManifest.getElementsByTagName("latest").item(0).getChildNodes().item(0).getNodeValue();
-        this.releaseInstaller = installerManifest.getElementsByTagName("release").item(0).getChildNodes().item(0).getNodeValue();
-        try {
-            this.latestInstallerUrl = new URL(String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
-        } catch (MalformedURLException ignored) {
+  /**
+   * Constructor
+   *
+   * @param installerManifest {@link Document} containing Fabric installer information
+   * @author Griefed
+   */
+  protected FabricInstaller(Document installerManifest) {
+    this.latestInstaller =
+        installerManifest
+            .getElementsByTagName("latest")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    this.releaseInstaller =
+        installerManifest
+            .getElementsByTagName("release")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    try {
+      this.latestInstallerUrl =
+          new URL(
+              String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
+    } catch (MalformedURLException ignored) {
 
-        }
-        try {
-            this.releaseInstallerUrl = new URL(String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
-        } catch (MalformedURLException ignored) {
+    }
+    try {
+      this.releaseInstallerUrl =
+          new URL(
+              String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
+    } catch (MalformedURLException ignored) {
 
-        }
-        this.installers.clear();
-        for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
-            installers.add(installerManifest.getElementsByTagName("version").item(i).getChildNodes().item(0).getNodeValue());
-        }
-        this.installerUrlMeta = new HashMap<>();
-        this.installers.forEach(version -> {
-            try {
-                this.installerUrlMeta.put(version, installerUrl(version));
-            } catch (MalformedURLException ignored) {
+    }
+    this.installers.clear();
+    for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
+      installers.add(
+          installerManifest
+              .getElementsByTagName("version")
+              .item(i)
+              .getChildNodes()
+              .item(0)
+              .getNodeValue());
+    }
+    this.installerUrlMeta = new HashMap<>();
+    this.installers.forEach(
+        version -> {
+          try {
+            this.installerUrlMeta.put(version, installerUrl(version));
+          } catch (MalformedURLException ignored) {
 
-            }
+          }
         });
+  }
+
+  /**
+   * Update this {@link FabricInstaller} with information from the given {@link Document}.
+   *
+   * @param installerManifest {@link Document} containing new installer information.
+   * @return This instance of {@link FabricInstaller}.
+   * @author Griefed
+   */
+  protected FabricInstaller update(Document installerManifest) {
+    this.latestInstaller =
+        installerManifest
+            .getElementsByTagName("latest")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    this.releaseInstaller =
+        installerManifest
+            .getElementsByTagName("release")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    try {
+      this.latestInstallerUrl =
+          new URL(
+              String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
+    } catch (MalformedURLException ignored) {
+
     }
+    try {
+      this.releaseInstallerUrl =
+          new URL(
+              String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
+    } catch (MalformedURLException ignored) {
 
-    /**
-     * Update this {@link FabricInstaller} with information from the given {@link Document}.
-     *
-     * @param installerManifest {@link Document} containing new installer information.
-     * @return This instance of {@link FabricInstaller}.
-     * @author Griefed
-     */
-    protected FabricInstaller update(Document installerManifest) {
-        this.latestInstaller = installerManifest.getElementsByTagName("latest").item(0).getChildNodes().item(0).getNodeValue();
-        this.releaseInstaller = installerManifest.getElementsByTagName("release").item(0).getChildNodes().item(0).getNodeValue();
-        try {
-            this.latestInstallerUrl = new URL(String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
-        } catch (MalformedURLException ignored) {
+    }
+    this.installers.clear();
+    for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
+      installers.add(
+          installerManifest
+              .getElementsByTagName("version")
+              .item(i)
+              .getChildNodes()
+              .item(0)
+              .getNodeValue());
+    }
+    this.installerUrlMeta = new HashMap<>();
+    this.installers.forEach(
+        version -> {
+          try {
+            this.installerUrlMeta.put(version, installerUrl(version));
+          } catch (MalformedURLException ignored) {
 
-        }
-        try {
-            this.releaseInstallerUrl = new URL(String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
-        } catch (MalformedURLException ignored) {
-
-        }
-        this.installers.clear();
-        for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
-            installers.add(installerManifest.getElementsByTagName("version").item(i).getChildNodes().item(0).getNodeValue());
-        }
-        this.installerUrlMeta = new HashMap<>();
-        this.installers.forEach(version -> {
-            try {
-                this.installerUrlMeta.put(version, installerUrl(version));
-            } catch (MalformedURLException ignored) {
-
-            }
+          }
         });
 
-        return this;
-    }
+    return this;
+  }
 
-    /**
-     * Acquire the URL for the given Fabric version.
-     *
-     * @param fabricInstallerVersion {@link String} Fabric version.
-     * @return {@link URL} to the installer for the given Fabric version.
-     * @throws MalformedURLException if the URL could not be formed.
-     * @author Griefed
-     */
-    private URL installerUrl(String fabricInstallerVersion) throws MalformedURLException {
-        return new URL(String.format(URL_TEMPLATE_INSTALLER, fabricInstallerVersion, fabricInstallerVersion));
-    }
+  /**
+   * Acquire the URL for the given Fabric version.
+   *
+   * @param fabricInstallerVersion {@link String} Fabric version.
+   * @return {@link URL} to the installer for the given Fabric version.
+   * @throws MalformedURLException if the URL could not be formed.
+   * @author Griefed
+   */
+  private URL installerUrl(String fabricInstallerVersion) throws MalformedURLException {
+    return new URL(
+        String.format(URL_TEMPLATE_INSTALLER, fabricInstallerVersion, fabricInstallerVersion));
+  }
 
-    /**
-     * Get a list of available installer versions for Fabric.
-     *
-     * @return {@link String}-list of available Fabric installer versions.
-     * @author Griefed
-     */
-    protected List<String> installers() {
-        return installers;
-    }
+  /**
+   * Get a list of available installer versions for Fabric.
+   *
+   * @return {@link String}-list of available Fabric installer versions.
+   * @author Griefed
+   */
+  protected List<String> installers() {
+    return installers;
+  }
 
-    /**
-     * Meta for the Fabric-Version-to-Installer-URL.<br>
-     * key: {@link String} Fabric version.<br>
-     * value: {@link URL} Fabric installer URL.
-     *
-     * @return {@link HashMap} with the Fabric-Version-to-Installer-URL.
-     * @author Griefed
-     */
-    protected HashMap<String, URL> meta() {
-        return installerUrlMeta;
-    }
+  /**
+   * Meta for the Fabric-Version-to-Installer-URL.<br>
+   * key: {@link String} Fabric version.<br>
+   * value: {@link URL} Fabric installer URL.
+   *
+   * @return {@link HashMap} with the Fabric-Version-to-Installer-URL.
+   * @author Griefed
+   */
+  protected HashMap<String, URL> meta() {
+    return installerUrlMeta;
+  }
 
-    /**
-     * Get the latest Fabric installer version.
-     *
-     * @return {@link String} The latest Fabric installer version.
-     * @author Griefed
-     */
-    protected String latestInstallerVersion() {
-        return latestInstaller;
-    }
+  /**
+   * Get the latest Fabric installer version.
+   *
+   * @return {@link String} The latest Fabric installer version.
+   * @author Griefed
+   */
+  protected String latestInstallerVersion() {
+    return latestInstaller;
+  }
 
-    /**
-     * Get the release Fabric installer version.
-     *
-     * @return {@link String} The release Fabric installer version.
-     * @author Griefed
-     */
-    protected String releaseInstallerVersion() {
-        return releaseInstaller;
-    }
+  /**
+   * Get the release Fabric installer version.
+   *
+   * @return {@link String} The release Fabric installer version.
+   * @author Griefed
+   */
+  protected String releaseInstallerVersion() {
+    return releaseInstaller;
+  }
 
-    /**
-     * Get the {@link URL} to the latest Fabric installer.
-     *
-     * @return {@link URL} to the latest Fabric installer.
-     * @author Griefed
-     */
-    protected URL latestInstallerUrl() {
-        return latestInstallerUrl;
-    }
+  /**
+   * Get the {@link URL} to the latest Fabric installer.
+   *
+   * @return {@link URL} to the latest Fabric installer.
+   * @author Griefed
+   */
+  protected URL latestInstallerUrl() {
+    return latestInstallerUrl;
+  }
 
-    /**
-     * Get the {@link URL} to the release Fabric installer.
-     *
-     * @return {@link URL} to the release Fabric installer.
-     * @author Griefed
-     */
-    protected URL releaseInstallerUrl() {
-        return releaseInstallerUrl;
-    }
+  /**
+   * Get the {@link URL} to the release Fabric installer.
+   *
+   * @return {@link URL} to the release Fabric installer.
+   * @author Griefed
+   */
+  protected URL releaseInstallerUrl() {
+    return releaseInstallerUrl;
+  }
 
-    /**
-     * Get the {@link URL} to the improved Fabric launcher for the given Minecraft and Fabric versions.
-     *
-     * @param minecraftVersion {@link String} Minecraft version.
-     * @param fabricVersion    {@link String} Fabric version.
-     * @return {@link URL} to the improved Fabric launcher, wrapped in an {@link Optional}.
-     * @author Griefed
-     */
-    protected Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
-        try {
-            return Optional.of(new URL(
-                    String.format("https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar",
-                            minecraftVersion,
-                            fabricVersion,
-                            releaseInstaller
-                    )
-            ));
-        } catch (MalformedURLException ex) {
-            return Optional.empty();
-        }
+  /**
+   * Get the {@link URL} to the improved Fabric launcher for the given Minecraft and Fabric
+   * versions.
+   *
+   * @param minecraftVersion {@link String} Minecraft version.
+   * @param fabricVersion {@link String} Fabric version.
+   * @return {@link URL} to the improved Fabric launcher, wrapped in an {@link Optional}.
+   * @author Griefed
+   */
+  protected Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
+    try {
+      return Optional.of(
+          new URL(
+              String.format(
+                  "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar",
+                  minecraftVersion, fabricVersion, releaseInstaller)));
+    } catch (MalformedURLException ex) {
+      return Optional.empty();
     }
+  }
 }

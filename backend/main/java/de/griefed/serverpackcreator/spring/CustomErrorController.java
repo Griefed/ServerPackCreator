@@ -32,15 +32,14 @@ import org.springframework.web.servlet.ModelAndView;
 @RestController
 public class CustomErrorController implements ErrorController {
 
-    /**
-     * Redirect all unknown paths to our 404-page.
-     *
-     * @return Redirects the requester to our error page.
-     * @author Griefed
-     */
-    @RequestMapping(value = "/error")
-    public ModelAndView error() {
-        return new ModelAndView("redirect:/#/error");
-    }
-
+  /**
+   * Redirect all unknown paths to our 404-page.
+   *
+   * @return Redirects the requester to our error page.
+   * @author Griefed
+   */
+  @RequestMapping(value = "/error")
+  public ModelAndView error() {
+    return new ModelAndView("redirect:/#/error");
+  }
 }

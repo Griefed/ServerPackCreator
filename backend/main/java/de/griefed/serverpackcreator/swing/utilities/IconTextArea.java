@@ -19,66 +19,69 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
-import javax.swing.*;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JTextArea;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentListener;
-import java.awt.*;
 
 /**
  * Based on {@link IconTextField}<br>
  * <a href="https://itqna.net/questions/10833/decorating-jtextfield-icon">it_qna</a>
  */
 public class IconTextArea extends JTextArea {
-    private static final int ICON_SPACING = 4;
-    private Border mBorder;
-    private Icon mIcon;
+  private static final int ICON_SPACING = 4;
+  private Border mBorder;
+  private Icon mIcon;
 
-    public IconTextArea(String s) {
-        super(s);
+  public IconTextArea(String s) {
+    super(s);
+  }
+
+  public IconTextArea() {
+    super();
+  }
+
+  @Override
+  public void setBorder(Border border) {
+    mBorder = border;
+
+    if (mIcon == null) {
+
+      super.setBorder(border);
+
+    } else {
+
+      // Border margin = BorderFactory.createEmptyBorder(0, mIcon.getIconWidth() + ICON_SPACING, 0,
+      // 0);
+      Border margin = BorderFactory.createEmptyBorder(0, mIcon.getIconWidth() + ICON_SPACING, 0, 0);
+      Border compoud = BorderFactory.createCompoundBorder(border, margin);
+      super.setBorder(compoud);
     }
+  }
 
-    public IconTextArea() {
-        super();
+  @Override
+  protected void paintComponent(Graphics graphics) {
+    super.paintComponent(graphics);
+
+    if (mIcon != null) {
+      Insets iconInsets = mBorder.getBorderInsets(this);
+      mIcon.paintIcon(this, graphics, iconInsets.left, this.getHeight() - mIcon.getIconHeight());
     }
+  }
 
-    @Override
-    public void setBorder(Border border) {
-        mBorder = border;
+  public void setIcon(Icon icon) {
+    mIcon = icon;
+    resetBorder();
+  }
 
-        if (mIcon == null) {
+  private void resetBorder() {
+    setBorder(mBorder);
+  }
 
-            super.setBorder(border);
-
-        } else {
-
-            //Border margin = BorderFactory.createEmptyBorder(0, mIcon.getIconWidth() + ICON_SPACING, 0, 0);
-            Border margin = BorderFactory.createEmptyBorder(0, mIcon.getIconWidth() + ICON_SPACING, 0, 0);
-            Border compoud = BorderFactory.createCompoundBorder(border, margin);
-            super.setBorder(compoud);
-
-        }
-    }
-
-    @Override
-    protected void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-
-        if (mIcon != null) {
-            Insets iconInsets = mBorder.getBorderInsets(this);
-            mIcon.paintIcon(this, graphics, iconInsets.left, this.getHeight() - mIcon.getIconHeight());
-        }
-    }
-
-    public void setIcon(Icon icon) {
-        mIcon = icon;
-        resetBorder();
-    }
-
-    private void resetBorder() {
-        setBorder(mBorder);
-    }
-
-    public void addDocumentListener(DocumentListener listener) {
-        getDocument().addDocumentListener(listener);
-    }
+  public void addDocumentListener(DocumentListener listener) {
+    getDocument().addDocumentListener(listener);
+  }
 }

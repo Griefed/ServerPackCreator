@@ -21,13 +21,13 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
-
 import java.io.IOException;
 
 /**
- * The Main-class is only responisble for creating an isntance of {@link ServerPackCreator} with the passed {@link String}-array
- * from the commandline and then subsequently running ServerPackCreator in the determined mode, with the determined locale.
- * <br><br>
+ * The Main-class is only responisble for creating an isntance of {@link ServerPackCreator} with the
+ * passed {@link String}-array from the commandline and then subsequently running ServerPackCreator
+ * in the determined mode, with the determined locale. <br>
+ * <br>
  * For a list of available commandline arguments, check out {@link CommandlineParser.Mode}
  *
  * @author Griefed
@@ -35,19 +35,18 @@ import java.io.IOException;
 @Generated
 public class Main {
 
-    /**
-     * Initialize ServerPackCreator with the passed commandline-arguments and run.
-     *
-     * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
-     *             will enter and which locale is used.
-     * @throws IOException if the {@link VersionMeta} could not be instantiated.
-     * @author Griefed
-     */
-    public static void main(String[] args) throws IOException {
+  /**
+   * Initialize ServerPackCreator with the passed commandline-arguments and run.
+   *
+   * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
+   *     ServerPackCreator will enter and which locale is used.
+   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @author Griefed
+   */
+  public static void main(String[] args) throws IOException {
 
-        ServerPackCreator serverPackCreator = new ServerPackCreator(args);
+    ServerPackCreator serverPackCreator = new ServerPackCreator(args);
 
-        serverPackCreator.run();
-
-    }
+    serverPackCreator.run();
+  }
 }

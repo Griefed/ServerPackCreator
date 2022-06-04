@@ -19,16 +19,16 @@
  */
 package de.griefed.serverpackcreator.spring.serverpack;
 
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
- * Our JPA repository for storing and retrieving {@link ServerPackModel}s to and from our SQLite database. Provides methods for
- * retrieving, storing, deleting. Calls must always be made from {@link ServerPackService} and not directly
- * to this repository. It may seem strange, but this accomplishes a couple of things:<br>
+ * Our JPA repository for storing and retrieving {@link ServerPackModel}s to and from our SQLite
+ * database. Provides methods for retrieving, storing, deleting. Calls must always be made from
+ * {@link ServerPackService} and not directly to this repository. It may seem strange, but this
+ * accomplishes a couple of things:<br>
  * 1. Centralized access to the repository.<br>
  * 2. Complete control over what happens with the data retrieved from the repository.<br>
  * 3. Complete control over what happens with the data passed to the repository.<br>
@@ -39,40 +39,44 @@ import java.util.Optional;
 @Repository
 public interface ServerPackRepository extends CrudRepository<ServerPackModel, Integer> {
 
-    /**
-     * Find all server packs using a CurseForge project name.
-     *
-     * @param projectName String. The project name with which to search for server packs.
-     * @return Returns a list of all server packs for the passed CurseForge project name wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     * @author Griefed
-     */
-    Optional<List<ServerPackModel>> findAllByProjectName(String projectName);
+  /**
+   * Find all server packs using a CurseForge project name.
+   *
+   * @param projectName String. The project name with which to search for server packs.
+   * @return Returns a list of all server packs for the passed CurseForge project name wrapped in an
+   *     {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link
+   *     Optional#get()}.
+   * @author Griefed
+   */
+  Optional<List<ServerPackModel>> findAllByProjectName(String projectName);
 
-    /**
-     * Find a server pack by its CurseForge file display name.
-     *
-     * @param fileName String. The CurseForge file display name with which to search for a server pack.
-     * @return Returns a server pack for the passed file display name wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     * @author Griefed
-     */
-    Optional<ServerPackModel> findByFileName(String fileName);
+  /**
+   * Find a server pack by its CurseForge file display name.
+   *
+   * @param fileName String. The CurseForge file display name with which to search for a server
+   *     pack.
+   * @return Returns a server pack for the passed file display name wrapped in an {@link Optional}.
+   *     I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
+   * @author Griefed
+   */
+  Optional<ServerPackModel> findByFileName(String fileName);
 
-    /**
-     * Find all server packs by their status.
-     *
-     * @param status String. The status with which to search for server packs.
-     * @return Returns a list of server packs for the passed status wrapped in an {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
-     * @author Griefed
-     */
-    Optional<List<ServerPackModel>> findByStatus(String status);
+  /**
+   * Find all server packs by their status.
+   *
+   * @param status String. The status with which to search for server packs.
+   * @return Returns a list of server packs for the passed status wrapped in an {@link Optional}. I
+   *     recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
+   * @author Griefed
+   */
+  Optional<List<ServerPackModel>> findByStatus(String status);
 
-    /**
-     * Count all server packs by a CurseForge project name.
-     *
-     * @param projectName String. The CurseForge project name with which to count all server packs.
-     * @return Integer. Returns the amount of server packs for the passed CurseForge project name.
-     * @author Griefed
-     */
-    int countAllByProjectName(String projectName);
-
+  /**
+   * Count all server packs by a CurseForge project name.
+   *
+   * @param projectName String. The CurseForge project name with which to count all server packs.
+   * @return Integer. Returns the amount of server packs for the passed CurseForge project name.
+   * @author Griefed
+   */
+  int countAllByProjectName(String projectName);
 }

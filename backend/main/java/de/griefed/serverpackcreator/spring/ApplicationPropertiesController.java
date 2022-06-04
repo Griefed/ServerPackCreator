@@ -21,13 +21,12 @@ package de.griefed.serverpackcreator.spring;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
+import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
 
 /**
  * RestController for acquiring the configuration of this ServerPackCreator instance.
@@ -39,32 +38,41 @@ import java.util.Arrays;
 @RequestMapping("/api/v1/settings")
 public class ApplicationPropertiesController {
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
-    private final Utilities UTILITIES;
+  private final ApplicationProperties APPLICATIONPROPERTIES;
+  private final Utilities UTILITIES;
 
-    /**
-     * Constructor for DI.
-     *
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties} with the configuration of this ServerPackCreator
-     *                                      instance.
-     * @param injectedUtilities             Instance of {@link Utilities}.
-     * @author Griefed
-     */
-    @Autowired
-    public ApplicationPropertiesController(ApplicationProperties injectedApplicationProperties,
-                                           Utilities injectedUtilities) {
+  /**
+   * Constructor for DI.
+   *
+   * @param injectedApplicationProperties Instance of {@link ApplicationProperties} with the
+   *     configuration of this ServerPackCreator instance.
+   * @param injectedUtilities Instance of {@link Utilities}.
+   * @author Griefed
+   */
+  @Autowired
+  public ApplicationPropertiesController(
+      ApplicationProperties injectedApplicationProperties, Utilities injectedUtilities) {
 
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        this.UTILITIES = injectedUtilities;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    this.UTILITIES = injectedUtilities;
+  }
 
-    @GetMapping(produces = "application/json")
-    public String getConfiguration() {
-        return "{" +
-                "\"listFallbackMods\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods()) + "," +
-                "\"listDirectoriesExclude\":" + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude()) + "," +
-                "\"serverPackCreatorVersion\":\"" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION() + "\"," +
-                "\"supportedModloaders\":" + UTILITIES.ListUtils().encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS())) +
-                "}";
-    }
+  @GetMapping(produces = "application/json")
+  public String getConfiguration() {
+    return "{"
+        + "\"listFallbackMods\":"
+        + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods())
+        + ","
+        + "\"listDirectoriesExclude\":"
+        + UTILITIES.ListUtils()
+            .encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude())
+        + ","
+        + "\"serverPackCreatorVersion\":\""
+        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
+        + "\","
+        + "\"supportedModloaders\":"
+        + UTILITIES.ListUtils()
+            .encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS()))
+        + "}";
+  }
 }

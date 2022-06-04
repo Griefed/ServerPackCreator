@@ -24,42 +24,43 @@ package de.griefed.serverpackcreator.i18n;
  * {@link #IncorrectLanguageException()}<br>
  * {@link #IncorrectLanguageException(String)}<br>
  * {@link #IncorrectLanguageException(Throwable)}<br>
- * {@link #IncorrectLanguageException(String, Throwable)}<p>
- * Provides exceptions to {@link LocalizationManager}
+ * {@link #IncorrectLanguageException(String, Throwable)}
+ *
+ * <p>Provides exceptions to {@link LocalizationManager}
  *
  * @author whitebear60
  */
 public class IncorrectLanguageException extends Exception {
 
-    /**
-     * @author whitebear60
-     */
-    public IncorrectLanguageException() {
-        super("Incorrect language specified");
-    }
+  /**
+   * @author whitebear60
+   */
+  public IncorrectLanguageException() {
+    super("Incorrect language specified");
+  }
 
-    /**
-     * @param message The exception message.
-     * @author whitebear60
-     */
-    public IncorrectLanguageException(String message) {
-        super(message);
-    }
+  /**
+   * @param message The exception message.
+   * @author whitebear60
+   */
+  public IncorrectLanguageException(String message) {
+    super(message);
+  }
 
-    /**
-     * @param message The exception message.
-     * @param cause   The cause of the exception.
-     * @author whitebear60
-     */
-    public IncorrectLanguageException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  /**
+   * @param message The exception message.
+   * @param cause The cause of the exception.
+   * @author whitebear60
+   */
+  public IncorrectLanguageException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    /**
-     * @param cause The cause of the exception.
-     * @author whitebear60
-     */
-    public IncorrectLanguageException(Throwable cause) {
-        super(cause);
-    }
+  /**
+   * @param cause The cause of the exception.
+   * @author whitebear60
+   */
+  public IncorrectLanguageException(Throwable cause) {
+    super(cause);
+  }
 }

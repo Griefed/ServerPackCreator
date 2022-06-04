@@ -29,10 +29,13 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * <a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
- * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
- * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
- * the necessary changes to fully implement it in ServerPackCreator.<br>
+ * <a
+ * href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
+ * to implement a task queue using Apache Artemis and Spring Boot</a><br>
+ * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
+ * how to implement a JMS. Without it this implementation of Artemis would have either taken way
+ * longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
+ * necessary changes to fully implement it in ServerPackCreator.<br>
  * Class responsible for submitting tasks to our JMS.
  *
  * @author Griefed
@@ -40,65 +43,75 @@ import org.springframework.stereotype.Service;
 @Service
 public class TaskSubmitter {
 
-    private static final Logger LOG = LogManager.getLogger(TaskSubmitter.class);
+  private static final Logger LOG = LogManager.getLogger(TaskSubmitter.class);
 
-    private JmsTemplate jmsTemplate;
+  private JmsTemplate jmsTemplate;
 
-    /**
-     * Constructor responsible for our DI.
-     *
-     * @param injectedJmsTemplate           Instance of {@link JmsTemplate}.
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
-     * @author Griefed
-     */
-    @Autowired
-    public TaskSubmitter(JmsTemplate injectedJmsTemplate, ApplicationProperties injectedApplicationProperties) {
-        this.jmsTemplate = injectedJmsTemplate;
-    }
+  /**
+   * Constructor responsible for our DI.
+   *
+   * @param injectedJmsTemplate Instance of {@link JmsTemplate}.
+   * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+   * @author Griefed
+   */
+  @Autowired
+  public TaskSubmitter(
+      JmsTemplate injectedJmsTemplate, ApplicationProperties injectedApplicationProperties) {
+    this.jmsTemplate = injectedJmsTemplate;
+  }
 
-    /**
-     * Submit a task for the generation of a server pack from a ZIP-archive.
-     *
-     * @param zipGenerationProperties {@link String} containing all information required to generate a server pack from
-     *                                a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
-     * @author Griefed
-     */
-    public void generateZip(String zipGenerationProperties) {
-        LOG.debug("Sending ZIP generate task: " + zipGenerationProperties);
-        submitGeneration(new GenerateZip(zipGenerationProperties));
-    }
+  /**
+   * Submit a task for the generation of a server pack from a ZIP-archive.
+   *
+   * @param zipGenerationProperties {@link String} containing all information required to generate a
+   *     server pack from a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String,
+   *     String, String, String, String)}.
+   * @author Griefed
+   */
+  public void generateZip(String zipGenerationProperties) {
+    LOG.debug("Sending ZIP generate task: " + zipGenerationProperties);
+    submitGeneration(new GenerateZip(zipGenerationProperties));
+  }
 
-    /**
-     * Convert and send a scan-task to our JMS. Set the <code>type</code> to <code>scan</code> and the <code>unique id</code>
-     * to tasks unique id which contains the CurseForge project and file id combination.
-     *
-     * @param task The task to be submitted to the scan-queue.
-     * @author Griefed
-     */
-    private void submitScan(Task task) {
-        LOG.info("Submitting scan " + task);
-        LOG.debug("UniqueID is: " + task.uniqueId());
-        jmsTemplate.convertAndSend("tasks.background", task, message -> {
-            message.setStringProperty("type", "scan");
-            message.setStringProperty("unique_id", task.uniqueId());
-            return message;
+  /**
+   * Convert and send a scan-task to our JMS. Set the <code>type</code> to <code>scan</code> and the
+   * <code>unique id</code> to tasks unique id which contains the CurseForge project and file id
+   * combination.
+   *
+   * @param task The task to be submitted to the scan-queue.
+   * @author Griefed
+   */
+  private void submitScan(Task task) {
+    LOG.info("Submitting scan " + task);
+    LOG.debug("UniqueID is: " + task.uniqueId());
+    jmsTemplate.convertAndSend(
+        "tasks.background",
+        task,
+        message -> {
+          message.setStringProperty("type", "scan");
+          message.setStringProperty("unique_id", task.uniqueId());
+          return message;
         });
-    }
+  }
 
-    /**
-     * Convert and send a generation-task to our JMS. Set the <code>type</code> to <code>generation</code> and the <code>unique id</code>
-     * to tasks unique id which contains the CurseForge project and file id combination.
-     *
-     * @param task The task to be submitted to the generation-queue.
-     * @author Griefed
-     */
-    private void submitGeneration(Task task) {
-        LOG.info("Submitting generation " + task);
-        LOG.debug("UniqueID is: " + task.uniqueId());
-        jmsTemplate.convertAndSend("tasks.background", task, message -> {
-            message.setStringProperty("type", "generation");
-            message.setStringProperty("unique_id", task.uniqueId());
-            return message;
+  /**
+   * Convert and send a generation-task to our JMS. Set the <code>type</code> to <code>generation
+   * </code> and the <code>unique id</code> to tasks unique id which contains the CurseForge project
+   * and file id combination.
+   *
+   * @param task The task to be submitted to the generation-queue.
+   * @author Griefed
+   */
+  private void submitGeneration(Task task) {
+    LOG.info("Submitting generation " + task);
+    LOG.debug("UniqueID is: " + task.uniqueId());
+    jmsTemplate.convertAndSend(
+        "tasks.background",
+        task,
+        message -> {
+          message.setStringProperty("type", "generation");
+          message.setStringProperty("unique_id", task.uniqueId());
+          return message;
         });
-    }
+  }
 }

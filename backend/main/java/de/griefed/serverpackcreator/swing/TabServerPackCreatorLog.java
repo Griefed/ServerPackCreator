@@ -23,12 +23,11 @@ import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.utilities.JComponentTailer;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import java.io.File;
+import java.util.Properties;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
-
-import java.io.File;
-import java.util.Properties;
 
 /**
  * This class creates the tab which display the latest serverpackcreator.log tailer.
@@ -38,52 +37,60 @@ import java.util.Properties;
 @Generated
 public class TabServerPackCreatorLog extends JComponentTailer {
 
-    private final LocalizationManager LOCALIZATIONMANAGER;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
+  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    /**
-     * <strong>Constructor</strong><p>
-     * Used for Dependency Injection.<p>
-     * Receives an instance of {@link LocalizationManager} or creates one if the received
-     * one is null. Required for use of localization.
-     *
-     * @param injectedLocalizationManager   Instance of {@link LocalizationManager} required for localized log messages.
-     * @param injectedApplicationProperties Instance of {@link Properties} required for various different things.
-     * @author Griefed
-     */
-    public TabServerPackCreatorLog(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
-        if (injectedApplicationProperties == null) {
-            this.APPLICATIONPROPERTIES = new ApplicationProperties();
-        } else {
-            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        }
-
-        if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        } else {
-            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
-        }
+  /**
+   * <strong>Constructor</strong>
+   *
+   * <p>Used for Dependency Injection.
+   *
+   * <p>Receives an instance of {@link LocalizationManager} or creates one if the received one is
+   * null. Required for use of localization.
+   *
+   * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for
+   *     localized log messages.
+   * @param injectedApplicationProperties Instance of {@link Properties} required for various
+   *     different things.
+   * @author Griefed
+   */
+  public TabServerPackCreatorLog(
+      LocalizationManager injectedLocalizationManager,
+      ApplicationProperties injectedApplicationProperties) {
+    if (injectedApplicationProperties == null) {
+      this.APPLICATIONPROPERTIES = new ApplicationProperties();
+    } else {
+      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    /**
-     * @author Griefed
-     */
-    @Override
-    protected void createTailer() {
-        class MyTailerListener extends TailerListenerAdapter {
-            public void handle(String line) {
-                if (line.contains(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"))) {
-                    textArea.setText("");
-                }
-                if (!line.contains("DEBUG")) {
-                    textArea.append(line.substring(line.lastIndexOf(") - ") + 3) + "\n");
-                }
-            }
-        }
-        TailerListener tailerListener = new MyTailerListener();
-        Tailer tailer = new Tailer(new File("./logs/serverpackcreator.log"), tailerListener, 100);
-        Thread thread = new Thread(tailer);
-        thread.setDaemon(true);
-        thread.start();
+    if (injectedLocalizationManager == null) {
+      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    } else {
+      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
     }
+  }
+
+  /**
+   * @author Griefed
+   */
+  @Override
+  protected void createTailer() {
+    class MyTailerListener extends TailerListenerAdapter {
+      public void handle(String line) {
+        if (line.contains(
+            LOCALIZATIONMANAGER.getLocalizedString(
+                "createserverpack.log.info.buttoncreateserverpack.start"))) {
+          textArea.setText("");
+        }
+        if (!line.contains("DEBUG")) {
+          textArea.append(line.substring(line.lastIndexOf(") - ") + 3) + "\n");
+        }
+      }
+    }
+    TailerListener tailerListener = new MyTailerListener();
+    Tailer tailer = new Tailer(new File("./logs/serverpackcreator.log"), tailerListener, 100);
+    Thread thread = new Thread(tailer);
+    thread.setDaemon(true);
+    thread.start();
+  }
 }

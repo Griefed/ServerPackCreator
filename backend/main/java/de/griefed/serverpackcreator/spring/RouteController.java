@@ -24,41 +24,42 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Simple route controller to ensure some destinations let the user arrive where we want them to, otherwise, we redirect.
- * Because our router mode in VueJS is set to hash, we receive a 404 when we try to access, say, /downloads directly.
- * So we need to redirect to /#/downloads instead, for example.
+ * Simple route controller to ensure some destinations let the user arrive where we want them to,
+ * otherwise, we redirect. Because our router mode in VueJS is set to hash, we receive a 404 when we
+ * try to access, say, /downloads directly. So we need to redirect to /#/downloads instead, for
+ * example.
  *
  * @author Griefed
  */
 @RestController
 public class RouteController {
 
-    /**
-     * Redirect /downloads to /#/downloads.
-     *
-     * @return Redirects requests for /downloads to /#/downloads
-     * @author Griefed
-     */
-    @RequestMapping("/downloads")
-    public ModelAndView redirectDownloads() {
-        return new ModelAndView("redirect:/#/downloads");
-    }
+  /**
+   * Redirect /downloads to /#/downloads.
+   *
+   * @return Redirects requests for /downloads to /#/downloads
+   * @author Griefed
+   */
+  @RequestMapping("/downloads")
+  public ModelAndView redirectDownloads() {
+    return new ModelAndView("redirect:/#/downloads");
+  }
 
-    /*@RequestMapping("/logs")
-    public ModelAndView redirectLogs() {
-            * Redirect /logs to /#/logs.
-            * @author Griefed
-            * @return Redirects requests for /logs to /#/logs
-        return new ModelAndView("redirect:/#/logs");}*/
+  /*@RequestMapping("/logs")
+  public ModelAndView redirectLogs() {
+          * Redirect /logs to /#/logs.
+          * @author Griefed
+          * @return Redirects requests for /logs to /#/logs
+      return new ModelAndView("redirect:/#/logs");}*/
 
-    /**
-     * Redirect /about to /#/about.
-     *
-     * @return Redirects requests for /about to /#/about
-     * @author Griefed
-     */
-    @RequestMapping("/about")
-    public ModelAndView redirectAbout() {
-        return new ModelAndView("redirect:/#/about");
-    }
+  /**
+   * Redirect /about to /#/about.
+   *
+   * @return Redirects requests for /about to /#/about
+   * @author Griefed
+   */
+  @RequestMapping("/about")
+  public ModelAndView redirectAbout() {
+    return new ModelAndView("redirect:/#/about");
+  }
 }

@@ -22,17 +22,16 @@ package de.griefed.serverpackcreator.spring;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackService;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * Schedules to cover all kinds of aspects of ServerPackCreator.
@@ -42,105 +41,112 @@ import java.util.Date;
 @Service
 public class Schedules {
 
-    private static final Logger LOG = LogManager.getLogger(Schedules.class);
+  private static final Logger LOG = LogManager.getLogger(Schedules.class);
 
-    private final ServerPackService SERVERPACKSERVICE;
-    private final VersionMeta VERSIONMETA;
+  private final ServerPackService SERVERPACKSERVICE;
+  private final VersionMeta VERSIONMETA;
 
-    /**
-     * Constructor for DI.
-     *
-     * @param injectedServerPackService Instance of {@link ServerPackService}.
-     * @param injectedVersionMeta       Instance of {@link VersionMeta}.
-     * @author Griefed
-     */
-    @Autowired
-    public Schedules(ServerPackService injectedServerPackService, VersionMeta injectedVersionMeta) {
+  /**
+   * Constructor for DI.
+   *
+   * @param injectedServerPackService Instance of {@link ServerPackService}.
+   * @param injectedVersionMeta Instance of {@link VersionMeta}.
+   * @author Griefed
+   */
+  @Autowired
+  public Schedules(ServerPackService injectedServerPackService, VersionMeta injectedVersionMeta) {
 
-        this.SERVERPACKSERVICE = injectedServerPackService;
-        this.VERSIONMETA = injectedVersionMeta;
-    }
+    this.SERVERPACKSERVICE = injectedServerPackService;
+    this.VERSIONMETA = injectedVersionMeta;
+  }
 
-    private void deletePack(ServerPackModel pack) {
-        LOG.info("Deleting archive " + pack.getPath().replace("\\", "/"));
-        FileUtils.deleteQuietly(new File(pack.getPath().replace("\\", "/")));
+  private void deletePack(ServerPackModel pack) {
+    LOG.info("Deleting archive " + pack.getPath().replace("\\", "/"));
+    FileUtils.deleteQuietly(new File(pack.getPath().replace("\\", "/")));
 
-        LOG.info("Deleting folder " + pack.getPath().replace("\\", "/").replace("_server_pack-zip", ""));
-        FileUtils.deleteQuietly(new File(pack.getPath().replace("\\", "/").replace("_server_pack-zip", "")));
+    LOG.info(
+        "Deleting folder " + pack.getPath().replace("\\", "/").replace("_server_pack-zip", ""));
+    FileUtils.deleteQuietly(
+        new File(pack.getPath().replace("\\", "/").replace("_server_pack-zip", "")));
 
-        LOG.info("Cleaned server pack " + pack.getId() + " from database.");
-        SERVERPACKSERVICE.deleteServerPack(pack.getId());
-    }
+    LOG.info("Cleaned server pack " + pack.getId() + " from database.");
+    SERVERPACKSERVICE.deleteServerPack(pack.getId());
+  }
 
-    /**
-     * Check the database every <code>de.griefed.serverpackcreator.spring.schedules.database.cleanup</code> for validity.
-     * <br>Deletes entries from the database which are older than 1 week and have 0 downloads.
-     * <br>Deletes entries whose status is <code>Available</code> but no server pack ZIP-archive can be found.
-     * <br>
-     *
-     * @author Griefed
-     */
-    @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
-    private void cleanDatabase() {
-        if (!SERVERPACKSERVICE.getServerPacks().isEmpty()) {
+  /**
+   * Check the database every <code>de.griefed.serverpackcreator.spring.schedules.database.cleanup
+   * </code> for validity. <br>
+   * Deletes entries from the database which are older than 1 week and have 0 downloads. <br>
+   * Deletes entries whose status is <code>Available</code> but no server pack ZIP-archive can be
+   * found. <br>
+   *
+   * @author Griefed
+   */
+  @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
+  private void cleanDatabase() {
+    if (!SERVERPACKSERVICE.getServerPacks().isEmpty()) {
 
-            LOG.info("Cleaning database...");
+      LOG.info("Cleaning database...");
 
-            for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
+      for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
 
-                if ((new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime()) >= 604800000 && pack.getDownloads() == 0) {
+        if ((new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime())
+                >= 604800000
+            && pack.getDownloads() == 0) {
 
-                    deletePack(pack);
+          deletePack(pack);
 
-                } else if (pack.getStatus().equals("Available") && !new File(pack.getPath()).isFile()) {
+        } else if (pack.getStatus().equals("Available") && !new File(pack.getPath()).isFile()) {
 
-                    deletePack(pack);
+          deletePack(pack);
 
-                } else if (pack.getStatus().equals("Generating") && (new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime()) >= 86400000) {
+        } else if (pack.getStatus().equals("Generating")
+            && (new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime())
+                >= 86400000) {
 
-                    deletePack(pack);
+          deletePack(pack);
 
-                } else {
-                    LOG.info("No database entries to clean up.");
-                }
-
-            }
-
-            LOG.info("Database cleanup completed.");
-
+        } else {
+          LOG.info("No database entries to clean up.");
         }
+      }
+
+      LOG.info("Database cleanup completed.");
     }
+  }
 
-    @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")
-    private void cleanFiles() {
-        if (!SERVERPACKSERVICE.getServerPacks().isEmpty()) {
+  @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")
+  private void cleanFiles() {
+    if (!SERVERPACKSERVICE.getServerPacks().isEmpty()) {
 
-            LOG.info("Cleaning files...");
+      LOG.info("Cleaning files...");
 
-            for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
+      for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
 
-                if (new File(pack.getPath()).isFile() && new File(pack.getPath().replace("_server_pack-zip", "")).isDirectory()) {
+        if (new File(pack.getPath()).isFile()
+            && new File(pack.getPath().replace("_server_pack-zip", "")).isDirectory()) {
 
-                    LOG.info("Deleting folder " + pack.getPath().replace("_server_pack-zip", "").replace("\\", "/"));
-                    FileUtils.deleteQuietly(new File(pack.getPath().replace("_server_pack-zip", "").replace("\\", "/")));
+          LOG.info(
+              "Deleting folder "
+                  + pack.getPath().replace("_server_pack-zip", "").replace("\\", "/"));
+          FileUtils.deleteQuietly(
+              new File(pack.getPath().replace("_server_pack-zip", "").replace("\\", "/")));
 
-                } else {
-                    LOG.info("No files to clean up.");
-                }
-
-            }
-
-            LOG.info("File cleanup completed.");
-
+        } else {
+          LOG.info("No files to clean up.");
         }
-    }
+      }
 
-    @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.versions.refresh}")
-    private void refreshVersionLister() {
-        try {
-            VERSIONMETA.update();
-        } catch (IOException ex) {
-            LOG.error("Could not update VersionMeta.", ex);
-        }
+      LOG.info("File cleanup completed.");
     }
+  }
+
+  @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.versions.refresh}")
+  private void refreshVersionLister() {
+    try {
+      VERSIONMETA.update();
+    } catch (IOException ex) {
+      LOG.error("Could not update VersionMeta.", ex);
+    }
+  }
 }

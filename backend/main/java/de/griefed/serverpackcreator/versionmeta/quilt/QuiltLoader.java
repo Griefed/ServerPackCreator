@@ -19,10 +19,9 @@
  */
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
-import org.w3c.dom.Document;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.w3c.dom.Document;
 
 /**
  * Information about releases of the Quilt loader.
@@ -31,71 +30,107 @@ import java.util.List;
  */
 public class QuiltLoader {
 
-    private final List<String> loaders = new ArrayList<>();
-    private String latest;
-    private String release;
+  private final List<String> loaders = new ArrayList<>();
+  private String latest;
+  private String release;
 
-    /**
-     * Constructor
-     *
-     * @param loaderManifest {@link Document} containing Quilts manifest.
-     * @author Griefed
-     */
-    protected QuiltLoader(Document loaderManifest) {
+  /**
+   * Constructor
+   *
+   * @param loaderManifest {@link Document} containing Quilts manifest.
+   * @author Griefed
+   */
+  protected QuiltLoader(Document loaderManifest) {
 
-        this.latest = loaderManifest.getElementsByTagName("latest").item(0).getChildNodes().item(0).getNodeValue();
-        this.release = loaderManifest.getElementsByTagName("release").item(0).getChildNodes().item(0).getNodeValue();
-        this.loaders.clear();
-        for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
-            loaders.add(loaderManifest.getElementsByTagName("version").item(i).getChildNodes().item(0).getNodeValue());
-        }
+    this.latest =
+        loaderManifest
+            .getElementsByTagName("latest")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    this.release =
+        loaderManifest
+            .getElementsByTagName("release")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    this.loaders.clear();
+    for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
+      loaders.add(
+          loaderManifest
+              .getElementsByTagName("version")
+              .item(i)
+              .getChildNodes()
+              .item(0)
+              .getNodeValue());
+    }
+  }
+
+  /**
+   * Update the latest, release and releases information.
+   *
+   * @param loaderManifest {@link Document} containing Quilts manifest.
+   * @return This instance of {@link QuiltLoader}.
+   * @author Griefed
+   */
+  protected QuiltLoader update(Document loaderManifest) {
+    this.latest =
+        loaderManifest
+            .getElementsByTagName("latest")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    this.release =
+        loaderManifest
+            .getElementsByTagName("release")
+            .item(0)
+            .getChildNodes()
+            .item(0)
+            .getNodeValue();
+    this.loaders.clear();
+    for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
+      loaders.add(
+          loaderManifest
+              .getElementsByTagName("version")
+              .item(i)
+              .getChildNodes()
+              .item(0)
+              .getNodeValue());
     }
 
-    /**
-     * Update the latest, release and releases information.
-     *
-     * @param loaderManifest {@link Document} containing Quilts manifest.
-     * @return This instance of {@link QuiltLoader}.
-     * @author Griefed
-     */
-    protected QuiltLoader update(Document loaderManifest) {
-        this.latest = loaderManifest.getElementsByTagName("latest").item(0).getChildNodes().item(0).getNodeValue();
-        this.release = loaderManifest.getElementsByTagName("release").item(0).getChildNodes().item(0).getNodeValue();
-        this.loaders.clear();
-        for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
-            loaders.add(loaderManifest.getElementsByTagName("version").item(i).getChildNodes().item(0).getNodeValue());
-        }
+    return this;
+  }
 
-        return this;
-    }
+  /**
+   * Get the latest Quilt loader version.
+   *
+   * @return {@link String} The latest Quilt loader version.
+   * @author Griefed
+   */
+  protected String latestLoaderVersion() {
+    return latest;
+  }
 
-    /**
-     * Get the latest Quilt loader version.
-     *
-     * @return {@link String} The latest Quilt loader version.
-     * @author Griefed
-     */
-    protected String latestLoaderVersion() {
-        return latest;
-    }
+  /**
+   * Get the release Quilt loader version.
+   *
+   * @return {@link String} The release Quilt loader version.
+   * @author Griefed
+   */
+  protected String releaseLoaderVersion() {
+    return release;
+  }
 
-    /**
-     * Get the release Quilt loader version.
-     *
-     * @return {@link String} The release Quilt loader version.
-     * @author Griefed
-     */
-    protected String releaseLoaderVersion() {
-        return release;
-    }
-
-    /**
-     * Get the list of available Quilt loader versions.
-     *
-     * @return {@link String}-list of the available Quilt loader versions.
-     * @author Griefed
-     */
-    protected List<String> loaders() {
-        return loaders;
-    }
+  /**
+   * Get the list of available Quilt loader versions.
+   *
+   * @return {@link String}-list of the available Quilt loader versions.
+   * @author Griefed
+   */
+  protected List<String> loaders() {
+    return loaders;
+  }
 }

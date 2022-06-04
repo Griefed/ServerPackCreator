@@ -26,8 +26,7 @@ package de.griefed.serverpackcreator.versionmeta;
  */
 public class InvalidTypeException extends Exception {
 
-    public InvalidTypeException(String message) {
-        super(message);
-    }
-
+  public InvalidTypeException(String message) {
+    super(message);
+  }
 }

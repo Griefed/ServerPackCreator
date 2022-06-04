@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.utilities.misc.Generated;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -32,79 +31,79 @@ import java.util.Scanner;
  */
 public class ListUtilities {
 
-    public ListUtilities() {
+  public ListUtilities() {}
 
+  /**
+   * Encapsulate every element of the passed String List in quotes. Returns the list as <code>
+   * ["element1","element2","element3"</code> etc.
+   *
+   * @param listToEncapsulate The String List of which to encapsulate every element in.
+   * @return String. Returns a concatenated String with all elements of the passed list
+   *     encapsulated.
+   * @author Griefed
+   */
+  public String encapsulateListElements(List<String> listToEncapsulate) {
+
+    if (listToEncapsulate.isEmpty()) {
+      return "[]";
     }
 
-    /**
-     * Encapsulate every element of the passed String List in quotes. Returns the list as <code>["element1","element2","element3"</code> etc.
-     *
-     * @param listToEncapsulate The String List of which to encapsulate every element in.
-     * @return String. Returns a concatenated String with all elements of the passed list encapsulated.
-     * @author Griefed
-     */
-    public String encapsulateListElements(List<String> listToEncapsulate) {
+    StringBuilder stringBuilder = new StringBuilder();
 
-        if (listToEncapsulate.isEmpty()) {
-            return "[]";
-        }
+    stringBuilder.append("[\"").append(listToEncapsulate.get(0).replace("\\", "/")).append("\"");
 
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder.append("[\"").append(listToEncapsulate.get(0).replace("\\", "/")).append("\"");
-
-        for (int i = 1; i < listToEncapsulate.size(); i++) {
-            stringBuilder.append(",\"").append(listToEncapsulate.get(i).replace("\\", "/")).append("\"");
-        }
-
-        stringBuilder.append("]");
-
-        return stringBuilder.toString();
+    for (int i = 1; i < listToEncapsulate.size(); i++) {
+      stringBuilder.append(",\"").append(listToEncapsulate.get(i).replace("\\", "/")).append("\"");
     }
 
-    /**
-     * Prompts the user to enter the values which will make up
-     * a String List in the new configuration file. If the user enters an empty line, the method is exited and the
-     * String List returned.
-     *
-     * @return String List. Returns the list of values entered by the user.
-     * @author whitebear60
-     */
-    @Generated
-    public List<String> readStringArray() {
+    stringBuilder.append("]");
 
-        Scanner readerArray = new Scanner(System.in);
+    return stringBuilder.toString();
+  }
 
-        ArrayList<String> result = new ArrayList<>(100);
+  /**
+   * Prompts the user to enter the values which will make up a String List in the new configuration
+   * file. If the user enters an empty line, the method is exited and the String List returned.
+   *
+   * @return String List. Returns the list of values entered by the user.
+   * @author whitebear60
+   */
+  @Generated
+  public List<String> readStringArray() {
 
-        String stringArray;
+    Scanner readerArray = new Scanner(System.in);
 
-        while (true) {
+    ArrayList<String> result = new ArrayList<>(100);
 
-            stringArray = readerArray.nextLine();
+    String stringArray;
 
-            if (stringArray.isEmpty()) {
+    while (true) {
 
-                readerArray.close();
-                return result;
+      stringArray = readerArray.nextLine();
 
-            } else {
+      if (stringArray.isEmpty()) {
 
-                result.add(stringArray);
-            }
-        }
+        readerArray.close();
+        return result;
+
+      } else {
+
+        result.add(stringArray);
+      }
     }
+  }
 
-    /**
-     * Clean a given String List of any entry consisting only of whitespace or a length of <code>0</code>.
-     *
-     * @param listToCleanUp List String. The list from which to delete all entries consisting only of whitespace or with
-     *                      a length of zero.
-     * @return List String. Returns the cleaned up list.
-     * @author Griefed
-     */
-    public List<String> cleanList(List<String> listToCleanUp) {
-        listToCleanUp.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
-        return listToCleanUp;
-    }
+  /**
+   * Clean a given String List of any entry consisting only of whitespace or a length of <code>0
+   * </code>.
+   *
+   * @param listToCleanUp List String. The list from which to delete all entries consisting only of
+   *     whitespace or with a length of zero.
+   * @return List String. Returns the cleaned up list.
+   * @author Griefed
+   */
+  public List<String> cleanList(List<String> listToCleanUp) {
+    listToCleanUp.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
+    return listToCleanUp;
+  }
 }

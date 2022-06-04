@@ -28,38 +28,40 @@ import de.griefed.serverpackcreator.spring.task.Task;
  */
 public class GenerateZip extends Task {
 
-    private final String zipGenerationProperties;
+  private final String zipGenerationProperties;
 
-    /**
-     * Create a message with a task for a Zip generation.
-     *
-     * @param zipGenerationProperties {@link String} The concatenated String which contains all information with which a server pack will be
-     *                                generated from. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
-     * @author Griefed
-     */
-    public GenerateZip(String zipGenerationProperties) {
-        this.zipGenerationProperties = zipGenerationProperties;
-    }
+  /**
+   * Create a message with a task for a Zip generation.
+   *
+   * @param zipGenerationProperties {@link String} The concatenated String which contains all
+   *     information with which a server pack will be generated from. See {@link
+   *     ZipController#requestGenerationFromZip(String, String, String, String, String)}.
+   * @author Griefed
+   */
+  public GenerateZip(String zipGenerationProperties) {
+    this.zipGenerationProperties = zipGenerationProperties;
+  }
 
-    /**
-     * Getter for the concatenated String which contains all information with which a server pack will be
-     * generated from. See {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
-     *
-     * @return {@link String}. The String from which to generate a server pack.
-     * @author Griefed
-     */
-    public String getZipGenerationProperties() {
-        return zipGenerationProperties;
-    }
+  /**
+   * Getter for the concatenated String which contains all information with which a server pack will
+   * be generated from. See {@link ZipController#requestGenerationFromZip(String, String, String,
+   * String, String)}.
+   *
+   * @return {@link String}. The String from which to generate a server pack.
+   * @author Griefed
+   */
+  public String getZipGenerationProperties() {
+    return zipGenerationProperties;
+  }
 
-    /**
-     * Getter for the unique id of the submitted task.
-     *
-     * @return String. Returns the unique id of the submitted task.
-     * @author Griefed
-     */
-    @Override
-    public String uniqueId() {
-        return "GENERATE_ZIP_" + zipGenerationProperties;
-    }
+  /**
+   * Getter for the unique id of the submitted task.
+   *
+   * @return String. Returns the unique id of the submitted task.
+   * @author Griefed
+   */
+  @Override
+  public String uniqueId() {
+    return "GENERATE_ZIP_" + zipGenerationProperties;
+  }
 }

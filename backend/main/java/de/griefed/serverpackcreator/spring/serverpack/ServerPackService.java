@@ -19,6 +19,13 @@
  */
 package de.griefed.serverpackcreator.spring.serverpack;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 /**
  * Class revolving around with server packs, like downloading, retrieving, deleting, voting etc.
  *
@@ -45,175 +44,183 @@ import java.util.List;
 @Service
 public class ServerPackService {
 
-    private static final Logger LOG = LogManager.getLogger(ServerPackService.class);
+  private static final Logger LOG = LogManager.getLogger(ServerPackService.class);
 
-    private final ServerPackRepository SERVERPACKREPOSITORY;
+  private final ServerPackRepository SERVERPACKREPOSITORY;
 
-    /**
-     * Constructor responsible for our DI.
-     *
-     * @param injectedServerPackRepository Instance of {@link ServerPackRepository}.
-     * @author Griefed
-     */
-    @Autowired
-    public ServerPackService(ServerPackRepository injectedServerPackRepository) {
-        this.SERVERPACKREPOSITORY = injectedServerPackRepository;
+  /**
+   * Constructor responsible for our DI.
+   *
+   * @param injectedServerPackRepository Instance of {@link ServerPackRepository}.
+   * @author Griefed
+   */
+  @Autowired
+  public ServerPackService(ServerPackRepository injectedServerPackRepository) {
+    this.SERVERPACKREPOSITORY = injectedServerPackRepository;
+  }
+
+  /**
+   * Download a server pack with the given database id.
+   *
+   * @param id Integer. The database id of the server pack to download.
+   * @return Returns a curseResponse entity with either the server pack as a downloadable file, or a
+   *     curseResponse entity with a not found body.
+   * @author Griefed
+   */
+  public ResponseEntity<Resource> downloadServerPackById(int id) {
+    if (SERVERPACKREPOSITORY.findById(id).isPresent()
+        && SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Available")) {
+
+      ServerPackModel serverPackModel = SERVERPACKREPOSITORY.findById(id).get();
+
+      Path path = Paths.get(serverPackModel.getPath());
+      Resource resource = null;
+      String contentType = "application/zip";
+
+      try {
+        resource = new UrlResource(path.toUri());
+      } catch (MalformedURLException ex) {
+        LOG.error("Error generating download for server pack with ID" + id + ".", ex);
+      }
+
+      updateDownloadCounter(id);
+
+      return ResponseEntity.ok()
+          .contentType(MediaType.parseMediaType(contentType))
+          .header(
+              HttpHeaders.CONTENT_DISPOSITION,
+              "attachment; filename=\""
+                  + serverPackModel.getFileDiskName().replace(".zip", "")
+                  + "_server_pack.zip"
+                  + "\"")
+          .body(resource);
+    } else {
+
+      return ResponseEntity.notFound().build();
     }
+  }
 
-    /**
-     * Download a server pack with the given database id.
-     *
-     * @param id Integer. The database id of the server pack to download.
-     * @return Returns a curseResponse entity with either the server pack as a downloadable file, or a curseResponse entity with a not found body.
-     * @author Griefed
-     */
-    public ResponseEntity<Resource> downloadServerPackById(int id) {
-        if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().matches("Available")) {
+  /**
+   * Either upvote or downvote a given server pack.
+   *
+   * @param voting String. The database id of the server pack and whether it should be up- or
+   *     downvoted.
+   * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or
+   *     not found if the server pack could not be found.
+   * @author Griefed
+   */
+  public ResponseEntity<Object> voteForServerPack(String voting) {
+    String[] vote = voting.split(",");
+    int id = Integer.parseInt(vote[0]);
+    if (SERVERPACKREPOSITORY.findById(id).isPresent()
+        && SERVERPACKREPOSITORY.findById(id).get().getStatus().equals("Available")) {
 
-            ServerPackModel serverPackModel = SERVERPACKREPOSITORY.findById(id).get();
+      if (vote[1].equalsIgnoreCase("up")) {
 
-            Path path = Paths.get(serverPackModel.getPath());
-            Resource resource = null;
-            String contentType = "application/zip";
+        updateConfirmedCounter(id, +1);
+        return ResponseEntity.ok().build();
 
-            try {
-                resource = new UrlResource(path.toUri());
-            } catch (MalformedURLException ex) {
-                LOG.error("Error generating download for server pack with ID" + id + ".", ex);
-            }
+      } else if (vote[1].equalsIgnoreCase("down")) {
 
-            updateDownloadCounter(id);
+        updateConfirmedCounter(id, -1);
+        return ResponseEntity.ok().build();
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + serverPackModel.getFileDiskName().replace(".zip", "") + "_server_pack.zip" + "\""
-                    )
-                    .body(resource);
-        } else {
+      } else {
 
-            return ResponseEntity.notFound().build();
+        return ResponseEntity.badRequest().build();
+      }
 
-        }
+    } else {
+
+      return ResponseEntity.notFound().build();
     }
+  }
 
-    /**
-     * Either upvote or downvote a given server pack.
-     *
-     * @param voting String. The database id of the server pack and whether it should be up- or downvoted.
-     * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or not found if the server pack could not be found.
-     * @author Griefed
-     */
-    public ResponseEntity<Object> voteForServerPack(String voting) {
-        String[] vote = voting.split(",");
-        int id = Integer.parseInt(vote[0]);
-        if (SERVERPACKREPOSITORY.findById(id).isPresent() && SERVERPACKREPOSITORY.findById(id).get().getStatus().equals("Available")) {
+  /**
+   * Get a list of all available server packs.
+   *
+   * @return List ServerPackModel. Returns a list of all available server packs.
+   * @author Griefed
+   */
+  public List<ServerPackModel> getServerPacks() {
+    List<ServerPackModel> serverPackModels = new ArrayList<>();
+    SERVERPACKREPOSITORY.findAll().forEach(serverPackModels::add);
+    return serverPackModels;
+  }
 
-            if (vote[1].equalsIgnoreCase("up")) {
+  /**
+   * Store a server pack in the database.
+   *
+   * @param serverPackModel Instance of {@link ServerPackModel} to store in the database.
+   * @author Griefed
+   */
+  public void insert(ServerPackModel serverPackModel) {
+    SERVERPACKREPOSITORY.save(serverPackModel);
+  }
 
-                updateConfirmedCounter(id, +1);
-                return ResponseEntity.ok().build();
-
-            } else if (vote[1].equalsIgnoreCase("down")) {
-
-                updateConfirmedCounter(id, -1);
-                return ResponseEntity.ok().build();
-
-            } else {
-
-                return ResponseEntity.badRequest().build();
-            }
-
-        } else {
-
-            return ResponseEntity.notFound().build();
-        }
+  /**
+   * Update a server pack database entry with the given database id.
+   *
+   * @param id Integer. The database id of the server pack to initialize.
+   * @param serverPackModel Instance of {@link ServerPackModel} with which to initialize the entry
+   *     in the database.
+   * @author Griefed
+   */
+  public void updateServerPackByID(int id, ServerPackModel serverPackModel) {
+    if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+      ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+      LOG.debug("Updating database with: " + serverPackModel.repositoryToString());
+      serverPackModelFromDB.setProjectName(serverPackModel.getProjectName());
+      serverPackModelFromDB.setFileName(serverPackModel.getFileName());
+      serverPackModelFromDB.setFileDiskName(serverPackModel.getFileDiskName());
+      serverPackModelFromDB.setSize(serverPackModel.getSize());
+      serverPackModelFromDB.setDownloads(serverPackModel.getDownloads());
+      serverPackModelFromDB.setConfirmedWorking(serverPackModel.getConfirmedWorking());
+      serverPackModelFromDB.setStatus(serverPackModel.getStatus());
+      serverPackModelFromDB.setLastModified(new Timestamp(new Date().getTime()));
+      serverPackModelFromDB.setPath(serverPackModel.getPath());
+      SERVERPACKREPOSITORY.save(serverPackModelFromDB);
     }
+  }
 
-    /**
-     * Get a list of all available server packs.
-     *
-     * @return List ServerPackModel. Returns a list of all available server packs.
-     * @author Griefed
-     */
-    public List<ServerPackModel> getServerPacks() {
-        List<ServerPackModel> serverPackModels = new ArrayList<>();
-        SERVERPACKREPOSITORY.findAll().forEach(serverPackModels::add);
-        return serverPackModels;
+  /**
+   * Increment the download counter for a given server pack entry in the database identified by the
+   * database id.
+   *
+   * @param id Integer. The database id of the server pack.
+   * @author Griefed
+   */
+  public void updateDownloadCounter(int id) {
+    if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+      ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+      serverPackModelFromDB.setDownloads(serverPackModelFromDB.getDownloads() + 1);
+      SERVERPACKREPOSITORY.save(serverPackModelFromDB);
     }
+  }
 
-    /**
-     * Store a server pack in the database.
-     *
-     * @param serverPackModel Instance of {@link ServerPackModel} to store in the database.
-     * @author Griefed
-     */
-    public void insert(ServerPackModel serverPackModel) {
-        SERVERPACKREPOSITORY.save(serverPackModel);
+  /**
+   * Either increment or decrement the confirmed working value of a given server pack entry in the
+   * database, identified by the database id.
+   *
+   * @param id Integer. The database id of the server pack.
+   * @param vote Integer. Positive for upvote, negative for downvote
+   * @author Griefed
+   */
+  public void updateConfirmedCounter(int id, int vote) {
+    if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+      ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+      serverPackModelFromDB.setConfirmedWorking(serverPackModelFromDB.getConfirmedWorking() + vote);
+      SERVERPACKREPOSITORY.save(serverPackModelFromDB);
     }
+  }
 
-    /**
-     * Update a server pack database entry with the given database id.
-     *
-     * @param id              Integer. The database id of the server pack to initialize.
-     * @param serverPackModel Instance of {@link ServerPackModel} with which to initialize the entry in the database.
-     * @author Griefed
-     */
-    public void updateServerPackByID(int id, ServerPackModel serverPackModel) {
-        if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            LOG.debug("Updating database with: " + serverPackModel.repositoryToString());
-            serverPackModelFromDB.setProjectName(serverPackModel.getProjectName());
-            serverPackModelFromDB.setFileName(serverPackModel.getFileName());
-            serverPackModelFromDB.setFileDiskName(serverPackModel.getFileDiskName());
-            serverPackModelFromDB.setSize(serverPackModel.getSize());
-            serverPackModelFromDB.setDownloads(serverPackModel.getDownloads());
-            serverPackModelFromDB.setConfirmedWorking(serverPackModel.getConfirmedWorking());
-            serverPackModelFromDB.setStatus(serverPackModel.getStatus());
-            serverPackModelFromDB.setLastModified(new Timestamp(new Date().getTime()));
-            serverPackModelFromDB.setPath(serverPackModel.getPath());
-            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
-        }
-    }
-
-    /**
-     * Increment the download counter for a given server pack entry in the database identified by the database id.
-     *
-     * @param id Integer. The database id of the server pack.
-     * @author Griefed
-     */
-    public void updateDownloadCounter(int id) {
-        if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            serverPackModelFromDB.setDownloads(serverPackModelFromDB.getDownloads() + 1);
-            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
-        }
-    }
-
-    /**
-     * Either increment or decrement the confirmed working value of a given server pack entry in the database, identified by the
-     * database id.
-     *
-     * @param id   Integer. The database id of the server pack.
-     * @param vote Integer. Positive for upvote, negative for downvote
-     * @author Griefed
-     */
-    public void updateConfirmedCounter(int id, int vote) {
-        if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-            ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
-            serverPackModelFromDB.setConfirmedWorking(serverPackModelFromDB.getConfirmedWorking() + vote);
-            SERVERPACKREPOSITORY.save(serverPackModelFromDB);
-        }
-    }
-
-    /**
-     * Deletes a server pack with the given id.
-     *
-     * @param id Integer. The database id of the server pack to delete.
-     * @author Griefed
-     */
-    public void deleteServerPack(int id) {
-        SERVERPACKREPOSITORY.deleteById(id);
-    }
+  /**
+   * Deletes a server pack with the given id.
+   *
+   * @param id Integer. The database id of the server pack to delete.
+   * @author Griefed
+   */
+  public void deleteServerPack(int id) {
+    SERVERPACKREPOSITORY.deleteById(id);
+  }
 }

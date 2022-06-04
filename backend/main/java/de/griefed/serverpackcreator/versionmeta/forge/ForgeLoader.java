@@ -21,14 +21,13 @@ package de.griefed.serverpackcreator.versionmeta.forge;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Information about available Forge loader versions in correlation to Minecraft versions.
@@ -37,175 +36,186 @@ import java.util.NoSuchElementException;
  */
 public class ForgeLoader {
 
-    private static final Logger LOG = LogManager.getLogger(ForgeLoader.class);
+  private static final Logger LOG = LogManager.getLogger(ForgeLoader.class);
 
-    private final MinecraftMeta MINECRAFT_META;
-    private final List<String> minecraftVersions = new ArrayList<>();
-    private final List<String> forgeVersions = new ArrayList<>();
+  private final MinecraftMeta MINECRAFT_META;
+  private final List<String> minecraftVersions = new ArrayList<>();
+  private final List<String> forgeVersions = new ArrayList<>();
 
-    /**
-     * 1-n Minecraft version to Forge versions.<br>
-     * <code>key</code>: Minecraft version.<br>
-     * <code>value</code>: List of Forge versions for said Minecraft versions.
-     */
-    private HashMap<String, List<String>> versionMeta;
+  /**
+   * 1-n Minecraft version to Forge versions.<br>
+   * <code>key</code>: Minecraft version.<br>
+   * <code>value</code>: List of Forge versions for said Minecraft versions.
+   */
+  private HashMap<String, List<String>> versionMeta;
 
-    /**
-     * 1-1 Forge version to Minecraft version<br>
-     * <code>key</code>: Forge version.<br>
-     * <code>value</code>: Minecraft version for said Forge version.
-     */
-    private HashMap<String, String> forgeToMinecraftMeta;
+  /**
+   * 1-1 Forge version to Minecraft version<br>
+   * <code>key</code>: Forge version.<br>
+   * <code>value</code>: Minecraft version for said Forge version.
+   */
+  private HashMap<String, String> forgeToMinecraftMeta;
 
-    /**
-     * 1-1 Minecraft + Forge version combination to {@link ForgeInstance}<br>
-     * <code>key</code>: Minecraft version + Forge version. Example: <code>1.18.2-40.0.44</code><br>
-     * <code>value</code>: The {@link ForgeInstance} for said Minecraft and Forge version combination.
-     */
-    private HashMap<String, ForgeInstance> instanceMeta;
+  /**
+   * 1-1 Minecraft + Forge version combination to {@link ForgeInstance}<br>
+   * <code>key</code>: Minecraft version + Forge version. Example: <code>1.18.2-40.0.44</code><br>
+   * <code>value</code>: The {@link ForgeInstance} for said Minecraft and Forge version combination.
+   */
+  private HashMap<String, ForgeInstance> instanceMeta;
 
-    /**
-     * Constructor
-     *
-     * @param forgemanifest         {@link JsonNode} containing information about available Forge versions.
-     * @param injectedMinecraftMeta {@link MinecraftMeta} for retroactively updating the previously passed meta.
-     * @author Griefed
-     */
-    protected ForgeLoader(JsonNode forgemanifest, MinecraftMeta injectedMinecraftMeta) {
-        this.MINECRAFT_META = injectedMinecraftMeta;
-        update(forgemanifest);
-    }
+  /**
+   * Constructor
+   *
+   * @param forgemanifest {@link JsonNode} containing information about available Forge versions.
+   * @param injectedMinecraftMeta {@link MinecraftMeta} for retroactively updating the previously
+   *     passed meta.
+   * @author Griefed
+   */
+  protected ForgeLoader(JsonNode forgemanifest, MinecraftMeta injectedMinecraftMeta) {
+    this.MINECRAFT_META = injectedMinecraftMeta;
+    update(forgemanifest);
+  }
 
-    /**
-     * Update the available Forge loader information.
-     *
-     * @param forgeManifest {@link JsonNode} containing information about available Forge versions.
-     * @return This instance of {@link ForgeLoader}.
-     * @author Griefed
-     */
-    protected ForgeLoader update(JsonNode forgeManifest) {
+  /**
+   * Update the available Forge loader information.
+   *
+   * @param forgeManifest {@link JsonNode} containing information about available Forge versions.
+   * @return This instance of {@link ForgeLoader}.
+   * @author Griefed
+   */
+  protected ForgeLoader update(JsonNode forgeManifest) {
 
-        minecraftVersions.clear();
-        forgeVersions.clear();
-        versionMeta = new HashMap<>();
-        forgeToMinecraftMeta = new HashMap<>();
-        instanceMeta = new HashMap<>();
+    minecraftVersions.clear();
+    forgeVersions.clear();
+    versionMeta = new HashMap<>();
+    forgeToMinecraftMeta = new HashMap<>();
+    instanceMeta = new HashMap<>();
 
-        forgeManifest.fieldNames().forEachRemaining(field -> {
+    forgeManifest
+        .fieldNames()
+        .forEachRemaining(
+            field -> {
 
-            /*
-             * A field, which represents a supported Minecraft version from the Forge manifest, does NOT necessarily exist
-             * in Mojang's Minecraft manifest.
-             * Examples:
-             *   Forge Manifest Minecraft version: 1.7.10_pre4
-             *   Minecraft Manifest version:       1.7.10-pre4
-             * So, if we want to acquire a Forge instance for 1.7.10-pre4, it would fail.
-             * When retrieving a Forge instance with a Minecraft version from the MinecraftMeta, we need to check for
-             * 1.7.10_pre4 AND 1.7.10-pre4.
-             */
-            String mcVersion;
-            if (MINECRAFT_META.getClient(field.replace("_", "-")).isPresent()) {
+              /*
+               * A field, which represents a supported Minecraft version from the Forge manifest, does NOT necessarily exist
+               * in Mojang's Minecraft manifest.
+               * Examples:
+               *   Forge Manifest Minecraft version: 1.7.10_pre4
+               *   Minecraft Manifest version:       1.7.10-pre4
+               * So, if we want to acquire a Forge instance for 1.7.10-pre4, it would fail.
+               * When retrieving a Forge instance with a Minecraft version from the MinecraftMeta, we need to check for
+               * 1.7.10_pre4 AND 1.7.10-pre4.
+               */
+              String mcVersion;
+              if (MINECRAFT_META.getClient(field.replace("_", "-")).isPresent()) {
                 mcVersion = field.replace("_", "-");
                 minecraftVersions.add(field.replace("_", "-"));
-            } else {
+              } else {
                 mcVersion = field;
                 minecraftVersions.add(field);
-            }
+              }
 
-            List<String> forgeVersionsForMCVer = new ArrayList<>();
+              List<String> forgeVersionsForMCVer = new ArrayList<>();
 
-            forgeManifest.get(field).forEach(forge -> {
+              forgeManifest
+                  .get(field)
+                  .forEach(
+                      forge -> {
 
-                /*
-                 * substring of length of Minecraft version plus 1, so entries like "1.18.2-40.0.17" get their
-                 * Minecraft version portion removed and result in "40.0.17". The +1 removes the "-", too. :)
-                 */
-                forgeVersions.add(forge.asText().substring(mcVersion.length() + 1));
-                forgeVersionsForMCVer.add(forge.asText().substring(mcVersion.length() + 1));
+                        /*
+                         * substring of length of Minecraft version plus 1, so entries like "1.18.2-40.0.17" get their
+                         * Minecraft version portion removed and result in "40.0.17". The +1 removes the "-", too. :)
+                         */
+                        forgeVersions.add(forge.asText().substring(mcVersion.length() + 1));
+                        forgeVersionsForMCVer.add(forge.asText().substring(mcVersion.length() + 1));
 
-                try {
+                        try {
 
-                    ForgeInstance forgeInstance = new ForgeInstance(
-                            mcVersion,
-                            forge.asText().substring(mcVersion.length() + 1),
-                            MINECRAFT_META
-                    );
+                          ForgeInstance forgeInstance =
+                              new ForgeInstance(
+                                  mcVersion,
+                                  forge.asText().substring(mcVersion.length() + 1),
+                                  MINECRAFT_META);
 
-                    instanceMeta.put(
-                            mcVersion + forge.asText().substring(mcVersion.length()),
-                            forgeInstance
-                    );
+                          instanceMeta.put(
+                              mcVersion + forge.asText().substring(mcVersion.length()),
+                              forgeInstance);
 
-                    forgeToMinecraftMeta.put(forge.asText().substring(mcVersion.length() + 1), mcVersion);
+                          forgeToMinecraftMeta.put(
+                              forge.asText().substring(mcVersion.length() + 1), mcVersion);
 
-                } catch (MalformedURLException | NoSuchElementException ex) {
+                        } catch (MalformedURLException | NoSuchElementException ex) {
 
-                    // Well, in THEORY this should never be throws, so we don't need to bother with a thorough error message
-                    LOG.debug("Could not create Forge instance for Minecraft " + mcVersion + " and Forge " + forge.asText().substring(mcVersion.length() + 1), ex);
-                }
+                          // Well, in THEORY this should never be throws, so we don't need to bother
+                          // with a thorough error message
+                          LOG.debug(
+                              "Could not create Forge instance for Minecraft "
+                                  + mcVersion
+                                  + " and Forge "
+                                  + forge.asText().substring(mcVersion.length() + 1),
+                              ex);
+                        }
+                      });
+
+              versionMeta.put(mcVersion, forgeVersionsForMCVer);
             });
 
-            versionMeta.put(mcVersion, forgeVersionsForMCVer);
+    return this;
+  }
 
-        });
+  /**
+   * Get a list of available Minecraft versions for Forge.
+   *
+   * @return {@link String}-list of the available Minecraft versions for Forge.
+   * @author Griefed
+   */
+  protected List<String> minecraftVersions() {
+    return minecraftVersions;
+  }
 
-        return this;
+  /**
+   * Get a list of available Forge versions.
+   *
+   * @return {@link String}-list of the available Forge versions.
+   * @author Griefed
+   */
+  protected List<String> forgeVersions() {
+    return forgeVersions;
+  }
 
-    }
+  /**
+   * Get the {@link ForgeLoader} version-meta.<br>
+   * key: {@link String} Minecraft version<br>
+   * value: {@link String}-list of Forge versions available for the given Minecraft version.
+   *
+   * @return {@link HashMap} containing the version meta.
+   * @author Griefed
+   */
+  protected HashMap<String, List<String>> versionMeta() {
+    return versionMeta;
+  }
 
-    /**
-     * Get a list of available Minecraft versions for Forge.
-     *
-     * @return {@link String}-list of the available Minecraft versions for Forge.
-     * @author Griefed
-     */
-    protected List<String> minecraftVersions() {
-        return minecraftVersions;
-    }
+  /**
+   * Get the Forge version to Minecraft version meta.<br>
+   * key: {@link String} Forge version.<br>
+   * version: {@link String} Minecraft version for the given Forge version.
+   *
+   * @return {@link HashMap} with Forge-to-Minecraft-version mappings.
+   * @author Griefed
+   */
+  protected HashMap<String, String> forgeToMinecraftMeta() {
+    return forgeToMinecraftMeta;
+  }
 
-    /**
-     * Get a list of available Forge versions.
-     *
-     * @return {@link String}-list of the available Forge versions.
-     * @author Griefed
-     */
-    protected List<String> forgeVersions() {
-        return forgeVersions;
-    }
-
-    /**
-     * Get the {@link ForgeLoader} version-meta.<br>
-     * key: {@link String} Minecraft version<br>
-     * value: {@link String}-list of Forge versions available for the given Minecraft version.
-     *
-     * @return {@link HashMap} containing the version meta.
-     * @author Griefed
-     */
-    protected HashMap<String, List<String>> versionMeta() {
-        return versionMeta;
-    }
-
-    /**
-     * Get the Forge version to Minecraft version meta.<br>
-     * key: {@link String} Forge version.<br>
-     * version: {@link String} Minecraft version for the given Forge version.
-     *
-     * @return {@link HashMap} with Forge-to-Minecraft-version mappings.
-     * @author Griefed
-     */
-    protected HashMap<String, String> forgeToMinecraftMeta() {
-        return forgeToMinecraftMeta;
-    }
-
-    /**
-     * Get the Minecraft-Forge-version meta.<br>
-     * key: {@link String} Minecraft version + Forge version concatenation.<br>
-     * value: {@link ForgeInstance} for the given Minecraft version + Forge version concatenation.
-     *
-     * @return {@link HashMap} with Minecraft-Forge-version-to-ForgeInstance mapping.
-     * @author Griefed
-     */
-    protected HashMap<String, ForgeInstance> instanceMeta() {
-        return instanceMeta;
-    }
+  /**
+   * Get the Minecraft-Forge-version meta.<br>
+   * key: {@link String} Minecraft version + Forge version concatenation.<br>
+   * value: {@link ForgeInstance} for the given Minecraft version + Forge version concatenation.
+   *
+   * @return {@link HashMap} with Minecraft-Forge-version-to-ForgeInstance mapping.
+   * @author Griefed
+   */
+  protected HashMap<String, ForgeInstance> instanceMeta() {
+    return instanceMeta;
+  }
 }

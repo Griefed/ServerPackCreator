@@ -26,8 +26,7 @@ package de.griefed.serverpackcreator.utilities.common;
  */
 public class InvalidLinkException extends Exception {
 
-    public InvalidLinkException(String message) {
-        super(message);
-    }
-
+  public InvalidLinkException(String message) {
+    super(message);
+  }
 }

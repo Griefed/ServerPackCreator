@@ -22,15 +22,17 @@ package de.griefed.serverpackcreator.spring.task;
 import java.io.Serializable;
 
 /**
- * <a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
- * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
- * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
- * the necessary changes to fully implement it in ServerPackCreator.<br>
+ * <a
+ * href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
+ * to implement a task queue using Apache Artemis and Spring Boot</a><br>
+ * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
+ * how to implement a JMS. Without it this implementation of Artemis would have either taken way
+ * longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
+ * necessary changes to fully implement it in ServerPackCreator.<br>
  *
  * @author Griefed
  */
 public abstract class Task implements Serializable {
 
-    public abstract String uniqueId();
-
+  public abstract String uniqueId();
 }

@@ -22,10 +22,9 @@ package de.griefed.serverpackcreator.utilities.common;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Scanner;
 
 /**
  * Utility-class revolving around Booleans.
@@ -34,95 +33,100 @@ import java.util.Scanner;
  */
 public class BooleanUtilities {
 
-    private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
-    private final LocalizationManager LOCALIZATIONMANAGER;
-    private final ApplicationProperties APPLICATIONPROPERTIES;
+  private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
+  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    public BooleanUtilities(LocalizationManager injectedLocalizationManager, ApplicationProperties injectedApplicationProperties) {
+  public BooleanUtilities(
+      LocalizationManager injectedLocalizationManager,
+      ApplicationProperties injectedApplicationProperties) {
 
-        if (injectedApplicationProperties == null) {
-            this.APPLICATIONPROPERTIES = new ApplicationProperties();
-        } else {
-            this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-        }
-
-        if (injectedLocalizationManager == null) {
-            this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-        } else {
-            this.LOCALIZATIONMANAGER = injectedLocalizationManager;
-        }
+    if (injectedApplicationProperties == null) {
+      this.APPLICATIONPROPERTIES = new ApplicationProperties();
+    } else {
+      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    /**
-     * Converts various strings to booleans, by using regex, to allow for more variations in input.<br>
-     * <strong>Converted to <code>TRUE</code> are:<br></strong>
-     * <code>[Tt]rue</code><br>
-     * <code>1</code><br>
-     * <code>[Yy]es</code><br>
-     * <code>[Yy]</code><br>
-     * Language Key <code>cli.input.true</code><br>
-     * Language Key <code>cli.input.yes</code><br>
-     * Language Key <code>cli.input.yes.short</code><br>
-     * <strong>Converted to <code>FALSE</code> are:<br></strong>
-     * <code>[Ff]alse</code><br>
-     * <code>0</code><br>
-     * <code>[Nn]o</code><br>
-     * <code>[Nn]</code><br>
-     * Language Key <code>cli.input.false</code><br>
-     * Language Key <code>cli.input.no</code><br>
-     * Language Key <code>cli.input.no.short</code><br>
-     *
-     * @param stringBoolean String. The string which should be converted to boolean if it matches certain patterns.
-     * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.
-     * @author Griefed
-     */
-    public boolean convertToBoolean(String stringBoolean) {
-
-        if (stringBoolean.matches("[Tt]rue") ||
-                stringBoolean.matches("1") ||
-                stringBoolean.matches("[Yy]es") ||
-                stringBoolean.matches("[Yy]") ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.true")) ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes")) ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes.short"))
-        ) {
-            return true;
-
-        } else if (stringBoolean.matches("[Ff]alse") ||
-                stringBoolean.matches("0") ||
-                stringBoolean.matches("[Nn]o") ||
-                stringBoolean.matches("[Nn]") ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.false")) ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no")) ||
-                stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no.short"))
-        ) {
-            return false;
-
-        } else {
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.converttoboolean.warn"));
-            return false;
-        }
+    if (injectedLocalizationManager == null) {
+      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    } else {
+      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
     }
+  }
 
-    /**
-     * Prompts the user to enter values which will then be converted to booleans, either <code>TRUE</code> or <code>FALSE</code>.
-     * This prevents any non-boolean values from being written to the new configuration file.
-     *
-     * @return Boolean. True or False, depending on user input.
-     * @author whitebear60
-     */
-    @Generated
-    public boolean readBoolean() {
+  /**
+   * Converts various strings to booleans, by using regex, to allow for more variations in input.
+   * <br>
+   * <strong>Converted to <code>TRUE</code> are:<br>
+   * </strong> <code>[Tt]rue</code><br>
+   * <code>1</code><br>
+   * <code>[Yy]es</code><br>
+   * <code>[Yy]</code><br>
+   * Language Key <code>cli.input.true</code><br>
+   * Language Key <code>cli.input.yes</code><br>
+   * Language Key <code>cli.input.yes.short</code><br>
+   * <strong>Converted to <code>FALSE</code> are:<br>
+   * </strong> <code>[Ff]alse</code><br>
+   * <code>0</code><br>
+   * <code>[Nn]o</code><br>
+   * <code>[Nn]</code><br>
+   * Language Key <code>cli.input.false</code><br>
+   * Language Key <code>cli.input.no</code><br>
+   * Language Key <code>cli.input.no.short</code><br>
+   *
+   * @param stringBoolean String. The string which should be converted to boolean if it matches
+   *     certain patterns.
+   * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match
+   *     is found, assume and return false.
+   * @author Griefed
+   */
+  public boolean convertToBoolean(String stringBoolean) {
 
-        Scanner readerBoolean = new Scanner(System.in);
+    if (stringBoolean.matches("[Tt]rue")
+        || stringBoolean.matches("1")
+        || stringBoolean.matches("[Yy]es")
+        || stringBoolean.matches("[Yy]")
+        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.true"))
+        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes"))
+        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes.short"))) {
+      return true;
 
-        String boolRead;
+    } else if (stringBoolean.matches("[Ff]alse")
+        || stringBoolean.matches("0")
+        || stringBoolean.matches("[Nn]o")
+        || stringBoolean.matches("[Nn]")
+        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.false"))
+        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no"))
+        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no.short"))) {
+      return false;
 
-        boolRead = readerBoolean.nextLine();
-
-        readerBoolean.close();
-
-        return convertToBoolean(boolRead);
+    } else {
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      LOG.warn(
+          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.converttoboolean.warn"));
+      return false;
     }
+  }
+
+  /**
+   * Prompts the user to enter values which will then be converted to booleans, either <code>TRUE
+   * </code> or <code>FALSE</code>. This prevents any non-boolean values from being written to the
+   * new configuration file.
+   *
+   * @return Boolean. True or False, depending on user input.
+   * @author whitebear60
+   */
+  @Generated
+  public boolean readBoolean() {
+
+    Scanner readerBoolean = new Scanner(System.in);
+
+    String boolRead;
+
+    boolRead = readerBoolean.nextLine();
+
+    readerBoolean.close();
+
+    return convertToBoolean(boolRead);
+  }
 }

@@ -31,19 +31,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @PropertySources({
-        @PropertySource("classpath:application.properties"),
-        @PropertySource("classpath:serverpackcreator.properties")
+  @PropertySource("classpath:application.properties"),
+  @PropertySource("classpath:serverpackcreator.properties")
 })
 public class WebService {
 
-    /**
-     * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
-     *
-     * @param args Arguments passed from invocation in {@link Main#main(String[])}.
-     * @author Griefed
-     */
-    public static void main(String[] args) {
-        SpringApplication.run(WebService.class, args);
-    }
-
+  /**
+   * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
+   *
+   * @param args Arguments passed from invocation in {@link Main#main(String[])}.
+   * @author Griefed
+   */
+  public static void main(String[] args) {
+    SpringApplication.run(WebService.class, args);
+  }
 }

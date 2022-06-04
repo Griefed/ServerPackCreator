@@ -19,13 +19,12 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Utility-class revolving around the system we are running on.
@@ -34,42 +33,42 @@ import java.util.List;
  */
 public class SystemUtilities {
 
-    private static final Logger LOG = LogManager.getLogger(SystemUtilities.class);
+  private static final Logger LOG = LogManager.getLogger(SystemUtilities.class);
 
-    private final List<String> DRIVES = new ArrayList<>(Arrays.asList(
-            "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:", "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"
-    ));
+  private final List<String> DRIVES =
+      new ArrayList<>(
+          Arrays.asList(
+              "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:",
+              "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"));
 
-    public SystemUtilities() {
+  public SystemUtilities() {}
 
-    }
+  /**
+   * Automatically acquire the path to the systems default Java installation.
+   *
+   * @return String. The path to the systems default Java installation.
+   * @author Griefed
+   */
+  public String acquireJavaPathFromSystem() {
 
-    /**
-     * Automatically acquire the path to the systems default Java installation.
-     *
-     * @return String. The path to the systems default Java installation.
-     * @author Griefed
-     */
-    public String acquireJavaPathFromSystem() {
+    LOG.debug("Acquiring path to Java installation from system properties...");
 
-        LOG.debug("Acquiring path to Java installation from system properties...");
+    String javaPath = "Couldn't acquire JavaPath";
 
-        String javaPath = "Couldn't acquire JavaPath";
+    if (new File(System.getProperty("java.home")).exists()) {
+      javaPath = String.format("%s/bin/java", System.getProperty("java.home").replace("\\", "/"));
 
-        if (new File(System.getProperty("java.home")).exists()) {
-            javaPath = String.format("%s/bin/java", System.getProperty("java.home").replace("\\", "/"));
+      if (!javaPath.startsWith("/")) {
+        for (String letter : DRIVES) {
+          if (javaPath.startsWith(letter)) {
 
-            if (!javaPath.startsWith("/")) {
-                for (String letter : DRIVES) {
-                    if (javaPath.startsWith(letter)) {
-
-                        LOG.debug("We're running on Windows. Ensuring javaPath ends with .exe");
-                        javaPath = String.format("%s.exe", javaPath);
-                    }
-                }
-            }
+            LOG.debug("We're running on Windows. Ensuring javaPath ends with .exe");
+            javaPath = String.format("%s.exe", javaPath);
+          }
         }
-
-        return javaPath;
+      }
     }
+
+    return javaPath;
+  }
 }

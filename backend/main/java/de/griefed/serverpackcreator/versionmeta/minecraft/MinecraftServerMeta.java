@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import de.griefed.serverpackcreator.versionmeta.Type;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,71 +31,75 @@ import java.util.List;
  */
 class MinecraftServerMeta {
 
-    private final MinecraftClientMeta MINECRAFT_CLIENT_META;
-    private final List<MinecraftServer> RELEASES = new ArrayList<>();
-    private final List<MinecraftServer> SNAPSHOTS = new ArrayList<>();
-    private HashMap<String, MinecraftServer> meta;
+  private final MinecraftClientMeta MINECRAFT_CLIENT_META;
+  private final List<MinecraftServer> RELEASES = new ArrayList<>();
+  private final List<MinecraftServer> SNAPSHOTS = new ArrayList<>();
+  private HashMap<String, MinecraftServer> meta;
 
-    /**
-     * Constructor.
-     *
-     * @param minecraftClientMeta Instance of {@link MinecraftClientMeta}.
-     * @author Griefed
-     */
-    protected MinecraftServerMeta(MinecraftClientMeta minecraftClientMeta) {
-        this.MINECRAFT_CLIENT_META = minecraftClientMeta;
-    }
+  /**
+   * Constructor.
+   *
+   * @param minecraftClientMeta Instance of {@link MinecraftClientMeta}.
+   * @author Griefed
+   */
+  protected MinecraftServerMeta(MinecraftClientMeta minecraftClientMeta) {
+    this.MINECRAFT_CLIENT_META = minecraftClientMeta;
+  }
 
-    /**
-     * Update this instance of {@link MinecraftServerMeta} with new information.
-     *
-     * @return This instance of {@link MinecraftServerMeta}.
-     * @author Griefed
-     */
-    protected MinecraftServerMeta update() {
+  /**
+   * Update this instance of {@link MinecraftServerMeta} with new information.
+   *
+   * @return This instance of {@link MinecraftServerMeta}.
+   * @author Griefed
+   */
+  protected MinecraftServerMeta update() {
 
-        this.RELEASES.clear();
-        MINECRAFT_CLIENT_META.releases().forEach(client -> this.RELEASES.add(client.server()));
+    this.RELEASES.clear();
+    MINECRAFT_CLIENT_META.releases().forEach(client -> this.RELEASES.add(client.server()));
 
-        this.SNAPSHOTS.clear();
-        MINECRAFT_CLIENT_META.snapshots().forEach(client -> this.SNAPSHOTS.add(client.server()));
+    this.SNAPSHOTS.clear();
+    MINECRAFT_CLIENT_META.snapshots().forEach(client -> this.SNAPSHOTS.add(client.server()));
 
-        this.meta = new HashMap<>();
-        MINECRAFT_CLIENT_META.releases().forEach(client -> this.meta.put(client.version(), client.server()));
-        MINECRAFT_CLIENT_META.snapshots().forEach(client -> this.meta.put(client.version(), client.server()));
+    this.meta = new HashMap<>();
+    MINECRAFT_CLIENT_META
+        .releases()
+        .forEach(client -> this.meta.put(client.version(), client.server()));
+    MINECRAFT_CLIENT_META
+        .snapshots()
+        .forEach(client -> this.meta.put(client.version(), client.server()));
 
-        return this;
-    }
+    return this;
+  }
 
-    /**
-     * Get a list of {@link MinecraftServer} of the {@link Type#RELEASE}.
-     *
-     * @return {@link MinecraftServer}-list of the {@link Type#RELEASE}.
-     * @author Griefed
-     */
-    protected List<MinecraftServer> releases() {
-        return RELEASES;
-    }
+  /**
+   * Get a list of {@link MinecraftServer} of the {@link Type#RELEASE}.
+   *
+   * @return {@link MinecraftServer}-list of the {@link Type#RELEASE}.
+   * @author Griefed
+   */
+  protected List<MinecraftServer> releases() {
+    return RELEASES;
+  }
 
-    /**
-     * Get a list of {@link MinecraftServer} of the {@link Type#SNAPSHOT}.
-     *
-     * @return {@link MinecraftServer}-list of the {@link Type#SNAPSHOT}.
-     * @author Griefed
-     */
-    protected List<MinecraftServer> snapshots() {
-        return SNAPSHOTS;
-    }
+  /**
+   * Get a list of {@link MinecraftServer} of the {@link Type#SNAPSHOT}.
+   *
+   * @return {@link MinecraftServer}-list of the {@link Type#SNAPSHOT}.
+   * @author Griefed
+   */
+  protected List<MinecraftServer> snapshots() {
+    return SNAPSHOTS;
+  }
 
-    /**
-     * Get the {@link MinecraftServer} meta.<br>
-     * key: {@link String} Minecraft version<br>
-     * value: {@link MinecraftServer} for said Minecraft version
-     *
-     * @return {@link HashMap} containing the {@link MinecraftServerMeta}.
-     * @author Griefed
-     */
-    protected HashMap<String, MinecraftServer> meta() {
-        return meta;
-    }
+  /**
+   * Get the {@link MinecraftServer} meta.<br>
+   * key: {@link String} Minecraft version<br>
+   * value: {@link MinecraftServer} for said Minecraft version
+   *
+   * @return {@link HashMap} containing the {@link MinecraftServerMeta}.
+   * @author Griefed
+   */
+  protected HashMap<String, MinecraftServer> meta() {
+    return meta;
+  }
 }

@@ -28,145 +28,149 @@ import java.util.Arrays;
  */
 public class StringUtilities {
 
-    public StringUtilities() {
+  public StringUtilities() {}
 
+  /**
+   * Converts a sequence of Strings, for example from a list, into a concatenated String.
+   *
+   * @param args Strings that will be concatenated into one string
+   * @return String. Returns concatenated string that contains all provided values.
+   * @author whitebear60
+   */
+  public String buildString(String... args) {
+
+    StringBuilder stringBuilder = new StringBuilder();
+
+    stringBuilder.append(Arrays.toString(args));
+
+    stringBuilder.delete(0, 2).reverse().delete(0, 2).reverse();
+
+    return stringBuilder.toString();
+  }
+
+  /**
+   * Remove commonly forbidden characters from the passed string, making the resulting String safe
+   * to use for files, paths, directories etc. If the passed text ends with a SPACE<code>
+   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
+   * Replaced/removed are:
+   *
+   * <ul>
+   *   <li><b>&#47;</b>
+   *   <li><b>&#60;</b>
+   *   <li><b>&#62;</b>
+   *   <li><b>&#58;</b>
+   *   <li><b>&#34;</b>
+   *   <li><b>&#92;</b>
+   *   <li><b>&#124;</b>
+   *   <li><b>&#63;</b>
+   *   <li><b>&#42;</b>
+   *   <li><b>&#35;</b>
+   *   <li><b>&#37;</b>
+   *   <li><b>&#38;</b>
+   *   <li><b>&#123;</b>
+   *   <li><b>&#125;</b>
+   *   <li><b>&#36;</b>
+   *   <li><b>&#33;</b>
+   *   <li><b>&#39;</b>
+   *   <li><b>&#64;</b>
+   *   <li><b>&#43;</b>
+   *   <li><b>&#180;</b>
+   *   <li><b>&#96;</b>
+   *   <li><b>&#61;</b>
+   * </ul>
+   *
+   * <br>
+   *
+   * @param text {@link String} The text which you want to be made safe.
+   * @return {@link String} The passed String safe for use for files, paths, directories etc.
+   * @author Griefed
+   */
+  public String pathSecureText(String text) {
+
+    while (text.endsWith(".") || text.endsWith(" ")) {
+      text = text.replace(text.substring(text.length() - 1), "");
     }
 
-    /**
-     * Converts a sequence of Strings, for example from a list, into a concatenated String.
-     *
-     * @param args Strings that will be concatenated into one string
-     * @return String. Returns concatenated string that contains all provided values.
-     * @author whitebear60
-     */
-    public String buildString(String... args) {
+    return text.replace("/", "")
+        .replace("<", "")
+        .replace(">", "")
+        .replace(":", "")
+        .replace("\"", "")
+        .replace("\\", "")
+        .replace("|", "")
+        .replace("?", "")
+        .replace("*", "")
+        .replace("#", "")
+        .replace("%", "")
+        .replace("&", "")
+        .replace("{", "")
+        .replace("}", "")
+        .replace("$", "")
+        .replace("!", "")
+        .replace("'", "")
+        .replace("@", "")
+        .replace("+", "")
+        .replace("´", "")
+        .replace("`", "")
+        .replace("=", "");
+  }
 
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder.append(Arrays.toString(args));
-
-        stringBuilder.delete(0, 2).reverse().delete(0, 2).reverse();
-
-        return stringBuilder.toString();
-    }
-
-    /**
-     * Remove commonly forbidden characters from the passed string, making the resulting String safe to use for files, paths,
-     * directories etc. If the passed text ends with a SPACE<code>(&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
-     * Replaced/removed are:
-     * <ul>
-     *     <li><b>&#47;</b></li>
-     *     <li><b>&#60;</b></li>
-     *     <li><b>&#62;</b></li>
-     *     <li><b>&#58;</b></li>
-     *     <li><b>&#34;</b></li>
-     *     <li><b>&#92;</b></li>
-     *     <li><b>&#124;</b></li>
-     *     <li><b>&#63;</b></li>
-     *     <li><b>&#42;</b></li>
-     *     <li><b>&#35;</b></li>
-     *     <li><b>&#37;</b></li>
-     *     <li><b>&#38;</b></li>
-     *     <li><b>&#123;</b></li>
-     *     <li><b>&#125;</b></li>
-     *     <li><b>&#36;</b></li>
-     *     <li><b>&#33;</b></li>
-     *     <li><b>&#39;</b></li>
-     *     <li><b>&#64;</b></li>
-     *     <li><b>&#43;</b></li>
-     *     <li><b>&#180;</b></li>
-     *     <li><b>&#96;</b></li>
-     *     <li><b>&#61;</b></li>
-     * </ul><br>
-     *
-     * @param text {@link String} The text which you want to be made safe.
-     * @return {@link String} The passed String safe for use for files, paths, directories etc.
-     * @author Griefed
-     */
-    public String pathSecureText(String text) {
-
-        while (text.endsWith(".") || text.endsWith(" ")) {
-            text = text.replace(text.substring(text.length() - 1), "");
-        }
-
-        return text
-                .replace("/", "")
-                .replace("<", "")
-                .replace(">", "")
-                .replace(":", "")
-                .replace("\"", "")
-                .replace("\\", "")
-                .replace("|", "")
-                .replace("?", "")
-                .replace("*", "")
-                .replace("#", "")
-                .replace("%", "")
-                .replace("&", "")
-                .replace("{", "")
-                .replace("}", "")
-                .replace("$", "")
-                .replace("!", "")
-                .replace("'", "")
-                .replace("@", "")
-                .replace("+", "")
-                .replace("´", "")
-                .replace("`", "")
-                .replace("=", "");
-    }
-
-    /**
-     * Check the passed string whether it contains any of the following characters:
-     * <ul>
-     *     <li><b>&#47;</b></li>
-     *     <li><b>&#60;</b></li>
-     *     <li><b>&#62;</b></li>
-     *     <li><b>&#58;</b></li>
-     *     <li><b>&#34;</b></li>
-     *     <li><b>&#92;</b></li>
-     *     <li><b>&#124;</b></li>
-     *     <li><b>&#63;</b></li>
-     *     <li><b>&#42;</b></li>
-     *     <li><b>&#35;</b></li>
-     *     <li><b>&#37;</b></li>
-     *     <li><b>&#38;</b></li>
-     *     <li><b>&#123;</b></li>
-     *     <li><b>&#125;</b></li>
-     *     <li><b>&#36;</b></li>
-     *     <li><b>&#33;</b></li>
-     *     <li><b>&#39;</b></li>
-     *     <li><b>&#64;</b></li>
-     *     <li><b>&#43;</b></li>
-     *     <li><b>&#180;</b></li>
-     *     <li><b>&#96;</b></li>
-     *     <li><b>&#61;</b></li>
-     * </ul><br>
-     *
-     * @param text {@link String} The text you want to check.
-     * @return <code>true</code> if none of these characters were found.
-     * @author Griefed
-     */
-    public boolean checkForIllegalCharacters(String text) {
-        return !text.contains("/") &&
-                !text.contains("<") &&
-                !text.contains(">") &&
-                !text.contains(":") &&
-                !text.contains("\"") &&
-                !text.contains("\\") &&
-                !text.contains("|") &&
-                !text.contains("?") &&
-                !text.contains("*") &&
-                !text.contains("#") &&
-                !text.contains("%") &&
-                !text.contains("&") &&
-                !text.contains("{") &&
-                !text.contains("}") &&
-                !text.contains("$") &&
-                !text.contains("!") &&
-                !text.contains("'") &&
-                !text.contains("@") &&
-                !text.contains("+") &&
-                !text.contains("`") &&
-                !text.contains("´") &&
-                !text.contains("=");
-    }
+  /**
+   * Check the passed string whether it contains any of the following characters:
+   *
+   * <ul>
+   *   <li><b>&#47;</b>
+   *   <li><b>&#60;</b>
+   *   <li><b>&#62;</b>
+   *   <li><b>&#58;</b>
+   *   <li><b>&#34;</b>
+   *   <li><b>&#92;</b>
+   *   <li><b>&#124;</b>
+   *   <li><b>&#63;</b>
+   *   <li><b>&#42;</b>
+   *   <li><b>&#35;</b>
+   *   <li><b>&#37;</b>
+   *   <li><b>&#38;</b>
+   *   <li><b>&#123;</b>
+   *   <li><b>&#125;</b>
+   *   <li><b>&#36;</b>
+   *   <li><b>&#33;</b>
+   *   <li><b>&#39;</b>
+   *   <li><b>&#64;</b>
+   *   <li><b>&#43;</b>
+   *   <li><b>&#180;</b>
+   *   <li><b>&#96;</b>
+   *   <li><b>&#61;</b>
+   * </ul>
+   *
+   * <br>
+   *
+   * @param text {@link String} The text you want to check.
+   * @return <code>true</code> if none of these characters were found.
+   * @author Griefed
+   */
+  public boolean checkForIllegalCharacters(String text) {
+    return !text.contains("/")
+        && !text.contains("<")
+        && !text.contains(">")
+        && !text.contains(":")
+        && !text.contains("\"")
+        && !text.contains("\\")
+        && !text.contains("|")
+        && !text.contains("?")
+        && !text.contains("*")
+        && !text.contains("#")
+        && !text.contains("%")
+        && !text.contains("&")
+        && !text.contains("{")
+        && !text.contains("}")
+        && !text.contains("$")
+        && !text.contains("!")
+        && !text.contains("'")
+        && !text.contains("@")
+        && !text.contains("+")
+        && !text.contains("`")
+        && !text.contains("´")
+        && !text.contains("=");
+  }
 }

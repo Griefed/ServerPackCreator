@@ -28,10 +28,13 @@ import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCu
 import org.springframework.context.annotation.Configuration;
 
 /**
- * <a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
- * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
- * would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
- * the necessary changes to fully implement it in ServerPackCreator.<br>
+ * <a
+ * href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
+ * to implement a task queue using Apache Artemis and Spring Boot</a><br>
+ * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
+ * how to implement a JMS. Without it this implementation of Artemis would have either taken way
+ * longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
+ * necessary changes to fully implement it in ServerPackCreator.<br>
  * Configuration for our Artemis JMS.
  *
  * @author Griefed
@@ -39,56 +42,58 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ArtemisConfig implements ArtemisConfigurationCustomizer {
 
-    private final ApplicationProperties APPLICATIONPROPERTIES;
+  private final ApplicationProperties APPLICATIONPROPERTIES;
 
-    /**
-     * Constructor responsible for our DI.
-     *
-     * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
-     * @author Griefed
-     */
-    @Autowired
-    public ArtemisConfig(ApplicationProperties injectedApplicationProperties) {
-        this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+  /**
+   * Constructor responsible for our DI.
+   *
+   * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+   * @author Griefed
+   */
+  @Autowired
+  public ArtemisConfig(ApplicationProperties injectedApplicationProperties) {
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+  }
+
+  /**
+   * Customize our configuration.<br>
+   * Set the default consumer windows size to 0.<br>
+   * Set the maximum disk usage from our property <code>
+   * de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br>
+   * Set the address to <code>tasks.background</code>.<br>
+   * Set the queue configuration to <code>tasks.background</code>.<br>
+   * Set the name to <code>tasks.background</code>.<br>
+   * Set the last value key to <code>unique_id</code>.<br>
+   * Set the routing type to {@link RoutingType#ANYCAST}.<br>
+   * Add our queue configuration..<br>
+   * All of this ensures that any message added will be deduplicated and worked on one by one. No
+   * messages should, at any time, be processed in parallel. Whilst working on them in parallel
+   * would increase the speed at which multiple serer packs are generated, we want to make sure
+   * neither the CurseForge API, nor the system our webservice is running on receives a heavy load.
+   * Economically speaking, we are trying to be nice neighbours and not claim too many resources for
+   * ourselves.
+   *
+   * @param configuration Artemis configuration.
+   * @author Griefed
+   */
+  @Override
+  public void customize(org.apache.activemq.artemis.core.config.Configuration configuration) {
+
+    if (configuration != null) {
+
+      configuration.setMaxDiskUsage(APPLICATIONPROPERTIES.getQueueMaxDiskUsage());
+
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setDefaultConsumerWindowSize(0);
+      configuration.addAddressesSetting("tasks.background", addressSettings);
+
+      QueueConfiguration queueConfiguration = new QueueConfiguration("tasks.background");
+      queueConfiguration.setAddress("tasks.background");
+      queueConfiguration.setName("tasks.background");
+      queueConfiguration.setLastValueKey("unique_id");
+      queueConfiguration.setRoutingType(RoutingType.ANYCAST);
+
+      configuration.addQueueConfiguration(queueConfiguration);
     }
-
-    /**
-     * Customize our configuration.<br>
-     * Set the default consumer windows size to 0.<br>
-     * Set the maximum disk usage from our property <code>de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br>
-     * Set the address to <code>tasks.background</code>.<br>
-     * Set the queue configuration to <code>tasks.background</code>.<br>
-     * Set the name to <code>tasks.background</code>.<br>
-     * Set the last value key to <code>unique_id</code>.<br>
-     * Set the routing type to {@link RoutingType#ANYCAST}.<br>
-     * Add our queue configuration..<br>
-     * All of this ensures that any message added will be deduplicated and worked on one by one. No messages should, at any time,
-     * be processed in parallel. Whilst working on them in parallel would increase the speed at which multiple serer packs are generated,
-     * we want to make sure neither the CurseForge API, nor the system our webservice is running on receives a heavy load.
-     * Economically speaking, we are trying to be nice neighbours and not claim too many resources for ourselves.
-     *
-     * @param configuration Artemis configuration.
-     * @author Griefed
-     */
-    @Override
-    public void customize(org.apache.activemq.artemis.core.config.Configuration configuration) {
-
-        if (configuration != null) {
-
-            configuration.setMaxDiskUsage(APPLICATIONPROPERTIES.getQueueMaxDiskUsage());
-
-            AddressSettings addressSettings = new AddressSettings();
-            addressSettings.setDefaultConsumerWindowSize(0);
-            configuration.addAddressesSetting("tasks.background", addressSettings);
-
-            QueueConfiguration queueConfiguration = new QueueConfiguration("tasks.background");
-            queueConfiguration.setAddress("tasks.background");
-            queueConfiguration.setName("tasks.background");
-            queueConfiguration.setLastValueKey("unique_id");
-            queueConfiguration.setRoutingType(RoutingType.ANYCAST);
-
-            configuration.addQueueConfiguration(queueConfiguration);
-
-        }
-    }
+  }
 }
