@@ -807,8 +807,7 @@ public class ServerPackHandler {
       writer.write("ECHO Minecraft version: %MINECRAFT%\n");
       writer.write("ECHO Fabric version: %FABRIC%\n");
       writer.write("ECHO Java version:\n");
-      // Batch, Windows, we can use --version
-      writer.write("%JAVA% --version\n");
+      writer.write("%JAVA% -version\n");
       writer.write("ECHO Java args: %ARGS%\n");
       writer.write("\n");
       writer.write("%JAVA% \"%OTHERARGS%\" %ARGS% -jar %LAUNCHER% nogui\n");
@@ -1051,7 +1050,7 @@ public class ServerPackHandler {
       writer.write("ECHO Minecraft version: %MINECRAFT%\n");
       writer.write("ECHO Quilt version: %QUILT%\n");
       writer.write("ECHO Java version:\n");
-      writer.write("%JAVA% --version\n");
+      writer.write("%JAVA% -version\n");
       writer.write("ECHO Java args: %ARGS%\n");
       writer.write("\n");
       writer.write("%JAVA% \"%OTHERARGS%\" %ARGS% -jar quilt-server-launch.jar nogui\n");
@@ -1354,8 +1353,7 @@ public class ServerPackHandler {
       writer.write("ECHO Minecraft version: %MINECRAFT%\n");
       writer.write("ECHO Forge version: %FORGE%\n");
       writer.write("ECHO Java version:\n");
-      // Batch, Windows, we can use --version
-      writer.write("%JAVA% --version\n");
+      writer.write("%JAVA% -version\n");
       writer.write("ECHO Java args in user_jvm_args.txt: %ARGS%\n");
       writer.write("\n");
       writer.write("REM Forge requires a configured set of both JVM and program arguments.\n");
@@ -1604,8 +1602,7 @@ public class ServerPackHandler {
       writer.write("ECHO Minecraft version: %MINECRAFT%\n");
       writer.write("ECHO Forge version: %FORGE%\n");
       writer.write("ECHO Java version:\n");
-      // Batch, Windows, we can use --version
-      writer.write("%JAVA% --version\n");
+      writer.write("%JAVA% -version\n");
       writer.write("ECHO Java args: %ARGS%\n");
       writer.write("\n");
       writer.write("%JAVA% \"%OTHERARGS%\" %ARGS% -jar forge.jar nogui\n");
