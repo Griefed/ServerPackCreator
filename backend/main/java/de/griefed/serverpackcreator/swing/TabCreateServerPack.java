@@ -62,6 +62,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -1131,7 +1132,7 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.insets = FIVE_ZERO_FIVE_ZERO;
 
     JPanel panel = new JPanel();
-    panel.setLayout(new GridBagLayout());
+    panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
     statusLabelLine0 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
     statusLabelLine1 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
@@ -1143,23 +1144,31 @@ public class TabCreateServerPack extends JComponent {
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.buttongenerateserverpack.ready"));
 
+    // Make sure all labels start on the left and extrend to the right
+    statusLabelLine0.setHorizontalAlignment(JLabel.LEFT);
+    statusLabelLine1.setHorizontalAlignment(JLabel.LEFT);
+    statusLabelLine2.setHorizontalAlignment(JLabel.LEFT);
+    statusLabelLine3.setHorizontalAlignment(JLabel.LEFT);
+    statusLabelLine4.setHorizontalAlignment(JLabel.LEFT);
+    statusLabelLine5.setHorizontalAlignment(JLabel.LEFT);
+
+    // Set the preferred size of the labels so they do not resize when long texts are set later on
+    Dimension labelDimension = new Dimension(700,30);
+    statusLabelLine0.setPreferredSize(labelDimension);
+    statusLabelLine1.setPreferredSize(labelDimension);
+    statusLabelLine2.setPreferredSize(labelDimension);
+    statusLabelLine3.setPreferredSize(labelDimension);
+    statusLabelLine4.setPreferredSize(labelDimension);
+    statusLabelLine5.setPreferredSize(labelDimension);
+
     updateStatusLabelForeground();
 
-    GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
-    GRIDBAGCONSTRAINTS.insets = new Insets(0, 0, 0, 0);
-    GRIDBAGCONSTRAINTS.gridx = 0;
-    GRIDBAGCONSTRAINTS.gridy = 0;
-    panel.add(statusLabelLine0, GRIDBAGCONSTRAINTS);
-    GRIDBAGCONSTRAINTS.gridy = 1;
-    panel.add(statusLabelLine1, GRIDBAGCONSTRAINTS);
-    GRIDBAGCONSTRAINTS.gridy = 2;
-    panel.add(statusLabelLine2, GRIDBAGCONSTRAINTS);
-    GRIDBAGCONSTRAINTS.gridy = 3;
-    panel.add(statusLabelLine3, GRIDBAGCONSTRAINTS);
-    GRIDBAGCONSTRAINTS.gridy = 4;
-    panel.add(statusLabelLine4, GRIDBAGCONSTRAINTS);
-    GRIDBAGCONSTRAINTS.gridy = 5;
-    panel.add(statusLabelLine5, GRIDBAGCONSTRAINTS);
+    panel.add(statusLabelLine0);
+    panel.add(statusLabelLine1);
+    panel.add(statusLabelLine2);
+    panel.add(statusLabelLine3);
+    panel.add(statusLabelLine4);
+    panel.add(statusLabelLine5);
 
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
     GRIDBAGCONSTRAINTS.gridx = 1;
@@ -1294,11 +1303,12 @@ public class TabCreateServerPack extends JComponent {
     this.statusLabelLine2.setText(statusLabelLine3.getText() + "   ");
     this.statusLabelLine3.setText(statusLabelLine4.getText() + "   ");
     this.statusLabelLine4.setText(statusLabelLine5.getText() + "   ");
-    if (text.length() > 90) {
+    this.statusLabelLine5.setText(text);
+    /*if (text.length() > 90) {
       this.statusLabelLine5.setText(text.substring(0, 90) + "...    ");
     } else {
       this.statusLabelLine5.setText(text);
-    }
+    }*/
   }
 
   /**
@@ -2026,7 +2036,6 @@ public class TabCreateServerPack extends JComponent {
    */
   private void generateServerpack(ActionEvent event) {
 
-    FRAME_SERVERPACKCREATOR.setResizable(false);
     BUTTON_GENERATESERVERPACK.setEnabled(false);
 
     int decision = 0;
@@ -2054,7 +2063,6 @@ public class TabCreateServerPack extends JComponent {
         break;
 
       default:
-        FRAME_SERVERPACKCREATOR.setResizable(true);
         BUTTON_GENERATESERVERPACK.setEnabled(true);
         break;
     }
