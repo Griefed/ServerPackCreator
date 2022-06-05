@@ -172,6 +172,9 @@ public class MainMenuBar extends Component {
   private JMenuItem view_OpenServerFilesDirectoryMenuItem;
   private JMenuItem view_OpenAddonsDirectoryMenuItem;
   private JMenuItem view_ExampleAddonRepositoryMenuItem;
+  private JMenuItem view_OpenSPCLog;
+  private JMenuItem view_OpenModloaderInstallerLog;
+  private JMenuItem view_OpenAddonLog;
 
   private JMenuItem about_OpenAboutWindowMenuItem;
   private JMenuItem about_OpenGitHubPageMenuItem;
@@ -396,6 +399,12 @@ public class MainMenuBar extends Component {
     view_OpenServerFilesDirectoryMenuItem =
         new JMenuItem(
             LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverfilesdir"));
+    view_OpenSPCLog =
+        new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.spclog"));
+    view_OpenModloaderInstallerLog =
+        new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.modloaderlog"));
+    view_OpenAddonLog =
+        new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.addonlog"));
 
     about_OpenAboutWindowMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.about"));
@@ -417,42 +426,39 @@ public class MainMenuBar extends Component {
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updates"));
 
     // create action listeners for items
-    file_NewConfigurationMenuItem.addActionListener(this::actionEventNewConfiguration);
-    file_LoadConfigMenuItem.addActionListener(this::actionEventLoadConfigurationFromFileMenuItem);
-    file_SaveConfigMenuItem.addActionListener(this::actionEventSaveConfigToFileMenuItem);
-    file_SaveAsConfigMenuItem.addActionListener(this::actionEventSaveAsConfigToFileMenuItem);
+    file_NewConfigurationMenuItem.addActionListener(this::newConfiguration);
+    file_LoadConfigMenuItem.addActionListener(this::loadConfigurationFromFileMenuItem);
+    file_SaveConfigMenuItem.addActionListener(this::saveConfigToFileMenuItem);
+    file_SaveAsConfigMenuItem.addActionListener(this::saveAsConfigToFileMenuItem);
     file_UploadConfigurationToHasteBin.addActionListener(
-        this::actionEventUploadConfigurationToHasteBinMenuItem);
+        this::uploadConfigurationToHasteBinMenuItem);
     file_UploadServerPackCreatorLogToHasteBin.addActionListener(
-        this::actionEventUploadServerPackCreatorLogToHasteBinMenuItem);
-    file_UpdateFallbackModslist.addActionListener(this::actionEventUpdateFallbackModslist);
-    file_ExitConfigMenuItem.addActionListener(this::actionEventExitMenuItem);
+        this::uploadServerPackCreatorLogToHasteBinMenuItem);
+    file_UpdateFallbackModslist.addActionListener(this::updateFallbackModslist);
+    file_ExitConfigMenuItem.addActionListener(this::exitMenuItem);
 
-    edit_SwitchTheme.addActionListener(this::actionEventSwitchThemeMenuItem);
-    edit_OpenInEditorServerProperties.addActionListener(
-        this::actionEventOpenInEditorServerProperties);
-    edit_OpenInEditorServerIcon.addActionListener(this::actionEventOpenServerIcon);
+    edit_SwitchTheme.addActionListener(this::switchThemeMenuItem);
+    edit_OpenInEditorServerProperties.addActionListener(this::openInEditorServerProperties);
+    edit_OpenInEditorServerIcon.addActionListener(this::openServerIcon);
 
-    view_OpenServerPackCreatorDirectoryMenuItem.addActionListener(
-        this::actionEventOpenSPCDirectoryMenuItem);
-    view_OpenServerPacksDirectoryMenuItem.addActionListener(
-        this::actionEventOpenServerPacksDirectoryMenuItem);
-    view_OpenServerFilesDirectoryMenuItem.addActionListener(
-        this::actionEventOpenServerFilesDirectoryMenuItem);
-    view_OpenAddonsDirectoryMenuItem.addActionListener(
-        this::actionEventOpenAddonsDirectoryMenuItem);
-    view_ExampleAddonRepositoryMenuItem.addActionListener(
-        this::actionEventViewExampleAddonMenuItem);
+    view_OpenServerPackCreatorDirectoryMenuItem.addActionListener(this::openSPCDirectoryMenuItem);
+    view_OpenServerPacksDirectoryMenuItem.addActionListener(this::openServerPacksDirectoryMenuItem);
+    view_OpenServerFilesDirectoryMenuItem.addActionListener(this::openServerFilesDirectoryMenuItem);
+    view_OpenAddonsDirectoryMenuItem.addActionListener(this::openAddonsDirectoryMenuItem);
+    view_ExampleAddonRepositoryMenuItem.addActionListener(this::viewExampleAddonMenuItem);
+    view_OpenSPCLog.addActionListener(this::openSPClog);
+    view_OpenModloaderInstallerLog.addActionListener(this::openModloaderInstallerLog);
+    view_OpenAddonLog.addActionListener(this::openAddonsLog);
 
-    about_OpenAboutWindowMenuItem.addActionListener(this::actionEventOpenAboutSPCMenuItem);
-    about_OpenGitHubPageMenuItem.addActionListener(this::actionEventOpenGitHubMenuItem);
-    about_OpenGitHubIssuesPageMenuItem.addActionListener(this::actionEventOpenIssuesMenuItem);
-    about_OpenReleasesPageMenuItem.addActionListener(this::actionEventOpenReleaseMenuItem);
-    about_OpenDiscordLinkMenuItem.addActionListener(this::actionEventOpenDiscordLinkMenuItem);
-    about_OpenDonationsPageMenuItem.addActionListener(this::actionEventOpenDonateMenuItem);
-    about_OpenWikiHelpMenuItem.addActionListener(this::actionEventOpenWikiHelpMenuItem);
-    about_OpenWikiHowToMenuItem.addActionListener(this::actionEventOpenWikiHowToMenuItem);
-    about_CheckForUpdates.addActionListener(this::actionEventCheckForUpdates);
+    about_OpenAboutWindowMenuItem.addActionListener(this::openAboutSPCMenuItem);
+    about_OpenGitHubPageMenuItem.addActionListener(this::openGitHubMenuItem);
+    about_OpenGitHubIssuesPageMenuItem.addActionListener(this::openIssuesMenuItem);
+    about_OpenReleasesPageMenuItem.addActionListener(this::openReleaseMenuItem);
+    about_OpenDiscordLinkMenuItem.addActionListener(this::openDiscordLinkMenuItem);
+    about_OpenDonationsPageMenuItem.addActionListener(this::openDonateMenuItem);
+    about_OpenWikiHelpMenuItem.addActionListener(this::openWikiHelpMenuItem);
+    about_OpenWikiHowToMenuItem.addActionListener(this::openWikiHowToMenuItem);
+    about_CheckForUpdates.addActionListener(this::checkForUpdates);
 
     // add items to menus
     fileMenu.add(file_NewConfigurationMenuItem);
@@ -479,6 +485,10 @@ public class MainMenuBar extends Component {
     viewMenu.add(view_OpenAddonsDirectoryMenuItem);
     viewMenu.add(new JSeparator());
     viewMenu.add(view_ExampleAddonRepositoryMenuItem);
+    viewMenu.add(new JSeparator());
+    viewMenu.add(view_OpenSPCLog);
+    viewMenu.add(view_OpenModloaderInstallerLog);
+    viewMenu.add(view_OpenAddonLog);
 
     aboutMenu.add(about_OpenAboutWindowMenuItem);
     aboutMenu.add(about_CheckForUpdates);
@@ -503,7 +513,67 @@ public class MainMenuBar extends Component {
     return MENUBAR;
   }
 
-  private void actionEventCheckForUpdates(ActionEvent actionEvent) {
+  private void openAddonsLog(ActionEvent actionEvent) {
+    LOG.debug("Clicked open Addons-log.");
+
+    if (new File("logs/addons.log").exists()) {
+      openFile("logs/addons.log");
+    } else {
+      openSPCFileInEditor("/logs/addons.log");
+    }
+  }
+
+  private void openModloaderInstallerLog(ActionEvent actionEvent) {
+    LOG.debug("Clicked open Modloader-Installer-log.");
+
+    if (new File("logs/modloader_installer.log").exists()) {
+      openFile("logs/modloader_installer.log");
+    } else {
+      openSPCFileInEditor("/logs/modloader_installer.log");
+    }
+  }
+
+  private void openSPClog(ActionEvent actionEvent) {
+    LOG.debug("Clicked open ServerPackCreator-log.");
+
+    if (new File("logs/serverpackcreator.log").exists()) {
+      openFile("logs/serverpackcreator.log");
+    } else {
+      openSPCFileInEditor("/logs/serverpackcreator.log");
+    }
+  }
+
+  private void openSPCFileInEditor(String spcFile) {
+    try {
+      if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+        Desktop.getDesktop()
+            .open(
+                new File(
+                    APPLICATIONHOME
+                            .getSource()
+                            .toString()
+                            .replace("\\", "/")
+                            .replace(
+                                APPLICATIONHOME
+                                    .getSource()
+                                    .toString()
+                                    .substring(
+                                        APPLICATIONHOME
+                                                .getSource()
+                                                .toString()
+                                                .replace("\\", "/")
+                                                .lastIndexOf("/")
+                                            + 1),
+                                "")
+                            .replace("\\", "/")
+                        + spcFile));
+      }
+    } catch (IOException ex) {
+      LOG.error("Error opening default server.properties.", ex);
+    }
+  }
+
+  private void checkForUpdates(ActionEvent actionEvent) {
     LOG.debug("Clicked Check for Updates");
 
     if (!displayUpdateDialog()) {
@@ -609,7 +679,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Grefed
    */
-  private void actionEventUpdateFallbackModslist(ActionEvent actionEvent) {
+  private void updateFallbackModslist(ActionEvent actionEvent) {
     LOG.debug("Running update check for fallback modslist...");
     if (APPLICATIONPROPERTIES.updateFallback()) {
       JOptionPane.showMessageDialog(
@@ -650,7 +720,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenWikiHelpMenuItem(ActionEvent actionEvent) {
+  private void openWikiHelpMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Help.");
 
     openLinkInBrowser(
@@ -664,7 +734,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenWikiHowToMenuItem(ActionEvent actionEvent) {
+  private void openWikiHowToMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Getting started.");
 
     openLinkInBrowser(
@@ -680,7 +750,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventNewConfiguration(ActionEvent actionEvent) {
+  private void newConfiguration(ActionEvent actionEvent) {
     LOG.debug("Clearing GUI...");
     TAB_CREATESERVERPACK.clearInterface();
     lastLoadedConfigurationFile = null;
@@ -693,7 +763,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenDiscordLinkMenuItem(ActionEvent actionEvent) {
+  private void openDiscordLinkMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Join Discord.");
 
     openLinkInBrowser(URI.create("https://discord.griefed.de"));
@@ -705,7 +775,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenIssuesMenuItem(ActionEvent actionEvent) {
+  private void openIssuesMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Open Issues page on GitHub.");
 
     openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
@@ -720,7 +790,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventUploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
+  private void uploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
 
     if (hasteBinPreChecks(new File("logs/serverpackcreator.log"))) {
@@ -769,7 +839,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventUploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
+  private void uploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload Configuration to HasteBin.");
 
     if (hasteBinPreChecks(new File("serverpackcreator.conf"))) {
@@ -834,45 +904,13 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenInEditorServerProperties(ActionEvent actionEvent) {
+  private void openInEditorServerProperties(ActionEvent actionEvent) {
     LOG.debug("Clicked Open server.properties in Editor.");
 
     if (new File(TAB_CREATESERVERPACK.getServerPropertiesPath()).isFile()) {
-      try {
-        if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-          Desktop.getDesktop().open(new File(TAB_CREATESERVERPACK.getServerPropertiesPath()));
-        }
-      } catch (IOException ex) {
-        LOG.error("Error opening custom server.properties.", ex);
-      }
+      openFile(TAB_CREATESERVERPACK.getServerPropertiesPath());
     } else {
-      try {
-        if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-          Desktop.getDesktop()
-              .open(
-                  new File(
-                      APPLICATIONHOME
-                              .getSource()
-                              .toString()
-                              .replace("\\", "/")
-                              .replace(
-                                  APPLICATIONHOME
-                                      .getSource()
-                                      .toString()
-                                      .substring(
-                                          APPLICATIONHOME
-                                                  .getSource()
-                                                  .toString()
-                                                  .replace("\\", "/")
-                                                  .lastIndexOf("/")
-                                              + 1),
-                                  "")
-                              .replace("\\", "/")
-                          + "/server_files/server.properties"));
-        }
-      } catch (IOException ex) {
-        LOG.error("Error opening default server.properties.", ex);
-      }
+      openSPCFileInEditor("/server_files/server.properties");
     }
   }
 
@@ -883,45 +921,29 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenServerIcon(ActionEvent actionEvent) {
+  private void openServerIcon(ActionEvent actionEvent) {
     LOG.debug("Clicked Open server-icon.png in Editor.");
 
     if (new File(TAB_CREATESERVERPACK.getServerIconPath()).isFile()) {
-      try {
-        if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-          Desktop.getDesktop().open(new File(TAB_CREATESERVERPACK.getServerIconPath()));
-        }
-      } catch (IOException ex) {
-        LOG.error("Error opening custom server-icon.png.", ex);
-      }
+      openFile(TAB_CREATESERVERPACK.getServerIconPath());
     } else {
-      try {
-        if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-          Desktop.getDesktop()
-              .open(
-                  new File(
-                      APPLICATIONHOME
-                              .getSource()
-                              .toString()
-                              .replace("\\", "/")
-                              .replace(
-                                  APPLICATIONHOME
-                                      .getSource()
-                                      .toString()
-                                      .substring(
-                                          APPLICATIONHOME
-                                                  .getSource()
-                                                  .toString()
-                                                  .replace("\\", "/")
-                                                  .lastIndexOf("/")
-                                              + 1),
-                                  "")
-                              .replace("\\", "/")
-                          + "/server_files/server-icon.png"));
-        }
-      } catch (IOException ex) {
-        LOG.error("Error opening default server-icon.png.", ex);
+      openSPCFileInEditor("/server_files/server-icon.png");
+    }
+  }
+
+  /**
+   * Open the specified file in the corresponding editor.
+   *
+   * @author Griefed
+   * @param fileToOpen {@link String} The file to open.
+   */
+  private void openFile(String fileToOpen) {
+    try {
+      if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+        Desktop.getDesktop().open(new File(fileToOpen));
       }
+    } catch (IOException ex) {
+      LOG.error("Error opening custom server-icon.png.", ex);
     }
   }
 
@@ -931,7 +953,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventExitMenuItem(ActionEvent actionEvent) {
+  private void exitMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Exit.");
     FRAME_SERVERPACKCREATOR.dispatchEvent(CLOSEEVENT);
   }
@@ -943,7 +965,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventSaveAsConfigToFileMenuItem(ActionEvent actionEvent) {
+  private void saveAsConfigToFileMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Save As...");
 
     configChooser = new JFileChooser();
@@ -998,7 +1020,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventSaveConfigToFileMenuItem(ActionEvent actionEvent) {
+  private void saveConfigToFileMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Save.");
     LOG.debug("Saving serverpackcreator.conf");
     TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"));
@@ -1016,7 +1038,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventSwitchThemeMenuItem(ActionEvent actionEvent) {
+  private void switchThemeMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Toggle light/dark-mode.");
 
     if (!isDarkTheme) {
@@ -1082,7 +1104,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventLoadConfigurationFromFileMenuItem(ActionEvent actionEvent) {
+  private void loadConfigurationFromFileMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked load configuration from file.");
 
     configChooser = new JFileChooser();
@@ -1137,9 +1159,19 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenAddonsDirectoryMenuItem(ActionEvent actionEvent) {
+  private void openAddonsDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open addons directory.");
 
+    openSPCFolder("/addons");
+  }
+
+  /**
+   * Open the specified folder, in the base dir of SPC, in the local explorer.
+   *
+   * @author Griefed
+   * @param folder {@link String} The folder to open.
+   */
+  private void openSPCFolder(String folder) {
     try {
       Desktop.getDesktop()
           .open(
@@ -1161,7 +1193,7 @@ public class MainMenuBar extends Component {
                                           + 1),
                               "")
                           .replace("\\", "/")
-                      + "/addons"));
+                      + folder));
     } catch (IOException ex) {
       LOG.error("Error opening file explorer for addons-directory.", ex);
     }
@@ -1174,7 +1206,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventViewExampleAddonMenuItem(ActionEvent actionEvent) {
+  private void viewExampleAddonMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked view example addon");
 
     openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
@@ -1186,34 +1218,10 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenSPCDirectoryMenuItem(ActionEvent actionEvent) {
+  private void openSPCDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open installation directory.");
 
-    try {
-      Desktop.getDesktop()
-          .open(
-              new File(
-                  APPLICATIONHOME
-                          .getSource()
-                          .toString()
-                          .replace("\\", "/")
-                          .replace(
-                              APPLICATIONHOME
-                                  .getSource()
-                                  .toString()
-                                  .substring(
-                                      APPLICATIONHOME
-                                              .getSource()
-                                              .toString()
-                                              .replace("\\", "/")
-                                              .lastIndexOf("/")
-                                          + 1),
-                              "")
-                          .replace("\\", "/")
-                      + "/"));
-    } catch (IOException ex) {
-      LOG.error("Error opening file explorer for ServerPackCreator base-directory.", ex);
-    }
+    openSPCFolder("/");
   }
 
   /**
@@ -1223,7 +1231,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
+  private void openServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open server packs directory.");
 
     TAB_CREATESERVERPACK.openServerPacksFolder();
@@ -1236,34 +1244,10 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
+  private void openServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open server files directory.");
 
-    try {
-      Desktop.getDesktop()
-          .open(
-              new File(
-                  APPLICATIONHOME
-                          .getSource()
-                          .toString()
-                          .replace("\\", "/")
-                          .replace(
-                              APPLICATIONHOME
-                                  .getSource()
-                                  .toString()
-                                  .substring(
-                                      APPLICATIONHOME
-                                              .getSource()
-                                              .toString()
-                                              .replace("\\", "/")
-                                              .lastIndexOf("/")
-                                          + 1),
-                              "")
-                          .replace("\\", "/")
-                      + "/server_files"));
-    } catch (IOException ex) {
-      LOG.error("Error opening file explorer for server_files.", ex);
-    }
+    openSPCFolder("/server_files");
   }
 
   /**
@@ -1272,7 +1256,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenAboutSPCMenuItem(ActionEvent actionEvent) {
+  private void openAboutSPCMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open about window.");
 
     JScrollPane ABOUTWINDOWSCROLLPANE =
@@ -1299,7 +1283,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenGitHubMenuItem(ActionEvent actionEvent) {
+  private void openGitHubMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open GitHub repository link.");
 
     openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator"));
@@ -1311,7 +1295,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenDonateMenuItem(ActionEvent actionEvent) {
+  private void openDonateMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open donations link.");
 
     openLinkInBrowser(URI.create("https://github.com/sponsors/Griefed"));
@@ -1323,7 +1307,7 @@ public class MainMenuBar extends Component {
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void actionEventOpenReleaseMenuItem(ActionEvent actionEvent) {
+  private void openReleaseMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open releases link");
 
     openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
