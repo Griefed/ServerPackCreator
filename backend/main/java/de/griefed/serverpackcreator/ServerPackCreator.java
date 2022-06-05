@@ -35,7 +35,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -187,8 +186,8 @@ public class ServerPackCreator {
    */
   private void stageOne() {
 
-    System.setProperty("log4j2.formatMsgNoLookups","true");
-    System.setProperty("file.encoding",StandardCharsets.UTF_8.name());
+    System.setProperty("log4j2.formatMsgNoLookups", "true");
+    System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
     this.utilities = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
@@ -197,7 +196,9 @@ public class ServerPackCreator {
             .systemInformation(
                 utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
 
-    utilities.SystemUtils().println(LOCALIZATIONMANAGER.getLocalizedString("encoding.check"));
+    // Uncomment if you want to work on encodings....
+    // Nightmare fuel...
+    // utilities.SystemUtils().println(LOCALIZATIONMANAGER.getLocalizedString("encoding.check"));
 
     LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
     LOG.debug("System information jarName: " + systemInformation.get("jarName"));
