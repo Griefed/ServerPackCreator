@@ -58,10 +58,6 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode.
- * Calls {@link #mainGUI()} which then calls {@link #createAndShowGUI()} in order to create and show
- * the GUI of ServerPackCreator. Instances of the {@link TabCreateServerPack}, {@link
- * TabServerPackCreatorLog}, {@link TabModloaderInstallerLog} are created in the constructor of this
- * class to make sure they are ready when the GUI is created and shown to the user.
  *
  * @author Griefed
  */
@@ -104,7 +100,6 @@ public class ServerPackCreatorGui extends JPanel {
 
   private final TabCreateServerPack TAB_CREATESERVERPACK;
   private final TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR;
-  private final TabModloaderInstallerLog TAB_LOG_MODLOADERINSTALLER;
   private final TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER;
 
   private final JTabbedPane TABBEDPANE;
@@ -266,9 +261,6 @@ public class ServerPackCreatorGui extends JPanel {
     this.TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
-    this.TAB_LOG_MODLOADERINSTALLER =
-        new TabModloaderInstallerLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-
     this.TAB_LOG_ADDONSHANDLER =
         new TabAddonsHandlerLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
@@ -284,8 +276,6 @@ public class ServerPackCreatorGui extends JPanel {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.createserverpack.tip"));
 
-    TABBEDPANE.setMnemonicAt(0, KeyEvent.VK_1);
-
     TABBEDPANE.addTab(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
@@ -296,18 +286,6 @@ public class ServerPackCreatorGui extends JPanel {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
 
-    TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
-
-    TABBEDPANE.addTab(
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.modloaderinstallerlog.title"),
-        null,
-        TAB_LOG_MODLOADERINSTALLER.create(null),
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.modloaderinstallerlog.tip"));
-
-    TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
-
     TABBEDPANE.addTab(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.addonshandlerlog.title"),
@@ -316,7 +294,9 @@ public class ServerPackCreatorGui extends JPanel {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
 
-    TABBEDPANE.setMnemonicAt(3, KeyEvent.VK_4);
+    TABBEDPANE.setMnemonicAt(0, KeyEvent.VK_1);
+    TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
+    TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
 
     if (!APPLICATIONPLUGINS.pluginsTabExtension().isEmpty()) {
       APPLICATIONPLUGINS
