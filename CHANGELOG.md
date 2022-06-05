@@ -1,3 +1,25 @@
+## [3.5.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-beta.1...3.5.0-beta.2) (2022-06-05)
+
+
+### :scissors: Refactor
+
+* **Addongs log tab:** Remove not needed fields and constructor params ([fe5d633](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe5d633f5117db7e6e4874be10914f8d5c27932c))
+* **Addongs log tab:** Remove not needed fields and constructor params. Display full logs without truncating. ([1504a8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/1504a8e57d78f59f11da37574d01a39ee60f4e06))
+* **Log Tail Component:** Always display horizontal scrollbar. ([fa20df4](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa20df4e369d4e6d2a69b816f931e0de8cbb8342))
+
+
+### 💎 Improvements
+
+* **Create Server Pack Tab:** Improve scroll amount which improves the user experience with the tab ([b11a876](https://git.griefed.de/Griefed/ServerPackCreator/commit/b11a8761535741f8c1ed6d23a7a38f9049038987))
+* **Create Server Pack tab:** Place status labels in BoxLayout panel and set preferred size, preventing resizing. Allow resizing of ServerPackCreator window at all times. ([2a4bc52](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a4bc52ba16671fdb5fc8f10e6914a3562f28705))
+* **Menu Bar View items:** Add SPC log, modloader installer log and addons log view items to open the respective logs in your default text-editor. ([361a62e](https://git.griefed.de/Griefed/ServerPackCreator/commit/361a62edf1780c94b505fc14a44a29cd3201b8ae))
+* **Modloader Installer Log tab:** Remove Modloader installer log tab. Rarely used, slows down SPC, rarely contains important information. ([8a9a793](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a9a79386b527ef8a06e506e1a08bb22e0f367dc))
+
+
+### Other
+
+* **Encoding:** UTF-8 ALL ZE FILES!!!11!1 ([b7d3189](https://git.griefed.de/Griefed/ServerPackCreator/commit/b7d318967d19b9e8cd3c5cdfcad8262d74c080b6))
+
 ## [3.5.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.4.1...3.5.0-beta.1) (2022-06-04)
 
 
