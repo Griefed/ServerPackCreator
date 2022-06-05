@@ -38,7 +38,6 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 public class TabServerPackCreatorLog extends JComponentTailer {
 
   private final LocalizationManager LOCALIZATIONMANAGER;
-  private final ApplicationProperties APPLICATIONPROPERTIES;
 
   /**
    * <strong>Constructor</strong>
@@ -57,10 +56,11 @@ public class TabServerPackCreatorLog extends JComponentTailer {
   public TabServerPackCreatorLog(
       LocalizationManager injectedLocalizationManager,
       ApplicationProperties injectedApplicationProperties) {
+    ApplicationProperties APPLICATIONPROPERTIES;
     if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
+      APPLICATIONPROPERTIES = new ApplicationProperties();
     } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+      APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
     if (injectedLocalizationManager == null) {
@@ -83,12 +83,12 @@ public class TabServerPackCreatorLog extends JComponentTailer {
           textArea.setText("");
         }
         if (!line.contains("DEBUG")) {
-          textArea.append(line.substring(line.lastIndexOf(") - ") + 3) + "\n");
+          textArea.append(line + "\n");
         }
       }
     }
     TailerListener tailerListener = new MyTailerListener();
-    Tailer tailer = new Tailer(new File("./logs/serverpackcreator.log"), tailerListener, 100);
+    Tailer tailer = new Tailer(new File("./logs/serverpackcreator.log"), tailerListener, 200);
     Thread thread = new Thread(tailer);
     thread.setDaemon(true);
     thread.start();
