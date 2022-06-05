@@ -19,12 +19,10 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.swing.utilities.JComponentTailer;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.io.File;
-import java.util.Properties;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -37,9 +35,6 @@ import org.apache.commons.io.input.TailerListenerAdapter;
 @Generated
 public class TabAddonsHandlerLog extends JComponentTailer {
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
-  private final ApplicationProperties APPLICATIONPROPERTIES;
-
   /**
    * <strong>Constructor</strong>
    *
@@ -48,27 +43,9 @@ public class TabAddonsHandlerLog extends JComponentTailer {
    * <p>Receives an instance of {@link LocalizationManager} or creates one if the received one is
    * null. Required for use of localization.
    *
-   * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for
-   *     localized log messages.
-   * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *     different things.
    * @author Griefed
    */
-  public TabAddonsHandlerLog(
-      LocalizationManager injectedLocalizationManager,
-      ApplicationProperties injectedApplicationProperties) {
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-    } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
-    }
-  }
+  public TabAddonsHandlerLog() {}
 
   /**
    * @author Griefed
@@ -78,7 +55,7 @@ public class TabAddonsHandlerLog extends JComponentTailer {
     class MyTailerListener extends TailerListenerAdapter {
       public void handle(String line) {
         if (!line.contains("DEBUG")) {
-          textArea.append(line.substring(line.lastIndexOf(") - ") + 3) + "\n");
+          textArea.append(line + "\n");
         }
       }
     }

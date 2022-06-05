@@ -261,8 +261,7 @@ public class ServerPackCreatorGui extends JPanel {
     this.TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
 
-    this.TAB_LOG_ADDONSHANDLER =
-        new TabAddonsHandlerLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+    this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog();
 
     this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
