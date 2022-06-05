@@ -1229,6 +1229,8 @@ public class TabCreateServerPack extends JComponent {
     // EVERYTHING ELSE--------
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
 
+    TAB_CREATESERVERPACKTAB_SCROLL_PANEL.getVerticalScrollBar().setUnitIncrement(16);
+
     CONTENT_PANE.add(TAB_CREATESERVERPACKTAB_SCROLL_PANEL, BorderLayout.CENTER);
 
     loadConfig(new File("serverpackcreator.conf"));
