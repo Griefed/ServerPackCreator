@@ -37,7 +37,7 @@ public abstract class JComponentTailer extends JComponent {
         new JScrollPane(
             textArea,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
     new SmartScroller(scrollPane, SmartScroller.VERTICAL, SmartScroller.END);
 
