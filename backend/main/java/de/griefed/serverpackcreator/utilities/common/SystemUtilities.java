@@ -50,12 +50,13 @@ public class SystemUtilities {
     try {
       ps = new PrintStream(System.out, true, StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException ex) {
-      LOG.error("Couldn't set printStream.",ex);
+      LOG.error("Couldn't set printStream.", ex);
     }
   }
 
   /**
-   * Print the output to a new line to console using a {@link StandardCharsets#UTF_8} {@link PrintStream}.
+   * Print the output to a new line to console using a {@link StandardCharsets#UTF_8} {@link
+   * PrintStream}.
    *
    * @author Griefed
    * @param output {@link String} The text you want to print to console.
