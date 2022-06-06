@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.CompoundIcon;
+import de.griefed.serverpackcreator.swing.utilities.CustomProgressBarUI;
 import de.griefed.serverpackcreator.swing.utilities.IconTextArea;
 import de.griefed.serverpackcreator.swing.utilities.IconTextField;
 import de.griefed.serverpackcreator.swing.utilities.RotatedIcon;
@@ -74,6 +75,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
@@ -205,6 +207,13 @@ public class TabCreateServerPack extends JComponent {
   private final JPanel COPYDIRECTORIES_JPANEL = new JPanel(false);
   private final JPanel JAVAARGS_JPANEL = new JPanel(false);
   private final JPanel CONTENT_PANE = new JPanel(new BorderLayout());
+
+  private final JProgressBar STATUS_BAR = new JProgressBar();
+  private final CustomProgressBarUI STATUS_BAR_UI =
+      new CustomProgressBarUI(
+          ImageIO.read(
+              Objects.requireNonNull(
+                  getClass().getResource("/de/griefed/resources/gui/generating.png"))));
 
   private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
 
@@ -1168,15 +1177,15 @@ public class TabCreateServerPack extends JComponent {
     panel.add(statusLabelLine3);
     panel.add(statusLabelLine4);
     panel.add(statusLabelLine5);
+    panel.setPreferredSize(new Dimension(700, 140));
 
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
     GRIDBAGCONSTRAINTS.gridx = 1;
-    GRIDBAGCONSTRAINTS.gridy = 20;
+    GRIDBAGCONSTRAINTS.gridy = 19;
     GRIDBAGCONSTRAINTS.gridwidth = 5;
     GRIDBAGCONSTRAINTS.gridheight = 2;
-    GRIDBAGCONSTRAINTS.weightx = 0;
-    GRIDBAGCONSTRAINTS.weighty = 0;
-    GRIDBAGCONSTRAINTS.insets = new Insets(-30, 0, 0, 0);
+    GRIDBAGCONSTRAINTS.weightx = 1;
+    GRIDBAGCONSTRAINTS.weighty = 1;
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
 
     CREATESERVERPACKPANEL.add(panel, GRIDBAGCONSTRAINTS);
@@ -1201,9 +1210,9 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 19;
     GRIDBAGCONSTRAINTS.gridwidth = 1;
-    GRIDBAGCONSTRAINTS.weightx = 0;
-    GRIDBAGCONSTRAINTS.weighty = 0;
-    GRIDBAGCONSTRAINTS.insets = new Insets(50, 20, 50, 20);
+    GRIDBAGCONSTRAINTS.gridheight = 1;
+    GRIDBAGCONSTRAINTS.weightx = 1;
+    GRIDBAGCONSTRAINTS.weighty = 1;
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
@@ -1222,19 +1231,29 @@ public class TabCreateServerPack extends JComponent {
     BUTTON_SERVER_PACKS.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonserverpacks.tip"));
 
-    GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 20;
-    GRIDBAGCONSTRAINTS.gridwidth = 1;
-    GRIDBAGCONSTRAINTS.weightx = 0;
-    GRIDBAGCONSTRAINTS.weighty = 0;
-    GRIDBAGCONSTRAINTS.insets = new Insets(50, 20, 50, 20);
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
     CREATESERVERPACKPANEL.add(BUTTON_SERVER_PACKS, GRIDBAGCONSTRAINTS);
 
-    // --------------------------------------------------------------------------------LEFTOVERS AND
-    // EVERYTHING ELSE--------
+    STATUS_BAR.setForeground(new Color(192, 255, 238));
+    STATUS_BAR.setPreferredSize(new Dimension(700, 30));
+    STATUS_BAR.setIndeterminate(false);
+    STATUS_BAR.setAlignmentY(0.0f);
+    STATUS_BAR.setAlignmentX(0.0f);
+
+    GRIDBAGCONSTRAINTS.gridx = 0;
+    GRIDBAGCONSTRAINTS.gridy = 21;
+    GRIDBAGCONSTRAINTS.gridwidth = 6;
+    GRIDBAGCONSTRAINTS.weightx = 1;
+    GRIDBAGCONSTRAINTS.weighty = 1;
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTH;
+    GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
+
+    CREATESERVERPACKPANEL.add(STATUS_BAR, GRIDBAGCONSTRAINTS);
+
+    // --------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
 
     TAB_CREATESERVERPACKTAB_SCROLL_PANEL.getVerticalScrollBar().setUnitIncrement(16);
@@ -2023,6 +2042,7 @@ public class TabCreateServerPack extends JComponent {
   private void generateServerpack(ActionEvent event) {
 
     BUTTON_GENERATESERVERPACK.setEnabled(false);
+    STATUS_BAR.setIndeterminate(true);
 
     int decision = 0;
 
@@ -2050,6 +2070,7 @@ public class TabCreateServerPack extends JComponent {
 
       default:
         BUTTON_GENERATESERVERPACK.setEnabled(true);
+        STATUS_BAR.setIndeterminate(false);
         break;
     }
   }
@@ -2204,6 +2225,7 @@ public class TabCreateServerPack extends JComponent {
           tailer.stop();
 
           BUTTON_GENERATESERVERPACK.setEnabled(true);
+          STATUS_BAR.setIndeterminate(false);
           FRAME_SERVERPACKCREATOR.setResizable(true);
 
           System.gc();
@@ -2564,5 +2586,9 @@ public class TabCreateServerPack extends JComponent {
 
       return LIGHTTHEME.getTextColor();
     }
+  }
+
+  public void setStatusBarUI() {
+    this.STATUS_BAR.setUI(STATUS_BAR_UI);
   }
 }

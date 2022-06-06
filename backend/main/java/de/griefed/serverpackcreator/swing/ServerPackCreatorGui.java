@@ -55,7 +55,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import mdlaf.MaterialLookAndFeel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.system.ApplicationHome;
 
 /**
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode.
@@ -402,6 +401,8 @@ public class ServerPackCreatorGui extends JPanel {
      * Does it work? Yeah.
      */
     SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
+
+    TAB_CREATESERVERPACK.setStatusBarUI();
 
     TABBEDPANE.setOpaque(true);
 

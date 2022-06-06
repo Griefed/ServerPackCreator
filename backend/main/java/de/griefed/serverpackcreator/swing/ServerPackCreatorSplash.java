@@ -140,7 +140,7 @@ public class ServerPackCreatorSplash {
     versionLabel.setForeground(c0FFEE);
     this.SPLASH_WINDOW.add(versionLabel);
 
-    // Consturct and add sum luv
+    // Construct and add sum luv
     JLabel someLuv = new JLabel("By Griefed");
     someLuv.setFont(new Font("arial", Font.BOLD, 15));
     someLuv.setBounds(

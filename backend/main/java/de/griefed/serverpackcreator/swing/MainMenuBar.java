@@ -984,10 +984,6 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_DARK);
         MaterialLookAndFeel.changeTheme(DARKTHEME);
 
-        SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
-
-        TABBEDPANE.setOpaque(true);
-
         isDarkTheme = true;
 
         try (OutputStream outputStream =
@@ -1009,10 +1005,6 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_LIGHT);
         MaterialLookAndFeel.changeTheme(LIGHTTHEME);
 
-        SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
-
-        TABBEDPANE.setOpaque(true);
-
         isDarkTheme = false;
 
         try (OutputStream outputStream =
@@ -1031,8 +1023,11 @@ public class MainMenuBar extends Component {
       }
     }
 
+    SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
+    TABBEDPANE.setOpaque(true);
     TAB_CREATESERVERPACK.validateInputFields();
     TAB_CREATESERVERPACK.updateStatusLabelForeground();
+    TAB_CREATESERVERPACK.setStatusBarUI();
   }
 
   /**
