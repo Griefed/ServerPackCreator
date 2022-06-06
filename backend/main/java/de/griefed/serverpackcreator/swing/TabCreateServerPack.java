@@ -2069,8 +2069,7 @@ public class TabCreateServerPack extends JComponent {
         break;
 
       default:
-        BUTTON_GENERATESERVERPACK.setEnabled(true);
-        STATUS_BAR.setIndeterminate(false);
+        ready();
         break;
     }
   }
@@ -2163,6 +2162,8 @@ public class TabCreateServerPack extends JComponent {
                   false);
               MATERIALTEXTPANEUI.installUI(SERVERPACKGENERATEDTEXTPANE);
 
+              ready();
+
               if (JOptionPane.showConfirmDialog(
                       FRAME_SERVERPACKCREATOR,
                       SERVERPACKGENERATEDTEXTPANE,
@@ -2210,6 +2211,8 @@ public class TabCreateServerPack extends JComponent {
                 errors.append(i + 1).append(": ").append(encounteredErrors.get(i)).append("\n");
               }
 
+              ready();
+
               JOptionPane.showMessageDialog(
                   FRAME_SERVERPACKCREATOR,
                   errors,
@@ -2224,15 +2227,18 @@ public class TabCreateServerPack extends JComponent {
 
           tailer.stop();
 
-          BUTTON_GENERATESERVERPACK.setEnabled(true);
-          STATUS_BAR.setIndeterminate(false);
-          FRAME_SERVERPACKCREATOR.setResizable(true);
+          ready();
 
           System.gc();
           System.runFinalization();
 
           executorService.shutdownNow();
         });
+  }
+
+  private void ready() {
+    BUTTON_GENERATESERVERPACK.setEnabled(true);
+    STATUS_BAR.setIndeterminate(false);
   }
 
   /**
