@@ -55,6 +55,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import mdlaf.MaterialLookAndFeel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.system.ApplicationHome;
 
 /**
  * This class creates and shows the GUI needed for running ServerPackCreator in....well...GUI mode.

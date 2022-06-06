@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
+import java.awt.Desktop;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -361,6 +363,44 @@ public class FileUtilities {
     }
 
     return true;
+  }
+
+  /**
+   * Open the specified folder in the file explorer.
+   *
+   * @author Griefed
+   * @param folder {@link String} The folder to open.
+   */
+  public void openFolder(String folder) {
+    if (GraphicsEnvironment.isHeadless()) {
+      LOG.error("Graphics environment not supported.");
+    } else {
+      try {
+        Desktop.getDesktop().open(new File(folder));
+      } catch (IOException ex) {
+        LOG.error("Error opening file explorer for " + folder + ".", ex);
+      }
+    }
+  }
+
+  /**
+   * Open the specified file in an editor.
+   *
+   * @author Griefed
+   * @param fileToOpen {@link String} The file to open.
+   */
+  public void openFile(String fileToOpen) {
+    if (GraphicsEnvironment.isHeadless()) {
+      LOG.error("Graphics environment not supported.");
+    } else {
+      try {
+        if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+          Desktop.getDesktop().open(new File(fileToOpen));
+        }
+      } catch (IOException ex) {
+        LOG.error("Error opening custom server-icon.png.", ex);
+      }
+    }
   }
 
   public enum FileType {

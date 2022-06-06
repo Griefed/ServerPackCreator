@@ -542,7 +542,7 @@ public class TabCreateServerPack extends JComponent {
   public JComponent createServerPackTab() {
 
     CREATESERVERPACKPANEL.setLayout(new GridBagLayout());
-    // ----------------------------------------------------------------------------------------LABELS AND TEXTFIELDS--------
+    // ----------------------------------------------------------------LABELS AND TEXTFIELDS--------
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
     GRIDBAGCONSTRAINTS.gridwidth = 3;
     GRIDBAGCONSTRAINTS.weightx = 1;
@@ -882,7 +882,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(COMBOBOX_MODLOADER_VERSIONS, GRIDBAGCONSTRAINTS);
 
-    // ----------------------------------------------------------------------------------------LABELS AND CHECKBOXES--------
+    // ----------------------------------------------------------------LABELS AND CHECKBOXES--------
 
     GRIDBAGCONSTRAINTS.insets = TEN_TEN_ZERO_ZERO;
     GRIDBAGCONSTRAINTS.gridwidth = 1;
@@ -991,7 +991,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(JAVAARGS_JPANEL, GRIDBAGCONSTRAINTS);
 
-    // ------------------------------------------------------------------------------------------------------BUTTONS--------
+    // ------------------------------------------------------------------------------BUTTONS--------
 
     GRIDBAGCONSTRAINTS.gridwidth = 1;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
@@ -1124,15 +1124,14 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_AIKARS_FLAGS, GRIDBAGCONSTRAINTS);
 
-    // ---------------------------------------------------------------------------------MAIN ACTION
-    // BUTTON AND LABEL--------
+    // ---------------------------------------------------------MAIN ACTION BUTTON AND LABEL--------
 
     GRIDBAGCONSTRAINTS.weightx = 0;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
     GRIDBAGCONSTRAINTS.insets = FIVE_ZERO_FIVE_ZERO;
 
     JPanel panel = new JPanel();
-    panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
     statusLabelLine0 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
     statusLabelLine1 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
@@ -1153,7 +1152,7 @@ public class TabCreateServerPack extends JComponent {
     statusLabelLine5.setHorizontalAlignment(JLabel.LEFT);
 
     // Set the preferred size of the labels so they do not resize when long texts are set later on
-    Dimension labelDimension = new Dimension(700,30);
+    Dimension labelDimension = new Dimension(700, 30);
     statusLabelLine0.setPreferredSize(labelDimension);
     statusLabelLine1.setPreferredSize(labelDimension);
     statusLabelLine2.setPreferredSize(labelDimension);
@@ -1319,20 +1318,7 @@ public class TabCreateServerPack extends JComponent {
    * @author Griefed
    */
   protected void openServerPacksFolder(ActionEvent actionEvent) {
-    openServerPacksFolder();
-  }
-
-  /**
-   * Open the folder containing generated server packs in the users file-explorer.
-   *
-   * @author Griefed
-   */
-  protected void openServerPacksFolder() {
-    try {
-      Desktop.getDesktop().open(new File(APPLICATIONPROPERTIES.getDirectoryServerPacks()));
-    } catch (IOException ex) {
-      LOG.error("Error opening file explorer for server-packs.", ex);
-    }
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.getDirectoryServerPacks());
   }
 
   /**
@@ -1790,7 +1776,7 @@ public class TabCreateServerPack extends JComponent {
     modpackDirChooser.setMultiSelectionEnabled(false);
     modpackDirChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (modpackDirChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
+    if (modpackDirChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
       try {
         TEXTFIELD_MODPACKDIRECTORY.setText(
             modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
@@ -1833,7 +1819,7 @@ public class TabCreateServerPack extends JComponent {
     serverIconChooser.setMultiSelectionEnabled(false);
     serverIconChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (serverIconChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
+    if (serverIconChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
       try {
 
         TEXTFIELD_SERVERICONPATH.setText(
@@ -1869,7 +1855,7 @@ public class TabCreateServerPack extends JComponent {
     serverPropertiesChooser.setMultiSelectionEnabled(false);
     serverPropertiesChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (serverPropertiesChooser.showOpenDialog(CREATESERVERPACKPANEL)
+    if (serverPropertiesChooser.showOpenDialog(FRAME_SERVERPACKCREATOR)
         == JFileChooser.APPROVE_OPTION) {
       try {
 
@@ -1916,7 +1902,7 @@ public class TabCreateServerPack extends JComponent {
     clientModsChooser.setMultiSelectionEnabled(true);
     clientModsChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (clientModsChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
+    if (clientModsChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
 
       File[] clientMods = clientModsChooser.getSelectedFiles();
       ArrayList<String> clientModsFilenames = new ArrayList<>(100);
@@ -1960,7 +1946,7 @@ public class TabCreateServerPack extends JComponent {
     copyDirsChooser.setMultiSelectionEnabled(true);
     copyDirsChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (copyDirsChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
+    if (copyDirsChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
       File[] directoriesToCopy = copyDirsChooser.getSelectedFiles();
       ArrayList<String> copyDirsNames = new ArrayList<>(100);
 
@@ -2011,7 +1997,7 @@ public class TabCreateServerPack extends JComponent {
     javaChooser.setMultiSelectionEnabled(false);
     javaChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (javaChooser.showOpenDialog(CREATESERVERPACKPANEL) == JFileChooser.APPROVE_OPTION) {
+    if (javaChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
       try {
         TEXTFIELD_JAVAPATH.setText(
             javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
@@ -2542,6 +2528,12 @@ public class TabCreateServerPack extends JComponent {
     validateInputFields();
   }
 
+  /**
+   * Get the current themes error-text colour.
+   *
+   * @author Griefed
+   * @return {@link Color} The current themes error-text colour.
+   */
   private Color getThemeErrorColor() {
     if (APPLICATIONPROPERTIES
         .getProperty("de.griefed.serverpackcreator.gui.darkmode")
@@ -2555,6 +2547,12 @@ public class TabCreateServerPack extends JComponent {
     }
   }
 
+  /**
+   * The the current themes default text colour.
+   *
+   * @author Griefed
+   * @return {@link Color} The current themes default text colour.
+   */
   private Color getThemeTextColor() {
     if (APPLICATIONPROPERTIES
         .getProperty("de.griefed.serverpackcreator.gui.darkmode")

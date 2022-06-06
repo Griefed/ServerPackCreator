@@ -55,6 +55,8 @@ public class ApplicationProperties extends Properties {
   private final File START_SCRIPT_LINUX = new File("start.sh");
   private final File USER_JVM_ARGS = new File("user_jvm_args.txt");
 
+  private final String DIRECTORY_SERVER_FILES = "server_files";
+  private final String DIRECTORY_PLUGINS = "plugins";
   private final String FALLBACK_MODS_DEFAULT_ASSTRING =
       "3dSkinLayers-,"
           + "3dskinlayers-,"
@@ -863,6 +865,27 @@ public class ApplicationProperties extends Properties {
    */
   public String[] SUPPORTED_MODLOADERS() {
     return SUPPORTED_MODLOADERS;
+  }
+
+  /**
+   * Directory where server-files are stored in, for example the default server-icon and
+   * server.properties.
+   *
+   * @author Griefed
+   * @return {@link String} server-files directory.
+   */
+  public String DIRECTORY_SERVER_FILES() {
+    return DIRECTORY_SERVER_FILES;
+  }
+
+  /**
+   * Directory where plugins are stored in.
+   *
+   * @author Griefed
+   * @return {@link String} plugins directory.
+   */
+  public String DIRECTORY_PLUGINS() {
+    return DIRECTORY_PLUGINS;
   }
 
   /**

@@ -79,7 +79,6 @@ import mdlaf.components.textpane.MaterialTextPaneUI;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.system.ApplicationHome;
 
 /**
  * This class creates our menubar which will be displayed at the top of the ServerPackCreator frame.
@@ -92,9 +91,6 @@ import org.springframework.boot.system.ApplicationHome;
 public class MainMenuBar extends Component {
 
   private static final Logger LOG = LogManager.getLogger(MainMenuBar.class);
-
-  private final ApplicationHome APPLICATIONHOME =
-      new ApplicationHome(de.griefed.serverpackcreator.Main.class);
 
   private final Clipboard CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
 
@@ -444,7 +440,7 @@ public class MainMenuBar extends Component {
     view_OpenServerPackCreatorDirectoryMenuItem.addActionListener(this::openSPCDirectoryMenuItem);
     view_OpenServerPacksDirectoryMenuItem.addActionListener(this::openServerPacksDirectoryMenuItem);
     view_OpenServerFilesDirectoryMenuItem.addActionListener(this::openServerFilesDirectoryMenuItem);
-    view_OpenAddonsDirectoryMenuItem.addActionListener(this::openAddonsDirectoryMenuItem);
+    view_OpenAddonsDirectoryMenuItem.addActionListener(this::openPluginsDirectoryMenuItem);
     view_ExampleAddonRepositoryMenuItem.addActionListener(this::viewExampleAddonMenuItem);
     view_OpenSPCLog.addActionListener(this::openSPClog);
     view_OpenModloaderInstallerLog.addActionListener(this::openModloaderInstallerLog);
@@ -516,61 +512,19 @@ public class MainMenuBar extends Component {
   private void openAddonsLog(ActionEvent actionEvent) {
     LOG.debug("Clicked open Addons-log.");
 
-    if (new File("logs/addons.log").exists()) {
-      openFile("logs/addons.log");
-    } else {
-      openSPCFileInEditor("/logs/addons.log");
-    }
+    UTILITIES.FileUtils().openFile("logs/addons.log");
   }
 
   private void openModloaderInstallerLog(ActionEvent actionEvent) {
     LOG.debug("Clicked open Modloader-Installer-log.");
 
-    if (new File("logs/modloader_installer.log").exists()) {
-      openFile("logs/modloader_installer.log");
-    } else {
-      openSPCFileInEditor("/logs/modloader_installer.log");
-    }
+    UTILITIES.FileUtils().openFile("logs/modloader_installer.log");
   }
 
   private void openSPClog(ActionEvent actionEvent) {
     LOG.debug("Clicked open ServerPackCreator-log.");
 
-    if (new File("logs/serverpackcreator.log").exists()) {
-      openFile("logs/serverpackcreator.log");
-    } else {
-      openSPCFileInEditor("/logs/serverpackcreator.log");
-    }
-  }
-
-  private void openSPCFileInEditor(String spcFile) {
-    try {
-      if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-        Desktop.getDesktop()
-            .open(
-                new File(
-                    APPLICATIONHOME
-                            .getSource()
-                            .toString()
-                            .replace("\\", "/")
-                            .replace(
-                                APPLICATIONHOME
-                                    .getSource()
-                                    .toString()
-                                    .substring(
-                                        APPLICATIONHOME
-                                                .getSource()
-                                                .toString()
-                                                .replace("\\", "/")
-                                                .lastIndexOf("/")
-                                            + 1),
-                                "")
-                            .replace("\\", "/")
-                        + spcFile));
-      }
-    } catch (IOException ex) {
-      LOG.error("Error opening default server.properties.", ex);
-    }
+    UTILITIES.FileUtils().openFile("logs/serverpackcreator.log");
   }
 
   private void checkForUpdates(ActionEvent actionEvent) {
@@ -908,9 +862,9 @@ public class MainMenuBar extends Component {
     LOG.debug("Clicked Open server.properties in Editor.");
 
     if (new File(TAB_CREATESERVERPACK.getServerPropertiesPath()).isFile()) {
-      openFile(TAB_CREATESERVERPACK.getServerPropertiesPath());
+      UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerPropertiesPath());
     } else {
-      openSPCFileInEditor("/server_files/server.properties");
+      UTILITIES.FileUtils().openFile("./server_files/server.properties");
     }
   }
 
@@ -925,25 +879,9 @@ public class MainMenuBar extends Component {
     LOG.debug("Clicked Open server-icon.png in Editor.");
 
     if (new File(TAB_CREATESERVERPACK.getServerIconPath()).isFile()) {
-      openFile(TAB_CREATESERVERPACK.getServerIconPath());
+      UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerIconPath());
     } else {
-      openSPCFileInEditor("/server_files/server-icon.png");
-    }
-  }
-
-  /**
-   * Open the specified file in the corresponding editor.
-   *
-   * @author Griefed
-   * @param fileToOpen {@link String} The file to open.
-   */
-  private void openFile(String fileToOpen) {
-    try {
-      if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-        Desktop.getDesktop().open(new File(fileToOpen));
-      }
-    } catch (IOException ex) {
-      LOG.error("Error opening custom server-icon.png.", ex);
+      UTILITIES.FileUtils().openFile("./server_files/server-icon.png");
     }
   }
 
@@ -1153,54 +1091,19 @@ public class MainMenuBar extends Component {
   }
 
   /**
-   * Upon button-press, open the folder containing installed addons for ServerPackCreator in the
+   * Upon button-press, open the folder containing installed plugins for ServerPackCreator in the
    * users file-explorer.
    *
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
-  private void openAddonsDirectoryMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open addons directory.");
-
-    openSPCFolder("/addons");
+  private void openPluginsDirectoryMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open plugins directory.");
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.DIRECTORY_PLUGINS());
   }
 
   /**
-   * Open the specified folder, in the base dir of SPC, in the local explorer.
-   *
-   * @author Griefed
-   * @param folder {@link String} The folder to open.
-   */
-  private void openSPCFolder(String folder) {
-    try {
-      Desktop.getDesktop()
-          .open(
-              new File(
-                  APPLICATIONHOME
-                          .getSource()
-                          .toString()
-                          .replace("\\", "/")
-                          .replace(
-                              APPLICATIONHOME
-                                  .getSource()
-                                  .toString()
-                                  .substring(
-                                      APPLICATIONHOME
-                                              .getSource()
-                                              .toString()
-                                              .replace("\\", "/")
-                                              .lastIndexOf("/")
-                                          + 1),
-                              "")
-                          .replace("\\", "/")
-                      + folder));
-    } catch (IOException ex) {
-      LOG.error("Error opening file explorer for addons-directory.", ex);
-    }
-  }
-
-  /**
-   * Upon button-press, open the example addons repository-page on GitHub in the users default
+   * Upon button-press, open the example plugins repository-page on GitHub in the users default
    * browser.
    *
    * @param actionEvent The event which triggers this method.
@@ -1220,8 +1123,7 @@ public class MainMenuBar extends Component {
    */
   private void openSPCDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open installation directory.");
-
-    openSPCFolder("/");
+    UTILITIES.FileUtils().openFolder(".");
   }
 
   /**
@@ -1233,8 +1135,7 @@ public class MainMenuBar extends Component {
    */
   private void openServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open server packs directory.");
-
-    TAB_CREATESERVERPACK.openServerPacksFolder();
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.getDirectoryServerPacks());
   }
 
   /**
@@ -1246,8 +1147,7 @@ public class MainMenuBar extends Component {
    */
   private void openServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open server files directory.");
-
-    openSPCFolder("/server_files");
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.DIRECTORY_SERVER_FILES());
   }
 
   /**
