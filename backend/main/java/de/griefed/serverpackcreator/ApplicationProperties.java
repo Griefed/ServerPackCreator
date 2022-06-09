@@ -147,7 +147,6 @@ public class ApplicationProperties extends Properties {
           + "jeed-,"
           + "jehc-,"
           + "jeiintegration_,"
-          + "JEITweaker-,"
           + "just-enough-harvestcraft-,"
           + "justenoughbeacons-,"
           + "JustEnoughCalculation-,"

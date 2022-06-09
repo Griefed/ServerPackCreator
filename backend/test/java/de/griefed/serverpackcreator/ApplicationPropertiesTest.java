@@ -133,7 +133,6 @@ public class ApplicationPropertiesTest {
                         + "jeed-,"
                         + "jehc-,"
                         + "jeiintegration_,"
-                        + "JEITweaker-,"
                         + "just-enough-harvestcraft-,"
                         + "justenoughbeacons-,"
                         + "JustEnoughCalculation-,"
