@@ -1,3 +1,12 @@
+## [3.5.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-beta.2...3.5.0-beta.3) (2022-06-06)
+
+
+### 💎 Improvements
+
+* **GUI FileChoosers and file/folder opening:** Open filechoosers in center of SPC window. Centralize file and folder opening to utilities. ([0b8b426](https://git.griefed.de/Griefed/ServerPackCreator/commit/0b8b4263c351f7d5fa6e17a9107cc1c55b671ba3))
+* **GUI Ready status:** Enable generation button and turn of status bar after generation has completed, but before dialogs are shown. Looks better and makes more sense. ([d3ab985](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3ab98564284eb1b3aa0098421c9b0b080d4c868))
+* **GUI status display:** Display a scrolling bar during the generation of a server pack to indicate that ServerPackCreator is currently doing something. Thanks to @Kreezxil for the suggestion! ([fa331bf](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa331bf8048bb3c5fadc3d9f9ab8a0b882b37a82))
+
 ## [3.5.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-beta.1...3.5.0-beta.2) (2022-06-05)
 
 

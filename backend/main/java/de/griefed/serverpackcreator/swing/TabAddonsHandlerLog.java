@@ -43,9 +43,13 @@ public class TabAddonsHandlerLog extends JComponentTailer {
    * <p>Receives an instance of {@link LocalizationManager} or creates one if the received one is
    * null. Required for use of localization.
    *
+   * @param tooltip {@link String} The tooltip text for this tailer.
    * @author Griefed
    */
-  public TabAddonsHandlerLog() {}
+  public TabAddonsHandlerLog(String tooltip) {
+    super(tooltip);
+    createTailer();
+  }
 
   /**
    * @author Griefed

@@ -51,11 +51,14 @@ public class TabServerPackCreatorLog extends JComponentTailer {
    *     localized log messages.
    * @param injectedApplicationProperties Instance of {@link Properties} required for various
    *     different things.
+   * @param tooltip {@link String} The tooltip text for this tailer.
    * @author Griefed
    */
   public TabServerPackCreatorLog(
       LocalizationManager injectedLocalizationManager,
-      ApplicationProperties injectedApplicationProperties) {
+      ApplicationProperties injectedApplicationProperties,
+      String tooltip) {
+    super(tooltip);
     ApplicationProperties APPLICATIONPROPERTIES;
     if (injectedApplicationProperties == null) {
       APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -68,6 +71,8 @@ public class TabServerPackCreatorLog extends JComponentTailer {
     } else {
       this.LOCALIZATIONMANAGER = injectedLocalizationManager;
     }
+
+    createTailer();
   }
 
   /**

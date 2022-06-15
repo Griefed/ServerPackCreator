@@ -1,21 +1,20 @@
 package de.griefed.serverpackcreator.swing.utilities;
 
 import de.griefed.serverpackcreator.utilities.misc.Generated;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 @Generated
-public abstract class JComponentTailer extends JComponent {
+public abstract class JComponentTailer extends JPanel {
 
   protected JTextArea textArea;
 
-  public JComponent create(String tooltip) {
-    JComponent jComponent = new JPanel(false);
-    jComponent.setLayout(new GridBagLayout());
+  public JComponentTailer(String tooltip) {
+    setLayout(new GridBagLayout());
     GridBagConstraints constraints = new GridBagConstraints();
 
     constraints.anchor = GridBagConstraints.CENTER;
@@ -28,6 +27,7 @@ public abstract class JComponentTailer extends JComponent {
     // Log Panel
     textArea = new JTextArea();
     textArea.setEditable(false);
+    textArea.setFont(new Font("Noto Sans Display Regular", Font.PLAIN, 15));
 
     if (tooltip != null) {
       textArea.setToolTipText(tooltip);
@@ -41,11 +41,7 @@ public abstract class JComponentTailer extends JComponent {
 
     new SmartScroller(scrollPane, SmartScroller.VERTICAL, SmartScroller.END);
 
-    jComponent.add(scrollPane, constraints);
-
-    createTailer();
-
-    return jComponent;
+    add(scrollPane, constraints);
   }
 
   protected abstract void createTailer();

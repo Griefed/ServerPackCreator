@@ -34,7 +34,6 @@ import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -47,7 +46,6 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -62,7 +60,7 @@ import org.apache.logging.log4j.Logger;
  * @author Griefed
  */
 @Generated
-public class ServerPackCreatorGui extends JPanel {
+public class ServerPackCreatorGui {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreatorGui.class);
 
@@ -152,8 +150,6 @@ public class ServerPackCreatorGui extends JPanel {
       ConfigUtilities injectedConfigUtilities,
       ServerPackCreatorSplash injectedServerPackCreatorSplash)
       throws IOException {
-
-    super(new GridLayout(1, 1));
 
     this.SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
     this.SERVERPACKCREATORSPLASH.update(90);
@@ -259,9 +255,16 @@ public class ServerPackCreatorGui extends JPanel {
             LIGHTTHEME);
 
     this.TAB_LOG_SERVERPACKCREATOR =
-        new TabServerPackCreatorLog(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+        new TabServerPackCreatorLog(
+            LOCALIZATIONMANAGER,
+            APPLICATIONPROPERTIES,
+            LOCALIZATIONMANAGER.getLocalizedString(
+                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
 
-    this.TAB_LOG_ADDONSHANDLER = new TabAddonsHandlerLog();
+    this.TAB_LOG_ADDONSHANDLER =
+        new TabAddonsHandlerLog(
+            LOCALIZATIONMANAGER.getLocalizedString(
+                "createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
 
     this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
@@ -271,7 +274,7 @@ public class ServerPackCreatorGui extends JPanel {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.createserverpack.title"),
         null,
-        TAB_CREATESERVERPACK.createServerPackTab(),
+        TAB_CREATESERVERPACK,
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.createserverpack.tip"));
 
@@ -279,9 +282,7 @@ public class ServerPackCreatorGui extends JPanel {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
         null,
-        TAB_LOG_SERVERPACKCREATOR.create(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip")),
+        TAB_LOG_SERVERPACKCREATOR,
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
 
@@ -289,9 +290,7 @@ public class ServerPackCreatorGui extends JPanel {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.tabbedpane.addonshandlerlog.title"),
         null,
-        TAB_LOG_ADDONSHANDLER.create(null),
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
+        TAB_LOG_ADDONSHANDLER);
 
     TABBEDPANE.setMnemonicAt(0, KeyEvent.VK_1);
     TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
@@ -310,8 +309,6 @@ public class ServerPackCreatorGui extends JPanel {
     } else {
       LOG.info("No TabbedPane addons to add.");
     }
-
-    add(TABBEDPANE);
 
     TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
@@ -401,8 +398,6 @@ public class ServerPackCreatorGui extends JPanel {
      * Does it work? Yeah.
      */
     SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
-
-    TAB_CREATESERVERPACK.setStatusBarUI();
 
     TABBEDPANE.setOpaque(true);
 

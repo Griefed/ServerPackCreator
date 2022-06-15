@@ -129,58 +129,21 @@ public class MainMenuBar extends Component {
 
   private final String[] HASTEOPTIONS = new String[3];
 
-  private final StyledDocument ABOUTWINDOWDOCUMENT = new DefaultStyledDocument();
-  private final StyledDocument CONFIGWINDOWDOCUMENT = new DefaultStyledDocument();
-  private final StyledDocument SPCLOGWINDOWDOCUMENT = new DefaultStyledDocument();
+  private final StyledDocument ABOUT_DOCUMENT = new DefaultStyledDocument();
+  private final StyledDocument CONFIG_DOCUMENT = new DefaultStyledDocument();
+  private final StyledDocument SPCLOG_DOCUMENT = new DefaultStyledDocument();
 
-  private final SimpleAttributeSet CONFIGATTRIBUTESET = new SimpleAttributeSet();
-  private final SimpleAttributeSet SPCLOGATTRIBUTESET = new SimpleAttributeSet();
+  private final SimpleAttributeSet CONFIG_ATTRIBUTESET = new SimpleAttributeSet();
+  private final SimpleAttributeSet SPCLOG_ATTRIBUTESET = new SimpleAttributeSet();
 
-  private final JTextPane ABOUTWINDOWTEXTPANE = new JTextPane(ABOUTWINDOWDOCUMENT);
-  private final JTextPane CONFIGWINDOWTEXTPANE = new JTextPane(CONFIGWINDOWDOCUMENT);
-  private final JTextPane SPCLOGWINDOWTEXTPANE = new JTextPane(SPCLOGWINDOWDOCUMENT);
-  private final JTextPane FILETOOLARGEWINDOWTEXTPANE = new JTextPane();
+  private final JTextPane ABOUT_WINDOW_TEXTPANE = new JTextPane(ABOUT_DOCUMENT);
+  private final JTextPane CONFIG_WINDOW_TEXTPANE = new JTextPane(CONFIG_DOCUMENT);
+  private final JTextPane SPCLOG_WINDOW_TEXTPANE = new JTextPane(SPCLOG_DOCUMENT);
+  private final JTextPane FILETOOLARGE_WINDOW_TEXTPANE = new JTextPane();
 
   private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
 
   private boolean isDarkTheme;
-
-  private JMenu fileMenu;
-  private JMenu editMenu;
-  private JMenu viewMenu;
-  private JMenu aboutMenu;
-
-  private JMenuItem file_NewConfigurationMenuItem;
-  private JMenuItem file_LoadConfigMenuItem;
-  private JMenuItem file_SaveConfigMenuItem;
-  private JMenuItem file_SaveAsConfigMenuItem;
-  private JMenuItem file_UploadConfigurationToHasteBin;
-  private JMenuItem file_UploadServerPackCreatorLogToHasteBin;
-  private JMenuItem file_ExitConfigMenuItem;
-  private JMenuItem file_UpdateFallbackModslist;
-
-  private JMenuItem edit_SwitchTheme;
-  private JMenuItem edit_OpenInEditorServerProperties;
-  private JMenuItem edit_OpenInEditorServerIcon;
-
-  private JMenuItem view_OpenServerPackCreatorDirectoryMenuItem;
-  private JMenuItem view_OpenServerPacksDirectoryMenuItem;
-  private JMenuItem view_OpenServerFilesDirectoryMenuItem;
-  private JMenuItem view_OpenAddonsDirectoryMenuItem;
-  private JMenuItem view_ExampleAddonRepositoryMenuItem;
-  private JMenuItem view_OpenSPCLog;
-  private JMenuItem view_OpenModloaderInstallerLog;
-  private JMenuItem view_OpenAddonLog;
-
-  private JMenuItem about_OpenAboutWindowMenuItem;
-  private JMenuItem about_OpenGitHubPageMenuItem;
-  private JMenuItem about_OpenGitHubIssuesPageMenuItem;
-  private JMenuItem about_OpenDonationsPageMenuItem;
-  private JMenuItem about_OpenReleasesPageMenuItem;
-  private JMenuItem about_OpenDiscordLinkMenuItem;
-  private JMenuItem about_OpenWikiHelpMenuItem;
-  private JMenuItem about_OpenWikiHowToMenuItem;
-  private JMenuItem about_CheckForUpdates;
 
   private JFileChooser configChooser;
 
@@ -266,26 +229,25 @@ public class MainMenuBar extends Component {
 
     String ABOUTWINDOWTEXT =
         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.text");
-    ABOUTWINDOWTEXTPANE.setEditable(false);
-    ABOUTWINDOWTEXTPANE.setOpaque(false);
-    ABOUTWINDOWTEXTPANE.setMinimumSize(ABOUTDIMENSION);
-    ABOUTWINDOWTEXTPANE.setPreferredSize(ABOUTDIMENSION);
-    ABOUTWINDOWTEXTPANE.setMaximumSize(ABOUTDIMENSION);
+    ABOUT_WINDOW_TEXTPANE.setEditable(false);
+    ABOUT_WINDOW_TEXTPANE.setOpaque(false);
+    ABOUT_WINDOW_TEXTPANE.setMinimumSize(ABOUTDIMENSION);
+    ABOUT_WINDOW_TEXTPANE.setPreferredSize(ABOUTDIMENSION);
+    ABOUT_WINDOW_TEXTPANE.setMaximumSize(ABOUTDIMENSION);
     SimpleAttributeSet ABOUTATTRIBUTESET = new SimpleAttributeSet();
     StyleConstants.setBold(ABOUTATTRIBUTESET, true);
     StyleConstants.setFontSize(ABOUTATTRIBUTESET, 14);
-    ABOUTWINDOWTEXTPANE.setCharacterAttributes(ABOUTATTRIBUTESET, true);
+    ABOUT_WINDOW_TEXTPANE.setCharacterAttributes(ABOUTATTRIBUTESET, true);
     StyleConstants.setAlignment(ABOUTATTRIBUTESET, StyleConstants.ALIGN_CENTER);
-    ABOUTWINDOWDOCUMENT.setParagraphAttributes(
-        0, ABOUTWINDOWDOCUMENT.getLength(), ABOUTATTRIBUTESET, false);
+    ABOUT_DOCUMENT.setParagraphAttributes(0, ABOUT_DOCUMENT.getLength(), ABOUTATTRIBUTESET, false);
     try {
-      ABOUTWINDOWDOCUMENT.insertString(0, ABOUTWINDOWTEXT, ABOUTATTRIBUTESET);
+      ABOUT_DOCUMENT.insertString(0, ABOUTWINDOWTEXT, ABOUTATTRIBUTESET);
     } catch (BadLocationException ex) {
       LOG.error("Error inserting text into aboutDocument.", ex);
     }
-    ABOUTWINDOWTEXTPANE.addHierarchyListener(
+    ABOUT_WINDOW_TEXTPANE.addHierarchyListener(
         e1 -> {
-          Window window = SwingUtilities.getWindowAncestor(ABOUTWINDOWTEXTPANE);
+          Window window = SwingUtilities.getWindowAncestor(ABOUT_WINDOW_TEXTPANE);
           if (window instanceof Dialog) {
             Dialog dialog = (Dialog) window;
             if (!dialog.isResizable()) {
@@ -302,17 +264,17 @@ public class MainMenuBar extends Component {
     HASTEOPTIONS[2] =
         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no");
 
-    CONFIGWINDOWTEXTPANE.setOpaque(false);
-    CONFIGWINDOWTEXTPANE.setEditable(false);
-    StyleConstants.setBold(CONFIGATTRIBUTESET, true);
-    StyleConstants.setFontSize(CONFIGATTRIBUTESET, 14);
-    CONFIGWINDOWTEXTPANE.setCharacterAttributes(CONFIGATTRIBUTESET, true);
-    StyleConstants.setAlignment(CONFIGATTRIBUTESET, StyleConstants.ALIGN_LEFT);
-    CONFIGWINDOWDOCUMENT.setParagraphAttributes(
-        0, CONFIGWINDOWDOCUMENT.getLength(), CONFIGATTRIBUTESET, false);
-    CONFIGWINDOWTEXTPANE.addHierarchyListener(
+    CONFIG_WINDOW_TEXTPANE.setOpaque(false);
+    CONFIG_WINDOW_TEXTPANE.setEditable(false);
+    StyleConstants.setBold(CONFIG_ATTRIBUTESET, true);
+    StyleConstants.setFontSize(CONFIG_ATTRIBUTESET, 14);
+    CONFIG_WINDOW_TEXTPANE.setCharacterAttributes(CONFIG_ATTRIBUTESET, true);
+    StyleConstants.setAlignment(CONFIG_ATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+    CONFIG_DOCUMENT.setParagraphAttributes(
+        0, CONFIG_DOCUMENT.getLength(), CONFIG_ATTRIBUTESET, false);
+    CONFIG_WINDOW_TEXTPANE.addHierarchyListener(
         e1 -> {
-          Window window = SwingUtilities.getWindowAncestor(CONFIGWINDOWTEXTPANE);
+          Window window = SwingUtilities.getWindowAncestor(CONFIG_WINDOW_TEXTPANE);
           if (window instanceof Dialog) {
             Dialog dialog = (Dialog) window;
             if (!dialog.isResizable()) {
@@ -321,17 +283,17 @@ public class MainMenuBar extends Component {
           }
         });
 
-    SPCLOGWINDOWTEXTPANE.setOpaque(false);
-    SPCLOGWINDOWTEXTPANE.setEditable(false);
-    StyleConstants.setBold(SPCLOGATTRIBUTESET, true);
-    StyleConstants.setFontSize(SPCLOGATTRIBUTESET, 14);
-    SPCLOGWINDOWTEXTPANE.setCharacterAttributes(SPCLOGATTRIBUTESET, true);
-    StyleConstants.setAlignment(SPCLOGATTRIBUTESET, StyleConstants.ALIGN_LEFT);
-    SPCLOGWINDOWDOCUMENT.setParagraphAttributes(
-        0, SPCLOGWINDOWDOCUMENT.getLength(), SPCLOGATTRIBUTESET, false);
-    SPCLOGWINDOWTEXTPANE.addHierarchyListener(
+    SPCLOG_WINDOW_TEXTPANE.setOpaque(false);
+    SPCLOG_WINDOW_TEXTPANE.setEditable(false);
+    StyleConstants.setBold(SPCLOG_ATTRIBUTESET, true);
+    StyleConstants.setFontSize(SPCLOG_ATTRIBUTESET, 14);
+    SPCLOG_WINDOW_TEXTPANE.setCharacterAttributes(SPCLOG_ATTRIBUTESET, true);
+    StyleConstants.setAlignment(SPCLOG_ATTRIBUTESET, StyleConstants.ALIGN_LEFT);
+    SPCLOG_DOCUMENT.setParagraphAttributes(
+        0, SPCLOG_DOCUMENT.getLength(), SPCLOG_ATTRIBUTESET, false);
+    SPCLOG_WINDOW_TEXTPANE.addHierarchyListener(
         e1 -> {
-          Window window = SwingUtilities.getWindowAncestor(SPCLOGWINDOWTEXTPANE);
+          Window window = SwingUtilities.getWindowAncestor(SPCLOG_WINDOW_TEXTPANE);
           if (window instanceof Dialog) {
             Dialog dialog = (Dialog) window;
             if (!dialog.isResizable()) {
@@ -351,74 +313,74 @@ public class MainMenuBar extends Component {
   public JMenuBar createMenuBar() {
 
     // create menus
-    fileMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.file"));
-    editMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.edit"));
-    viewMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.view"));
-    aboutMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.about"));
+    JMenu fileMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.file"));
+    JMenu editMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.edit"));
+    JMenu viewMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.view"));
+    JMenu aboutMenu = new JMenu(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menu.about"));
 
     // create menu items
-    file_NewConfigurationMenuItem = new JMenuItem("New configuration");
-    file_LoadConfigMenuItem =
+    JMenuItem file_NewConfigurationMenuItem = new JMenuItem("New configuration");
+    JMenuItem file_LoadConfigMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.loadconfig"));
-    file_SaveConfigMenuItem =
+    JMenuItem file_SaveConfigMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveconfig"));
-    file_SaveAsConfigMenuItem =
+    JMenuItem file_SaveAsConfigMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.saveas"));
-    file_UploadConfigurationToHasteBin =
+    JMenuItem file_UploadConfigurationToHasteBin =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadconfig"));
-    file_UploadServerPackCreatorLogToHasteBin =
+    JMenuItem file_UploadServerPackCreatorLogToHasteBin =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.uploadlog"));
-    file_UpdateFallbackModslist =
+    JMenuItem file_UpdateFallbackModslist =
         new JMenuItem(
             LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updatefallback"));
-    file_ExitConfigMenuItem =
+    JMenuItem file_ExitConfigMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.exit"));
 
-    edit_SwitchTheme =
+    JMenuItem edit_SwitchTheme =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.theme"));
-    edit_OpenInEditorServerProperties =
+    JMenuItem edit_OpenInEditorServerProperties =
         new JMenuItem(
             LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverproperties"));
-    edit_OpenInEditorServerIcon =
+    JMenuItem edit_OpenInEditorServerIcon =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.servericon"));
 
-    view_OpenAddonsDirectoryMenuItem =
+    JMenuItem view_OpenAddonsDirectoryMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.addonsdir"));
-    view_ExampleAddonRepositoryMenuItem =
+    JMenuItem view_ExampleAddonRepositoryMenuItem =
         new JMenuItem(
             LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.exampleaddonrepo"));
-    view_OpenServerPackCreatorDirectoryMenuItem =
+    JMenuItem view_OpenServerPackCreatorDirectoryMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.spcdir"));
-    view_OpenServerPacksDirectoryMenuItem =
+    JMenuItem view_OpenServerPacksDirectoryMenuItem =
         new JMenuItem(
             LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverpacksdir"));
-    view_OpenServerFilesDirectoryMenuItem =
+    JMenuItem view_OpenServerFilesDirectoryMenuItem =
         new JMenuItem(
             LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.serverfilesdir"));
-    view_OpenSPCLog =
+    JMenuItem view_OpenSPCLog =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.spclog"));
-    view_OpenModloaderInstallerLog =
+    JMenuItem view_OpenModloaderInstallerLog =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.modloaderlog"));
-    view_OpenAddonLog =
+    JMenuItem view_OpenAddonLog =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.addonlog"));
 
-    about_OpenAboutWindowMenuItem =
+    JMenuItem about_OpenAboutWindowMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.about"));
-    about_OpenGitHubPageMenuItem =
+    JMenuItem about_OpenGitHubPageMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.repository"));
-    about_OpenGitHubIssuesPageMenuItem =
+    JMenuItem about_OpenGitHubIssuesPageMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.issues"));
-    about_OpenReleasesPageMenuItem =
+    JMenuItem about_OpenReleasesPageMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.releases"));
-    about_OpenDiscordLinkMenuItem =
+    JMenuItem about_OpenDiscordLinkMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.discord"));
-    about_OpenDonationsPageMenuItem =
+    JMenuItem about_OpenDonationsPageMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.donate"));
-    about_OpenWikiHelpMenuItem =
+    JMenuItem about_OpenWikiHelpMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.help"));
-    about_OpenWikiHowToMenuItem =
+    JMenuItem about_OpenWikiHowToMenuItem =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.wiki.howto"));
-    about_CheckForUpdates =
+    JMenuItem about_CheckForUpdates =
         new JMenuItem(LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.menuitem.updates"));
 
     // create action listeners for items
@@ -752,16 +714,16 @@ public class MainMenuBar extends Component {
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {
-        SPCLOGWINDOWDOCUMENT.insertString(0, textContent, SPCLOGATTRIBUTESET);
+        SPCLOG_DOCUMENT.insertString(0, textContent, SPCLOG_ATTRIBUTESET);
       } catch (BadLocationException ex) {
         LOG.error("Error inserting text into aboutDocument.", ex);
       }
 
-      MATERIALTEXTPANEUI.installUI(SPCLOGWINDOWTEXTPANE);
+      MATERIALTEXTPANEUI.installUI(SPCLOG_WINDOW_TEXTPANE);
 
       switch (JOptionPane.showOptionDialog(
           FRAME_SERVERPACKCREATOR,
-          SPCLOGWINDOWTEXTPANE,
+          SPCLOG_WINDOW_TEXTPANE,
           LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
           JOptionPane.DEFAULT_OPTION,
           JOptionPane.INFORMATION_MESSAGE,
@@ -802,16 +764,16 @@ public class MainMenuBar extends Component {
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {
-        CONFIGWINDOWDOCUMENT.insertString(0, textContent, CONFIGATTRIBUTESET);
+        CONFIG_DOCUMENT.insertString(0, textContent, CONFIG_ATTRIBUTESET);
       } catch (BadLocationException ex) {
         LOG.error("Error inserting text into aboutDocument.", ex);
       }
 
-      MATERIALTEXTPANEUI.installUI(CONFIGWINDOWTEXTPANE);
+      MATERIALTEXTPANEUI.installUI(CONFIG_WINDOW_TEXTPANE);
 
       switch (JOptionPane.showOptionDialog(
           FRAME_SERVERPACKCREATOR,
-          CONFIGWINDOWTEXTPANE,
+          CONFIG_WINDOW_TEXTPANE,
           LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
           JOptionPane.DEFAULT_OPTION,
           JOptionPane.INFORMATION_MESSAGE,
@@ -841,7 +803,7 @@ public class MainMenuBar extends Component {
    * @author Griefed
    */
   private void fileTooLargeDialog() {
-    MATERIALTEXTPANEUI.installUI(FILETOOLARGEWINDOWTEXTPANE);
+    MATERIALTEXTPANEUI.installUI(FILETOOLARGE_WINDOW_TEXTPANE);
     JOptionPane.showConfirmDialog(
         FRAME_SERVERPACKCREATOR,
         LOCALIZATIONMANAGER.getLocalizedString("menubar.gui.filetoolarge"),
@@ -1026,8 +988,7 @@ public class MainMenuBar extends Component {
     SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
     TABBEDPANE.setOpaque(true);
     TAB_CREATESERVERPACK.validateInputFields();
-    TAB_CREATESERVERPACK.updateStatusLabelForeground();
-    TAB_CREATESERVERPACK.setStatusBarUI();
+    TAB_CREATESERVERPACK.updatePanelTheme();
   }
 
   /**
@@ -1156,7 +1117,7 @@ public class MainMenuBar extends Component {
 
     JScrollPane ABOUTWINDOWSCROLLPANE =
         new JScrollPane(
-            ABOUTWINDOWTEXTPANE,
+            ABOUT_WINDOW_TEXTPANE,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
             JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     ABOUTWINDOWSCROLLPANE.setMinimumSize(ABOUTDIMENSION);
