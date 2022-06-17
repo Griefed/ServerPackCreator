@@ -1,3 +1,26 @@
+## [3.5.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-beta.3...3.5.0-beta.4) (2022-06-17)
+
+
+### ⏩ Performance
+
+* **GUI:** Various little improvements towards initialization and setup of the GUI ([8112bcb](https://git.griefed.de/Griefed/ServerPackCreator/commit/8112bcbff3987526d8b1659c0548fe5e7ee1e517))
+
+
+### 💎 Improvements
+
+* **Fallback List Clientside-Mods:** Remove JEITweaker from list of fallback clientside-mods. Thanks to @NevadaActual for the report. ([c7de800](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7de80090c24ae784d581cf36eed17591b293a46))
+* **GUI:** Various. Prevent text in status label box from being cut off at the end. Replace crude status animation with custom made LarsonScanner. Refactor some classes to inner classes where appropriate. Update some dependencies. ([377d674](https://git.griefed.de/Griefed/ServerPackCreator/commit/377d6745e0e1f577a9e1dc7ff192910da7374252))
+
+
+### 🦊 CI/CD
+
+* **Workflow:** Prevent detached pipelines from running ([af486a5](https://git.griefed.de/Griefed/ServerPackCreator/commit/af486a598d1870f94a6473fcd1e44d95713a8344))
+
+
+### 🛠 Fixes
+
+* **WebUI:** Correctly set modloader versions when selecting a Minecraft version ([a17e3f5](https://git.griefed.de/Griefed/ServerPackCreator/commit/a17e3f5d0910071bf9300b9f9feb49b1807caf56))
+
 ## [3.5.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0-beta.2...3.5.0-beta.3) (2022-06-06)
 
 
