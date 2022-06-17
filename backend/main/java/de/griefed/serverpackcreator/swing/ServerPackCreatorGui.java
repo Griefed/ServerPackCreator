@@ -327,6 +327,8 @@ public class ServerPackCreatorGui {
             UTILITIES);
 
     FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
+
+    TABBEDPANE.setOpaque(true);
   }
 
   /**
@@ -371,26 +373,24 @@ public class ServerPackCreatorGui {
    */
   private void createAndShowGUI() {
 
-    FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-    FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
-
-    FRAME_SERVERPACKCREATOR.setIconImage(ICON_SERVERPACKCREATOR);
+    SERVERPACKCREATORSPLASH.close();
 
     JLabel serverPackCreatorBanner = new JLabel(ICON_SERVERPACKCREATOR_BANNER);
     serverPackCreatorBanner.setOpaque(false);
 
-    FRAME_SERVERPACKCREATOR.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
+    FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
+    FRAME_SERVERPACKCREATOR.setIconImage(ICON_SERVERPACKCREATOR);
 
+    FRAME_SERVERPACKCREATOR.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
     FRAME_SERVERPACKCREATOR.add(TABBEDPANE, BorderLayout.CENTER);
 
     FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
     FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
-
+    FRAME_SERVERPACKCREATOR.setLocationRelativeTo(null);
     FRAME_SERVERPACKCREATOR.setResizable(true);
 
     FRAME_SERVERPACKCREATOR.pack();
-
     /*
      * I know this looks stupid. Why initialize the tree if it isn't even visible yet?
      * Because otherwise, when switching from light to dark-theme, the inset for tabs of the tabbed pane suddenly
@@ -398,17 +398,10 @@ public class ServerPackCreatorGui {
      * Does it work? Yeah.
      */
     SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
-
-    TABBEDPANE.setOpaque(true);
-
-    SERVERPACKCREATORSPLASH.close();
-
-    TAB_CREATESERVERPACK.validateInputFields();
-
-    FRAME_SERVERPACKCREATOR.setLocationRelativeTo(null);
-
     FRAME_SERVERPACKCREATOR.setVisible(true);
 
+    TAB_CREATESERVERPACK.validateInputFields();
+    TAB_CREATESERVERPACK.updatePanelTheme();
     MENUBAR.displayUpdateDialog();
   }
 }

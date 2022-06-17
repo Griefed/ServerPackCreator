@@ -42,8 +42,10 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
@@ -54,6 +56,11 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Launch-class of ServerPackCreator which determines the mode to run in, takes care of
@@ -116,9 +123,9 @@ public class ServerPackCreator {
 
   /**
    * Run ServerPackCreator in a specific {@link
-   * de.griefed.serverpackcreator.CommandlineParser.Mode}.
+   * CommandlineParser.Mode}.
    *
-   * @param modeToRunIn {@link de.griefed.serverpackcreator.CommandlineParser.Mode} to run in.
+   * @param modeToRunIn {@link CommandlineParser.Mode} to run in.
    * @throws IOException if the run fails.
    * @author Griefed
    */
@@ -532,9 +539,9 @@ public class ServerPackCreator {
    * Offer the user to continue using ServerPackCreator.
    *
    * @throws IOException if an error occurs trying to run ServerPackCreator in {@link
-   *     de.griefed.serverpackcreator.CommandlineParser.Mode#GUI}, {@link
-   *     de.griefed.serverpackcreator.CommandlineParser.Mode#CLI} or {@link
-   *     de.griefed.serverpackcreator.CommandlineParser.Mode#WEB}
+   *     CommandlineParser.Mode#GUI}, {@link
+   *     CommandlineParser.Mode#CLI} or {@link
+   *     CommandlineParser.Mode#WEB}
    * @author Griefed
    */
   private void continuedRunOptions() throws IOException {
@@ -963,5 +970,227 @@ public class ServerPackCreator {
         LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.wiki"));
     System.out.println(
         LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.someluv"));
+  }
+
+  /**
+   * Check the passed commandline-arguments with which ServerPackCreator was started and return the
+   * mode in which to run.
+   *
+   * @author Griefed
+   */
+  public static class CommandlineParser {
+
+    /**
+     * The mode in which ServerPackCreator will run in after the commandline arguments have been
+     * parsed and checked.
+     */
+    private final Mode MODE;
+    /**
+     * The language ServerPackCreator should use if any was specified. Null if none was specified, so
+     * we can use the default language <code>en_us</code>.
+     */
+    private final String LANG;
+
+    /**
+     * Create a new CommandlineParser from the passed commandline-arguments with which
+     * ServerPackCreator was started. The mode and language in which ServerPackCreator should run will
+     * thus be determined and available to you via {@link #getModeToRunIn()} and {@link
+     * #getLanguageToUse()}.<br>
+     * {@link #getLanguageToUse()} is wrapped in an {@link Optional} to quickly determine whether a
+     * language was specified.
+     *
+     * @param args {@link String}-array of commandline-arguments with which ServerPackCreator was
+     *     started. Typically passed from {@link Main}.
+     * @author Griefed
+     */
+    public CommandlineParser(String[] args) {
+
+      List<String> argsList = Arrays.asList(args);
+
+      /*
+       * Check whether a language locale was specified by the user.
+       * If none was specified, set LANG to null so the Optional returns false for isPresent(),
+       * thus allowing us to use the locale set in the ApplicationProperties later on.
+       */
+      if (argsList.contains(Mode.LANG.argument())) {
+        this.LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
+      } else {
+        this.LANG = null;
+      }
+
+      /*
+       * Check whether the user wanted us to print the help-text.
+       */
+      if (argsList.contains(Mode.HELP.argument())) {
+        this.MODE = Mode.HELP;
+        return;
+      }
+
+      /*
+       * Check whether the user wants to check for update availability.
+       */
+      if (argsList.contains(Mode.UPDATE.argument())) {
+        this.MODE = Mode.UPDATE;
+        return;
+      }
+
+      /*
+       * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
+       */
+      if (argsList.contains(Mode.CGEN.argument())) {
+        this.MODE = Mode.CGEN;
+        return;
+      }
+
+      /*
+       * Check whether the user wants to run in commandline-mode or whether a GUI would not be supported.
+       */
+      if (argsList.contains(Mode.CLI.argument())) {
+        this.MODE = Mode.CLI;
+        return;
+      } else if (GraphicsEnvironment.isHeadless()) {
+        this.MODE = Mode.CLI;
+        return;
+      }
+
+      /*
+       * Check whether the user wants ServerPackCreator to run as a webservice.
+       */
+      if (argsList.contains(Mode.WEB.argument())) {
+        this.MODE = Mode.WEB;
+        return;
+      }
+
+      /*
+       * Check whether the user wants to use ServerPackCreators GUI.
+       */
+      if (argsList.contains(Mode.GUI.argument())) {
+        this.MODE = Mode.GUI;
+        return;
+      }
+
+      /*
+       * Check whether the user wants to set up and prepare the environment for subsequent runs.
+       */
+      if (argsList.contains(Mode.SETUP.argument())) {
+        this.MODE = Mode.SETUP;
+        return;
+      }
+
+      /*
+       * Last but not least, failsafe-check whether a GUI would be supported.
+       */
+      if (!GraphicsEnvironment.isHeadless()) {
+        this.MODE = Mode.GUI;
+        return;
+      }
+
+      /*
+       * If all else fails, exit ServerPackCreator.
+       */
+      this.MODE = Mode.EXIT;
+    }
+
+    /**
+     * Get the mode in which ServerPackCreator should be run in.
+     *
+     * @return {@link Mode} in which ServerPackCreator should be run in.
+     * @author Griefed
+     */
+    protected Mode getModeToRunIn() {
+      return MODE;
+    }
+
+    /**
+     * Get the locale in which ServerPackCreator should be run in, wrapped in an {@link Optional}.
+     *
+     * @return {@link String} The locale in which ServerPackCreator should be run in, wrapped in an
+     *     {@link Optional}.
+     * @author Griefed
+     */
+    protected Optional<String> getLanguageToUse() {
+      return Optional.ofNullable(LANG);
+    }
+
+    /** Mode-priorities. Highest to lowest. */
+    public enum Mode {
+
+      /** Priority 0. Print ServerPackCreators help to commandline. */
+      HELP("-help"),
+
+      /** Priority 1. Check whether a newer version of ServerPackCreator is available. */
+      UPDATE("-update"),
+
+      /** Priority 2. Run ServerPackCreators configuration generation. */
+      CGEN("-cgen"),
+
+      /**
+       * Priority 3. Run ServerPackCreator in commandline-mode. If no graphical environment is
+       * supported, this is the default ServerPackCreator will enter, even when starting
+       * ServerPackCreator with no extra arguments at all.
+       */
+      CLI("-cli"),
+
+      /** Priority 4. Run ServerPackCreator as a webservice. */
+      WEB("-web"),
+
+      /**
+       * Priority 5. Run ServerPackCreator with our GUI. If a graphical environment is supported, this
+       * is the default ServerPackCreator will enter, even when starting ServerPackCreator with no
+       * extra arguments at all.
+       */
+      GUI("-gui"),
+
+      /**
+       * Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator. This
+       * will create/copy all files needed for ServerPackCreator to function properly from inside its
+       * JAR-file and setup everything else, too.
+       */
+      SETUP("--setup"),
+
+      /** Priority 7. Exit ServerPackCreator. */
+      EXIT("exit"),
+
+      /** Used when the user wants to change the language of ServerPackCreator. */
+      LANG("-lang");
+
+      private final String ARGUMENT;
+
+      Mode(String cliArg) {
+        this.ARGUMENT = cliArg;
+      }
+
+      /**
+       * Textual representation of this mode.
+       *
+       * @return {@link String} Textual representation of this mode.
+       * @author Griefed
+       */
+      public String argument() {
+        return ARGUMENT;
+      }
+    }
+  }
+
+  /**
+   * @author Griefed
+   */
+  @SpringBootApplication
+  @EnableScheduling
+  @PropertySources({
+    @PropertySource("classpath:application.properties"),
+    @PropertySource("classpath:serverpackcreator.properties")
+  })
+  public static class WebService {
+
+    /**
+     * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
+     *
+     * @param args Arguments passed from invocation in {@link Main#main(String[])}.
+     * @author Griefed
+     */
+    public static void main(String[] args) {
+      SpringApplication.run(WebService.class, args);
+    }
   }
 }

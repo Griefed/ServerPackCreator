@@ -28,7 +28,8 @@ import java.io.IOException;
  * passed {@link String}-array from the commandline and then subsequently running ServerPackCreator
  * in the determined mode, with the determined locale. <br>
  * <br>
- * For a list of available commandline arguments, check out {@link CommandlineParser.Mode}
+ * For a list of available commandline arguments, check out {@link
+ * ServerPackCreator.CommandlineParser.Mode}
  *
  * @author Griefed
  */

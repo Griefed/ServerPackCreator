@@ -24,8 +24,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -37,6 +40,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.ResourceBundle.Control;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -302,6 +306,8 @@ public class LocalizationManager {
         jarResources = null;
       }
     }
+
+    LOG.debug(getLocalizedString("encoding.check"));
   }
 
   /**
@@ -406,6 +412,39 @@ public class LocalizationManager {
       APPLICATIONPROPERTIES.store(outputStream, null);
     } catch (IOException ex) {
       LOG.error("Couldn't write properties-file.", ex);
+    }
+  }
+
+  public static class UTF8Control extends Control {
+    public ResourceBundle newBundle(
+        String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
+        throws IllegalAccessException, InstantiationException, IOException {
+      // The below is a copy of the default implementation.
+      String bundleName = toBundleName(baseName, locale);
+      String resourceName = toResourceName(bundleName, "properties");
+      ResourceBundle bundle = null;
+      InputStream stream = null;
+      if (reload) {
+        URL url = loader.getResource(resourceName);
+        if (url != null) {
+          URLConnection connection = url.openConnection();
+          if (connection != null) {
+            connection.setUseCaches(false);
+            stream = connection.getInputStream();
+          }
+        }
+      } else {
+        stream = loader.getResourceAsStream(resourceName);
+      }
+      if (stream != null) {
+        try {
+          // Only this line is changed to make it to read properties files as UTF-8.
+          bundle = new PropertyResourceBundle(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        } finally {
+          stream.close();
+        }
+      }
+      return bundle;
     }
   }
 }

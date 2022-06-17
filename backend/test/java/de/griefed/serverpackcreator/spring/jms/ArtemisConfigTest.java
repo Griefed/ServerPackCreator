@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator.spring.jms;
 
-import de.griefed.serverpackcreator.CommandlineParser;
+import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser;
 import de.griefed.serverpackcreator.ServerPackCreator;
 import java.io.File;
 import java.io.IOException;

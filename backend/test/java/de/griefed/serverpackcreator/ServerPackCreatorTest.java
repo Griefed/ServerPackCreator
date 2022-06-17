@@ -12,7 +12,7 @@ public class ServerPackCreatorTest {
 
   ServerPackCreatorTest() throws IOException {
     this.SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
-    this.SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
+    this.SERVER_PACK_CREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
   }
 
   @Test
@@ -24,7 +24,7 @@ public class ServerPackCreatorTest {
     FileUtils.deleteQuietly(new File("./server_files/server.properties"));
     FileUtils.deleteQuietly(new File("./server_files/server-icon.png"));
     FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
-    SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
+    SERVER_PACK_CREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
     Assertions.assertTrue(new File("./server_files").isDirectory());
     Assertions.assertTrue(new File("./work").isDirectory());
     Assertions.assertTrue(new File("./work/temp").isDirectory());

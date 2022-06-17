@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.swing;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
+import de.griefed.larsonscanner.LarsonScanner;
+import de.griefed.larsonscanner.LarsonScanner.ScannerConfig;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ConfigurationModel;
@@ -29,7 +31,6 @@ import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.CompoundIcon;
-import de.griefed.serverpackcreator.swing.utilities.CustomProgressBarUI;
 import de.griefed.serverpackcreator.swing.utilities.IconTextArea;
 import de.griefed.serverpackcreator.swing.utilities.IconTextField;
 import de.griefed.serverpackcreator.swing.utilities.RotatedIcon;
@@ -49,6 +50,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -69,13 +71,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
@@ -114,7 +114,7 @@ import org.jetbrains.annotations.Nullable;
  * @author Griefed
  */
 @Generated
-public class TabCreateServerPack extends JComponent {
+public class TabCreateServerPack extends JPanel {
 
   private static final Logger LOG = LogManager.getLogger(TabCreateServerPack.class);
 
@@ -126,29 +126,17 @@ public class TabCreateServerPack extends JComponent {
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final ApplicationPlugins APPLICATIONPLUGINS;
   private final ConfigUtilities CONFIGUTILITIES;
   private final DarkTheme DARKTHEME;
   private final LightTheme LIGHTTHEME;
-  private final ReticulatingSplines RETICULATOR = new ReticulatingSplines();
 
   private final StyledDocument SERVERPACKGENERATEDDOCUMENT = new DefaultStyledDocument();
   private final SimpleAttributeSet SERVERPACKGENERATEDATTRIBUTESET = new SimpleAttributeSet();
   private final JTextPane SERVERPACKGENERATEDTEXTPANE = new JTextPane(SERVERPACKGENERATEDDOCUMENT);
 
   private final StyledDocument LAZYMODEDOCUMENT = new DefaultStyledDocument();
-  private final SimpleAttributeSet LAZYMODEATTRIBUTESET = new SimpleAttributeSet();
   private final JTextPane LAZYMODETEXTPANE = new JTextPane(LAZYMODEDOCUMENT);
 
-  private final ImageIcon FOLDERICON =
-      new ImageIcon(
-          Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/folder.png")));
-  private final BufferedImage GENERATE =
-      ImageIO.read(
-          Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource(
-                  "/de/griefed/resources/gui/start_generation.png")));
   private final int ERROR_ICON_SIZE = 18;
   private final BufferedImage ERROR_ICON_BASE =
       ImageIO.read(
@@ -176,55 +164,73 @@ public class TabCreateServerPack extends JComponent {
       new ImageIcon(
           ERROR_ICON_BASE.getScaledInstance(ERROR_ICON_SIZE, ERROR_ICON_SIZE, Image.SCALE_SMOOTH));
 
-  private final Dimension FOLDERBUTTONDIMENSION = new Dimension(24, 24);
   private final Dimension CHOOSERDIMENSION = new Dimension(750, 450);
 
-  private final JButton BUTTON_MODPACKDIRECTORY = new JButton();
-  private final JButton BUTTON_CLIENTSIDEMODS = new JButton();
-  private final JButton BUTTON_COPYDIRECTORIES = new JButton();
-  private final JButton BUTTON_JAVAPATH = new JButton();
   private final JButton BUTTON_GENERATESERVERPACK = new JButton();
-  private final JButton BUTTON_SERVERICON = new JButton();
-  private final JButton BUTTON_SERVERPROPERTIES = new JButton();
-  private final JButton BUTTON_AIKARS_FLAGS = new JButton();
-  private final JButton BUTTON_SERVER_PACKS = new JButton();
 
-  private final Insets TWENTY_TEN_ZERO_ZERO = new Insets(20, 10, 0, 0);
-  private final Insets ZERO_TEN_ZERO_ZERO = new Insets(0, 10, 0, 0);
-  private final Insets TEN_TEN_ZERO_ZERO = new Insets(10, 10, 0, 0);
-  private final Insets ZERO_TEN_ZERO_TEN = new Insets(0, 10, 0, 10);
-  private final Insets FIVE_ZERO_FIVE_ZERO = new Insets(5, 0, 5, 0);
+  private final JPanel CREATESERVERPACKPANEL = new JPanel();
 
-  private final GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
-  private final GridBagConstraints TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS =
-      new GridBagConstraints();
-  private final GridBagConstraints TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS =
-      new GridBagConstraints();
-  private final GridBagConstraints TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS = new GridBagConstraints();
-
-  private final JPanel CREATESERVERPACKPANEL = new JPanel(false);
-  private final JPanel CLIENTSIDEMODS_JPANEL = new JPanel(false);
-  private final JPanel COPYDIRECTORIES_JPANEL = new JPanel(false);
-  private final JPanel JAVAARGS_JPANEL = new JPanel(false);
-  private final JPanel CONTENT_PANE = new JPanel(new BorderLayout());
-
-  private final JProgressBar STATUS_BAR = new JProgressBar();
-  private final CustomProgressBarUI STATUS_BAR_UI =
-      new CustomProgressBarUI(
-          ImageIO.read(
-              Objects.requireNonNull(
-                  getClass().getResource("/de/griefed/resources/gui/generating.png"))));
-
+  private final LarsonScanner STATUS_BAR = new LarsonScanner();
+  private final ScannerConfig IDLE_CONFIG =
+      new ScannerConfig(
+          2,
+          new short[] {25, 50, 75, 100, 150, 200, 255},
+          (short) 50,
+          (short) 50,
+          (byte) 7,
+          new float[] {0.4f, 1.0f},
+          50.0f,
+          5.0D,
+          false,
+          false,
+          true,
+          false,
+          false,
+          new Color[] {
+            new Color(50, 83, 88),
+            new Color(50, 83, 88),
+            new Color(50, 83, 88),
+            new Color(50, 83, 88),
+            new Color(50, 83, 88),
+            new Color(50, 83, 88),
+            new Color(50, 83, 88)
+          },
+          new Color(49, 47, 47),
+          new Color(49, 47, 47));
+  private final ScannerConfig BUSY_CONFIG =
+      new ScannerConfig(
+          2,
+          new short[] {25, 50, 75, 100, 150, 200, 255},
+          (short) 100,
+          (short) 25,
+          (byte) 7,
+          new float[] {0.4f, 1.0f},
+          25.0f,
+          5.0D,
+          false,
+          false,
+          true,
+          true,
+          false,
+          new Color[] {
+            new Color(192, 255, 238),
+            new Color(192, 255, 238),
+            new Color(192, 255, 238),
+            new Color(192, 255, 238),
+            new Color(192, 255, 238),
+            new Color(192, 255, 238),
+            new Color(192, 255, 238)
+          },
+          new Color(49, 47, 47),
+          new Color(49, 47, 47));
   private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
 
   private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
   private final JComboBox<String> COMBOBOX_MODLOADERS = new JComboBox<>();
   private final JComboBox<String> COMBOBOX_MODLOADER_VERSIONS = new JComboBox<>();
 
-  private final DefaultComboBoxModel<String> MINECRAFT_VERSIONS;
   private final DefaultComboBoxModel<String> FABRIC_VERSIONS;
   private final DefaultComboBoxModel<String> QUILT_VERSIONS;
-  private final DefaultComboBoxModel<String> NO_VERSIONS;
 
   private final IconTextArea TEXTAREA_CLIENTSIDEMODS = new IconTextArea("");
   private final IconTextArea TEXTAREA_JAVAARGS = new IconTextArea("");
@@ -236,60 +242,21 @@ public class TabCreateServerPack extends JComponent {
   private final IconTextField TEXTFIELD_SERVERICONPATH = new IconTextField("");
   private final IconTextField TEXTFIELD_SERVERPROPERTIESPATH = new IconTextField("");
 
-  private final JScrollPane SCROLL_PANEL_CLIENTSIDEMODS =
-      new JScrollPane(
-          TEXTAREA_CLIENTSIDEMODS,
-          JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-          JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-  private final JScrollPane SCROLL_PANEL_COPYDIRECTORIES =
-      new JScrollPane(
-          TEXTAREA_COPYDIRECTORIES,
-          JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-          JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-  private final JScrollPane SCROLL_PANEL_JAVAARGS =
-      new JScrollPane(
-          TEXTAREA_JAVAARGS,
-          JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-          JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-  private final JScrollPane TAB_CREATESERVERPACKTAB_SCROLL_PANEL =
-      new JScrollPane(CREATESERVERPACKPANEL);
-
   private final File DIRECTORY_CHOOSER = new File(".");
 
   private final String[] NONE;
 
-  private JLabel labelModpackDir;
-  private JLabel labelClientMods;
-  private JLabel labelCopyDirs;
-  private JLabel labelJavaPath;
-  private JLabel labelMinecraftVersion;
-  private JLabel labelModloader;
-  private JLabel labelModloaderVersion;
-  private JLabel labelServerPackSuffix;
-  private JLabel labelServerIconPath;
-  private JLabel labelServerPropertiesPath;
-  private JLabel labelJavaArgs;
-  private JLabel statusLabelLine0;
-  private JLabel statusLabelLine1;
-  private JLabel statusLabelLine2;
-  private JLabel statusLabelLine3;
-  private JLabel statusLabelLine4;
-  private JLabel statusLabelLine5;
-
+  private final JLabel STATUS_LABEL_LINE_0;
+  private final JLabel STATUS_LABEL_LINE_1;
+  private final JLabel STATUS_LABEL_LINE_2;
+  private final JLabel STATUS_LABEL_LINE_3;
+  private final JLabel STATUS_LABEL_LINE_4;
+  private final JLabel STATUS_LABEL_LINE_5;
+  private final JCheckBox CHECKBOX_SERVER;
+  private final JCheckBox CHECKBOX_ICON;
+  private final JCheckBox CHECKBOX_PROPERTIES;
+  private final JCheckBox CHECKBOX_ZIP;
   private DefaultComboBoxModel<String> forgeComboBoxModel;
-
-  private JFileChooser modpackDirChooser;
-  private JFileChooser clientModsChooser;
-  private JFileChooser copyDirsChooser;
-  private JFileChooser javaChooser;
-  private JFileChooser serverIconChooser;
-  private JFileChooser serverPropertiesChooser;
-
-  private JCheckBox checkBoxServer;
-  private JCheckBox checkBoxIcon;
-  private JCheckBox checkBoxProperties;
-  private JCheckBox checkBoxZIP;
-
   private String chosenModloader = "Fabric";
   private String chosenModloaderVersion;
   private String chosenMinecraftVersion = "1.18.2";
@@ -376,10 +343,11 @@ public class TabCreateServerPack extends JComponent {
       this.UTILITIES = injectedUtilities;
     }
 
+    ApplicationPlugins APPLICATIONPLUGINS;
     if (injectedPluginManager == null) {
-      this.APPLICATIONPLUGINS = new ApplicationPlugins();
+      APPLICATIONPLUGINS = new ApplicationPlugins();
     } else {
-      this.APPLICATIONPLUGINS = injectedPluginManager;
+      APPLICATIONPLUGINS = injectedPluginManager;
     }
 
     if (injectedConfigUtilities == null) {
@@ -429,6 +397,7 @@ public class TabCreateServerPack extends JComponent {
 
     LAZYMODETEXTPANE.setOpaque(false);
     LAZYMODETEXTPANE.setEditable(false);
+    SimpleAttributeSet LAZYMODEATTRIBUTESET = new SimpleAttributeSet();
     StyleConstants.setBold(LAZYMODEATTRIBUTESET, true);
     StyleConstants.setFontSize(LAZYMODEATTRIBUTESET, 14);
     LAZYMODETEXTPANE.setCharacterAttributes(LAZYMODEATTRIBUTESET, true);
@@ -460,104 +429,20 @@ public class TabCreateServerPack extends JComponent {
           LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createserverpack.forge.none")
         };
 
-    this.MINECRAFT_VERSIONS =
-        new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending());
     this.FABRIC_VERSIONS =
         new DefaultComboBoxModel<>(VERSIONMETA.fabric().loaderVersionsArrayDescending());
     this.QUILT_VERSIONS =
         new DefaultComboBoxModel<>(VERSIONMETA.quilt().loaderVersionsArrayDescending());
-    this.NO_VERSIONS = new DefaultComboBoxModel<>(NONE);
-  }
-
-  /**
-   * Getter for the chosen modloader from the JRadioButtons.
-   *
-   * @return String. Returns either Fabric or Forge.
-   * @author Griefed
-   */
-  public String getChosenModloader() {
-    return chosenModloader;
-  }
-
-  /**
-   * Getter for the selected modloader version depending on which modloader is currently selected.
-   *
-   * @return String. Returns the modloader version depending on which modloader is currently
-   *     selected.
-   * @author Griefed
-   */
-  private String getSelectedModloaderVersion() {
-    return chosenModloaderVersion;
-  }
-
-  /**
-   * Getter for the currently set JVM flags / Java args.
-   *
-   * @return String. Returns the currently set JVM flags / Java args.
-   * @author Griefed
-   */
-  public String getJavaArgs() {
-    return javaArgs;
-  }
-
-  /**
-   * Setter for the JVM flags / Java args.
-   *
-   * @param javaArgs String. The javaargs to set.
-   * @author Griefed
-   */
-  public void setJavaArgs(String javaArgs) {
-    this.javaArgs = javaArgs;
-  }
-
-  /**
-   * Getter for the current text from the currently set Javapath in the Javapath textfield.
-   *
-   * @return String. Returns the current text from the currently set Javapath in the Javapath
-   *     textfield.
-   * @author Griefed
-   */
-  public String getJavaPath() {
-    return TEXTFIELD_JAVAPATH.getText();
-  }
-
-  /**
-   * Getter for the text in the custom server-icon textfield.
-   *
-   * @return String. Returns the text in the server-icon textfield.
-   * @author Griefed
-   */
-  public String getServerIconPath() {
-    return TEXTFIELD_SERVERICONPATH.getText();
-  }
-
-  /**
-   * Getter for the text in the custom server.properties textfield
-   *
-   * @return String. Returns the text in the server.properties textfield.
-   * @author Griefed
-   */
-  public String getServerPropertiesPath() {
-    return TEXTFIELD_SERVERPROPERTIESPATH.getText();
-  }
-
-  /**
-   * Create the tab which displays every component related to configuring ServerPackCreator and
-   * creating a server pack.
-   *
-   * @return JComponent. Returns a JPanel everything needed for displaying the TabCreateServerPack.
-   * @author Griefed
-   */
-  public JComponent createServerPackTab() {
 
     CREATESERVERPACKPANEL.setLayout(new GridBagLayout());
     // ----------------------------------------------------------------LABELS AND TEXTFIELDS--------
+    GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
     GRIDBAGCONSTRAINTS.gridwidth = 3;
     GRIDBAGCONSTRAINTS.weightx = 1;
 
     // Label and textfield modpackDir
-    labelModpackDir =
+    JLabel labelModpackDir =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelmodpackdir"));
@@ -567,6 +452,7 @@ public class TabCreateServerPack extends JComponent {
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 0;
+    Insets TWENTY_TEN_ZERO_ZERO = new Insets(20, 10, 0, 0);
     GRIDBAGCONSTRAINTS.insets = TWENTY_TEN_ZERO_ZERO;
 
     CREATESERVERPACKPANEL.add(labelModpackDir, GRIDBAGCONSTRAINTS);
@@ -579,12 +465,13 @@ public class TabCreateServerPack extends JComponent {
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 1;
+    Insets ZERO_TEN_ZERO_ZERO = new Insets(0, 10, 0, 0);
     GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_ZERO;
 
     CREATESERVERPACKPANEL.add(TEXTFIELD_MODPACKDIRECTORY, GRIDBAGCONSTRAINTS);
 
     // Label and textfield server pack suffix
-    labelServerPackSuffix =
+    JLabel labelServerPackSuffix =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelsuffix"));
@@ -617,7 +504,7 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.gridwidth = 5;
 
     // Label and textfield clientMods
-    labelClientMods =
+    JLabel labelClientMods =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelclientmods"));
@@ -639,7 +526,9 @@ public class TabCreateServerPack extends JComponent {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.textclientmods.error"));
     TEXTAREA_CLIENTSIDEMODS.addDocumentListener((SimpleDocumentListener) e -> validateClientMods());
+    JPanel CLIENTSIDEMODS_JPANEL = new JPanel();
     CLIENTSIDEMODS_JPANEL.setLayout(new GridBagLayout());
+    GridBagConstraints TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS = new GridBagConstraints();
     TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.anchor = GridBagConstraints.CENTER;
     TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.fill = GridBagConstraints.BOTH;
     TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.gridx = 0;
@@ -647,6 +536,11 @@ public class TabCreateServerPack extends JComponent {
     TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.weighty = 1;
     TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS.weightx = 1;
 
+    JScrollPane SCROLL_PANEL_CLIENTSIDEMODS =
+        new JScrollPane(
+            TEXTAREA_CLIENTSIDEMODS,
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     CLIENTSIDEMODS_JPANEL.add(
         SCROLL_PANEL_CLIENTSIDEMODS, TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS);
     CLIENTSIDEMODS_JPANEL.setSize(100, 100);
@@ -661,7 +555,7 @@ public class TabCreateServerPack extends JComponent {
     CREATESERVERPACKPANEL.add(CLIENTSIDEMODS_JPANEL, GRIDBAGCONSTRAINTS);
 
     // Label and textfield copyDirs
-    labelCopyDirs =
+    JLabel labelCopyDirs =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelcopydirs"));
@@ -683,7 +577,9 @@ public class TabCreateServerPack extends JComponent {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.textclientmods.error"));
     TEXTAREA_COPYDIRECTORIES.addDocumentListener((SimpleDocumentListener) e -> validateCopyDirs());
+    JPanel COPYDIRECTORIES_JPANEL = new JPanel();
     COPYDIRECTORIES_JPANEL.setLayout(new GridBagLayout());
+    GridBagConstraints TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS = new GridBagConstraints();
     TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.anchor = GridBagConstraints.CENTER;
     TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.fill = GridBagConstraints.BOTH;
     TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.gridx = 0;
@@ -691,6 +587,11 @@ public class TabCreateServerPack extends JComponent {
     TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.weighty = 1;
     TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS.weightx = 1;
 
+    JScrollPane SCROLL_PANEL_COPYDIRECTORIES =
+        new JScrollPane(
+            TEXTAREA_COPYDIRECTORIES,
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     COPYDIRECTORIES_JPANEL.add(
         SCROLL_PANEL_COPYDIRECTORIES, TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS);
     COPYDIRECTORIES_JPANEL.setSize(100, 100);
@@ -708,7 +609,7 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
     GRIDBAGCONSTRAINTS.gridwidth = 2;
 
-    labelServerIconPath =
+    JLabel labelServerIconPath =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labeliconpath"));
@@ -738,7 +639,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(TEXTFIELD_SERVERICONPATH, GRIDBAGCONSTRAINTS);
 
-    labelServerPropertiesPath =
+    JLabel labelServerPropertiesPath =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelpropertiespath"));
@@ -772,7 +673,7 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
     GRIDBAGCONSTRAINTS.gridwidth = 5;
 
-    labelJavaPath =
+    JLabel labelJavaPath =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labeljavapath"));
@@ -805,7 +706,7 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.gridwidth = 1;
 
     // Label and combobox minecraftVersion
-    labelMinecraftVersion =
+    JLabel labelMinecraftVersion =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelminecraft"));
@@ -833,7 +734,7 @@ public class TabCreateServerPack extends JComponent {
     CREATESERVERPACKPANEL.add(COMBOBOX_MINECRAFTVERSIONS, GRIDBAGCONSTRAINTS);
 
     // Label and radio buttons Modloader
-    labelModloader =
+    JLabel labelModloader =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelmodloader"));
@@ -866,7 +767,7 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.gridwidth = 2;
 
     // Label and textfield modloaderVersion
-    labelModloaderVersion =
+    JLabel labelModloaderVersion =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.labelmodloaderversion"));
@@ -893,73 +794,73 @@ public class TabCreateServerPack extends JComponent {
 
     // ----------------------------------------------------------------LABELS AND CHECKBOXES--------
 
-    GRIDBAGCONSTRAINTS.insets = TEN_TEN_ZERO_ZERO;
+    GRIDBAGCONSTRAINTS.insets = new Insets(10, 10, 0, 0);
     GRIDBAGCONSTRAINTS.gridwidth = 1;
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.SOUTHWEST;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
 
     // Checkbox installServer
-    checkBoxServer =
+    CHECKBOX_SERVER =
         new JCheckBox(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.checkboxserver"),
             true);
-    checkBoxServer.setToolTipText(
+    CHECKBOX_SERVER.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.checkboxserver.tip"));
-    checkBoxServer.addActionListener(this::actionEventCheckBoxServer);
+    CHECKBOX_SERVER.addActionListener(this::actionEventCheckBoxServer);
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 14;
 
-    CREATESERVERPACKPANEL.add(checkBoxServer, GRIDBAGCONSTRAINTS);
+    CREATESERVERPACKPANEL.add(CHECKBOX_SERVER, GRIDBAGCONSTRAINTS);
 
     // Checkbox copyIcon
-    checkBoxIcon =
+    CHECKBOX_ICON =
         new JCheckBox(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.checkboxicon"),
             true);
-    checkBoxIcon.setToolTipText(
+    CHECKBOX_ICON.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.checkboxicon.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 1;
     GRIDBAGCONSTRAINTS.gridy = 14;
 
-    CREATESERVERPACKPANEL.add(checkBoxIcon, GRIDBAGCONSTRAINTS);
+    CREATESERVERPACKPANEL.add(CHECKBOX_ICON, GRIDBAGCONSTRAINTS);
 
     // Checkbox copyProperties
-    checkBoxProperties =
+    CHECKBOX_PROPERTIES =
         new JCheckBox(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.checkboxproperties"),
             true);
-    checkBoxProperties.setToolTipText(
+    CHECKBOX_PROPERTIES.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.checkboxproperties.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 2;
     GRIDBAGCONSTRAINTS.gridy = 14;
 
-    CREATESERVERPACKPANEL.add(checkBoxProperties, GRIDBAGCONSTRAINTS);
+    CREATESERVERPACKPANEL.add(CHECKBOX_PROPERTIES, GRIDBAGCONSTRAINTS);
 
     // Checkbox createZIP
-    checkBoxZIP =
+    CHECKBOX_ZIP =
         new JCheckBox(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.checkboxzip"),
             true);
-    checkBoxZIP.setToolTipText(
+    CHECKBOX_ZIP.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.checkboxzip.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 3;
     GRIDBAGCONSTRAINTS.gridy = 14;
 
-    CREATESERVERPACKPANEL.add(checkBoxZIP, GRIDBAGCONSTRAINTS);
+    CREATESERVERPACKPANEL.add(CHECKBOX_ZIP, GRIDBAGCONSTRAINTS);
 
-    labelJavaArgs =
+    JLabel labelJavaArgs =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.createserverpack.javaargs"));
@@ -978,7 +879,9 @@ public class TabCreateServerPack extends JComponent {
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.javaargs.tip"));
     TEXTAREA_JAVAARGS.setFont(new Font("Noto Sans Display Regular", Font.PLAIN, 15));
+    JPanel JAVAARGS_JPANEL = new JPanel();
     JAVAARGS_JPANEL.setLayout(new GridBagLayout());
+    GridBagConstraints TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS = new GridBagConstraints();
     TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS.anchor = GridBagConstraints.CENTER;
     TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS.fill = GridBagConstraints.BOTH;
     TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS.gridx = 0;
@@ -986,6 +889,11 @@ public class TabCreateServerPack extends JComponent {
     TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS.weighty = 1;
     TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS.weightx = 1;
 
+    JScrollPane SCROLL_PANEL_JAVAARGS =
+        new JScrollPane(
+            TEXTAREA_JAVAARGS,
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     JAVAARGS_JPANEL.add(SCROLL_PANEL_JAVAARGS, TEXTAREA_JAVAARGS_JPANEL_CONSTRAINTS);
     JAVAARGS_JPANEL.setSize(100, 100);
     JAVAARGS_JPANEL.setPreferredSize(new Dimension(100, 100));
@@ -1004,15 +912,22 @@ public class TabCreateServerPack extends JComponent {
 
     GRIDBAGCONSTRAINTS.gridwidth = 1;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
+    Insets ZERO_TEN_ZERO_TEN = new Insets(0, 10, 0, 10);
     GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_TEN;
     GRIDBAGCONSTRAINTS.weightx = 0;
     GRIDBAGCONSTRAINTS.weighty = 0;
 
+    JButton BUTTON_MODPACKDIRECTORY = new JButton();
     BUTTON_MODPACKDIRECTORY.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonmodpackdir"));
     BUTTON_MODPACKDIRECTORY.setContentAreaFilled(false);
     BUTTON_MODPACKDIRECTORY.setMultiClickThreshhold(1000);
+    ImageIcon FOLDERICON =
+        new ImageIcon(
+            Objects.requireNonNull(
+                ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/folder.png")));
     BUTTON_MODPACKDIRECTORY.setIcon(FOLDERICON);
+    Dimension FOLDERBUTTONDIMENSION = new Dimension(24, 24);
     BUTTON_MODPACKDIRECTORY.setMinimumSize(FOLDERBUTTONDIMENSION);
     BUTTON_MODPACKDIRECTORY.setPreferredSize(FOLDERBUTTONDIMENSION);
     BUTTON_MODPACKDIRECTORY.setMaximumSize(FOLDERBUTTONDIMENSION);
@@ -1024,6 +939,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_MODPACKDIRECTORY, GRIDBAGCONSTRAINTS);
 
+    JButton BUTTON_CLIENTSIDEMODS = new JButton();
     BUTTON_CLIENTSIDEMODS.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonclientmods"));
     BUTTON_CLIENTSIDEMODS.setContentAreaFilled(false);
@@ -1040,6 +956,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_CLIENTSIDEMODS, GRIDBAGCONSTRAINTS);
 
+    JButton BUTTON_COPYDIRECTORIES = new JButton();
     BUTTON_COPYDIRECTORIES.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttoncopydirs"));
     BUTTON_COPYDIRECTORIES.setContentAreaFilled(false);
@@ -1056,6 +973,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_COPYDIRECTORIES, GRIDBAGCONSTRAINTS);
 
+    JButton BUTTON_JAVAPATH = new JButton();
     BUTTON_JAVAPATH.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.buttonjavapath"));
     BUTTON_JAVAPATH.setContentAreaFilled(false);
@@ -1072,6 +990,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_JAVAPATH, GRIDBAGCONSTRAINTS);
 
+    JButton BUTTON_SERVERICON = new JButton();
     BUTTON_SERVERICON.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.button.icon"));
@@ -1092,6 +1011,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_SERVERICON, GRIDBAGCONSTRAINTS);
 
+    JButton BUTTON_SERVERPROPERTIES = new JButton();
     BUTTON_SERVERPROPERTIES.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.button.properties"));
@@ -1109,6 +1029,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_SERVERPROPERTIES, GRIDBAGCONSTRAINTS);
 
+    JButton BUTTON_AIKARS_FLAGS = new JButton();
     BUTTON_AIKARS_FLAGS.setToolTipText(
         LOCALIZATIONMANAGER.getLocalizedString(
             "createserverpack.gui.createserverpack.button.properties"));
@@ -1137,47 +1058,48 @@ public class TabCreateServerPack extends JComponent {
 
     GRIDBAGCONSTRAINTS.weightx = 0;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
-    GRIDBAGCONSTRAINTS.insets = FIVE_ZERO_FIVE_ZERO;
+    GRIDBAGCONSTRAINTS.insets = new Insets(5, 0, 5, 0);
 
-    JPanel panel = new JPanel();
-    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    JPanel statusPanel = new JPanel();
+    statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
 
-    statusLabelLine0 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
-    statusLabelLine1 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
-    statusLabelLine2 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
-    statusLabelLine3 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
-    statusLabelLine4 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
-    statusLabelLine5 =
+    ReticulatingSplines RETICULATOR = new ReticulatingSplines();
+    STATUS_LABEL_LINE_0 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+    STATUS_LABEL_LINE_1 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+    STATUS_LABEL_LINE_2 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+    STATUS_LABEL_LINE_3 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+    STATUS_LABEL_LINE_4 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
+    STATUS_LABEL_LINE_5 =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
-                "createserverpack.gui.buttongenerateserverpack.ready"));
+                "createserverpack.gui.buttongenerateserverpack.ready") + "   ");
 
     // Make sure all labels start on the left and extrend to the right
-    statusLabelLine0.setHorizontalAlignment(JLabel.LEFT);
-    statusLabelLine1.setHorizontalAlignment(JLabel.LEFT);
-    statusLabelLine2.setHorizontalAlignment(JLabel.LEFT);
-    statusLabelLine3.setHorizontalAlignment(JLabel.LEFT);
-    statusLabelLine4.setHorizontalAlignment(JLabel.LEFT);
-    statusLabelLine5.setHorizontalAlignment(JLabel.LEFT);
+    STATUS_LABEL_LINE_0.setHorizontalAlignment(JLabel.LEFT);
+    STATUS_LABEL_LINE_1.setHorizontalAlignment(JLabel.LEFT);
+    STATUS_LABEL_LINE_2.setHorizontalAlignment(JLabel.LEFT);
+    STATUS_LABEL_LINE_3.setHorizontalAlignment(JLabel.LEFT);
+    STATUS_LABEL_LINE_4.setHorizontalAlignment(JLabel.LEFT);
+    STATUS_LABEL_LINE_5.setHorizontalAlignment(JLabel.LEFT);
 
     // Set the preferred size of the labels so they do not resize when long texts are set later on
     Dimension labelDimension = new Dimension(700, 30);
-    statusLabelLine0.setPreferredSize(labelDimension);
-    statusLabelLine1.setPreferredSize(labelDimension);
-    statusLabelLine2.setPreferredSize(labelDimension);
-    statusLabelLine3.setPreferredSize(labelDimension);
-    statusLabelLine4.setPreferredSize(labelDimension);
-    statusLabelLine5.setPreferredSize(labelDimension);
+    STATUS_LABEL_LINE_0.setPreferredSize(labelDimension);
+    STATUS_LABEL_LINE_1.setPreferredSize(labelDimension);
+    STATUS_LABEL_LINE_2.setPreferredSize(labelDimension);
+    STATUS_LABEL_LINE_3.setPreferredSize(labelDimension);
+    STATUS_LABEL_LINE_4.setPreferredSize(labelDimension);
+    STATUS_LABEL_LINE_5.setPreferredSize(labelDimension);
 
-    updateStatusLabelForeground();
+    updatePanelTheme();
 
-    panel.add(statusLabelLine0);
-    panel.add(statusLabelLine1);
-    panel.add(statusLabelLine2);
-    panel.add(statusLabelLine3);
-    panel.add(statusLabelLine4);
-    panel.add(statusLabelLine5);
-    panel.setPreferredSize(new Dimension(700, 140));
+    statusPanel.add(STATUS_LABEL_LINE_0);
+    statusPanel.add(STATUS_LABEL_LINE_1);
+    statusPanel.add(STATUS_LABEL_LINE_2);
+    statusPanel.add(STATUS_LABEL_LINE_3);
+    statusPanel.add(STATUS_LABEL_LINE_4);
+    statusPanel.add(STATUS_LABEL_LINE_5);
+    statusPanel.setPreferredSize(new Dimension(700, 140));
 
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
     GRIDBAGCONSTRAINTS.gridx = 1;
@@ -1188,10 +1110,15 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.weighty = 1;
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
 
-    CREATESERVERPACKPANEL.add(panel, GRIDBAGCONSTRAINTS);
+    CREATESERVERPACKPANEL.add(statusPanel, GRIDBAGCONSTRAINTS);
 
     GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_TEN;
 
+    BufferedImage GENERATE =
+        ImageIO.read(
+            Objects.requireNonNull(
+                ServerPackCreatorGui.class.getResource(
+                    "/de/griefed/resources/gui/start_generation.png")));
     BUTTON_GENERATESERVERPACK.setIcon(
         new CompoundIcon(
             CompoundIcon.Axis.X_AXIS,
@@ -1218,6 +1145,7 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_GENERATESERVERPACK, GRIDBAGCONSTRAINTS);
 
+    JButton BUTTON_SERVER_PACKS = new JButton();
     BUTTON_SERVER_PACKS.setIcon(
         new CompoundIcon(
             CompoundIcon.Axis.X_AXIS,
@@ -1237,12 +1165,6 @@ public class TabCreateServerPack extends JComponent {
 
     CREATESERVERPACKPANEL.add(BUTTON_SERVER_PACKS, GRIDBAGCONSTRAINTS);
 
-    STATUS_BAR.setForeground(new Color(192, 255, 238));
-    STATUS_BAR.setPreferredSize(new Dimension(700, 30));
-    STATUS_BAR.setIndeterminate(false);
-    STATUS_BAR.setAlignmentY(0.0f);
-    STATUS_BAR.setAlignmentX(0.0f);
-
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 21;
     GRIDBAGCONSTRAINTS.gridwidth = 6;
@@ -1251,18 +1173,24 @@ public class TabCreateServerPack extends JComponent {
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTH;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
+    STATUS_BAR.setPreferredSize(new Dimension(700, 40));
+    STATUS_BAR.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+
     CREATESERVERPACKPANEL.add(STATUS_BAR, GRIDBAGCONSTRAINTS);
+
+    STATUS_BAR.loadConfig(IDLE_CONFIG);
+    STATUS_BAR.play();
 
     // --------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
 
+    JScrollPane TAB_CREATESERVERPACKTAB_SCROLL_PANEL = new JScrollPane(CREATESERVERPACKPANEL);
     TAB_CREATESERVERPACKTAB_SCROLL_PANEL.getVerticalScrollBar().setUnitIncrement(16);
 
-    CONTENT_PANE.add(TAB_CREATESERVERPACKTAB_SCROLL_PANEL, BorderLayout.CENTER);
+    setLayout(new BorderLayout());
+    add(TAB_CREATESERVERPACKTAB_SCROLL_PANEL, BorderLayout.CENTER);
 
     loadConfig(new File("serverpackcreator.conf"));
-
-    return CONTENT_PANE;
   }
 
   /**
@@ -1270,43 +1198,45 @@ public class TabCreateServerPack extends JComponent {
    *
    * @author Griefed
    */
-  protected void updateStatusLabelForeground() {
-    statusLabelLine0.setForeground(
+  protected void updatePanelTheme() {
+    STATUS_LABEL_LINE_0.setForeground(
         new Color(
             getThemeTextColor().getRed(),
             getThemeTextColor().getGreen(),
             getThemeTextColor().getBlue(),
             20));
-    statusLabelLine1.setForeground(
+    STATUS_LABEL_LINE_1.setForeground(
         new Color(
             getThemeTextColor().getRed(),
             getThemeTextColor().getGreen(),
             getThemeTextColor().getBlue(),
             50));
-    statusLabelLine2.setForeground(
+    STATUS_LABEL_LINE_2.setForeground(
         new Color(
             getThemeTextColor().getRed(),
             getThemeTextColor().getGreen(),
             getThemeTextColor().getBlue(),
             100));
-    statusLabelLine3.setForeground(
+    STATUS_LABEL_LINE_3.setForeground(
         new Color(
             getThemeTextColor().getRed(),
             getThemeTextColor().getGreen(),
             getThemeTextColor().getBlue(),
             150));
-    statusLabelLine4.setForeground(
+    STATUS_LABEL_LINE_4.setForeground(
         new Color(
             getThemeTextColor().getRed(),
             getThemeTextColor().getGreen(),
             getThemeTextColor().getBlue(),
             200));
-    statusLabelLine5.setForeground(
-        new Color(
-            getThemeTextColor().getRed(),
-            getThemeTextColor().getGreen(),
-            getThemeTextColor().getBlue(),
-            255));
+
+    IDLE_CONFIG.setScannerBackgroundColour(getBackground());
+    IDLE_CONFIG.setEyeBackgroundColour(getBackground());
+    BUSY_CONFIG.setScannerBackgroundColour(getBackground());
+    BUSY_CONFIG.setEyeBackgroundColour(getBackground());
+
+    STATUS_BAR.setBackground(getBackground());
+    STATUS_BAR.setEyeBackground(getBackground());
   }
 
   /**
@@ -1316,17 +1246,12 @@ public class TabCreateServerPack extends JComponent {
    * @author Griefed
    */
   private void updateStatus(String text) {
-    this.statusLabelLine0.setText(statusLabelLine1.getText() + "   ");
-    this.statusLabelLine1.setText(statusLabelLine2.getText() + "   ");
-    this.statusLabelLine2.setText(statusLabelLine3.getText() + "   ");
-    this.statusLabelLine3.setText(statusLabelLine4.getText() + "   ");
-    this.statusLabelLine4.setText(statusLabelLine5.getText() + "   ");
-    this.statusLabelLine5.setText(text);
-    /*if (text.length() > 90) {
-      this.statusLabelLine5.setText(text.substring(0, 90) + "...    ");
-    } else {
-      this.statusLabelLine5.setText(text);
-    }*/
+    this.STATUS_LABEL_LINE_0.setText(STATUS_LABEL_LINE_1.getText() + "   ");
+    this.STATUS_LABEL_LINE_1.setText(STATUS_LABEL_LINE_2.getText() + "   ");
+    this.STATUS_LABEL_LINE_2.setText(STATUS_LABEL_LINE_3.getText() + "   ");
+    this.STATUS_LABEL_LINE_3.setText(STATUS_LABEL_LINE_4.getText() + "   ");
+    this.STATUS_LABEL_LINE_4.setText(STATUS_LABEL_LINE_5.getText() + "   ");
+    this.STATUS_LABEL_LINE_5.setText(text + "   ");
   }
 
   /**
@@ -1341,7 +1266,7 @@ public class TabCreateServerPack extends JComponent {
   }
 
   /**
-   * Validate all text-based inputfields.
+   * Validate all text-based input fields.
    *
    * @author Griefed
    */
@@ -1362,7 +1287,7 @@ public class TabCreateServerPack extends JComponent {
   }
 
   /**
-   * Validate the inputfield for modpack directory.
+   * Validate the input field for modpack directory.
    *
    * @author Griefed
    */
@@ -1391,7 +1316,7 @@ public class TabCreateServerPack extends JComponent {
   }
 
   /**
-   * Validate the inputfield for server pack suffix
+   * Validate the input field for server pack suffix
    *
    * @author Griefed
    */
@@ -1414,7 +1339,7 @@ public class TabCreateServerPack extends JComponent {
   }
 
   /**
-   * Validate the inputfield for client mods.
+   * Validate the input field for client mods.
    *
    * @author Griefed
    */
@@ -1438,7 +1363,7 @@ public class TabCreateServerPack extends JComponent {
   }
 
   /**
-   * Validate the inputfield for copy directories.
+   * Validate the input field for copy directories.
    *
    * @author Griefed
    */
@@ -1471,7 +1396,7 @@ public class TabCreateServerPack extends JComponent {
   }
 
   /**
-   * Validate the inputfield for server icon.
+   * Validate the input field for server icon.
    *
    * @author Griefed
    */
@@ -1596,7 +1521,7 @@ public class TabCreateServerPack extends JComponent {
    * @author Griefed
    */
   private void actionEventCheckBoxServer(ActionEvent actionEvent) {
-    if (checkBoxServer.isSelected() && TEXTFIELD_JAVAPATH.getText().isEmpty()) {
+    if (CHECKBOX_SERVER.isSelected() && TEXTFIELD_JAVAPATH.getText().isEmpty()) {
       switch (JOptionPane.showConfirmDialog(
           CREATESERVERPACKPANEL,
           LOCALIZATIONMANAGER.getLocalizedString(
@@ -1769,7 +1694,7 @@ public class TabCreateServerPack extends JComponent {
    */
   private void selectModpackDirectory(ActionEvent event) {
 
-    modpackDirChooser = new JFileChooser();
+    JFileChooser modpackDirChooser = new JFileChooser();
 
     if (new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()) {
 
@@ -1819,7 +1744,7 @@ public class TabCreateServerPack extends JComponent {
    */
   private void selectServerIcon(ActionEvent event) {
 
-    serverIconChooser = new JFileChooser();
+    JFileChooser serverIconChooser = new JFileChooser();
 
     serverIconChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     serverIconChooser.setDialogTitle(
@@ -1858,7 +1783,7 @@ public class TabCreateServerPack extends JComponent {
    */
   private void selectServerProperties(ActionEvent event) {
 
-    serverPropertiesChooser = new JFileChooser();
+    JFileChooser serverPropertiesChooser = new JFileChooser();
 
     serverPropertiesChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     serverPropertiesChooser.setDialogTitle(
@@ -1896,7 +1821,7 @@ public class TabCreateServerPack extends JComponent {
    */
   private void selectClientMods(ActionEvent event) {
 
-    clientModsChooser = new JFileChooser();
+    JFileChooser clientModsChooser = new JFileChooser();
 
     if (TEXTFIELD_MODPACKDIRECTORY.getText().length() > 0
         && new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()
@@ -1948,7 +1873,7 @@ public class TabCreateServerPack extends JComponent {
    */
   private void selectCopyDirs(ActionEvent event) {
 
-    copyDirsChooser = new JFileChooser();
+    JFileChooser copyDirsChooser = new JFileChooser();
 
     if (TEXTFIELD_MODPACKDIRECTORY.getText().length() > 0
         && new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()) {
@@ -1997,7 +1922,7 @@ public class TabCreateServerPack extends JComponent {
    * @author Griefed
    */
   void chooseJava() {
-    javaChooser = new JFileChooser();
+    JFileChooser javaChooser = new JFileChooser();
 
     if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/")))
         .isDirectory()) {
@@ -2042,7 +1967,7 @@ public class TabCreateServerPack extends JComponent {
   private void generateServerpack(ActionEvent event) {
 
     BUTTON_GENERATESERVERPACK.setEnabled(false);
-    STATUS_BAR.setIndeterminate(true);
+    STATUS_BAR.loadConfig(BUSY_CONFIG);
 
     int decision = 0;
 
@@ -2236,9 +2161,14 @@ public class TabCreateServerPack extends JComponent {
         });
   }
 
+  /**
+   * Set the GUI ready for the next generation.
+   *
+   * @author Griefed
+   */
   private void ready() {
     BUTTON_GENERATESERVERPACK.setEnabled(true);
-    STATUS_BAR.setIndeterminate(false);
+    STATUS_BAR.loadConfig(IDLE_CONFIG);
   }
 
   /**
@@ -2267,14 +2197,14 @@ public class TabCreateServerPack extends JComponent {
         tempCopyDirs,
         TEXTFIELD_SERVERICONPATH.getText().replace("\\", "/"),
         TEXTFIELD_SERVERPROPERTIESPATH.getText().replace("\\", "/"),
-        checkBoxServer.isSelected(),
+        CHECKBOX_SERVER.isSelected(),
         TEXTFIELD_JAVAPATH.getText().replace("\\", "/"),
         chosenMinecraftVersion,
         chosenModloader,
         chosenModloaderVersion,
-        checkBoxIcon.isSelected(),
-        checkBoxProperties.isSelected(),
-        checkBoxZIP.isSelected(),
+        CHECKBOX_ICON.isSelected(),
+        CHECKBOX_PROPERTIES.isSelected(),
+        CHECKBOX_ZIP.isSelected(),
         TEXTAREA_JAVAARGS.getText(),
         UTILITIES.StringUtils().pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
         configFile);
@@ -2481,21 +2411,21 @@ public class TabCreateServerPack extends JComponent {
         updateModloaderGuiComponents("Forge");
       }
 
-      checkBoxServer.setSelected(
+      CHECKBOX_SERVER.setSelected(
           UTILITIES.BooleanUtils()
               .convertToBoolean(
                   String.valueOf(config.getOrElse("includeServerInstallation", "False"))));
 
-      checkBoxIcon.setSelected(
+      CHECKBOX_ICON.setSelected(
           UTILITIES.BooleanUtils()
               .convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
 
-      checkBoxProperties.setSelected(
+      CHECKBOX_PROPERTIES.setSelected(
           UTILITIES.BooleanUtils()
               .convertToBoolean(
                   String.valueOf(config.getOrElse("includeServerProperties", "False"))));
 
-      checkBoxZIP.setSelected(
+      CHECKBOX_ZIP.setSelected(
           UTILITIES.BooleanUtils()
               .convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
 
@@ -2547,10 +2477,10 @@ public class TabCreateServerPack extends JComponent {
 
     updateModloaderGuiComponents("Forge");
 
-    checkBoxServer.setSelected(false);
-    checkBoxIcon.setSelected(false);
-    checkBoxProperties.setSelected(false);
-    checkBoxZIP.setSelected(false);
+    CHECKBOX_SERVER.setSelected(false);
+    CHECKBOX_ICON.setSelected(false);
+    CHECKBOX_PROPERTIES.setSelected(false);
+    CHECKBOX_ZIP.setSelected(false);
     setJavaArgs("");
 
     validateInputFields();
@@ -2563,9 +2493,7 @@ public class TabCreateServerPack extends JComponent {
    * @return {@link Color} The current themes error-text colour.
    */
   private Color getThemeErrorColor() {
-    if (APPLICATIONPROPERTIES
-        .getProperty("de.griefed.serverpackcreator.gui.darkmode")
-        .equals("true")) {
+    if (isDark()) {
 
       return DARKTHEME.getTextErrorColour();
 
@@ -2576,15 +2504,13 @@ public class TabCreateServerPack extends JComponent {
   }
 
   /**
-   * The the current themes default text colour.
+   * The current themes default text colour.
    *
    * @author Griefed
    * @return {@link Color} The current themes default text colour.
    */
   private Color getThemeTextColor() {
-    if (APPLICATIONPROPERTIES
-        .getProperty("de.griefed.serverpackcreator.gui.darkmode")
-        .equals("true")) {
+    if (isDark()) {
 
       return DARKTHEME.getTextColor();
 
@@ -2594,7 +2520,87 @@ public class TabCreateServerPack extends JComponent {
     }
   }
 
-  public void setStatusBarUI() {
-    this.STATUS_BAR.setUI(STATUS_BAR_UI);
+  /**
+   * Check whether the current theme is Dark mode or Light mode.
+   *
+   * @return {@link Boolean} <code>true</code> if Dark.
+   * @author Griefed
+   */
+  private boolean isDark() {
+    return APPLICATIONPROPERTIES
+        .getProperty("de.griefed.serverpackcreator.gui.darkmode")
+        .equals("true");
+  }
+
+  /**
+   * Getter for the chosen modloader from the JRadioButtons.
+   *
+   * @return String. Returns either Fabric or Forge.
+   * @author Griefed
+   */
+  public String getChosenModloader() {
+    return chosenModloader;
+  }
+
+  /**
+   * Getter for the selected modloader version depending on which modloader is currently selected.
+   *
+   * @return String. Returns the modloader version depending on which modloader is currently
+   *     selected.
+   * @author Griefed
+   */
+  private String getSelectedModloaderVersion() {
+    return chosenModloaderVersion;
+  }
+
+  /**
+   * Getter for the currently set JVM flags / Java args.
+   *
+   * @return String. Returns the currently set JVM flags / Java args.
+   * @author Griefed
+   */
+  public String getJavaArgs() {
+    return javaArgs;
+  }
+
+  /**
+   * Setter for the JVM flags / Java args.
+   *
+   * @param javaArgs String. The javaargs to set.
+   * @author Griefed
+   */
+  public void setJavaArgs(String javaArgs) {
+    this.javaArgs = javaArgs;
+  }
+
+  /**
+   * Getter for the current text from the currently set Javapath in the Javapath textfield.
+   *
+   * @return String. Returns the current text from the currently set Javapath in the Javapath
+   *     textfield.
+   * @author Griefed
+   */
+  public String getJavaPath() {
+    return TEXTFIELD_JAVAPATH.getText();
+  }
+
+  /**
+   * Getter for the text in the custom server-icon textfield.
+   *
+   * @return String. Returns the text in the server-icon textfield.
+   * @author Griefed
+   */
+  public String getServerIconPath() {
+    return TEXTFIELD_SERVERICONPATH.getText();
+  }
+
+  /**
+   * Getter for the text in the custom server.properties textfield
+   *
+   * @return String. Returns the text in the server.properties textfield.
+   * @author Griefed
+   */
+  public String getServerPropertiesPath() {
+    return TEXTFIELD_SERVERPROPERTIESPATH.getText();
   }
 }

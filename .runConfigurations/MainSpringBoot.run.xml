@@ -2,7 +2,7 @@
   <configuration default="false" name="MainSpringBoot" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <option name="ACTIVE_PROFILES" />
     <module name="ServerPackCreator.main" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="de.griefed.serverpackcreator.WebService" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.griefed.serverpackcreator.ServerPackCreator.WebService" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
