@@ -407,30 +407,49 @@ export default defineComponent({
     minecraftVersionSelected(version) {
       this.minecraftVersion = version;
 
-      api.get("/versions/forge/" + version)
+      switch (this.modLoader) {
+        case 'Forge':
+
+          this.getForgeVersions(this.minecraftVersion);
+          break;
+
+        case 'Fabric':
+
+          this.modloaderVersion = this.fabricVersions[0];
+          break;
+
+        case 'Quilt':
+
+          this.modloaderVersion = this.quiltVersions[0];
+          break;
+      }
+
+      this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
+    },
+    /**
+     * Get the available Forge versions for the given Minecraft version.
+     * @author Griefed
+     * @param minecraftVersion
+     */
+    getForgeVersions(minecraftVersion) {
+
+      api.get("/versions/forge/" + minecraftVersion)
       .then(response => {
         this.forgeVersions = response.data.forge;
 
-        if (this.modLoader === this.modloaders[0]) {
-
-          if (this.forgeVersions.length === 0) {
-            console.log('Zero')
-            this.modloaderVersion = 'None';
-          } else {
-            this.modloaderVersion = this.forgeVersions[0];
-          }
-
+        if (this.forgeVersions.length === 0) {
+          console.log('Zero')
+          this.modloaderVersion = 'None';
         } else {
-          this.modloaderVersion = this.fabricVersions[0];
+          this.modloaderVersion = this.forgeVersions[0];
         }
-
-        this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
 
       })
       .catch(error => {
         console.log(error);
         this.errorNotification(error);
       });
+
     },
     /**
      * Set selected modloader and modloader versions.
@@ -443,50 +462,23 @@ export default defineComponent({
         case "Forge":
 
           this.modLoader = 'Forge';
-          api.get("/versions/forge/" + this.minecraftVersion)
-          .then(response => {
-
-            this.forgeVersions = response.data.forge;
-
-            if (this.forgeVersions.length === 0) {
-
-              this.modloaderVersion = 'None';
-
-            } else {
-
-              this.modloaderVersion = this.forgeVersions[0];
-
-            }
-
-            this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
-
-          })
-          .catch(error => {
-            console.log(error);
-            this.errorNotification(error);
-          });
+          this.getForgeVersions(this.minecraftVersion);
           break;
 
         case "Fabric":
 
           this.modLoader = 'Fabric';
           this.modloaderVersion = this.fabricVersions[0];
-
-          if (this.modloaderVersion !== 'None' && this.zipName !== "") {
-            this.disableZip = false;
-          }
-
           break;
 
         case "Quilt":
 
           this.modLoader = 'Quilt';
           this.modloaderVersion = this.quiltVersions[0];
+          break;
 
-          if (this.modloaderVersion !== 'None' && this.zipName !== "") {
-            this.disableZip = false;
-          }
       }
+      this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
     },
     /**
      * If the upload of a given ZIP-file fails, display a notification to tell the user about said failure, reset the
