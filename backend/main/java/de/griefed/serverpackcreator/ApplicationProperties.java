@@ -142,6 +142,7 @@ public class ApplicationProperties extends Properties {
           + "InventoryTweaks-,"
           + "invtweaks-,"
           + "ItemBorders-,"
+          + "ItemStitchingFix-,"
           + "itemzoom,"
           + "itlt-,"
           + "jeed-,"

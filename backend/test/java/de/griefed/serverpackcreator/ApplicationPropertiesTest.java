@@ -128,6 +128,7 @@ public class ApplicationPropertiesTest {
                         + "InventoryTweaks-,"
                         + "invtweaks-,"
                         + "ItemBorders-,"
+                        + "ItemStitchingFix-,"
                         + "itemzoom,"
                         + "itlt-,"
                         + "jeed-,"
