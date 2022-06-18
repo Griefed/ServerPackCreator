@@ -50,7 +50,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -1072,7 +1071,8 @@ public class TabCreateServerPack extends JPanel {
     STATUS_LABEL_LINE_5 =
         new JLabel(
             LOCALIZATIONMANAGER.getLocalizedString(
-                "createserverpack.gui.buttongenerateserverpack.ready") + "   ");
+                    "createserverpack.gui.buttongenerateserverpack.ready")
+                + "   ");
 
     // Make sure all labels start on the left and extrend to the right
     STATUS_LABEL_LINE_0.setHorizontalAlignment(JLabel.LEFT);

@@ -3696,9 +3696,9 @@ public class ServerPackHandler {
   }
 
   /**
-   * A ServerPackFile represents a source-destination-combination of two files/directories. The source
-   * is the file/directory, usually in the modpack, whilst the destination is the file to which the
-   * source is supposed to be copied to in the server pack.
+   * A ServerPackFile represents a source-destination-combination of two files/directories. The
+   * source is the file/directory, usually in the modpack, whilst the destination is the file to
+   * which the source is supposed to be copied to in the server pack.
    *
    * @author Griefed
    */
@@ -3797,12 +3797,11 @@ public class ServerPackHandler {
     }
 
     /**
-     * Copy this ServerPackFiles source to the destination. Already existing files are replaced. When
-     * the source-file is a directory, then the destination-directory is created as an empty
+     * Copy this ServerPackFiles source to the destination. Already existing files are replaced.
+     * When the source-file is a directory, then the destination-directory is created as an empty
      * directory. Any contents in the source-directory are NOT copied over to the
-     * destination-directory. See {@link Files#copy(Path, Path, CopyOption...)} for an example on how
-     * to copy entire directories, or use {@link FileUtils#copyDirectory(File,
-     * File)}.<br>
+     * destination-directory. See {@link Files#copy(Path, Path, CopyOption...)} for an example on
+     * how to copy entire directories, or use {@link FileUtils#copyDirectory(File, File)}.<br>
      * <br>
      * This method specifically does NOT copy recursively, because we would potentially copy
      * previously EXCLUDED files, too. We do not want that. At all.
@@ -3811,7 +3810,8 @@ public class ServerPackHandler {
      *     installed, the {@link SecurityManager#checkRead(String) checkRead} method is invoked to
      *     check read access to the source file, the {@link SecurityManager#checkWrite(String)
      *     checkWrite} is invoked to check write access to the target file. If a symbolic link is
-     *     copied the security manager is invoked to check {@link LinkPermission}{@code ("symbolic")}.
+     *     copied the security manager is invoked to check {@link LinkPermission}{@code
+     *     ("symbolic")}.
      * @throws UnsupportedOperationException if the array contains a copy option that is not
      *     supported.
      * @throws IOException if an I/O error occurs

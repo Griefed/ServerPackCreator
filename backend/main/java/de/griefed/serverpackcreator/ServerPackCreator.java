@@ -122,8 +122,7 @@ public class ServerPackCreator {
   }
 
   /**
-   * Run ServerPackCreator in a specific {@link
-   * CommandlineParser.Mode}.
+   * Run ServerPackCreator in a specific {@link CommandlineParser.Mode}.
    *
    * @param modeToRunIn {@link CommandlineParser.Mode} to run in.
    * @throws IOException if the run fails.
@@ -539,8 +538,7 @@ public class ServerPackCreator {
    * Offer the user to continue using ServerPackCreator.
    *
    * @throws IOException if an error occurs trying to run ServerPackCreator in {@link
-   *     CommandlineParser.Mode#GUI}, {@link
-   *     CommandlineParser.Mode#CLI} or {@link
+   *     CommandlineParser.Mode#GUI}, {@link CommandlineParser.Mode#CLI} or {@link
    *     CommandlineParser.Mode#WEB}
    * @author Griefed
    */
@@ -986,15 +984,15 @@ public class ServerPackCreator {
      */
     private final Mode MODE;
     /**
-     * The language ServerPackCreator should use if any was specified. Null if none was specified, so
-     * we can use the default language <code>en_us</code>.
+     * The language ServerPackCreator should use if any was specified. Null if none was specified,
+     * so we can use the default language <code>en_us</code>.
      */
     private final String LANG;
 
     /**
      * Create a new CommandlineParser from the passed commandline-arguments with which
-     * ServerPackCreator was started. The mode and language in which ServerPackCreator should run will
-     * thus be determined and available to you via {@link #getModeToRunIn()} and {@link
+     * ServerPackCreator was started. The mode and language in which ServerPackCreator should run
+     * will thus be determined and available to you via {@link #getModeToRunIn()} and {@link
      * #getLanguageToUse()}.<br>
      * {@link #getLanguageToUse()} is wrapped in an {@link Optional} to quickly determine whether a
      * language was specified.
@@ -1135,16 +1133,16 @@ public class ServerPackCreator {
       WEB("-web"),
 
       /**
-       * Priority 5. Run ServerPackCreator with our GUI. If a graphical environment is supported, this
-       * is the default ServerPackCreator will enter, even when starting ServerPackCreator with no
-       * extra arguments at all.
+       * Priority 5. Run ServerPackCreator with our GUI. If a graphical environment is supported,
+       * this is the default ServerPackCreator will enter, even when starting ServerPackCreator with
+       * no extra arguments at all.
        */
       GUI("-gui"),
 
       /**
-       * Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator. This
-       * will create/copy all files needed for ServerPackCreator to function properly from inside its
-       * JAR-file and setup everything else, too.
+       * Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator.
+       * This will create/copy all files needed for ServerPackCreator to function properly from
+       * inside its JAR-file and setup everything else, too.
        */
       SETUP("--setup"),
 
