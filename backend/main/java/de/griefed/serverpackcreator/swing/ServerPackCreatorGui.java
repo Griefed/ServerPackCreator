@@ -75,15 +75,7 @@ public class ServerPackCreatorGui {
                   ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/app.png")));
   private final Dimension DIMENSION_WINDOW = new Dimension(1050, 800);
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
-  private final ConfigurationHandler CONFIGURATIONHANDLER;
-  private final ServerPackHandler CREATESERVERPACK;
-  private final VersionMeta VERSIONMETA;
-  private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final ApplicationPlugins APPLICATIONPLUGINS;
-  private final UpdateChecker UPDATECHECKER;
-  private final ConfigUtilities CONFIGUTILITIES;
   private final ServerPackCreatorSplash SERVERPACKCREATORSPLASH;
 
   private final LightTheme LIGHTTHEME = new LightTheme();
@@ -97,8 +89,6 @@ public class ServerPackCreatorGui {
   private final JFrame FRAME_SERVERPACKCREATOR;
 
   private final TabCreateServerPack TAB_CREATESERVERPACK;
-  private final TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR;
-  private final TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER;
 
   private final JTabbedPane TABBEDPANE;
 
@@ -159,14 +149,16 @@ public class ServerPackCreatorGui {
     } else {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
+    LocalizationManager LOCALIZATIONMANAGER;
     if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+      LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
     } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+      LOCALIZATIONMANAGER = injectedLocalizationManager;
     }
 
+    VersionMeta VERSIONMETA;
     if (injectedVersionMeta == null) {
-      this.VERSIONMETA =
+      VERSIONMETA =
           new VersionMeta(
               APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
@@ -175,38 +167,43 @@ public class ServerPackCreatorGui {
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     } else {
-      this.VERSIONMETA = injectedVersionMeta;
+      VERSIONMETA = injectedVersionMeta;
     }
 
+    Utilities UTILITIES;
     if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
     } else {
-      this.UTILITIES = injectedUtilities;
+      UTILITIES = injectedUtilities;
     }
 
+    ConfigUtilities CONFIGUTILITIES;
     if (injectedConfigUtilities == null) {
-      this.CONFIGUTILITIES =
+      CONFIGUTILITIES =
           new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
     } else {
-      this.CONFIGUTILITIES = injectedConfigUtilities;
+      CONFIGUTILITIES = injectedConfigUtilities;
     }
 
+    ConfigurationHandler CONFIGURATIONHANDLER;
     if (injectedConfigurationHandler == null) {
-      this.CONFIGURATIONHANDLER =
+      CONFIGURATIONHANDLER =
           new ConfigurationHandler(
               LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
     } else {
-      this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
+      CONFIGURATIONHANDLER = injectedConfigurationHandler;
     }
 
+    ApplicationPlugins APPLICATIONPLUGINS;
     if (injectedPluginManager == null) {
-      this.APPLICATIONPLUGINS = new ApplicationPlugins();
+      APPLICATIONPLUGINS = new ApplicationPlugins();
     } else {
-      this.APPLICATIONPLUGINS = injectedPluginManager;
+      APPLICATIONPLUGINS = injectedPluginManager;
     }
 
+    ServerPackHandler CREATESERVERPACK;
     if (injectedServerPackHandler == null) {
-      this.CREATESERVERPACK =
+      CREATESERVERPACK =
           new ServerPackHandler(
               LOCALIZATIONMANAGER,
               APPLICATIONPROPERTIES,
@@ -214,13 +211,14 @@ public class ServerPackCreatorGui {
               UTILITIES,
               APPLICATIONPLUGINS);
     } else {
-      this.CREATESERVERPACK = injectedServerPackHandler;
+      CREATESERVERPACK = injectedServerPackHandler;
     }
 
+    UpdateChecker UPDATECHECKER;
     if (injectedUpdateChecker == null) {
-      this.UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
     } else {
-      this.UPDATECHECKER = injectedUpdateChecker;
+      UPDATECHECKER = injectedUpdateChecker;
     }
 
     try {
@@ -254,14 +252,14 @@ public class ServerPackCreatorGui {
             DARKTHEME,
             LIGHTTHEME);
 
-    this.TAB_LOG_SERVERPACKCREATOR =
+    TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(
             LOCALIZATIONMANAGER,
             APPLICATIONPROPERTIES,
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
 
-    this.TAB_LOG_ADDONSHANDLER =
+    TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER =
         new TabAddonsHandlerLog(
             LOCALIZATIONMANAGER.getLocalizedString(
                 "createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
