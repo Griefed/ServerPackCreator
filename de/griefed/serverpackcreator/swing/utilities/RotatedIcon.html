@@ -117,16 +117,14 @@ implements javax.swing.Icon</pre>
 <div class="block">Heya, Griefed here. This is yet another miracle by Rob Camick. This man is a godsend.<br>
  See <a href="https://tips4java.wordpress.com/2009/04/06/rotated-icon/">Rotated Icon</a><br>
 
-
-  The RotatedIcon allows you to change the orientation of an Icon by
-  rotating the Icon before it is painted. This class supports the following
-  orientations:
+ <p>The RotatedIcon allows you to change the orientation of an Icon by rotating the Icon before it
+ is painted. This class supports the following orientations:
 
  <ul>
- <li>DOWN - rotated 90 degrees
- <li>UP (default) - rotated -90 degrees
- <li>UPSIDE_DOWN - rotated 180 degrees
- <li>ABOUT_CENTER - the icon is rotated by the specified degrees about its center.
+   <li>DOWN - rotated 90 degrees
+   <li>UP (default) - rotated -90 degrees
+   <li>UPSIDE_DOWN - rotated 180 degrees
+   <li>ABOUT_CENTER - the icon is rotated by the specified degrees about its center.
  </ul></div>
 </li>
 </ul>
@@ -320,8 +318,8 @@ implements javax.swing.Icon</pre>
 <h4>RotatedIcon</h4>
 <pre>public&nbsp;RotatedIcon(javax.swing.Icon&nbsp;icon,
                    double&nbsp;degrees)</pre>
-<div class="block">Create a RotatedIcon. The icon will rotate about its center. This
-  constructor will automatically set the Rotate enum to ABOUT_CENTER.</div>
+<div class="block">Create a RotatedIcon. The icon will rotate about its center. This constructor will
+ automatically set the Rotate enum to ABOUT_CENTER.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>icon</code> - the Icon to rotate</dd>
@@ -338,8 +336,8 @@ implements javax.swing.Icon</pre>
 <pre>public&nbsp;RotatedIcon(javax.swing.Icon&nbsp;icon,
                    double&nbsp;degrees,
                    boolean&nbsp;circularIcon)</pre>
-<div class="block">Create a RotatedIcon. The icon will rotate about its center. This
-  constructor will automatically set the Rotate enum to ABOUT_CENTER.</div>
+<div class="block">Create a RotatedIcon. The icon will rotate about its center. This constructor will
+ automatically set the Rotate enum to ABOUT_CENTER.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>icon</code> - the Icon to rotate</dd>
@@ -405,10 +403,9 @@ implements javax.swing.Icon</pre>
 <li class="blockList">
 <h4>setDegrees</h4>
 <pre>public&nbsp;void&nbsp;setDegrees(double&nbsp;degrees)</pre>
-<div class="block">Set the degrees of rotation. Only used for Rotate.ABOUT_CENTER.
-  This method only sets the degress of rotation, it will not cause
-  the Icon to be repainted. You must invoke repaint() on any
-  component using this icon for it to be repainted.</div>
+<div class="block">Set the degrees of rotation. Only used for Rotate.ABOUT_CENTER. This method only sets the
+ degress of rotation, it will not cause the Icon to be repainted. You must invoke repaint() on
+ any component using this icon for it to be repainted.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>degrees</code> - the degrees of rotation</dd>
@@ -422,8 +419,8 @@ implements javax.swing.Icon</pre>
 <li class="blockList">
 <h4>isCircularIcon</h4>
 <pre>public&nbsp;boolean&nbsp;isCircularIcon()</pre>
-<div class="block">Is the image circular or rectangular? Only used for Rotate.ABOUT_CENTER.
-  When true, the icon width/height will not change as the Icon is rotated.</div>
+<div class="block">Is the image circular or rectangular? Only used for Rotate.ABOUT_CENTER. When true, the icon
+ width/height will not change as the Icon is rotated.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>true for a circular Icon, false otherwise</dd>
@@ -437,8 +434,8 @@ implements javax.swing.Icon</pre>
 <li class="blockList">
 <h4>setCircularIcon</h4>
 <pre>public&nbsp;void&nbsp;setCircularIcon(boolean&nbsp;circularIcon)</pre>
-<div class="block">Set the Icon as circular or rectangular. Only used for Rotate.ABOUT_CENTER.
-  When true, the icon width/height will not change as the Icon is rotated.</div>
+<div class="block">Set the Icon as circular or rectangular. Only used for Rotate.ABOUT_CENTER. When true, the icon
+ width/height will not change as the Icon is rotated.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>circularIcon</code> - true for a circular Icon, false otherwise</dd>

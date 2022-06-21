@@ -117,26 +117,27 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <div class="block">Heya, Griefed here. This is yet another miracle by Rob Camick. This man is a godsend.<br>
  See <a href="https://tips4java.wordpress.com/2009/04/02/text-icon/">Text Icon</a><br>
 
-  The TextIcon will paint a String of text as an Icon. The Icon
-  can be used by any Swing component that supports icons.
+ <p>The TextIcon will paint a String of text as an Icon. The Icon can be used by any Swing
+ component that supports icons.
 
-  TextIcon supports two different layout styles:
-  <ul>
-  <li>Horizontally - does normal rendering of the text by using the
-          Graphics.drawString(...) method
-  <li>Vertically - Each character is displayed on a separate line
-  </ul>
+ <p>TextIcon supports two different layout styles:
 
-  TextIcon was designed to be rendered on a specific JComponent as it
-  requires FontMetrics information in order to calculate its size and to do
-  the rendering. Therefore, it should only be added to component it was
-  created for.
+ <ul>
+   <li>Horizontally - does normal rendering of the text by using the Graphics.drawString(...)
+       method
+   <li>Vertically - Each character is displayed on a separate line
+ </ul>
 
-  By default the text will be rendered using the Font and foreground color
-  of its associated component. However, this class does allow you to override
-  these properties. Also starting in JDK6 the desktop renderering hints will
-  be used to renderer the text. For versions not supporting the rendering
-  hints antialiasing will be turned on.</div>
+ <p>TextIcon was designed to be rendered on a specific JComponent as it requires FontMetrics
+ information in order to calculate its size and to do the rendering. Therefore, it should only be
+ added to component it was created for.
+
+ <p>By default the text will be rendered using the Font and foreground color of its associated
+ component. However, this class does allow you to override these properties. Also starting in JDK6
+ the desktop renderering hints will be used to renderer the text. For versions not supporting the
+ rendering hints antialiasing will be turned on.
+
+ <p></div>
 </li>
 </ul>
 </div>
@@ -271,8 +272,7 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/TextIcon.html#setPadding-int-">setPadding</a></span>(int&nbsp;padding)</code>
-<div class="block">By default, the size of the Icon is based on the size of the rendered
-  text.</div>
+<div class="block">By default, the size of the Icon is based on the size of the rendered text.</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
@@ -333,8 +333,8 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>component</code> - the component to which the icon will be added</dd>
 <dd><code>text</code> - the text to be rendered on the Icon</dd>
-<dd><code>layout</code> - specify the layout of the text. Must be one of
-                          the Layout enums: HORIZONTAL or VERTICAL</dd>
+<dd><code>layout</code> - specify the layout of the text. Must be one of the Layout enums: HORIZONTAL or
+     VERTICAL</dd>
 </dl>
 </li>
 </ul>
@@ -395,9 +395,8 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <li class="blockList">
 <h4>getFont</h4>
 <pre>public&nbsp;java.awt.Font&nbsp;getFont()</pre>
-<div class="block">Get the Font used to render the text. This will default to the Font
-  of the component unless the Font has been overridden by using the
-  setFont() method.</div>
+<div class="block">Get the Font used to render the text. This will default to the Font of the component unless the
+ Font has been overridden by using the setFont() method.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the Font used to render the text</dd>
@@ -425,9 +424,9 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <li class="blockList">
 <h4>getForeground</h4>
 <pre>public&nbsp;java.awt.Color&nbsp;getForeground()</pre>
-<div class="block">Get the foreground Color used to render the text. This will default to
-  the foreground Color of the component unless the foreground Color has
-  been overridden by using the setForeground() method.</div>
+<div class="block">Get the foreground Color used to render the text. This will default to the foreground Color of
+ the component unless the foreground Color has been overridden by using the setForeground()
+ method.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the Color used to render the text</dd>
@@ -469,9 +468,8 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <li class="blockList">
 <h4>setPadding</h4>
 <pre>public&nbsp;void&nbsp;setPadding(int&nbsp;padding)</pre>
-<div class="block">By default, the size of the Icon is based on the size of the rendered
-  text. You can specify some padding to be added to the start and end
-  of the text when it is rendered.</div>
+<div class="block">By default, the size of the Icon is based on the size of the rendered text. You can specify
+ some padding to be added to the start and end of the text when it is rendered.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>padding</code> - the padding amount in pixels</dd>

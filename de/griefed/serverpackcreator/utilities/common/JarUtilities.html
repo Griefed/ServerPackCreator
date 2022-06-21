@@ -47,11 +47,11 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidLinkException.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" target="_top">Frames</a></li>
+<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/common/JarUtilities.html" target="_top">Frames</a></li>
 <li><a href="JarUtilities.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
@@ -90,7 +90,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">de.griefed.serverpackcreator.utilities.commonutilities</div>
+<div class="subTitle">de.griefed.serverpackcreator.utilities.common</div>
 <h2 title="Class JarUtilities" class="title">Class JarUtilities</h2>
 </div>
 <div class="contentContainer">
@@ -98,7 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li>de.griefed.serverpackcreator.utilities.commonutilities.JarUtilities</li>
+<li>de.griefed.serverpackcreator.utilities.common.JarUtilities</li>
 </ul>
 </li>
 </ul>
@@ -128,7 +128,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#JarUtilities--">JarUtilities</a></span>()</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#JarUtilities--">JarUtilities</a></span>()</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -147,7 +147,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.io.File-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
                boolean&nbsp;replace,
                java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
@@ -155,14 +155,14 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFileFromJar-java.io.File-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.io.File-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
                java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
                  java.lang.String&nbsp;directoryToCopy,
                  java.lang.String&nbsp;destinationDirectory,
                  java.lang.String&nbsp;jarDirectoryPrefix,
@@ -172,14 +172,15 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>org.springframework.boot.system.ApplicationHome</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</code>
 <div class="block">Retrieve the ApplicationHome for a given class.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#systemInformation-org.springframework.boot.system.ApplicationHome-">systemInformation</a></span>(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</code>
-<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>, stored in a <code>HashMap</code>.<br>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#systemInformation-org.springframework.boot.system.ApplicationHome-">systemInformation</a></span>(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</code>
+<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
+ stored in a <code>HashMap</code>.<br>
  Available key-value-pairs:<br>
  jarPath - The path to the JAR-file.<br>
  jarName - The name of the JAR-file.<br>
@@ -237,11 +238,11 @@ extends java.lang.Object</pre>
 <pre>public&nbsp;void&nbsp;copyFileFromJar(java.io.File&nbsp;fileToCopy,
                             boolean&nbsp;replace,
                             java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</pre>
-<div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as specified in the parameter.
- <br>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as
+ specified in the parameter. <br>
  Example:<br>
- <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from inside the JAR-file to be copied
- to the outside of the JAR-file as <code>log4j2.xml</code></div>
+ <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
+ inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileToCopy</code> - File. The source-file in the JAR you wish to copy outside the JAR.</dd>
@@ -258,11 +259,11 @@ extends java.lang.Object</pre>
 <h4>copyFileFromJar</h4>
 <pre>public&nbsp;void&nbsp;copyFileFromJar(java.io.File&nbsp;fileToCopy,
                             java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</pre>
-<div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as specified in the parameter.
- <br>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as
+ specified in the parameter. <br>
  Example:<br>
- <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from inside the JAR-file to be copied
- to the outside of the JAR-file as <code>log4j2.xml</code></div>
+ <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
+ inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileToCopy</code> - File. The source-file in the JAR you wish to copy outside the JAR.</dd>
@@ -293,7 +294,8 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>systemInformation</h4>
 <pre>public&nbsp;java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;systemInformation(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</pre>
-<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>, stored in a <code>HashMap</code>.<br>
+<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
+ stored in a <code>HashMap</code>.<br>
  Available key-value-pairs:<br>
  jarPath - The path to the JAR-file.<br>
  jarName - The name of the JAR-file.<br>
@@ -303,9 +305,11 @@ extends java.lang.Object</pre>
  osVersion - Version of the operating system.<br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>applicationHome</code> - Instance of <code>ApplicationHome</code> from which to gather information about the JAR-file and system.</dd>
+<dd><code>applicationHome</code> - Instance of <code>ApplicationHome</code> from which to gather information
+     about the JAR-file and system.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>HashMap String-String. A hashmap containing key-value-pairs with information about the JAR-file and system.</dd>
+<dd>HashMap String-String. A hashmap containing key-value-pairs with information about the
+     JAR-file and system.</dd>
 </dl>
 </li>
 </ul>
@@ -321,25 +325,31 @@ extends java.lang.Object</pre>
                               java.lang.String&nbsp;jarDirectoryPrefix,
                               java.lang.String&nbsp;fileEnding)
                        throws java.io.IOException</pre>
-<div class="block">Copy a folder from inside a JAR-file to the host filesystem. The specified folder will be copied, along with all
- resources inside it, recursively, to the specified destination.<br></div>
+<div class="block">Copy a folder from inside a JAR-file to the host filesystem. The specified folder will be
+ copied, along with all resources inside it, recursively, to the specified destination.<br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>classToRetrieveHomeFor</code> - String. Path to either the JAR-file from which to copy a folder from, or to the class when running
-                in a dev-environment. This parameter decides whether <a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(Class,String, String, String)</code></a> or
-                <a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html#copyFolderFromJar-java.util.jar.JarFile-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(JarFile, String, String, String, String)</code></a> is called.<br>
-                Example for JAR-file: <code>/home/griefed/serverpackcreator/serverpackcreator.jar</code><br>
-                Example for dev-environment: <code>G:/GitLab/ServerPackCreator/build/classes/java/main</code><br>
-                See <a href="../../../../../de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-"><code>Main.main(String[])</code></a> source code for an example on how this is acquired automatically.</dd>
+<dd><code>classToRetrieveHomeFor</code> - String. Path to either the JAR-file from which to copy a folder
+     from, or to the class when running in a dev-environment. This parameter decides whether
+     <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(Class, String, String, String)</code></a> or <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.util.jar.JarFile-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(JarFile, String, String, String, String)</code></a> is called.<br>
+     Example for JAR-file: <code>/home/griefed/serverpackcreator/serverpackcreator.jar</code>
+     <br>
+     Example for dev-environment: <code>G:/GitLab/ServerPackCreator/build/classes/java/main
+     </code><br>
+     See <a href="../../../../../de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-"><code>Main.main(String[])</code></a> source code for an example on how this is acquired
+     automatically.</dd>
 <dd><code>directoryToCopy</code> - String. Path to the directory inside the JAR-file you want to copy.</dd>
-<dd><code>destinationDirectory</code> - String. Path to the destination directory you want to copy source to.</dd>
-<dd><code>jarDirectoryPrefix</code> - String. A prefix to remove when checking for existence of source inside the JAR-file. For example,
-                           the ServerPackCreator files inside it's JAR-File are located in <code>BOOT-INF/classes</code> due
-                           to SpringBoot. In order to correctly scan for source, we need to remove that prefix, so we receive
-                           a path that looks like a regular path inside a JAR-file.</dd>
+<dd><code>destinationDirectory</code> - String. Path to the destination directory you want to copy source
+     to.</dd>
+<dd><code>jarDirectoryPrefix</code> - String. A prefix to remove when checking for existence of source
+     inside the JAR-file. For example, the ServerPackCreator files inside it's JAR-File are
+     located in <code>BOOT-INF/classes</code> due to SpringBoot. In order to correctly scan for
+     source, we need to remove that prefix, so we receive a path that looks like a regular path
+     inside a JAR-file.</dd>
 <dd><code>fileEnding</code> - String. The file-ending to filter for.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code> - Exception thrown if a file can not be accessed, found or otherwise worked with.</dd>
+<dd><code>java.io.IOException</code> - Exception thrown if a file can not be accessed, found or otherwise worked
+     with.</dd>
 </dl>
 </li>
 </ul>
@@ -370,11 +380,11 @@ extends java.lang.Object</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidLinkException.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/commonutilities/JarUtilities.html" target="_top">Frames</a></li>
+<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/common/JarUtilities.html" target="_top">Frames</a></li>
 <li><a href="JarUtilities.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">

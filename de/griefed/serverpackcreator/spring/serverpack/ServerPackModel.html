@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -115,10 +115,12 @@ var activeTableTab = "activeTableTab";
 <pre>@Entity
 public class <span class="typeNameLabel">ServerPackModel</span>
 extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></pre>
-<div class="block">Class containing all fields and therefore all information gathered from a submitted CurseForge project and fileID, or
- modpack export. By extending <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> we inherit all basic fields required for the generation of a
- server pack and can add only those we require in the REST API portion of ServerPackCreator.<br>
- We mark this class with <code>Entity</code> because we also use this class for storing information in our database.</div>
+<div class="block">Class containing all fields and therefore all information gathered from a submitted CurseForge
+ project and fileID, or modpack export. By extending <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> we inherit all
+ basic fields required for the generation of a server pack and can add only those we require in
+ the REST API portion of ServerPackCreator.<br>
+ We mark this class with <code>Entity</code> because we also use this class for storing information in
+ our database.</div>
 </li>
 </ul>
 </div>
@@ -142,15 +144,7 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#ServerPackModel-int-int-">ServerPackModel</a></span>(int&nbsp;projectID,
-               int&nbsp;fileID)</code>
-<div class="block">Constructor for our ServerPackModel using a project and file ID from a CurseForge project.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#ServerPackModel-int-int-int-java.lang.String-java.lang.String-double-int-int-java.lang.String-java.sql.Timestamp-java.sql.Timestamp-">ServerPackModel</a></span>(int&nbsp;id,
-               int&nbsp;projectID,
-               int&nbsp;fileID,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#ServerPackModel-int-java.lang.String-java.lang.String-double-int-int-java.lang.String-java.sql.Timestamp-java.sql.Timestamp-">ServerPackModel</a></span>(int&nbsp;id,
                java.lang.String&nbsp;fileName,
                java.lang.String&nbsp;displayName,
                double&nbsp;size,
@@ -159,7 +153,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
                java.lang.String&nbsp;status,
                java.sql.Timestamp&nbsp;dateCreated,
                java.sql.Timestamp&nbsp;lastModified)</code>
-<div class="block">Constructor for our ServerPackModel, setting id, projectID, fileID, fileName, displayName, size, downloads, confirmedWorking, status, dateCreated, lastModified manually.</div>
+<div class="block">Constructor for our ServerPackModel, setting id, projectID, fileID, fileName, displayName,
+ size, downloads, confirmedWorking, status, dateCreated, lastModified manually.</div>
 </td>
 </tr>
 </table>
@@ -202,138 +197,114 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getFileID--">getFileID</a></span>()</code>
-<div class="block">Getter for the file id of the server pack.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getFileName--">getFileName</a></span>()</code>
 <div class="block">Getter for the file display name of the project file from which the server pack was generated.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getId--">getId</a></span>()</code>
 <div class="block">Getter for the database id of a server pack.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.sql.Timestamp</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getLastModified--">getLastModified</a></span>()</code>
 <div class="block">Getter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getPath--">getPath</a></span>()</code>
 <div class="block">Getter for the path to the generated server pack.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
-<td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getProjectID--">getProjectID</a></span>()</code>
-<div class="block">Getter for the project id of the server pack.</div>
-</td>
-</tr>
-<tr id="i10" class="altColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getProjectName--">getProjectName</a></span>()</code>
 <div class="block">Getter for the name of the project of the server pack.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>double</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getSize--">getSize</a></span>()</code>
 <div class="block">Getter for the size of the generated server pack in MB.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getStatus--">getStatus</a></span>()</code>
 <div class="block">Getter for the status of the server pack.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#repositoryToString--">repositoryToString</a></span>()</code>
 <div class="block">String concatenation of all important values of our server pack entry.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setConfirmedWorking-int-">setConfirmedWorking</a></span>(int&nbsp;confirmedWorking)</code>
 <div class="block">Setter for the amount of votes indicating whether this server pack works.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setDateCreated-java.sql.Timestamp-">setDateCreated</a></span>(java.sql.Timestamp&nbsp;dateCreated)</code>
 <div class="block">Setter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setDownloads-int-">setDownloads</a></span>(int&nbsp;downloads)</code>
 <div class="block">Setter for the amount of downloads this server pack has received.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setFileDiskName-java.lang.String-">setFileDiskName</a></span>(java.lang.String&nbsp;fileDiskName)</code>
 <div class="block">Setter for the file disk name of the project file from which the server pack was generated.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setFileID-int-">setFileID</a></span>(int&nbsp;fileID)</code>
-<div class="block">Setter for the file id of the server pack.</div>
-</td>
-</tr>
-<tr id="i19" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setFileName-java.lang.String-">setFileName</a></span>(java.lang.String&nbsp;fileName)</code>
 <div class="block">Setter for the file display name of the project file from which the server pack was generated.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setId-int-">setId</a></span>(int&nbsp;id)</code>
 <div class="block">Setter for the database id of a server pack.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setLastModified-java.sql.Timestamp-">setLastModified</a></span>(java.sql.Timestamp&nbsp;lastModified)</code>
 <div class="block">Setter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setPath-java.lang.String-">setPath</a></span>(java.lang.String&nbsp;path)</code>
 <div class="block">Setter for the path to the generated server pack.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setProjectID-int-">setProjectID</a></span>(int&nbsp;projectID)</code>
-<div class="block">Setter for the project id of the server pack.</div>
-</td>
-</tr>
-<tr id="i24" class="altColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setProjectName-java.lang.String-">setProjectName</a></span>(java.lang.String&nbsp;projectName)</code>
 <div class="block">Setter for the project name of the project of the server pack.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setSize-double-">setSize</a></span>(double&nbsp;size)</code>
 <div class="block">Setter for the size of the generated server pack in MB.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setStatus-java.lang.String-">setStatus</a></span>(java.lang.String&nbsp;status)</code>
 <div class="block">Setter for the status of a server pack.</div>
@@ -378,31 +349,13 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <div class="block">Constructor for our ServerPackModel.</div>
 </li>
 </ul>
-<a name="ServerPackModel-int-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>ServerPackModel</h4>
-<pre>public&nbsp;ServerPackModel(int&nbsp;projectID,
-                       int&nbsp;fileID)</pre>
-<div class="block">Constructor for our ServerPackModel using a project and file ID from a CurseForge project.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - Integer. The project ID of the CurseForge project.</dd>
-<dd><code>fileID</code> - Integer. The file ID of the CurseForge project file.</dd>
-</dl>
-</li>
-</ul>
-<a name="ServerPackModel-int-int-int-java.lang.String-java.lang.String-double-int-int-java.lang.String-java.sql.Timestamp-java.sql.Timestamp-">
+<a name="ServerPackModel-int-java.lang.String-java.lang.String-double-int-int-java.lang.String-java.sql.Timestamp-java.sql.Timestamp-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ServerPackModel</h4>
 <pre>public&nbsp;ServerPackModel(int&nbsp;id,
-                       int&nbsp;projectID,
-                       int&nbsp;fileID,
                        java.lang.String&nbsp;fileName,
                        java.lang.String&nbsp;displayName,
                        double&nbsp;size,
@@ -411,20 +364,21 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
                        java.lang.String&nbsp;status,
                        java.sql.Timestamp&nbsp;dateCreated,
                        java.sql.Timestamp&nbsp;lastModified)</pre>
-<div class="block">Constructor for our ServerPackModel, setting id, projectID, fileID, fileName, displayName, size, downloads, confirmedWorking, status, dateCreated, lastModified manually.</div>
+<div class="block">Constructor for our ServerPackModel, setting id, projectID, fileID, fileName, displayName,
+ size, downloads, confirmedWorking, status, dateCreated, lastModified manually.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>id</code> - The ID of the server pack in our database.</dd>
-<dd><code>projectID</code> - The project ID of the CurseForge project.</dd>
-<dd><code>fileID</code> - The file ID of the CurseForge project file.</dd>
 <dd><code>fileName</code> - The disk name of the CurseForge project file.</dd>
 <dd><code>displayName</code> - The display name of the CurseForge project file.</dd>
 <dd><code>size</code> - The size of the generated server pack, in MB.</dd>
 <dd><code>downloads</code> - The amount of times this server pack was downloaded.</dd>
 <dd><code>confirmedWorking</code> - The amount of votes indicating whether this server pack works.</dd>
-<dd><code>status</code> - The status of this server pack. Either <code>Queued</code>, <code>Generating</code>, <code>Available</code>.</dd>
+<dd><code>status</code> - The status of this server pack. Either <code>Queued</code>, <code>Generating
+     </code>, <code>Available</code>.</dd>
 <dd><code>dateCreated</code> - The date and time at which this server pack was requested for generation.</dd>
-<dd><code>lastModified</code> - The date and time this server pack was last modified. Be it either due to regeneration or something else.</dd>
+<dd><code>lastModified</code> - The date and time this server pack was last modified. Be it either due to
+     regeneration or something else.</dd>
 </dl>
 </li>
 </ul>
@@ -461,70 +415,6 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>id</code> - Integer. The database id of the server pack.</dd>
-</dl>
-</li>
-</ul>
-<a name="getProjectID--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getProjectID</h4>
-<pre>public&nbsp;int&nbsp;getProjectID()</pre>
-<div class="block">Getter for the project id of the server pack.</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#getProjectID--">getProjectID</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Integer. Returns the project id with which the server pack was generated.</dd>
-</dl>
-</li>
-</ul>
-<a name="setProjectID-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setProjectID</h4>
-<pre>public&nbsp;void&nbsp;setProjectID(int&nbsp;projectID)</pre>
-<div class="block">Setter for the project id of the server pack.</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#setProjectID-int-">setProjectID</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - Integer. The project id with which the server pack was generated.</dd>
-</dl>
-</li>
-</ul>
-<a name="getFileID--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getFileID</h4>
-<pre>public&nbsp;int&nbsp;getFileID()</pre>
-<div class="block">Getter for the file id of the server pack.</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#getFileID--">getFileID</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Integer. Returns the file id with which the server pack was generated.</dd>
-</dl>
-</li>
-</ul>
-<a name="setFileID-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setFileID</h4>
-<pre>public&nbsp;void&nbsp;setFileID(int&nbsp;fileID)</pre>
-<div class="block">Setter for the file id of the server pack.</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#setFileID-int-">setFileID</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileID</code> - Integer. The file id with which the server pack was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -572,7 +462,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#getFileName--">getFileName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns the file display name of the project file from which the server pack was generated.</dd>
+<dd>String. Returns the file display name of the project file from which the server pack
+     was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -588,7 +479,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#setFileName-java.lang.String-">setFileName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileName</code> - String. The file display name of the project file from which the server pack was generated.</dd>
+<dd><code>fileName</code> - String. The file display name of the project file from which the server pack
+     was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -604,7 +496,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#getFileDiskName--">getFileDiskName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. The file disk name of the project file from which the server pack was generated.</dd>
+<dd>String. The file disk name of the project file from which the server pack was
+     generated.</dd>
 </dl>
 </li>
 </ul>
@@ -620,7 +513,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#setFileDiskName-java.lang.String-">setFileDiskName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileDiskName</code> - String. The file disk name of the project file from which the server pack was generated.</dd>
+<dd><code>fileDiskName</code> - String. The file disk name of the project file from which the server pack
+     was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -687,8 +581,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>getConfirmedWorking</h4>
 <pre>public&nbsp;int&nbsp;getConfirmedWorking()</pre>
-<div class="block">Getter for the amount of votes indicating whether this server pack works. Positive values indicate a working server pack.
- Negative values indicate the server pack is not working.</div>
+<div class="block">Getter for the amount of votes indicating whether this server pack works. Positive values
+ indicate a working server pack. Negative values indicate the server pack is not working.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Integer. Returns the amount of votes indicating whether this server pack works.</dd>
@@ -702,8 +596,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>setConfirmedWorking</h4>
 <pre>public&nbsp;void&nbsp;setConfirmedWorking(int&nbsp;confirmedWorking)</pre>
-<div class="block">Setter for the amount of votes indicating whether this server pack works. Positive values indicate a working server pack.
- Negative values indicate the server pack is not working.</div>
+<div class="block">Setter for the amount of votes indicating whether this server pack works. Positive values
+ indicate a working server pack. Negative values indicate the server pack is not working.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>confirmedWorking</code> - Integer. The amount of votes indicating whether this server pack works.</dd>
@@ -717,7 +611,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>getStatus</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getStatus()</pre>
-<div class="block">Getter for the status of the server pack. Either <code>Queued</code>, <code>Generating</code>, <code>Available</code>.</div>
+<div class="block">Getter for the status of the server pack. Either <code>Queued</code>, <code>Generating</code>,
+ <code>Available</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns the status of a server pack.</dd>
@@ -731,7 +626,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>setStatus</h4>
 <pre>public&nbsp;void&nbsp;setStatus(java.lang.String&nbsp;status)</pre>
-<div class="block">Setter for the status of a server pack. Either <code>Queued</code>, <code>Generating</code>, <code>Available</code>.</div>
+<div class="block">Setter for the status of a server pack. Either <code>Queued</code>, <code>Generating</code>,
+ <code>Available</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>status</code> - String. The status of a server pack.</dd>
@@ -776,7 +672,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <div class="block">Getter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Timestamp</code>. Returns the date and time at which this server pack entry was created as a <code>Timestamp</code>.</dd>
+<dd><code>Timestamp</code>. Returns the date and time at which this server pack entry was
+     created as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -790,7 +687,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <div class="block">Setter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>dateCreated</code> - <code>Timestamp</code>. The date and time at which this server pack was created as a <code>Timestamp</code>.</dd>
+<dd><code>dateCreated</code> - <code>Timestamp</code>. The date and time at which this server pack was created
+     as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -804,7 +702,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <div class="block">Getter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Timestamp</code>. Returns the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</dd>
+<dd><code>Timestamp</code>. Returns the date and time at which this server pack entry was last
+     modified as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -818,7 +717,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <div class="block">Setter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lastModified</code> - <code>Timestamp</code>. The date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</dd>
+<dd><code>lastModified</code> - <code>Timestamp</code>. The date and time at which this server pack entry was
+     last modified as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -832,7 +732,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <div class="block">String concatenation of all important values of our server pack entry.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns all important information of a server pack entry as a concatenated string.</dd>
+<dd>String. Returns all important information of a server pack entry as a concatenated
+     string.</dd>
 </dl>
 </li>
 </ul>

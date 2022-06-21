@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -148,28 +148,6 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html#curseResponse-int-int-java.lang.String-int-java.lang.String-java.lang.String-">curseResponse</a></span>(int&nbsp;projectID,
-             int&nbsp;status,
-             java.lang.String&nbsp;message,
-             int&nbsp;timeout,
-             java.lang.String&nbsp;icon,
-             java.lang.String&nbsp;colour)</code>
-<div class="block">Construct a curseResponse with values acquired from the CurseForge API.</div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html#curseResponse-java.lang.String-int-java.lang.String-int-java.lang.String-java.lang.String-">curseResponse</a></span>(java.lang.String&nbsp;projectName,
-             int&nbsp;status,
-             java.lang.String&nbsp;message,
-             int&nbsp;timeout,
-             java.lang.String&nbsp;icon,
-             java.lang.String&nbsp;colour)</code>
-<div class="block">Construct a curseResponse with all values manually set.</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html#zipResponse-java.util.List-int-java.lang.String-java.lang.String-java.lang.String-boolean-">zipResponse</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;messages,
            int&nbsp;timeout,
            java.lang.String&nbsp;icon,
@@ -179,7 +157,7 @@ extends java.lang.Object</pre>
 <div class="block">Construct a zipResponse for replying to a file-upload and display in a quasar notification.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html#zipResponse-java.lang.String-int-java.lang.String-java.lang.String-java.lang.String-boolean-">zipResponse</a></span>(java.lang.String&nbsp;message,
            int&nbsp;timeout,
@@ -229,58 +207,6 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="curseResponse-java.lang.String-int-java.lang.String-int-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>curseResponse</h4>
-<pre>public&nbsp;java.lang.String&nbsp;curseResponse(java.lang.String&nbsp;projectName,
-                                      int&nbsp;status,
-                                      java.lang.String&nbsp;message,
-                                      int&nbsp;timeout,
-                                      java.lang.String&nbsp;icon,
-                                      java.lang.String&nbsp;colour)</pre>
-<div class="block">Construct a curseResponse with all values manually set.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectName</code> - The name of the CurseForge project.</dd>
-<dd><code>status</code> - The statuscode. Status 0: Already exists. Status 1: OK, generating. Status 2: Error occurred.</dd>
-<dd><code>message</code> - The message the requester should care about.</dd>
-<dd><code>timeout</code> - Timeout in milliseconds after which the notification in our Quasar frontend should disappear.</dd>
-<dd><code>icon</code> - The icon to be displayed in the notification.</dd>
-<dd><code>colour</code> - The colour of the notification.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns the aforementioned parameters wrapped in JSON.</dd>
-</dl>
-</li>
-</ul>
-<a name="curseResponse-int-int-java.lang.String-int-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>curseResponse</h4>
-<pre>public&nbsp;java.lang.String&nbsp;curseResponse(int&nbsp;projectID,
-                                      int&nbsp;status,
-                                      java.lang.String&nbsp;message,
-                                      int&nbsp;timeout,
-                                      java.lang.String&nbsp;icon,
-                                      java.lang.String&nbsp;colour)</pre>
-<div class="block">Construct a curseResponse with values acquired from the CurseForge API.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - The id with which to gather the name of the project.</dd>
-<dd><code>status</code> - The statuscode. Status 0: Already exists. Status 1: OK, generating. Status 2: Error occurred.</dd>
-<dd><code>message</code> - The message the requester should care about.</dd>
-<dd><code>timeout</code> - Timeout in milliseconds after which the notification in our Quasar frontend should disappear.</dd>
-<dd><code>icon</code> - The icon to be displayed in the notification.</dd>
-<dd><code>colour</code> - The colour of the notification.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns the aforementioned parameters wrapped in JSON.</dd>
-</dl>
-</li>
-</ul>
 <a name="zipResponse-java.util.List-int-java.lang.String-java.lang.String-java.lang.String-boolean-">
 <!--   -->
 </a>
@@ -297,7 +223,8 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>messages</code> - <code>List</code> A list of messages.</dd>
-<dd><code>timeout</code> - <code>Integer</code> The timeout in ms until the message gets automatically discarded.</dd>
+<dd><code>timeout</code> - <code>Integer</code> The timeout in ms until the message gets automatically
+     discarded.</dd>
 <dd><code>icon</code> - <code>String</code> The icon to be displayed in the message.</dd>
 <dd><code>colour</code> - <code>String</code> The colour of the message.</dd>
 <dd><code>file</code> - <code>String</code> The file name, if available.</dd>
@@ -323,7 +250,8 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>message</code> - <code>String</code> The message itself.</dd>
-<dd><code>timeout</code> - <code>Integer</code> The timeout in ms until the message gets automatically discarded.</dd>
+<dd><code>timeout</code> - <code>Integer</code> The timeout in ms until the message gets automatically
+     discarded.</dd>
 <dd><code>icon</code> - <code>String</code> The icon to be displayed in the message.</dd>
 <dd><code>colour</code> - <code>String</code> The colour of the message.</dd>
 <dd><code>file</code> - <code>String</code> The file name, if available.</dd>

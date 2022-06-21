@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/ServerPackCreator.html" target="_top">Frames</a></li>
@@ -72,7 +72,7 @@ var activeTableTab = "activeTableTab";
 <div>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
-<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
@@ -109,14 +109,40 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">ServerPackCreator</span>
 extends java.lang.Object</pre>
-<div class="block">Launch-class of ServerPackCreator which determines the mode to run in, takes care of initialization and dependency
- injection and, finally, running ServerPackCreator.</div>
+<div class="block">Launch-class of ServerPackCreator which determines the mode to run in, takes care of
+ initialization and dependency injection and, finally, running ServerPackCreator.</div>
 </li>
 </ul>
 </div>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="nested.class.summary">
+<!--   -->
+</a>
+<h3>Nested Class Summary</h3>
+<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Nested Class Summary table, listing nested classes, and an explanation">
+<caption><span>Nested Classes</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Class and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser</a></span></code>
+<div class="block">Check the passed commandline-arguments with which ServerPackCreator was started and return the
+ mode in which to run.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.WebService.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.WebService</a></span></code>&nbsp;</td>
+</tr>
+</table>
+</li>
+</ul>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.summary">
@@ -130,7 +156,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#ServerPackCreator-java.lang.String:A-">ServerPackCreator</a></span>(java.lang.String[]&nbsp;args)</code>
-<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>CommandlineParser.Mode</code></a> to run in.</div>
+<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a> to run in.</div>
 </td>
 </tr>
 </table>
@@ -169,13 +195,13 @@ extends java.lang.Object</pre>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run--">run</a></span>()</code>
-<div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>CommandlineParser</code></a>.</div>
+<div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser</code></a>.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run-de.griefed.serverpackcreator.CommandlineParser.Mode-">run</a></span>(<a href="../../../de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">CommandlineParser.Mode</a>&nbsp;modeToRunIn)</code>
-<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>CommandlineParser.Mode</code></a>.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run-de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode-">run</a></span>(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser.Mode</a>&nbsp;modeToRunIn)</code>
+<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a>.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
@@ -213,11 +239,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>ServerPackCreator</h4>
 <pre>public&nbsp;ServerPackCreator(java.lang.String[]&nbsp;args)</pre>
-<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>CommandlineParser.Mode</code></a> to run in.</div>
+<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a> to run in.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode ServerPackCreator
- will enter and which locale is used.</dd>
+<dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode
+     ServerPackCreator will enter and which locale is used.</dd>
 </dl>
 </li>
 </ul>
@@ -237,25 +263,25 @@ extends java.lang.Object</pre>
 <h4>run</h4>
 <pre>public&nbsp;void&nbsp;run()
          throws java.io.IOException</pre>
-<div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>CommandlineParser</code></a>.</div>
+<div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser</code></a>.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the run fails.</dd>
 </dl>
 </li>
 </ul>
-<a name="run-de.griefed.serverpackcreator.CommandlineParser.Mode-">
+<a name="run-de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>run</h4>
-<pre>public&nbsp;void&nbsp;run(<a href="../../../de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">CommandlineParser.Mode</a>&nbsp;modeToRunIn)
+<pre>public&nbsp;void&nbsp;run(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser.Mode</a>&nbsp;modeToRunIn)
          throws java.io.IOException</pre>
-<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>CommandlineParser.Mode</code></a>.</div>
+<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modeToRunIn</code> - <a href="../../../de/griefed/serverpackcreator/CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>CommandlineParser.Mode</code></a> to run in.</dd>
+<dd><code>modeToRunIn</code> - <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a> to run in.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the run fails.</dd>
 </dl>
@@ -268,11 +294,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkForConfig</h4>
 <pre>public&nbsp;boolean&nbsp;checkForConfig()</pre>
-<div class="block">Check for old config file, if found rename to new name. If neither old nor new config file can be found, a new
- config file is generated.</div>
+<div class="block">Check for old config file, if found rename to new name. If neither old nor new config file can
+ be found, a new config file is generated.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so we can inform the user about said newly generated file.</dd>
+<dd>Boolean. Returns true if the file was generated, so we can inform the user about said
+     newly generated file.</dd>
 </dl>
 </li>
 </ul>
@@ -286,10 +313,11 @@ extends java.lang.Object</pre>
 <div class="block">Checks for existence of defaults files. If it is not found, it is generated.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileToCheckFor</code> - The file which is to be checked for whether it exists and if it doesn't, should be created.</dd>
+<dd><code>fileToCheckFor</code> - The file which is to be checked for whether it exists and if it doesn't,
+     should be created.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so we can inform the user about
- said newly generated file.</dd>
+<dd>Boolean. Returns true if the file was generated, so we can inform the user about said
+     newly generated file.</dd>
 </dl>
 </li>
 </ul>
@@ -341,7 +369,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/ServerPackCreator.html" target="_top">Frames</a></li>
@@ -365,7 +393,7 @@ extends java.lang.Object</pre>
 <div>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
-<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>

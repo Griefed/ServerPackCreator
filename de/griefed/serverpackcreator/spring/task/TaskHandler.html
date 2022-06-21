@@ -110,12 +110,15 @@ var activeTableTab = "activeTableTab";
 <pre>@Service
 public class <span class="typeNameLabel">TaskHandler</span>
 extends java.lang.Object</pre>
-<div class="block"><a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
- Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
- would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
- the necessary changes to fully implement it in ServerPackCreator.<br>
- TaskHandler class which determines what to do with all message in our JMS, depending on their task type and content of
- the message.</div>
+<div class="block"><a
+ href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
+ to implement a task queue using Apache Artemis and Spring Boot</a><br>
+ Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
+ how to implement a JMS. Without it this implementation of Artemis would have either taken way
+ longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
+ necessary changes to fully implement it in ServerPackCreator.<br>
+ TaskHandler class which determines what to do with all message in our JMS, depending on their
+ task type and content of the message.</div>
 </li>
 </ul>
 </div>
@@ -134,11 +137,9 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskHandler.html#TaskHandler-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.spring.serverpack.ServerPackService-de.griefed.serverpackcreator.spring.task.TaskSubmitter-de.griefed.serverpackcreator.ApplicationProperties-">TaskHandler</a></span>(<a href="../../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskHandler.html#TaskHandler-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.spring.serverpack.ServerPackService-">TaskHandler</a></span>(<a href="../../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
            <a href="../../../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;injectedServerPackHandler,
-           <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackService</a>&nbsp;injectedServerPackService,
-           <a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskSubmitter.html" title="class in de.griefed.serverpackcreator.spring.task">TaskSubmitter</a>&nbsp;injectedTaskSubmitter,
-           <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+           <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackService</a>&nbsp;injectedServerPackService)</code>
 <div class="block">Constructor responsible for our DI.</div>
 </td>
 </tr>
@@ -160,17 +161,20 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskHandler.html#handleGeneration-de.griefed.serverpackcreator.spring.task.Task-">handleGeneration</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/task/Task.html" title="class in de.griefed.serverpackcreator.spring.task">Task</a>&nbsp;task)</code>
-<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector <code>type = 'generation'</code>, so only task
- that match the <code>generation</code>-type are worked with in this method.<br>
+<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector
+ <code>type = 'generation'</code>, so only task that match the <code>generation</code>-type are
+ worked with in this method.<br>
  If a task is received that matches this type, the generation of a new server pack is started.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskHandler.html#handleScan-de.griefed.serverpackcreator.spring.task.Task-">handleScan</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/task/Task.html" title="class in de.griefed.serverpackcreator.spring.task">Task</a>&nbsp;task)</code>
-<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector <code>type = 'scan'</code>, so only task
- that match the <code>scan</code>-type are worked with in this method.<br>
- If a task is received that matches this type, the CurseForge project and file ID of said task is checked for validity.</div>
+<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector
+ <code>type = 'scan'</code>, so only task that match the <code>scan</code>-type are worked with
+ in this method.<br>
+ If a task is received that matches this type, the CurseForge project and file ID of said task
+ is checked for validity.</div>
 </td>
 </tr>
 </table>
@@ -195,7 +199,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="TaskHandler-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.spring.serverpack.ServerPackService-de.griefed.serverpackcreator.spring.task.TaskSubmitter-de.griefed.serverpackcreator.ApplicationProperties-">
+<a name="TaskHandler-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.spring.serverpack.ServerPackService-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -204,17 +208,13 @@ extends java.lang.Object</pre>
 <pre>@Autowired
 public&nbsp;TaskHandler(<a href="../../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
                               <a href="../../../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;injectedServerPackHandler,
-                              <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackService</a>&nbsp;injectedServerPackService,
-                              <a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskSubmitter.html" title="class in de.griefed.serverpackcreator.spring.task">TaskSubmitter</a>&nbsp;injectedTaskSubmitter,
-                              <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+                              <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackService</a>&nbsp;injectedServerPackService)</pre>
 <div class="block">Constructor responsible for our DI.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedConfigurationHandler</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationHandler</code></a>.</dd>
 <dd><code>injectedServerPackHandler</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator"><code>ServerPackHandler</code></a>.</dd>
 <dd><code>injectedServerPackService</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackService</code></a>.</dd>
-<dd><code>injectedTaskSubmitter</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskSubmitter.html" title="class in de.griefed.serverpackcreator.spring.task"><code>TaskSubmitter</code></a>.</dd>
-<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -235,13 +235,13 @@ public&nbsp;TaskHandler(<a href="../../../../../de/griefed/serverpackcreator/Con
 <pre>@JmsListener(destination="tasks.background",
              selector="type = \'scan\'")
 public&nbsp;void&nbsp;handleScan(<a href="../../../../../de/griefed/serverpackcreator/spring/task/Task.html" title="class in de.griefed.serverpackcreator.spring.task">Task</a>&nbsp;task)</pre>
-<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector <code>type = 'scan'</code>, so only task
- that match the <code>scan</code>-type are worked with in this method.<br>
- If a task is received that matches this type, the CurseForge project and file ID of said task is checked for validity.
- If the combination is found valid, either a new entry is saved to the database or an already existing one updated,
- if the existing one has the status <code>Generating</code> and <code>lastModified</code> is bigger than 30 minutes.
- In either case, a <a href="../../../../../de/griefed/serverpackcreator/spring/curseforge/GenerateCurseProject.html" title="class in de.griefed.serverpackcreator.spring.curseforge"><code>GenerateCurseProject</code></a>-task is sent which will then generate a server pack from the CurseForge project
- and file ID combination.</div>
+<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector
+ <code>type = 'scan'</code>, so only task that match the <code>scan</code>-type are worked with
+ in this method.<br>
+ If a task is received that matches this type, the CurseForge project and file ID of said task
+ is checked for validity. If the combination is found valid, either a new entry is saved to the
+ database or an already existing one updated, if the existing one has the status <code>
+ Generating</code> and <code>lastModified</code> is bigger than 30 minutes.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>task</code> - The task for which to check the CurseForge project and file ID, as well as status.</dd>
@@ -257,12 +257,14 @@ public&nbsp;void&nbsp;handleScan(<a href="../../../../../de/griefed/serverpackcr
 <pre>@JmsListener(destination="tasks.background",
              selector="type = \'generation\'")
 public&nbsp;void&nbsp;handleGeneration(<a href="../../../../../de/griefed/serverpackcreator/spring/task/Task.html" title="class in de.griefed.serverpackcreator.spring.task">Task</a>&nbsp;task)</pre>
-<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector <code>type = 'generation'</code>, so only task
- that match the <code>generation</code>-type are worked with in this method.<br>
+<div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector
+ <code>type = 'generation'</code>, so only task that match the <code>generation</code>-type are
+ worked with in this method.<br>
  If a task is received that matches this type, the generation of a new server pack is started.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>task</code> - The task with which to generate a server pack from a CurseForge project and file ID.</dd>
+<dd><code>task</code> - The task with which to generate a server pack from a CurseForge project and file
+     ID.</dd>
 </dl>
 </li>
 </ul>

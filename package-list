@@ -1,11 +1,9 @@
 de.griefed.serverpackcreator
-de.griefed.serverpackcreator.curseforge
 de.griefed.serverpackcreator.i18n
 de.griefed.serverpackcreator.plugins
 de.griefed.serverpackcreator.plugins.serverpackhandler
 de.griefed.serverpackcreator.plugins.swinggui
 de.griefed.serverpackcreator.spring
-de.griefed.serverpackcreator.spring.curseforge
 de.griefed.serverpackcreator.spring.serverpack
 de.griefed.serverpackcreator.spring.task
 de.griefed.serverpackcreator.spring.zip
@@ -13,9 +11,10 @@ de.griefed.serverpackcreator.swing
 de.griefed.serverpackcreator.swing.themes
 de.griefed.serverpackcreator.swing.utilities
 de.griefed.serverpackcreator.utilities
-de.griefed.serverpackcreator.utilities.commonutilities
+de.griefed.serverpackcreator.utilities.common
 de.griefed.serverpackcreator.utilities.misc
 de.griefed.serverpackcreator.versionmeta
 de.griefed.serverpackcreator.versionmeta.fabric
 de.griefed.serverpackcreator.versionmeta.forge
 de.griefed.serverpackcreator.versionmeta.minecraft
+de.griefed.serverpackcreator.versionmeta.quilt

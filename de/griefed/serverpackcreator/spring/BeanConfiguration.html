@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -110,6 +110,8 @@ var activeTableTab = "activeTableTab";
 <pre>@Configuration
 public class <span class="typeNameLabel">BeanConfiguration</span>
 extends java.lang.Object</pre>
+<div class="block">Bean configuration for running ServerPackCreator as a webservice. This class provides beans for a
+ couple or properties which can not otherwise be provided.</div>
 </li>
 </ul>
 </div>
@@ -147,19 +149,39 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricInstallerManifest--">fabricInstallerManifest</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricInstallerManifest--">fabricInstallerManifest</a></span>()</code>
+<div class="block">Bean for the location of the Fabric installer version manifest-file.</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricManifest--">fabricManifest</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricManifest--">fabricManifest</a></span>()</code>
+<div class="block">Bean for the location of the Fabric version manifest-file.</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#forgeManifest--">forgeManifest</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#forgeManifest--">forgeManifest</a></span>()</code>
+<div class="block">Bean for the location of the Forge version manifest-file.</div>
+</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#minecraftManifest--">minecraftManifest</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#minecraftManifest--">minecraftManifest</a></span>()</code>
+<div class="block">Bean for the location of the Minecraft version manifest-file.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltInstallerManifest--">quiltInstallerManifest</a></span>()</code>
+<div class="block">Bean for the location of the Quilt installer version manifest-file.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltManifest--">quiltManifest</a></span>()</code>
+<div class="block">Bean for the location of the Quilt version manifest-file.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -209,6 +231,11 @@ public&nbsp;BeanConfiguration(<a href="../../../../de/griefed/serverpackcreator/
 <h4>minecraftManifest</h4>
 <pre>@Bean
 public&nbsp;java.io.File&nbsp;minecraftManifest()</pre>
+<div class="block">Bean for the location of the Minecraft version manifest-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>File</code></dd>
+</dl>
 </li>
 </ul>
 <a name="forgeManifest--">
@@ -219,6 +246,11 @@ public&nbsp;java.io.File&nbsp;minecraftManifest()</pre>
 <h4>forgeManifest</h4>
 <pre>@Bean
 public&nbsp;java.io.File&nbsp;forgeManifest()</pre>
+<div class="block">Bean for the location of the Forge version manifest-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>File</code></dd>
+</dl>
 </li>
 </ul>
 <a name="fabricManifest--">
@@ -229,16 +261,56 @@ public&nbsp;java.io.File&nbsp;forgeManifest()</pre>
 <h4>fabricManifest</h4>
 <pre>@Bean
 public&nbsp;java.io.File&nbsp;fabricManifest()</pre>
+<div class="block">Bean for the location of the Fabric version manifest-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>File</code></dd>
+</dl>
 </li>
 </ul>
 <a name="fabricInstallerManifest--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>fabricInstallerManifest</h4>
 <pre>@Bean
 public&nbsp;java.io.File&nbsp;fabricInstallerManifest()</pre>
+<div class="block">Bean for the location of the Fabric installer version manifest-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>File</code></dd>
+</dl>
+</li>
+</ul>
+<a name="quiltManifest--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>quiltManifest</h4>
+<pre>@Bean
+public&nbsp;java.io.File&nbsp;quiltManifest()</pre>
+<div class="block">Bean for the location of the Quilt version manifest-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>File</code></dd>
+</dl>
+</li>
+</ul>
+<a name="quiltInstallerManifest--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>quiltInstallerManifest</h4>
+<pre>@Bean
+public&nbsp;java.io.File&nbsp;quiltInstallerManifest()</pre>
+<div class="block">Bean for the location of the Quilt installer version manifest-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>File</code></dd>
+</dl>
 </li>
 </ul>
 </li>

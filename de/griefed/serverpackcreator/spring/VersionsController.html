@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -112,7 +112,8 @@ var activeTableTab = "activeTableTab";
  @RequestMapping(value="/api/v1/versions")
 public class <span class="typeNameLabel">VersionsController</span>
 extends java.lang.Object</pre>
-<div class="block">RestController for acquiring all available Minecraft, Forge, Fabric and Fabric Installer versions.</div>
+<div class="block">RestController for acquiring all available Minecraft, Forge, Fabric and Fabric Installer
+ versions.</div>
 </li>
 </ul>
 </div>
@@ -131,8 +132,8 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/VersionsController.html#VersionsController-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-">VersionsController</a></span>(<a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
-                  <a href="../../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">Utilities</a>&nbsp;injectedUtilities)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/VersionsController.html#VersionsController-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.common.Utilities-">VersionsController</a></span>(<a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
+                  <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</code>
 <div class="block">Constructor for DI.</div>
 </td>
 </tr>
@@ -175,6 +176,18 @@ extends java.lang.Object</pre>
 <div class="block">Get a list of all available Minecraft versions.</div>
 </td>
 </tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>org.springframework.http.ResponseEntity&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/VersionsController.html#getAvailableQuiltInstallerVersions--">getAvailableQuiltInstallerVersions</a></span>()</code>
+<div class="block">Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>org.springframework.http.ResponseEntity&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/VersionsController.html#getAvailableQuiltVersions--">getAvailableQuiltVersions</a></span>()</code>
+<div class="block">Get a list of all available Fabric versions.</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -197,7 +210,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="VersionsController-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.commonutilities.Utilities-">
+<a name="VersionsController-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.common.Utilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -205,12 +218,12 @@ extends java.lang.Object</pre>
 <h4>VersionsController</h4>
 <pre>@Autowired
 public&nbsp;VersionsController(<a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
-                                     <a href="../../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities">Utilities</a>&nbsp;injectedUtilities)</pre>
+                                     <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</pre>
 <div class="block">Constructor for DI.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedVersionMeta</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> for version acquisition.</dd>
-<dd><code>injectedUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/commonutilities/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><code>Utilities</code></a>.</dd>
+<dd><code>injectedUtilities</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -249,9 +262,11 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp
 <div class="block">Get a list of all available Forge versions for a specific Minecraft version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - String. The Minecraft version you want to get a list of Forge versions for.</dd>
+<dd><code>minecraftVersion</code> - String. The Minecraft version you want to get a list of Forge versions
+     for.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String List. Returns a list of all available Forge versions for the specified Minecraft version.</dd>
+<dd>String List. Returns a list of all available Forge versions for the specified Minecraft
+     version.</dd>
 </dl>
 </li>
 </ul>
@@ -273,7 +288,7 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp
 <a name="getAvailableFabricInstallerVersions--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getAvailableFabricInstallerVersions</h4>
 <pre>@GetMapping(value="/fabric/installer",
@@ -282,7 +297,40 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp
 <div class="block">Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.</dd>
+<dd>String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
+     JSON object.</dd>
+</dl>
+</li>
+</ul>
+<a name="getAvailableQuiltVersions--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAvailableQuiltVersions</h4>
+<pre>@GetMapping(value="/quilt")
+public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp;getAvailableQuiltVersions()</pre>
+<div class="block">Get a list of all available Fabric versions.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String List. Returns a list of all available Fabric versions.</dd>
+</dl>
+</li>
+</ul>
+<a name="getAvailableQuiltInstallerVersions--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getAvailableQuiltInstallerVersions</h4>
+<pre>@GetMapping(value="/quilt/installer",
+            produces="application/json")
+public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp;getAvailableQuiltInstallerVersions()</pre>
+<div class="block">Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
+     JSON object.</dd>
 </dl>
 </li>
 </ul>

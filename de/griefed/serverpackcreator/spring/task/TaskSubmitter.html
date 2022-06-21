@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10};
+var methods = {"i0":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -110,10 +110,13 @@ var activeTableTab = "activeTableTab";
 <pre>@Service
 public class <span class="typeNameLabel">TaskSubmitter</span>
 extends java.lang.Object</pre>
-<div class="block"><a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
- Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
- would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
- the necessary changes to fully implement it in ServerPackCreator.<br>
+<div class="block"><a
+ href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
+ to implement a task queue using Apache Artemis and Spring Boot</a><br>
+ Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
+ how to implement a JMS. Without it this implementation of Artemis would have either taken way
+ longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
+ necessary changes to fully implement it in ServerPackCreator.<br>
  Class responsible for submitting tasks to our JMS.</div>
 </li>
 </ul>
@@ -155,20 +158,8 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskSubmitter.html#generateCurseProject-java.lang.String-">generateCurseProject</a></span>(java.lang.String&nbsp;projectIDAndFileID)</code>
-<div class="block">Submit a task for the generation of a server pack from a CurseForge project and file id combination.</div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskSubmitter.html#generateZip-java.lang.String-">generateZip</a></span>(java.lang.String&nbsp;zipGenerationProperties)</code>
 <div class="block">Submit a task for the generation of a server pack from a ZIP-archive.</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/TaskSubmitter.html#scanCurseProject-java.lang.String-">scanCurseProject</a></span>(java.lang.String&nbsp;projectIDAndFileID)</code>
-<div class="block">Submit a task for scanning a CurseForge project and file id combination.</div>
 </td>
 </tr>
 </table>
@@ -218,34 +209,6 @@ public&nbsp;TaskSubmitter(org.springframework.jms.core.JmsTemplate&nbsp;injected
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="scanCurseProject-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>scanCurseProject</h4>
-<pre>public&nbsp;void&nbsp;scanCurseProject(java.lang.String&nbsp;projectIDAndFileID)</pre>
-<div class="block">Submit a task for scanning a CurseForge project and file id combination.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectIDAndFileID</code> - The CurseForge project and file id combination</dd>
-</dl>
-</li>
-</ul>
-<a name="generateCurseProject-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>generateCurseProject</h4>
-<pre>public&nbsp;void&nbsp;generateCurseProject(java.lang.String&nbsp;projectIDAndFileID)</pre>
-<div class="block">Submit a task for the generation of a server pack from a CurseForge project and file id combination.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectIDAndFileID</code> - The CurseForge project and file id combination.</dd>
-</dl>
-</li>
-</ul>
 <a name="generateZip-java.lang.String-">
 <!--   -->
 </a>
@@ -256,8 +219,9 @@ public&nbsp;TaskSubmitter(org.springframework.jms.core.JmsTemplate&nbsp;injected
 <div class="block">Submit a task for the generation of a server pack from a ZIP-archive.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipGenerationProperties</code> - <code>String</code> containing all information required to generate a server pack from
-                                              a ZIP-archive. See <a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-"><code>ZipController.requestGenerationFromZip(String, String, String, String, String, boolean)</code></a>.</dd>
+<dd><code>zipGenerationProperties</code> - <code>String</code> containing all information required to generate a
+     server pack from a ZIP-archive. See <a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>ZipController.requestGenerationFromZip(String,
+     String, String, String, String)</code></a>.</dd>
 </dl>
 </li>
 </ul>

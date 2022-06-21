@@ -111,19 +111,20 @@ var activeTableTab = "activeTableTab";
 </dl>
 <dl>
 <dt>Direct Known Subclasses:</dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/spring/curseforge/GenerateCurseProject.html" title="class in de.griefed.serverpackcreator.spring.curseforge">GenerateCurseProject</a>, <a href="../../../../../de/griefed/serverpackcreator/spring/zip/GenerateZip.html" title="class in de.griefed.serverpackcreator.spring.zip">GenerateZip</a>, <a href="../../../../../de/griefed/serverpackcreator/spring/curseforge/ScanCurseProject.html" title="class in de.griefed.serverpackcreator.spring.curseforge">ScanCurseProject</a></dd>
+<dd><a href="../../../../../de/griefed/serverpackcreator/spring/zip/GenerateZip.html" title="class in de.griefed.serverpackcreator.spring.zip">GenerateZip</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public abstract class <span class="typeNameLabel">Task</span>
 extends java.lang.Object
 implements java.io.Serializable</pre>
-<div class="block"><a href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How to implement a task queue using Apache Artemis and Spring Boot</a><br>
- Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a JMS. Without it this implementation of Artemis
- would have either taken way longer or never happened at all. I managed to translate their Kotlin-code to Java and make
- the necessary changes to fully implement it in ServerPackCreator.<br>
- Base class from which <a href="../../../../../de/griefed/serverpackcreator/spring/curseforge/GenerateCurseProject.html" title="class in de.griefed.serverpackcreator.spring.curseforge"><code>GenerateCurseProject</code></a> and <a href="../../../../../de/griefed/serverpackcreator/spring/curseforge/ScanCurseProject.html" title="class in de.griefed.serverpackcreator.spring.curseforge"><code>ScanCurseProject</code></a> extend. See the aforementioned classes for
- an example on how a new task class should be implemented. All new task must extend this class.</div>
+<div class="block"><a
+ href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
+ to implement a task queue using Apache Artemis and Spring Boot</a><br>
+ Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
+ how to implement a JMS. Without it this implementation of Artemis would have either taken way
+ longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
+ necessary changes to fully implement it in ServerPackCreator.<br></div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../../serialized-form.html#de.griefed.serverpackcreator.spring.task.Task">Serialized Form</a></dd>

@@ -134,17 +134,20 @@ var activeTableTab = "activeTableTab";
 <pre><a href="../../../../../de/griefed/serverpackcreator/utilities/misc/Generated.html" title="annotation in de.griefed.serverpackcreator.utilities.misc">@Generated</a>
 public class <span class="typeNameLabel">BackgroundPanel</span>
 extends javax.swing.JPanel</pre>
-<div class="block">Hey, Griefed here. I tried to add a tiled background image to the frame which holds the JTabbedPane, but after several
- failed attempts, I gave up and almost threw the idea out of the window. I wanted to set the background to a tiled image,
- because simply setting a colour seemed too boring, and I needed <em>something</em> in the background so the banner
- icon would be more clear to the eye. So, I activated my Google-Fu and encountered this holy grail of tiling images
+<div class="block">Hey, Griefed here. I tried to add a tiled background image to the frame which holds the
+ JTabbedPane, but after several failed attempts, I gave up and almost threw the idea out of the
+ window. I wanted to set the background to a tiled image, because simply setting a colour seemed
+ too boring, and I needed <em>something</em> in the background so the banner icon would be more
+ clear to the eye. So, I activated my Google-Fu and encountered this holy grail of tiling images
  for Swing.<br>
  Links:<br>
- <a href="https://tips4java.wordpress.com/2008/10/12/background-panel/">Background Panel by Rob Camick from October 12, 2008</a><br>
+ <a href="https://tips4java.wordpress.com/2008/10/12/background-panel/">Background Panel by Rob
+ Camick from October 12, 2008</a><br>
  <a href="https://www.camick.com/java/source/BackgroundPanel.java">BackgroundPanel.java</a><br>
- Seriously, give this man an award, because this class is a <strong>BEAST</strong>.<p>
- Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank you, thank you, thank you
- so very much! You seriously made my day here.<br>
+ Seriously, give this man an award, because this class is a <strong>BEAST</strong>.
+
+ <p>Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank
+ you, thank you, thank you so very much! You seriously made my day here.<br>
  Rob, you rule.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
@@ -296,14 +299,14 @@ extends javax.swing.JPanel</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#add-javax.swing.JComponent-">add</a></span>(javax.swing.JComponent&nbsp;component)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#addComponent-javax.swing.JComponent-">addComponent</a></span>(javax.swing.JComponent&nbsp;component)</code>
 <div class="block">Override method so we can make the component transparent.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#add-javax.swing.JComponent-java.lang.Object-">add</a></span>(javax.swing.JComponent&nbsp;component,
-   java.lang.Object&nbsp;constraints)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#addComponent-javax.swing.JComponent-java.lang.Object-">addComponent</a></span>(javax.swing.JComponent&nbsp;component,
+            java.lang.Object&nbsp;constraints)</code>
 <div class="block">Override method so we can make the component transparent.</div>
 </td>
 </tr>
@@ -352,8 +355,7 @@ extends javax.swing.JPanel</pre>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#setTransparentAdd-boolean-">setTransparentAdd</a></span>(boolean&nbsp;isTransparentAdd)</code>
-<div class="block">Controls whether components added to this panel should automatically
- be made transparent.</div>
+<div class="block">Controls whether components added to this panel should automatically be made transparent.</div>
 </td>
 </tr>
 </table>
@@ -599,13 +601,13 @@ extends javax.swing.JPanel</pre>
 </dl>
 </li>
 </ul>
-<a name="add-javax.swing.JComponent-">
+<a name="addComponent-javax.swing.JComponent-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>add</h4>
-<pre>public&nbsp;void&nbsp;add(javax.swing.JComponent&nbsp;component)</pre>
+<h4>addComponent</h4>
+<pre>public&nbsp;void&nbsp;addComponent(javax.swing.JComponent&nbsp;component)</pre>
 <div class="block">Override method so we can make the component transparent.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -629,14 +631,14 @@ extends javax.swing.JPanel</pre>
 </dl>
 </li>
 </ul>
-<a name="add-javax.swing.JComponent-java.lang.Object-">
+<a name="addComponent-javax.swing.JComponent-java.lang.Object-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>add</h4>
-<pre>public&nbsp;void&nbsp;add(javax.swing.JComponent&nbsp;component,
-                java.lang.Object&nbsp;constraints)</pre>
+<h4>addComponent</h4>
+<pre>public&nbsp;void&nbsp;addComponent(javax.swing.JComponent&nbsp;component,
+                         java.lang.Object&nbsp;constraints)</pre>
 <div class="block">Override method so we can make the component transparent.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -652,9 +654,8 @@ extends javax.swing.JPanel</pre>
 <li class="blockList">
 <h4>setTransparentAdd</h4>
 <pre>public&nbsp;void&nbsp;setTransparentAdd(boolean&nbsp;isTransparentAdd)</pre>
-<div class="block">Controls whether components added to this panel should automatically
- be made transparent. That is, setOpaque(false) will be invoked.
- The default is set to true.</div>
+<div class="block">Controls whether components added to this panel should automatically be made transparent. That
+ is, setOpaque(false) will be invoked. The default is set to true.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>isTransparentAdd</code> - Whether to automatically make components transparent.</dd>

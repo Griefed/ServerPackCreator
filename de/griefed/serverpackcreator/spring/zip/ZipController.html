@@ -112,7 +112,8 @@ var activeTableTab = "activeTableTab";
  @RequestMapping(value="/api/v1/zip")
 public class <span class="typeNameLabel">ZipController</span>
 extends java.lang.Object</pre>
-<div class="block">RestController responsible for handling ZIP-archive uploads and server pack generation from the very same.</div>
+<div class="block">RestController responsible for handling ZIP-archive uploads and server pack generation from the
+ very same.</div>
 </li>
 </ul>
 </div>
@@ -131,9 +132,11 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#ZipController-de.griefed.serverpackcreator.spring.zip.ZipService-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.spring.NotificationResponse-">ZipController</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipService.html" title="class in de.griefed.serverpackcreator.spring.zip">ZipService</a>&nbsp;injectedZipService,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#ZipController-de.griefed.serverpackcreator.spring.zip.ZipService-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.spring.NotificationResponse-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-">ZipController</a></span>(<a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipService.html" title="class in de.griefed.serverpackcreator.spring.zip">ZipService</a>&nbsp;injectedZipService,
              <a href="../../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
-             <a href="../../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring">NotificationResponse</a>&nbsp;injectedNotificationResponse)</code>
+             <a href="../../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring">NotificationResponse</a>&nbsp;injectedNotificationResponse,
+             <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+             <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</code>
 <div class="block">Constructor responsible for DI.</div>
 </td>
 </tr>
@@ -160,19 +163,17 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>org.springframework.http.ResponseEntity&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-">requestGenerationFromZip</a></span>(java.lang.String&nbsp;zipName,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">requestGenerationFromZip</a></span>(java.lang.String&nbsp;zipName,
                         java.lang.String&nbsp;clientMods,
                         java.lang.String&nbsp;minecraftVersion,
                         java.lang.String&nbsp;modLoader,
-                        java.lang.String&nbsp;modLoaderVersion,
-                        boolean&nbsp;installModloaderServer)</code>
-<div class="block">Request the generation of a server pack from a previously uploaded ZIP-archive, which passed validation checks,
- and from a barebones configuration, including:<br>
+                        java.lang.String&nbsp;modLoaderVersion)</code>
+<div class="block">Request the generation of a server pack from a previously uploaded ZIP-archive, which passed
+ validation checks, and from a barebones configuration, including:<br>
  <code>clientMods</code><br>
  <code>minecraftVersion</code><br>
  <code>modLoader</code><br>
- <code>modLoaderVersion</code><br>
- <code>installModloaderServer</code></div>
+ <code>modLoaderVersion</code><br></div>
 </td>
 </tr>
 </table>
@@ -197,7 +198,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ZipController-de.griefed.serverpackcreator.spring.zip.ZipService-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.spring.NotificationResponse-">
+<a name="ZipController-de.griefed.serverpackcreator.spring.zip.ZipService-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.spring.NotificationResponse-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -206,13 +207,17 @@ extends java.lang.Object</pre>
 <pre>@Autowired
 public&nbsp;ZipController(<a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipService.html" title="class in de.griefed.serverpackcreator.spring.zip">ZipService</a>&nbsp;injectedZipService,
                                 <a href="../../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
-                                <a href="../../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring">NotificationResponse</a>&nbsp;injectedNotificationResponse)</pre>
+                                <a href="../../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring">NotificationResponse</a>&nbsp;injectedNotificationResponse,
+                                <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                                <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</pre>
 <div class="block">Constructor responsible for DI.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedZipService</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipService.html" title="class in de.griefed.serverpackcreator.spring.zip"><code>ZipService</code></a>.</dd>
 <dd><code>injectedConfigurationHandler</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationHandler</code></a>.</dd>
 <dd><code>injectedNotificationResponse</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring"><code>NotificationResponse</code></a>.</dd>
+<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.</dd>
+<dd><code>injectedUtilities</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -245,40 +250,39 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp
 </dl>
 </li>
 </ul>
-<a name="requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-">
+<a name="requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>requestGenerationFromZip</h4>
-<pre>@GetMapping(value="/{zipName}&amp;{clientMods}&amp;{minecraftVersion}&amp;{modLoader}&amp;{modLoaderVersion}&amp;{installModloaderServer}")
+<pre>@GetMapping(value="/{zipName}&amp;{clientMods}&amp;{minecraftVersion}&amp;{modLoader}&amp;{modLoaderVersion}")
 public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp;requestGenerationFromZip(@PathVariable(value="zipName")
-                                                                                                                                                                                                                  java.lang.String&nbsp;zipName,
-                                                                                                                                                                                                                  @PathVariable(value="clientMods")
-                                                                                                                                                                                                                  java.lang.String&nbsp;clientMods,
-                                                                                                                                                                                                                  @PathVariable(value="minecraftVersion")
-                                                                                                                                                                                                                  java.lang.String&nbsp;minecraftVersion,
-                                                                                                                                                                                                                  @PathVariable(value="modLoader")
-                                                                                                                                                                                                                  java.lang.String&nbsp;modLoader,
-                                                                                                                                                                                                                  @PathVariable(value="modLoaderVersion")
-                                                                                                                                                                                                                  java.lang.String&nbsp;modLoaderVersion,
-                                                                                                                                                                                                                  @PathVariable(value="installModloaderServer")
-                                                                                                                                                                                                                  boolean&nbsp;installModloaderServer)</pre>
-<div class="block">Request the generation of a server pack from a previously uploaded ZIP-archive, which passed validation checks,
- and from a barebones configuration, including:<br>
+                                                                                                                                                                                         java.lang.String&nbsp;zipName,
+                                                                                                                                                                                         @PathVariable(value="clientMods")
+                                                                                                                                                                                         java.lang.String&nbsp;clientMods,
+                                                                                                                                                                                         @PathVariable(value="minecraftVersion")
+                                                                                                                                                                                         java.lang.String&nbsp;minecraftVersion,
+                                                                                                                                                                                         @PathVariable(value="modLoader")
+                                                                                                                                                                                         java.lang.String&nbsp;modLoader,
+                                                                                                                                                                                         @PathVariable(value="modLoaderVersion")
+                                                                                                                                                                                         java.lang.String&nbsp;modLoaderVersion)</pre>
+<div class="block">Request the generation of a server pack from a previously uploaded ZIP-archive, which passed
+ validation checks, and from a barebones configuration, including:<br>
  <code>clientMods</code><br>
  <code>minecraftVersion</code><br>
  <code>modLoader</code><br>
- <code>modLoaderVersion</code><br>
- <code>installModloaderServer</code></div>
+ <code>modLoaderVersion</code><br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>zipName</code> - <code>String</code> The name of the previously uploaded ZIP-archive.</dd>
-<dd><code>clientMods</code> - <code>String</code> A comma separated list of clientside-only mods to exclude from the server pack.</dd>
-<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft version the modpack, and therefor the server pack, uses.</dd>
+<dd><code>clientMods</code> - <code>String</code> A comma separated list of clientside-only mods to exclude from
+     the server pack.</dd>
+<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft version the modpack, and therefor the
+     server pack, uses.</dd>
 <dd><code>modLoader</code> - <code>String</code> The modloader the modpack, and therefor the server pack, uses.</dd>
-<dd><code>modLoaderVersion</code> - <code>String</code> The modloader version the modpack, and therefor the server pack, uses.</dd>
-<dd><code>installModloaderServer</code> - <code>Boolean</code> Whether to install the modloader server in the server pack.</dd>
+<dd><code>modLoaderVersion</code> - <code>String</code> The modloader version the modpack, and therefor the
+     server pack, uses.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><a href="../../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring"><code>NotificationResponse</code></a> with information about the result.</dd>
 </dl>

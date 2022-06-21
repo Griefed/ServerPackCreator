@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -129,10 +129,12 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-">VersionMeta</a></span>(java.io.File&nbsp;minecraftManifest,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-">VersionMeta</a></span>(java.io.File&nbsp;minecraftManifest,
            java.io.File&nbsp;forgeManifest,
            java.io.File&nbsp;fabricManifest,
-           java.io.File&nbsp;fabricInstallerManifest)</code>
+           java.io.File&nbsp;fabricInstallerManifest,
+           java.io.File&nbsp;quiltManifest,
+           java.io.File&nbsp;quiltInstallerManifest)</code>
 <div class="block">Constructor.</div>
 </td>
 </tr>
@@ -154,13 +156,13 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#fabric--">fabric</a></span>()</code>
-<div class="block">The FabricMeta instance for working with Fabric versions and information about them.</div>
+<div class="block">The QuiltMeta-instance for working with Fabric versions and information about them.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#forge--">forge</a></span>()</code>
-<div class="block">The ForgeMeta instance for working with Forge versions and information about them.</div>
+<div class="block">The ForgeMeta-instance for working with Forge versions and information about them.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
@@ -170,6 +172,12 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.quilt">QuiltMeta</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#quilt--">quilt</a></span>()</code>
+<div class="block">The QuiltMeta-instance for working with Quilt versions and information about them.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#update--">update</a></span>()</code>
 <div class="block">Update the Minecraft, Forge and Fabric metas.</div>
@@ -197,7 +205,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-">
+<a name="VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -207,7 +215,9 @@ extends java.lang.Object</pre>
 public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
                               java.io.File&nbsp;forgeManifest,
                               java.io.File&nbsp;fabricManifest,
-                              java.io.File&nbsp;fabricInstallerManifest)
+                              java.io.File&nbsp;fabricInstallerManifest,
+                              java.io.File&nbsp;quiltManifest,
+                              java.io.File&nbsp;quiltInstallerManifest)
                        throws java.io.IOException</pre>
 <div class="block">Constructor.</div>
 <dl>
@@ -216,6 +226,8 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <dd><code>forgeManifest</code> - <code>File</code> Forge manifest file.</dd>
 <dd><code>fabricManifest</code> - <code>File</code> Fabric manifest file.</dd>
 <dd><code>fabricInstallerManifest</code> - <code>File</code> Fabric-installer manifest file.</dd>
+<dd><code>quiltManifest</code> - <code>File</code> Quilt manifest file.</dd>
+<dd><code>quiltInstallerManifest</code> - <code>File</code> Quilt-installer manifest file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if one of the metas could not be initialized.</dd>
 </dl>
@@ -237,7 +249,8 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <h4>update</h4>
 <pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;update()
                    throws java.io.IOException</pre>
-<div class="block">Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been refreshed.</div>
+<div class="block">Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been
+ refreshed.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Instance of <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a>.</dd>
@@ -267,7 +280,7 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <li class="blockList">
 <h4>fabric</h4>
 <pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a>&nbsp;fabric()</pre>
-<div class="block">The FabricMeta instance for working with Fabric versions and information about them.</div>
+<div class="block">The QuiltMeta-instance for working with Fabric versions and information about them.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Instance of <a href="../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricMeta</code></a>.</dd>
@@ -277,14 +290,28 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <a name="forge--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>forge</h4>
 <pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forge()</pre>
-<div class="block">The ForgeMeta instance for working with Forge versions and information about them.</div>
+<div class="block">The ForgeMeta-instance for working with Forge versions and information about them.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Instance of <a href="../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeMeta</code></a>.</dd>
+</dl>
+</li>
+</ul>
+<a name="quilt--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>quilt</h4>
+<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.quilt">QuiltMeta</a>&nbsp;quilt()</pre>
+<div class="block">The QuiltMeta-instance for working with Quilt versions and information about them.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Instance of <a href="../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.quilt"><code>QuiltMeta</code></a>.</dd>
 </dl>
 </li>
 </ul>

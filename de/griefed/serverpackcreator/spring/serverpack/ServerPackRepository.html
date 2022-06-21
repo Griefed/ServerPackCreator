@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -106,9 +106,10 @@ var activeTableTab = "activeTableTab";
 <pre>@Repository
 public interface <span class="typeNameLabel">ServerPackRepository</span>
 extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>,java.lang.Integer&gt;</pre>
-<div class="block">Our JPA repository for storing and retrieving <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a>s to and from our SQLite database. Provides methods for
- retrieving, storing, deleting. Calls must always be made from <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackService</code></a> and not directly
- to this repository. It may seem strange, but this accomplishes a couple of things:<br>
+<div class="block">Our JPA repository for storing and retrieving <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a>s to and from our SQLite
+ database. Provides methods for retrieving, storing, deleting. Calls must always be made from
+ <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackService</code></a> and not directly to this repository. It may seem strange, but this
+ accomplishes a couple of things:<br>
  1. Centralized access to the repository.<br>
  2. Complete control over what happens with the data retrieved from the repository.<br>
  3. Complete control over what happens with the data passed to the repository.<br>
@@ -133,61 +134,23 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#countAllByProjectID-int-">countAllByProjectID</a></span>(int&nbsp;projectID)</code>
-<div class="block">Count all server packs by a CurseForge projectID.</div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#countAllByProjectName-java.lang.String-">countAllByProjectName</a></span>(java.lang.String&nbsp;projectName)</code>
 <div class="block">Count all server packs by a CurseForge project name.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#deleteAllByProjectID-int-">deleteAllByProjectID</a></span>(int&nbsp;projectID)</code>
-<div class="block">Delete all server packs with a CurseForge project ID.</div>
-</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#deleteByProjectIDAndFileID-int-int-">deleteByProjectIDAndFileID</a></span>(int&nbsp;projectID,
-                          int&nbsp;fileID)</code>
-<div class="block">Delete a server pack with a given CurseForge project and file ID.</div>
-</td>
-</tr>
-<tr id="i4" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#findAllByProjectID-int-">findAllByProjectID</a></span>(int&nbsp;projectID)</code>
-<div class="block">Find all server packs using a CurseForge project ID.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#findAllByProjectName-java.lang.String-">findAllByProjectName</a></span>(java.lang.String&nbsp;projectName)</code>
 <div class="block">Find all server packs using a CurseForge project name.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#findByFileID-int-">findByFileID</a></span>(int&nbsp;fileID)</code>
-<div class="block">Find a server pack by its database id.</div>
-</td>
-</tr>
-<tr id="i7" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#findByFileName-java.lang.String-">findByFileName</a></span>(java.lang.String&nbsp;fileName)</code>
 <div class="block">Find a server pack by its CurseForge file display name.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#findByProjectIDAndFileID-int-int-">findByProjectIDAndFileID</a></span>(int&nbsp;projectID,
-                        int&nbsp;fileID)</code>
-<div class="block">Find a specific server pack by searching with a CurseForge project and file ID.</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackRepository.html#findByStatus-java.lang.String-">findByStatus</a></span>(java.lang.String&nbsp;status)</code>
 <div class="block">Find all server packs by their status.</div>
@@ -215,40 +178,6 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="findAllByProjectID-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>findAllByProjectID</h4>
-<pre>java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;&gt;&nbsp;findAllByProjectID(int&nbsp;projectID)</pre>
-<div class="block">Find all server packs using a CurseForge project ID.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - Integer. The CurseForge project ID with which to search for server pack.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns a list of all server packs for the passed CurseForge project ID wrapped in an <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
-</dl>
-</li>
-</ul>
-<a name="findByProjectIDAndFileID-int-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>findByProjectIDAndFileID</h4>
-<pre>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;&nbsp;findByProjectIDAndFileID(int&nbsp;projectID,
-                                                             int&nbsp;fileID)</pre>
-<div class="block">Find a specific server pack by searching with a CurseForge project and file ID.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - Integer. The CurseForge project ID.</dd>
-<dd><code>fileID</code> - Integer. The CurseForge project file ID.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns the server pack for the passed project and file ID wrapped in an <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
-</dl>
-</li>
-</ul>
 <a name="findAllByProjectName-java.lang.String-">
 <!--   -->
 </a>
@@ -261,23 +190,8 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>projectName</code> - String. The project name with which to search for server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns a list of all server packs for the passed CurseForge project name wrapped in an <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
-</dl>
-</li>
-</ul>
-<a name="findByFileID-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>findByFileID</h4>
-<pre>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&gt;&nbsp;findByFileID(int&nbsp;fileID)</pre>
-<div class="block">Find a server pack by its database id.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileID</code> - Integer. The database id with which to search for a server pack.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns a server pack for the passed database id wrapped in an <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
+<dd>Returns a list of all server packs for the passed CurseForge project name wrapped in an
+     <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -291,9 +205,11 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <div class="block">Find a server pack by its CurseForge file display name.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileName</code> - String. The CurseForge file display name with which to search for a server pack.</dd>
+<dd><code>fileName</code> - String. The CurseForge file display name with which to search for a server
+     pack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns a server pack for the passed file display name wrapped in an <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
+<dd>Returns a server pack for the passed file display name wrapped in an <code>Optional</code>.
+     I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -309,30 +225,15 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>status</code> - String. The status with which to search for server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns a list of server packs for the passed status wrapped in an <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
-</dl>
-</li>
-</ul>
-<a name="countAllByProjectID-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>countAllByProjectID</h4>
-<pre>int&nbsp;countAllByProjectID(int&nbsp;projectID)</pre>
-<div class="block">Count all server packs by a CurseForge projectID.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - Integer. The CurseForge project ID with which to count all server packs.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Integer. Returns the amount of server packs for the passed CurseForge projectID.</dd>
+<dd>Returns a list of server packs for the passed status wrapped in an <code>Optional</code>. I
+     recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
 </dl>
 </li>
 </ul>
 <a name="countAllByProjectName-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>countAllByProjectName</h4>
 <pre>int&nbsp;countAllByProjectName(java.lang.String&nbsp;projectName)</pre>
@@ -342,36 +243,6 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <dd><code>projectName</code> - String. The CurseForge project name with which to count all server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Integer. Returns the amount of server packs for the passed CurseForge project name.</dd>
-</dl>
-</li>
-</ul>
-<a name="deleteAllByProjectID-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>deleteAllByProjectID</h4>
-<pre>void&nbsp;deleteAllByProjectID(int&nbsp;projectID)</pre>
-<div class="block">Delete all server packs with a CurseForge project ID.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - The CurseForge project ID for which to delete all server packs.</dd>
-</dl>
-</li>
-</ul>
-<a name="deleteByProjectIDAndFileID-int-int-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>deleteByProjectIDAndFileID</h4>
-<pre>void&nbsp;deleteByProjectIDAndFileID(int&nbsp;projectID,
-                                int&nbsp;fileID)</pre>
-<div class="block">Delete a server pack with a given CurseForge project and file ID.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectID</code> - Integer. The CurseForge project ID.</dd>
-<dd><code>fileID</code> - Integer. The CurseForge file ID.</dd>
 </dl>
 </li>
 </ul>

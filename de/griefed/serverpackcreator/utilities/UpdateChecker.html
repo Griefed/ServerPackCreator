@@ -111,8 +111,8 @@ var activeTableTab = "activeTableTab";
  @Service
 public class <span class="typeNameLabel">UpdateChecker</span>
 extends java.lang.Object</pre>
-<div class="block">Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can then run our update
- checks later on.</div>
+<div class="block">Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can
+ then run our update checks later on.</div>
 </li>
 </ul>
 </div>
@@ -155,7 +155,8 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>java.util.Optional&lt;de.griefed.versionchecker.Update&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html#checkForUpdate-java.lang.String-java.lang.Boolean-">checkForUpdate</a></span>(@NotNull java.lang.String&nbsp;version,
               java.lang.Boolean&nbsp;preReleaseCheck)</code>
-<div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
+<div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return
+ the update.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -294,12 +295,14 @@ public&nbsp;UpdateChecker(<a href="../../../../de/griefed/serverpackcreator/i18n
 <pre>public&nbsp;java.util.Optional&lt;de.griefed.versionchecker.Update&gt;&nbsp;checkForUpdate(@NotNull
                                                                            @NotNull java.lang.String&nbsp;version,
                                                                            java.lang.Boolean&nbsp;preReleaseCheck)</pre>
-<div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return the update.</div>
+<div class="block">Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return
+ the update.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>version</code> - <code>String</code> The version for which to check for updates.</dd>
-<dd><code>preReleaseCheck</code> - <code>Boolean</code> Whether to check pre-releasesDescending as well. Use <code>true</code> to check pre-releasesDescending
-                                       as well, <Code>false</Code> to only check with regular releases.</dd>
+<dd><code>preReleaseCheck</code> - <code>Boolean</code> Whether to check pre-releasesDescending as well. Use
+     <code>true</code> to check pre-releasesDescending as well, <Code>false</Code> to only check
+     with regular releases.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>String</code> The update, if available, as well as the download URL.</dd>
 </dl>

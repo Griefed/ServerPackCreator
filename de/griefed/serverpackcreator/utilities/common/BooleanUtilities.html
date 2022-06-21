@@ -48,10 +48,10 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li>Prev&nbsp;Class</li>
-<li><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/commonutilities/BooleanUtilities.html" target="_top">Frames</a></li>
+<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" target="_top">Frames</a></li>
 <li><a href="BooleanUtilities.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
@@ -90,7 +90,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">de.griefed.serverpackcreator.utilities.commonutilities</div>
+<div class="subTitle">de.griefed.serverpackcreator.utilities.common</div>
 <h2 title="Class BooleanUtilities" class="title">Class BooleanUtilities</h2>
 </div>
 <div class="contentContainer">
@@ -98,7 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li>de.griefed.serverpackcreator.utilities.commonutilities.BooleanUtilities</li>
+<li>de.griefed.serverpackcreator.utilities.common.BooleanUtilities</li>
 </ul>
 </li>
 </ul>
@@ -128,7 +128,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/BooleanUtilities.html#BooleanUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">BooleanUtilities</a></span>(<a href="../../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#BooleanUtilities-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">BooleanUtilities</a></span>(<a href="../../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager,
                 <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>&nbsp;</td>
 </tr>
 </table>
@@ -148,30 +148,15 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/BooleanUtilities.html#convertToBoolean-java.lang.String-">convertToBoolean</a></span>(java.lang.String&nbsp;stringBoolean)</code>
-<div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.<br>
- <strong>Converted to <code>TRUE</code> are:<br></strong>
- <code>[Tt]rue</code><br>
- <code>1</code><br>
- <code>[Yy]es</code><br>
- <code>[Yy]</code><br>
- Language Key <code>cli.input.true</code><br>
- Language Key <code>cli.input.yes</code><br>
- Language Key <code>cli.input.yes.short</code><br>
- <strong>Converted to <code>FALSE</code> are:<br></strong>
- <code>[Ff]alse</code><br>
- <code>0</code><br>
- <code>[Nn]o</code><br>
- <code>[Nn]</code><br>
- Language Key <code>cli.input.false</code><br>
- Language Key <code>cli.input.no</code><br>
- Language Key <code>cli.input.no.short</code><br></div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#convertToBoolean-java.lang.String-">convertToBoolean</a></span>(java.lang.String&nbsp;stringBoolean)</code>
+<div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/BooleanUtilities.html#readBoolean--">readBoolean</a></span>()</code>
-<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE</code> or <code>FALSE</code>.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean--">readBoolean</a></span>()</code>
+<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE
+ </code> or <code>FALSE</code>.</div>
 </td>
 </tr>
 </table>
@@ -221,17 +206,18 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>convertToBoolean</h4>
 <pre>public&nbsp;boolean&nbsp;convertToBoolean(java.lang.String&nbsp;stringBoolean)</pre>
-<div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.<br>
- <strong>Converted to <code>TRUE</code> are:<br></strong>
- <code>[Tt]rue</code><br>
+<div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.
+ <br>
+ <strong>Converted to <code>TRUE</code> are:<br>
+ </strong> <code>[Tt]rue</code><br>
  <code>1</code><br>
  <code>[Yy]es</code><br>
  <code>[Yy]</code><br>
  Language Key <code>cli.input.true</code><br>
  Language Key <code>cli.input.yes</code><br>
  Language Key <code>cli.input.yes.short</code><br>
- <strong>Converted to <code>FALSE</code> are:<br></strong>
- <code>[Ff]alse</code><br>
+ <strong>Converted to <code>FALSE</code> are:<br>
+ </strong> <code>[Ff]alse</code><br>
  <code>0</code><br>
  <code>[Nn]o</code><br>
  <code>[Nn]</code><br>
@@ -240,9 +226,11 @@ extends java.lang.Object</pre>
  Language Key <code>cli.input.no.short</code><br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>stringBoolean</code> - String. The string which should be converted to boolean if it matches certain patterns.</dd>
+<dd><code>stringBoolean</code> - String. The string which should be converted to boolean if it matches
+     certain patterns.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns the corresponding boolean if match with pattern was found. If no match is found, assume and return false.</dd>
+<dd>Boolean. Returns the corresponding boolean if match with pattern was found. If no match
+     is found, assume and return false.</dd>
 </dl>
 </li>
 </ul>
@@ -254,8 +242,9 @@ extends java.lang.Object</pre>
 <h4>readBoolean</h4>
 <pre><a href="../../../../../de/griefed/serverpackcreator/utilities/misc/Generated.html" title="annotation in de.griefed.serverpackcreator.utilities.misc">@Generated</a>
 public&nbsp;boolean&nbsp;readBoolean()</pre>
-<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE</code> or <code>FALSE</code>.
- This prevents any non-boolean values from being written to the new configuration file.</div>
+<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE
+ </code> or <code>FALSE</code>. This prevents any non-boolean values from being written to the
+ new configuration file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. True or False, depending on user input.</dd>
@@ -290,10 +279,10 @@ public&nbsp;boolean&nbsp;readBoolean()</pre>
 <div class="subNav">
 <ul class="navList">
 <li>Prev&nbsp;Class</li>
-<li><a href="../../../../../de/griefed/serverpackcreator/utilities/commonutilities/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.commonutilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/commonutilities/BooleanUtilities.html" target="_top">Frames</a></li>
+<li><a href="../../../../../index.html?de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" target="_top">Frames</a></li>
 <li><a href="BooleanUtilities.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">
