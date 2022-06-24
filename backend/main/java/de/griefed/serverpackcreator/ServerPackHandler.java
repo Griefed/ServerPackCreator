@@ -656,6 +656,7 @@ public class ServerPackHandler {
           "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
       writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
       writer.write("\n");
+      writer.write("  echo -n \"Response: \"\n");
       writer.write("  read ANSWER\n");
       writer.write("\n");
       writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
@@ -667,6 +668,7 @@ public class ServerPackHandler {
       writer.write("\n");
       writer.write("  else\n");
       writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
+      writer.write("    echo \"Entered: $ANSWER\"\n");
       writer.write("  fi\n");
       writer.write("\n");
       writer.write("else\n");
@@ -792,9 +794,9 @@ public class ServerPackHandler {
           "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
       writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
       writer.write("\n");
-      writer.write("  set /P \"Response=\"\n");
+      writer.write("  set /P response=\"Response: \"\n");
       writer.write("\n");
-      writer.write("  IF \"%Response%\" == \"%AGREE%\" (\n");
+      writer.write("  IF \"%response%\" == \"%AGREE%\" (\n");
       writer.write("\n");
       writer.write("    ECHO User agreed to Mojang's EULA.\n");
       writer.write(
@@ -803,6 +805,7 @@ public class ServerPackHandler {
       writer.write("\n");
       writer.write("  ) else (\n");
       writer.write("    ECHO User did not agree to Mojang's EULA. \n");
+      writer.write("    ECHO Entered: %response%\n");
       writer.write("  )\n");
       writer.write("\n");
       writer.write(") ELSE (\n");
@@ -914,6 +917,7 @@ public class ServerPackHandler {
           "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
       writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
       writer.write("\n");
+      writer.write("  echo -n \"Response: \"\n");
       writer.write("  read ANSWER\n");
       writer.write("\n");
       writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
@@ -925,6 +929,7 @@ public class ServerPackHandler {
       writer.write("\n");
       writer.write("  else\n");
       writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
+      writer.write("    echo \"Entered: $ANSWER\"\n");
       writer.write("  fi\n");
       writer.write("\n");
       writer.write("else\n");
@@ -1035,9 +1040,9 @@ public class ServerPackHandler {
           "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
       writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
       writer.write("\n");
-      writer.write("  set /P \"Response=\"\n");
+      writer.write("  set /P response=\"Response: \"\n");
       writer.write("\n");
-      writer.write("  IF \"%Response%\" == \"%AGREE%\" (\n");
+      writer.write("  IF \"%response%\" == \"%AGREE%\" (\n");
       writer.write("\n");
       writer.write("    ECHO User agreed to Mojang's EULA.\n");
       writer.write(
@@ -1046,6 +1051,7 @@ public class ServerPackHandler {
       writer.write("\n");
       writer.write("  ) else (\n");
       writer.write("    ECHO User did not agree to Mojang's EULA. \n");
+      writer.write("    ECHO Entered: %response%\n");
       writer.write("  )\n");
       writer.write("\n");
       writer.write(") ELSE (\n");
@@ -1201,7 +1207,10 @@ public class ServerPackHandler {
       writer.write(
           "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
       writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
+      writer.write("\n");
+      writer.write("  echo -n \"Response: \"\n");
       writer.write("  read ANSWER\n");
+      writer.write("\n");
       writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
       writer.write("    echo \"User agreed to Mojang's EULA.\"\n");
       writer.write(
@@ -1209,6 +1218,7 @@ public class ServerPackHandler {
       writer.write("    echo \"eula=true\" >> eula.txt;\n");
       writer.write("  else\n");
       writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
+      writer.write("    echo \"Entered: $ANSWER\"\n");
       writer.write("  fi\n");
       writer.write("else\n");
       writer.write("  echo \"eula.txt present. Moving on...\";\n");
@@ -1342,14 +1352,17 @@ public class ServerPackHandler {
       writer.write(
           "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
       writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
-      writer.write("  set /P \"Response=\"\n");
-      writer.write("  IF \"%Response%\" == \"%AGREE%\" (\n");
+      writer.write("\n");
+      writer.write("  set /P response=\"Response: \"\n");
+      writer.write("\n");
+      writer.write("  IF \"%response%\" == \"%AGREE%\" (\n");
       writer.write("    ECHO User agreed to Mojang's EULA.\n");
       writer.write(
           "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n");
       writer.write("    ECHO eula=true>> eula.txt\n");
       writer.write("  ) else (\n");
       writer.write("    ECHO User did not agree to Mojang's EULA. \n");
+      writer.write("    ECHO Entered: %response%\n");
       writer.write("  )\n");
       writer.write(") ELSE (\n");
       writer.write("  ECHO eula.txt present. Moving on...\n");
@@ -1469,7 +1482,10 @@ public class ServerPackHandler {
       writer.write(
           "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
       writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
+      writer.write("\n");
+      writer.write("  echo -n \"Response: \"\n");
       writer.write("  read ANSWER\n");
+      writer.write("\n");
       writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
       writer.write("    echo \"User agreed to Mojang's EULA.\"\n");
       writer.write(
@@ -1477,6 +1493,7 @@ public class ServerPackHandler {
       writer.write("    echo \"eula=true\" >> eula.txt;\n");
       writer.write("  else\n");
       writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
+      writer.write("    echo \"Entered: $ANSWER\"\n");
       writer.write("  fi\n");
       writer.write("else\n");
       writer.write("  echo \"eula.txt present. Moving on...\";\n");
@@ -1591,14 +1608,17 @@ public class ServerPackHandler {
       writer.write(
           "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
       writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
-      writer.write("  set /P \"Response=\"\n");
-      writer.write("  IF \"%Response%\" == \"%AGREE%\" (\n");
+      writer.write("\n");
+      writer.write("  set /P response=\"Response: \"\n");
+      writer.write("\n");
+      writer.write("  IF \"%response%\" == \"%AGREE%\" (\n");
       writer.write("    ECHO User agreed to Mojang's EULA.\n");
       writer.write(
           "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n");
       writer.write("    ECHO eula=true>> eula.txt\n");
       writer.write("  ) else (\n");
       writer.write("    ECHO User did not agree to Mojang's EULA. \n");
+      writer.write("    ECHO Entered: %response%\n");
       writer.write("  )\n");
       writer.write(") ELSE (\n");
       writer.write("  ECHO eula.txt present. Moving on...\n");
