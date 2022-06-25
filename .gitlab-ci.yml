@@ -365,8 +365,8 @@ coverage:
 Qodana Expose:
   stage: Documentation
   image:
-    name: jetbrains/qodana-jvm
-    entrypoint: [""]
+    name: jetbrains/qodana-jvm-community:2022.1
+    entrypoint: ['']
   allow_failure: true
   script:
     - /opt/idea/bin/entrypoint --results-dir=$CI_PROJECT_DIR/qodana --save-report --report-dir=$CI_PROJECT_DIR/qodana/report
