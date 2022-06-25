@@ -1,3 +1,10 @@
+### [3.5.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0...3.5.1) (2022-06-24)
+
+
+### 🛠 Fixes
+
+* **Start Scripts:** Correctly read the users answer to whether they agree to Mojang's EULA ([f2a82b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/f2a82b3a35455893e8f01539e5f1cc12cd57ac29))
+
 ## [3.5.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.4.1...3.5.0) (2022-06-21)
 
 

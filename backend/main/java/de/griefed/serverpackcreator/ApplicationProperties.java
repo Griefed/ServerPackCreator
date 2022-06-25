@@ -55,8 +55,6 @@ public class ApplicationProperties extends Properties {
   private final File START_SCRIPT_LINUX = new File("start.sh");
   private final File USER_JVM_ARGS = new File("user_jvm_args.txt");
 
-  private final String DIRECTORY_SERVER_FILES = "server_files";
-  private final String DIRECTORY_PLUGINS = "plugins";
   private final String FALLBACK_MODS_DEFAULT_ASSTRING =
       "3dSkinLayers-,"
           + "3dskinlayers-,"
@@ -285,6 +283,12 @@ public class ApplicationProperties extends Properties {
   private boolean versioncheck_prerelease;
 
   /**
+   * Aikars flags recommended for running a Minecraft server, from <a
+   * href=https://aikar.co/mcflags.html>aikar.co</a>
+   */
+  private String aikarsFlags;
+
+  /**
    * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
    *
    * @author Griefed
@@ -465,15 +469,16 @@ public class ApplicationProperties extends Properties {
     } else {
       this.SERVERPACKCREATOR_VERSION = "dev";
     }
+
+    this.aikarsFlags = this.getProperty("de.griefed.serverpackcreator.configuration.aikar");
   }
 
   /**
    * Reload serverpackcreator.properties.
    *
-   * @return {@link ApplicationProperties} The updated instance of this object.
    * @author Griefed
    */
-  public ApplicationProperties reload() {
+  public void reload() {
 
     try (InputStream inputStream =
         Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
@@ -620,7 +625,7 @@ public class ApplicationProperties extends Properties {
         Boolean.parseBoolean(
             getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
 
-    return this;
+    this.aikarsFlags = this.getProperty("de.griefed.serverpackcreator.configuration.aikar");
   }
 
   /**
@@ -875,7 +880,7 @@ public class ApplicationProperties extends Properties {
    * @return {@link String} server-files directory.
    */
   public String DIRECTORY_SERVER_FILES() {
-    return DIRECTORY_SERVER_FILES;
+    return "server_files";
   }
 
   /**
@@ -885,7 +890,7 @@ public class ApplicationProperties extends Properties {
    * @return {@link String} plugins directory.
    */
   public String DIRECTORY_PLUGINS() {
-    return DIRECTORY_PLUGINS;
+    return "plugins";
   }
 
   /**
@@ -1045,6 +1050,14 @@ public class ApplicationProperties extends Properties {
       LOG.info("No fallback-list updates available.");
       return false;
     }
+  }
+
+  /**
+   * Get this configurations AikarsFlags
+   * @return {@link String} Aikars flags.
+   */
+  public String getAikarsFlags() {
+    return aikarsFlags;
   }
 
   @Override

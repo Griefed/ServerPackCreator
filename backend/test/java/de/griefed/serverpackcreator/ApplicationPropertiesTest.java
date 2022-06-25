@@ -299,12 +299,6 @@ public class ApplicationPropertiesTest {
   }
 
   @Test
-  void reloadTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.reload());
-    Assertions.assertInstanceOf(ApplicationProperties.class, APPLICATIONPROPERTIES.reload());
-  }
-
-  @Test
   void booleanTests() {
     Assertions.assertFalse(APPLICATIONPROPERTIES.getSaveLoadedConfiguration());
     Assertions.assertFalse(APPLICATIONPROPERTIES.checkForAvailablePreReleases());
