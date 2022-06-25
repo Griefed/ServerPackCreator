@@ -171,7 +171,7 @@ tasks.withType(Javadoc) {
 
 // Launch4j builds our ServerPackCreator.exe.
 launch4j {
-  mainClassName = 'de.griefed.serverpackcreator.Main'
+  mainClassName = 'de.griefed.serverpackcreator.ServerPackCreator'
   jarTask = project.tasks.jar
   fileDescription = "Create server packs from Minecraft modpacks."
   version = project.version
@@ -244,7 +244,7 @@ java {
 bootJar {
   // Customize MANIFEST to include relevant information.
   manifest {
-    attributes "Start-Class": "de.griefed.serverpackcreator.Main",
+    attributes "Start-Class": "de.griefed.serverpackcreator.ServerPackCreator",
         "Class-Path": configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
         "Description": "Create server packs from Minecraft modpacks.",
         "Built-By": System.getProperty("user.name"),
@@ -289,7 +289,7 @@ jar {
   // Customize MANIFEST to include relevant information.
   manifest {
     attributes(
-        "Main-Class": "de.griefed.serverpackcreator.Main",
+        "Main-Class": "de.griefed.serverpackcreator.ServerPackCreator",
         "Class-Path": configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
         "Description": "Create server packs from Minecraft Forge or Fabric modpacks.",
         "Built-By": System.getProperty("user.name"),

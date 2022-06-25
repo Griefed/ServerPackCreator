@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.Main;
+import de.griefed.serverpackcreator.ServerPackCreator;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -205,7 +205,7 @@ public class JarUtilities {
    *     <br>
    *     Example for dev-environment: <code>G:/GitLab/ServerPackCreator/build/classes/java/main
    *     </code><br>
-   *     See {@link Main#main(String[])} source code for an example on how this is acquired
+   *     See {@link ServerPackCreator#main(String[])} source code for an example on how this is acquired
    *     automatically.
    * @param directoryToCopy String. Path to the directory inside the JAR-file you want to copy.
    * @param destinationDirectory String. Path to the destination directory you want to copy source

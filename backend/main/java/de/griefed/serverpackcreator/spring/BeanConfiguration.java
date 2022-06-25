@@ -106,4 +106,20 @@ public class BeanConfiguration {
   public File quiltInstallerManifest() {
     return APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION();
   }
+
+  /**
+   * Bean for starting up our Spring Boot Application, serving as our...<br>
+   * <code>starts chanting</code><br>
+   * <strong>public-static-void-main-string-args-public-static-void-main-string-args-public-static-void-main-string-args</strong><br>
+   * <br>
+   * ehem...<br>
+   * Sorry 'bout that.
+   *
+   * @return empty String array.
+   * @author Griefed
+   */
+  @Bean
+  public String[] args() {
+    return new String[0];
+  }
 }

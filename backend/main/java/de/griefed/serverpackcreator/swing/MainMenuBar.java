@@ -185,7 +185,7 @@ public class MainMenuBar extends Component {
     }
 
     if (injectedUpdateChecker == null) {
-      this.UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      this.UPDATECHECKER = new UpdateChecker();
     } else {
       this.UPDATECHECKER = injectedUpdateChecker;
     }

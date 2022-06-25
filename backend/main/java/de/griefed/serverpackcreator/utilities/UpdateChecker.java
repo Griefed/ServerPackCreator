@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.GitHubChecker;
 import de.griefed.versionchecker.GitLabChecker;
@@ -45,85 +43,65 @@ public class UpdateChecker {
 
   private static final Logger LOG = LogManager.getLogger(UpdateChecker.class);
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
-  private final ApplicationProperties APPLICATIONPROPERTIES;
-  private GitHubChecker GITHUB;
-  private GitLabChecker GITGRIEFED;
-  private GitLabChecker GITLAB;
+  private GitHubChecker gitHub;
+  private GitLabChecker gitGriefed;
+  private GitLabChecker gitLab;
 
   /**
    * Constructor for Dependency Injection.
    *
-   * @param injectedLocalizationManager Instance of {@link LocalizationManager}.
-   * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
    * @author Griefed
    */
   @Autowired
-  public UpdateChecker(
-      LocalizationManager injectedLocalizationManager,
-      ApplicationProperties injectedApplicationProperties) {
-
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-    } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
-    }
+  public UpdateChecker() {
 
     try {
-      this.GITHUB = new GitHubChecker("Griefed/ServerPackCreator").refresh();
+      this.gitHub = new GitHubChecker("Griefed/ServerPackCreator").refresh();
     } catch (IOException ex) {
       LOG.error("The GitHub user/repository you set resulted in a malformed URL.", ex);
-      this.GITHUB = null;
+      this.gitHub = null;
     }
 
     try {
-      this.GITLAB =
+      this.gitLab =
           new GitLabChecker("https://gitlab.com/api/v4/projects/32677538/releases").refresh();
     } catch (IOException ex) {
       LOG.error("The GitLab URL you set resulted in a malformed URL.", ex);
-      this.GITLAB = null;
+      this.gitLab = null;
     }
     try {
-      this.GITGRIEFED =
+      this.gitGriefed =
           new GitLabChecker("https://git.griefed.de/api/v4/projects/63/releases").refresh();
     } catch (IOException ex) {
       LOG.error("The GitGriefed URL you set resulted in a malformed URL.", ex);
-      this.GITGRIEFED = null;
+      this.gitGriefed = null;
     }
   }
 
   /**
    * Refresh the GitHub, GitLab and GitGriefed instances, so we get the most current releases.
    *
-   * @return {@link UpdateChecker} reference.
    * @author Griefed
    */
-  public UpdateChecker refresh() {
+  public void refresh() {
     try {
-      this.GITHUB.refresh();
+      this.gitHub.refresh();
     } catch (Exception ex) {
       LOG.error("Error refreshing GitHub.", ex);
-      this.GITHUB = null;
+      this.gitHub = null;
     }
     try {
-      this.GITLAB.refresh();
+      this.gitLab.refresh();
     } catch (Exception ex) {
       LOG.error("Error refreshing GitLab.", ex);
-      this.GITLAB = null;
+      this.gitLab = null;
     }
     try {
-      this.GITGRIEFED.refresh();
+      this.gitGriefed.refresh();
     } catch (Exception ex) {
       LOG.error("Error refreshing GitGriefed.", ex);
-      this.GITGRIEFED = null;
+      this.gitGriefed = null;
     }
-    return this;
   }
 
   /**
@@ -133,7 +111,7 @@ public class UpdateChecker {
    * @author Griefed
    */
   public GitHubChecker getGitHub() {
-    return GITHUB;
+    return gitHub;
   }
 
   /**
@@ -143,7 +121,7 @@ public class UpdateChecker {
    * @author Griefed
    */
   public GitLabChecker getGitLab() {
-    return GITLAB;
+    return gitLab;
   }
 
   /**
@@ -153,7 +131,7 @@ public class UpdateChecker {
    * @author Griefed
    */
   public GitLabChecker getGitGriefed() {
-    return GITGRIEFED;
+    return gitGriefed;
   }
 
   /**
@@ -175,43 +153,43 @@ public class UpdateChecker {
 
     Optional<Update> update = Optional.empty();
 
-    if (GITHUB != null) {
+    if (gitHub != null) {
       LOG.debug("Checking GitHub for updates...");
 
       // Check GitHub for the most recent release.
-      update = GITHUB.check(version, preReleaseCheck);
+      update = gitHub.check(version, preReleaseCheck);
     }
 
-    if (GITGRIEFED != null) {
+    if (gitGriefed != null) {
       LOG.debug("Checking GitGriefed for updates...");
 
       // After checking GitHub, and we did not get a version, check GitGriefed.
       if (update.isPresent()
-          && GITGRIEFED.check(update.get().version(), preReleaseCheck).isPresent()) {
+          && gitGriefed.check(update.get().version(), preReleaseCheck).isPresent()) {
 
-        update = GITGRIEFED.check(update.get().version(), preReleaseCheck);
+        update = gitGriefed.check(update.get().version(), preReleaseCheck);
 
         // Check GitGriefed for a newer version, with the version received from GitHub, if we
         // received a new version from GitHub.
       } else if (!update.isPresent()) {
 
-        update = GITGRIEFED.check(version, preReleaseCheck);
+        update = gitGriefed.check(version, preReleaseCheck);
       }
     }
 
-    if (GITLAB != null) {
+    if (gitLab != null) {
       LOG.debug("Checking GitLab for updates...");
 
       // After checking GitGriefed, and we did not get a version, check GitLab.
-      if (update.isPresent() && GITLAB.check(update.get().version(), preReleaseCheck).isPresent()) {
+      if (update.isPresent() && gitLab.check(update.get().version(), preReleaseCheck).isPresent()) {
 
-        update = GITLAB.check(update.get().version(), preReleaseCheck);
+        update = gitLab.check(update.get().version(), preReleaseCheck);
 
         // Check GitLab for a newer version, with the version we received from GitGriefed, if we
         // received a new version from GitGriefed.
       } else if (!update.isPresent()) {
 
-        update = GITLAB.check(version, preReleaseCheck);
+        update = gitLab.check(version, preReleaseCheck);
       }
     }
 

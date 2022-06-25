@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ConfigurationCreator;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
+import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import de.griefed.versionchecker.Update;
 import java.awt.GraphicsEnvironment;
@@ -68,16 +69,20 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  *
  * @author Griefed
  */
+@Generated
+@SpringBootApplication
+@EnableScheduling
+@PropertySources({
+    @PropertySource("classpath:application.properties"),
+    @PropertySource("classpath:serverpackcreator.properties")
+})
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
-
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final LocalizationManager LOCALIZATIONMANAGER;
-
   private final String[] ARGS;
-
   private final File LOG4J2XML = new File("log4j2.xml");
   private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
   private Utilities utilities = null;
@@ -109,6 +114,34 @@ public class ServerPackCreator {
     } else {
       this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
     }
+  }
+
+  /**
+   * Initialize ServerPackCreator with the passed commandline-arguments and run.
+   *
+   * <p>For a list of available commandline arguments, check out {@link
+   * ServerPackCreator.CommandlineParser.Mode}
+   *
+   * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
+   *     ServerPackCreator will enter and which locale is used.
+   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @author Griefed
+   */
+  public static void main(String[] args) throws IOException {
+
+    ServerPackCreator serverPackCreator = new ServerPackCreator(args);
+
+    serverPackCreator.run();
+  }
+
+  /**
+   * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
+   *
+   * @param args Arguments passed from invocation in {@link #main(String[])}.
+   * @author Griefed
+   */
+  public static void web(String[] args) {
+    SpringApplication.run(ServerPackCreator.class, args);
   }
 
   /**
@@ -201,10 +234,6 @@ public class ServerPackCreator {
         utilities.JarUtils()
             .systemInformation(
                 utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
-
-    // Uncomment if you want to work on encodings....
-    // Nightmare fuel...
-    // utilities.SystemUtils().println(LOCALIZATIONMANAGER.getLocalizedString("encoding.check"));
 
     LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
     LOG.debug("System information jarName: " + systemInformation.get("jarName"));
@@ -394,7 +423,8 @@ public class ServerPackCreator {
   }
 
   /**
-   * Initialize {@link ApplicationPlugins}, {@link ServerPackHandler}.
+   * Initialize {@link ApplicationPlugins}, {@link ServerPackHandler} and our {@link UpdateChecker}
+   * if it is found to be <code>null</code>.
    *
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
@@ -407,9 +437,7 @@ public class ServerPackCreator {
             LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, versionMeta, utilities, applicationPlugins);
 
     if (this.updateChecker == null) {
-      this.updateChecker = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
-    } else {
-      this.updateChecker.refresh();
+      this.updateChecker = new UpdateChecker();
     }
   }
 
@@ -481,7 +509,7 @@ public class ServerPackCreator {
           private void createFile(File toCreate) {
             try {
               FileUtils.copyInputStreamToFile(
-                  Objects.requireNonNull(Main.class.getResourceAsStream("/" + toCreate.getName())),
+                  Objects.requireNonNull(ServerPackCreator.class.getResourceAsStream("/" + toCreate.getName())),
                   toCreate);
 
             } catch (IOException ex) {
@@ -520,6 +548,10 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void runGui() throws IOException {
+    if (updateChecker == null) {
+      updateChecker = new UpdateChecker();
+    }
+
     new ServerPackCreatorGui(
             LOCALIZATIONMANAGER,
             configurationHandler,
@@ -527,7 +559,7 @@ public class ServerPackCreator {
             APPLICATIONPROPERTIES,
             versionMeta,
             utilities,
-            new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES),
+            updateChecker,
             applicationPlugins,
             configUtilities,
             serverPackCreatorSplash)
@@ -769,14 +801,14 @@ public class ServerPackCreator {
 
           LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.yes"));
           reader.close();
-          WebService.main(ARGS);
+          web(ARGS);
         }
 
       } while (!answer.matches("^(Yes|No)$"));
 
     } else {
 
-      WebService.main(ARGS);
+      web(ARGS);
     }
   }
 
@@ -913,7 +945,7 @@ public class ServerPackCreator {
    */
   public void updateCheck() {
     if (this.updateChecker == null) {
-      this.updateChecker = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      this.updateChecker = new UpdateChecker();
     } else {
       this.updateChecker.refresh();
     }
@@ -998,7 +1030,7 @@ public class ServerPackCreator {
      * language was specified.
      *
      * @param args {@link String}-array of commandline-arguments with which ServerPackCreator was
-     *     started. Typically passed from {@link Main}.
+     *     started. Typically passed from {@link ServerPackCreator}.
      * @author Griefed
      */
     public CommandlineParser(String[] args) {
@@ -1167,28 +1199,6 @@ public class ServerPackCreator {
       public String argument() {
         return ARGUMENT;
       }
-    }
-  }
-
-  /**
-   * @author Griefed
-   */
-  @SpringBootApplication
-  @EnableScheduling
-  @PropertySources({
-    @PropertySource("classpath:application.properties"),
-    @PropertySource("classpath:serverpackcreator.properties")
-  })
-  public static class WebService {
-
-    /**
-     * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
-     *
-     * @param args Arguments passed from invocation in {@link Main#main(String[])}.
-     * @author Griefed
-     */
-    public static void main(String[] args) {
-      SpringApplication.run(WebService.class, args);
     }
   }
 }

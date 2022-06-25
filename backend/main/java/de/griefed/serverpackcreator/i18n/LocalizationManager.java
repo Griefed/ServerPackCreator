@@ -307,7 +307,9 @@ public class LocalizationManager {
       }
     }
 
-    LOG.debug(getLocalizedString("encoding.check"));
+    // Uncomment if you want to work on encodings....
+    // Nightmare fuel...
+    // LOG.debug(getLocalizedString("encoding.check"));
   }
 
   /**
@@ -370,16 +372,7 @@ public class LocalizationManager {
 
       if (value != null) {
 
-        // Ukrainian letters are displayed as ???? ?? ?????? and so on. Please help. I have no idea
-        // how to fix this
-        // German letters like ö, ä and ü are fine....
         text = value;
-        /*try {
-          text = decodeText(value);
-        } catch (IOException ex) {
-          LOG.error("Couldn't decode text.", ex);
-          text = value;
-        }*/
 
       } else {
 
@@ -418,7 +411,7 @@ public class LocalizationManager {
   public static class UTF8Control extends Control {
     public ResourceBundle newBundle(
         String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
-        throws IllegalAccessException, InstantiationException, IOException {
+        throws IOException {
       // The below is a copy of the default implementation.
       String bundleName = toBundleName(baseName, locale);
       String resourceName = toResourceName(bundleName, "properties");

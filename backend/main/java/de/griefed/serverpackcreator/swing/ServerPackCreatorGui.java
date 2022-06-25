@@ -216,7 +216,7 @@ public class ServerPackCreatorGui {
 
     UpdateChecker UPDATECHECKER;
     if (injectedUpdateChecker == null) {
-      UPDATECHECKER = new UpdateChecker(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      UPDATECHECKER = new UpdateChecker();
     } else {
       UPDATECHECKER = injectedUpdateChecker;
     }
