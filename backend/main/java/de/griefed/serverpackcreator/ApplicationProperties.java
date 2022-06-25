@@ -305,23 +305,42 @@ public class ApplicationProperties extends Properties {
    */
   @Autowired
   public ApplicationProperties() {
+    super();
 
     // Load the properties file from the classpath, providing default values.
     try (InputStream inputStream =
         new ClassPathResource("serverpackcreator.properties").getInputStream()) {
-      load(inputStream);
+      this.load(inputStream);
     } catch (IOException ex) {
       LOG.error("Couldn't read properties file.", ex);
     }
-    /*
-     * Now load the properties file from the local filesystem. This overwrites previously loaded properties
-     * but has the advantage of always providing default values if any property in the applications.properties
-     * on the filesystem should be commented out.
-     */
+
+    String version = ApplicationProperties.class.getPackage().getImplementationVersion();
+    if (version != null) {
+      this.SERVERPACKCREATOR_VERSION = version;
+    } else {
+      this.SERVERPACKCREATOR_VERSION = "dev";
+    }
+
+    reload();
+  }
+
+  /**
+   * Reload serverpackcreator.properties.
+   *
+   * @author Griefed
+   */
+  public void reload() {
+
     if (new File("serverpackcreator.properties").exists()) {
+      /*
+       * Now load the properties file from the local filesystem. This overwrites previously loaded properties
+       * but has the advantage of always providing default values if any property in the applications.properties
+       * on the filesystem should be commented out.
+       */
       try (InputStream inputStream =
           Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
-        load(inputStream);
+        this.load(inputStream);
       } catch (IOException ex) {
         LOG.error("Couldn't read properties file.", ex);
       }
@@ -367,164 +386,7 @@ public class ApplicationProperties extends Properties {
       }
     }
 
-    if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
-
-      this.listFallbackMods = this.FALLBACK_CLIENTSIDE_MODS;
-      LOG.debug("Fallbackmodslist property null. Using fallback: " + this.FALLBACK_CLIENTSIDE_MODS);
-
-    } else if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
-        .contains(",")) {
-
-      this.listFallbackMods =
-          new ArrayList<>(
-              Arrays.asList(
-                  this.getProperty(
-                          "de.griefed.serverpackcreator.configuration.fallbackmodslist",
-                          this.FALLBACK_MODS_DEFAULT_ASSTRING)
-                      .split(",")));
-      LOG.debug("Fallbackmodslist set to: " + this.listFallbackMods);
-
-    } else {
-
-      this.listFallbackMods =
-          Collections.singletonList(
-              (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
-      LOG.debug("Fallbackmodslist set to: " + this.listFallbackMods);
-    }
-
-    // List of directories which can be excluded from server packs
-    if (this.getProperty("de.griefed.serverpackcreator.configuration.directories.shouldexclude")
-        == null) {
-
-      this.directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
-      LOG.debug(
-          "directories.shouldexclude-property null. Using fallback: "
-              + this.directoriesToExclude);
-
-    } else if (this.getProperty(
-            "de.griefed.serverpackcreator.configuration.directories.shouldexclude")
-        .contains(",")) {
-
-      this.directoriesToExclude =
-          new ArrayList<>(
-              Arrays.asList(
-                  this.getProperty(
-                          "de.griefed.serverpackcreator.configuration.directories.shouldexclude",
-                          FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING)
-                      .split(",")));
-      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
-
-    } else {
-
-      this.directoriesToExclude =
-          Collections.singletonList(
-              this.getProperty(
-                  "de.griefed.serverpackcreator.configuration.directories.shouldexclude"));
-      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
-    }
-
-    // List of directories which should always be included in a server pack, no matter what the
-    // users specify
-    if (this.getProperty("de.griefed.serverpackcreator.configuration.directories.mustinclude")
-        == null) {
-
-      this.directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
-      LOG.debug(
-          "directories.mustinclude-property null. Using fallback: "
-              + this.directoriesToInclude);
-
-    } else if (this.getProperty(
-            "de.griefed.serverpackcreator.configuration.directories.mustinclude")
-        .contains(",")) {
-
-      this.directoriesToInclude =
-          new ArrayList<>(
-              Arrays.asList(
-                  this.getProperty(
-                          "de.griefed.serverpackcreator.configuration.directories.mustinclude",
-                          FALLBACK_DIRECTORIES_INCLUDE_ASSTRING)
-                      .split(",")));
-      LOG.debug(
-          "Directories which must always be included set to: " + this.directoriesToInclude);
-
-    } else {
-
-      this.directoriesToInclude =
-          Collections.singletonList(
-              this.getProperty(
-                  "de.griefed.serverpackcreator.configuration.directories.mustinclude"));
-      LOG.debug(
-          "Directories which must always be included set to: " + this.directoriesToInclude);
-    }
-
-    this.queueMaxDiskUsage =
-        Integer.parseInt(
-            getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
-
-    this.saveLoadedConfiguration =
-        Boolean.parseBoolean(
-            getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
-
-    this.versioncheck_prerelease =
-        Boolean.parseBoolean(
-            getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
-
-    String version = ApplicationProperties.class.getPackage().getImplementationVersion();
-    if (version != null) {
-      this.SERVERPACKCREATOR_VERSION = version;
-    } else {
-      this.SERVERPACKCREATOR_VERSION = "dev";
-    }
-
-    this.aikarsFlags = this.getProperty("de.griefed.serverpackcreator.configuration.aikar");
-  }
-
-  /**
-   * Reload serverpackcreator.properties.
-   *
-   * @author Griefed
-   */
-  public void reload() {
-
-    try (InputStream inputStream =
-        Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
-      load(inputStream);
-    } catch (IOException ex) {
-      LOG.error("Couldn't read properties file.", ex);
-    }
-
-    String tempDir = null;
-    try {
-
-      tempDir =
-          this.getProperty(
-              "de.griefed.serverpackcreator.configuration.directories.serverpacks", "server-packs");
-
-    } catch (NullPointerException npe) {
-
-      this.setProperty(
-          "de.griefed.serverpackcreator.configuration.directories.serverpacks", "server-packs");
-      tempDir = "server-packs";
-
-    } finally {
-
-      if (tempDir != null && !tempDir.isEmpty() && new File(tempDir).isDirectory()) {
-        this.setProperty(
-            "de.griefed.serverpackcreator.configuration.directories.serverpacks", tempDir);
-        this.directoryServerPacks = tempDir;
-
-        try (OutputStream outputStream =
-            Files.newOutputStream(this.SERVERPACKCREATOR_PROPERTIES.toPath())) {
-          this.store(outputStream, null);
-        } catch (IOException ex) {
-          LOG.error("Couldn't write properties-file.", ex);
-        }
-
-      } else {
-        this.directoryServerPacks = "server-packs";
-      }
-    }
-
+    // Setup our fallback list of clientside-only mods.
     if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
 
       this.listFallbackMods = this.FALLBACK_CLIENTSIDE_MODS;
