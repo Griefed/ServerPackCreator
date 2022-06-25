@@ -214,8 +214,18 @@ public class ApplicationProperties extends Properties {
           + "yisthereautojump-";
   private final String SERVERPACKCREATOR_VERSION;
   private final String[] SUPPORTED_MODLOADERS = new String[] {"Fabric", "Forge", "Quilt"};
+
   private final List<String> FALLBACK_CLIENTSIDE_MODS =
       new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
+
+  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,defaultconfigs,scripts";
+  private final List<String> FALLBACK_DIRECTORIES_INCLUDE =
+      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
+
+  private final String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING =
+      "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries";
+  private final List<String> FALLBACK_DIRECTORIES_EXCLUDE =
+      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
 
   // DefaultFiles related
   private final File DEFAULT_CONFIG = new File("serverpackcreator.conf");
@@ -254,13 +264,13 @@ public class ApplicationProperties extends Properties {
    * List of directories which should be excluded from server packs. Default is overrides, packmenu,
    * resourcepacks, server_pack, fancymenu.
    */
-  private List<String> listDirectoriesExclude;
+  private List<String> directoriesToExclude;
 
   /**
    * List of directories which must not be excluded from server packs. Default is mods, config,
    * defaultconfigs, scripts, saves, seeds, libraries.
    */
-  private List<String> listCheckAgainstNewEntry;
+  private List<String> directoriesToInclude;
 
   /**
    * When running as a webservice: Maximum disk usage in % at which JMS/Artemis will stop storing
@@ -386,33 +396,31 @@ public class ApplicationProperties extends Properties {
     if (this.getProperty("de.griefed.serverpackcreator.configuration.directories.shouldexclude")
         == null) {
 
-      this.listDirectoriesExclude =
-          new ArrayList<>(
-              Arrays.asList("overrides", "packmenu", "resourcepacks", "server_pack", "fancymenu"));
+      this.directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
       LOG.debug(
           "directories.shouldexclude-property null. Using fallback: "
-              + this.listDirectoriesExclude);
+              + this.directoriesToExclude);
 
     } else if (this.getProperty(
             "de.griefed.serverpackcreator.configuration.directories.shouldexclude")
         .contains(",")) {
 
-      this.listDirectoriesExclude =
+      this.directoriesToExclude =
           new ArrayList<>(
               Arrays.asList(
                   this.getProperty(
                           "de.griefed.serverpackcreator.configuration.directories.shouldexclude",
-                          "overrides,packmenu,resourcepacks,server_pack,fancymenu")
+                          FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING)
                       .split(",")));
-      LOG.debug("Directories to exclude set to: " + this.listDirectoriesExclude);
+      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
 
     } else {
 
-      this.listDirectoriesExclude =
+      this.directoriesToExclude =
           Collections.singletonList(
               this.getProperty(
                   "de.griefed.serverpackcreator.configuration.directories.shouldexclude"));
-      LOG.debug("Directories to exclude set to: " + this.listDirectoriesExclude);
+      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
     }
 
     // List of directories which should always be included in a server pack, no matter what the
@@ -420,35 +428,33 @@ public class ApplicationProperties extends Properties {
     if (this.getProperty("de.griefed.serverpackcreator.configuration.directories.mustinclude")
         == null) {
 
-      this.listCheckAgainstNewEntry =
-          new ArrayList<>(
-              Arrays.asList("overrides", "packmenu", "resourcepacks", "server_pack", "fancymenu"));
+      this.directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
       LOG.debug(
           "directories.mustinclude-property null. Using fallback: "
-              + this.listCheckAgainstNewEntry);
+              + this.directoriesToInclude);
 
     } else if (this.getProperty(
             "de.griefed.serverpackcreator.configuration.directories.mustinclude")
         .contains(",")) {
 
-      this.listCheckAgainstNewEntry =
+      this.directoriesToInclude =
           new ArrayList<>(
               Arrays.asList(
                   this.getProperty(
                           "de.griefed.serverpackcreator.configuration.directories.mustinclude",
-                          "mods,config,defaultconfigs,scripts,saves,seeds,libraries")
+                          FALLBACK_DIRECTORIES_INCLUDE_ASSTRING)
                       .split(",")));
       LOG.debug(
-          "Directories which must always be included set to: " + this.listCheckAgainstNewEntry);
+          "Directories which must always be included set to: " + this.directoriesToInclude);
 
     } else {
 
-      this.listCheckAgainstNewEntry =
+      this.directoriesToInclude =
           Collections.singletonList(
               this.getProperty(
                   "de.griefed.serverpackcreator.configuration.directories.mustinclude"));
       LOG.debug(
-          "Directories which must always be included set to: " + this.listCheckAgainstNewEntry);
+          "Directories which must always be included set to: " + this.directoriesToInclude);
     }
 
     this.queueMaxDiskUsage =
@@ -548,33 +554,31 @@ public class ApplicationProperties extends Properties {
     if (this.getProperty("de.griefed.serverpackcreator.configuration.directories.shouldexclude")
         == null) {
 
-      this.listDirectoriesExclude =
-          new ArrayList<>(
-              Arrays.asList("overrides", "packmenu", "resourcepacks", "server_pack", "fancymenu"));
+      this.directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
       LOG.debug(
           "directories.shouldexclude-property null. Using fallback: "
-              + this.listDirectoriesExclude);
+              + this.directoriesToExclude);
 
     } else if (this.getProperty(
             "de.griefed.serverpackcreator.configuration.directories.shouldexclude")
         .contains(",")) {
 
-      this.listDirectoriesExclude =
+      this.directoriesToExclude =
           new ArrayList<>(
               Arrays.asList(
                   this.getProperty(
                           "de.griefed.serverpackcreator.configuration.directories.shouldexclude",
-                          "overrides,packmenu,resourcepacks,server_pack,fancymenu")
+                          FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING)
                       .split(",")));
-      LOG.debug("Directories to exclude set to: " + this.listDirectoriesExclude);
+      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
 
     } else {
 
-      this.listDirectoriesExclude =
+      this.directoriesToExclude =
           Collections.singletonList(
               this.getProperty(
                   "de.griefed.serverpackcreator.configuration.directories.shouldexclude"));
-      LOG.debug("Directories to exclude set to: " + this.listDirectoriesExclude);
+      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
     }
 
     // List of directories which should always be included in a server pack, no matter what the
@@ -582,35 +586,33 @@ public class ApplicationProperties extends Properties {
     if (this.getProperty("de.griefed.serverpackcreator.configuration.directories.mustinclude")
         == null) {
 
-      this.listCheckAgainstNewEntry =
-          new ArrayList<>(
-              Arrays.asList("overrides", "packmenu", "resourcepacks", "server_pack", "fancymenu"));
+      this.directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
       LOG.debug(
           "directories.mustinclude-property null. Using fallback: "
-              + this.listCheckAgainstNewEntry);
+              + this.directoriesToInclude);
 
     } else if (this.getProperty(
             "de.griefed.serverpackcreator.configuration.directories.mustinclude")
         .contains(",")) {
 
-      this.listCheckAgainstNewEntry =
+      this.directoriesToInclude =
           new ArrayList<>(
               Arrays.asList(
                   this.getProperty(
                           "de.griefed.serverpackcreator.configuration.directories.mustinclude",
-                          "mods,config,defaultconfigs,scripts,saves,seeds,libraries")
+                          FALLBACK_DIRECTORIES_INCLUDE_ASSTRING)
                       .split(",")));
       LOG.debug(
-          "Directories which must always be included set to: " + this.listCheckAgainstNewEntry);
+          "Directories which must always be included set to: " + this.directoriesToInclude);
 
     } else {
 
-      this.listCheckAgainstNewEntry =
+      this.directoriesToInclude =
           Collections.singletonList(
               this.getProperty(
                   "de.griefed.serverpackcreator.configuration.directories.mustinclude"));
       LOG.debug(
-          "Directories which must always be included set to: " + this.listCheckAgainstNewEntry);
+          "Directories which must always be included set to: " + this.directoriesToInclude);
     }
 
     this.queueMaxDiskUsage =
@@ -914,13 +916,23 @@ public class ApplicationProperties extends Properties {
   }
 
   /**
+   * Getter for the default list of directories to include in a server pack.
+   *
+   * @return {@link List} {@link String} containing default directories to include in a server pack.
+   * @author Griefed
+   */
+  public List<String> getDirectoriesToInclude() {
+    return directoriesToInclude;
+  }
+
+  /**
    * Getter for the list of directories to exclude from server packs.
    *
    * @return List String. Returns the list of directories to exclude from server packs.
    * @author Griefed
    */
-  public List<String> getListOfDirectoriesToExclude() {
-    return listDirectoriesExclude;
+  public List<String> getDirectoriesToExclude() {
+    return directoriesToExclude;
   }
 
   /**
@@ -930,11 +942,11 @@ public class ApplicationProperties extends Properties {
    *     packs.
    * @author Griefed
    */
-  public void addToListOfDirectoriesToExclude(String entry) {
-    if (!this.listDirectoriesExclude.contains(entry)
-        && !this.listCheckAgainstNewEntry.contains(entry)) {
+  public void addDirectoryToExclude(String entry) {
+    if (!this.directoriesToExclude.contains(entry)
+        && !this.directoriesToInclude.contains(entry)) {
       LOG.debug("Adding " + entry + " to list of files or directories to exclude.");
-      this.listDirectoriesExclude.add(entry);
+      this.directoriesToExclude.add(entry);
     }
   }
 
@@ -1054,6 +1066,7 @@ public class ApplicationProperties extends Properties {
 
   /**
    * Get this configurations AikarsFlags
+   *
    * @return {@link String} Aikars flags.
    */
   public String getAikarsFlags() {
@@ -1105,9 +1118,9 @@ public class ApplicationProperties extends Properties {
         + ", listFallbackMods="
         + getListFallbackMods()
         + ", listDirectoriesExclude="
-        + getListOfDirectoriesToExclude()
+        + getDirectoriesToExclude()
         + ", listCheckAgainstNewEntry="
-        + listCheckAgainstNewEntry
+        + getDirectoriesToInclude()
         + ", queueMaxDiskUsage="
         + getQueueMaxDiskUsage()
         + ", saveLoadedConfiguration="

@@ -279,7 +279,7 @@ public class ConfigurationHandler {
       configurationModel.setMinecraftVersion(config.getOrElse("minecraftVersion", ""));
       configurationModel.setModLoader(config.getOrElse("modLoader", ""));
       configurationModel.setModLoaderVersion(config.getOrElse("modLoaderVersion", ""));
-      configurationModel.setJavaArgs(config.getOrElse("javaArgs", "empty"));
+      configurationModel.setJavaArgs(config.getOrElse("javaArgs", ""));
 
       configurationModel.setServerPackSuffix(
           UTILITIES.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix", "")));

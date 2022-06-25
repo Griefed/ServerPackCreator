@@ -162,7 +162,7 @@ public class ZipController {
     if (clientMods.length() == 0) {
       clientMods =
           UTILITIES.StringUtils()
-              .buildString(APPLICATIONPROPERTIES.getListFallbackMods().toString());
+              .buildString(APPLICATIONPROPERTIES.getListFallbackMods());
     }
 
     return ResponseEntity.ok()

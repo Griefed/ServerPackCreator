@@ -1701,7 +1701,7 @@ public class ServerPackHandler {
 
     } else {
 
-      List<String> exclusions = APPLICATIONPROPERTIES.getListOfDirectoriesToExclude();
+      List<String> exclusions = APPLICATIONPROPERTIES.getDirectoriesToExclude();
       directoriesToCopy.forEach(
           entry -> {
             if (entry.startsWith("!") && !exclusions.contains(entry.substring(1))) {

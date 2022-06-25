@@ -347,50 +347,6 @@ public class ConfigUtilitiesTest {
   }
 
   @Test
-  void getConfigurationAsListTest() {
-    ConfigurationModel configurationModel = new ConfigurationModel();
-    configurationModel.setModpackDir("backend/test/resources/forge_tests");
-    configurationModel.setClientMods(
-        new ArrayList<>(
-            Arrays.asList(
-                "AmbientSounds",
-                "BackTools",
-                "BetterAdvancement",
-                "BetterPing",
-                "cherished",
-                "ClientTweaks",
-                "Controlling",
-                "DefaultOptions",
-                "durability",
-                "DynamicSurroundings",
-                "itemzoom",
-                "jei-professions",
-                "jeiintegration",
-                "JustEnoughResources",
-                "MouseTweaks",
-                "Neat",
-                "OldJavaWarning",
-                "PackMenu",
-                "preciseblockplacing",
-                "SimpleDiscordRichPresence",
-                "SpawnerFix",
-                "TipTheScales",
-                "WorldNameRandomizer")));
-    configurationModel.setCopyDirs(
-        new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs")));
-    configurationModel.setIncludeServerInstallation(true);
-    configurationModel.setIncludeServerIcon(true);
-    configurationModel.setIncludeServerProperties(true);
-    configurationModel.setIncludeZipCreation(true);
-    configurationModel.setJavaPath("/usr/bin/java");
-    configurationModel.setMinecraftVersion("1.16.5");
-    configurationModel.setModLoader("Forge");
-    configurationModel.setModLoaderVersion("36.1.2");
-    configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
-    Assertions.assertTrue(CONFIGUTILITIES.getConfigurationAsList(configurationModel).size() > 0);
-  }
-
-  @Test
   void updateConfigModelFromCurseManifestTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
     CONFIGUTILITIES.updateConfigModelFromCurseManifest(

@@ -323,15 +323,16 @@ public class ConfigUtilities {
    * @return String List. A list of all configurations as strings.
    * @author Griefed
    */
+  @Deprecated
   public List<String> getConfigurationAsList(ConfigurationModel configurationModel) {
 
     List<String> configurationAsList = new ArrayList<>(100);
 
     configurationAsList.add(configurationModel.getModpackDir());
     configurationAsList.add(
-        UTILITIES.StringUtils().buildString(configurationModel.getClientMods().toString()));
+        UTILITIES.StringUtils().buildString(configurationModel.getClientMods()));
     configurationAsList.add(
-        UTILITIES.StringUtils().buildString(configurationModel.getCopyDirs().toString()));
+        UTILITIES.StringUtils().buildString(configurationModel.getCopyDirs()));
     configurationAsList.add(configurationModel.getJavaPath());
     configurationAsList.add(configurationModel.getMinecraftVersion());
     configurationAsList.add(configurationModel.getModLoader());
@@ -754,13 +755,13 @@ public class ConfigUtilities {
     }
 
     for (int idirs = 0;
-        idirs < APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().size();
+        idirs < APPLICATIONPROPERTIES.getDirectoriesToExclude().size();
         idirs++) {
 
       int i = idirs;
 
       dirsInModpack.removeIf(
-          n -> (n.contains(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().get(i))));
+          n -> (n.contains(APPLICATIONPROPERTIES.getDirectoriesToExclude().get(i))));
     }
 
     LOG.info(

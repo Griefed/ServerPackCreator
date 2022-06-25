@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Utility-class revolving around Strings.
@@ -29,6 +30,17 @@ import java.util.Arrays;
 public class StringUtilities {
 
   public StringUtilities() {}
+
+  /**
+   * Converts a list of Strings, for example from a list, into a concatenated String.
+   *
+   * @param strings {@link List} {@link String} Strings that will be concatenated into one string
+   * @return String. Returns concatenated string that contains all provided values.
+   * @author Griefed
+   */
+  public String buildString(List<String> strings) {
+    return buildString(strings.toString());
+  }
 
   /**
    * Converts a sequence of Strings, for example from a list, into a concatenated String.

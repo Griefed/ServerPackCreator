@@ -293,9 +293,9 @@ public class ApplicationPropertiesTest {
 
   @Test
   void getListOfDirectoriesToExcludeTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude());
-    APPLICATIONPROPERTIES.addToListOfDirectoriesToExclude("test");
-    Assertions.assertTrue(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude().contains("test"));
+    Assertions.assertNotNull(APPLICATIONPROPERTIES.getDirectoriesToExclude());
+    APPLICATIONPROPERTIES.addDirectoryToExclude("test");
+    Assertions.assertTrue(APPLICATIONPROPERTIES.getDirectoriesToExclude().contains("test"));
   }
 
   @Test

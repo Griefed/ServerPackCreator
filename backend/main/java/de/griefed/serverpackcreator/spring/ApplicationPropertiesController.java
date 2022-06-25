@@ -65,7 +65,7 @@ public class ApplicationPropertiesController {
         + ","
         + "\"listDirectoriesExclude\":"
         + UTILITIES.ListUtils()
-            .encapsulateListElements(APPLICATIONPROPERTIES.getListOfDirectoriesToExclude())
+            .encapsulateListElements(APPLICATIONPROPERTIES.getDirectoriesToExclude())
         + ","
         + "\"serverPackCreatorVersion\":\""
         + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
