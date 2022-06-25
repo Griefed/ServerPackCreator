@@ -100,14 +100,6 @@
 <pre>java.io.File USER_JVM_ARGS</pre>
 </li>
 <li class="blockList">
-<h4>DIRECTORY_SERVER_FILES</h4>
-<pre>java.lang.String DIRECTORY_SERVER_FILES</pre>
-</li>
-<li class="blockList">
-<h4>DIRECTORY_PLUGINS</h4>
-<pre>java.lang.String DIRECTORY_PLUGINS</pre>
-</li>
-<li class="blockList">
 <h4>FALLBACK_MODS_DEFAULT_ASSTRING</h4>
 <pre>java.lang.String FALLBACK_MODS_DEFAULT_ASSTRING</pre>
 </li>
@@ -122,6 +114,22 @@
 <li class="blockList">
 <h4>FALLBACK_CLIENTSIDE_MODS</h4>
 <pre>java.util.List&lt;E&gt; FALLBACK_CLIENTSIDE_MODS</pre>
+</li>
+<li class="blockList">
+<h4>FALLBACK_DIRECTORIES_INCLUDE_ASSTRING</h4>
+<pre>java.lang.String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING</pre>
+</li>
+<li class="blockList">
+<h4>FALLBACK_DIRECTORIES_INCLUDE</h4>
+<pre>java.util.List&lt;E&gt; FALLBACK_DIRECTORIES_INCLUDE</pre>
+</li>
+<li class="blockList">
+<h4>FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING</h4>
+<pre>java.lang.String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING</pre>
+</li>
+<li class="blockList">
+<h4>FALLBACK_DIRECTORIES_EXCLUDE</h4>
+<pre>java.util.List&lt;E&gt; FALLBACK_DIRECTORIES_EXCLUDE</pre>
 </li>
 <li class="blockList">
 <h4>DEFAULT_CONFIG</h4>
@@ -203,14 +211,14 @@
 <div class="block">List of mods which should be excluded from server packs.</div>
 </li>
 <li class="blockList">
-<h4>listDirectoriesExclude</h4>
-<pre>java.util.List&lt;E&gt; listDirectoriesExclude</pre>
+<h4>directoriesToExclude</h4>
+<pre>java.util.List&lt;E&gt; directoriesToExclude</pre>
 <div class="block">List of directories which should be excluded from server packs. Default is overrides, packmenu,
  resourcepacks, server_pack, fancymenu.</div>
 </li>
 <li class="blockList">
-<h4>listCheckAgainstNewEntry</h4>
-<pre>java.util.List&lt;E&gt; listCheckAgainstNewEntry</pre>
+<h4>directoriesToInclude</h4>
+<pre>java.util.List&lt;E&gt; directoriesToInclude</pre>
 <div class="block">List of directories which must not be excluded from server packs. Default is mods, config,
  defaultconfigs, scripts, saves, seeds, libraries.</div>
 </li>
@@ -227,12 +235,18 @@
  serverpackcreator.conf. Setting this to true will make ServerPackCreator save
  serverpackcreator.conf as well as the last loaded configuration-file. Default is false.</div>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>versioncheck_prerelease</h4>
 <pre>boolean versioncheck_prerelease</pre>
 <div class="block">Whether ServerPackCreator should check for available PreReleases. Set to <code>true</code> to
  get notified about available PreReleases. Set to <code>false</code> if you only want stable
  releases.</div>
+</li>
+<li class="blockListLast">
+<h4>aikarsFlags</h4>
+<pre>java.lang.String aikarsFlags</pre>
+<div class="block">Aikars flags recommended for running a Minecraft server, from <a
+ href=https://aikar.co/mcflags.html>aikar.co</a></div>
 </li>
 </ul>
 </li>

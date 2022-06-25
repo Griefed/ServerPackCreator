@@ -137,6 +137,31 @@ extends java.lang.Object</pre>
 <div class="block">Constructor for our ConfigurationModel.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#ConfigurationModel-java.util.List-java.util.List-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-">ConfigurationModel</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
+                  java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
+                  java.lang.String&nbsp;modpackDir,
+                  java.lang.String&nbsp;javaPath,
+                  java.lang.String&nbsp;minecraftVersion,
+                  java.lang.String&nbsp;modLoader,
+                  java.lang.String&nbsp;modLoaderVersion,
+                  java.lang.String&nbsp;javaArgs,
+                  java.lang.String&nbsp;serverPackSuffix,
+                  java.lang.String&nbsp;serverIconPath,
+                  java.lang.String&nbsp;serverPropertiesPath,
+                  boolean&nbsp;includeServerInstallation,
+                  boolean&nbsp;includeServerIcon,
+                  boolean&nbsp;includeServerProperties,
+                  boolean&nbsp;includeZipCreation)</code>
+<div class="block">Construct a new configuration model with custom values.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#ConfigurationModel-de.griefed.serverpackcreator.utilities.common.Utilities-java.io.File-">ConfigurationModel</a></span>(<a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+                  java.io.File&nbsp;configFile)</code>
+<div class="block">Create a new configuration model from a config file.</div>
+</td>
+</tr>
 </table>
 </li>
 </ul>
@@ -409,11 +434,74 @@ extends java.lang.Object</pre>
 <a name="ConfigurationModel--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>ConfigurationModel</h4>
 <pre>public&nbsp;ConfigurationModel()</pre>
 <div class="block">Constructor for our ConfigurationModel.</div>
+</li>
+</ul>
+<a name="ConfigurationModel-java.util.List-java.util.List-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>ConfigurationModel</h4>
+<pre>public&nbsp;ConfigurationModel(java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
+                          java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
+                          java.lang.String&nbsp;modpackDir,
+                          java.lang.String&nbsp;javaPath,
+                          java.lang.String&nbsp;minecraftVersion,
+                          java.lang.String&nbsp;modLoader,
+                          java.lang.String&nbsp;modLoaderVersion,
+                          java.lang.String&nbsp;javaArgs,
+                          java.lang.String&nbsp;serverPackSuffix,
+                          java.lang.String&nbsp;serverIconPath,
+                          java.lang.String&nbsp;serverPropertiesPath,
+                          boolean&nbsp;includeServerInstallation,
+                          boolean&nbsp;includeServerIcon,
+                          boolean&nbsp;includeServerProperties,
+                          boolean&nbsp;includeZipCreation)</pre>
+<div class="block">Construct a new configuration model with custom values.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>clientMods</code> - String-<code>List</code> of clientside mods to exclude from the server pack.</dd>
+<dd><code>copyDirs</code> - String-<code>List</code> of directories and/or files to include in the server pack.</dd>
+<dd><code>modpackDir</code> - <code>String</code> The path to the modpack.</dd>
+<dd><code>javaPath</code> - <code>String</code> The path to the java installation used for modloader server installation.</dd>
+<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft version the modpack uses.</dd>
+<dd><code>modLoader</code> - <code>String</code> The modloader the modpack uses. Either <code>Forge</code>, <code>Fabric</code> or <code>Quilt</code>.</dd>
+<dd><code>modLoaderVersion</code> - <code>String</code> The modloader version the modpack uses.</dd>
+<dd><code>javaArgs</code> - <code>String</code> JVM flags to create the start scripts with.</dd>
+<dd><code>serverPackSuffix</code> - <code>String</code> Suffix to create the server pack with.</dd>
+<dd><code>serverIconPath</code> - <code>String</code> Path to the icon to use in the server pack.</dd>
+<dd><code>serverPropertiesPath</code> - <code>String</code> Path to the server.properties to create the server pack with.</dd>
+<dd><code>includeServerInstallation</code> - <code>Boolean</code> Whether to install the modloader server in the server pack.</dd>
+<dd><code>includeServerIcon</code> - <code>Boolean</code> Whether to include the server-icon.png in the server pack.</dd>
+<dd><code>includeServerProperties</code> - <code>Boolean</code> Whether to include the server.properties in the server pack.</dd>
+<dd><code>includeZipCreation</code> - <code>Boolean</code> Whether to create a ZIP-archive of the server pack.</dd>
+</dl>
+</li>
+</ul>
+<a name="ConfigurationModel-de.griefed.serverpackcreator.utilities.common.Utilities-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>ConfigurationModel</h4>
+<pre>public&nbsp;ConfigurationModel(<a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+                          java.io.File&nbsp;configFile)
+                   throws java.io.FileNotFoundException,
+                          com.electronwill.nightconfig.core.file.NoFormatFoundException</pre>
+<div class="block">Create a new configuration model from a config file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>utilities</code> - <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a> Instance of our SPC utilities.</dd>
+<dd><code>configFile</code> - <code>File</code> Configuration file to load.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.FileNotFoundException</code> - if the specified file can not be found.</dd>
+<dd><code>com.electronwill.nightconfig.core.file.NoFormatFoundException</code></dd>
+</dl>
 </li>
 </ul>
 </li>
