@@ -1,12 +1,24 @@
 package de.griefed.serverpackcreator.utilities.common;
 
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import java.awt.Desktop;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ProtocolException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import javax.net.ssl.HttpsURLConnection;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +32,25 @@ public class WebUtilities {
 
   private static final Logger LOG = LogManager.getLogger(WebUtilities.class);
 
-  public WebUtilities() {}
+  private final ApplicationProperties APPLICATIONPROPERTIES;
+  private final LocalizationManager LOCALIZATIONMANAGER;
+
+  public WebUtilities(
+      ApplicationProperties injectedApplicationProperties,
+      LocalizationManager injectedLocalizationManager) {
+    if (injectedApplicationProperties == null) {
+
+      this.APPLICATIONPROPERTIES = new ApplicationProperties();
+    } else {
+      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    }
+
+    if (injectedLocalizationManager == null) {
+      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    } else {
+      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+    }
+  }
 
   /**
    * Download the file from the specified URL to the specified destination, replacing the file if it
@@ -140,5 +170,159 @@ public class WebUtilities {
     }
 
     return new File(fileDestination).exists();
+  }
+
+  /**
+   * Open the given url in a browser.
+   *
+   * @param url {@link URL} the URI to the website you want to open.
+   * @author Griefed
+   */
+  public void openLinkInBrowser(URL url) {
+    try {
+      openLinkInBrowser(url.toURI());
+    } catch (URISyntaxException ex) {
+      LOG.error("Error opening browser with link " + url + ".", ex);
+    }
+  }
+
+  /**
+   * Open the given uri in a browser.
+   *
+   * @param uri {@link URI} the URI to the website you want to open.
+   * @author Griefed
+   */
+  public void openLinkInBrowser(URI uri) {
+    try {
+      if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+        Desktop.getDesktop().browse(uri);
+      }
+    } catch (IOException ex) {
+      LOG.error("Error opening browser with link " + uri + ".", ex);
+    }
+  }
+
+  /**
+   * Checks the filesize of the given file whether it is smaller or bigger than 10 MB.
+   *
+   * @param fileToCheck The file or directory to check.
+   * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
+   * @author Griefed
+   */
+  public boolean hasteBinPreChecks(File fileToCheck) {
+    long fileSize = FileUtils.sizeOf(fileToCheck);
+
+    try {
+      if (fileSize < 10000000
+          && FileUtils.readFileToString(fileToCheck, StandardCharsets.UTF_8).length() < 400000) {
+        LOG.debug("Smaller. " + fileSize + " byte.");
+        return true;
+      } else {
+        LOG.debug("Bigger. " + fileSize + " byte.");
+        return false;
+      }
+    } catch (IOException ex) {
+      LOG.error("Couldn't read file: " + fileToCheck, ex);
+    }
+
+    return false;
+  }
+
+  /**
+   * Create a HasteBin post from a given text file. The text file provided is read into a string and
+   * then passed onto <a href="https://haste.zneix.eu">Haste zneix</a> which creates a HasteBin post
+   * out of the passed String and returns the URL to the newly created post.<br>
+   * Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's
+   * hastebin.java (MIT License)</a> and edited to use HasteBin fork <a
+   * href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork of kaimu-kun's
+   * hastebin.java is available at <a
+   * href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.
+   *
+   * @param textFile The file which will be read into a String of which then to create a HasteBin
+   *     post of.
+   * @return String. Returns a String containing the URL to the newly created HasteBin post.
+   * @author <a href="https://github.com/kaimu-kun">kaimu-kun/hastebin.java</a>
+   * @author Griefed
+   */
+  public String createHasteBinFromFile(File textFile) {
+    String text = null;
+    String requestURL =
+        APPLICATIONPROPERTIES.getProperty(
+            "de.griefed.serverpackcreator.configuration.hastebinserver",
+            "https://haste.zneix.eu/documents");
+
+    String response = null;
+
+    int postDataLength;
+
+    URL url = null;
+
+    HttpsURLConnection conn = null;
+
+    byte[] postData;
+
+    try {
+      url = new URL(requestURL);
+    } catch (IOException ex) {
+      LOG.error("Error during acquisition of request URL.", ex);
+    }
+
+    try {
+      text = FileUtils.readFileToString(textFile, "UTF-8");
+    } catch (IOException ex) {
+      LOG.error("Error reading text from file.", ex);
+    }
+
+    postData = Objects.requireNonNull(text).getBytes(StandardCharsets.UTF_8);
+    postDataLength = postData.length;
+
+    try {
+      conn = (HttpsURLConnection) Objects.requireNonNull(url).openConnection();
+    } catch (IOException ex) {
+      LOG.error("Error during opening of connection to URL.", ex);
+    }
+
+    Objects.requireNonNull(conn).setDoOutput(true);
+    conn.setInstanceFollowRedirects(false);
+
+    try {
+      conn.setRequestMethod("POST");
+    } catch (ProtocolException ex) {
+      LOG.error("Error during request of POST method.", ex);
+    }
+
+    conn.setRequestProperty("User-Agent", "HasteBin-Creator for ServerPackCreator");
+    conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
+    conn.setUseCaches(false);
+
+    try (DataOutputStream dataOutputStream = new DataOutputStream(conn.getOutputStream())) {
+      // dataOutputStream = new DataOutputStream(conn.getOutputStream());
+      dataOutputStream.write(postData);
+
+      try (BufferedReader bufferedReader =
+          new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+
+        response = bufferedReader.readLine();
+
+      } catch (IOException ex) {
+        LOG.error("Error encountered when acquiring HasteBin.", ex);
+      }
+
+    } catch (IOException ex) {
+      LOG.error("Error encountered when acquiring HasteBin.", ex);
+    }
+
+    if (Objects.requireNonNull(response).contains("\"key\"")) {
+      response =
+          requestURL.replace("/documents", "/")
+              + response.substring(response.indexOf(":") + 2, response.length() - 2);
+    }
+
+    if (response.contains(requestURL.replace("/documents", ""))) {
+      return response;
+    } else {
+      return LOCALIZATIONMANAGER.getLocalizedString(
+          "createserverpack.log.error.abouttab.hastebin.response");
+    }
   }
 }

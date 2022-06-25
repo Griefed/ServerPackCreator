@@ -34,7 +34,8 @@ public class Utilities {
     this.LIST_UTILITIES = new ListUtilities();
     this.STRING_UTILITIES = new StringUtilities();
     this.SYSTEM_UTILITIES = new SystemUtilities();
-    this.WEB_UTILITIES = new WebUtilities();
+    this.WEB_UTILITIES =
+        new WebUtilities(injectedApplicationProperties, injectedLocalizationManager);
   }
 
   public BooleanUtilities BooleanUtils() {

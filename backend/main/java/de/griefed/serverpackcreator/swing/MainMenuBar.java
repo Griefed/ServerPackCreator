@@ -28,7 +28,6 @@ import de.griefed.serverpackcreator.utilities.common.InvalidFileTypeException;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.Update;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -37,22 +36,15 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -76,7 +68,6 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.Utilities;
 import mdlaf.MaterialLookAndFeel;
 import mdlaf.components.textpane.MaterialTextPaneUI;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -568,10 +559,8 @@ public class MainMenuBar extends Component {
           options[0])) {
         case 0:
           try {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-              Desktop.getDesktop().browse(update.get().url().toURI());
-            }
-          } catch (IOException | RuntimeException | URISyntaxException ex) {
+            UTILITIES.WebUtils().openLinkInBrowser(update.get().url().toURI());
+          } catch (RuntimeException | URISyntaxException ex) {
             LOG.error("Error opening browser.", ex);
           }
           break;
@@ -615,22 +604,6 @@ public class MainMenuBar extends Component {
   }
 
   /**
-   * Open the given url in a browser.
-   *
-   * @param uri {@link URI} the URI to the website you want to open.
-   * @author Griefed
-   */
-  private void openLinkInBrowser(URI uri) {
-    try {
-      if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-        Desktop.getDesktop().browse(uri);
-      }
-    } catch (IOException ex) {
-      LOG.error("Error opening browser with link " + uri + ".", ex);
-    }
-  }
-
-  /**
    * Open the Help-section of the wiki in a browser.
    *
    * @param actionEvent The event which triggers this method.
@@ -639,9 +612,10 @@ public class MainMenuBar extends Component {
   private void openWikiHelpMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Help.");
 
-    openLinkInBrowser(
-        URI.create(
-            "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"));
+    UTILITIES.WebUtils()
+        .openLinkInBrowser(
+            URI.create(
+                "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"));
   }
 
   /**
@@ -653,9 +627,10 @@ public class MainMenuBar extends Component {
   private void openWikiHowToMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Getting started.");
 
-    openLinkInBrowser(
-        URI.create(
-            "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo"));
+    UTILITIES.WebUtils()
+        .openLinkInBrowser(
+            URI.create(
+                "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo"));
   }
 
   /**
@@ -682,7 +657,7 @@ public class MainMenuBar extends Component {
   private void openDiscordLinkMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Join Discord.");
 
-    openLinkInBrowser(URI.create("https://discord.griefed.de"));
+    UTILITIES.WebUtils().openLinkInBrowser(URI.create("https://discord.griefed.de"));
   }
 
   /**
@@ -694,7 +669,8 @@ public class MainMenuBar extends Component {
   private void openIssuesMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Open Issues page on GitHub.");
 
-    openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
+    UTILITIES.WebUtils()
+        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
   }
 
   /**
@@ -709,8 +685,9 @@ public class MainMenuBar extends Component {
   private void uploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
 
-    if (hasteBinPreChecks(new File("logs/serverpackcreator.log"))) {
-      String urltoHasteBin = createHasteBinFromFile(new File("logs/serverpackcreator.log"));
+    if (UTILITIES.WebUtils().hasteBinPreChecks(new File("logs/serverpackcreator.log"))) {
+      String urltoHasteBin =
+          UTILITIES.WebUtils().createHasteBinFromFile(new File("logs/serverpackcreator.log"));
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {
@@ -719,29 +696,7 @@ public class MainMenuBar extends Component {
         LOG.error("Error inserting text into aboutDocument.", ex);
       }
 
-      MATERIALTEXTPANEUI.installUI(SPCLOG_WINDOW_TEXTPANE);
-
-      switch (JOptionPane.showOptionDialog(
-          FRAME_SERVERPACKCREATOR,
-          SPCLOG_WINDOW_TEXTPANE,
-          LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
-          JOptionPane.DEFAULT_OPTION,
-          JOptionPane.INFORMATION_MESSAGE,
-          ICON_HASTEBIN,
-          HASTEOPTIONS,
-          HASTEOPTIONS[0])) {
-        case 0:
-          openLinkInBrowser(URI.create(urltoHasteBin));
-
-          break;
-
-        case 1:
-          CLIPBOARD.setContents(new StringSelection(urltoHasteBin), null);
-          break;
-
-        default:
-          break;
-      }
+      displayUploadUrl(urltoHasteBin, SPCLOG_WINDOW_TEXTPANE);
     } else {
       fileTooLargeDialog();
     }
@@ -758,9 +713,10 @@ public class MainMenuBar extends Component {
   private void uploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload Configuration to HasteBin.");
 
-    if (hasteBinPreChecks(new File("serverpackcreator.conf"))) {
+    if (UTILITIES.WebUtils().hasteBinPreChecks(new File("serverpackcreator.conf"))) {
 
-      String urltoHasteBin = createHasteBinFromFile(new File("serverpackcreator.conf"));
+      String urltoHasteBin =
+          UTILITIES.WebUtils().createHasteBinFromFile(new File("serverpackcreator.conf"));
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {
@@ -769,31 +725,42 @@ public class MainMenuBar extends Component {
         LOG.error("Error inserting text into aboutDocument.", ex);
       }
 
-      MATERIALTEXTPANEUI.installUI(CONFIG_WINDOW_TEXTPANE);
-
-      switch (JOptionPane.showOptionDialog(
-          FRAME_SERVERPACKCREATOR,
-          CONFIG_WINDOW_TEXTPANE,
-          LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
-          JOptionPane.DEFAULT_OPTION,
-          JOptionPane.INFORMATION_MESSAGE,
-          ICON_HASTEBIN,
-          HASTEOPTIONS,
-          HASTEOPTIONS[0])) {
-        case 0:
-          openLinkInBrowser(URI.create(urltoHasteBin));
-
-          break;
-
-        case 1:
-          CLIPBOARD.setContents(new StringSelection(urltoHasteBin), null);
-          break;
-
-        default:
-          break;
-      }
+      displayUploadUrl(urltoHasteBin, CONFIG_WINDOW_TEXTPANE);
     } else {
       fileTooLargeDialog();
+    }
+  }
+
+  /**
+   * Display the given URL in a text pane.
+   *
+   * @param urltoHasteBin {@link String} The URL, as a String, to display.
+   * @param displayTextPane {@link JTextPane} The text pane to display the URL in.
+   * @author Griefed
+   */
+  private void displayUploadUrl(String urltoHasteBin, JTextPane displayTextPane) {
+    MATERIALTEXTPANEUI.installUI(displayTextPane);
+
+    switch (JOptionPane.showOptionDialog(
+        FRAME_SERVERPACKCREATOR,
+        displayTextPane,
+        LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
+        JOptionPane.DEFAULT_OPTION,
+        JOptionPane.INFORMATION_MESSAGE,
+        ICON_HASTEBIN,
+        HASTEOPTIONS,
+        HASTEOPTIONS[0])) {
+      case 0:
+        UTILITIES.WebUtils().openLinkInBrowser(URI.create(urltoHasteBin));
+
+        break;
+
+      case 1:
+        CLIPBOARD.setContents(new StringSelection(urltoHasteBin), null);
+        break;
+
+      default:
+        break;
     }
   }
 
@@ -1068,7 +1035,8 @@ public class MainMenuBar extends Component {
   private void viewExampleAddonMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked view example addon");
 
-    openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
+    UTILITIES.WebUtils()
+        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
   }
 
   /**
@@ -1142,7 +1110,8 @@ public class MainMenuBar extends Component {
   private void openGitHubMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open GitHub repository link.");
 
-    openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator"));
+    UTILITIES.WebUtils()
+        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator"));
   }
 
   /**
@@ -1154,7 +1123,7 @@ public class MainMenuBar extends Component {
   private void openDonateMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open donations link.");
 
-    openLinkInBrowser(URI.create("https://github.com/sponsors/Griefed"));
+    UTILITIES.WebUtils().openLinkInBrowser(URI.create("https://github.com/sponsors/Griefed"));
   }
 
   /**
@@ -1166,130 +1135,7 @@ public class MainMenuBar extends Component {
   private void openReleaseMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open releases link");
 
-    openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
-  }
-
-  /**
-   * Checks the filesize of the given file whether it is smaller or bigger than 10 MB.
-   *
-   * @param fileToCheck The file or directory to check.
-   * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
-   * @author Griefed
-   */
-  private boolean hasteBinPreChecks(File fileToCheck) {
-    long fileSize = FileUtils.sizeOf(fileToCheck);
-
-    try {
-      if (fileSize < 10000000
-          && FileUtils.readFileToString(fileToCheck, StandardCharsets.UTF_8).length() < 400000) {
-        LOG.debug("Smaller. " + fileSize + " byte.");
-        return true;
-      } else {
-        LOG.debug("Bigger. " + fileSize + " byte.");
-        return false;
-      }
-    } catch (IOException ex) {
-      LOG.error("Couldn't read file: " + fileToCheck, ex);
-    }
-
-    return false;
-  }
-
-  /**
-   * Create a HasteBin post from a given text file. The text file provided is read into a string and
-   * then passed onto <a href="https://haste.zneix.eu">Haste zneix</a> which creates a HasteBin post
-   * out of the passed String and returns the URL to the newly created post.<br>
-   * Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's
-   * hastebin.java (MIT License)</a> and edited to use HasteBin fork <a
-   * href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork of kaimu-kun's
-   * hastebin.java is available at <a
-   * href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.
-   *
-   * @param textFile The file which will be read into a String of which then to create a HasteBin
-   *     post of.
-   * @return String. Returns a String containing the URL to the newly created HasteBin post.
-   * @author <a href="https://github.com/kaimu-kun">kaimu-kun/hastebin.java</a>
-   * @author Griefed
-   */
-  private String createHasteBinFromFile(File textFile) {
-    String text = null;
-    String requestURL =
-        APPLICATIONPROPERTIES.getProperty(
-            "de.griefed.serverpackcreator.configuration.hastebinserver",
-            "https://haste.zneix.eu/documents");
-
-    String response = null;
-
-    int postDataLength;
-
-    URL url = null;
-
-    HttpsURLConnection conn = null;
-
-    byte[] postData;
-
-    try {
-      url = new URL(requestURL);
-    } catch (IOException ex) {
-      LOG.error("Error during acquisition of request URL.", ex);
-    }
-
-    try {
-      text = FileUtils.readFileToString(textFile, "UTF-8");
-    } catch (IOException ex) {
-      LOG.error("Error reading text from file.", ex);
-    }
-
-    postData = Objects.requireNonNull(text).getBytes(StandardCharsets.UTF_8);
-    postDataLength = postData.length;
-
-    try {
-      conn = (HttpsURLConnection) Objects.requireNonNull(url).openConnection();
-    } catch (IOException ex) {
-      LOG.error("Error during opening of connection to URL.", ex);
-    }
-
-    Objects.requireNonNull(conn).setDoOutput(true);
-    conn.setInstanceFollowRedirects(false);
-
-    try {
-      conn.setRequestMethod("POST");
-    } catch (ProtocolException ex) {
-      LOG.error("Error during request of POST method.", ex);
-    }
-
-    conn.setRequestProperty("User-Agent", "HasteBin-Creator for ServerPackCreator");
-    conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
-    conn.setUseCaches(false);
-
-    try (DataOutputStream dataOutputStream = new DataOutputStream(conn.getOutputStream())) {
-      // dataOutputStream = new DataOutputStream(conn.getOutputStream());
-      dataOutputStream.write(postData);
-
-      try (BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-
-        response = bufferedReader.readLine();
-
-      } catch (IOException ex) {
-        LOG.error("Error encountered when acquiring HasteBin.", ex);
-      }
-
-    } catch (IOException ex) {
-      LOG.error("Error encountered when acquiring HasteBin.", ex);
-    }
-
-    if (Objects.requireNonNull(response).contains("\"key\"")) {
-      response =
-          requestURL.replace("/documents", "/")
-              + response.substring(response.indexOf(":") + 2, response.length() - 2);
-    }
-
-    if (response.contains(requestURL.replace("/documents", ""))) {
-      return response;
-    } else {
-      return LOCALIZATIONMANAGER.getLocalizedString(
-          "createserverpack.log.error.abouttab.hastebin.response");
-    }
+    UTILITIES.WebUtils()
+        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
   }
 }

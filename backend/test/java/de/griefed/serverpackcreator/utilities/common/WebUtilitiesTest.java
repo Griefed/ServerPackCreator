@@ -1,5 +1,7 @@
 package de.griefed.serverpackcreator.utilities.common;
 
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import java.io.File;
 import java.net.URL;
 import org.apache.commons.io.FileUtils;
@@ -11,7 +13,9 @@ public class WebUtilitiesTest {
   private final WebUtilities WEB_UTILITIES;
 
   WebUtilitiesTest() {
-    this.WEB_UTILITIES = new WebUtilities();
+    ApplicationProperties applicationProperties = new ApplicationProperties();
+    this.WEB_UTILITIES =
+        new WebUtilities(applicationProperties, new LocalizationManager(applicationProperties));
   }
 
   @Test
