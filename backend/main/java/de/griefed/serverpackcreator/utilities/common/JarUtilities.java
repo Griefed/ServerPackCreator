@@ -355,6 +355,8 @@ public class JarUtilities {
             } catch (Exception ignored) {
 
             }
+
+            LOG.debug("Copied from JAR:" + entryName + ".");
           }
         }
       }
@@ -396,8 +398,6 @@ public class JarUtilities {
         filesFromJar.add(file.substring(file.lastIndexOf("/") + 1));
       }
 
-      filesFromJar.forEach(file -> LOG.debug("Copying from JAR: " + file));
-
     } catch (URISyntaxException ex) {
       LOG.error("Error retrieving file list from JAR.", ex);
     }
@@ -420,6 +420,7 @@ public class JarUtilities {
               assert inputStream != null;
               FileUtils.copyInputStreamToFile(inputStream, new File(destination + "/" + file));
 
+              LOG.debug("Copying from JAR: " + file);
             } catch (IOException ex) {
               LOG.error("Error extracting files.", ex);
             }
