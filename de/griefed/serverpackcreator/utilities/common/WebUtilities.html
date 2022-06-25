@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -128,7 +128,8 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#WebUtilities--">WebUtilities</a></span>()</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#WebUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.i18n.LocalizationManager-">WebUtilities</a></span>(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+            <a href="../../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -146,6 +147,12 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#createHasteBinFromFile-java.io.File-">createHasteBinFromFile</a></span>(java.io.File&nbsp;textFile)</code>
+<div class="block">Create a HasteBin post from a given text file.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#downloadAndReplaceFile-java.io.File-java.net.URL-">downloadAndReplaceFile</a></span>(java.io.File&nbsp;destinationFile,
                       java.net.URL&nbsp;downloadURL)</code>
@@ -153,7 +160,7 @@ extends java.lang.Object</pre>
  already exists.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#downloadAndReplaceFile-java.lang.String-java.net.URL-">downloadAndReplaceFile</a></span>(java.lang.String&nbsp;fileDestination,
                       java.net.URL&nbsp;downloadURL)</code>
@@ -161,18 +168,36 @@ extends java.lang.Object</pre>
  already exists.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#downloadFile-java.io.File-java.net.URL-">downloadFile</a></span>(java.io.File&nbsp;destinationFile,
             java.net.URL&nbsp;downloadURL)</code>
 <div class="block">Download the file from the specified URL to the specified destination.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#downloadFile-java.lang.String-java.net.URL-">downloadFile</a></span>(java.lang.String&nbsp;fileDestination,
             java.net.URL&nbsp;downloadURL)</code>
 <div class="block">Download the file from the specified URL to the specified destination.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#hasteBinPreChecks-java.io.File-">hasteBinPreChecks</a></span>(java.io.File&nbsp;fileToCheck)</code>
+<div class="block">Checks the filesize of the given file whether it is smaller or bigger than 10 MB.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#openLinkInBrowser-java.net.URI-">openLinkInBrowser</a></span>(java.net.URI&nbsp;uri)</code>
+<div class="block">Open the given uri in a browser.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#openLinkInBrowser-java.net.URL-">openLinkInBrowser</a></span>(java.net.URL&nbsp;url)</code>
+<div class="block">Open the given url in a browser.</div>
 </td>
 </tr>
 </table>
@@ -197,13 +222,14 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="WebUtilities--">
+<a name="WebUtilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.i18n.LocalizationManager-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>WebUtilities</h4>
-<pre>public&nbsp;WebUtilities()</pre>
+<pre>public&nbsp;WebUtilities(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                    <a href="../../../../../de/griefed/serverpackcreator/i18n/LocalizationManager.html" title="class in de.griefed.serverpackcreator.i18n">LocalizationManager</a>&nbsp;injectedLocalizationManager)</pre>
 </li>
 </ul>
 </li>
@@ -282,7 +308,7 @@ extends java.lang.Object</pre>
 <a name="downloadFile-java.lang.String-java.net.URL-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>downloadFile</h4>
 <pre>public&nbsp;boolean&nbsp;downloadFile(java.lang.String&nbsp;fileDestination,
@@ -298,6 +324,74 @@ extends java.lang.Object</pre>
 <dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
+</dl>
+</li>
+</ul>
+<a name="openLinkInBrowser-java.net.URL-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>openLinkInBrowser</h4>
+<pre>public&nbsp;void&nbsp;openLinkInBrowser(java.net.URL&nbsp;url)</pre>
+<div class="block">Open the given url in a browser.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>url</code> - <code>URL</code> the URI to the website you want to open.</dd>
+</dl>
+</li>
+</ul>
+<a name="openLinkInBrowser-java.net.URI-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>openLinkInBrowser</h4>
+<pre>public&nbsp;void&nbsp;openLinkInBrowser(java.net.URI&nbsp;uri)</pre>
+<div class="block">Open the given uri in a browser.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>uri</code> - <code>URI</code> the URI to the website you want to open.</dd>
+</dl>
+</li>
+</ul>
+<a name="hasteBinPreChecks-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasteBinPreChecks</h4>
+<pre>public&nbsp;boolean&nbsp;hasteBinPreChecks(java.io.File&nbsp;fileToCheck)</pre>
+<div class="block">Checks the filesize of the given file whether it is smaller or bigger than 10 MB.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToCheck</code> - The file or directory to check.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. True if the file is smaller, false if the file is bigger than 10 MB.</dd>
+</dl>
+</li>
+</ul>
+<a name="createHasteBinFromFile-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>createHasteBinFromFile</h4>
+<pre>public&nbsp;java.lang.String&nbsp;createHasteBinFromFile(java.io.File&nbsp;textFile)</pre>
+<div class="block">Create a HasteBin post from a given text file. The text file provided is read into a string and
+ then passed onto <a href="https://haste.zneix.eu">Haste zneix</a> which creates a HasteBin post
+ out of the passed String and returns the URL to the newly created post.<br>
+ Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's
+ hastebin.java (MIT License)</a> and edited to use HasteBin fork <a
+ href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork of kaimu-kun's
+ hastebin.java is available at <a
+ href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>textFile</code> - The file which will be read into a String of which then to create a HasteBin
+     post of.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String. Returns a String containing the URL to the newly created HasteBin post.</dd>
 </dl>
 </li>
 </ul>
