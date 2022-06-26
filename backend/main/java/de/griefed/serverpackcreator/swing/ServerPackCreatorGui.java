@@ -325,8 +325,6 @@ public class ServerPackCreatorGui {
             UTILITIES);
 
     FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
-
-    TABBEDPANE.setOpaque(true);
   }
 
   /**
@@ -396,6 +394,13 @@ public class ServerPackCreatorGui {
      * Does it work? Yeah.
      */
     SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
+
+    /*
+     * This call needs to stay here, otherwise we have a transparent background in the tab-bar of
+     * our tabbed pane, which looks kinda cool, but also stupid and hard to read.
+     */
+    TABBEDPANE.setOpaque(true);
+
     FRAME_SERVERPACKCREATOR.setVisible(true);
 
     TAB_CREATESERVERPACK.validateInputFields();
