@@ -265,7 +265,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/fabric_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
+    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge","36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -284,7 +284,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/forge_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
+    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge","36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -303,7 +303,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/quilt_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir);
+    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge","36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(

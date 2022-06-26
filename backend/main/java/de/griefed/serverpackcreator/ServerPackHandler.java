@@ -51,7 +51,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -350,7 +349,9 @@ public class ServerPackHandler {
         zipBuilder(
             configurationModel.getMinecraftVersion(),
             configurationModel.getIncludeServerInstallation(),
-            destination);
+            destination,
+            configurationModel.getModLoader(),
+            configurationModel.getModLoaderVersion());
       } else {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.runincli.zip"));
@@ -2416,9 +2417,10 @@ public class ServerPackHandler {
   }
 
   /**
-   * Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.
-   *
-   * <p>
+   * Creates a ZIP-archive of the server pack previously generated. Depending on {@link
+   * ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize the
+   * files which will be excluded, see {@link
+   * ApplicationProperties#getFilesToExcludeFromZipArchive()}
    *
    * @param minecraftVersion String. Determines the name of the Minecraft server JAR to exclude from
    *     the ZIP-archive if the modloader is Forge.
@@ -2428,29 +2430,47 @@ public class ServerPackHandler {
    * @author Griefed
    */
   public void zipBuilder(
-      String minecraftVersion, boolean includeServerInstallation, String destination) {
+      String minecraftVersion,
+      boolean includeServerInstallation,
+      String destination,
+      String modloader,
+      String modloaderVersion) {
 
     /* This log is meant to be read by the user, therefore we allow translation. */
     LOG.info(LOCALIZATIONMANAGER.getLocalizedString("createserverpack.log.info.zipbuilder.enter"));
 
-    List<File> filesToExclude =
-        new ArrayList<>(
-            Arrays.asList(
-                new File(
-                    String.format("%s/minecraft_server.%s.jar", destination, minecraftVersion)),
-                new File(String.format("%s/server.jar", destination)),
-                new File(
-                    String.format(
-                        "%s/libraries/net/minecraft/server/%s/server-%s.jar",
-                        destination, minecraftVersion, minecraftVersion))));
-
-    ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
-
     ZipParameters zipParameters = new ZipParameters();
-    zipParameters.setExcludeFileFilter(excludeFileFilter);
-    zipParameters.setIncludeRootFolder(false);
 
-    zipParameters.setFileComment("Server pack made with ServerPackCreator by Griefed.");
+    List<File> filesToExclude = new ArrayList<>(100);
+    if (APPLICATIONPROPERTIES.isZipFileExclusionEnabled()) {
+      APPLICATIONPROPERTIES
+          .getFilesToExcludeFromZipArchive()
+          .forEach(
+              entry ->
+                  filesToExclude.add(
+                      new File(
+                          destination
+                              + "/"
+                              + entry
+                                  .replace("MINECRAFT_VERSION", minecraftVersion)
+                                  .replace("MODLOADER", modloader)
+                                  .replace("MODLOADER_VERSION", modloaderVersion))));
+
+      ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
+      zipParameters.setExcludeFileFilter(excludeFileFilter);
+
+    } else {
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      LOG.info(
+          LOCALIZATIONMANAGER.getLocalizedString(
+              "createserverpack.log.info.zipbuilder.exclusion.deactivated"));
+    }
+
+    zipParameters.setIncludeRootFolder(false);
+    zipParameters.setFileComment(
+        "Server pack made with ServerPackCreator "
+            + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
+            + " by Griefed.");
 
     try (ZipFile zip = new ZipFile(String.format("%s_server_pack.zip", destination))) {
 

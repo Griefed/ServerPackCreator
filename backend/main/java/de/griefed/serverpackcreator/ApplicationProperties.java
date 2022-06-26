@@ -227,6 +227,11 @@ public class ApplicationProperties extends Properties {
   private final List<String> FALLBACK_DIRECTORIES_EXCLUDE =
       new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
 
+  private final String FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING =
+      "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar";
+  private final List<String> FALLBACK_FILES_EXCLUDE_ZIP =
+      new ArrayList<>(Arrays.asList(FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING.split(",")));
+
   // DefaultFiles related
   private final File DEFAULT_CONFIG = new File("serverpackcreator.conf");
   private final File OLD_CONFIG = new File("creator.conf");
@@ -297,6 +302,12 @@ public class ApplicationProperties extends Properties {
    * href=https://aikar.co/mcflags.html>aikar.co</a>
    */
   private String aikarsFlags;
+
+  /** List of files to be excluded from ZIP-archives. */
+  private List<String> filesToExcludeFromZipArchive;
+
+  /** Whether the exclusion of files from the server pack is enabled. */
+  private boolean isZipFileExclusionEnabled;
 
   /**
    * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
@@ -390,7 +401,7 @@ public class ApplicationProperties extends Properties {
     if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
 
       this.listFallbackMods = this.FALLBACK_CLIENTSIDE_MODS;
-      LOG.debug("Fallbackmodslist property null. Using fallback: " + this.FALLBACK_CLIENTSIDE_MODS);
+      LOG.debug("Fallbackmodslist property null. Using fallback.");
 
     } else if (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
         .contains(",")) {
@@ -402,24 +413,21 @@ public class ApplicationProperties extends Properties {
                           "de.griefed.serverpackcreator.configuration.fallbackmodslist",
                           this.FALLBACK_MODS_DEFAULT_ASSTRING)
                       .split(",")));
-      LOG.debug("Fallbackmodslist set to: " + this.listFallbackMods);
 
     } else {
 
       this.listFallbackMods =
           Collections.singletonList(
               (this.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
-      LOG.debug("Fallbackmodslist set to: " + this.listFallbackMods);
     }
+    LOG.debug("Fallbackmodslist set to: " + this.listFallbackMods);
 
     // List of directories which can be excluded from server packs
     if (this.getProperty("de.griefed.serverpackcreator.configuration.directories.shouldexclude")
         == null) {
 
       this.directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
-      LOG.debug(
-          "directories.shouldexclude-property null. Using fallback: "
-              + this.directoriesToExclude);
+      LOG.debug("directories.shouldexclude-property null. Using fallback.");
 
     } else if (this.getProperty(
             "de.griefed.serverpackcreator.configuration.directories.shouldexclude")
@@ -432,7 +440,6 @@ public class ApplicationProperties extends Properties {
                           "de.griefed.serverpackcreator.configuration.directories.shouldexclude",
                           FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING)
                       .split(",")));
-      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
 
     } else {
 
@@ -440,8 +447,8 @@ public class ApplicationProperties extends Properties {
           Collections.singletonList(
               this.getProperty(
                   "de.griefed.serverpackcreator.configuration.directories.shouldexclude"));
-      LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
     }
+    LOG.debug("Directories to exclude set to: " + this.directoriesToExclude);
 
     // List of directories which should always be included in a server pack, no matter what the
     // users specify
@@ -449,9 +456,7 @@ public class ApplicationProperties extends Properties {
         == null) {
 
       this.directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
-      LOG.debug(
-          "directories.mustinclude-property null. Using fallback: "
-              + this.directoriesToInclude);
+      LOG.debug("directories.mustinclude-property null. Using fallback.");
 
     } else if (this.getProperty(
             "de.griefed.serverpackcreator.configuration.directories.mustinclude")
@@ -464,8 +469,6 @@ public class ApplicationProperties extends Properties {
                           "de.griefed.serverpackcreator.configuration.directories.mustinclude",
                           FALLBACK_DIRECTORIES_INCLUDE_ASSTRING)
                       .split(",")));
-      LOG.debug(
-          "Directories which must always be included set to: " + this.directoriesToInclude);
 
     } else {
 
@@ -473,9 +476,8 @@ public class ApplicationProperties extends Properties {
           Collections.singletonList(
               this.getProperty(
                   "de.griefed.serverpackcreator.configuration.directories.mustinclude"));
-      LOG.debug(
-          "Directories which must always be included set to: " + this.directoriesToInclude);
     }
+    LOG.debug("Directories which must always be included set to: " + this.directoriesToInclude);
 
     this.queueMaxDiskUsage =
         Integer.parseInt(
@@ -489,7 +491,47 @@ public class ApplicationProperties extends Properties {
         Boolean.parseBoolean(
             getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
 
-    this.aikarsFlags = this.getProperty("de.griefed.serverpackcreator.configuration.aikar");
+    this.aikarsFlags =
+        this.getProperty(
+            "de.griefed.serverpackcreator.configuration.aikar",
+            "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 "
+                + "-XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 "
+                + "-XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 "
+                + "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 "
+                + "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem "
+                + "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true");
+
+    if (this.getProperty("de.griefed.serverpackcreator.serverpack.zip.exclude") == null) {
+
+      this.filesToExcludeFromZipArchive = FALLBACK_FILES_EXCLUDE_ZIP;
+      LOG.debug("serverpack.zip.exclude-property null. Using fallback.");
+
+    } else if (this.getProperty("de.griefed.serverpackcreator.serverpack.zip.exclude")
+        .contains(",")) {
+
+      this.filesToExcludeFromZipArchive =
+          new ArrayList<>(
+              Arrays.asList(
+                  this.getProperty(
+                          "de.griefed.serverpackcreator.serverpack.zip.exclude",
+                          FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING)
+                      .split(",")));
+
+    } else {
+
+      this.filesToExcludeFromZipArchive =
+          Collections.singletonList(
+              this.getProperty(
+                  "de.griefed.serverpackcreator.serverpack.zip.exclude",
+                  FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING));
+    }
+    LOG.debug(
+        "Files which must be excluded from ZIP-archives set to: "
+            + this.filesToExcludeFromZipArchive);
+
+    this.isZipFileExclusionEnabled =
+        Boolean.parseBoolean(
+            getProperty("de.griefed.serverpackcreator.serverpack.zip.exclude.enabled", "true"));
   }
 
   /**
@@ -805,8 +847,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public void addDirectoryToExclude(String entry) {
-    if (!this.directoriesToExclude.contains(entry)
-        && !this.directoriesToInclude.contains(entry)) {
+    if (!this.directoriesToExclude.contains(entry) && !this.directoriesToInclude.contains(entry)) {
       LOG.debug("Adding " + entry + " to list of files or directories to exclude.");
       this.directoriesToExclude.add(entry);
     }
@@ -843,6 +884,46 @@ public class ApplicationProperties extends Properties {
    */
   public boolean checkForAvailablePreReleases() {
     return versioncheck_prerelease;
+  }
+
+  /**
+   * Get this configurations AikarsFlags
+   *
+   * @return {@link String} Aikars flags.
+   */
+  public String getAikarsFlags() {
+    return aikarsFlags;
+  }
+
+  /**
+   * List of files to be excluded from ZIP-archives. Current filters are:
+   *
+   * <ul>
+   *   <li><code>MINECRAFT_VERSION</code> - Will be replaced with the Minecraft version of the
+   *       server pack
+   *   <li><code>MODLOADER</code> - Will be replaced with the modloader of the server pack
+   *   <li><code>MODLOADER_VERSION</code> - Will be replaced with the modloader version of the
+   *       server pack
+   * </ul>
+   *
+   * Should you want these filters to be expanded, open an issue on <a
+   * href="https://github.com/Griefed/ServerPackCreator/issues">GitHub</a>
+   *
+   * @return {@link List} {@link String} of files to exclude from the ZIP archive of a server pack.
+   * @author Griefed
+   */
+  public List<String> getFilesToExcludeFromZipArchive() {
+    return filesToExcludeFromZipArchive;
+  }
+
+  /**
+   * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
+   *
+   * @return {@link Boolean} <code>true</code> if the exclusion is enabled.
+   * @author Griefed
+   */
+  public boolean isZipFileExclusionEnabled() {
+    return isZipFileExclusionEnabled;
   }
 
   /**
@@ -924,74 +1005,5 @@ public class ApplicationProperties extends Properties {
       LOG.info("No fallback-list updates available.");
       return false;
     }
-  }
-
-  /**
-   * Get this configurations AikarsFlags
-   *
-   * @return {@link String} Aikars flags.
-   */
-  public String getAikarsFlags() {
-    return aikarsFlags;
-  }
-
-  @Override
-  public synchronized String toString() {
-    return "ApplicationProperties{"
-        + "SERVERPACKCREATOR_PROPERTIES="
-        + SERVERPACKCREATOR_PROPERTIES
-        + ", START_SCRIPT_WINDOWS="
-        + START_SCRIPT_WINDOWS
-        + ", START_SCRIPT_LINUX="
-        + START_SCRIPT_LINUX
-        + ", USER_JVM_ARGS="
-        + USER_JVM_ARGS
-        + ", FALLBACK_CLIENTSIDE_MODS="
-        + FALLBACK_CLIENTSIDE_MODS
-        + ", DEFAULT_CONFIG="
-        + DEFAULT_CONFIG
-        + ", OLD_CONFIG="
-        + OLD_CONFIG
-        + ", DEFAULT_SERVER_PROPERTIES="
-        + DEFAULT_SERVER_PROPERTIES
-        + ", DEFAULT_SERVER_ICON="
-        + DEFAULT_SERVER_ICON
-        + ", MINECRAFT_VERSION_MANIFEST="
-        + MINECRAFT_VERSION_MANIFEST
-        + ", FORGE_VERSION_MANIFEST="
-        + FORGE_VERSION_MANIFEST
-        + ", FABRIC_VERSION_MANIFEST="
-        + FABRIC_VERSION_MANIFEST
-        + ", FABRIC_INSTALLER_VERSION_MANIFEST="
-        + FABRIC_INSTALLER_VERSION_MANIFEST
-        + ", SERVERPACKCREATOR_DATABASE="
-        + SERVERPACKCREATOR_DATABASE
-        + ", MINECRAFT_VERSION_MANIFEST_LOCATION="
-        + MINECRAFT_VERSION_MANIFEST_LOCATION
-        + ", FORGE_VERSION_MANIFEST_LOCATION="
-        + FORGE_VERSION_MANIFEST_LOCATION
-        + ", FABRIC_VERSION_MANIFEST_LOCATION="
-        + FABRIC_VERSION_MANIFEST_LOCATION
-        + ", FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION="
-        + FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION
-        + ", directoryServerPacks='"
-        + getDirectoryServerPacks()
-        + '\''
-        + ", listFallbackMods="
-        + getListFallbackMods()
-        + ", listDirectoriesExclude="
-        + getDirectoriesToExclude()
-        + ", listCheckAgainstNewEntry="
-        + getDirectoriesToInclude()
-        + ", queueMaxDiskUsage="
-        + getQueueMaxDiskUsage()
-        + ", saveLoadedConfiguration="
-        + getSaveLoadedConfiguration()
-        + ", serverPackCreatorVersion='"
-        + SERVERPACKCREATOR_VERSION()
-        + '\''
-        + ", versioncheck_prerelease="
-        + checkForAvailablePreReleases()
-        + '}';
   }
 }
