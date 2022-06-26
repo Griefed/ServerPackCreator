@@ -1,3 +1,33 @@
+## [3.6.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.1...3.6.0) (2022-06-26)
+
+
+### :scissors: Refactor
+
+* **Aikars Flags:** Move Aikars flags to property in serverpackcreator.properties ([bbd34fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbd34fa3447aa68b254b1ee3ea67d3ce53207281))
+* **ApplicationProperties:** Call reloading from constructor to reduce duplicate code and increase maintainability. ([91b2ee7](https://git.griefed.de/Griefed/ServerPackCreator/commit/91b2ee789b4859077829b057c81955139df32130))
+* **GUI-API separation:** Work towards separating the GUI from the API. ([3f17c7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f17c7e526e28f6321e96a59ad823dea2386d511))
+* **Startup:** Rearrange a couple of startup methods. Get rid of the Main-class by moving/merging into ServerPackCreator.class. ([1e02b2e](https://git.griefed.de/Griefed/ServerPackCreator/commit/1e02b2e413925a1a9469416e99f03cb9f9556401))
+
+
+### 👀 Reverts
+
+* **Tabbed Pane opaque call:** Call TABBED_PANE.setOaque(..) not from the constructor, but from createAndShowGUI() to prevent transparent tab-bar. ([9e402ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e402eda358007b37aa579925ce0037dd8409b34))
+
+
+### 💎 Improvements
+
+* **File exclusion in ZIP-archives:** Make file exclusion opt-out and allow customizing of files to exclude with some basic filter `MINECRAFT_VERSION`, `MODLOADER`, `MODLOADER_VERSION` will be replaced with their respective values. ([ef26008](https://git.griefed.de/Griefed/ServerPackCreator/commit/ef260086e75290570ab84263dc803c718c983e0e))
+
+
+### 📔 Docs
+
+* **zipBuilder params:** Add missing params for modloader and modloader version. ([c14fd45](https://git.griefed.de/Griefed/ServerPackCreator/commit/c14fd4520c0db3d65df7668b7df09dfdcad3b669))
+
+
+### 🛠 Fixes
+
+* **Config loading/saving & Application Properties:** Improve config loading and saving. Fix the directories to include in server pack setting by loading the correct settings with from a corrected property. Delete you `serverpackcreator.properties`-file to generate a new one. ([8eec4ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/8eec4ac6ec41a1383cd3798ef7b9495ad18ff5d4))
+
 ### [3.5.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.0...3.5.1) (2022-06-24)
 
 
