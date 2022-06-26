@@ -2422,11 +2422,13 @@ public class ServerPackHandler {
    * files which will be excluded, see {@link
    * ApplicationProperties#getFilesToExcludeFromZipArchive()}
    *
-   * @param minecraftVersion String. Determines the name of the Minecraft server JAR to exclude from
+   * @param minecraftVersion {@link String} Determines the name of the Minecraft server JAR to exclude from
    *     the ZIP-archive if the modloader is Forge.
-   * @param includeServerInstallation Boolean. Determines whether the Minecraft server JAR info
+   * @param includeServerInstallation {@link Boolean} Determines whether the Minecraft server JAR info
    *     should be printed.
-   * @param destination String. The destination where the ZIP-archive should be created in.
+   * @param destination {@link String} The destination where the ZIP-archive should be created in.
+   * @param modloader {@link String} The modloader the modpack and server pack use.
+   * @param modloaderVersion {@link String} The modloader version the modpack and server pack use.
    * @author Griefed
    */
   public void zipBuilder(
