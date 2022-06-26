@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -302,84 +302,96 @@ extends java.util.Properties</pre>
 </tr>
 <tr id="i18" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--">getFilesToExcludeFromZipArchive</a></span>()</code>
+<div class="block">List of files to be excluded from ZIP-archives.</div>
+</td>
+</tr>
+<tr id="i19" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getListFallbackMods--">getListFallbackMods</a></span>()</code>
 <div class="block">Getter for the fallback list of clientside-only mods.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getQueueMaxDiskUsage--">getQueueMaxDiskUsage</a></span>()</code>
 <div class="block">Getter for the maximum disk usage at which JMS/Artemis will stop storing queues on disk.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getSaveLoadedConfiguration--">getSaveLoadedConfiguration</a></span>()</code>
 <div class="block">Getter for whether the last loaded configuration file should be saved to as well.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i22" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--">isZipFileExclusionEnabled</a></span>()</code>
+<div class="block">Whether the exclusion of files from the ZIP-archive of the server pack is enabled.</div>
+</td>
+</tr>
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#MINECRAFT_VERSION_MANIFEST_LOCATION--">MINECRAFT_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Minecraft version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#MINECRAFT_VERSION_MANIFEST--">MINECRAFT_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Minecraft version manifest-file.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#OLD_CONFIG--">OLD_CONFIG</a></span>()</code>
 <div class="block">Old configuration-file used for automated migration in case anyone upgrades from 1.x.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_INSTALLER_VERSION_MANIFEST_LOCATION--">QUILT_INSTALLER_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Quilt installer version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_INSTALLER_VERSION_MANIFEST--">QUILT_INSTALLER_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Quilt installer version manifest-file.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_VERSION_MANIFEST_LOCATION--">QUILT_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Quilt version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_VERSION_MANIFEST--">QUILT_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Quilt version manifest-file.</div>
 </td>
 </tr>
-<tr id="i28" class="altColor">
+<tr id="i30" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#reload--">reload</a></span>()</code>
 <div class="block">Reload serverpackcreator.properties.</div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
+<tr id="i31" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_DATABASE--">SERVERPACKCREATOR_DATABASE</a></span>()</code>
 <div class="block">ServerPackCreator-database when running as a webservice.</div>
 </td>
 </tr>
-<tr id="i30" class="altColor">
+<tr id="i32" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_PROPERTIES--">SERVERPACKCREATOR_PROPERTIES</a></span>()</code>
 <div class="block">Properties file used by ServerPackCreator, containing the configuration for this instance of
  it.</div>
 </td>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i33" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_VERSION--">SERVERPACKCREATOR_VERSION</a></span>()</code>
 <div class="block">Getter for the version of ServerPackCreator.<br>
@@ -387,36 +399,32 @@ extends java.util.Properties</pre>
  VERSION.txt-file which contains the version of said release.</div>
 </td>
 </tr>
-<tr id="i32" class="altColor">
+<tr id="i34" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#START_SCRIPT_LINUX--">START_SCRIPT_LINUX</a></span>()</code>
 <div class="block">Start script for server packs, used by UNIX/Linux.</div>
 </td>
 </tr>
-<tr id="i33" class="rowColor">
+<tr id="i35" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#START_SCRIPT_WINDOWS--">START_SCRIPT_WINDOWS</a></span>()</code>
 <div class="block">Start script for server packs, used by Windows.</div>
 </td>
 </tr>
-<tr id="i34" class="altColor">
+<tr id="i36" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SUPPORTED_MODLOADERS--">SUPPORTED_MODLOADERS</a></span>()</code>
 <div class="block">String-array of modloaders supported by ServerPackCreator.</div>
 </td>
 </tr>
-<tr id="i35" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#toString--">toString</a></span>()</code>&nbsp;</td>
-</tr>
-<tr id="i36" class="altColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#updateFallback--">updateFallback</a></span>()</code>
 <div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code>
  from the main-repository or one of its mirrors.</div>
 </td>
 </tr>
-<tr id="i37" class="rowColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#USER_JVM_ARGS--">USER_JVM_ARGS</a></span>()</code>
 <div class="block">JVM args file used by Forge MC 1.17+</div>
@@ -435,7 +443,7 @@ extends java.util.Properties</pre>
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;java.util.Hashtable</h3>
-<code>clear, clone, compute, computeIfAbsent, computeIfPresent, contains, containsKey, containsValue, elements, entrySet, equals, forEach, get, getOrDefault, hashCode, isEmpty, keys, keySet, merge, put, putAll, putIfAbsent, rehash, remove, remove, replace, replace, replaceAll, size, values</code></li>
+<code>clear, clone, compute, computeIfAbsent, computeIfPresent, contains, containsKey, containsValue, elements, entrySet, equals, forEach, get, getOrDefault, hashCode, isEmpty, keys, keySet, merge, put, putAll, putIfAbsent, rehash, remove, remove, replace, replace, replaceAll, size, toString, values</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -972,21 +980,6 @@ public&nbsp;ApplicationProperties()</pre>
 </dl>
 </li>
 </ul>
-<a name="updateFallback--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>updateFallback</h4>
-<pre>public&nbsp;boolean&nbsp;updateFallback()</pre>
-<div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code>
- from the main-repository or one of its mirrors.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if the fallback-property was updated.</dd>
-</dl>
-</li>
-</ul>
 <a name="getAikarsFlags--">
 <!--   -->
 </a>
@@ -1001,16 +994,57 @@ public&nbsp;ApplicationProperties()</pre>
 </dl>
 </li>
 </ul>
-<a name="toString--">
+<a name="getFilesToExcludeFromZipArchive--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFilesToExcludeFromZipArchive</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getFilesToExcludeFromZipArchive()</pre>
+<div class="block">List of files to be excluded from ZIP-archives. Current filters are:
+
+ <ul>
+   <li><code>MINECRAFT_VERSION</code> - Will be replaced with the Minecraft version of the
+       server pack
+   <li><code>MODLOADER</code> - Will be replaced with the modloader of the server pack
+   <li><code>MODLOADER_VERSION</code> - Will be replaced with the modloader version of the
+       server pack
+ </ul>
+
+ Should you want these filters to be expanded, open an issue on <a
+ href="https://github.com/Griefed/ServerPackCreator/issues">GitHub</a></div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>List</code> <code>String</code> of files to exclude from the ZIP archive of a server pack.</dd>
+</dl>
+</li>
+</ul>
+<a name="isZipFileExclusionEnabled--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isZipFileExclusionEnabled</h4>
+<pre>public&nbsp;boolean&nbsp;isZipFileExclusionEnabled()</pre>
+<div class="block">Whether the exclusion of files from the ZIP-archive of the server pack is enabled.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>Boolean</code> <code>true</code> if the exclusion is enabled.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateFallback--">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>toString</h4>
-<pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<h4>updateFallback</h4>
+<pre>public&nbsp;boolean&nbsp;updateFallback()</pre>
+<div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code>
+ from the main-repository or one of its mirrors.</div>
 <dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code>toString</code>&nbsp;in class&nbsp;<code>java.util.Hashtable&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the fallback-property was updated.</dd>
 </dl>
 </li>
 </ul>

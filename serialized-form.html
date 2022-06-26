@@ -132,6 +132,14 @@
 <pre>java.util.List&lt;E&gt; FALLBACK_DIRECTORIES_EXCLUDE</pre>
 </li>
 <li class="blockList">
+<h4>FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING</h4>
+<pre>java.lang.String FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING</pre>
+</li>
+<li class="blockList">
+<h4>FALLBACK_FILES_EXCLUDE_ZIP</h4>
+<pre>java.util.List&lt;E&gt; FALLBACK_FILES_EXCLUDE_ZIP</pre>
+</li>
+<li class="blockList">
 <h4>DEFAULT_CONFIG</h4>
 <pre>java.io.File DEFAULT_CONFIG</pre>
 </li>
@@ -242,11 +250,21 @@
  get notified about available PreReleases. Set to <code>false</code> if you only want stable
  releases.</div>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>aikarsFlags</h4>
 <pre>java.lang.String aikarsFlags</pre>
 <div class="block">Aikars flags recommended for running a Minecraft server, from <a
  href=https://aikar.co/mcflags.html>aikar.co</a></div>
+</li>
+<li class="blockList">
+<h4>filesToExcludeFromZipArchive</h4>
+<pre>java.util.List&lt;E&gt; filesToExcludeFromZipArchive</pre>
+<div class="block">List of files to be excluded from ZIP-archives.</div>
+</li>
+<li class="blockListLast">
+<h4>isZipFileExclusionEnabled</h4>
+<pre>boolean isZipFileExclusionEnabled</pre>
+<div class="block">Whether the exclusion of files from the server pack is enabled.</div>
 </li>
 </ul>
 </li>

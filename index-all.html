@@ -120,6 +120,15 @@
 <dd>
 <div class="block">Constructor for DI.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html#args--">args()</a></span> - Method in class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html" title="class in de.griefed.serverpackcreator.spring">BeanConfiguration</a></dt>
+<dd>
+<div class="block">Bean for starting up our Spring Boot Application, serving as our...<br>
+ <code>starts chanting</code><br>
+ <strong>public-static-void-main-string-args-public-static-void-main-string-args-public-static-void-main-string-args</strong><br>
+ <br>
+ ehem...<br>
+ Sorry 'bout that.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html#argument--">argument()</a></span> - Method in enum de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser.Mode</a></dt>
 <dd>
 <div class="block">Textual representation of this mode.</div>
@@ -1028,6 +1037,10 @@
 <dd>
 <div class="block">Getter for the file display name of the project file from which the server pack was generated.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--">getFilesToExcludeFromZipArchive()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
+<dd>
+<div class="block">List of files to be excluded from ZIP-archives.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html#getFont--">getFont()</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">TextIcon</a></dt>
 <dd>
 <div class="block">Get the Font used to render the text.</div>
@@ -1514,6 +1527,10 @@
 <dd>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--">isZipFileExclusionEnabled()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
+<dd>
+<div class="block">Whether the exclusion of files from the ZIP-archive of the server pack is enabled.</div>
+</dd>
 </dl>
 <a name="I:J">
 <!--   -->
@@ -1702,21 +1719,9 @@
 </a>
 <h2 class="title">M</h2>
 <dl>
-<dt><a href="de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Main</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
-<dd>
-<div class="block">The Main-class is only responisble for creating an isntance of <a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator</code></a> with the
- passed <code>String</code>-array from the commandline and then subsequently running ServerPackCreator
- in the determined mode, with the determined locale.</div>
-</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/Main.html#Main--">Main()</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator">Main</a></dt>
-<dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/Main.html#main-java.lang.String:A-">main(String[])</a></span> - Static method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/Main.html" title="class in de.griefed.serverpackcreator">Main</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#main-java.lang.String:A-">main(String[])</a></span> - Static method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
 <dd>
 <div class="block">Initialize ServerPackCreator with the passed commandline-arguments and run.</div>
-</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.WebService.html#main-java.lang.String:A-">main(String[])</a></span> - Static method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.WebService.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.WebService</a></dt>
-<dd>
-<div class="block">Start Spring Boot app, providing our Apache Tomcat and serving our frontend.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html#mainGUI--">mainGUI()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorGui</a></dt>
 <dd>
@@ -2304,8 +2309,6 @@
 <dd>
 <div class="block">Mode-priorities.</div>
 </dd>
-<dt><a href="de/griefed/serverpackcreator/ServerPackCreator.WebService.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">ServerPackCreator.WebService</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
-<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_DATABASE--">SERVERPACKCREATOR_DATABASE()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">ServerPackCreator-database when running as a webservice.</div>
@@ -2786,8 +2789,6 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#TILED">TILED</a></span> - Static variable in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.swing.utilities">BackgroundPanel</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#toString--">toString()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
-<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#toString--">toString()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html#type--">type()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.minecraft.<a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a></dt>
@@ -2875,7 +2876,7 @@
 <div class="block">Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can
  then run our update checks later on.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#UpdateChecker-de.griefed.serverpackcreator.i18n.LocalizationManager-de.griefed.serverpackcreator.ApplicationProperties-">UpdateChecker(LocalizationManager, ApplicationProperties)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html#UpdateChecker--">UpdateChecker()</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></dt>
 <dd>
 <div class="block">Constructor for Dependency Injection.</div>
 </dd>
@@ -3056,8 +3057,10 @@ the order they are declared.</div>
 </a>
 <h2 class="title">W</h2>
 <dl>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.WebService.html#WebService--">WebService()</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.WebService.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.WebService</a></dt>
-<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#web-java.lang.String:A-">web(String[])</a></span> - Static method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
+<dd>
+<div class="block">Start Spring Boot app, providing our Apache Tomcat and serving our frontend.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">WebUtilities</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/common/package-summary.html">de.griefed.serverpackcreator.utilities.common</a></dt>
 <dd>
 <div class="block">Utility-class revolving around interactions with web-resources.</div>
@@ -3081,9 +3084,9 @@ the order they are declared.</div>
 </a>
 <h2 class="title">Z</h2>
 <dl>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackHandler.html#zipBuilder-java.lang.String-boolean-java.lang.String-">zipBuilder(String, boolean, String)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackHandler.html#zipBuilder-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-">zipBuilder(String, boolean, String, String, String)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></dt>
 <dd>
-<div class="block">Creates a ZIP-archive of the server_pack directory excluding the Minecraft server JAR.</div>
+<div class="block">Creates a ZIP-archive of the server pack previously generated.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/spring/zip/ZipController.html" title="class in de.griefed.serverpackcreator.spring.zip"><span class="typeNameLink">ZipController</span></a> - Class in <a href="de/griefed/serverpackcreator/spring/zip/package-summary.html">de.griefed.serverpackcreator.spring.zip</a></dt>
 <dd>
