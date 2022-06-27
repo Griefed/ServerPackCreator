@@ -729,6 +729,8 @@ public class ServerPackHandler {
       writer.write(":: If everything is in order, the server is started.\n");
       writer.write("@ECHO off\n");
       writer.write("\n");
+      writer.write("PUSHD \"%~dp0\"");
+      writer.write("\n");
       writer.write("SET JAVA=\"java\"\n");
       writer.write("SET MINECRAFT=\"" + minecraftVersion + "\"\n");
       writer.write("SET FABRIC=\"" + modloaderVersion + "\"\n");
@@ -987,6 +989,8 @@ public class ServerPackHandler {
           ":: This script checks for the Minecraft and Quilt JAR-Files, and if they are not found, they are downloaded and installed.\n");
       writer.write(":: If everything is in order, the server is started.\n");
       writer.write("@ECHO off\n");
+      writer.write("\n");
+      writer.write("PUSHD \"%~dp0\"");
       writer.write("\n");
       writer.write("SET JAVA=\"java\"\n");
       writer.write("SET MINECRAFT=\"" + minecraftVersion + "\"\n");
@@ -1290,6 +1294,8 @@ public class ServerPackHandler {
           ":: This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n");
       writer.write(":: If everything is in order, the server is started.\n");
       writer.write("@ECHO off\n");
+      writer.write("\n");
+      writer.write("PUSHD \"%~dp0\"");
       writer.write("SetLocal EnableDelayedExpansion\n");
       writer.write("\n");
       writer.write("SET JAVA=\"java\"\n");
@@ -1558,6 +1564,8 @@ public class ServerPackHandler {
       writer.write(":: If everything is in order, the server is started.\n");
       writer.write("@ECHO off\n");
       writer.write("SetLocal EnableDelayedExpansion\n");
+      writer.write("\n");
+      writer.write("PUSHD \"%~dp0\"");
       writer.write("\n");
       writer.write("SET JAVA=\"java\"\n");
       writer.write("SET MINECRAFT=\"" + minecraftVersion + "\"\n");
