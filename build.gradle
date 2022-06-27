@@ -67,7 +67,7 @@ dependencies {
   embed 'commons-io:commons-io:2.11.0'
   embed 'commons-lang:commons-lang:2.6'
 
-  embed 'net.lingala.zip4j:zip4j:2.10.0'
+  embed 'net.lingala.zip4j:zip4j:2.11.1'
   embed 'com.moandjiezana.toml:toml4j:0.7.2'
   embed 'org.xerial:sqlite-jdbc:3.36.0.3'
   embed 'org.pf4j:pf4j:3.6.0'
