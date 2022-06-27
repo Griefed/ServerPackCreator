@@ -47,7 +47,7 @@ jobs:
         uses: tj-actions/branch-names@v5
       # DOCKER RELATED
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Build
