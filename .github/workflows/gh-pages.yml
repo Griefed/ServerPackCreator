@@ -32,7 +32,7 @@ jobs:
 
       # DEPLOY TO GH-PAGES
       - name: Deploy to GitHub-Pages
-        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        uses: JamesIves/github-pages-deploy-action@v4.3.4
         with:
           branch: gh-pages
           folder: build/docs/javadoc
