@@ -2,5 +2,18 @@ version: "1.0"
 profile:
   name: qodana.recommended
 include:
+  - name: ArrayEquality
+  - name: Deprecation
+  - name: DevKitPropertiesQuotesValidation
+  - name: GroovyPointlessBoolean
   - name: IfCanBeSwitch
+  - name: InstanceofChain
+  - name: InstanceVariableUninitializedUse
+  - name: NegatedEqualityExpression
+  - name: ObjectEquality
+  - name: StaticVariableUninitializedUse
+  - name: StringEquality
   - name: StringEqualsEmptyString
+  - name: UseOfObsoleteDateTimeApi
+exclude:
+  - name: SystemOutErr
