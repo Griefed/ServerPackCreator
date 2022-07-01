@@ -64,7 +64,7 @@ public class ForgeLoader {
   private HashMap<String, ForgeInstance> instanceMeta;
 
   /**
-   * Constructor
+   * Create a new instance of the Forge Loader.
    *
    * @param forgemanifest {@link JsonNode} containing information about available Forge versions.
    * @param injectedMinecraftMeta {@link MinecraftMeta} for retroactively updating the previously
@@ -80,10 +80,9 @@ public class ForgeLoader {
    * Update the available Forge loader information.
    *
    * @param forgeManifest {@link JsonNode} containing information about available Forge versions.
-   * @return This instance of {@link ForgeLoader}.
    * @author Griefed
    */
-  protected ForgeLoader update(JsonNode forgeManifest) {
+  protected void update(JsonNode forgeManifest) {
 
     minecraftVersions.clear();
     forgeVersions.clear();
@@ -159,8 +158,6 @@ public class ForgeLoader {
 
               versionMeta.put(mcVersion, forgeVersionsForMCVer);
             });
-
-    return this;
   }
 
   /**

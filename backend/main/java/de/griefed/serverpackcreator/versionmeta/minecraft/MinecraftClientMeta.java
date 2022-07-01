@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.versionmeta.Type;
@@ -41,10 +40,7 @@ import org.apache.logging.log4j.Logger;
 public class MinecraftClientMeta {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
-  private final ObjectMapper OBJECTMAPPER =
-      new ObjectMapper()
-          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+  private final ObjectMapper OBJECTMAPPER;
 
   private final ForgeMeta FORGE_META;
   private final File MINECRAFT_MANIFEST;
@@ -56,26 +52,28 @@ public class MinecraftClientMeta {
   private HashMap<String, MinecraftClient> meta = new HashMap<>();
 
   /**
-   * Constructor.
+   * Create a new Minecraft Client Meta.
    *
    * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link
    *     MinecraftClient} version.
    * @param minecraftManifest {@link File} Minecraft manifest file.
+   * @param objectMapper {@link ObjectMapper} for parsing.
    * @author Griefed
    */
-  protected MinecraftClientMeta(File minecraftManifest, ForgeMeta injectedForgeMeta) {
+  protected MinecraftClientMeta(
+      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper) {
     this.MINECRAFT_MANIFEST = minecraftManifest;
     this.FORGE_META = injectedForgeMeta;
+    this.OBJECTMAPPER = objectMapper;
   }
 
   /**
    * Update the meta information.
    *
-   * @return This instance of {@link MinecraftClientMeta}
    * @throws IOException if the manifest could not be read.
    * @author Griefed
    */
-  protected MinecraftClientMeta update() throws IOException {
+  protected void update() throws IOException {
 
     RELEASES.clear();
     SNAPSHOTS.clear();
@@ -95,7 +93,8 @@ public class MinecraftClientMeta {
                           minecraftVersion.get("id").asText(),
                           Type.RELEASE,
                           new URL(minecraftVersion.get("url").asText()),
-                          this.FORGE_META));
+                          this.FORGE_META,
+                          OBJECTMAPPER));
                 } catch (IOException ex) {
                   LOG.debug(
                       "No server available for MinecraftClient version "
@@ -111,7 +110,8 @@ public class MinecraftClientMeta {
                           minecraftVersion.get("id").asText(),
                           Type.SNAPSHOT,
                           new URL(minecraftVersion.get("url").asText()),
-                          this.FORGE_META));
+                          this.FORGE_META,
+                          OBJECTMAPPER));
                 } catch (IOException ex) {
                   LOG.debug(
                       "No server available for MinecraftClient version "
@@ -138,8 +138,6 @@ public class MinecraftClientMeta {
             meta.get(minecraftManifest.get("latest").get("snapshot").asText()).url(),
             meta.get(minecraftManifest.get("latest").get("snapshot").asText()).server(),
             this.FORGE_META);
-
-    return this;
   }
 
   /**

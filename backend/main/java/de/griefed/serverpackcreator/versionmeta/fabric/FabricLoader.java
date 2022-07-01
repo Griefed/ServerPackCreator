@@ -35,7 +35,7 @@ public class FabricLoader {
   private String release;
 
   /**
-   * Constructor
+   * Create a new instance of the Fabric Loader.
    *
    * @param loaderManifest {@link Document} containing Fabrics manifest.
    * @author Griefed
@@ -72,10 +72,9 @@ public class FabricLoader {
    * Update the latest, release and releases information.
    *
    * @param loaderManifest {@link Document} containing Fabrics manifest.
-   * @return This instance of {@link FabricLoader}.
    * @author Griefed
    */
-  protected FabricLoader update(Document loaderManifest) {
+  protected void update(Document loaderManifest) {
     this.latest =
         loaderManifest
             .getElementsByTagName("latest")
@@ -100,8 +99,6 @@ public class FabricLoader {
               .item(0)
               .getNodeValue());
     }
-
-    return this;
   }
 
   /**

@@ -43,7 +43,7 @@ public class QuiltInstaller {
   private HashMap<String, URL> installerUrlMeta;
 
   /**
-   * Constructor
+   * Create a new Quilt Installer instance.
    *
    * @param installerManifest {@link Document} containing Quilt installer information
    * @author Griefed
@@ -102,10 +102,9 @@ public class QuiltInstaller {
    * Update this {@link QuiltInstaller} with information from the given {@link Document}.
    *
    * @param installerManifest {@link Document} containing new installer information.
-   * @return This instance of {@link QuiltInstaller}.
    * @author Griefed
    */
-  protected QuiltInstaller update(Document installerManifest) {
+  protected void update(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -153,8 +152,6 @@ public class QuiltInstaller {
 
           }
         });
-
-    return this;
   }
 
   /**

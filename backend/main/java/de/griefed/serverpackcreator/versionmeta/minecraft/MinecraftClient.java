@@ -19,14 +19,13 @@
  */
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeInstance;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Relevant information about a given Minecraft client.
@@ -35,13 +34,11 @@ import org.apache.logging.log4j.Logger;
  */
 public class MinecraftClient {
 
-  private static final Logger LOG = LogManager.getLogger(MinecraftClient.class);
-
   private final String VERSION;
   private final Type TYPE;
   private final URL URL;
   private final MinecraftServer MINECRAFT_SERVER;
-  private ForgeMeta FORGE_META;
+  private final ForgeMeta FORGE_META;
 
   /**
    * Constructor using version, type and url.
@@ -51,14 +48,16 @@ public class MinecraftClient {
    * @param url {@link URL} Url to this versions manifest.
    * @param forgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link MinecraftClient}
    *     version.
+   * @param objectMapper {@link ObjectMapper} for parsing.
    * @author Griefed
    */
-  protected MinecraftClient(String version, Type type, URL url, ForgeMeta forgeMeta) {
+  protected MinecraftClient(
+      String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper) {
     this.VERSION = version;
     this.TYPE = type;
     this.URL = url;
     this.FORGE_META = forgeMeta;
-    this.MINECRAFT_SERVER = new MinecraftServer(version, type, url);
+    this.MINECRAFT_SERVER = new MinecraftServer(version, type, url, objectMapper);
   }
 
   /**
