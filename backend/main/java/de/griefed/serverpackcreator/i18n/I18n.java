@@ -33,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -44,16 +43,14 @@ import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
  * This is the localizationManager for ServerPackCreator.<br>
- * To use it, initialize it by calling {@link #initialize()}. Then use {@link
- * #getLocalizedString(String)} to use a language key from the resource bundle corresponding to the
- * specified locale. If no locale is provided during the launch of ServerPackCreator, en_US is used
- * by default.<br>
+ * To use it, initialize it by calling {@link #initialize()}. Then use {@link #getMessage(String)}
+ * to use a language key from the resource bundle corresponding to the specified locale. If no
+ * locale is provided during the launch of ServerPackCreator, en_US is used by default.<br>
  * All localization properties-files need to be stored in the <code>de/griefed/resources/lang/
  * </code>-directory and be named using following pattern: lang_{language code in
  * lowercase}_{country code in lowercase}. For example: <code>lang_en_us.properties</code>.<br>
@@ -61,7 +58,7 @@ import org.springframework.stereotype.Component;
  * By default, ServerPackCreator tries to load language definitions from the local filesystem, in
  * the <code>lang</code>-folder. If no file can be found for the specified locale, ServerPackCreator
  * tries to load language definitions from inside the JAR-file, from the resource bundles. If the
- * specified key can not be retrieved when calling {@link #getLocalizedString(String)}, a default is
+ * specified key can not be retrieved when calling {@link #getMessage(String)}, a default is
  * retrieved from the lang_en_us-bundle inside the JAR-file by default.
  *
  * @author whitebear60
@@ -311,8 +308,8 @@ public class I18n {
     }
 
     if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().equals("dev")) {
-      LOG.info(getLocalizedString("encoding.check"));
-      System.out.println(getLocalizedString("encoding.check"));
+      LOG.info(getMessage("encoding.check"));
+      System.out.println(getMessage("encoding.check"));
     }
   }
 
@@ -326,7 +323,7 @@ public class I18n {
    * @author whitebear60
    * @author Griefed
    */
-  public String getLocalizedString(String languageKey) {
+  public String getMessage(String languageKey) {
 
     //noinspection UnusedAssignment
     String text = null;
@@ -396,8 +393,8 @@ public class I18n {
   /**
    * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
    * subsequent start of serverpackcreator is executed using said locale. This method should
-   * <strong>not</strong> call {@link #getLocalizedString(String)}, as the initialization of said
-   * manager is called from here. Therefore, localized strings are not yet available.
+   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager is
+   * called from here. Therefore, localized strings are not yet available.
    *
    * @param locale The locale the user specified when they ran serverpackcreator with -lang
    *     -your_locale.

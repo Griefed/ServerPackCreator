@@ -40,8 +40,8 @@ public class TabAddonsHandlerLog extends JComponentTailer {
    *
    * <p>Used for Dependency Injection.
    *
-   * <p>Receives an instance of {@link I18n} or creates one if the received one is
-   * null. Required for use of localization.
+   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
+   * for use of localization.
    *
    * @param tooltip {@link String} The tooltip text for this tailer.
    * @author Griefed

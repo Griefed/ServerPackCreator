@@ -37,9 +37,7 @@ public class BooleanUtilities {
   private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
 
-  public BooleanUtilities(
-      I18n injectedI18n,
-      ApplicationProperties injectedApplicationProperties) {
+  public BooleanUtilities(I18n injectedI18n, ApplicationProperties injectedApplicationProperties) {
 
     if (injectedApplicationProperties == null) {
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -86,24 +84,23 @@ public class BooleanUtilities {
         || stringBoolean.matches("1")
         || stringBoolean.matches("[Yy]es")
         || stringBoolean.matches("[Yy]")
-        || stringBoolean.matches(I18N.getLocalizedString("cli.input.true"))
-        || stringBoolean.matches(I18N.getLocalizedString("cli.input.yes"))
-        || stringBoolean.matches(I18N.getLocalizedString("cli.input.yes.short"))) {
+        || stringBoolean.matches(I18N.getMessage("cli.input.true"))
+        || stringBoolean.matches(I18N.getMessage("cli.input.yes"))
+        || stringBoolean.matches(I18N.getMessage("cli.input.yes.short"))) {
       return true;
 
     } else if (stringBoolean.matches("[Ff]alse")
         || stringBoolean.matches("0")
         || stringBoolean.matches("[Nn]o")
         || stringBoolean.matches("[Nn]")
-        || stringBoolean.matches(I18N.getLocalizedString("cli.input.false"))
-        || stringBoolean.matches(I18N.getLocalizedString("cli.input.no"))
-        || stringBoolean.matches(I18N.getLocalizedString("cli.input.no.short"))) {
+        || stringBoolean.matches(I18N.getMessage("cli.input.false"))
+        || stringBoolean.matches(I18N.getMessage("cli.input.no"))
+        || stringBoolean.matches(I18N.getMessage("cli.input.no.short"))) {
       return false;
 
     } else {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.warn(
-          I18N.getLocalizedString("configuration.log.warn.converttoboolean.warn"));
+      LOG.warn(I18N.getMessage("configuration.log.warn.converttoboolean.warn"));
       return false;
     }
   }

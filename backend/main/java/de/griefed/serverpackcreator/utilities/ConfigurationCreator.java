@@ -156,66 +156,50 @@ public class ConfigurationCreator {
     Scanner reader = new Scanner(System.in);
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(
-        String.format(
-            I18N.getLocalizedString("configuration.log.info.start"), "-cgen"));
+    LOG.info(String.format(I18N.getMessage("configuration.log.info.start"), "-cgen"));
     do {
       // --------------------------------------------------------------------------------------------MODPACK DIRECTORY---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.modpack.enter"));
-      LOG.info(I18N.getLocalizedString("configuration.log.info.modpack.example"));
+      LOG.info(I18N.getMessage("configuration.log.info.modpack.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.modpack.example"));
 
       do {
 
         do {
-          System.out.print(
-              I18N.getLocalizedString("configuration.log.info.modpack.cli") + " ");
+          System.out.print(I18N.getMessage("configuration.log.info.modpack.cli") + " ");
           tmpModpackDir = reader.nextLine();
         } while (!CONFIGURATIONHANDLER.checkModpackDir(tmpModpackDir, encounteredErrors));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(
-            String.format(
-                I18N.getLocalizedString("configuration.log.info.checkreturn"),
-                tmpModpackDir));
-        LOG.info(
-            I18N.getLocalizedString(
-                "configuration.log.info.modpack.checkreturninfo"));
+            String.format(I18N.getMessage("configuration.log.info.checkreturn"), tmpModpackDir));
+        LOG.info(I18N.getMessage("configuration.log.info.modpack.checkreturninfo"));
 
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.answer") + " ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
       modpackDir = tmpModpackDir.replace("\\", "/");
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              modpackDir));
+      LOG.info(String.format(I18N.getMessage("configuration.log.info.checkreturn"), modpackDir));
       System.out.println();
 
       // -----------------------------------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.clientmods.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.clientmods.enter"));
       do {
         clientMods.clear();
 
         clientMods.addAll(UTILITIES.ListUtils().readStringArray());
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                I18N.getLocalizedString("configuration.log.info.checkreturn"),
-                clientMods));
+        LOG.info(String.format(I18N.getMessage("configuration.log.info.checkreturn"), clientMods));
 
         if (clientMods.isEmpty()) {
           clientMods = APPLICATIONPROPERTIES.getListFallbackMods();
 
           /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.warn(
-              I18N.getLocalizedString(
-                  "configuration.log.warn.checkconfig.clientmods"));
+          LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.clientmods"));
 
           for (String mod : clientMods) {
             LOG.warn(String.format("    %s", mod));
@@ -223,20 +207,14 @@ public class ConfigurationCreator {
         }
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            I18N.getLocalizedString(
-                "configuration.log.info.clientmods.checkreturninfo"));
+        LOG.info(I18N.getMessage("configuration.log.info.clientmods.checkreturninfo"));
 
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.answer") + " ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              clientMods));
+      LOG.info(String.format(I18N.getMessage("configuration.log.info.checkreturn"), clientMods));
 
       tmpClientMods = new String[clientMods.size()];
       clientMods.toArray(tmpClientMods);
@@ -246,7 +224,7 @@ public class ConfigurationCreator {
       // ------------------------------------------------------------------DIRECTORIES OR FILES TO
       // COPY TO SERVER PACK---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.copydirs.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.copydirs.enter"));
 
       List<String> dirList =
           Arrays.asList(
@@ -257,38 +235,27 @@ public class ConfigurationCreator {
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
           String.format(
-              I18N.getLocalizedString(
-                  "configuration.log.info.copydirs.dirsinmodpack"),
+              I18N.getMessage("configuration.log.info.copydirs.dirsinmodpack"),
               dirList.toString().replace("[", "").replace("]", "")));
       do {
         do {
           copyDirs.clear();
           /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.info(
-              I18N.getLocalizedString("configuration.log.info.copydirs.specify"));
+          LOG.info(I18N.getMessage("configuration.log.info.copydirs.specify"));
           copyDirs.addAll(UTILITIES.ListUtils().readStringArray());
 
         } while (!CONFIGURATIONHANDLER.checkCopyDirs(copyDirs, modpackDir, encounteredErrors));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                I18N.getLocalizedString("configuration.log.info.checkreturn"),
-                copyDirs));
-        LOG.info(
-            I18N.getLocalizedString(
-                "configuration.log.info.copydirs.checkreturninfo"));
+        LOG.info(String.format(I18N.getMessage("configuration.log.info.checkreturn"), copyDirs));
+        LOG.info(I18N.getMessage("configuration.log.info.copydirs.checkreturninfo"));
 
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.answer") + " ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              copyDirs));
+      LOG.info(String.format(I18N.getMessage("configuration.log.info.checkreturn"), copyDirs));
 
       tmpCopyDirs = new String[copyDirs.size()];
       copyDirs.toArray(tmpCopyDirs);
@@ -298,64 +265,52 @@ public class ConfigurationCreator {
       // ---------------------------------------------------------------------------PATH TO THE
       // CUSTOM SERVER-ICON.PNG---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.custom.icon.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.custom.icon.enter"));
 
       do {
 
         do {
           /* This log is meant to be read by the user, therefore we allow translation. */
-          System.out.print(
-              I18N.getLocalizedString("configuration.log.info.custom.icon.path"));
+          System.out.print(I18N.getMessage("configuration.log.info.custom.icon.path"));
           tmpServerIcon = reader.nextLine();
 
         } while (!CONFIGURATIONHANDLER.checkIconAndProperties(tmpServerIcon));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(
-            String.format(
-                I18N.getLocalizedString("configuration.log.info.checkreturn"),
-                tmpServerIcon));
-        LOG.info(I18N.getLocalizedString("configuration.log.info.custom.icon.end"));
+            String.format(I18N.getMessage("configuration.log.info.checkreturn"), tmpServerIcon));
+        LOG.info(I18N.getMessage("configuration.log.info.custom.icon.end"));
 
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.answer") + " ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
       serverIconPath = tmpServerIcon.replace("\\", "/");
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              serverIconPath));
+          String.format(I18N.getMessage("configuration.log.info.checkreturn"), serverIconPath));
       System.out.println();
 
       // -------------------------------------------------------------------------PATH TO THE CUSTOM
       // SERVER.PROPERTIES---------
 
-      LOG.info(
-          I18N.getLocalizedString("configuration.log.info.custom.properties.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.custom.properties.enter"));
 
       do {
 
         do {
           /* This log is meant to be read by the user, therefore we allow translation. */
-          System.out.print(
-              I18N.getLocalizedString(
-                  "configuration.log.info.custom.properties.path"));
+          System.out.print(I18N.getMessage("configuration.log.info.custom.properties.path"));
           tmpServerProperties = reader.nextLine();
         } while (!CONFIGURATIONHANDLER.checkIconAndProperties(tmpServerProperties));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(
             String.format(
-                I18N.getLocalizedString("configuration.log.info.checkreturn"),
-                tmpServerProperties));
-        LOG.info(
-            I18N.getLocalizedString("configuration.log.info.custom.properties.end"));
+                I18N.getMessage("configuration.log.info.checkreturn"), tmpServerProperties));
+        LOG.info(I18N.getMessage("configuration.log.info.custom.properties.end"));
 
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.answer") + " ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
@@ -363,52 +318,44 @@ public class ConfigurationCreator {
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
           String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              serverPropertiesPath));
+              I18N.getMessage("configuration.log.info.checkreturn"), serverPropertiesPath));
       System.out.println();
 
       // -------------------------------------------------------------WHETHER TO INCLUDE MODLOADER
       // SERVER INSTALLATION---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.server.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.server.enter"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.server.include") + " ");
+      System.out.print(I18N.getMessage("configuration.log.info.server.include") + " ");
       includeServerInstallation = UTILITIES.BooleanUtils().readBoolean();
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
           String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              includeServerInstallation));
+              I18N.getMessage("configuration.log.info.checkreturn"), includeServerInstallation));
 
       // -------------------------------------------------------------------------------MINECRAFT
       // VERSION MODPACK USES---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.minecraft.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.minecraft.enter"));
 
       do {
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.minecraft.specify")
-                + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.minecraft.specify") + " ");
         minecraftVersion = reader.nextLine();
 
       } while (!VERSIONMETA.minecraft().checkMinecraftVersion(minecraftVersion));
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              minecraftVersion));
+          String.format(I18N.getMessage("configuration.log.info.checkreturn"), minecraftVersion));
       System.out.println();
 
       // ---------------------------------------------------------------------------------------MODLOADER MODPACK USES---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.modloader.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.modloader.enter"));
 
       do {
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.modloader.cli") + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.modloader.cli") + " ");
         modLoader = reader.nextLine();
 
       } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
@@ -416,10 +363,7 @@ public class ConfigurationCreator {
       modLoader = CONFIGUTILITIES.getModLoaderCase(modLoader);
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              modLoader));
+      LOG.info(String.format(I18N.getMessage("configuration.log.info.checkreturn"), modLoader));
       System.out.println();
 
       // ----------------------------------------------------------------------------VERSION OF
@@ -427,14 +371,10 @@ public class ConfigurationCreator {
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
           String.format(
-              I18N.getLocalizedString(
-                  "configuration.log.info.modloaderversion.enter"),
-              modLoader));
+              I18N.getMessage("configuration.log.info.modloaderversion.enter"), modLoader));
 
       do {
-        System.out.print(
-            I18N.getLocalizedString("configuration.log.info.modloaderversion.cli")
-                + " ");
+        System.out.print(I18N.getMessage("configuration.log.info.modloaderversion.cli") + " ");
         modLoaderVersion = reader.nextLine();
 
       } while (!CONFIGURATIONHANDLER.checkModloaderVersion(
@@ -442,85 +382,71 @@ public class ConfigurationCreator {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              modLoaderVersion));
+          String.format(I18N.getMessage("configuration.log.info.checkreturn"), modLoaderVersion));
       System.out.println();
 
       // ------------------------------------------------------------------------------------PATH TO
       // JAVA INSTALLATION---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.java.enter"));
-      LOG.info(I18N.getLocalizedString("configuration.log.info.java.enter2"));
-      LOG.info(I18N.getLocalizedString("configuration.log.info.java.example"));
+      LOG.info(I18N.getMessage("configuration.log.info.java.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.java.enter2"));
+      LOG.info(I18N.getMessage("configuration.log.info.java.example"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.java.cli") + " ");
+      System.out.print(I18N.getMessage("configuration.log.info.java.cli") + " ");
 
       javaPath = CONFIGURATIONHANDLER.getJavaPath(reader.nextLine());
 
       //noinspection RedundantStringFormatCall
       System.out.println(
-          String.format(
-              I18N.getLocalizedString("configuration.log.warn.getjavapath.set"),
-              javaPath));
+          String.format(I18N.getMessage("configuration.log.warn.getjavapath.set"), javaPath));
 
       System.out.println();
 
       // ------------------------------------------------------------WHETHER TO INCLUDE
       // SERVER-ICON.PNG IN SERVER PACK---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.icon.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.icon.enter"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.icon.cli") + " ");
+      System.out.print(I18N.getMessage("configuration.log.info.icon.cli") + " ");
       includeServerIcon = UTILITIES.BooleanUtils().readBoolean();
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              includeServerIcon));
+          String.format(I18N.getMessage("configuration.log.info.checkreturn"), includeServerIcon));
       System.out.println();
 
       // ----------------------------------------------------------WHETHER TO INCLUDE
       // SERVER.PROPERTIES IN SERVER PACK---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.properties.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.properties.enter"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.properties.cli") + " ");
+      System.out.print(I18N.getMessage("configuration.log.info.properties.cli") + " ");
       includeServerProperties = UTILITIES.BooleanUtils().readBoolean();
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
           String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              includeServerProperties));
+              I18N.getMessage("configuration.log.info.checkreturn"), includeServerProperties));
       System.out.println();
 
       // ----------------------------------------------------WHETHER TO INCLUDE CREATION OF
       // ZIP-ARCHIVE OF SERVER PACK---------
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.zip.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.zip.enter"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.zip.cli") + " ");
+      System.out.print(I18N.getMessage("configuration.log.info.zip.cli") + " ");
       includeZipCreation = UTILITIES.BooleanUtils().readBoolean();
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.checkreturn"),
-              includeZipCreation));
+          String.format(I18N.getMessage("configuration.log.info.checkreturn"), includeZipCreation));
 
       // -------------------------------------------------------------------------JAVA ARGS TO
       // EXECUTE THE SERVER WITH---------
 
-      LOG.info(I18N.getLocalizedString("configuration.log.info.javaargs.cli"));
+      LOG.info(I18N.getMessage("configuration.log.info.javaargs.cli"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.javaargs.enter"));
+      System.out.print(I18N.getMessage("configuration.log.info.javaargs.enter"));
       javaArgs = reader.nextLine();
 
       if (javaArgs.isEmpty()) {
@@ -528,18 +454,14 @@ public class ConfigurationCreator {
       }
 
       LOG.info(
-          String.format(
-              I18N.getLocalizedString("configuration.log.info.printconfig.javaargs"),
-              javaArgs));
+          String.format(I18N.getMessage("configuration.log.info.printconfig.javaargs"), javaArgs));
 
       // ------------------------------------------------------------------------------SUFFIX TO
       // APPEND TO SERVER PACK---------
 
-      LOG.info(
-          I18N.getLocalizedString("configuration.log.info.serverpacksuffix.cli"));
+      LOG.info(I18N.getMessage("configuration.log.info.serverpacksuffix.cli"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.serverpacksuffix.enter"));
+      System.out.print(I18N.getMessage("configuration.log.info.serverpacksuffix.enter"));
       serverPackSuffix = reader.nextLine();
 
       // ------------------------------------------------------------------------------PRINT CONFIG
@@ -562,10 +484,9 @@ public class ConfigurationCreator {
           serverPropertiesPath);
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.config.enter"));
+      LOG.info(I18N.getMessage("configuration.log.info.config.enter"));
 
-      System.out.print(
-          I18N.getLocalizedString("configuration.log.info.answer") + " ");
+      System.out.print(I18N.getMessage("configuration.log.info.answer") + " ");
 
     } while (!UTILITIES.BooleanUtils().readBoolean());
 
@@ -590,7 +511,7 @@ public class ConfigurationCreator {
         serverPackSuffix,
         APPLICATIONPROPERTIES.DEFAULT_CONFIG())) {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getLocalizedString("configuration.log.info.config.written"));
+      LOG.info(I18N.getMessage("configuration.log.info.config.written"));
     }
   }
 }

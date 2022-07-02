@@ -110,7 +110,8 @@ public class BeanConfiguration {
   /**
    * Bean for starting up our Spring Boot Application, serving as our...<br>
    * <code>starts chanting</code><br>
-   * <strong>public-static-void-main-string-args-public-static-void-main-string-args-public-static-void-main-string-args</strong><br>
+   * <strong>public-static-void-main-string-args-public-static-void-main-string-args-public-static-void-main-string-args</strong>
+   * <br>
    * <br>
    * ehem...<br>
    * Sorry 'bout that.

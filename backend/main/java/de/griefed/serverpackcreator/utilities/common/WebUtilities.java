@@ -35,9 +35,7 @@ public class WebUtilities {
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
 
-  public WebUtilities(
-      ApplicationProperties injectedApplicationProperties,
-      I18n injectedI18n) {
+  public WebUtilities(ApplicationProperties injectedApplicationProperties, I18n injectedI18n) {
     if (injectedApplicationProperties == null) {
 
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -321,8 +319,7 @@ public class WebUtilities {
     if (response.contains(requestURL.replace("/documents", ""))) {
       return response;
     } else {
-      return I18N.getLocalizedString(
-          "createserverpack.log.error.abouttab.hastebin.response");
+      return I18N.getMessage("createserverpack.log.error.abouttab.hastebin.response");
     }
   }
 }

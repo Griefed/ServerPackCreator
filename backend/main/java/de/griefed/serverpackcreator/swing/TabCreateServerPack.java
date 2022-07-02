@@ -264,8 +264,8 @@ public class TabCreateServerPack extends JPanel {
    *
    * <p>Used for Dependency Injection.
    *
-   * <p>Receives an instance of {@link I18n} or creates one if the received one is
-   * null. Required for use of localization.
+   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
+   * for use of localization.
    *
    * <p>Receives an instance of {@link ConfigurationHandler} required to successfully and correctly
    * create the server pack.
@@ -273,8 +273,7 @@ public class TabCreateServerPack extends JPanel {
    * <p>Receives an instance of {@link ServerPackHandler} which is required to generate a server
    * pack.
    *
-   * @param injectedI18n Instance of {@link I18n} required for
-   *     localized log messages.
+   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
    * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to
    *     successfully and correctly create the server pack.
    * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the
@@ -365,11 +364,7 @@ public class TabCreateServerPack extends JPanel {
     if (injectedServerPackHandler == null) {
       this.CREATESERVERPACK =
           new ServerPackHandler(
-              I18N,
-              APPLICATIONPROPERTIES,
-              VERSIONMETA,
-              UTILITIES,
-              APPLICATIONPLUGINS);
+              I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS);
     } else {
       this.CREATESERVERPACK = injectedServerPackHandler;
     }
@@ -385,8 +380,7 @@ public class TabCreateServerPack extends JPanel {
     try {
       SERVERPACKGENERATEDDOCUMENT.insertString(
           0,
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.openfolder.browse"),
+          I18N.getMessage("createserverpack.gui.createserverpack.openfolder.browse"),
           SERVERPACKGENERATEDATTRIBUTESET);
     } catch (BadLocationException ex) {
       LOG.error("Error inserting text into aboutDocument.", ex);
@@ -402,29 +396,21 @@ public class TabCreateServerPack extends JPanel {
     try {
       LAZYMODEDOCUMENT.insertString(
           0,
-          I18N.getLocalizedString(
-                  "configuration.log.warn.checkconfig.copydirs.lazymode0")
+          I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode0")
               + "\n\n"
-              + I18N.getLocalizedString(
-                  "configuration.log.warn.checkconfig.copydirs.lazymode1")
+              + I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode1")
               + "\n"
-              + I18N.getLocalizedString(
-                  "configuration.log.warn.checkconfig.copydirs.lazymode2")
+              + I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode2")
               + "\n"
-              + I18N.getLocalizedString(
-                  "configuration.log.warn.checkconfig.copydirs.lazymode3")
+              + I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode3")
               + "\n\n"
-              + I18N.getLocalizedString(
-                  "configuration.log.warn.checkconfig.copydirs.lazymode0"),
+              + I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode0"),
           LAZYMODEATTRIBUTESET);
     } catch (BadLocationException ex) {
       LOG.error("Error inserting text into aboutDocument.", ex);
     }
 
-    this.NONE =
-        new String[] {
-          I18N.getLocalizedString("createserverpack.gui.createserverpack.forge.none")
-        };
+    this.NONE = new String[] {I18N.getMessage("createserverpack.gui.createserverpack.forge.none")};
 
     this.FABRIC_VERSIONS =
         new DefaultComboBoxModel<>(VERSIONMETA.fabric().loaderVersionsArrayDescending());
@@ -440,12 +426,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Label and textfield modpackDir
     JLabel labelModpackDir =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelmodpackdir"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelmodpackdir"));
     labelModpackDir.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelmodpackdir.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 0;
@@ -455,8 +438,7 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(labelModpackDir, GRIDBAGCONSTRAINTS);
 
     TEXTFIELD_MODPACKDIRECTORY.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelmodpackdir.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
     TEXTFIELD_MODPACKDIRECTORY.addDocumentListener(
         (SimpleDocumentListener) e -> validateModpackDir());
 
@@ -469,12 +451,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Label and textfield server pack suffix
     JLabel labelServerPackSuffix =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelsuffix"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelsuffix"));
     labelServerPackSuffix.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelsuffix.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelsuffix.tip"));
 
     GRIDBAGCONSTRAINTS.gridwidth = 2;
     GRIDBAGCONSTRAINTS.gridx = 4;
@@ -484,11 +463,9 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(labelServerPackSuffix, GRIDBAGCONSTRAINTS);
 
     TEXTFIELD_SERVERPACKSUFFIX.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelsuffix.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelsuffix.tip"));
     ERROR_ICON_SERVERPACK_SUFFIX.setDescription(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textsuffix.error"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textsuffix.error"));
     TEXTFIELD_SERVERPACKSUFFIX.addDocumentListener((SimpleDocumentListener) e -> validateSuffix());
 
     GRIDBAGCONSTRAINTS.gridwidth = 1;
@@ -502,12 +479,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Label and textfield clientMods
     JLabel labelClientMods =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelclientmods"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelclientmods"));
     labelClientMods.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelclientmods.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelclientmods.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 2;
@@ -516,12 +490,10 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(labelClientMods, GRIDBAGCONSTRAINTS);
 
     TEXTAREA_CLIENTSIDEMODS.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelclientmods.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelclientmods.tip"));
     TEXTAREA_CLIENTSIDEMODS.setFont(new Font("Noto Sans Display Regular", Font.PLAIN, 15));
     ERROR_ICON_CLIENTSIDE_MODS.setDescription(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textclientmods.error"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textclientmods.error"));
     TEXTAREA_CLIENTSIDEMODS.addDocumentListener((SimpleDocumentListener) e -> validateClientMods());
     JPanel CLIENTSIDEMODS_JPANEL = new JPanel();
     CLIENTSIDEMODS_JPANEL.setLayout(new GridBagLayout());
@@ -553,12 +525,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Label and textfield copyDirs
     JLabel labelCopyDirs =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelcopydirs"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs"));
     labelCopyDirs.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelcopydirs.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 4;
@@ -567,12 +536,10 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(labelCopyDirs, GRIDBAGCONSTRAINTS);
 
     TEXTAREA_COPYDIRECTORIES.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelcopydirs.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
     TEXTAREA_COPYDIRECTORIES.setFont(new Font("Noto Sans Display Regular", Font.PLAIN, 15));
     ERROR_ICON_COPYDIRECTORIES.setDescription(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textclientmods.error"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textclientmods.error"));
     TEXTAREA_COPYDIRECTORIES.addDocumentListener((SimpleDocumentListener) e -> validateCopyDirs());
     JPanel COPYDIRECTORIES_JPANEL = new JPanel();
     COPYDIRECTORIES_JPANEL.setLayout(new GridBagLayout());
@@ -607,12 +574,9 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.gridwidth = 2;
 
     JLabel labelServerIconPath =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labeliconpath"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labeliconpath"));
     labelServerIconPath.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labeliconpath.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labeliconpath.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 6;
@@ -622,11 +586,9 @@ public class TabCreateServerPack extends JPanel {
 
     TEXTFIELD_SERVERICONPATH.setText("");
     TEXTFIELD_SERVERICONPATH.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textfield.iconpath"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textfield.iconpath"));
     ERROR_ICON_SERVERICON.setDescription(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textfield.iconpath.error"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textfield.iconpath.error"));
     TEXTFIELD_SERVERICONPATH.addDocumentListener(
         (SimpleDocumentListener) e -> validateServerIcon());
 
@@ -637,12 +599,9 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(TEXTFIELD_SERVERICONPATH, GRIDBAGCONSTRAINTS);
 
     JLabel labelServerPropertiesPath =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelpropertiespath"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelpropertiespath"));
     labelServerPropertiesPath.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelpropertiespath.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelpropertiespath.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 3;
     GRIDBAGCONSTRAINTS.gridy = 6;
@@ -652,11 +611,9 @@ public class TabCreateServerPack extends JPanel {
 
     TEXTFIELD_SERVERPROPERTIESPATH.setText("");
     TEXTFIELD_SERVERPROPERTIESPATH.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textfield.propertiespath"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textfield.propertiespath"));
     ERROR_ICON_SERVERPROPERTIES.setDescription(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textfield.propertiespath.error"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textfield.propertiespath.error"));
     TEXTFIELD_SERVERPROPERTIESPATH.addDocumentListener(
         (SimpleDocumentListener) e -> validateServerProperties());
 
@@ -671,13 +628,10 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.gridwidth = 5;
 
     JLabel labelJavaPath =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labeljavapath"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labeljavapath"));
     labelJavaPath.setToolTipText(
         "<html>"
-            + I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labeljavapath.tip")
+            + I18N.getMessage("createserverpack.gui.createserverpack.labeljavapath.tip")
             + "</html>");
 
     GRIDBAGCONSTRAINTS.gridx = 0;
@@ -687,11 +641,9 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(labelJavaPath, GRIDBAGCONSTRAINTS);
 
     TEXTFIELD_JAVAPATH.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labeljavapath.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labeljavapath.tip"));
     ERROR_ICON_JAVAPATH.setDescription(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.textjavapath.error"));
+        I18N.getMessage("createserverpack.gui.createserverpack.textjavapath.error"));
     TEXTFIELD_JAVAPATH.addDocumentListener((SimpleDocumentListener) e -> validateJavaPath());
 
     GRIDBAGCONSTRAINTS.gridx = 0;
@@ -704,12 +656,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Label and combobox minecraftVersion
     JLabel labelMinecraftVersion =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelminecraft"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelminecraft"));
     labelMinecraftVersion.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelminecraft.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelminecraft.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 10;
@@ -732,12 +681,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Label and radio buttons Modloader
     JLabel labelModloader =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelmodloader"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelmodloader"));
     labelModloader.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelmodloader.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelmodloader.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 1;
     GRIDBAGCONSTRAINTS.gridy = 10;
@@ -765,12 +711,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Label and textfield modloaderVersion
     JLabel labelModloaderVersion =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.labelmodloaderversion"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.labelmodloaderversion"));
     labelModloaderVersion.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.labelmodloaderversion.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 2;
     GRIDBAGCONSTRAINTS.gridy = 10;
@@ -799,12 +742,9 @@ public class TabCreateServerPack extends JPanel {
     // Checkbox installServer
     CHECKBOX_SERVER =
         new JCheckBox(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.checkboxserver"),
-            true);
+            I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver"), true);
     CHECKBOX_SERVER.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.checkboxserver.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.tip"));
     CHECKBOX_SERVER.addActionListener(this::actionEventCheckBoxServer);
 
     GRIDBAGCONSTRAINTS.gridx = 0;
@@ -814,13 +754,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Checkbox copyIcon
     CHECKBOX_ICON =
-        new JCheckBox(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.checkboxicon"),
-            true);
+        new JCheckBox(I18N.getMessage("createserverpack.gui.createserverpack.checkboxicon"), true);
     CHECKBOX_ICON.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.checkboxicon.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.checkboxicon.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 1;
     GRIDBAGCONSTRAINTS.gridy = 14;
@@ -830,12 +766,9 @@ public class TabCreateServerPack extends JPanel {
     // Checkbox copyProperties
     CHECKBOX_PROPERTIES =
         new JCheckBox(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.checkboxproperties"),
-            true);
+            I18N.getMessage("createserverpack.gui.createserverpack.checkboxproperties"), true);
     CHECKBOX_PROPERTIES.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.checkboxproperties.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.checkboxproperties.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 2;
     GRIDBAGCONSTRAINTS.gridy = 14;
@@ -844,13 +777,9 @@ public class TabCreateServerPack extends JPanel {
 
     // Checkbox createZIP
     CHECKBOX_ZIP =
-        new JCheckBox(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.checkboxzip"),
-            true);
+        new JCheckBox(I18N.getMessage("createserverpack.gui.createserverpack.checkboxzip"), true);
     CHECKBOX_ZIP.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.checkboxzip.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.checkboxzip.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 3;
     GRIDBAGCONSTRAINTS.gridy = 14;
@@ -858,12 +787,9 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(CHECKBOX_ZIP, GRIDBAGCONSTRAINTS);
 
     JLabel labelJavaArgs =
-        new JLabel(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.javaargs"));
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.javaargs"));
     labelJavaArgs.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.javaargs.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.javaargs.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 15;
@@ -873,8 +799,7 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(labelJavaArgs, GRIDBAGCONSTRAINTS);
 
     TEXTAREA_JAVAARGS.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.javaargs.tip"));
+        I18N.getMessage("createserverpack.gui.createserverpack.javaargs.tip"));
     TEXTAREA_JAVAARGS.setFont(new Font("Noto Sans Display Regular", Font.PLAIN, 15));
     JPanel JAVAARGS_JPANEL = new JPanel();
     JAVAARGS_JPANEL.setLayout(new GridBagLayout());
@@ -916,7 +841,7 @@ public class TabCreateServerPack extends JPanel {
 
     JButton BUTTON_MODPACKDIRECTORY = new JButton();
     BUTTON_MODPACKDIRECTORY.setToolTipText(
-        I18N.getLocalizedString("createserverpack.gui.buttonmodpackdir"));
+        I18N.getMessage("createserverpack.gui.buttonmodpackdir"));
     BUTTON_MODPACKDIRECTORY.setContentAreaFilled(false);
     BUTTON_MODPACKDIRECTORY.setMultiClickThreshhold(1000);
     ImageIcon FOLDERICON =
@@ -937,8 +862,7 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(BUTTON_MODPACKDIRECTORY, GRIDBAGCONSTRAINTS);
 
     JButton BUTTON_CLIENTSIDEMODS = new JButton();
-    BUTTON_CLIENTSIDEMODS.setToolTipText(
-        I18N.getLocalizedString("createserverpack.gui.buttonclientmods"));
+    BUTTON_CLIENTSIDEMODS.setToolTipText(I18N.getMessage("createserverpack.gui.buttonclientmods"));
     BUTTON_CLIENTSIDEMODS.setContentAreaFilled(false);
     BUTTON_CLIENTSIDEMODS.setMultiClickThreshhold(1000);
     BUTTON_CLIENTSIDEMODS.setIcon(FOLDERICON);
@@ -954,8 +878,7 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(BUTTON_CLIENTSIDEMODS, GRIDBAGCONSTRAINTS);
 
     JButton BUTTON_COPYDIRECTORIES = new JButton();
-    BUTTON_COPYDIRECTORIES.setToolTipText(
-        I18N.getLocalizedString("createserverpack.gui.buttoncopydirs"));
+    BUTTON_COPYDIRECTORIES.setToolTipText(I18N.getMessage("createserverpack.gui.buttoncopydirs"));
     BUTTON_COPYDIRECTORIES.setContentAreaFilled(false);
     BUTTON_COPYDIRECTORIES.setIcon(FOLDERICON);
     BUTTON_COPYDIRECTORIES.setMultiClickThreshhold(1000);
@@ -971,8 +894,7 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(BUTTON_COPYDIRECTORIES, GRIDBAGCONSTRAINTS);
 
     JButton BUTTON_JAVAPATH = new JButton();
-    BUTTON_JAVAPATH.setToolTipText(
-        I18N.getLocalizedString("createserverpack.gui.buttonjavapath"));
+    BUTTON_JAVAPATH.setToolTipText(I18N.getMessage("createserverpack.gui.buttonjavapath"));
     BUTTON_JAVAPATH.setContentAreaFilled(false);
     BUTTON_JAVAPATH.setIcon(FOLDERICON);
     BUTTON_JAVAPATH.setMultiClickThreshhold(1000);
@@ -989,8 +911,7 @@ public class TabCreateServerPack extends JPanel {
 
     JButton BUTTON_SERVERICON = new JButton();
     BUTTON_SERVERICON.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.button.icon"));
+        I18N.getMessage("createserverpack.gui.createserverpack.button.icon"));
     BUTTON_SERVERICON.setContentAreaFilled(false);
     BUTTON_SERVERICON.setIcon(FOLDERICON);
     BUTTON_SERVERICON.setMultiClickThreshhold(1000);
@@ -1010,8 +931,7 @@ public class TabCreateServerPack extends JPanel {
 
     JButton BUTTON_SERVERPROPERTIES = new JButton();
     BUTTON_SERVERPROPERTIES.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.button.properties"));
+        I18N.getMessage("createserverpack.gui.createserverpack.button.properties"));
     BUTTON_SERVERPROPERTIES.setContentAreaFilled(false);
     BUTTON_SERVERPROPERTIES.setIcon(FOLDERICON);
     BUTTON_SERVERPROPERTIES.setMultiClickThreshhold(1000);
@@ -1028,15 +948,13 @@ public class TabCreateServerPack extends JPanel {
 
     JButton BUTTON_AIKARS_FLAGS = new JButton();
     BUTTON_AIKARS_FLAGS.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.button.properties"));
+        I18N.getMessage("createserverpack.gui.createserverpack.button.properties"));
     BUTTON_AIKARS_FLAGS.setContentAreaFilled(false);
     BUTTON_AIKARS_FLAGS.setIcon(
         new RotatedIcon(
             new TextIcon(
                 BUTTON_AIKARS_FLAGS,
-                I18N.getLocalizedString(
-                    "createserverpack.gui.createserverpack.javaargs.aikar"),
+                I18N.getMessage("createserverpack.gui.createserverpack.javaargs.aikar"),
                 TextIcon.Layout.HORIZONTAL),
             RotatedIcon.Rotate.UP));
     BUTTON_AIKARS_FLAGS.setMultiClickThreshhold(1000);
@@ -1067,10 +985,7 @@ public class TabCreateServerPack extends JPanel {
     STATUS_LABEL_LINE_3 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
     STATUS_LABEL_LINE_4 = new JLabel("..." + RETICULATOR.reticulate() + "   ");
     STATUS_LABEL_LINE_5 =
-        new JLabel(
-            I18N.getLocalizedString(
-                    "createserverpack.gui.buttongenerateserverpack.ready")
-                + "   ");
+        new JLabel(I18N.getMessage("createserverpack.gui.buttongenerateserverpack.ready") + "   ");
 
     // Make sure all labels start on the left and extrend to the right
     STATUS_LABEL_LINE_0.setHorizontalAlignment(JLabel.LEFT);
@@ -1124,13 +1039,11 @@ public class TabCreateServerPack extends JPanel {
             new ImageIcon(GENERATE.getScaledInstance(32, 32, Image.SCALE_SMOOTH)),
             new TextIcon(
                 BUTTON_GENERATESERVERPACK,
-                I18N.getLocalizedString(
-                    "createserverpack.gui.buttongenerateserverpack"))));
+                I18N.getMessage("createserverpack.gui.buttongenerateserverpack"))));
     BUTTON_GENERATESERVERPACK.addActionListener(this::generateServerpack);
     BUTTON_GENERATESERVERPACK.setMultiClickThreshhold(1000);
     BUTTON_GENERATESERVERPACK.setToolTipText(
-        I18N.getLocalizedString(
-            "createserverpack.gui.buttongenerateserverpack.tip"));
+        I18N.getMessage("createserverpack.gui.buttongenerateserverpack.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 19;
@@ -1150,12 +1063,11 @@ public class TabCreateServerPack extends JPanel {
             8,
             FOLDERICON,
             new TextIcon(
-                BUTTON_SERVER_PACKS,
-                I18N.getLocalizedString("createserverpack.gui.buttonserverpacks"))));
+                BUTTON_SERVER_PACKS, I18N.getMessage("createserverpack.gui.buttonserverpacks"))));
     BUTTON_SERVER_PACKS.addActionListener(this::openServerPacksFolder);
     BUTTON_SERVER_PACKS.setMultiClickThreshhold(1000);
     BUTTON_SERVER_PACKS.setToolTipText(
-        I18N.getLocalizedString("createserverpack.gui.buttonserverpacks.tip"));
+        I18N.getMessage("createserverpack.gui.buttonserverpacks.tip"));
 
     GRIDBAGCONSTRAINTS.gridy = 20;
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
@@ -1296,8 +1208,7 @@ public class TabCreateServerPack extends JPanel {
 
       TEXTFIELD_MODPACKDIRECTORY.setIcon(null);
       TEXTFIELD_MODPACKDIRECTORY.setToolTipText(
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.labelmodpackdir.tip"));
+          I18N.getMessage("createserverpack.gui.createserverpack.labelmodpackdir.tip"));
 
       TEXTFIELD_MODPACKDIRECTORY.setForeground(getThemeTextColor());
 
@@ -1323,8 +1234,7 @@ public class TabCreateServerPack extends JPanel {
 
       TEXTFIELD_SERVERPACKSUFFIX.setIcon(null);
       TEXTFIELD_SERVERPACKSUFFIX.setToolTipText(
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.labelsuffix.tip"));
+          I18N.getMessage("createserverpack.gui.createserverpack.labelsuffix.tip"));
 
       TEXTFIELD_SERVERPACKSUFFIX.setForeground(getThemeTextColor());
 
@@ -1347,8 +1257,7 @@ public class TabCreateServerPack extends JPanel {
 
       TEXTAREA_CLIENTSIDEMODS.setIcon(null);
       TEXTAREA_CLIENTSIDEMODS.setToolTipText(
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.labelclientmods.tip"));
+          I18N.getMessage("createserverpack.gui.createserverpack.labelclientmods.tip"));
 
       TEXTAREA_CLIENTSIDEMODS.setForeground(getThemeTextColor());
 
@@ -1379,8 +1288,7 @@ public class TabCreateServerPack extends JPanel {
 
       TEXTAREA_COPYDIRECTORIES.setIcon(null);
       TEXTAREA_COPYDIRECTORIES.setToolTipText(
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.labelcopydirs.tip"));
+          I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
 
       TEXTAREA_COPYDIRECTORIES.setForeground(getThemeTextColor());
 
@@ -1403,8 +1311,7 @@ public class TabCreateServerPack extends JPanel {
 
       TEXTFIELD_SERVERICONPATH.setIcon(null);
       TEXTFIELD_SERVERICONPATH.setToolTipText(
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.textfield.iconpath"));
+          I18N.getMessage("createserverpack.gui.createserverpack.textfield.iconpath"));
 
       TEXTFIELD_SERVERICONPATH.setForeground(getThemeTextColor());
 
@@ -1425,8 +1332,7 @@ public class TabCreateServerPack extends JPanel {
     if (CONFIGURATIONHANDLER.checkIconAndProperties(TEXTFIELD_SERVERPROPERTIESPATH.getText())) {
       TEXTFIELD_SERVERPROPERTIESPATH.setIcon(null);
       TEXTFIELD_SERVERPROPERTIESPATH.setToolTipText(
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.textfield.propertiespath"));
+          I18N.getMessage("createserverpack.gui.createserverpack.textfield.propertiespath"));
 
       TEXTFIELD_SERVERPROPERTIESPATH.setForeground(getThemeTextColor());
 
@@ -1448,8 +1354,7 @@ public class TabCreateServerPack extends JPanel {
 
       TEXTFIELD_JAVAPATH.setIcon(null);
       TEXTFIELD_JAVAPATH.setToolTipText(
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.labeljavapath.tip"));
+          I18N.getMessage("createserverpack.gui.createserverpack.labeljavapath.tip"));
       TEXTFIELD_JAVAPATH.setForeground(getThemeTextColor());
 
     } else {
@@ -1471,10 +1376,8 @@ public class TabCreateServerPack extends JPanel {
     if (!TEXTAREA_JAVAARGS.getText().isEmpty()) {
       switch (JOptionPane.showConfirmDialog(
           CREATESERVERPACKPANEL,
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.javaargs.confirm.message"),
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.javaargs.confirm.title"),
+          I18N.getMessage("createserverpack.gui.createserverpack.javaargs.confirm.message"),
+          I18N.getMessage("createserverpack.gui.createserverpack.javaargs.confirm.title"),
           JOptionPane.YES_NO_OPTION,
           JOptionPane.WARNING_MESSAGE)) {
         case 0:
@@ -1515,10 +1418,8 @@ public class TabCreateServerPack extends JPanel {
     if (CHECKBOX_SERVER.isSelected() && TEXTFIELD_JAVAPATH.getText().isEmpty()) {
       switch (JOptionPane.showConfirmDialog(
           CREATESERVERPACKPANEL,
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.checkboxserver.confirm.message"),
-          I18N.getLocalizedString(
-              "createserverpack.gui.createserverpack.checkboxserver.confirm.title"),
+          I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.confirm.message"),
+          I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.confirm.title"),
           JOptionPane.YES_NO_OPTION,
           JOptionPane.WARNING_MESSAGE)) {
         case 0:
@@ -1528,10 +1429,9 @@ public class TabCreateServerPack extends JPanel {
         case 1:
           JOptionPane.showMessageDialog(
               CREATESERVERPACKPANEL,
-              I18N.getLocalizedString(
+              I18N.getMessage(
                   "createserverpack.gui.createserverpack.checkboxserver.message.message"),
-              I18N.getLocalizedString(
-                  "createserverpack.gui.createserverpack.checkboxserver.message.title"),
+              I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.message.title"),
               JOptionPane.ERROR_MESSAGE,
               null);
           break;
@@ -1700,12 +1600,11 @@ public class TabCreateServerPack extends JPanel {
       modpackDirChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     }
     modpackDirChooser.setDialogTitle(
-        I18N.getLocalizedString("createserverpack.gui.buttonmodpackdir.title"));
+        I18N.getMessage("createserverpack.gui.buttonmodpackdir.title"));
     modpackDirChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     modpackDirChooser.setFileFilter(
         new FileNameExtensionFilter(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.chooser.modpack.filter"),
+            I18N.getMessage("createserverpack.gui.createserverpack.chooser.modpack.filter"),
             "zip"));
     modpackDirChooser.setAcceptAllFileFilterUsed(false);
     modpackDirChooser.setMultiSelectionEnabled(false);
@@ -1739,13 +1638,11 @@ public class TabCreateServerPack extends JPanel {
 
     serverIconChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     serverIconChooser.setDialogTitle(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.chooser.icon.title"));
+        I18N.getMessage("createserverpack.gui.createserverpack.chooser.icon.title"));
     serverIconChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     serverIconChooser.setFileFilter(
         new FileNameExtensionFilter(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.chooser.icon.filter"),
+            I18N.getMessage("createserverpack.gui.createserverpack.chooser.icon.filter"),
             "png",
             "jpg",
             "jpeg",
@@ -1778,13 +1675,11 @@ public class TabCreateServerPack extends JPanel {
 
     serverPropertiesChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     serverPropertiesChooser.setDialogTitle(
-        I18N.getLocalizedString(
-            "createserverpack.gui.createserverpack.chooser.properties.title"));
+        I18N.getMessage("createserverpack.gui.createserverpack.chooser.properties.title"));
     serverPropertiesChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     serverPropertiesChooser.setFileFilter(
         new FileNameExtensionFilter(
-            I18N.getLocalizedString(
-                "createserverpack.gui.createserverpack.chooser.properties.filter"),
+            I18N.getMessage("createserverpack.gui.createserverpack.chooser.properties.filter"),
             "properties"));
     serverPropertiesChooser.setAcceptAllFileFilterUsed(false);
     serverPropertiesChooser.setMultiSelectionEnabled(false);
@@ -1825,13 +1720,12 @@ public class TabCreateServerPack extends JPanel {
     }
 
     clientModsChooser.setDialogTitle(
-        I18N.getLocalizedString("createserverpack.gui.buttonclientmods.title"));
+        I18N.getMessage("createserverpack.gui.buttonclientmods.title"));
     clientModsChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
     clientModsChooser.setFileFilter(
         new FileNameExtensionFilter(
-            I18N.getLocalizedString("createserverpack.gui.buttonclientmods.filter"),
-            "jar"));
+            I18N.getMessage("createserverpack.gui.buttonclientmods.filter"), "jar"));
 
     clientModsChooser.setAcceptAllFileFilterUsed(false);
     clientModsChooser.setMultiSelectionEnabled(true);
@@ -1872,8 +1766,7 @@ public class TabCreateServerPack extends JPanel {
       copyDirsChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     }
 
-    copyDirsChooser.setDialogTitle(
-        I18N.getLocalizedString("createserverpack.gui.buttoncopydirs.title"));
+    copyDirsChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttoncopydirs.title"));
     copyDirsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     copyDirsChooser.setAcceptAllFileFilterUsed(false);
     copyDirsChooser.setMultiSelectionEnabled(true);
@@ -1921,8 +1814,7 @@ public class TabCreateServerPack extends JPanel {
       javaChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     }
 
-    javaChooser.setDialogTitle(
-        I18N.getLocalizedString("createserverpack.gui.buttonjavapath.tile"));
+    javaChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonjavapath.tile"));
     javaChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     javaChooser.setAcceptAllFileFilterUsed(true);
     javaChooser.setMultiSelectionEnabled(false);
@@ -1938,9 +1830,7 @@ public class TabCreateServerPack extends JPanel {
                 + javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
       } catch (IOException ex) {
-        LOG.error(
-            "I18N.getLocalizedString(\"createserverpack.log.error.buttonjavapath\")",
-            ex);
+        LOG.error("I18N.getMessage(\"createserverpack.log.error.buttonjavapath\")", ex);
       }
     }
   }
@@ -1965,8 +1855,7 @@ public class TabCreateServerPack extends JPanel {
           JOptionPane.showConfirmDialog(
               FRAME_SERVERPACKCREATOR,
               LAZYMODETEXTPANE,
-              I18N.getLocalizedString(
-                  "createserverpack.gui.createserverpack.lazymode"),
+              I18N.getMessage("createserverpack.gui.createserverpack.lazymode"),
               JOptionPane.YES_NO_OPTION,
               JOptionPane.INFORMATION_MESSAGE);
     }
@@ -2041,13 +1930,9 @@ public class TabCreateServerPack extends JPanel {
             false);
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(
-        I18N.getLocalizedString(
-            "createserverpack.log.info.buttoncreateserverpack.start"));
-    // labelGenerateServerPack.setText(I18N.getLocalizedString("createserverpack.log.info.buttoncreateserverpack.start"));
-    updateStatus(
-        I18N.getLocalizedString(
-            "createserverpack.log.info.buttoncreateserverpack.start"));
+    LOG.info(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
+    // labelGenerateServerPack.setText(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
+    updateStatus(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
 
     List<String> encounteredErrors = new ArrayList<>(100);
 
@@ -2060,24 +1945,19 @@ public class TabCreateServerPack extends JPanel {
               configurationModel, encounteredErrors, true)) {
 
             /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(
-                I18N.getLocalizedString(
-                    "createserverpack.log.info.buttoncreateserverpack.checked"));
+            LOG.info(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.checked"));
 
             updateStatus(
-                I18N.getLocalizedString(
-                    "createserverpack.log.info.buttoncreateserverpack.checked"));
+                I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.checked"));
 
             saveConfig(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.info(
-                I18N.getLocalizedString(
-                    "createserverpack.log.info.buttoncreateserverpack.generating"));
+                I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.generating"));
 
             updateStatus(
-                I18N.getLocalizedString(
-                    "createserverpack.log.info.buttoncreateserverpack.generating"));
+                I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.generating"));
 
             try {
 
@@ -2086,8 +1966,7 @@ public class TabCreateServerPack extends JPanel {
               loadConfig(new File("serverpackcreator.conf"));
 
               updateStatus(
-                  I18N.getLocalizedString(
-                      "createserverpack.log.info.buttoncreateserverpack.ready"));
+                  I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.ready"));
 
               SERVERPACKGENERATEDDOCUMENT.setParagraphAttributes(
                   0,
@@ -2101,8 +1980,7 @@ public class TabCreateServerPack extends JPanel {
               if (JOptionPane.showConfirmDialog(
                       FRAME_SERVERPACKCREATOR,
                       SERVERPACKGENERATEDTEXTPANE,
-                      I18N.getLocalizedString(
-                          "createserverpack.gui.createserverpack.openfolder.title"),
+                      I18N.getMessage("createserverpack.gui.createserverpack.openfolder.title"),
                       JOptionPane.YES_NO_OPTION,
                       JOptionPane.INFORMATION_MESSAGE)
                   == 0) {
@@ -2132,9 +2010,7 @@ public class TabCreateServerPack extends JPanel {
 
           } else {
 
-            updateStatus(
-                I18N.getLocalizedString(
-                    "createserverpack.gui.buttongenerateserverpack.fail"));
+            updateStatus(I18N.getMessage("createserverpack.gui.buttongenerateserverpack.fail"));
 
             if (encounteredErrors.size() > 0) {
 
@@ -2151,8 +2027,7 @@ public class TabCreateServerPack extends JPanel {
                   FRAME_SERVERPACKCREATOR,
                   errors,
                   String.format(
-                      I18N.getLocalizedString(
-                          "createserverpack.gui.createserverpack.errors.encountered"),
+                      I18N.getMessage("createserverpack.gui.createserverpack.errors.encountered"),
                       encounteredErrors.size()),
                   JOptionPane.ERROR_MESSAGE,
                   UIManager.getIcon("OptionPane.errorIcon"));

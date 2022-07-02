@@ -143,8 +143,7 @@ public class MainMenuBar extends Component {
   /**
    * Constructor for our MainMenuBar. Prepares various Strings, Arrays, Panels and windows.
    *
-   * @param injectedI18n Instance of {@link I18n} required for
-   *     localized log messages.
+   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
    * @param injectedLightTheme Instance of {@link LightTheme} required for theme switching.
    * @param injectedDarkTheme Instance of {@link DarkTheme} required for theme switching.
    * @param injectedJFrame The parent from in which everything ServerPackCreator is displayed in.
@@ -192,8 +191,7 @@ public class MainMenuBar extends Component {
 
     if (injectedUtilities == null) {
       this.UTILITIES =
-          new de.griefed.serverpackcreator.utilities.common.Utilities(
-              I18N, APPLICATIONPROPERTIES);
+          new de.griefed.serverpackcreator.utilities.common.Utilities(I18N, APPLICATIONPROPERTIES);
     } else {
       this.UTILITIES = injectedUtilities;
     }
@@ -218,8 +216,7 @@ public class MainMenuBar extends Component {
 
     CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
 
-    String ABOUTWINDOWTEXT =
-        I18N.getLocalizedString("createserverpack.gui.about.text");
+    String ABOUTWINDOWTEXT = I18N.getMessage("createserverpack.gui.about.text");
     ABOUT_WINDOW_TEXTPANE.setEditable(false);
     ABOUT_WINDOW_TEXTPANE.setOpaque(false);
     ABOUT_WINDOW_TEXTPANE.setMinimumSize(ABOUTDIMENSION);
@@ -247,13 +244,9 @@ public class MainMenuBar extends Component {
           }
         });
 
-    HASTEOPTIONS[0] =
-        I18N.getLocalizedString("createserverpack.gui.about.hastebin.dialog.yes");
-    HASTEOPTIONS[1] =
-        I18N.getLocalizedString(
-            "createserverpack.gui.about.hastebin.dialog.clipboard");
-    HASTEOPTIONS[2] =
-        I18N.getLocalizedString("createserverpack.gui.about.hastebin.dialog.no");
+    HASTEOPTIONS[0] = I18N.getMessage("createserverpack.gui.about.hastebin.dialog.yes");
+    HASTEOPTIONS[1] = I18N.getMessage("createserverpack.gui.about.hastebin.dialog.clipboard");
+    HASTEOPTIONS[2] = I18N.getMessage("createserverpack.gui.about.hastebin.dialog.no");
 
     CONFIG_WINDOW_TEXTPANE.setOpaque(false);
     CONFIG_WINDOW_TEXTPANE.setEditable(false);
@@ -304,75 +297,66 @@ public class MainMenuBar extends Component {
   public JMenuBar createMenuBar() {
 
     // create menus
-    JMenu fileMenu = new JMenu(I18N.getLocalizedString("menubar.gui.menu.file"));
-    JMenu editMenu = new JMenu(I18N.getLocalizedString("menubar.gui.menu.edit"));
-    JMenu viewMenu = new JMenu(I18N.getLocalizedString("menubar.gui.menu.view"));
-    JMenu aboutMenu = new JMenu(I18N.getLocalizedString("menubar.gui.menu.about"));
+    JMenu fileMenu = new JMenu(I18N.getMessage("menubar.gui.menu.file"));
+    JMenu editMenu = new JMenu(I18N.getMessage("menubar.gui.menu.edit"));
+    JMenu viewMenu = new JMenu(I18N.getMessage("menubar.gui.menu.view"));
+    JMenu aboutMenu = new JMenu(I18N.getMessage("menubar.gui.menu.about"));
 
     // create menu items
     JMenuItem file_NewConfigurationMenuItem = new JMenuItem("New configuration");
     JMenuItem file_LoadConfigMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.loadconfig"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.loadconfig"));
     JMenuItem file_SaveConfigMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.saveconfig"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.saveconfig"));
     JMenuItem file_SaveAsConfigMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.saveas"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.saveas"));
     JMenuItem file_UploadConfigurationToHasteBin =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.uploadconfig"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.uploadconfig"));
     JMenuItem file_UploadServerPackCreatorLogToHasteBin =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.uploadlog"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.uploadlog"));
     JMenuItem file_UpdateFallbackModslist =
-        new JMenuItem(
-            I18N.getLocalizedString("menubar.gui.menuitem.updatefallback"));
-    JMenuItem file_ExitConfigMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.exit"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.updatefallback"));
+    JMenuItem file_ExitConfigMenuItem = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.exit"));
 
-    JMenuItem edit_SwitchTheme =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.theme"));
+    JMenuItem edit_SwitchTheme = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.theme"));
     JMenuItem edit_OpenInEditorServerProperties =
-        new JMenuItem(
-            I18N.getLocalizedString("menubar.gui.menuitem.serverproperties"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.serverproperties"));
     JMenuItem edit_OpenInEditorServerIcon =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.servericon"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.servericon"));
 
     JMenuItem view_OpenAddonsDirectoryMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.addonsdir"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.addonsdir"));
     JMenuItem view_ExampleAddonRepositoryMenuItem =
-        new JMenuItem(
-            I18N.getLocalizedString("menubar.gui.menuitem.exampleaddonrepo"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.exampleaddonrepo"));
     JMenuItem view_OpenServerPackCreatorDirectoryMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.spcdir"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.spcdir"));
     JMenuItem view_OpenServerPacksDirectoryMenuItem =
-        new JMenuItem(
-            I18N.getLocalizedString("menubar.gui.menuitem.serverpacksdir"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.serverpacksdir"));
     JMenuItem view_OpenServerFilesDirectoryMenuItem =
-        new JMenuItem(
-            I18N.getLocalizedString("menubar.gui.menuitem.serverfilesdir"));
-    JMenuItem view_OpenSPCLog =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.spclog"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.serverfilesdir"));
+    JMenuItem view_OpenSPCLog = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.spclog"));
     JMenuItem view_OpenModloaderInstallerLog =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.modloaderlog"));
-    JMenuItem view_OpenAddonLog =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.addonlog"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.modloaderlog"));
+    JMenuItem view_OpenAddonLog = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.addonlog"));
 
     JMenuItem about_OpenAboutWindowMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.about"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.about"));
     JMenuItem about_OpenGitHubPageMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.repository"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.repository"));
     JMenuItem about_OpenGitHubIssuesPageMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.issues"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.issues"));
     JMenuItem about_OpenReleasesPageMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.releases"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.releases"));
     JMenuItem about_OpenDiscordLinkMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.discord"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.discord"));
     JMenuItem about_OpenDonationsPageMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.donate"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.donate"));
     JMenuItem about_OpenWikiHelpMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.wiki.help"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.wiki.help"));
     JMenuItem about_OpenWikiHowToMenuItem =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.wiki.howto"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.wiki.howto"));
     JMenuItem about_CheckForUpdates =
-        new JMenuItem(I18N.getLocalizedString("menubar.gui.menuitem.updates"));
+        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.updates"));
 
     // create action listeners for items
     file_NewConfigurationMenuItem.addActionListener(this::newConfiguration);
@@ -486,8 +470,8 @@ public class MainMenuBar extends Component {
     if (!displayUpdateDialog()) {
       JOptionPane.showMessageDialog(
           FRAME_SERVERPACKCREATOR,
-          I18N.getLocalizedString("menubar.gui.menuitem.updates.none"),
-          I18N.getLocalizedString("menubar.gui.menuitem.updates.none.title"),
+          I18N.getMessage("menubar.gui.menuitem.updates.none"),
+          I18N.getMessage("menubar.gui.menuitem.updates.none.title"),
           JOptionPane.INFORMATION_MESSAGE,
           UIManager.getIcon("OptionPane.informationIcon"));
     }
@@ -507,9 +491,7 @@ public class MainMenuBar extends Component {
             APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
     if (update.isPresent()) {
-      String textContent =
-          String.format(
-              I18N.getLocalizedString("update.dialog.new"), update.get().url());
+      String textContent = String.format(I18N.getMessage("update.dialog.new"), update.get().url());
 
       StyledDocument styledDocument = new DefaultStyledDocument();
       SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
@@ -536,9 +518,9 @@ public class MainMenuBar extends Component {
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
       String[] options = new String[3];
 
-      options[0] = I18N.getLocalizedString("update.dialog.yes");
-      options[1] = I18N.getLocalizedString("update.dialog.no");
-      options[2] = I18N.getLocalizedString("update.dialog.clipboard");
+      options[0] = I18N.getMessage("update.dialog.yes");
+      options[1] = I18N.getMessage("update.dialog.no");
+      options[2] = I18N.getMessage("update.dialog.clipboard");
 
       try {
         styledDocument.insertString(0, textContent, simpleAttributeSet);
@@ -551,7 +533,7 @@ public class MainMenuBar extends Component {
       switch (JOptionPane.showOptionDialog(
           FRAME_SERVERPACKCREATOR,
           jTextPane,
-          I18N.getLocalizedString("update.dialog.available"),
+          I18N.getMessage("update.dialog.available"),
           JOptionPane.DEFAULT_OPTION,
           JOptionPane.INFORMATION_MESSAGE,
           UIManager.getIcon("OptionPane.informationIcon"),
@@ -589,15 +571,15 @@ public class MainMenuBar extends Component {
     if (APPLICATIONPROPERTIES.updateFallback()) {
       JOptionPane.showMessageDialog(
           FRAME_SERVERPACKCREATOR,
-          I18N.getLocalizedString("menubar.gui.menuitem.updatefallback.updated"),
-          I18N.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.updated"),
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
           JOptionPane.INFORMATION_MESSAGE,
           UIManager.getIcon("OptionPane.informationIcon"));
     } else {
       JOptionPane.showMessageDialog(
           FRAME_SERVERPACKCREATOR,
-          I18N.getLocalizedString("menubar.gui.menuitem.updatefallback.nochange"),
-          I18N.getLocalizedString("menubar.gui.menuitem.updatefallback.title"),
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.nochange"),
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
           JOptionPane.INFORMATION_MESSAGE,
           UIManager.getIcon("OptionPane.informationIcon"));
     }
@@ -744,7 +726,7 @@ public class MainMenuBar extends Component {
     switch (JOptionPane.showOptionDialog(
         FRAME_SERVERPACKCREATOR,
         displayTextPane,
-        I18N.getLocalizedString("createserverpack.gui.about.hastebin.dialog"),
+        I18N.getMessage("createserverpack.gui.about.hastebin.dialog"),
         JOptionPane.DEFAULT_OPTION,
         JOptionPane.INFORMATION_MESSAGE,
         ICON_HASTEBIN,
@@ -773,8 +755,8 @@ public class MainMenuBar extends Component {
     MATERIALTEXTPANEUI.installUI(FILETOOLARGE_WINDOW_TEXTPANE);
     JOptionPane.showConfirmDialog(
         FRAME_SERVERPACKCREATOR,
-        I18N.getLocalizedString("menubar.gui.filetoolarge"),
-        I18N.getLocalizedString("menubar.gui.filetoolargetitle"),
+        I18N.getMessage("menubar.gui.filetoolarge"),
+        I18N.getMessage("menubar.gui.filetoolargetitle"),
         JOptionPane.DEFAULT_OPTION,
         JOptionPane.WARNING_MESSAGE,
         ICON_HASTEBIN);
@@ -841,8 +823,7 @@ public class MainMenuBar extends Component {
     configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     configChooser.setFileFilter(
         new FileNameExtensionFilter(
-            I18N.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),
-            "conf"));
+            I18N.getMessage("createserverpack.gui.buttonloadconfig.filter"), "conf"));
     configChooser.setAcceptAllFileFilterUsed(false);
     configChooser.setMultiSelectionEnabled(false);
     configChooser.setPreferredSize(CHOOSERDIMENSION);
@@ -869,10 +850,7 @@ public class MainMenuBar extends Component {
         }
 
       } catch (IOException ex) {
-        LOG.error(
-            I18N.getLocalizedString(
-                "createserverpack.log.error.buttonloadconfigfromfile"),
-            ex);
+        LOG.error(I18N.getMessage("createserverpack.log.error.buttonloadconfigfromfile"), ex);
       }
     }
   }
@@ -970,13 +948,11 @@ public class MainMenuBar extends Component {
 
     configChooser = new JFileChooser();
     configChooser.setCurrentDirectory(new File("."));
-    configChooser.setDialogTitle(
-        I18N.getLocalizedString("createserverpack.gui.buttonloadconfig.title"));
+    configChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonloadconfig.title"));
     configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     configChooser.setFileFilter(
         new FileNameExtensionFilter(
-            I18N.getLocalizedString("createserverpack.gui.buttonloadconfig.filter"),
-            "conf"));
+            I18N.getMessage("createserverpack.gui.buttonloadconfig.filter"), "conf"));
     configChooser.setAcceptAllFileFilterUsed(false);
     configChooser.setMultiSelectionEnabled(false);
     configChooser.setPreferredSize(CHOOSERDIMENSION);
@@ -988,8 +964,7 @@ public class MainMenuBar extends Component {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(
             String.format(
-                I18N.getLocalizedString(
-                    "createserverpack.log.info.buttonloadconfigfromfile"),
+                I18N.getMessage("createserverpack.log.info.buttonloadconfigfromfile"),
                 configChooser.getSelectedFile().getCanonicalPath()));
 
         File specifiedConfigFile;
@@ -1095,7 +1070,7 @@ public class MainMenuBar extends Component {
     JOptionPane.showMessageDialog(
         FRAME_SERVERPACKCREATOR,
         ABOUTWINDOWSCROLLPANE,
-        I18N.getLocalizedString("createserverpack.gui.createserverpack.about.title"),
+        I18N.getMessage("createserverpack.gui.createserverpack.about.title"),
         JOptionPane.INFORMATION_MESSAGE,
         HELPICON);
   }

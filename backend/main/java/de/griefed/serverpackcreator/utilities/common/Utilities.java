@@ -23,19 +23,15 @@ public class Utilities {
   private final WebUtilities WEB_UTILITIES;
 
   @Autowired
-  public Utilities(
-      I18n injectedI18n,
-      ApplicationProperties injectedApplicationProperties) {
+  public Utilities(I18n injectedI18n, ApplicationProperties injectedApplicationProperties) {
 
-    this.BOOLEAN_UTILITIES =
-        new BooleanUtilities(injectedI18n, injectedApplicationProperties);
+    this.BOOLEAN_UTILITIES = new BooleanUtilities(injectedI18n, injectedApplicationProperties);
     this.FILE_UTILITIES = new FileUtilities();
     this.JAR_UTILITIES = new JarUtilities();
     this.LIST_UTILITIES = new ListUtilities();
     this.STRING_UTILITIES = new StringUtilities();
     this.SYSTEM_UTILITIES = new SystemUtilities();
-    this.WEB_UTILITIES =
-        new WebUtilities(injectedApplicationProperties, injectedI18n);
+    this.WEB_UTILITIES = new WebUtilities(injectedApplicationProperties, injectedI18n);
   }
 
   public BooleanUtilities BooleanUtils() {

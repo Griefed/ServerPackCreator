@@ -44,20 +44,17 @@ public class TabServerPackCreatorLog extends JComponentTailer {
    *
    * <p>Used for Dependency Injection.
    *
-   * <p>Receives an instance of {@link I18n} or creates one if the received one is
-   * null. Required for use of localization.
+   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
+   * for use of localization.
    *
-   * @param injectedI18n Instance of {@link I18n} required for
-   *     localized log messages.
+   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
    * @param injectedApplicationProperties Instance of {@link Properties} required for various
    *     different things.
    * @param tooltip {@link String} The tooltip text for this tailer.
    * @author Griefed
    */
   public TabServerPackCreatorLog(
-      I18n injectedI18n,
-      ApplicationProperties injectedApplicationProperties,
-      String tooltip) {
+      I18n injectedI18n, ApplicationProperties injectedApplicationProperties, String tooltip) {
     super(tooltip);
     ApplicationProperties APPLICATIONPROPERTIES;
     if (injectedApplicationProperties == null) {
@@ -83,8 +80,7 @@ public class TabServerPackCreatorLog extends JComponentTailer {
     class MyTailerListener extends TailerListenerAdapter {
       public void handle(String line) {
         if (line.contains(
-            I18N.getLocalizedString(
-                "createserverpack.log.info.buttoncreateserverpack.start"))) {
+            I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"))) {
           textArea.setText("");
         }
         if (!line.contains("DEBUG")) {

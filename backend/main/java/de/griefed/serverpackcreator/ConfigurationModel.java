@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.NoFormatFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.typesafe.config.ConfigException;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,17 +70,23 @@ public class ConfigurationModel {
    * @param clientMods String-{@link List} of clientside mods to exclude from the server pack.
    * @param copyDirs String-{@link List} of directories and/or files to include in the server pack.
    * @param modpackDir {@link String} The path to the modpack.
-   * @param javaPath {@link String} The path to the java installation used for modloader server installation.
+   * @param javaPath {@link String} The path to the java installation used for modloader server
+   *     installation.
    * @param minecraftVersion {@link String} The Minecraft version the modpack uses.
-   * @param modLoader {@link String} The modloader the modpack uses. Either <code>Forge</code>, <code>Fabric</code> or <code>Quilt</code>.
+   * @param modLoader {@link String} The modloader the modpack uses. Either <code>Forge</code>,
+   *     <code>Fabric</code> or <code>Quilt</code>.
    * @param modLoaderVersion {@link String} The modloader version the modpack uses.
    * @param javaArgs {@link String} JVM flags to create the start scripts with.
    * @param serverPackSuffix {@link String} Suffix to create the server pack with.
    * @param serverIconPath {@link String} Path to the icon to use in the server pack.
-   * @param serverPropertiesPath {@link String} Path to the server.properties to create the server pack with.
-   * @param includeServerInstallation {@link Boolean} Whether to install the modloader server in the server pack.
-   * @param includeServerIcon {@link Boolean} Whether to include the server-icon.png in the server pack.
-   * @param includeServerProperties {@link Boolean} Whether to include the server.properties in the server pack.
+   * @param serverPropertiesPath {@link String} Path to the server.properties to create the server
+   *     pack with.
+   * @param includeServerInstallation {@link Boolean} Whether to install the modloader server in the
+   *     server pack.
+   * @param includeServerIcon {@link Boolean} Whether to include the server-icon.png in the server
+   *     pack.
+   * @param includeServerProperties {@link Boolean} Whether to include the server.properties in the
+   *     server pack.
    * @param includeZipCreation {@link Boolean} Whether to create a ZIP-archive of the server pack.
    * @author Griefed
    */
@@ -127,7 +132,8 @@ public class ConfigurationModel {
    * @throws FileNotFoundException if the specified file can not be found.
    * @author Griefed
    */
-  public ConfigurationModel(Utilities utilities, File configFile) throws FileNotFoundException, NoFormatFoundException {
+  public ConfigurationModel(Utilities utilities, File configFile)
+      throws FileNotFoundException, NoFormatFoundException {
     if (!configFile.exists()) {
       throw new FileNotFoundException("Couldn't find file: " + configFile);
     }
@@ -136,8 +142,7 @@ public class ConfigurationModel {
 
     config.load();
 
-    setClientMods(
-        config.getOrElse("clientMods", Collections.singletonList("")));
+    setClientMods(config.getOrElse("clientMods", Collections.singletonList("")));
     setCopyDirs(config.getOrElse("copyDirs", Collections.singletonList("")));
     setModpackDir(config.getOrElse("modpackDir", "").replace("\\", "/"));
     setJavaPath(config.getOrElse("javaPath", "").replace("\\", "/"));
@@ -149,10 +154,8 @@ public class ConfigurationModel {
 
     setServerPackSuffix(
         utilities.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix", "")));
-    setServerIconPath(
-        config.getOrElse("serverIconPath", "").replace("\\", "/"));
-    setServerPropertiesPath(
-        config.getOrElse("serverPropertiesPath", "").replace("\\", "/"));
+    setServerIconPath(config.getOrElse("serverIconPath", "").replace("\\", "/"));
+    setServerPropertiesPath(config.getOrElse("serverPropertiesPath", "").replace("\\", "/"));
 
     setIncludeServerInstallation(
         utilities.BooleanUtils()

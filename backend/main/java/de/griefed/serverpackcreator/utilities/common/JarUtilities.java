@@ -205,8 +205,8 @@ public class JarUtilities {
    *     <br>
    *     Example for dev-environment: <code>G:/GitLab/ServerPackCreator/build/classes/java/main
    *     </code><br>
-   *     See {@link ServerPackCreator#main(String[])} source code for an example on how this is acquired
-   *     automatically.
+   *     See {@link ServerPackCreator#main(String[])} source code for an example on how this is
+   *     acquired automatically.
    * @param directoryToCopy String. Path to the directory inside the JAR-file you want to copy.
    * @param destinationDirectory String. Path to the destination directory you want to copy source
    *     to.

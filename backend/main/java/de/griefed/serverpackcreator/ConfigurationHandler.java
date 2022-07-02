@@ -67,11 +67,10 @@ public class ConfigurationHandler {
    *
    * <p>Used for Dependency Injection.
    *
-   * <p>Receives an instance of {@link I18n} or creates one if the received one is
-   * null. Required for use of localization.
+   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
+   * for use of localization.
    *
-   * @param injectedI18n Instance of {@link I18n} required for
-   *     localized log messages.
+   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
    * @param injectedApplicationProperties Instance of {@link Properties} required for various
    *     different things.
    * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything
@@ -254,8 +253,7 @@ public class ConfigurationHandler {
       config = FileConfig.of(configFile);
     } catch (ConfigException ex) {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(
-          I18N.getLocalizedString("configuration.log.error.checkconfig.start"));
+      LOG.error(I18N.getMessage("configuration.log.error.checkconfig.start"));
     }
 
     if (config != null) {
@@ -264,10 +262,8 @@ public class ConfigurationHandler {
         config.load();
       } catch (ConfigException ex) {
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(
-            I18N.getLocalizedString("configuration.log.error.checkconfig.start"));
-        encounteredErrors.add(
-            I18N.getLocalizedString("configuration.log.error.checkconfig.start"));
+        LOG.error(I18N.getMessage("configuration.log.error.checkconfig.start"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
       }
 
       configurationModel.setClientMods(
@@ -305,8 +301,7 @@ public class ConfigurationHandler {
 
     } else {
 
-      encounteredErrors.add(
-          I18N.getLocalizedString("configuration.log.error.checkconfig.start"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
     }
 
     return checkConfiguration(configurationModel, encounteredErrors, quietCheck);
@@ -343,12 +338,11 @@ public class ConfigurationHandler {
     sanitizeLinks(configurationModel);
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getLocalizedString("configuration.log.info.checkconfig.start"));
+    LOG.info(I18N.getMessage("configuration.log.info.checkconfig.start"));
 
     if (configurationModel.getClientMods().isEmpty()) {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.warn(
-          I18N.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
+      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.clientmods"));
       configurationModel.setClientMods(APPLICATIONPROPERTIES.getListFallbackMods());
     } else {
       configurationModel.setClientMods(configurationModel.getClientMods());
@@ -364,7 +358,7 @@ public class ConfigurationHandler {
 
       encounteredErrors.add(
           String.format(
-              I18N.getLocalizedString("configuration.log.error.servericon"),
+              I18N.getMessage("configuration.log.error.servericon"),
               configurationModel.getServerIconPath()));
 
     } else if (configurationModel.getServerIconPath().length() > 0
@@ -377,7 +371,7 @@ public class ConfigurationHandler {
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(
           String.format(
-              I18N.getLocalizedString("configuration.log.error.checkcopydirs.read"),
+              I18N.getMessage("configuration.log.error.checkcopydirs.read"),
               configurationModel.getServerIconPath()));
     }
 
@@ -388,7 +382,7 @@ public class ConfigurationHandler {
 
       encounteredErrors.add(
           String.format(
-              I18N.getLocalizedString("configuration.log.error.serverproperties"),
+              I18N.getMessage("configuration.log.error.serverproperties"),
               configurationModel.getServerPropertiesPath()));
 
     } else if (configurationModel.getServerPropertiesPath().length() > 0
@@ -402,7 +396,7 @@ public class ConfigurationHandler {
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(
           String.format(
-              I18N.getLocalizedString("configuration.log.error.checkcopydirs.read"),
+              I18N.getMessage("configuration.log.error.checkcopydirs.read"),
               configurationModel.getServerPropertiesPath()));
     }
 
@@ -433,9 +427,8 @@ public class ConfigurationHandler {
 
     } else {
       configHasError = true;
-      LOG.error(I18N.getLocalizedString("configuration.log.error.checkmodpackdir"));
-      encounteredErrors.add(
-          I18N.getLocalizedString("configuration.log.error.checkmodpackdir"));
+      LOG.error(I18N.getMessage("configuration.log.error.checkmodpackdir"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodpackdir"));
     }
 
     if (checkModloader(configurationModel.getModLoader())) {
@@ -443,13 +436,10 @@ public class ConfigurationHandler {
       if (VERSIONMETA.minecraft().checkMinecraftVersion(configurationModel.getMinecraftVersion())) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.debug(
-            I18N.getLocalizedString(
-                "configuration.log.debug.isdir.minecraftversion"));
+        LOG.debug(I18N.getMessage("configuration.log.debug.isdir.minecraftversion"));
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.debug(
-            I18N.getLocalizedString("configuration.log.debug.isdir.modloader"));
+        LOG.debug(I18N.getMessage("configuration.log.debug.isdir.modloader"));
 
         if (checkModloaderVersion(
             configurationModel.getModLoader(),
@@ -457,32 +447,23 @@ public class ConfigurationHandler {
             configurationModel.getMinecraftVersion())) {
 
           /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.debug(
-              I18N.getLocalizedString(
-                  "configuration.log.debug.isdir.modloaderversion"));
+          LOG.debug(I18N.getMessage("configuration.log.debug.isdir.modloaderversion"));
 
         } else {
 
           configHasError = true;
 
           /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.error(
-              I18N.getLocalizedString(
-                  "configuration.log.error.isdir.modloaderversion"));
-          encounteredErrors.add(
-              I18N.getLocalizedString(
-                  "configuration.log.error.checkmodloaderversion"));
+          LOG.error(I18N.getMessage("configuration.log.error.isdir.modloaderversion"));
+          encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloaderversion"));
         }
 
       } else {
 
         configHasError = true;
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(
-            I18N.getLocalizedString(
-                "configuration.log.error.isdir.minecraftversion"));
-        encounteredErrors.add(
-            I18N.getLocalizedString("configuration.log.error.minecraft"));
+        LOG.error(I18N.getMessage("configuration.log.error.isdir.minecraftversion"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.minecraft"));
       }
 
     } else {
@@ -490,9 +471,8 @@ public class ConfigurationHandler {
       configHasError = true;
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(I18N.getLocalizedString("configuration.log.error.isdir.modloader"));
-      encounteredErrors.add(
-          I18N.getLocalizedString("configuration.log.error.checkmodloader"));
+      LOG.error(I18N.getMessage("configuration.log.error.isdir.modloader"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloader"));
     }
 
     if (quietCheck) {
@@ -502,14 +482,12 @@ public class ConfigurationHandler {
     if (!configHasError) {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          I18N.getLocalizedString("configuration.log.info.checkconfig.success"));
+      LOG.info(I18N.getMessage("configuration.log.info.checkconfig.success"));
 
     } else {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(
-          I18N.getLocalizedString("configuration.log.error.checkconfig.failure"));
+      LOG.error(I18N.getMessage("configuration.log.error.checkconfig.failure"));
 
       printEncounteredErrors(encounteredErrors);
     }
@@ -536,15 +514,14 @@ public class ConfigurationHandler {
         configurationModel.getCopyDirs(), configurationModel.getModpackDir(), encounteredErrors)) {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug(I18N.getLocalizedString("configuration.log.debug.isdir.copydirs"));
+      LOG.debug(I18N.getMessage("configuration.log.debug.isdir.copydirs"));
 
     } else {
 
       configHasError = true;
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(I18N.getLocalizedString("configuration.log.error.isdir.copydir"));
-      encounteredErrors.add(
-          I18N.getLocalizedString("configuration.log.error.isdir.copydir"));
+      LOG.error(I18N.getMessage("configuration.log.error.isdir.copydir"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.isdir.copydir"));
     }
 
     return configHasError;
@@ -650,8 +627,7 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing CurseForge manifest.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            I18N.getLocalizedString("configuration.log.error.zip.manifest"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.manifest"));
 
         configHasError = true;
       }
@@ -679,8 +655,7 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing minecraftinstance.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            I18N.getLocalizedString("configuration.log.error.zip.instance"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.instance"));
 
         configHasError = true;
       }
@@ -710,8 +685,7 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing config.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            I18N.getLocalizedString("configuration.log.error.zip.config"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.config"));
 
         configHasError = true;
       }
@@ -726,8 +700,7 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing mmc-pack.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            I18N.getLocalizedString("configuration.log.error.zip.mmcpack"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.mmcpack"));
 
         configHasError = true;
       }
@@ -865,11 +838,11 @@ public class ConfigurationHandler {
 
         LOG.error(
             String.format(
-                I18N.getLocalizedString("configuration.log.error.zip.overrides"),
+                I18N.getMessage("configuration.log.error.zip.overrides"),
                 foldersInModpackZip.get(0)));
         encounteredErrors.add(
             String.format(
-                I18N.getLocalizedString("configuration.log.error.zip.overrides"),
+                I18N.getMessage("configuration.log.error.zip.overrides"),
                 foldersInModpackZip.get(0)));
 
         return true;
@@ -877,10 +850,8 @@ public class ConfigurationHandler {
         // If the ZIP-file does not contain the mods or config directories, consider it invalid.
       } else if (!foldersInModpackZip.contains("mods") || !foldersInModpackZip.contains("config")) {
 
-        LOG.error(
-            I18N.getLocalizedString("configuration.log.error.zip.modsorconfig"));
-        encounteredErrors.add(
-            I18N.getLocalizedString("configuration.log.error.zip.modsorconfig"));
+        LOG.error(I18N.getMessage("configuration.log.error.zip.modsorconfig"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.modsorconfig"));
 
         return true;
       }
@@ -888,8 +859,7 @@ public class ConfigurationHandler {
     } catch (IOException ex) {
 
       LOG.error("Couldn't acquire directories in ZIP-file.", ex);
-      encounteredErrors.add(
-          I18N.getLocalizedString("configuration.log.error.zip.directories"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.directories"));
 
       return true;
     }
@@ -1086,8 +1056,7 @@ public class ConfigurationHandler {
 
     LOG.error(
         String.format(
-            I18N.getLocalizedString("configuration.log.error.encountered"),
-            encounteredErrors.size()));
+            I18N.getMessage("configuration.log.error.encountered"), encounteredErrors.size()));
 
     //noinspection UnusedAssignment
     int encounteredErrorNumber = 0;
@@ -1098,8 +1067,7 @@ public class ConfigurationHandler {
 
       LOG.error(
           String.format(
-              I18N.getLocalizedString(
-                  "configuration.log.error.encountered.specific"),
+              I18N.getMessage("configuration.log.error.encountered.specific"),
               encounteredErrorNumber,
               encounteredErrors.get(i)));
     }
@@ -1134,22 +1102,17 @@ public class ConfigurationHandler {
     if (modpackDir.isEmpty()) {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(I18N.getLocalizedString("configuration.log.error.checkmodpackdir"));
-      encounteredErrors.add(
-          I18N.getLocalizedString("configuration.log.error.checkmodpackdir"));
+      LOG.error(I18N.getMessage("configuration.log.error.checkmodpackdir"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodpackdir"));
 
     } else if (!(new File(modpackDir).isDirectory())) {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.warn(
-          String.format(
-              I18N.getLocalizedString("configuration.log.warn.checkmodpackdir"),
-              modpackDir));
+          String.format(I18N.getMessage("configuration.log.warn.checkmodpackdir"), modpackDir));
 
       encounteredErrors.add(
-          String.format(
-              I18N.getLocalizedString("configuration.log.error.modpackdirectory"),
-              modpackDir));
+          String.format(I18N.getMessage("configuration.log.error.modpackdirectory"), modpackDir));
 
     } else {
 
@@ -1206,36 +1169,22 @@ public class ConfigurationHandler {
       configCorrect = false;
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(
-          I18N.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
+      LOG.error(I18N.getMessage("configuration.log.error.checkcopydirs.empty"));
 
-      encounteredErrors.add(
-          I18N.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkcopydirs.empty"));
 
     } else if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
-      LOG.warn(
-          I18N.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode0"));
-      LOG.warn(
-          I18N.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode1"));
-      LOG.warn(
-          I18N.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode2"));
-      LOG.warn(
-          I18N.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode3"));
-      LOG.warn(
-          I18N.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode0"));
+      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode0"));
+      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode1"));
+      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode2"));
+      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode3"));
+      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode0"));
 
     } else {
 
       if (directoriesToCopy.size() > 1 && directoriesToCopy.contains("lazy_mode"))
-        LOG.warn(
-            I18N.getLocalizedString(
-                "configuration.log.warn.checkconfig.copydirs.lazymode.ignore"));
+        LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode.ignore"));
 
       directoriesToCopy.removeIf(entry -> entry.equals("lazy_mode"));
 
@@ -1262,14 +1211,12 @@ public class ConfigurationHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(
                 String.format(
-                    I18N.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.filenotfound"),
+                    I18N.getMessage("configuration.log.error.checkcopydirs.filenotfound"),
                     sourceFileToCheck));
 
             encounteredErrors.add(
                 String.format(
-                    I18N.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.filenotfound"),
+                    I18N.getMessage("configuration.log.error.checkcopydirs.filenotfound"),
                     sourceFileToCheck));
 
           } else {
@@ -1287,8 +1234,7 @@ public class ConfigurationHandler {
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      I18N.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"),
                       String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
 
             } else if (new File(
@@ -1304,8 +1250,7 @@ public class ConfigurationHandler {
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      I18N.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"),
                       String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
 
             } else if (new File(sourceFileDestinationFileCombination[0]).exists()
@@ -1317,8 +1262,7 @@ public class ConfigurationHandler {
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      I18N.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"),
                       sourceFileDestinationFileCombination[0]));
             }
 
@@ -1338,9 +1282,7 @@ public class ConfigurationHandler {
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          I18N.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
 
@@ -1354,9 +1296,7 @@ public class ConfigurationHandler {
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          I18N.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
             }
@@ -1396,15 +1336,11 @@ public class ConfigurationHandler {
             /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(
                 String.format(
-                    I18N.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.notfound"),
-                    directory));
+                    I18N.getMessage("configuration.log.error.checkcopydirs.notfound"), directory));
 
             encounteredErrors.add(
                 String.format(
-                    I18N.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.notfound"),
-                    directory));
+                    I18N.getMessage("configuration.log.error.checkcopydirs.notfound"), directory));
 
           } else {
 
@@ -1415,9 +1351,7 @@ public class ConfigurationHandler {
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      I18N.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
-                      dirToCheck));
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"), dirToCheck));
 
             } else if (new File(directory).exists()
                 && !UTILITIES.FileUtils().checkReadPermission(directory)) {
@@ -1427,9 +1361,7 @@ public class ConfigurationHandler {
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      I18N.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
-                      directory));
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"), directory));
             }
 
             if (dirToCheck.isDirectory()) {
@@ -1442,9 +1374,7 @@ public class ConfigurationHandler {
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          I18N.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
 
@@ -1458,9 +1388,7 @@ public class ConfigurationHandler {
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          I18N.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
             }
@@ -1643,7 +1571,7 @@ public class ConfigurationHandler {
     } else {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(I18N.getLocalizedString("configuration.log.error.checkmodloader"));
+      LOG.error(I18N.getMessage("configuration.log.error.checkmodloader"));
 
       return false;
     }
@@ -1679,9 +1607,7 @@ public class ConfigurationHandler {
       default:
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(
-            I18N.getLocalizedString(
-                "configuration.log.error.checkmodloaderversion"));
+        LOG.error(I18N.getMessage("configuration.log.error.checkmodloaderversion"));
 
         return false;
     }
