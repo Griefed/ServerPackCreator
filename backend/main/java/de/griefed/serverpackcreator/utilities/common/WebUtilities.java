@@ -1,7 +1,7 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -33,11 +33,11 @@ public class WebUtilities {
   private static final Logger LOG = LogManager.getLogger(WebUtilities.class);
 
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
 
   public WebUtilities(
       ApplicationProperties injectedApplicationProperties,
-      LocalizationManager injectedLocalizationManager) {
+      I18n injectedI18n) {
     if (injectedApplicationProperties == null) {
 
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
@@ -45,10 +45,10 @@ public class WebUtilities {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    if (injectedI18n == null) {
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+      this.I18N = injectedI18n;
     }
   }
 
@@ -321,7 +321,7 @@ public class WebUtilities {
     if (response.contains(requestURL.replace("/documents", ""))) {
       return response;
     } else {
-      return LOCALIZATIONMANAGER.getLocalizedString(
+      return I18N.getLocalizedString(
           "createserverpack.log.error.abouttab.hastebin.response");
     }
   }

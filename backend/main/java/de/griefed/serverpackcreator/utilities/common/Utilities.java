@@ -1,7 +1,7 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,18 +24,18 @@ public class Utilities {
 
   @Autowired
   public Utilities(
-      LocalizationManager injectedLocalizationManager,
+      I18n injectedI18n,
       ApplicationProperties injectedApplicationProperties) {
 
     this.BOOLEAN_UTILITIES =
-        new BooleanUtilities(injectedLocalizationManager, injectedApplicationProperties);
+        new BooleanUtilities(injectedI18n, injectedApplicationProperties);
     this.FILE_UTILITIES = new FileUtilities();
     this.JAR_UTILITIES = new JarUtilities();
     this.LIST_UTILITIES = new ListUtilities();
     this.STRING_UTILITIES = new StringUtilities();
     this.SYSTEM_UTILITIES = new SystemUtilities();
     this.WEB_UTILITIES =
-        new WebUtilities(injectedApplicationProperties, injectedLocalizationManager);
+        new WebUtilities(injectedApplicationProperties, injectedI18n);
   }
 
   public BooleanUtilities BooleanUtils() {

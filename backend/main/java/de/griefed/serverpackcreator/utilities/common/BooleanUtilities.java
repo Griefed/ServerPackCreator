@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
@@ -34,11 +34,11 @@ import org.apache.logging.log4j.Logger;
 public class BooleanUtilities {
 
   private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
 
   public BooleanUtilities(
-      LocalizationManager injectedLocalizationManager,
+      I18n injectedI18n,
       ApplicationProperties injectedApplicationProperties) {
 
     if (injectedApplicationProperties == null) {
@@ -47,10 +47,10 @@ public class BooleanUtilities {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    if (injectedI18n == null) {
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+      this.I18N = injectedI18n;
     }
   }
 
@@ -86,24 +86,24 @@ public class BooleanUtilities {
         || stringBoolean.matches("1")
         || stringBoolean.matches("[Yy]es")
         || stringBoolean.matches("[Yy]")
-        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.true"))
-        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes"))
-        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.yes.short"))) {
+        || stringBoolean.matches(I18N.getLocalizedString("cli.input.true"))
+        || stringBoolean.matches(I18N.getLocalizedString("cli.input.yes"))
+        || stringBoolean.matches(I18N.getLocalizedString("cli.input.yes.short"))) {
       return true;
 
     } else if (stringBoolean.matches("[Ff]alse")
         || stringBoolean.matches("0")
         || stringBoolean.matches("[Nn]o")
         || stringBoolean.matches("[Nn]")
-        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.false"))
-        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no"))
-        || stringBoolean.matches(LOCALIZATIONMANAGER.getLocalizedString("cli.input.no.short"))) {
+        || stringBoolean.matches(I18N.getLocalizedString("cli.input.false"))
+        || stringBoolean.matches(I18N.getLocalizedString("cli.input.no"))
+        || stringBoolean.matches(I18N.getLocalizedString("cli.input.no.short"))) {
       return false;
 
     } else {
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.converttoboolean.warn"));
+          I18N.getLocalizedString("configuration.log.warn.converttoboolean.warn"));
       return false;
     }
   }

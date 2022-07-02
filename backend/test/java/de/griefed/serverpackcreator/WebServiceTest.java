@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -14,7 +14,7 @@ import org.springframework.context.annotation.PropertySources;
 public class WebServiceTest {
 
   private final ServerPackCreator SERVERPACKCREATOR;
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
 
   WebServiceTest() throws IOException {
@@ -34,7 +34,7 @@ public class WebServiceTest {
     }
 
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    this.I18N = new I18n(APPLICATIONPROPERTIES);
     this.SERVERPACKCREATOR = new ServerPackCreator(new String[] {"--setup"});
     this.SERVERPACKCREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
     this.SERVERPACKCREATOR.checkDatabase();

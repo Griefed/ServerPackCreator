@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -43,6 +44,7 @@ import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -66,13 +68,14 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class LocalizationManager {
+public class I18n {
 
-  private static final Logger LOG = LogManager.getLogger(LocalizationManager.class);
+  private static final Logger LOG = LogManager.getLogger(I18n.class);
 
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final ResourceBundle FALLBACKRESOURCES =
-      ResourceBundle.getBundle("de/griefed/resources/lang/lang_en_us", new Locale("en", "us"));
+      ResourceBundle.getBundle(
+          "de/griefed/resources/lang/lang_en_us", new Locale("en", "us"), new UTF8Control());
   private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>();
   private final File PROPERTIESFILE = new File("serverpackcreator.properties");
   private final String MAP_PATH_LANGUAGE = "language";
@@ -84,17 +87,17 @@ public class LocalizationManager {
   private ResourceBundle jarResources = null;
 
   /**
-   * Constructor for our LocalizationManager using the locale set in the {@link
-   * ApplicationProperties}-instance passed to this constructor. If initialization with the provided
-   * {@link ApplicationProperties}-instance fails, the LocalizationManager is initialized with the
-   * default locale <code>en_us</code>.
+   * Constructor for our I18n using the locale set in the {@link ApplicationProperties}-instance
+   * passed to this constructor. If initialization with the provided {@link
+   * ApplicationProperties}-instance fails, the I18n is initialized with the default locale <code>
+   * en_us</code>.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
    *     various different things.
    * @author Griefed
    */
   @Autowired
-  public LocalizationManager(ApplicationProperties injectedApplicationProperties) {
+  public I18n(ApplicationProperties injectedApplicationProperties) {
     if (injectedApplicationProperties == null) {
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
     } else {
@@ -109,9 +112,9 @@ public class LocalizationManager {
   }
 
   /**
-   * Constructor for our LocalizationManager with a given locale. If initialization with the
-   * provided locale fails, the LocalizationManager is initialized with the locale set in the
-   * instance of {@link ApplicationProperties}. If this also fails, the default locale <code>en_us
+   * Constructor for our I18n with a given locale. If initialization with the provided locale fails,
+   * the I18n is initialized with the locale set in the instance of {@link ApplicationProperties}.
+   * If this also fails, the default locale <code>en_us
    * </code> is used.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
@@ -119,7 +122,7 @@ public class LocalizationManager {
    * @param locale String. The locale to initialize with.
    * @author Griefed
    */
-  public LocalizationManager(ApplicationProperties injectedApplicationProperties, String locale) {
+  public I18n(ApplicationProperties injectedApplicationProperties, String locale) {
     if (injectedApplicationProperties == null) {
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
     } else {
@@ -140,18 +143,18 @@ public class LocalizationManager {
   }
 
   /**
-   * Constructor for our LocalizationManager using the default locale en_us.
+   * Constructor for our I18n using the default locale en_us.
    *
    * @author Griefed
    */
-  public LocalizationManager() {
+  public I18n() {
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
     initialize();
   }
 
   /**
-   * Initialize the LocalizationManager with en_us as the locale.
+   * Initialize the I18n with en_us as the locale.
    *
    * @author whitebear60
    */
@@ -164,7 +167,7 @@ public class LocalizationManager {
   }
 
   /**
-   * Initializes the LocalizationManager with a provided localePropertiesFile.
+   * Initializes the I18n with a provided localePropertiesFile.
    *
    * @param propertiesFile Path to the locale properties file which specifies the language to use.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
@@ -192,7 +195,7 @@ public class LocalizationManager {
   }
 
   /**
-   * Initializes the LocalizationManager with a provided localePropertiesFile.
+   * Initializes the I18n with a provided localePropertiesFile.
    *
    * @param applicationProperties Instance of {@link ApplicationProperties} containing the locale to
    *     use.
@@ -207,7 +210,7 @@ public class LocalizationManager {
   }
 
   /**
-   * Initializes the LocalizationManager with a provided locale.
+   * Initializes the I18n with a provided locale.
    *
    * @param locale Locale to be used by application in this run.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
@@ -270,8 +273,8 @@ public class LocalizationManager {
             ResourceBundle.getBundle(
                 String.format("de/griefed/resources/lang/lang_%s", locale),
                 new Locale(
-                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)),
+                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
+                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
                 new UTF8Control());
 
       } catch (Exception ex2) {
@@ -296,8 +299,8 @@ public class LocalizationManager {
             ResourceBundle.getBundle(
                 String.format("de/griefed/resources/lang/lang_%s", locale),
                 new Locale(
-                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)),
+                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
+                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
                 new UTF8Control());
 
       } catch (Exception ex) {
@@ -307,9 +310,10 @@ public class LocalizationManager {
       }
     }
 
-    // Uncomment if you want to work on encodings....
-    // Nightmare fuel...
-    // LOG.debug(getLocalizedString("encoding.check"));
+    if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().equals("dev")) {
+      LOG.info(getLocalizedString("encoding.check"));
+      System.out.println(getLocalizedString("encoding.check"));
+    }
   }
 
   /**

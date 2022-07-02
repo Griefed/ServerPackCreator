@@ -1,20 +1,20 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class BooleanUtilitiesTest {
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final BooleanUtilities BOOLEANUTILITIES;
 
   BooleanUtilitiesTest() {
-    this.LOCALIZATIONMANAGER = new LocalizationManager();
+    this.I18N = new I18n();
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    this.BOOLEANUTILITIES = new BooleanUtilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+    this.BOOLEANUTILITIES = new BooleanUtilities(I18N, APPLICATIONPROPERTIES);
   }
 
   @Test

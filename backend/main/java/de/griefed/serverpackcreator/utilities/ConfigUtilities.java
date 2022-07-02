@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.BufferedWriter;
@@ -62,14 +62,14 @@ public class ConfigUtilities {
 
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
 
   @Autowired
   public ConfigUtilities(
-      LocalizationManager injectedLocalizationManager,
+      I18n injectedI18n,
       Utilities injectedUtilities,
       ApplicationProperties injectedApplicationProperties,
       VersionMeta injectedVersionMeta)
@@ -81,14 +81,14 @@ public class ConfigUtilities {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    if (injectedI18n == null) {
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+      this.I18N = injectedI18n;
     }
 
     if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
     } else {
       this.UTILITIES = injectedUtilities;
     }
@@ -238,44 +238,44 @@ public class ConfigUtilities {
                 + "%s\nincludeZipCreation = %b\n\n"
                 + "%s\njavaArgs = \"%s\"\n\n"
                 + "%s\nserverPackSuffix = \"%s\"",
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"),
+            I18N.getLocalizedString("configuration.writeconfigtofile.modpackdir"),
             modpackDir.replace("\\", "/"),
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"),
+            I18N.getLocalizedString("configuration.writeconfigtofile.clientmods"),
             UTILITIES.ListUtils()
                 .encapsulateListElements(UTILITIES.ListUtils().cleanList(clientMods)),
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"),
+            I18N.getLocalizedString("configuration.writeconfigtofile.copydirs"),
             UTILITIES.ListUtils()
                 .encapsulateListElements(UTILITIES.ListUtils().cleanList(copyDirs)),
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.icon"),
+            I18N.getLocalizedString("configuration.writeconfigtofile.custom.icon"),
             serverIconPath,
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.custom.properties"),
             serverPropertiesPath,
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.includeserverinstallation"),
             includeServer,
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javapath"),
+            I18N.getLocalizedString("configuration.writeconfigtofile.javapath"),
             javaPath.replace("\\", "/"),
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.minecraftversion"),
             minecraftVersion,
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modloader"),
+            I18N.getLocalizedString("configuration.writeconfigtofile.modloader"),
             modLoader,
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.modloaderversion"),
             modLoaderVersion,
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.includeservericon"),
             includeIcon,
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.includeserverproperties"),
             includeProperties,
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.includezipcreation"),
             includeZip,
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javaargs"),
+            I18N.getLocalizedString("configuration.writeconfigtofile.javaargs"),
             javaArgs,
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.writeconfigtofile.serverpacksuffix"),
             serverPackSuffix);
 
@@ -291,12 +291,12 @@ public class ConfigUtilities {
       configWritten = true;
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          LOCALIZATIONMANAGER.getLocalizedString(
+          I18N.getLocalizedString(
               "defaultfiles.log.info.writeconfigtofile.confignew"));
     } catch (IOException ex) {
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.error(
-          LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile"), ex);
+          I18N.getLocalizedString("defaultfiles.log.error.writeconfigtofile"), ex);
     }
 
     return configWritten;
@@ -424,29 +424,29 @@ public class ConfigUtilities {
       String serverPropertiesPath) {
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.start"));
+    LOG.info(I18N.getLocalizedString("configuration.log.info.printconfig.start"));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modpackdir"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.modpackdir"),
             modpackDirectory));
 
     if (clientsideMods.isEmpty()) {
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString(
+          I18N.getLocalizedString(
               "configuration.log.warn.printconfig.noclientmods"));
     } else {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.clientmods"));
+          I18N.getLocalizedString("configuration.log.info.printconfig.clientmods"));
       for (String mod : clientsideMods) {
         LOG.info(String.format("    %s", mod));
       }
     }
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.copydirs"));
+    LOG.info(I18N.getLocalizedString("configuration.log.info.printconfig.copydirs"));
 
     if (copyDirectories != null) {
 
@@ -457,60 +457,60 @@ public class ConfigUtilities {
     } else {
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.error(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.printconfig.copydirs"));
+          I18N.getLocalizedString("configuration.log.error.printconfig.copydirs"));
     }
 
     /* This log is meant to be read by the user, therefore we allow translation. */
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.server"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.server"),
             installServer));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javapath"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.javapath"),
             javaInstallPath));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.log.info.printconfig.minecraftversion"),
             minecraftVer));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modloader"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.modloader"),
             modloader));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.log.info.printconfig.modloaderversion"),
             modloaderVersion));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.icon"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.icon"),
             includeIcon));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.properties"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.properties"),
             includeProperties));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.zip"),
             includeZip));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"),
+            I18N.getLocalizedString("configuration.log.info.printconfig.javaargs"),
             javaArgs));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "configuration.log.info.printconfig.serverpacksuffix"),
             serverPackSuffix));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.servericon"),
+            I18N.getLocalizedString("utilities.log.info.config.print.servericon"),
             serverIconPath));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
+            I18N.getLocalizedString(
                 "utilities.log.info.config.print.serverproperties"),
             serverPropertiesPath));
   }
@@ -554,9 +554,9 @@ public class ConfigUtilities {
       } else {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
+        LOG.info(I18N.getLocalizedString("configuration.log.info.iscurse.fabric"));
         LOG.debug(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
+            I18N.getLocalizedString("configuration.log.debug.modloader.forge"));
 
         configurationModel.setModLoader("Fabric");
         configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoaderVersion());
@@ -565,7 +565,7 @@ public class ConfigUtilities {
     } else {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
+      LOG.debug(I18N.getLocalizedString("configuration.log.debug.modloader.forge"));
 
       configurationModel.setModLoader("Forge");
       configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
@@ -735,7 +735,7 @@ public class ConfigUtilities {
   public List<String> suggestCopyDirs(String modpackDir) {
     /* This log is meant to be read by the user, therefore we allow translation. */
     LOG.info(
-        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
+        I18N.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
 
     File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
 
@@ -766,7 +766,7 @@ public class ConfigUtilities {
 
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),
+            I18N.getLocalizedString("configuration.log.info.suggestcopydirs.list"),
             dirsInModpack));
 
     return dirsInModpack;
@@ -795,7 +795,7 @@ public class ConfigUtilities {
           || modpackJson.get("files").get(i).get("fileID").asText().equalsIgnoreCase("306612")) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
+        LOG.info(I18N.getLocalizedString("configuration.log.info.containsfabric"));
         return true;
       }
     }

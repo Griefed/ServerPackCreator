@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorGui;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
@@ -81,7 +81,7 @@ public class ServerPackCreator {
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final String[] ARGS;
   private final File LOG4J2XML = new File("log4j2.xml");
   private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
@@ -108,11 +108,11 @@ public class ServerPackCreator {
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
-      this.LOCALIZATIONMANAGER =
-          new LocalizationManager(
+      this.I18N =
+          new I18n(
               APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
     } else {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     }
   }
 
@@ -228,7 +228,7 @@ public class ServerPackCreator {
     System.setProperty("log4j2.formatMsgNoLookups", "true");
     System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
-    this.utilities = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+    this.utilities = new Utilities(I18N, APPLICATIONPROPERTIES);
 
     this.systemInformation =
         utilities.JarUtils()
@@ -334,15 +334,15 @@ public class ServerPackCreator {
 
     if (config || serverProperties || serverIcon) {
 
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning1"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning2"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning3"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
+      LOG.warn(I18N.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
+      LOG.warn(I18N.getLocalizedString("defaultfiles.log.warn.filessetup.warning1"));
+      LOG.warn(I18N.getLocalizedString("defaultfiles.log.warn.filessetup.warning2"));
+      LOG.warn(I18N.getLocalizedString("defaultfiles.log.warn.filessetup.warning3"));
+      LOG.warn(I18N.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
 
     } else {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.finish"));
+      LOG.info(I18N.getLocalizedString("defaultfiles.log.info.filessetup.finish"));
     }
 
     // Print system information to console and logs.
@@ -359,43 +359,43 @@ public class ServerPackCreator {
         || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("beta")) {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip3"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip4"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+      LOG.debug(I18N.getLocalizedString("main.log.debug.warning"));
+      LOG.warn(I18N.getLocalizedString("main.log.warn.wip0"));
+      LOG.warn(I18N.getLocalizedString("main.log.warn.wip1"));
+      LOG.warn(I18N.getLocalizedString("main.log.warn.wip2"));
+      LOG.warn(I18N.getLocalizedString("main.log.warn.wip3"));
+      LOG.warn(I18N.getLocalizedString("main.log.warn.wip4"));
+      LOG.warn(I18N.getLocalizedString("main.log.warn.wip0"));
     }
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
+    LOG.info(I18N.getLocalizedString("main.log.info.system.enter"));
     LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"),
+            I18N.getLocalizedString("main.log.info.system.jarpath"),
             systemInformation.get("jarPath")));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"),
+            I18N.getLocalizedString("main.log.info.system.jarname"),
             systemInformation.get("jarName")));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"),
+            I18N.getLocalizedString("main.log.info.system.java"),
             systemInformation.get("javaVersion")));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osarchitecture"),
+            I18N.getLocalizedString("main.log.info.system.osarchitecture"),
             systemInformation.get("osArch")));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"),
+            I18N.getLocalizedString("main.log.info.system.osname"),
             systemInformation.get("osName")));
     LOG.info(
         String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"),
+            I18N.getLocalizedString("main.log.info.system.osversion"),
             systemInformation.get("osVersion")));
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
+    LOG.info(I18N.getLocalizedString("main.log.info.system.include"));
   }
 
   /**
@@ -415,11 +415,11 @@ public class ServerPackCreator {
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
 
     this.configUtilities =
-        new ConfigUtilities(LOCALIZATIONMANAGER, utilities, APPLICATIONPROPERTIES, versionMeta);
+        new ConfigUtilities(I18N, utilities, APPLICATIONPROPERTIES, versionMeta);
 
     this.configurationHandler =
         new ConfigurationHandler(
-            LOCALIZATIONMANAGER, versionMeta, APPLICATIONPROPERTIES, utilities, configUtilities);
+            I18N, versionMeta, APPLICATIONPROPERTIES, utilities, configUtilities);
   }
 
   /**
@@ -434,7 +434,7 @@ public class ServerPackCreator {
 
     this.serverPackHandler =
         new ServerPackHandler(
-            LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, versionMeta, utilities, applicationPlugins);
+            I18N, APPLICATIONPROPERTIES, versionMeta, utilities, applicationPlugins);
 
     if (this.updateChecker == null) {
       this.updateChecker = new UpdateChecker();
@@ -553,7 +553,7 @@ public class ServerPackCreator {
     }
 
     new ServerPackCreatorGui(
-            LOCALIZATIONMANAGER,
+        I18N,
             configurationHandler,
             serverPackHandler,
             APPLICATIONPROPERTIES,
@@ -588,7 +588,7 @@ public class ServerPackCreator {
         selection = scanner.nextInt();
 
         if (selection == 7 && GraphicsEnvironment.isHeadless()) {
-          System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.gui"));
+          System.out.println(I18N.getLocalizedString("run.menu.error.gui"));
           selection = 100;
         }
 
@@ -620,13 +620,13 @@ public class ServerPackCreator {
           default:
             if (selection > 7) {
               System.out.println(
-                  LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.selection"));
+                  I18N.getLocalizedString("run.menu.error.selection"));
               printMenu();
             }
         }
 
       } catch (InputMismatchException ex) {
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.selection"));
+        System.out.println(I18N.getLocalizedString("run.menu.error.selection"));
         selection = 100;
       }
 
@@ -649,14 +649,14 @@ public class ServerPackCreator {
 
       case 0:
       default:
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.exit"));
+        System.out.println(I18N.getLocalizedString("run.menu.exit"));
         System.exit(0);
     }
   }
 
   private void changeLocale() {
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale"));
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale.format"));
+    System.out.println(I18N.getLocalizedString("run.menu.change.locale"));
+    System.out.println(I18N.getLocalizedString("run.menu.change.locale.format"));
 
     Scanner scanner = new Scanner(System.in);
     String regex = "^[a-zA-Z]+_[a-zA-Z]+$";
@@ -670,17 +670,17 @@ public class ServerPackCreator {
 
       if (!userLocale.matches(regex)) {
 
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale.error"));
+        System.out.println(I18N.getLocalizedString("run.menu.change.locale.error"));
 
       } else {
 
         try {
 
-          LOCALIZATIONMANAGER.initialize(userLocale);
+          I18N.initialize(userLocale);
 
         } catch (IncorrectLanguageException e) {
           System.out.println(
-              LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale.error"));
+              I18N.getLocalizedString("run.menu.change.locale.error"));
           userLocale = "";
         }
       }
@@ -689,9 +689,9 @@ public class ServerPackCreator {
 
     scanner.close();
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("cli.usingLanguage")
+        I18N.getLocalizedString("cli.usingLanguage")
             + " "
-            + LOCALIZATIONMANAGER.getLocalizedString("localeName"));
+            + I18N.getLocalizedString("localeName"));
   }
 
   /**
@@ -701,22 +701,22 @@ public class ServerPackCreator {
    */
   private void printMenu() {
     System.out.println();
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.options"));
-    System.out.println("(1) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options1"));
-    System.out.println("(2) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options2"));
-    System.out.println("(3) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options3"));
-    System.out.println("(4) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options4"));
-    System.out.println("(5) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options5"));
-    System.out.println("(6) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options6"));
-    System.out.println("(7) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options7"));
-    System.out.println("(0) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options0"));
+    System.out.println(I18N.getLocalizedString("run.menu.options"));
+    System.out.println("(1) : " + I18N.getLocalizedString("run.menu.options1"));
+    System.out.println("(2) : " + I18N.getLocalizedString("run.menu.options2"));
+    System.out.println("(3) : " + I18N.getLocalizedString("run.menu.options3"));
+    System.out.println("(4) : " + I18N.getLocalizedString("run.menu.options4"));
+    System.out.println("(5) : " + I18N.getLocalizedString("run.menu.options5"));
+    System.out.println("(6) : " + I18N.getLocalizedString("run.menu.options6"));
+    System.out.println("(7) : " + I18N.getLocalizedString("run.menu.options7"));
+    System.out.println("(0) : " + I18N.getLocalizedString("run.menu.options0"));
 
     // Determine the length of the longest menu entry.
     int lengthOfText = 0;
     for (int i = 0; i < 8; i++) {
-      if (LOCALIZATIONMANAGER.getLocalizedString("run.menu.options" + i).length() + 6
+      if (I18N.getLocalizedString("run.menu.options" + i).length() + 6
           > lengthOfText) {
-        lengthOfText = LOCALIZATIONMANAGER.getLocalizedString("run.menu.options" + i).length() + 6;
+        lengthOfText = I18N.getLocalizedString("run.menu.options" + i).length() + 6;
       }
     }
 
@@ -725,7 +725,7 @@ public class ServerPackCreator {
       System.out.print("-");
     }
     System.out.println();
-    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("run.menu.options.select") + ": ");
+    System.out.print(I18N.getLocalizedString("run.menu.options.select") + ": ");
   }
 
   /**
@@ -761,7 +761,7 @@ public class ServerPackCreator {
   private void createConfig() throws IOException {
 
     new ConfigurationCreator(
-            LOCALIZATIONMANAGER,
+        I18N,
             configurationHandler,
             APPLICATIONPROPERTIES,
             utilities,
@@ -782,8 +782,8 @@ public class ServerPackCreator {
 
       Scanner reader = new Scanner(System.in);
 
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows"));
-      System.out.print(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.input") + " ");
+      LOG.warn(I18N.getLocalizedString("main.log.warn.windows"));
+      System.out.print(I18N.getLocalizedString("main.log.warn.windows.input") + " ");
 
       //noinspection UnusedAssignment
       String answer = "foobar";
@@ -793,13 +793,13 @@ public class ServerPackCreator {
 
         if (answer.equals("No")) {
 
-          LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.no"));
+          LOG.info(I18N.getLocalizedString("main.log.warn.windows.no"));
           reader.close();
           System.exit(0);
 
         } else if (answer.equals("Yes")) {
 
-          LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.yes"));
+          LOG.warn(I18N.getLocalizedString("main.log.warn.windows.yes"));
           reader.close();
           web(ARGS);
         }
@@ -831,7 +831,7 @@ public class ServerPackCreator {
         if (APPLICATIONPROPERTIES.OLD_CONFIG().delete()) {
           /* This log is meant to be read by the user, therefore we allow translation. */
           LOG.info(
-              LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
+              I18N.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
         }
 
       } catch (IOException ex) {
@@ -852,7 +852,7 @@ public class ServerPackCreator {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(
-            LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
+            I18N.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
         firstRun = true;
 
       } catch (IOException ex) {
@@ -889,7 +889,7 @@ public class ServerPackCreator {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(
             String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfile"),
+                I18N.getLocalizedString("defaultfiles.log.info.checkforfile"),
                 fileToCheckFor));
 
         firstRun = true;
@@ -957,11 +957,11 @@ public class ServerPackCreator {
 
     System.out.println();
     if (update.isPresent()) {
-      System.out.println(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.available"));
+      System.out.println(I18N.getLocalizedString("update.dialog.available"));
       System.out.println("    " + update.get().version());
       System.out.println("    " + update.get().url());
     } else {
-      System.out.println(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"));
+      System.out.println(I18N.getLocalizedString("updates.log.info.none"));
     }
   }
 
@@ -971,35 +971,35 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void printHelp() {
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.intro"));
+    System.out.println(I18N.getLocalizedString("serverpackcreator.help.intro"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.intro"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.intro"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.lang"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.lang"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.help"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.help"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.update"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.update"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.cgen"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.cgen"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.cli"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.cli"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.web"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.web"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.gui"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.gui"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.setup"));
+        I18N.getLocalizedString("serverpackcreator.help.arguments.setup"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.intro"));
+        I18N.getLocalizedString("serverpackcreator.help.support.intro"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.issues"));
+        I18N.getLocalizedString("serverpackcreator.help.support.issues"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.discord"));
+        I18N.getLocalizedString("serverpackcreator.help.support.discord"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.wiki"));
+        I18N.getLocalizedString("serverpackcreator.help.support.wiki"));
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.someluv"));
+        I18N.getLocalizedString("serverpackcreator.help.support.someluv"));
   }
 
   /**
