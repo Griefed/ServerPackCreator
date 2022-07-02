@@ -1830,7 +1830,7 @@ public class TabCreateServerPack extends JPanel {
                 + javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
       } catch (IOException ex) {
-        LOG.error("I18N.getMessage(\"createserverpack.log.error.buttonjavapath\")", ex);
+        LOG.error("Couldn't set java executable path.", ex);
       }
     }
   }
@@ -1929,9 +1929,8 @@ public class TabCreateServerPack extends JPanel {
             100,
             false);
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
-    // labelGenerateServerPack.setText(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
+    LOG.info("Checking entered configuration.");
+
     updateStatus(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
 
     List<String> encounteredErrors = new ArrayList<>(100);
@@ -1944,17 +1943,14 @@ public class TabCreateServerPack extends JPanel {
           if (!CONFIGURATIONHANDLER.checkConfiguration(
               configurationModel, encounteredErrors, true)) {
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.checked"));
+            LOG.info("Configuration checked successfully.");
 
             updateStatus(
                 I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.checked"));
 
             saveConfig(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
-            LOG.info(
-                I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.generating"));
+            LOG.info("Starting ServerPackCreator run.");
 
             updateStatus(
                 I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.generating"));

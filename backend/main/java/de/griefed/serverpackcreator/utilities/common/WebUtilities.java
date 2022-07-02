@@ -33,20 +33,13 @@ public class WebUtilities {
   private static final Logger LOG = LogManager.getLogger(WebUtilities.class);
 
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final I18n I18N;
 
-  public WebUtilities(ApplicationProperties injectedApplicationProperties, I18n injectedI18n) {
+  public WebUtilities(ApplicationProperties injectedApplicationProperties) {
     if (injectedApplicationProperties == null) {
 
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
     } else {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedI18n == null) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      this.I18N = injectedI18n;
     }
   }
 
@@ -319,7 +312,7 @@ public class WebUtilities {
     if (response.contains(requestURL.replace("/documents", ""))) {
       return response;
     } else {
-      return I18N.getMessage("createserverpack.log.error.abouttab.hastebin.response");
+      return "Error encountered when acquiring response from URL.";
     }
   }
 }

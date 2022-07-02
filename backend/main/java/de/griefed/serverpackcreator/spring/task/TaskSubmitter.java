@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.spring.task;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.spring.zip.GenerateZip;
 import de.griefed.serverpackcreator.spring.zip.ZipController;
 import org.apache.logging.log4j.LogManager;
@@ -45,18 +44,17 @@ public class TaskSubmitter {
 
   private static final Logger LOG = LogManager.getLogger(TaskSubmitter.class);
 
-  private JmsTemplate jmsTemplate;
+  private final JmsTemplate jmsTemplate;
 
   /**
    * Constructor responsible for our DI.
    *
    * @param injectedJmsTemplate Instance of {@link JmsTemplate}.
-   * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
    * @author Griefed
    */
   @Autowired
   public TaskSubmitter(
-      JmsTemplate injectedJmsTemplate, ApplicationProperties injectedApplicationProperties) {
+      JmsTemplate injectedJmsTemplate) {
     this.jmsTemplate = injectedJmsTemplate;
   }
 

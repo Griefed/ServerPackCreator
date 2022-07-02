@@ -15,7 +15,7 @@ public class WebUtilitiesTest {
   WebUtilitiesTest() {
     ApplicationProperties applicationProperties = new ApplicationProperties();
     this.WEB_UTILITIES =
-        new WebUtilities(applicationProperties, new I18n(applicationProperties));
+        new WebUtilities(applicationProperties);
   }
 
   @Test

@@ -42,8 +42,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/packs")
 public class ServerPackController {
 
-  private static final Logger LOG = LogManager.getLogger(ServerPackController.class);
-
   private final ServerPackService SERVERPACKSERVICE;
 
   /**

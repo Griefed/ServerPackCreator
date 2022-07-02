@@ -75,7 +75,6 @@ public class FileUtilities {
    * @author Griefed
    */
   public void unzipArchive(String zipFile, String destinationDirectory) {
-    /* This log is meant to be read by the user, therefore we allow translation. */
     LOG.info("Extracting ZIP-file: " + zipFile);
 
     try (ZipFile zip = new ZipFile(zipFile)) {

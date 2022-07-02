@@ -248,8 +248,6 @@ public class ServerPackCreatorGui {
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(
-            I18N,
-            APPLICATIONPROPERTIES,
             I18N.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
 
     TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER =

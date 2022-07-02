@@ -84,7 +84,6 @@ public class ServerPackHandler {
   private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
   private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
-  private final I18n I18N;
   private final VersionMeta VERSIONMETA;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
@@ -126,10 +125,11 @@ public class ServerPackHandler {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
+    I18n i18N;
     if (injectedI18n == null) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
+      i18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      this.I18N = injectedI18n;
+      i18N = injectedI18n;
     }
 
     if (injectedVersionMeta == null) {
@@ -146,7 +146,7 @@ public class ServerPackHandler {
     }
 
     if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
+      this.UTILITIES = new Utilities(i18N, APPLICATIONPROPERTIES);
     } else {
       this.UTILITIES = injectedUtilities;
     }
@@ -237,7 +237,7 @@ public class ServerPackHandler {
             .equals("false")
         && new File(destination).exists()) {
 
-      LOG.info(I18N.getMessage("createserverpack.log.info.overwrite"));
+      LOG.info("Server pack already exists and overwrite disabled.");
 
     } else {
 
@@ -251,24 +251,21 @@ public class ServerPackHandler {
       }
 
       if (!APPLICATIONPLUGINS.pluginsPreGenExtension().isEmpty()) {
-        LOG_ADDONS.info(I18N.getMessage("addons.log.info.execute.pregen"));
+        LOG_ADDONS.info("Executing PreGenExtension addons.");
         APPLICATIONPLUGINS
             .pluginsPreGenExtension()
             .forEach(
                 plugin -> {
-                  LOG_ADDONS.info(
-                      String.format(
-                          I18N.getMessage("addons.log.info.execute.addon"), plugin.getName()));
+                  LOG_ADDONS.info("Executing addon " + plugin.getName());
 
                   try {
                     plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                   } catch (Exception ex) {
-                    LOG_ADDONS.error(
-                        String.format(I18N.getMessage("addons.log.error"), plugin.getName()), ex);
+                    LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
                   }
                 });
       } else {
-        LOG.info(I18N.getMessage("addons.log.info.execute.pregen.none"));
+        LOG.info("No PreGenExtension addons to execute.");
       }
 
       // Recursively copy all specified directories and files, excluding clientside-only mods, to
@@ -302,37 +299,34 @@ public class ServerPackHandler {
       if (configurationModel.getIncludeServerIcon()) {
         copyIcon(destination, configurationModel.getServerIconPath());
       } else {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(I18N.getMessage("main.log.info.runincli.icon"));
+
+        LOG.info("Not including servericon.");
       }
 
       // If true, copy the server.properties from server_files to the server pack.
       if (configurationModel.getIncludeServerProperties()) {
         copyProperties(destination, configurationModel.getServerPropertiesPath());
       } else {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(I18N.getMessage("main.log.info.runincli.properties"));
+
+        LOG.info("Not including server.properties.");
       }
 
       if (!APPLICATIONPLUGINS.pluginsPreZipExtension().isEmpty()) {
-        LOG_ADDONS.info(I18N.getMessage("addons.log.info.execute.prezip"));
+        LOG_ADDONS.info("Executing PreZipExtension addons.");
         APPLICATIONPLUGINS
             .pluginsPreZipExtension()
             .forEach(
                 plugin -> {
-                  LOG_ADDONS.info(
-                      String.format(
-                          I18N.getMessage("addons.log.info.execute.addon"), plugin.getName()));
+                  LOG_ADDONS.info("Executing addon " + plugin.getName());
 
                   try {
                     plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                   } catch (Exception ex) {
-                    LOG_ADDONS.error(
-                        String.format(I18N.getMessage("addons.log.error"), plugin.getName()), ex);
+                    LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
                   }
                 });
       } else {
-        LOG.info(I18N.getMessage("addons.log.info.execute.prezip.none"));
+        LOG.info("No PreZipExtension addons to execute.");
       }
 
       // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
@@ -344,8 +338,8 @@ public class ServerPackHandler {
             configurationModel.getModLoader(),
             configurationModel.getModLoaderVersion());
       } else {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(I18N.getMessage("main.log.info.runincli.zip"));
+
+        LOG.info("Not creating zip archive of serverpack.");
       }
 
       // If true, Install the modloader software for the specified Minecraft version, modloader,
@@ -358,35 +352,31 @@ public class ServerPackHandler {
             configurationModel.getJavaPath(),
             destination);
       } else {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(I18N.getMessage("main.log.info.runincli.server"));
+
+        LOG.info("Not installing modded server.");
       }
 
       // Inform user about location of newly generated server pack.
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(String.format(I18N.getMessage("main.log.info.runincli.serverpack"), destination));
-      LOG.info(String.format(I18N.getMessage("main.log.info.runincli.archive"), destination));
-      LOG.info(I18N.getMessage("main.log.info.runincli.finish"));
+      LOG.info("Server pack available at: " + destination);
+      LOG.info("Server pack archive available at: " + destination + "_server_pack.zip");
+      LOG.info("Done!");
 
       if (!APPLICATIONPLUGINS.pluginsPostGenExtension().isEmpty()) {
-        LOG_ADDONS.info(I18N.getMessage("addons.log.info.execute.postgen"));
+        LOG_ADDONS.info("Executing PostGenExtension addons.");
         APPLICATIONPLUGINS
             .pluginsPostGenExtension()
             .forEach(
                 plugin -> {
-                  LOG_ADDONS.info(
-                      String.format(
-                          I18N.getMessage("addons.log.info.execute.addon"), plugin.getName()));
+                  LOG_ADDONS.info("Executing addon " + plugin.getName());
 
                   try {
                     plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
                   } catch (Exception ex) {
-                    LOG_ADDONS.error(
-                        String.format(I18N.getMessage("addons.log.error"), plugin.getName()), ex);
+                    LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
                   }
                 });
       } else {
-        LOG.info(I18N.getMessage("addons.log.info.execute.postgen.none"));
+        LOG.info("No PostGenExtension addons to execute.");
       }
     }
     return true;
@@ -413,7 +403,7 @@ public class ServerPackHandler {
                 fileDestination,
                 VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).get())) {
 
-      LOG.info(I18N.getMessage("createserverpack.log.info.fabric.improved"));
+      LOG.info("Successfully provided improved Fabric Server Launcher.");
 
       try (BufferedWriter writer =
           new BufferedWriter(
@@ -455,14 +445,13 @@ public class ServerPackHandler {
    */
   private void cleanupEnvironment(boolean deleteZip, String destination) {
 
-    LOG.info(I18N.getMessage("createserverpack.log.info.cleanupenvironment.folder.enter"));
+    LOG.info("Found old server_pack. Cleaning up...");
 
     FileUtils.deleteQuietly(new File(destination));
 
     if (deleteZip) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getMessage("createserverpack.log.info.cleanupenvironment.zip.enter"));
+      LOG.info("Found old server_pack.zip. Cleaning up...");
 
       FileUtils.deleteQuietly(new File(String.format("%s_server_pack.zip", destination)));
     }
@@ -493,8 +482,7 @@ public class ServerPackHandler {
       case "Forge":
         String[] minecraft = minecraftVersion.split("\\.");
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(I18N.getMessage("createserverpack.log.info.copystartscripts.forge"));
+        LOG.info("Creating Forge start scripts...");
 
         if (Integer.parseInt(minecraft[1]) < 17) {
 
@@ -509,27 +497,27 @@ public class ServerPackHandler {
         }
 
         break;
+
       case "Fabric":
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(I18N.getMessage("createserverpack.log.info.copystartscripts.fabric"));
+        LOG.info("Creating Fabric start scripts...");
 
         fabricBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
         fabricShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
 
         break;
+
       case "Quilt":
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(I18N.getMessage("createserverpack.log.info.copystartscripts.quilt"));
+        LOG.info("Creating Quilt start scripts...");
 
         quiltBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
         quiltShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
 
         break;
+
       default:
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("configuration.log.error.checkmodloader"));
+        LOG.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt.");
     }
   }
 
@@ -556,8 +544,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -719,8 +707,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -888,8 +876,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -1037,8 +1025,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -1226,8 +1214,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -1396,8 +1384,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -1576,8 +1564,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -1729,8 +1717,8 @@ public class ServerPackHandler {
 
       if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
           || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(I18N.getMessage("createserverpack.log.error.minecraft.server"));
+
+        LOG.error("A server is not available for the specified Minecraft version.");
         return;
       }
 
@@ -1903,11 +1891,13 @@ public class ServerPackHandler {
 
     if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
-      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode0"));
-      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode1"));
-      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode2"));
-      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode3"));
-      LOG.warn(I18N.getMessage("configuration.log.warn.checkconfig.copydirs.lazymode0"));
+      LOG.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
+      LOG.warn(
+          "Lazy mode specified. This will copy the WHOLE modpack to the server pack. No exceptions.");
+      LOG.warn("You will not receive any support for a server pack generated this way.");
+      LOG.warn(
+          "Do not open an issue on GitHub if this configuration errors or results in a broken server pack.");
+      LOG.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
 
       try {
 
@@ -1935,9 +1925,7 @@ public class ServerPackHandler {
         String clientDir = String.format("%s/%s", modpackDir, directory).replace("\\", "/");
         String serverDir = String.format("%s/%s", destination, directory).replace("\\", "/");
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(I18N.getMessage("createserverpack.log.info.copyfiles.setup"), directory));
+        LOG.info("Gathering %s file(s).");
 
         if (directory.contains(";")) {
 
@@ -2001,7 +1989,7 @@ public class ServerPackHandler {
         }
       }
 
-      LOG.info(I18N.getMessage("createserverpack.log.info.copyfiles.copy"));
+      LOG.info("Copying files to the server pack. This may take a while...");
 
       serverPackFiles.forEach(
           serverPackFile -> {
@@ -2084,16 +2072,13 @@ public class ServerPackHandler {
                           .resolve(Paths.get(source).relativize(file))));
             } catch (UnsupportedOperationException ex) {
 
-              LOG.error(
-                  String.format(
-                      I18N.getMessage("createserverpack.log.error.copy.directory"), file, source),
-                  ex);
+              LOG.error("Couldn't gather file " + file + " from directory " + source + ".", ex);
             }
           });
 
     } catch (IOException ex) {
 
-      LOG.error(I18N.getMessage("createserverpack.log.error.copy"), ex);
+      LOG.error("An error occurred gathering files to copy to the server pack.", ex);
     }
 
     return serverPackFiles;
@@ -2125,12 +2110,7 @@ public class ServerPackHandler {
                       Paths.get(String.format("%s/%s", destination, directory.substring(6)))
                           .resolve(Paths.get(clientDir).relativize(file))));
             } catch (UnsupportedOperationException ex) {
-              LOG.error(
-                  String.format(
-                      I18N.getMessage("createserverpack.log.error.copy.directory"),
-                      file,
-                      clientDir),
-                  ex);
+              LOG.error("Couldn't gather file " + file + " from directory " + clientDir + ".", ex);
             }
           });
 
@@ -2160,8 +2140,8 @@ public class ServerPackHandler {
       List<String> userSpecifiedClientMods,
       String minecraftVersion,
       String modloader) {
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getMessage("createserverpack.log.info.excludeclientmods"));
+
+    LOG.info("Preparing a list of mods to include in server pack...");
 
     Collection<File> filesInModsDir =
         FileUtils.listFiles(new File(modsDir), new String[] {"jar"}, true);
@@ -2283,8 +2263,7 @@ public class ServerPackHandler {
    */
   private void copyIcon(String destination, String pathToServerIcon) {
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getMessage("createserverpack.log.info.copyicon"));
+    LOG.info("Copying server-icon.png...");
 
     File iconFile =
         new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON()));
@@ -2336,8 +2315,7 @@ public class ServerPackHandler {
 
     } else if (pathToServerIcon.length() == 0) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getMessage("createserverpack.log.info.icon"));
+      LOG.info("No custom icon specified or the file doesn't exist.");
 
       try {
 
@@ -2351,8 +2329,7 @@ public class ServerPackHandler {
 
     } else {
 
-      LOG.error(
-          String.format(I18N.getMessage("configuration.log.error.servericon"), pathToServerIcon));
+      LOG.error("The specified server-icon does not exist: " + pathToServerIcon);
     }
   }
 
@@ -2365,8 +2342,7 @@ public class ServerPackHandler {
    */
   private void copyProperties(String destination, String pathToServerProperties) {
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getMessage("createserverpack.log.info.copyproperties"));
+    LOG.info("Copying server.properties...");
 
     File defaultProperties =
         new File(
@@ -2383,8 +2359,7 @@ public class ServerPackHandler {
 
     } else if (pathToServerProperties.length() == 0) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getMessage("createserverpack.log.info.properties"));
+      LOG.info("No custom properties specified or the file doesn't exist.");
 
       try {
 
@@ -2400,9 +2375,7 @@ public class ServerPackHandler {
 
     } else {
 
-      LOG.error(
-          String.format(
-              I18N.getMessage("configuration.log.error.serverproperties"), pathToServerProperties));
+      LOG.error("The specified server.properties does not exist: " + pathToServerProperties);
     }
   }
 
@@ -2437,15 +2410,14 @@ public class ServerPackHandler {
     switch (modLoader) {
       case "Fabric":
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG_INSTALLER.info(I18N.getMessage("createserverpack.log.info.installserver.fabric.enter"));
+        LOG_INSTALLER.info("Starting Fabric installation.");
 
         fileDestination = String.format("%s/fabric-installer.jar", destination);
 
         if (UTILITIES.WebUtils()
             .downloadFile(fileDestination, VERSIONMETA.fabric().releaseInstallerUrl())) {
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.info(I18N.getMessage("createserverpack.log.info.installserver.fabric.download"));
+
+          LOG.info("Fabric installer successfully downloaded.");
 
           commandArguments.add(javaPath);
           commandArguments.add("-jar");
@@ -2466,8 +2438,7 @@ public class ServerPackHandler {
 
       case "Forge":
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG_INSTALLER.info(I18N.getMessage("createserverpack.log.info.installserver.forge.enter"));
+        LOG_INSTALLER.info("Starting Forge installation.");
 
         fileDestination = String.format("%s/forge-installer.jar", destination);
 
@@ -2481,8 +2452,7 @@ public class ServerPackHandler {
                         .get()
                         .installerUrl())) {
 
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.info(I18N.getMessage("createserverpack.log.info.installserver.forge.download"));
+          LOG.info("Forge installer successfully downloaded.");
           commandArguments.add(javaPath);
           commandArguments.add("-jar");
           commandArguments.add("forge-installer.jar");
@@ -2497,15 +2467,14 @@ public class ServerPackHandler {
 
       case "Quilt":
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG_INSTALLER.info(I18N.getMessage("createserverpack.log.info.installserver.quilt.enter"));
+        LOG_INSTALLER.info("Starting Quilt installation.");
 
         fileDestination = String.format("%s/quilt-installer.jar", destination);
 
         if (UTILITIES.WebUtils()
             .downloadFile(fileDestination, VERSIONMETA.quilt().releaseInstallerUrl())) {
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.info(I18N.getMessage("createserverpack.log.info.installserver.quilt.download"));
+
+          LOG.info("Quilt installer successfully downloaded.");
 
           commandArguments.add(javaPath);
           commandArguments.add("-jar");
@@ -2524,18 +2493,21 @@ public class ServerPackHandler {
         break;
 
       default:
-        /* This log is meant to be read by the user, therefore we allow translation. */
+
         LOG.error(
-            String.format(I18N.getMessage("configuration.log.error.checkmodloader"), modLoader));
+            "Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt. Specified: "
+                + modLoader);
     }
 
     try {
       LOG.info(
-          String.format(
-              I18N.getMessage("createserverpack.log.info.installserver.enter"),
-              minecraftVersion,
-              modLoader,
-              modLoaderVersion));
+          "Starting server installation for Minecraft "
+              + minecraftVersion
+              + ", "
+              + modLoader
+              + " "
+              + modLoaderVersion
+              + ".");
 
       ProcessBuilder processBuilder =
           new ProcessBuilder(commandArguments).directory(new File(destination));
@@ -2556,22 +2528,26 @@ public class ServerPackHandler {
         LOG_INSTALLER.info(line);
       }
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
       LOG_INSTALLER.info(
-          String.format(
-              I18N.getMessage("createserverpack.log.info.installserver"),
-              minecraftVersion,
-              modLoader,
-              modLoaderVersion));
+          "Server for Minecraft "
+              + minecraftVersion
+              + ", "
+              + modLoader
+              + " "
+              + modLoaderVersion
+              + " installed.");
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info(
-          String.format(
-              I18N.getMessage("createserverpack.log.info.installserver"),
-              minecraftVersion,
-              modLoader,
-              modLoaderVersion));
-      LOG.info(I18N.getMessage("createserverpack.log.info.installserver.details"));
+          "Server for Minecraft "
+              + minecraftVersion
+              + ", "
+              + modLoader
+              + " "
+              + modLoaderVersion
+              + " installed.");
+
+      LOG.info(
+          "For details regarding the installation of this modloader server, see logs/modloader_installer.log.");
 
     } catch (IOException ex) {
 
@@ -2603,7 +2579,7 @@ public class ServerPackHandler {
         .equalsIgnoreCase("true")) {
       cleanUpServerPack(minecraftVersion, modLoaderVersion, destination);
     } else {
-      LOG.info(I18N.getMessage("createserverpack.log.info.cleanup"));
+      LOG.info("Server pack cleanup disabled.");
     }
   }
 
@@ -2629,8 +2605,7 @@ public class ServerPackHandler {
       String modloader,
       String modloaderVersion) {
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getMessage("createserverpack.log.info.zipbuilder.enter"));
+    LOG.info("Creating zip archive of serverpack...");
 
     ZipParameters zipParameters = new ZipParameters();
 
@@ -2653,8 +2628,8 @@ public class ServerPackHandler {
       zipParameters.setExcludeFileFilter(excludeFileFilter);
 
     } else {
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(I18N.getMessage("createserverpack.log.info.zipbuilder.exclusion.deactivated"));
+
+      LOG.info("File exclusion from ZIP-archives deactivated.");
     }
 
     zipParameters.setIncludeRootFolder(false);
@@ -2674,14 +2649,12 @@ public class ServerPackHandler {
 
     if (includeServerInstallation) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.warn(I18N.getMessage("createserverpack.log.warn.zipbuilder.minecraftjar1"));
-      LOG.warn(I18N.getMessage("createserverpack.log.warn.zipbuilder.minecraftjar2"));
-      LOG.warn(I18N.getMessage("createserverpack.log.warn.zipbuilder.minecraftjar3"));
+      LOG.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
+      LOG.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
+      LOG.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
     }
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getMessage("createserverpack.log.info.zipbuilder.finish"));
+    LOG.info("Finished creation of zip archive.");
   }
 
   /**
@@ -2698,8 +2671,7 @@ public class ServerPackHandler {
   private void cleanUpServerPack(
       String minecraftVersion, String modLoaderVersion, String destination) {
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(I18N.getMessage("createserverpack.log.info.cleanupserverpack.enter"));
+    LOG.info("Cleanup after modloader server installation.");
 
     FileUtils.deleteQuietly(new File(String.format("%s/fabric-installer.jar", destination)));
     FileUtils.deleteQuietly(new File(String.format("%s/forge-installer.jar", destination)));
@@ -2748,7 +2720,7 @@ public class ServerPackHandler {
      * Can I just say:
      * WHAT THE EVERLOVING FUCK IS THIS METHOD? try catch if try catch if else try catch what the actual fucking fuck?
      */
-    LOG.info(I18N.getMessage("createserverpack.log.info.scantoml"));
+    LOG.info("Scanning Minecraft 1.13.x and newer Forge mods for sideness...");
 
     List<String> serverMods = new ArrayList<>();
     List<String> modsDelta = new ArrayList<>();
@@ -3084,7 +3056,7 @@ public class ServerPackHandler {
    */
   private List<String> scanAnnotations(Collection<File> filesInModsDir) {
 
-    LOG.info(I18N.getMessage("createserverpack.log.info.scanannotation"));
+    LOG.info("Scanning Minecraft 1.12.x and older mods for sideness...");
 
     List<String> modDependencies = new ArrayList<>();
     List<String> clientMods = new ArrayList<>();
@@ -3561,7 +3533,7 @@ public class ServerPackHandler {
    * @author Griefed
    */
   private List<String> scanFabricModJson(Collection<File> filesInModsDir) {
-    LOG.info(I18N.getMessage("createserverpack.log.info.scanfabricmodjson"));
+    LOG.info("Scanning Fabric mods for sideness...");
 
     List<String> modDependencies = new ArrayList<>();
     List<String> clientMods = new ArrayList<>();
@@ -3743,7 +3715,7 @@ public class ServerPackHandler {
    * @author Griefed
    */
   private List<String> scanQuiltModJson(Collection<File> filesInModsDir) {
-    LOG.info(I18N.getMessage("createserverpack.log.info.scanquiltmodjson"));
+    LOG.info("Scanning Quilt mods for sideness...");
 
     List<String> modDependencies = new ArrayList<>();
     List<String> clientMods = new ArrayList<>();

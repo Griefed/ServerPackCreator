@@ -32,8 +32,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificationResponse {
 
-  private static final Logger LOG = LogManager.getLogger(NotificationResponse.class);
-
   /**
    * Construct a zipResponse for replying to a file-upload and display in a quasar notification.
    *

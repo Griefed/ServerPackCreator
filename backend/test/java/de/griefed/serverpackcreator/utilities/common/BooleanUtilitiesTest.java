@@ -14,7 +14,7 @@ public class BooleanUtilitiesTest {
   BooleanUtilitiesTest() {
     this.I18N = new I18n();
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    this.BOOLEANUTILITIES = new BooleanUtilities(I18N, APPLICATIONPROPERTIES);
+    this.BOOLEANUTILITIES = new BooleanUtilities();
   }
 
   @Test

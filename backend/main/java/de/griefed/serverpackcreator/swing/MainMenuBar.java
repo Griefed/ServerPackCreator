@@ -850,7 +850,7 @@ public class MainMenuBar extends Component {
         }
 
       } catch (IOException ex) {
-        LOG.error(I18N.getMessage("createserverpack.log.error.buttonloadconfigfromfile"), ex);
+        LOG.error("Error loading configuration from selected file.", ex);
       }
     }
   }
@@ -962,10 +962,7 @@ public class MainMenuBar extends Component {
       try {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                I18N.getMessage("createserverpack.log.info.buttonloadconfigfromfile"),
-                configChooser.getSelectedFile().getCanonicalPath()));
+        LOG.info("Loading from configuration file: " + configChooser.getSelectedFile().getCanonicalPath());
 
         File specifiedConfigFile;
         try {
