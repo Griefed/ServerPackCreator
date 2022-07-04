@@ -35,7 +35,7 @@
     "vue": "3.2.33",
     "quasar": "2.7.4",
     "tsparticles": "1.42.4",
-    "vue": "3.2.33",
+    "vue": "3.2.37",
     "vue-class-component": "8.0.0-rc.1"
   },
   "devDependencies": {
