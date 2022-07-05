@@ -1,3 +1,15 @@
+## [3.7.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.6.0...3.7.0) (2022-06-29)
+
+
+### 💎 Improvements
+
+* **Start scripts:** Various improvements, additions and fixes to the start scripts ([204ac6e](https://git.griefed.de/Griefed/ServerPackCreator/commit/204ac6e32532143ccb550b1c67d020176d8a3365))
+
+
+### 🦊 CI/CD
+
+* **Maven publishing:** Only publish maven artifacts when a beta or a full release was published ([1323088](https://git.griefed.de/Griefed/ServerPackCreator/commit/1323088fff61033c427b9dc948e7a5c4ea64af1f))
+
 ## [3.6.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.5.1...3.6.0) (2022-06-26)
 
 

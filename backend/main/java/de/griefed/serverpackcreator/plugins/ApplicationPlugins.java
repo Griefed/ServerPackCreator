@@ -27,9 +27,7 @@ import java.io.File;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.pf4j.ExtensionFactory;
 import org.pf4j.JarPluginManager;
-import org.pf4j.SingletonExtensionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -72,11 +70,6 @@ public class ApplicationPlugins extends JarPluginManager {
     this.PLUGINS_TabExtension = getExtensions(TabExtension.class);
 
     availablePluginsAndExtensions();
-  }
-
-  @Override
-  protected ExtensionFactory createExtensionFactory() {
-    return new SingletonExtensionFactory();
   }
 
   /**
