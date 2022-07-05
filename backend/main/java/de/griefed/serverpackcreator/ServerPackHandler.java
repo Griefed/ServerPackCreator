@@ -3152,7 +3152,7 @@ public class ServerPackHandler {
                           // ModIDs are different, possibly two mods in one JAR-file.......
                         } else {
 
-                          // Add additional modId to list so we can check those later
+                          // Add additional modId to list, so we can check those later
                           additionalMods.add(
                               child.get("values").get("modid").get("value").asText());
                         }
