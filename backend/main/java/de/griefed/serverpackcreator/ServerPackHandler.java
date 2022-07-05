@@ -792,7 +792,7 @@ public class ServerPackHandler {
       writer.write("        ECHO Download complete.\n");
       writer.write("      ) ELSE (\n");
       writer.write(
-          "        ECHO Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\n");
+          "        ECHO \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
       writer.write("        GOTO crash\n");
       writer.write("      )\n");
       writer.write("    ) ELSE (\n");
@@ -952,7 +952,7 @@ public class ServerPackHandler {
       writer.write("    echo Download complete.\n");
       writer.write("  else\n");
       writer.write(
-          "    echo Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\n");
+          "    echo \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
       writer.write("    echo \"Exiting...\"\n");
       writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
       writer.write("    exit 1\n");
@@ -1296,7 +1296,7 @@ public class ServerPackHandler {
       writer.write("    echo Download complete.\n");
       writer.write("  else\n");
       writer.write(
-          "    echo Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\n");
+          "    echo \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
       writer.write("    echo \"Exiting...\"\n");
       writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
       writer.write("    exit 1\n");
@@ -1644,7 +1644,7 @@ public class ServerPackHandler {
       writer.write("    echo Download complete.\n");
       writer.write("  else\n");
       writer.write(
-          "    echo Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\n");
+          "    echo \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
       writer.write("    echo \"Exiting...\"\n");
       writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
       writer.write("    exit 1\n");
