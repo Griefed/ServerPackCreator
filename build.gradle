@@ -70,7 +70,7 @@ dependencies {
   embed 'net.lingala.zip4j:zip4j:2.11.1'
   embed 'com.moandjiezana.toml:toml4j:0.7.2'
   embed 'org.xerial:sqlite-jdbc:3.36.0.3'
-  embed 'org.pf4j:pf4j:3.6.0'
+  embed 'org.pf4j:pf4j:3.7.0'
   embed 'com.github.vatbub:mslinks:1.0.5'
   implementation 'org.jetbrains:annotations:23.0.0'
 
