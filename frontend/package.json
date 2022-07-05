@@ -33,7 +33,7 @@
     "core-js": "3.22.8",
     "tsparticles": "2.0.6",
     "vue": "3.2.33",
-    "quasar": "2.7.4",
+    "quasar": "2.7.5",
     "tsparticles": "1.42.4",
     "vue": "3.2.37",
     "vue-class-component": "8.0.0-rc.1"
@@ -45,7 +45,7 @@
     "eslint": "8.19.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-vue": "9.1.1",
-    "eslint-webpack-plugin": "3.1.1"
+    "eslint-webpack-plugin": "3.2.0"
   },
   "browserslist": [
     "last 10 Chrome versions",
