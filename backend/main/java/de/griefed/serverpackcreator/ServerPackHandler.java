@@ -2611,6 +2611,7 @@ public class ServerPackHandler {
 
     List<File> filesToExclude = new ArrayList<>(100);
     if (APPLICATIONPROPERTIES.isZipFileExclusionEnabled()) {
+
       APPLICATIONPROPERTIES
           .getFilesToExcludeFromZipArchive()
           .forEach(
@@ -2632,14 +2633,16 @@ public class ServerPackHandler {
       LOG.info("File exclusion from ZIP-archives deactivated.");
     }
 
+    String comment = "Server pack made with ServerPackCreator "
+        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
+        + " by Griefed.";
+
     zipParameters.setIncludeRootFolder(false);
-    zipParameters.setFileComment(
-        "Server pack made with ServerPackCreator "
-            + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-            + " by Griefed.");
+    zipParameters.setFileComment(comment);
 
     try (ZipFile zip = new ZipFile(String.format("%s_server_pack.zip", destination))) {
 
+      zip.setComment(comment);
       zip.addFolder(new File(destination), zipParameters);
 
     } catch (IOException ex) {
