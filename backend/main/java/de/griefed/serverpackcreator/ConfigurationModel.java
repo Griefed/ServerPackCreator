@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -39,6 +40,7 @@ public class ConfigurationModel {
 
   private List<String> clientMods = new ArrayList<>();
   private List<String> copyDirs = new ArrayList<>();
+  private HashMap<String, String> scriptSettings = new HashMap<>();
   private String modpackDir = "";
   private String javaPath = "";
   private String minecraftVersion = "";
@@ -88,6 +90,7 @@ public class ConfigurationModel {
    * @param includeServerProperties {@link Boolean} Whether to include the server.properties in the
    *     server pack.
    * @param includeZipCreation {@link Boolean} Whether to create a ZIP-archive of the server pack.
+   * @param scriptSettings {@link HashMap} {@link String} {@link String} Map containing key-value pairs to be used in start script creation.
    * @author Griefed
    */
   public ConfigurationModel(
@@ -105,7 +108,8 @@ public class ConfigurationModel {
       boolean includeServerInstallation,
       boolean includeServerIcon,
       boolean includeServerProperties,
-      boolean includeZipCreation) {
+      boolean includeZipCreation,
+      HashMap<String, String> scriptSettings) {
 
     this.clientMods = clientMods;
     this.copyDirs = copyDirs;
@@ -122,6 +126,7 @@ public class ConfigurationModel {
     this.includeServerIcon = includeServerIcon;
     this.includeServerProperties = includeServerProperties;
     this.includeZipCreation = includeZipCreation;
+    this.scriptSettings.putAll(scriptSettings);
   }
 
   /**
@@ -569,6 +574,28 @@ public class ConfigurationModel {
    */
   public void setServerPropertiesPath(String serverPropertiesPath) {
     this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
+  }
+
+  /**
+   * Getter for the script settings used during script creation.
+   *
+   * @return {@link HashMap} {@link String}-{@link String}
+   * @author Griefed
+   */
+  public HashMap<String, String> getScriptSettings() {
+    return scriptSettings;
+  }
+
+  /**
+   * Putter for the script settings used during script creation. All key-value pairs from the passed
+   * hashmap are put into this models hashmap.
+   *
+   * @param scriptSettings {@link HashMap} {@link String}-{@link String} containing key-value pairs
+   *     to be used in script creation.
+   * @author Griefed
+   */
+  public void setScriptSettings(HashMap<String, String> scriptSettings) {
+    this.scriptSettings.putAll(scriptSettings);
   }
 
   @Override
