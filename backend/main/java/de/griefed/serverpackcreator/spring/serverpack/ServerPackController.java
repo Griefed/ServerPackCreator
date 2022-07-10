@@ -97,7 +97,6 @@ public class ServerPackController {
    * @author Griefed
    */
   @GetMapping("vote/{voting}")
-  // TODO: Secure with Captcha so vote spamming is somewhat prevented
   public ResponseEntity<Object> voteForServerPack(@PathVariable("voting") String voting) {
     return SERVERPACKSERVICE.voteForServerPack(voting);
   }

@@ -30,15 +30,6 @@ public class ApplicationPropertiesTest {
         APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES(),
         new File("serverpackcreator.properties"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS());
-    Assertions.assertEquals(APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS(), new File("start.bat"));
-
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.START_SCRIPT_LINUX());
-    Assertions.assertEquals(APPLICATIONPROPERTIES.START_SCRIPT_LINUX(), new File("start.sh"));
-
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.USER_JVM_ARGS());
-    Assertions.assertEquals(APPLICATIONPROPERTIES.USER_JVM_ARGS(), new File("user_jvm_args.txt"));
-
     Assertions.assertNotNull(APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS());
     Assertions.assertEquals(
         APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS(),

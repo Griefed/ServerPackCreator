@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
@@ -52,7 +53,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -182,14 +185,7 @@ public class ServerPackHandler {
    */
   public ServerPackModel run(@NotNull ServerPackModel serverPackModel) {
 
-    String destination =
-        String.format(
-            "%s/%s",
-            APPLICATIONPROPERTIES.getDirectoryServerPacks(),
-            serverPackModel
-                    .getModpackDir()
-                    .substring(serverPackModel.getModpackDir().lastIndexOf("/") + 1)
-                + serverPackModel.getServerPackSuffix());
+    String destination = getServerPackDestination(serverPackModel);
 
     run((ConfigurationModel) serverPackModel);
 
@@ -207,6 +203,35 @@ public class ServerPackHandler {
   }
 
   /**
+   * Acquire the destination directory in which the server pack will be generated. The directory in
+   * which the server pack will be created has all its spaces replaces with underscores, so <code>
+   * Survive Create Prosper 4 - 5.0.1</code> would become <code>Survive_Create_Prosper_4_-_5.0.1
+   * </code> Even though it is the year 2022, spaces in paths can and do still cause trouble. Such
+   * as for Powershell scripts. Powershell throws a complete fit if the path contains spaces....
+   *
+   * @param configurationModel {@link ConfigurationModel} or {@link ServerPackModel} containing the
+   *     modpack directory of the modpack from which the server pack will be generated.
+   * @return {@link String} The complete path to the directory in which the server pack will be
+   *     generated.
+   * @author Griefed
+   */
+  public String getServerPackDestination(ConfigurationModel configurationModel) {
+
+    String serverPackToBe =
+        configurationModel
+                .getModpackDir()
+                .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)
+            + configurationModel.getServerPackSuffix();
+
+    serverPackToBe = serverPackToBe.replace(" ", "_");
+
+    return new File(
+            String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), serverPackToBe))
+        .getAbsolutePath()
+        .replace("\\", "/");
+  }
+
+  /**
    * Create a server pack from a given instance of {@link ConfigurationModel}.
    *
    * @param configurationModel An instance of {@link ConfigurationModel} which contains the
@@ -216,17 +241,7 @@ public class ServerPackHandler {
    */
   public boolean run(@NotNull ConfigurationModel configurationModel) {
 
-    String destination =
-        new File(
-                String.format(
-                    "%s/%s",
-                    APPLICATIONPROPERTIES.getDirectoryServerPacks(),
-                    configurationModel
-                            .getModpackDir()
-                            .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)
-                        + configurationModel.getServerPackSuffix()))
-            .getAbsolutePath()
-            .replace("\\", "/");
+    String destination = getServerPackDestination(configurationModel);
 
     /*
      * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
@@ -279,12 +294,7 @@ public class ServerPackHandler {
           configurationModel.getModLoader());
 
       // Create the start scripts for this server pack.
-      createStartScripts(
-          configurationModel.getModLoader(),
-          configurationModel.getJavaArgs(),
-          configurationModel.getMinecraftVersion(),
-          configurationModel.getModLoaderVersion(),
-          destination);
+      createStartScripts(configurationModel, destination);
 
       // If modloader is fabric, try and replace the old server-launch.jar with the new and improved
       // one which also downloads the Minecraft server.
@@ -460,1399 +470,31 @@ public class ServerPackHandler {
   /**
    * Create start-scripts for the generated server pack.
    *
-   * @param modLoader String. Whether to copy the Forge or Fabric scripts into the server pack.
-   * @param javaArguments String. Java arguments to write the start-scripts with.
-   * @param minecraftVersion String. The Minecraft version the modpack uses.
-   * @param modloaderVersion String. The modloader version the modpack uses.
+   * @param configurationModel {@link ConfigurationModel} Configuration model containing modpack
+   *     specific values. keys to be replaced with their respective values in the start scripts.
    * @param destination String. The destination where the scripts should be created in.
    * @author Griefed
    */
-  private void createStartScripts(
-      String modLoader,
-      String javaArguments,
-      String minecraftVersion,
-      String modloaderVersion,
-      String destination) {
+  private void createStartScripts(ConfigurationModel configurationModel, String destination) {
 
-    if (javaArguments.equals("empty")) {
-      javaArguments = "";
-    }
+    HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
 
-    switch (modLoader) {
-      case "Forge":
-        String[] minecraft = minecraftVersion.split("\\.");
+    for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
 
-        LOG.info("Creating Forge start scripts...");
+      try {
+        String fileEnding = template.toString().substring(template.toString().lastIndexOf(".") + 1);
+        File destinationScript = new File(destination + "/start." + fileEnding);
 
-        if (Integer.parseInt(minecraft[1]) < 17) {
+        String scriptContent = FileUtils.readFileToString(template, StandardCharsets.UTF_8);
 
-          forgeBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-          forgeShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-
-        } else {
-
-          forgeBatchScriptNewMC(minecraftVersion, modloaderVersion, destination);
-          forgeShellScriptNewMC(javaArguments, minecraftVersion, modloaderVersion, destination);
-          forgeJvmArgsTxt(javaArguments, destination);
+        for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
+          scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
         }
 
-        break;
-
-      case "Fabric":
-
-        LOG.info("Creating Fabric start scripts...");
-
-        fabricBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-        fabricShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-
-        break;
-
-      case "Quilt":
-
-        LOG.info("Creating Quilt start scripts...");
-
-        quiltBatchScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-        quiltShellScript(javaArguments, minecraftVersion, modloaderVersion, destination);
-
-        break;
-
-      default:
-        LOG.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt.");
-    }
-  }
-
-  /**
-   * Create a Fabric shell start script
-   *
-   * @param javaArguments String. Java arguments with which the server should be started
-   * @param minecraftVersion String. Minecraft version of this server pack.
-   * @param modloaderVersion String. Modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
-   * @author Griefed
-   */
-  private void fabricShellScript(
-      String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
+        FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.UTF_8);
+      } catch (Exception ex) {
+        LOG.error("File not accessible: " + template + ".", ex);
       }
-
-      // Fabric Bash file
-      writer.write("#!/usr/bin/env bash\n");
-      writer.write(
-          "# Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + ".\n");
-      writer.write(
-          "# This script checks for the Minecraft and Fabric JAR-Files, and if they are not found, they are downloaded and installed.\n");
-      writer.write(
-          "# Should this server pack come with the improved Fabric Server Launcher, then it is used instead of the old one.\n");
-      writer.write("# If everything is in order, the server is started.\n");
-      writer.write("\n");
-      writer.write("if [ \"$(id -u)\" = \"0\" ]; then\n");
-      writer.write(
-          "  echo \"Warning! Running with administrator-privileges is not recommended.\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("JAVA=\"java\"\n");
-      writer.write("MINECRAFT=\"" + minecraftVersion + "\"\n");
-      writer.write("FABRIC=\"" + modloaderVersion + "\"\n");
-      writer.write("INSTALLER=\"" + VERSIONMETA.fabric().releaseInstallerVersion() + "\"\n");
-      writer.write("ARGS=\"" + javaArguments + "\"\n");
-      writer.write("OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
-      writer.write("LAUNCHER=\"fabric-server-launch.jar\"");
-      writer.write("\n");
-      writer.write("if [[ -s \"fabric-server-launcher.jar\" ]];then\n");
-      writer.write("\n");
-      writer.write("  echo \"Improved Fabric Server Launcher found...\";\n");
-      writer.write("  echo \"The improved launcher will be used to run this Fabric server.\";\n");
-      writer.write("  LAUNCHER=\"fabric-server-launcher.jar\";\n");
-      writer.write("\n");
-      writer.write("elif [[ ! -s \"fabric-server-launch.jar\" ]];then\n");
-      writer.write("\n");
-      writer.write("  echo \"Fabric Server JAR-file not found. Downloading installer...\";\n");
-      writer.write(
-          "  wget -O fabric-installer.jar https://maven.fabricmc.net/net/fabricmc/fabric-installer/$INSTALLER/fabric-installer-$INSTALLER.jar;\n");
-      writer.write("\n");
-      writer.write("  if [[ -s \"fabric-installer.jar\" ]];then\n");
-      writer.write("\n");
-      writer.write("    echo \"Installer downloaded. Installing...\";\n");
-      writer.write(
-          "    \"$JAVA\" -jar fabric-installer.jar server -mcversion $MINECRAFT -loader $FABRIC -downloadMinecraft;\n");
-      writer.write("\n");
-      writer.write("    if [[ -s \"fabric-server-launch.jar\" ]];then\n");
-      writer.write("      rm -rf .fabric-installer;\n");
-      writer.write("      rm -f fabric-installer.jar;\n");
-      writer.write("      echo \"Installation complete. fabric-installer.jar deleted.\";\n");
-      writer.write("    else\n");
-      writer.write("      rm -f fabric-installer.jar\n");
-      writer.write(
-          "      echo \"fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble.\";\n");
-      writer.write(
-          "      echo \"Please try again in a couple of minutes and check your internet connection.\";\n");
-      writer.write("      echo \"Exiting...\"\n");
-      writer.write("      read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("      exit 1\n");
-      writer.write("    fi\n");
-      writer.write("\n");
-      writer.write("  else\n");
-      writer.write(
-          "    echo \"fabric-installer.jar not found. Maybe the Fabric servers are having trouble.\";\n");
-      writer.write("    echo \"Please try again in a couple of minutes.\";\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"fabric-server-launch.jar present. Moving on...\";\n");
-      writer.write("\n");
-      writer.write("  if [[ ! -s \"server.jar\" ]];then\n");
-      writer.write("    echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
-      writer.write(
-          "    wget -O server.jar "
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + ";\n");
-      writer.write("    if [[ -s \"server.jar\" ]];then\n");
-      writer.write("      echo \"Download complete.\"\n");
-      writer.write("    else\n");
-      writer.write(
-          "      echo \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
-      writer.write("      echo \"Exiting...\"\n");
-      writer.write("      read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("      exit 1\n");
-      writer.write("    fi\n");
-      writer.write("  else\n");
-      writer.write("    echo \"server.jar present. Moving on...\";\n");
-      writer.write("  fi\n");
-      writer.write("\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"eula.txt\" ]];then\n");
-      writer.write("\n");
-      writer.write(
-          "  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n");
-      writer.write(
-          "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
-      writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
-      writer.write("\n");
-      writer.write("  echo -n \"Response: \"\n");
-      writer.write("  read ANSWER\n");
-      writer.write("\n");
-      writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
-      writer.write("\n");
-      writer.write("    echo \"User agreed to Mojang's EULA.\"\n");
-      writer.write(
-          "    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n");
-      writer.write("    echo \"eula=true\" >> eula.txt;\n");
-      writer.write("\n");
-      writer.write("  else\n");
-      writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
-      writer.write("    echo \"Entered: $ANSWER\"\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("\n");
-      writer.write("else\n");
-      writer.write("  echo \"eula.txt present. Moving on...\";\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("echo \"Starting server...\";\n");
-      writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
-      writer.write("echo \"Fabric version: $FABRIC\";\n");
-      writer.write("echo \"Java version:\"\n");
-      writer.write("\"$JAVA\"-version\n");
-      writer.write("echo \"Java args: $ARGS\";\n");
-      writer.write("\n");
-      writer.write("\"$JAVA\" $OTHERARGS $ARGS -jar $LAUNCHER nogui");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating shell-script for Fabric.", ex);
-    }
-  }
-
-  /**
-   * Create a Fabric batch start script.
-   *
-   * @param javaArguments String. Java arguments wich which the server should be started.
-   * @param minecraftVersion String. The Minecraft version of this server pack.
-   * @param modloaderVersion String. The modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
-   * @author Griefed
-   */
-  private void fabricBatchScript(
-      String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s",
-                            destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
-      }
-
-      // Fabric Batch file
-      writer.write(
-          ":: Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + ".\n");
-      writer.write(
-          ":: This script checks for the Minecraft and Fabric JAR-Files, and if they are not found, they are downloaded and installed.\n");
-      writer.write(
-          ":: Should this server pack come with the improved Fabric Server Launcher, then it is used instead of the old one.\n");
-      writer.write(":: If everything is in order, the server is started.\n");
-      writer.write("@ECHO off\n");
-      writer.write("SetLocal EnableDelayedExpansion\n");
-      writer.write("\n");
-      writer.write("net session >nul 2>&1\n");
-      writer.write("if %errorLevel% == 0 (\n");
-      writer.write(
-          "    echo Warning! Running with administrator/root-privileges is not recommended.\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("PUSHD \"%~dp0\"");
-      writer.write("\n");
-      writer.write("SET JAVA=\"java\"\n");
-      writer.write("SET MINECRAFT=" + minecraftVersion + "\n");
-      writer.write("SET FABRIC=" + modloaderVersion + "\n");
-      writer.write("SET INSTALLER=" + VERSIONMETA.fabric().releaseInstallerVersion() + "\n");
-      writer.write("SET ARGS=" + javaArguments + "\n");
-      writer.write("SET OTHERARGS=-Dlog4j2.formatMsgNoLookups=true\n");
-      writer.write("SET LAUNCHER=fabric-server-launch.jar\n");
-      writer.write("\n");
-      writer.write("IF EXIST fabric-server-launcher.jar (\n");
-      writer.write("\n");
-      writer.write("  ECHO Improved Fabric Server Launcher found...\n");
-      writer.write("  ECHO The improved launcher will be used to run this Fabric server.\n");
-      writer.write("  SET LAUNCHER=fabric-server-launcher.jar\n");
-      writer.write("\n");
-      writer.write(") ELSE (\n");
-      writer.write("\n");
-      writer.write("  IF NOT EXIST fabric-server-launch.jar (\n");
-      writer.write("\n");
-      writer.write("    ECHO Fabric Server JAR-file not found. Downloading installer...\n");
-      writer.write(
-          "    powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://maven.fabricmc.net/net/fabricmc/fabric-installer/%INSTALLER%/fabric-installer-%INSTALLER%.jar', 'fabric-installer.jar')\"\n");
-      writer.write("\n");
-      writer.write("    IF EXIST fabric-installer.jar (\n");
-      writer.write("\n");
-      writer.write("      ECHO Installer downloaded. Installing...\n");
-      writer.write(
-          "      %JAVA% -jar fabric-installer.jar server -mcversion %MINECRAFT% -loader %FABRIC% -downloadMinecraft\n");
-      writer.write("\n");
-      writer.write("      IF EXIST fabric-server-launch.jar (\n");
-      writer.write("        IF EXIST .fabric-installer RMDIR /S /Q .fabric-installer\n");
-      writer.write("        IF EXIST fabric-installer.jar DEL fabric-installer.jar\n");
-      writer.write(
-          "        ECHO Installation complete. fabric-installer.jar and installation files deleted.\n");
-      writer.write("      ) ELSE (\n");
-      writer.write("        IF EXIST fabric-installer.jar DEL fabric-installer.jar\n");
-      writer.write(
-          "        ECHO Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("        GOTO crash\n");
-      writer.write("      )\n");
-      writer.write("\n");
-      writer.write("    ) ELSE (\n");
-      writer.write(
-          "      ECHO fabric-installer.jar not found. Maybe the Fabric servers are having trouble.\n");
-      writer.write("      ECHO Please try again in a couple of minutes.\n");
-      writer.write("      GOTO crash\n");
-      writer.write("    )\n");
-      writer.write("\n");
-      writer.write("  ) ELSE (\n");
-      writer.write("    ECHO fabric-server-launch.jar present. Moving on...\n");
-      writer.write("    IF NOT EXIST server.jar (\n");
-      writer.write("      ECHO Minecraft Server JAR-file not found. Downloading...\n");
-      writer.write(
-          "      powershell -Command \"(New-Object Net.WebClient).DownloadFile('"
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + "', 'server.jar')\"\n");
-      writer.write("      IF EXIST server.jar (\n");
-      writer.write("        ECHO Download complete.\n");
-      writer.write("      ) ELSE (\n");
-      writer.write(
-          "        ECHO \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
-      writer.write("        GOTO crash\n");
-      writer.write("      )\n");
-      writer.write("    ) ELSE (\n");
-      writer.write("      ECHO server.jar present. Moving on...\n");
-      writer.write("    )\n");
-      writer.write("  )\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST eula.txt (\n");
-      writer.write(
-          "  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n");
-      writer.write(
-          "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
-      writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
-      writer.write("\n");
-      writer.write("  SET /p UserInput=Response: \n");
-      writer.write("  GOTO check\n");
-      writer.write("  \n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO eula.txt present. Moving on...\n");
-      writer.write("  GOTO start\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write(":check\n");
-      writer.write("IF \"%UserInput%\" == \"I agree\" (\n");
-      writer.write("    ECHO User agreed to Mojang's EULA.\n");
-      writer.write(
-          "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n");
-      writer.write("    ECHO eula=true>> eula.txt\n");
-      writer.write(") else (\n");
-      writer.write("    ECHO User did not agree to Mojang's EULA. \n");
-      writer.write("    ECHO Entered: %UserInput%\n");
-      writer.write("    GOTO crash\n");
-      writer.write(")");
-      writer.write("\n");
-      writer.write(":start\n");
-      writer.write("ECHO Starting server...\n");
-      writer.write("ECHO Minecraft version: %MINECRAFT%\n");
-      writer.write("ECHO Fabric version: %FABRIC%\n");
-      writer.write("ECHO Java version:\n");
-      writer.write("%JAVA% -version\n");
-      writer.write("ECHO Java args: %ARGS%\n");
-      writer.write("\n");
-      writer.write("%JAVA% %OTHERARGS% %ARGS% -jar %LAUNCHER% nogui\n");
-      writer.write("\n");
-      writer.write(":quit\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 0\n");
-      writer.write("\n");
-      writer.write(":crash\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 1");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating batch-script for Fabric.", ex);
-    }
-  }
-
-  /**
-   * Create a Quilt shell start script
-   *
-   * @param javaArguments String. Java arguments with which the server should be started
-   * @param minecraftVersion String. Minecraft version of this server pack.
-   * @param modloaderVersion String. Modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
-   * @author Griefed
-   */
-  private void quiltShellScript(
-      String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
-      }
-
-      // Quilt Bash file
-      writer.write("#!/usr/bin/env bash\n");
-      writer.write(
-          "# Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + ".\n");
-      writer.write(
-          "# This script checks for the Minecraft and Quilt JAR-Files, and if they are not found, they are downloaded and installed.\n");
-      writer.write("# If everything is in order, the server is started.\n");
-      writer.write("\n");
-      writer.write("if [ \"$(id -u)\" = \"0\" ]; then\n");
-      writer.write(
-          "  echo \"Warning! Running with administrator-privileges is not recommended.\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("JAVA=\"java\"\n");
-      writer.write("MINECRAFT=\"" + minecraftVersion + "\"\n");
-      writer.write("QUILT=\"" + modloaderVersion + "\"\n");
-      writer.write("INSTALLER=\"" + VERSIONMETA.quilt().releaseInstallerVersion() + "\"\n");
-      writer.write("ARGS=\"" + javaArguments + "\"\n");
-      writer.write("OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"quilt-server-launch.jar\" ]];then\n");
-      writer.write("\n");
-      writer.write("  echo \"Quilt Server JAR-file not found. Downloading installer...\";\n");
-      writer.write(
-          "  wget -O quilt-installer.jar https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/$INSTALLER/quilt-installer-$INSTALLER.jar;\n");
-      writer.write("\n");
-      writer.write("  if [[ -s \"quilt-installer.jar\" ]];then\n");
-      writer.write("\n");
-      writer.write("    echo \"Installer downloaded. Installing...\";\n");
-      writer.write(
-          "    \"$JAVA\" -jar quilt-installer.jar install server $MINECRAFT --download-server --install-dir=.;\n");
-      writer.write("\n");
-      writer.write("    if [[ -s \"quilt-server-launch.jar\" ]];then\n");
-      writer.write("      rm quilt-installer.jar;\n");
-      writer.write("      echo \"Installation complete. quilt-installer.jar deleted.\";\n");
-      writer.write("    else\n");
-      writer.write("      rm -f quilt-installer.jar\n");
-      writer.write(
-          "      echo \"quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble.\";\n");
-      writer.write(
-          "      echo \"Please try again in a couple of minutes and check your internet connection.\";\n");
-      writer.write("      echo \"Exiting...\"\n");
-      writer.write("      read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("      exit 1\n");
-      writer.write("    fi\n");
-      writer.write("\n");
-      writer.write("  else\n");
-      writer.write(
-          "    echo \"quilt-installer.jar not found. Maybe the Quilt servers are having trouble.\";\n");
-      writer.write(
-          "    echo \"Please try again in a couple of minutes and check your internet connection.\";\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"quilt-server-launch.jar present. Moving on...\";\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"server.jar\" ]];then\n");
-      writer.write("  echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
-      writer.write(
-          "  wget -O server.jar "
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + ";\n");
-      writer.write("  if [[ -s \"server.jar\" ]];then\n");
-      writer.write("    echo Download complete.\n");
-      writer.write("  else\n");
-      writer.write(
-          "    echo \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"server.jar present. Moving on...\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"eula.txt\" ]];then\n");
-      writer.write(
-          "  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n");
-      writer.write(
-          "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
-      writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
-      writer.write("\n");
-      writer.write("  echo -n \"Response: \"\n");
-      writer.write("  read ANSWER\n");
-      writer.write("\n");
-      writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
-      writer.write("    echo \"User agreed to Mojang's EULA.\"\n");
-      writer.write(
-          "    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n");
-      writer.write("    echo \"eula=true\" >> eula.txt;\n");
-      writer.write("  else\n");
-      writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
-      writer.write("    echo \"Entered: $ANSWER\"\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"eula.txt present. Moving on...\";\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("echo \"Starting server...\";\n");
-      writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
-      writer.write("echo \"Quilt version: $QUILT\";\n");
-      writer.write("echo \"Java version:\"\n");
-      writer.write("\"$JAVA\" -version\n");
-      writer.write("echo \"Java args: $ARGS\";\n");
-      writer.write("\n");
-      writer.write("\"$JAVA\" $OTHERARGS $ARGS -jar quilt-server-launch.jar nogui");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating shell-script for Quilt.", ex);
-    }
-  }
-
-  /**
-   * Create a Quilt batch start script.
-   *
-   * @param javaArguments String. Java arguments wich which the server should be started.
-   * @param minecraftVersion String. The Minecraft version of this server pack.
-   * @param modloaderVersion String. The modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
-   * @author Griefed
-   */
-  private void quiltBatchScript(
-      String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s",
-                            destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
-      }
-
-      // Quilt Batch file
-      writer.write(
-          ":: Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + ".\n");
-      writer.write(
-          ":: This script checks for the Minecraft and Quilt JAR-Files, and if they are not found, they are downloaded and installed.\n");
-      writer.write(":: If everything is in order, the server is started.\n");
-      writer.write("@ECHO off\n");
-      writer.write("SetLocal EnableDelayedExpansion\n");
-      writer.write("\n");
-      writer.write("net session >nul 2>&1\n");
-      writer.write("if %errorLevel% == 0 (\n");
-      writer.write(
-          "    echo Warning! Running with administrator/root-privileges is not recommended.\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("PUSHD \"%~dp0\"");
-      writer.write("\n");
-      writer.write("SET JAVA=\"java\"\n");
-      writer.write("SET MINECRAFT=" + minecraftVersion + "\n");
-      writer.write("SET QUILT=" + modloaderVersion + "\n");
-      writer.write("SET INSTALLER=" + VERSIONMETA.quilt().releaseInstallerVersion() + "\n");
-      writer.write("SET ARGS=" + javaArguments + "\n");
-      writer.write("SET OTHERARGS=-Dlog4j2.formatMsgNoLookups=true\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST quilt-server-launch.jar (\n");
-      writer.write("\n");
-      writer.write("  ECHO Quilt Server JAR-file not found. Downloading installer...\n");
-      writer.write(
-          "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%INSTALLER%/quilt-installer-%INSTALLER%.jar', 'quilt-installer.jar')\"\n");
-      writer.write("\n");
-      writer.write("  IF EXIST quilt-installer.jar (\n");
-      writer.write("\n");
-      writer.write("    ECHO Installer downloaded. Installing...\n");
-      writer.write(
-          "    %JAVA% -jar quilt-installer.jar install server %MINECRAFT% --download-server --install-dir=.\n");
-      writer.write("\n");
-      writer.write("    IF EXIST quilt-server-launch.jar (\n");
-      writer.write("      IF EXIST quilt-installer.jar DEL quilt-installer.jar\n");
-      writer.write("      ECHO Installation complete. quilt-installer.jar deleted.\n");
-      writer.write("    ) ELSE (\n");
-      writer.write("      IF EXIST quilt-installer.jar DEL quilt-installer.jar\n");
-      writer.write(
-          "      ECHO Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("      GOTO crash\n");
-      writer.write("    )\n");
-      writer.write("\n");
-      writer.write("  ) ELSE (\n");
-      writer.write(
-          "    ECHO quilt-installer.jar not found. Maybe the Quilt servers are having trouble.\n");
-      writer.write(
-          "    ECHO Please try again in a couple of minutes. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("    GOTO crash\n");
-      writer.write("  )\n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO quilt-server-launch.jar present. Moving on...\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST server.jar (\n");
-      writer.write("  ECHO Minecraft Server JAR-file not found. Downloading...\n");
-      writer.write(
-          "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('"
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + "', 'server.jar')\"\n");
-      writer.write("  IF EXIST server.jar (\n");
-      writer.write("    ECHO Download complete.\n");
-      writer.write("  ) ELSE (\n");
-      writer.write(
-          "    ECHO Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("    GOTO crash\n");
-      writer.write("  )\n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO server.jar present. Moving on...\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST eula.txt (\n");
-      writer.write(
-          "  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n");
-      writer.write(
-          "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
-      writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
-      writer.write("\n");
-      writer.write("  SET /p UserInput=Response: \n");
-      writer.write("  GOTO check\n");
-      writer.write("  \n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO eula.txt present. Moving on...\n");
-      writer.write("  GOTO start\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write(":check\n");
-      writer.write("IF \"%UserInput%\" == \"I agree\" (\n");
-      writer.write("    ECHO User agreed to Mojang's EULA.\n");
-      writer.write(
-          "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n");
-      writer.write("    ECHO eula=true>> eula.txt\n");
-      writer.write(") else (\n");
-      writer.write("    ECHO User did not agree to Mojang's EULA. \n");
-      writer.write("    ECHO Entered: %UserInput%\n");
-      writer.write("    GOTO crash\n");
-      writer.write(")");
-      writer.write("\n");
-      writer.write(":start\n");
-      writer.write("ECHO Starting server...\n");
-      writer.write("ECHO Minecraft version: %MINECRAFT%\n");
-      writer.write("ECHO Quilt version: %QUILT%\n");
-      writer.write("ECHO Java version:\n");
-      writer.write("%JAVA% -version\n");
-      writer.write("ECHO Java args: %ARGS%\n");
-      writer.write("\n");
-      writer.write("%JAVA% %OTHERARGS% %ARGS% -jar quilt-server-launch.jar nogui\n");
-      writer.write("\n");
-      writer.write(":quit\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 0\n");
-      writer.write("\n");
-      writer.write(":crash\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 1");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating batch-script for Quilt.", ex);
-    }
-  }
-
-  /**
-   * Create a Forge JVM args file used by Forge Minecraft 1.17 and newer.
-   *
-   * @param javaArguments String. Java arguments with which the server should be started.
-   * @param destination String. Where the file should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.USER_JVM_ARGS)</code>
-   * @author Griefed
-   */
-  private void forgeJvmArgsTxt(String javaArguments, String destination) {
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s", destination, APPLICATIONPROPERTIES.USER_JVM_ARGS())))))) {
-
-      // User Java Args file for Minecraft 1.17+ Forge servers
-      writer.write("# Xmx and Xms set the maximum and minimum RAM usage, respectively.\n");
-      writer.write("# They can take any number, followed by an M or a G.\n");
-      writer.write("# M means Megabyte, G means Gigabyte.\n");
-      writer.write("# For example, to set the maximum to 3GB: -Xmx3G\n");
-      writer.write("# To set the minimum to 2.5GB: -Xms2500M\n");
-      writer.write("\n");
-      writer.write("# A good default for a modded server is 4GB.\n");
-      writer.write("# Uncomment the next line to set it.\n");
-      writer.write("# -Xmx4G\n");
-      writer.write(javaArguments);
-
-    } catch (IOException ex) {
-      LOG.error("Error generating user_jvm_args.txt for Forge.", ex);
-    }
-  }
-
-  /**
-   * Create a Forge shell start script for Minecraft 1.17 and newer.
-   *
-   * @param javaArguments String. Java arguments with which the server should be started.
-   * @param minecraftVersion String. The Minecraft version of this server pack.
-   * @param modloaderVersion String. The modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
-   * @author Griefed
-   */
-  private void forgeShellScriptNewMC(
-      String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
-      }
-
-      /*
-       * FORGE 1.17 AND NEWER!
-       * If the specified Minecraft version is newer than or equal to 1.17.1, then we need to generate scripts which run
-       * Forge the new way, by running @user_jvm_args.txt and @libraries[...] etc.
-       *
-       * Forge Bash
-       */
-      writer.write("#!/usr/bin/env bash\n");
-      writer.write(
-          "# Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + ".\n");
-      writer.write(
-          "# This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n");
-      writer.write("# If everything is in order, the server is started.\n");
-      writer.write("\n");
-      writer.write("if [ \"$(id -u)\" = \"0\" ]; then\n");
-      writer.write(
-          "  echo \"Warning! Running with administrator-privileges is not recommended.\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("JAVA=\"java\"\n");
-      writer.write("MINECRAFT=\"" + minecraftVersion + "\"\n");
-      writer.write("FORGE=\"" + modloaderVersion + "\"\n");
-      writer.write("ARGS=\"" + javaArguments + "\"\n");
-      writer.write("OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
-      writer.write("\n");
-      writer.write(
-          "if [[ ! -s \"libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-server.jar\" ]];then\n");
-      writer.write("\n");
-      writer.write("  echo \"Forge Server JAR-file not found. Downloading installer...\";\n");
-      writer.write(
-          "  wget -O forge-installer.jar https://files.minecraftforge.net/maven/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-installer.jar;\n");
-      writer.write("\n");
-      writer.write("  if [[ -s \"forge-installer.jar\" ]]; then\n");
-      writer.write("\n");
-      writer.write("    echo \"Installer downloaded. Installing...\";\n");
-      writer.write("    \"$JAVA\" -jar forge-installer.jar --installServer;\n");
-      writer.write("\n");
-      writer.write(
-          "    if [[ -s \"libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-server.jar\" ]];then\n");
-      writer.write("      rm -f forge-installer.jar;\n");
-      writer.write("      echo \"Installation complete. forge-installer.jar deleted.\";\n");
-      writer.write("    else\n");
-      writer.write("      rm -f forge-installer.jar\n");
-      writer.write(
-          "      echo \"Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("      echo \"Exiting...\"\n");
-      writer.write("      read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("      exit 1\n");
-      writer.write("    fi\n");
-      writer.write("\n");
-      writer.write("  else\n");
-      writer.write(
-          "    echo \"forge-installer.jar not found. Maybe the Forge servers are having trouble.\";\n");
-      writer.write(
-          "    echo \"Please try again in a couple of minutes and check your internet connection.\";\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"Forge server present. Moving on...\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write(
-          "if [[ ! -s \"libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar\" ]];then\n");
-      writer.write("  echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
-      writer.write(
-          "  wget -O libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar "
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + ";\n");
-      writer.write(
-          "  if [[ -s \"libraries/net/minecraft/server/$MINECRAFT/server-$MINECRAFT.jar\" ]];then\n");
-      writer.write("    echo Download complete.\n");
-      writer.write("  else\n");
-      writer.write(
-          "    echo \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"Minecraft server present. Moving on...\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("if [[ -s \"run.bat\" ]];then\n");
-      writer.write("  rm -f run.bat;\n");
-      writer.write("fi\n");
-      writer.write("if [[ -s \"run.sh\" ]];then\n");
-      writer.write("  rm -f run.sh;\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"eula.txt\" ]];then\n");
-      writer.write(
-          "  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n");
-      writer.write(
-          "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
-      writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
-      writer.write("\n");
-      writer.write("  echo -n \"Response: \"\n");
-      writer.write("  read ANSWER\n");
-      writer.write("\n");
-      writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
-      writer.write("    echo \"User agreed to Mojang's EULA.\"\n");
-      writer.write(
-          "    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n");
-      writer.write("    echo \"eula=true\" >> eula.txt;\n");
-      writer.write("  else\n");
-      writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
-      writer.write("    echo \"Entered: $ANSWER\"\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"eula.txt present. Moving on...\";\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("echo \"Starting server...\";\n");
-      writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
-      writer.write("echo \"Forge version: $FORGE\";\n");
-      writer.write("echo \"Java version:\"\n");
-      writer.write("$JAVA -version\n");
-      writer.write("echo \"Java args in user_jvm_args.txt: $ARGS\";\n");
-      writer.write("\n");
-      writer.write("# Forge requires a configured set of both JVM and program arguments.\n");
-      writer.write("# Add custom JVM arguments to the user_jvm_args.txt\n");
-      writer.write(
-          "# Add custom program arguments {such as nogui} to this file in the next line before the \"$@\" or\n");
-      writer.write("#  pass them to this script directly\n");
-      writer.write(
-          "echo \"If you receive the error message 'Error: Could not find or load main class @user_jvm_args.txt' you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft version to find out which Java-version is required in order to run this server.\"\n");
-      writer.write("\n");
-      writer.write(
-          "$JAVA $OTHERARGS @user_jvm_args.txt @libraries/net/minecraftforge/forge/$MINECRAFT-$FORGE/unix_args.txt nogui \"$@\"");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating shell-script for Forge.", ex);
-    }
-  }
-
-  /**
-   * Create a Forge batch script for Minecraft 1.17 and newer.
-   *
-   * @param minecraftVersion String. The Minecraft version of this server pack.
-   * @param modloaderVersion String. The modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)
-   *     </code>
-   * @author Griefed
-   */
-  private void forgeBatchScriptNewMC(
-      String minecraftVersion, String modloaderVersion, String destination) {
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s",
-                            destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
-      }
-
-      /*
-       * FORGE 1.17 AND NEWER!
-       * If the specified Minecraft version is newer than or equal to 1.17.1, then we need to generate scripts which run
-       * Forge the new way, by running @user_jvm_args.txt and @libraries[...] etc.
-       *
-       * Forge Batch
-       */
-      writer.write(
-          ":: Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + "\n");
-      writer.write(
-          ":: This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n");
-      writer.write(":: If everything is in order, the server is started.\n");
-      writer.write("@ECHO off\n");
-      writer.write("SetLocal EnableDelayedExpansion\n");
-      writer.write("\n");
-      writer.write("net session >nul 2>&1\n");
-      writer.write("if %errorLevel% == 0 (\n");
-      writer.write(
-          "    echo Warning! Running with administrator/root-privileges is not recommended.\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("PUSHD \"%~dp0\"");
-      writer.write("\n");
-      writer.write("SET JAVA=\"java\"\n");
-      writer.write("SET MINECRAFT=" + minecraftVersion + "\n");
-      writer.write("SET FORGE=" + modloaderVersion + "\n");
-      writer.write("SET OTHERARGS=-Dlog4j2.formatMsgNoLookups=true\n");
-      writer.write("\n");
-      writer.write(
-          "IF NOT EXIST libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-server.jar (\n");
-      writer.write("\n");
-      writer.write("  ECHO Forge Server JAR-file not found. Downloading installer...\n");
-      writer.write(
-          "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://files.minecraftforge.net/maven/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-installer.jar', 'forge-installer.jar')\"\n");
-      writer.write("\n");
-      writer.write("  IF EXIST forge-installer.jar (\n");
-      writer.write("\n");
-      writer.write("    ECHO Installer downloaded. Installing...\n");
-      writer.write("    %JAVA% -jar forge-installer.jar --installServer\n");
-      writer.write("\n");
-      writer.write(
-          "    IF EXIST libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-server.jar (\n");
-      writer.write("      IF EXIST forge-installer.jar DEL forge-installer.jar\n");
-      writer.write("      ECHO Installation complete. forge-installer.jar deleted.\n");
-      writer.write("    ) ELSE (\n");
-      writer.write("      IF EXIST forge-installer.jar DEL forge-installer.jar\n");
-      writer.write(
-          "      ECHO Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("      GOTO quit\n");
-      writer.write("    )\n");
-      writer.write("\n");
-      writer.write("  ) ELSE (\n");
-      writer.write(
-          "    ECHO forge-installer.jar not found. Maybe the Forge servers are having trouble.\n");
-      writer.write(
-          "    ECHO Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("    GOTO quit\n");
-      writer.write("  )\n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO Forge server present. Moving on...\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write(
-          "IF NOT EXIST libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar (\n");
-      writer.write("  ECHO Minecraft Server JAR-file not found. Downloading...\n");
-      writer.write("  IF NOT EXIST libraries/net/minecraft/server/%MINECRAFT%/NUL (\n");
-      writer.write("    MKDIR \"libraries/net/minecraft/server/%MINECRAFT%\"\n");
-      writer.write("  )\n");
-      writer.write(
-          "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('"
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + "', 'libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar')\"\n");
-      writer.write(
-          "    IF EXIST libraries/net/minecraft/server/%MINECRAFT%/server-%MINECRAFT%.jar (\n");
-      writer.write("      ECHO Download complete.\n");
-      writer.write("    ) ELSE (\n");
-      writer.write(
-          "      ECHO Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("      GOTO quit\n");
-      writer.write("    )\n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO Minecraft server present. Moving on...\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("IF EXIST run.bat (\n");
-      writer.write("  DEL run.bat\n");
-      writer.write(")\n");
-      writer.write("IF EXIST run.sh (\n");
-      writer.write("  DEL run.sh\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST eula.txt (\n");
-      writer.write(
-          "  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n");
-      writer.write(
-          "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
-      writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
-      writer.write("\n");
-      writer.write("  SET /p UserInput=Response: \n");
-      writer.write("  GOTO check\n");
-      writer.write("  \n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO eula.txt present. Moving on...\n");
-      writer.write("  GOTO start\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write(":check\n");
-      writer.write("IF \"%UserInput%\" == \"I agree\" (\n");
-      writer.write("    ECHO User agreed to Mojang's EULA.\n");
-      writer.write(
-          "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n");
-      writer.write("    ECHO eula=true>> eula.txt\n");
-      writer.write(") else (\n");
-      writer.write("    ECHO User did not agree to Mojang's EULA. \n");
-      writer.write("    ECHO Entered: %UserInput%\n");
-      writer.write("    GOTO quit\n");
-      writer.write(")");
-      writer.write("\n");
-      writer.write(":start\n");
-      writer.write("ECHO Starting server...\n");
-      writer.write("ECHO Minecraft version: %MINECRAFT%\n");
-      writer.write("ECHO Forge version: %FORGE%\n");
-      writer.write("ECHO Java version:\n");
-      writer.write("\"%JAVA%\" -version\n");
-      writer.write("ECHO See user_jvm_args.txt if you want to inspect the used JVM args\n");
-      writer.write("\n");
-      writer.write("ECHO Forge requires a configured set of both JVM and program arguments.\n");
-      writer.write("ECHO Add custom JVM arguments to the user_jvm_args.txt\n");
-      writer.write(
-          "ECHO Add custom program arguments, such as nogui, to this file in the next line before the %* or pass them to this script directly.\n");
-      writer.write(
-          "ECHO If you receive the error message \"Error: Could not find or load main class @user_jvm_args.txt\" you may be using the wrong Java-version for this modded Minecraft server. Contact the modpack-developer or, if you made the server pack yourself, do a quick google-search for the used Minecraft version to find out which Java-version is required in order to run this server.\n");
-      writer.write("\n");
-      writer.write(
-          "%JAVA% %OTHERARGS% @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/win_args.txt nogui %*\n");
-      writer.write("\n");
-      writer.write(":quit\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 0\n");
-      writer.write("\n");
-      writer.write(":crash\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 1");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating batch-script for Forge.", ex);
-    }
-  }
-
-  /**
-   * Create a Forge shell script for Minecraft 1.16 and older.
-   *
-   * @param javaArguments String. The Java arguments with which to start the server.
-   * @param minecraftVersion String. The Minecraft version of this server pack.
-   * @param modloaderVersion String. The modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX)</code>
-   * @author Griefed
-   */
-  private void forgeShellScript(
-      String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_LINUX())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
-      }
-
-      /*
-       * FORGE 1.16 AND OLDER!
-       * If the specified Minecraft version is older than 1.17.1, then we need to generate scripts which run
-       * Forge the old way, with the Minecraft server-jar and the Forge server-jar, executing the Forge server-jar
-       * with the given Java args.
-       *
-       * Forge Bash file
-       */
-      writer.write("#!/usr/bin/env bash\n");
-      writer.write(
-          "# Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + ".\n");
-      writer.write(
-          "# This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n");
-      writer.write("# If everything is in order, the server is started.\n");
-      writer.write("\n");
-      writer.write("if [ \"$(id -u)\" = \"0\" ]; then\n");
-      writer.write(
-          "  echo \"Warning! Running with administrator-privileges is not recommended.\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("JAVA=\"java\"\n");
-      writer.write("MINECRAFT=\"" + minecraftVersion + "\"\n");
-      writer.write("FORGE=\"" + modloaderVersion + "\"\n");
-      writer.write("ARGS=\"" + javaArguments + "\"\n");
-      writer.write("OTHERARGS=\"-Dlog4j2.formatMsgNoLookups=true\"\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"forge.jar\" ]];then\n");
-      writer.write("\n");
-      writer.write("  echo \"Forge Server JAR-file not found. Downloading installer...\";\n");
-      writer.write(
-          "  wget -O forge-installer.jar https://files.minecraftforge.net/maven/net/minecraftforge/forge/$MINECRAFT-$FORGE/forge-$MINECRAFT-$FORGE-installer.jar;\n");
-      writer.write("\n");
-      writer.write("  if [[ -s \"forge-installer.jar\" ]]; then\n");
-      writer.write("\n");
-      writer.write("    echo \"Installer downloaded. Installing...\";\n");
-      writer.write("    \"$JAVA\" -jar forge-installer.jar --installServer;\n");
-      writer.write("    mv forge-$MINECRAFT-$FORGE.jar forge.jar;\n");
-      writer.write("\n");
-      writer.write("    if [[ -s \"forge.jar\" ]];then\n");
-      writer.write("      rm -f forge-installer.jar;\n");
-      writer.write("      echo \"Installation complete. forge-installer.jar deleted.\";\n");
-      writer.write("    else\n");
-      writer.write("      rm -f forge-installer.jar;\n");
-      writer.write(
-          "      echo \"Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection.\"\n");
-      writer.write("      echo \"Exiting...\"\n");
-      writer.write("      read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("      exit 1\n");
-      writer.write("    fi\n");
-      writer.write("\n");
-      writer.write("  else\n");
-      writer.write(
-          "    echo \"forge-installer.jar not found. Maybe the Forge servers are having trouble.\";\n");
-      writer.write(
-          "    echo \"Please try again in a couple of minutes and check your internet connection.\";\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"forge.jar present. Moving on...\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"minecraft_server.$MINECRAFT.jar\" ]];then\n");
-      writer.write("  echo \"Minecraft Server JAR-file not found. Downloading...\";\n");
-      writer.write(
-          "  wget -O minecraft_server.$MINECRAFT.jar "
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + ";\n");
-      writer.write("  if [[ -s \"minecraft_server.$MINECRAFT.jar\" ]];then\n");
-      writer.write("    echo Download complete.\n");
-      writer.write("  else\n");
-      writer.write(
-          "    echo \"Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\"\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"minecraft_server.$MINECRAFT.jar present. Moving on...\"\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("if [[ ! -s \"eula.txt\" ]];then\n");
-      writer.write(
-          "  echo \"Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\"\n");
-      writer.write(
-          "  echo \"Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\"\n");
-      writer.write("  echo \"If you agree to Mojang's EULA then type 'I agree'\"\n");
-      writer.write("\n");
-      writer.write("  echo -n \"Response: \"\n");
-      writer.write("  read ANSWER\n");
-      writer.write("\n");
-      writer.write("  if [[ \"$ANSWER\" = \"I agree\" ]]; then\n");
-      writer.write("    echo \"User agreed to Mojang's EULA.\"\n");
-      writer.write(
-          "    echo \"#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\" > eula.txt;\n");
-      writer.write("    echo \"eula=true\" >> eula.txt;\n");
-      writer.write("  else\n");
-      writer.write("    echo \"User did not agree to Mojang's EULA.\"\n");
-      writer.write("    echo \"Entered: $ANSWER\"\n");
-      writer.write("    echo \"Exiting...\"\n");
-      writer.write("    read -n 1 -s -r -p \"Press any key to continue\"\n");
-      writer.write("    exit 1\n");
-      writer.write("  fi\n");
-      writer.write("else\n");
-      writer.write("  echo \"eula.txt present. Moving on...\";\n");
-      writer.write("fi\n");
-      writer.write("\n");
-      writer.write("echo \"Starting server...\";\n");
-      writer.write("echo \"Minecraft version: $MINECRAFT\";\n");
-      writer.write("echo \"Forge version: $FORGE\";\n");
-      writer.write("echo \"Java version:\"\n");
-      writer.write("\"$JAVA\" -version\n");
-      writer.write("echo \"Java args: $ARGS\";\n");
-      writer.write("\n");
-      writer.write("\"$JAVA\" $OTHERARGS $ARGS -jar forge.jar nogui");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating shell-script for Forge.", ex);
-    }
-  }
-
-  /**
-   * Create a forge batch script for Minecraft 1.16 and older.
-   *
-   * @param javaArguments String. The Java arguments with which to start the server.
-   * @param minecraftVersion String. The Minecraft version of this server pack.
-   * @param modloaderVersion String. The modloader version of this server pack.
-   * @param destination String. Where the script should be written to. Result is a combination of
-   *     <code>String.format("%s/%s", destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS)
-   *     </code>
-   * @author Griefed
-   */
-  private void forgeBatchScript(
-      String javaArguments, String minecraftVersion, String modloaderVersion, String destination) {
-    try (BufferedWriter writer =
-        new BufferedWriter(
-            new FileWriter(
-                String.valueOf(
-                    Paths.get(
-                        String.format(
-                            "%s/%s",
-                            destination, APPLICATIONPROPERTIES.START_SCRIPT_WINDOWS())))))) {
-
-      if (!VERSIONMETA.minecraft().getServer(minecraftVersion).isPresent()
-          || !VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().isPresent()) {
-
-        LOG.error("A server is not available for the specified Minecraft version.");
-        return;
-      }
-
-      /*
-       * FORGE 1.16 AND OLDER!
-       * If the specified Minecraft version is older than 1.17.1, then we need to generate scripts which run
-       * Forge the old way, with the Minecraft server-jar and the Forge server-jar, executing the Forge server-jar
-       * with the given Java args.
-       *
-       * Forge Batch
-       */
-      writer.write(
-          ":: Start script generated by ServerPackCreator "
-              + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-              + ".\n");
-      writer.write(
-          ":: This script checks for the Minecraft and Forge JAR-files, and if they are not found, they are downloaded and installed.\n");
-      writer.write(":: If everything is in order, the server is started.\n");
-      writer.write("@ECHO off\n");
-      writer.write("SetLocal EnableDelayedExpansion\n");
-      writer.write("\n");
-      writer.write("net session >nul 2>&1\n");
-      writer.write("if %errorLevel% == 0 (\n");
-      writer.write(
-          "    ECHO Warning! Running with administrator/root-privileges is not recommended.\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("PUSHD \"%~dp0\"");
-      writer.write("\n");
-      writer.write("SET JAVA=\"java\"\n");
-      writer.write("SET MINECRAFT=" + minecraftVersion + "\n");
-      writer.write("SET FORGE=" + modloaderVersion + "\n");
-      writer.write("SET ARGS=" + javaArguments + "\n");
-      writer.write("SET OTHERARGS=-Dlog4j2.formatMsgNoLookups=true\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST forge.jar (\n");
-      writer.write("\n");
-      writer.write("  ECHO Forge Server JAR-file not found. Downloading installer...\n");
-      writer.write(
-          "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('https://files.minecraftforge.net/maven/net/minecraftforge/forge/%MINECRAFT%-%FORGE%/forge-%MINECRAFT%-%FORGE%-installer.jar', 'forge-installer.jar')\"\n");
-      writer.write("\n");
-      writer.write("  IF EXIST forge-installer.jar (\n");
-      writer.write("\n");
-      writer.write("    ECHO Installer downloaded. Installing...\n");
-      writer.write("    %JAVA% -jar forge-installer.jar --installServer\n");
-      writer.write("    MOVE forge-%MINECRAFT%-%FORGE%.jar forge.jar\n");
-      writer.write("\n");
-      writer.write("    IF EXIST forge.jar (\n");
-      writer.write("      IF EXIST forge-installer.jar DEL forge-installer.jar\n");
-      writer.write("      ECHO Installation complete. forge-installer.jar deleted.\n");
-      writer.write("    ) ELSE (\n");
-      writer.write("      IF EXIST forge-installer.jar DEL forge-installer.jar\n");
-      writer.write(
-          "      ECHO Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("      GOTO crash\n");
-      writer.write("    )\n");
-      writer.write("\n");
-      writer.write("  ) ELSE (\n");
-      writer.write(
-          "    ECHO forge-installer.jar not found. Maybe the Forge servers are having trouble.\n");
-      writer.write(
-          "    ECHO Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("    GOTO crash\n");
-      writer.write("  )\n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO forge.jar present. Moving on...\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST minecraft_server.%MINECRAFT%.jar (\n");
-      writer.write("  ECHO Minecraft Server JAR-file not found. Downloading...\n");
-      writer.write(
-          "  powershell -Command \"(New-Object Net.WebClient).DownloadFile('"
-              + VERSIONMETA.minecraft().getServer(minecraftVersion).get().url().get()
-              + "', 'minecraft_server.%MINECRAFT%.jar')\"\n");
-      writer.write("  IF EXIST minecraft_server.%MINECRAFT%.jar (\n");
-      writer.write("    ECHO Download complete.\n");
-      writer.write("  ) ELSE (\n");
-      writer.write(
-          "    ECHO Something went wrong during the server download. Please try again in a couple of minutes and check your internet connection.\n");
-      writer.write("    GOTO crash\n");
-      writer.write("  )\n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO minecraft_server.%MINECRAFT%.jar present. Moving on...\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write("IF NOT EXIST eula.txt (\n");
-      writer.write(
-          "  ECHO Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA.\n");
-      writer.write(
-          "  ECHO Mojang's EULA is available to read at https://account.mojang.com/documents/minecraft_eula\n");
-      writer.write("  ECHO If you agree to Mojang's EULA then type \"I agree\"\n");
-      writer.write("\n");
-      writer.write("  SET /p UserInput=Response: \n");
-      writer.write("  GOTO check\n");
-      writer.write("  \n");
-      writer.write(") ELSE (\n");
-      writer.write("  ECHO eula.txt present. Moving on...\n");
-      writer.write("  GOTO start\n");
-      writer.write(")\n");
-      writer.write("\n");
-      writer.write(":check\n");
-      writer.write("IF \"%UserInput%\" == \"I agree\" (\n");
-      writer.write("    ECHO User agreed to Mojang's EULA.\n");
-      writer.write(
-          "    ECHO #By changing the setting below to TRUE you are indicating your agreement to our EULA ^(https://account.mojang.com/documents/minecraft_eula^).> eula.txt\n");
-      writer.write("    ECHO eula=true>> eula.txt\n");
-      writer.write(") else (\n");
-      writer.write("    ECHO User did not agree to Mojang's EULA. \n");
-      writer.write("    ECHO Entered: %UserInput%\n");
-      writer.write("    GOTO crash\n");
-      writer.write(")");
-      writer.write("\n");
-      writer.write(":start\n");
-      writer.write("ECHO Starting server...\n");
-      writer.write("ECHO Minecraft version: %MINECRAFT%\n");
-      writer.write("ECHO Forge version: %FORGE%\n");
-      writer.write("ECHO Java version:\n");
-      writer.write("%JAVA% -version\n");
-      writer.write("ECHO Java args: %ARGS%\n");
-      writer.write("\n");
-      writer.write("%JAVA% %OTHERARGS% %ARGS% -jar forge.jar nogui\n");
-      writer.write("\n");
-      writer.write(":quit\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 0\n");
-      writer.write("\n");
-      writer.write(":crash\n");
-      writer.write("ECHO Exiting...\n");
-      writer.write("PAUSE\n");
-      writer.write("EXIT 1");
-
-    } catch (IOException ex) {
-      LOG.error("Error generating batch-script for Forge.", ex);
     }
   }
 
@@ -2409,7 +1051,6 @@ public class ServerPackHandler {
 
     switch (modLoader) {
       case "Fabric":
-
         LOG_INSTALLER.info("Starting Fabric installation.");
 
         fileDestination = String.format("%s/fabric-installer.jar", destination);
@@ -2437,7 +1078,6 @@ public class ServerPackHandler {
         break;
 
       case "Forge":
-
         LOG_INSTALLER.info("Starting Forge installation.");
 
         fileDestination = String.format("%s/forge-installer.jar", destination);
@@ -2466,7 +1106,6 @@ public class ServerPackHandler {
         break;
 
       case "Quilt":
-
         LOG_INSTALLER.info("Starting Quilt installation.");
 
         fileDestination = String.format("%s/quilt-installer.jar", destination);
@@ -2493,7 +1132,6 @@ public class ServerPackHandler {
         break;
 
       default:
-
         LOG.error(
             "Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt. Specified: "
                 + modLoader);
@@ -2652,9 +1290,12 @@ public class ServerPackHandler {
 
     if (includeServerInstallation) {
 
-      LOG.warn("!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
-      LOG.warn("!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
-      LOG.warn("!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+      LOG.warn(
+          "!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
+      LOG.warn(
+          "!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
+      LOG.warn(
+          "!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
     }
 
     LOG.info("Finished creation of zip archive.");
@@ -2676,31 +1317,31 @@ public class ServerPackHandler {
 
     LOG.info("Cleanup after modloader server installation.");
 
-    FileUtils.deleteQuietly(new File(String.format("%s/fabric-installer.jar", destination)));
-    FileUtils.deleteQuietly(new File(String.format("%s/forge-installer.jar", destination)));
-    FileUtils.deleteQuietly(new File(String.format("%s/quilt-installer.jar", destination)));
-    FileUtils.deleteQuietly(new File(String.format("%s/installer.log", destination)));
-    FileUtils.deleteQuietly(new File(String.format("%s/forge-installer.jar.log", destination)));
-
-    Path path =
-        Paths.get(
-            String.format("%s/forge-%s-%s.jar", destination, minecraftVersion, modLoaderVersion));
+    FileUtils.deleteQuietly(new File(destination + "/fabric-installer.jar"));
+    FileUtils.deleteQuietly(new File(destination + "/forge-installer.jar"));
+    FileUtils.deleteQuietly(new File(destination + "/quilt-installer.jar"));
+    FileUtils.deleteQuietly(new File(destination + "/installer.log"));
+    FileUtils.deleteQuietly(new File(destination + "/forge-installer.jar.log"));
+    FileUtils.deleteQuietly(Paths.get(destination + "/run.bat").toFile());
+    FileUtils.deleteQuietly(Paths.get(destination + "/run.sh").toFile());
+    FileUtils.deleteQuietly(Paths.get(destination + "/user_jvm_args.txt").toFile());
 
     try {
+      Path path =
+          Paths.get(
+              String.format(destination + "/forge-%s-%s.jar", minecraftVersion, modLoaderVersion));
 
       if (new File(
-              String.format("%s/forge-%s-%s.jar", destination, minecraftVersion, modLoaderVersion))
+              String.format(destination + "/forge-%s-%s.jar", minecraftVersion, modLoaderVersion))
           .exists()) {
-        Files.copy(path, Paths.get(String.format("%s/forge.jar", destination)), REPLACE_EXISTING);
+
+        Files.copy(path, Paths.get(destination + "/forge.jar"), REPLACE_EXISTING);
+        FileUtils.deleteQuietly(path.toFile());
       }
 
     } catch (IOException ignored) {
 
     }
-
-    FileUtils.deleteQuietly(path.toFile());
-    FileUtils.deleteQuietly(Paths.get(String.format("%s/run.bat", destination)).toFile());
-    FileUtils.deleteQuietly(Paths.get(String.format("%s/run.sh", destination)).toFile());
   }
 
   /**

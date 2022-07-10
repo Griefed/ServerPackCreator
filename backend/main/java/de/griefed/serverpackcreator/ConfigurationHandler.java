@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import org.apache.commons.io.FileUtils;
@@ -513,6 +514,8 @@ public class ConfigurationHandler {
       printEncounteredErrors(encounteredErrors);
     }
 
+    ensureScriptSettingsDefaults(configurationModel);
+
     return configHasError;
   }
 
@@ -906,6 +909,78 @@ public class ConfigurationHandler {
   }
 
   /**
+   * Update the script settings and ensure the default keys, with values gathered from the passed
+   * {@link ConfigurationModel}, are present:
+   *
+   * <ol>
+   *   <li><code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>
+   *       ServerPackCreator version with which the scripts were created</code>
+   *   <li><code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
+   *   <li><code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
+   *       </code>
+   *   <li><code>SPC_MODLOADER_SPC</code> : <code>The modloader of the modpack</code>
+   *   <li><code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
+   *       </code>
+   *   <li><code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
+   *   <li><code>SPC_JAVA_SPC</code> : <code>
+   *       Path to the java installation to be used to run the server</code>
+   *   <li><code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>
+   *       Most recent version of the Fabric installer at the time of creating the scripts</code>
+   *   <li><code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>
+   *       Most recent version of the Quilt installer at the time of creating the scripts</code>
+   * </ol>
+   *
+   * @param configurationModel {@link ConfigurationModel} in which to ensure the default key-value
+   *     pairs are present.
+   * @author Griefed
+   */
+  private void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
+
+    HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
+
+    if (!VERSIONMETA.minecraft().getServer(configurationModel.getMinecraftVersion()).isPresent()
+        || !VERSIONMETA
+            .minecraft()
+            .getServer(configurationModel.getMinecraftVersion())
+            .get()
+            .url()
+            .isPresent()) {
+
+      scriptSettings.put(
+          "SPC_MINECRAFT_SERVER_URL_SPC","");
+
+    } else {
+      scriptSettings.put(
+          "SPC_MINECRAFT_SERVER_URL_SPC",
+          VERSIONMETA
+              .minecraft()
+              .getServer(configurationModel.getMinecraftVersion())
+              .get()
+              .url()
+              .get()
+              .toString());
+    }
+
+    scriptSettings.put(
+        "SPC_SERVERPACKCREATOR_VERSION_SPC", APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+    scriptSettings.put("SPC_MINECRAFT_VERSION_SPC", configurationModel.getMinecraftVersion());
+
+    scriptSettings.put("SPC_MODLOADER_SPC", configurationModel.getModLoader());
+    scriptSettings.put("SPC_MODLOADER_VERSION_SPC", configurationModel.getModLoaderVersion());
+    scriptSettings.put("SPC_JAVA_ARGS_SPC", configurationModel.getJavaArgs());
+
+    // To be enhanced in a later milestone
+    scriptSettings.put("SPC_JAVA_SPC", "java");
+
+    scriptSettings.put(
+        "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstallerVersion());
+    scriptSettings.put(
+        "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstallerVersion());
+
+    configurationModel.setScriptSettings(scriptSettings);
+  }
+
+  /**
    * Sanitize any and all links in a given instance of {@link ConfigurationModel} modpack-directory,
    * server-icon path, server-properties path, Java path and copy-directories entries.
    *
@@ -1247,7 +1322,10 @@ public class ConfigurationHandler {
 
             configCorrect = false;
 
-            LOG.error("Copy-file " + sourceFileToCheck + " does not exist. Please specify existing files.");
+            LOG.error(
+                "Copy-file "
+                    + sourceFileToCheck
+                    + " does not exist. Please specify existing files.");
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             encounteredErrors.add(
@@ -1267,7 +1345,10 @@ public class ConfigurationHandler {
 
               configCorrect = false;
 
-              LOG.error("No read-permission for " + String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+              LOG.error(
+                  "No read-permission for "
+                      + String.format(
+                          "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
 
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
@@ -1285,7 +1366,10 @@ public class ConfigurationHandler {
 
               configCorrect = false;
 
-              LOG.error("No read-permission for " + String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+              LOG.error(
+                  "No read-permission for "
+                      + String.format(
+                          "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
 
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
@@ -1379,7 +1463,10 @@ public class ConfigurationHandler {
 
             configCorrect = false;
 
-            LOG.error("Copy-file or copy-directory " + directory + " does not exist. Please specify existing directories or files.");
+            LOG.error(
+                "Copy-file or copy-directory "
+                    + directory
+                    + " does not exist. Please specify existing directories or files.");
 
             /* This log is meant to be read by the user, therefore we allow translation. */
             encounteredErrors.add(
@@ -1656,8 +1743,8 @@ public class ConfigurationHandler {
         return VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion);
 
       default:
-
-        LOG.error("Specified incorrect modloader version. Please check your modpack for the correct version and enter again.");
+        LOG.error(
+            "Specified incorrect modloader version. Please check your modpack for the correct version and enter again.");
 
         return false;
     }
