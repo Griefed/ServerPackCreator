@@ -78,7 +78,7 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/start.bat").exists());
+    Assertions.assertTrue(new File("server-packs/forge_tests/start.ps1").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
     try {
       Files.copy(

@@ -51,9 +51,6 @@ public class ApplicationProperties extends Properties {
 
   // ServerPackHandler related
   private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
-  private final File START_SCRIPT_WINDOWS = new File("start.bat");
-  private final File START_SCRIPT_LINUX = new File("start.sh");
-  private final File USER_JVM_ARGS = new File("user_jvm_args.txt");
 
   private final String FALLBACK_MODS_DEFAULT_ASSTRING =
       "3dSkinLayers-,"
@@ -212,25 +209,29 @@ public class ApplicationProperties extends Properties {
           + "WindowedFullscreen-,"
           + "WorldNameRandomizer-,"
           + "yisthereautojump-";
-  private final String SERVERPACKCREATOR_VERSION;
-  private final String[] SUPPORTED_MODLOADERS = new String[] {"Fabric", "Forge", "Quilt"};
-
   private final List<String> FALLBACK_CLIENTSIDE_MODS =
       new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
-
+  private final String SERVERPACKCREATOR_VERSION;
+  private final String[] SUPPORTED_MODLOADERS = new String[] {"Fabric", "Forge", "Quilt"};
   private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,defaultconfigs,scripts";
   private final List<String> FALLBACK_DIRECTORIES_INCLUDE =
       new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
-
   private final String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING =
       "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries";
   private final List<String> FALLBACK_DIRECTORIES_EXCLUDE =
       new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
-
   private final String FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING =
       "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar";
   private final List<String> FALLBACK_FILES_EXCLUDE_ZIP =
       new ArrayList<>(Arrays.asList(FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING.split(",")));
+  private final String DEFAULT_SHELL_TEMPALTE = "default_template.sh";
+  private final String DEFAULT_POWERSHELL_TEMPLATE = "default_template.ps1";
+
+  private final List<File> FALLBACK_SCRIPT_TEMPLATES =
+      new ArrayList<>(
+          Arrays.asList(
+              new File("server_files/" + DEFAULT_SHELL_TEMPALTE),
+              new File("server_files/" + DEFAULT_POWERSHELL_TEMPLATE)));
 
   // DefaultFiles related
   private final File DEFAULT_CONFIG = new File("serverpackcreator.conf");
@@ -308,6 +309,9 @@ public class ApplicationProperties extends Properties {
 
   /** Whether the exclusion of files from the server pack is enabled. */
   private boolean isZipFileExclusionEnabled;
+
+  /** List of templates used for start-script creation. */
+  private List<File> scriptTemplates;
 
   /**
    * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
@@ -532,6 +536,66 @@ public class ApplicationProperties extends Properties {
     this.isZipFileExclusionEnabled =
         Boolean.parseBoolean(
             getProperty("de.griefed.serverpackcreator.serverpack.zip.exclude.enabled", "true"));
+
+    // Setup our start script template list
+    if (this.getProperty("de.griefed.serverpackcreator.serverpack.script.template") == null) {
+
+      this.scriptTemplates = this.FALLBACK_SCRIPT_TEMPLATES;
+      LOG.debug("Script template property null. Using fallback.");
+
+    } else if (this.getProperty("de.griefed.serverpackcreator.serverpack.script.template")
+        .contains(",")) {
+
+      this.scriptTemplates = new ArrayList<>(10);
+
+      for (String template :
+          this.getProperty("de.griefed.serverpackcreator.serverpack.script.template").split(",")) {
+        scriptTemplates.add(new File("server_files/" + template));
+      }
+
+    } else {
+
+      this.scriptTemplates =
+          Collections.singletonList(
+              (new File(
+                  "server_files/"
+                      + this.getProperty(
+                          "de.griefed.serverpackcreator.configuration.fallbackmodslist"))));
+    }
+    LOG.debug("Script templates set to: " + this.scriptTemplates);
+  }
+
+  /**
+   * Default list of script templates, used in case not a single one was configured.
+   *
+   * <ul>
+   *   <li>default_template.sh
+   *   <li>default_template.ps1
+   * </ul>
+   *
+   * @return {@link List} {@link File} Default script templates.
+   * @author Griefed
+   */
+  public List<File> FALLBACK_SCRIPT_TEMPLATES() {
+    return FALLBACK_SCRIPT_TEMPLATES;
+  }
+
+  public File DEFAULT_SHELL_TEMPLATE() {
+    return new File(DEFAULT_SHELL_TEMPALTE);
+  }
+
+  public File DEFAULT_POWERSHELL_TEMPLATE() {
+    return new File(DEFAULT_POWERSHELL_TEMPLATE);
+  }
+
+  /**
+   * Configured list of script templates.
+   *
+   * @return {@link List} {@link File} Configured script templates.
+   * @author Griefed
+   */
+  public List<File> scriptTemplates() {
+    return scriptTemplates;
   }
 
   /**
@@ -543,36 +607,6 @@ public class ApplicationProperties extends Properties {
    */
   public File SERVERPACKCREATOR_PROPERTIES() {
     return SERVERPACKCREATOR_PROPERTIES;
-  }
-
-  /**
-   * Start script for server packs, used by Windows.
-   *
-   * @return {@link File} start.bat-file.
-   * @author Griefed
-   */
-  public File START_SCRIPT_WINDOWS() {
-    return START_SCRIPT_WINDOWS;
-  }
-
-  /**
-   * Start script for server packs, used by UNIX/Linux.
-   *
-   * @return {@link File} start.sh-file.
-   * @author Griefed
-   */
-  public File START_SCRIPT_LINUX() {
-    return START_SCRIPT_LINUX;
-  }
-
-  /**
-   * JVM args file used by Forge MC 1.17+
-   *
-   * @return {@link File} user_jvm_args.txt-file.
-   * @author Griefed
-   */
-  public File USER_JVM_ARGS() {
-    return USER_JVM_ARGS;
   }
 
   /**

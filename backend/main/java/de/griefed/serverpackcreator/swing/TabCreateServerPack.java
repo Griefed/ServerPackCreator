@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -119,7 +120,7 @@ public class TabCreateServerPack extends JPanel {
 
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final I18n I18N;
-  private final ServerPackHandler CREATESERVERPACK;
+  private final ServerPackHandler SERVERPACKHANDLER;
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
@@ -362,11 +363,11 @@ public class TabCreateServerPack extends JPanel {
     }
 
     if (injectedServerPackHandler == null) {
-      this.CREATESERVERPACK =
+      this.SERVERPACKHANDLER =
           new ServerPackHandler(
               I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS);
     } else {
-      this.CREATESERVERPACK = injectedServerPackHandler;
+      this.SERVERPACKHANDLER = injectedServerPackHandler;
     }
 
     this.FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
@@ -1882,6 +1883,9 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private ConfigurationModel currentConfigAsModel() {
+    // To be used and enhanced in a later milestone
+    HashMap<String, String> scriptSettings = new HashMap<>();
+
     return new ConfigurationModel(
         UTILITIES.ListUtils()
             .cleanList(
@@ -1905,7 +1909,8 @@ public class TabCreateServerPack extends JPanel {
         CHECKBOX_SERVER.isSelected(),
         CHECKBOX_ICON.isSelected(),
         CHECKBOX_PROPERTIES.isSelected(),
-        CHECKBOX_ZIP.isSelected());
+        CHECKBOX_ZIP.isSelected(),
+        scriptSettings);
   }
 
   /**
@@ -1957,7 +1962,7 @@ public class TabCreateServerPack extends JPanel {
 
             try {
 
-              CREATESERVERPACK.run(configurationModel);
+              SERVERPACKHANDLER.run(configurationModel);
 
               loadConfig(new File("serverpackcreator.conf"));
 
@@ -1984,16 +1989,7 @@ public class TabCreateServerPack extends JPanel {
                 try {
                   Desktop.getDesktop()
                       .open(
-                          new File(
-                              String.format(
-                                  "%s/%s",
-                                  APPLICATIONPROPERTIES.getDirectoryServerPacks(),
-                                  configurationModel
-                                          .getModpackDir()
-                                          .substring(
-                                              configurationModel.getModpackDir().lastIndexOf("/")
-                                                  + 1)
-                                      + TEXTFIELD_SERVERPACKSUFFIX.getText())));
+                          new File(SERVERPACKHANDLER.getServerPackDestination(configurationModel)));
                 } catch (IOException ex) {
                   LOG.error("Error opening file explorer for server pack.", ex);
                 }

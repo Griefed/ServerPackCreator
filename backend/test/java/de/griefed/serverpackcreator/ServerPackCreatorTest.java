@@ -31,6 +31,8 @@ public class ServerPackCreatorTest {
     Assertions.assertTrue(new File("./server-packs").isDirectory());
     Assertions.assertTrue(new File("./server_files/server.properties").exists());
     Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
+    Assertions.assertTrue(new File("./server_files/default_template.ps1").exists());
+    Assertions.assertTrue(new File("./server_files/default_template.sh").exists());
     Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
   }
 }

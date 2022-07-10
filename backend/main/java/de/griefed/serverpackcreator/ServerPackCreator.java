@@ -329,8 +329,11 @@ public class ServerPackCreator {
     boolean serverProperties =
         checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
     boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
+    boolean shellTemplate = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+    boolean powershellTemplate =
+        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
 
-    if (config || serverProperties || serverIcon) {
+    if (config || serverProperties || serverIcon || shellTemplate || powershellTemplate) {
 
       LOG.warn("################################################################");
       LOG.warn("#             ONE OR MORE DEFAULT FILE(S) GENERATED.           #");
@@ -467,6 +470,16 @@ public class ServerPackCreator {
 
                 checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
                 LOG.info("Restored default server-icon.png.");
+
+              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE())) {
+
+                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+                LOG.info("Restored default_template.sh.");
+
+              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE())) {
+
+                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+                LOG.info("Restored default_template.ps1.");
               }
             }
           }
@@ -926,6 +939,7 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void printHelp() {
+    // TODO move to file in resources. Read and print text from file
     System.out.println(
         "# How to use ServerPackCreator:\n"
             + "#   java -jar ServerPackCreator.jar\n"
