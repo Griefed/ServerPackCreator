@@ -42,7 +42,7 @@
     "@babel/eslint-parser": "7.18.2",
     "@quasar/app": "3.3.3",
     "@types/node": "18.0.3",
-    "eslint": "8.18.0",
+    "eslint": "8.19.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-vue": "9.2.0",
     "eslint-webpack-plugin": "3.1.1"
