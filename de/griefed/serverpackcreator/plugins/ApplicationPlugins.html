@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -193,28 +193,24 @@ extends org.pf4j.JarPluginManager</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>protected org.pf4j.ExtensionFactory</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html#createExtensionFactory--">createExtensionFactory</a></span>()</code>&nbsp;</td>
-</tr>
-<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/plugins/serverpackhandler/PostGenExtension.html" title="interface in de.griefed.serverpackcreator.plugins.serverpackhandler">PostGenExtension</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html#pluginsPostGenExtension--">pluginsPostGenExtension</a></span>()</code>
 <div class="block">List of available <a href="../../../../de/griefed/serverpackcreator/plugins/serverpackhandler/PostGenExtension.html" title="interface in de.griefed.serverpackcreator.plugins.serverpackhandler"><code>PostGenExtension</code></a>-plugins.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/plugins/serverpackhandler/PreGenExtension.html" title="interface in de.griefed.serverpackcreator.plugins.serverpackhandler">PreGenExtension</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html#pluginsPreGenExtension--">pluginsPreGenExtension</a></span>()</code>
 <div class="block">List of available <a href="../../../../de/griefed/serverpackcreator/plugins/serverpackhandler/PreGenExtension.html" title="interface in de.griefed.serverpackcreator.plugins.serverpackhandler"><code>PreGenExtension</code></a>-plugins.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/plugins/serverpackhandler/PreZipExtension.html" title="interface in de.griefed.serverpackcreator.plugins.serverpackhandler">PreZipExtension</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html#pluginsPreZipExtension--">pluginsPreZipExtension</a></span>()</code>
 <div class="block">List of available <a href="../../../../de/griefed/serverpackcreator/plugins/serverpackhandler/PreZipExtension.html" title="interface in de.griefed.serverpackcreator.plugins.serverpackhandler"><code>PreZipExtension</code></a>-plugins.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../de/griefed/serverpackcreator/plugins/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.plugins.swinggui">TabExtension</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/plugins/ApplicationPlugins.html#pluginsTabExtension--">pluginsTabExtension</a></span>()</code>
 <div class="block">List of available <a href="../../../../de/griefed/serverpackcreator/plugins/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.plugins.swinggui"><code>TabExtension</code></a>-plugins.</div>
@@ -233,14 +229,14 @@ extends org.pf4j.JarPluginManager</pre>
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.pf4j.DefaultPluginManager</h3>
-<code>createExtensionFinder, createPluginFactory, createPluginStatusProvider, createVersionManager, initialize, loadPluginFromPath</code></li>
+<code>createExtensionFactory, createExtensionFinder, createPluginFactory, createPluginStatusProvider, createVersionManager, initialize, loadPluginFromPath</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.pf4j.AbstractPluginManager">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.pf4j.AbstractPluginManager</h3>
-<code>addPluginStateListener, checkPluginId, createPluginsRoot, deletePlugin, disablePlugin, enablePlugin, firePluginStateEvent, getExtensionClasses, getExtensionClasses, getExtensionClasses, getExtensionClasses, getExtensionClassNames, getExtensionFactory, getExtensions, getExtensions, getExtensions, getExtensions, getPlugin, getPluginClassLoader, getPluginClassLoaders, getPluginDescriptorFinder, getPluginFactory, getPluginLabel, getPluginLoader, getPlugins, getPlugins, getPluginsRoot, getPluginsRoots, getResolvedPlugins, getRuntimeMode, getStartedPlugins, getSystemVersion, getUnresolvedPlugins, getVersion, getVersionManager, idForPath, isExactVersionAllowed, isPluginDisabled, isPluginValid, loadPlugin, loadPlugins, removePluginStateListener, resolvePlugins, setExactVersionAllowed, setSystemVersion, startPlugin, startPlugins, stopPlugin, stopPlugin, stopPlugins, unloadPlugin, unloadPlugin, unloadPlugins, validatePluginDescriptor, whichPlugin</code></li>
+<code>addPluginStateListener, checkPluginId, createPluginsRoot, createPluginWrapper, deletePlugin, disablePlugin, enablePlugin, firePluginStateEvent, getExtensionClasses, getExtensionClasses, getExtensionClasses, getExtensionClasses, getExtensionClassNames, getExtensionFactory, getExtensions, getExtensions, getExtensions, getExtensions, getPlugin, getPluginClassLoader, getPluginClassLoaders, getPluginDescriptorFinder, getPluginFactory, getPluginLabel, getPluginLoader, getPlugins, getPlugins, getPluginsRoot, getPluginsRoots, getResolvedPlugins, getRuntimeMode, getStartedPlugins, getSystemVersion, getUnresolvedPlugins, getVersion, getVersionManager, idForPath, isExactVersionAllowed, isPluginDisabled, isPluginValid, loadPlugin, loadPlugins, removePluginStateListener, resolvePlugins, setExactVersionAllowed, setSystemVersion, startPlugin, startPlugins, stopPlugin, stopPlugin, stopPlugins, unloadPlugin, unloadPlugin, unloadPlugins, validatePluginDescriptor, whichPlugin</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -289,19 +285,6 @@ public&nbsp;ApplicationPlugins()</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="createExtensionFactory--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>createExtensionFactory</h4>
-<pre>protected&nbsp;org.pf4j.ExtensionFactory&nbsp;createExtensionFactory()</pre>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code>createExtensionFactory</code>&nbsp;in class&nbsp;<code>org.pf4j.DefaultPluginManager</code></dd>
-</dl>
-</li>
-</ul>
 <a name="pluginsPreGenExtension--">
 <!--   -->
 </a>

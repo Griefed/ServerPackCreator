@@ -130,9 +130,10 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected </code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html#MinecraftClientMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">MinecraftClientMeta</a></span>(java.io.File&nbsp;minecraftManifest,
-                   <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta)</code>
-<div class="block">Constructor.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html#MinecraftClientMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">MinecraftClientMeta</a></span>(java.io.File&nbsp;minecraftManifest,
+                   <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta,
+                   com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
+<div class="block">Create a new Minecraft Client Meta.</div>
 </td>
 </tr>
 </table>
@@ -183,7 +184,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>protected <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClientMeta</a></code></td>
+<td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html#update--">update</a></span>()</code>
 <div class="block">Update the meta information.</div>
 </td>
@@ -210,19 +211,21 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="MinecraftClientMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">
+<a name="MinecraftClientMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>MinecraftClientMeta</h4>
 <pre>protected&nbsp;MinecraftClientMeta(java.io.File&nbsp;minecraftManifest,
-                              <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta)</pre>
-<div class="block">Constructor.</div>
+                              <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta,
+                              com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
+<div class="block">Create a new Minecraft Client Meta.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedForgeMeta</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeMeta</code></a> to acquire Forge instances for this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> version.</dd>
 <dd><code>minecraftManifest</code> - <code>File</code> Minecraft manifest file.</dd>
+<dd><code>objectMapper</code> - <code>ObjectMapper</code> for parsing.</dd>
 </dl>
 </li>
 </ul>
@@ -240,12 +243,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>update</h4>
-<pre>protected&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClientMeta</a>&nbsp;update()
-                              throws java.io.IOException</pre>
+<pre>protected&nbsp;void&nbsp;update()
+               throws java.io.IOException</pre>
 <div class="block">Update the meta information.</div>
 <dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>This instance of <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClientMeta</code></a></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the manifest could not be read.</dd>
 </dl>

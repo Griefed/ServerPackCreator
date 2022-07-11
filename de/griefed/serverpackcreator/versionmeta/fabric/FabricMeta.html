@@ -130,7 +130,7 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#FabricMeta-java.io.File-java.io.File-">FabricMeta</a></span>(java.io.File&nbsp;fabricManifest,
           java.io.File&nbsp;fabricInstallerManifest)</code>
-<div class="block">Constructor</div>
+<div class="block">Create a new Fabric Meta instance.</div>
 </td>
 </tr>
 </table>
@@ -258,7 +258,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i18" class="altColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></code></td>
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#update--">update</a></span>()</code>
 <div class="block">Update the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricLoader</code></a> and <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricInstaller</code></a> information.</div>
 </td>
@@ -293,7 +293,7 @@ extends java.lang.Object</pre>
 <h4>FabricMeta</h4>
 <pre>public&nbsp;FabricMeta(java.io.File&nbsp;fabricManifest,
                   java.io.File&nbsp;fabricInstallerManifest)</pre>
-<div class="block">Constructor</div>
+<div class="block">Create a new Fabric Meta instance.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fabricManifest</code> - <code>File</code> Fabric manifest file..</dd>
@@ -315,12 +315,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>update</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a>&nbsp;update()
-                  throws java.net.MalformedURLException</pre>
+<pre>public&nbsp;void&nbsp;update()
+            throws java.net.MalformedURLException</pre>
 <div class="block">Update the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricLoader</code></a> and <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricInstaller</code></a> information.</div>
 <dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>This instance of <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricMeta</code></a>.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.net.MalformedURLException</code> - if a URL could not be constructed</dd>
 </dl>

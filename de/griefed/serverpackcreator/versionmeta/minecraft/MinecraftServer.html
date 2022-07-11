@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -131,10 +131,11 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected </code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#MinecraftServer-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-">MinecraftServer</a></span>(java.lang.String&nbsp;mcVersion,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#MinecraftServer-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">MinecraftServer</a></span>(java.lang.String&nbsp;mcVersion,
                <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;mcType,
-               java.net.URL&nbsp;mcUrl)</code>
-<div class="block">Constructor</div>
+               java.net.URL&nbsp;mcUrl,
+               com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
+<div class="block">Create a new Minecraft Server.</div>
 </td>
 </tr>
 </table>
@@ -159,18 +160,24 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#setServerJson--">setServerJson</a></span>()</code>
+<div class="block">Read and store the server manifest.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#type--">type</a></span>()</code>
 <div class="block">Get the release-type of this Minecraft-server.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#url--">url</a></span>()</code>
 <div class="block">Get the <code>URL</code> to the download of this Minecraft-servers JAR-file.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#version--">version</a></span>()</code>
 <div class="block">Get the Minecraft-version of this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>.</div>
@@ -198,7 +205,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="MinecraftServer-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-">
+<a name="MinecraftServer-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -206,14 +213,16 @@ extends java.lang.Object</pre>
 <h4>MinecraftServer</h4>
 <pre>protected&nbsp;MinecraftServer(java.lang.String&nbsp;mcVersion,
                           <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;mcType,
-                          java.net.URL&nbsp;mcUrl)</pre>
-<div class="block">Constructor</div>
+                          java.net.URL&nbsp;mcUrl,
+                          com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
+<div class="block">Create a new Minecraft Server.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>mcVersion</code> - <code>String</code> The Minecraft version of this server.</dd>
 <dd><code>mcType</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta"><code>Type</code></a> The release-type of this server. Either <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> or
      <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>.</dd>
 <dd><code>mcUrl</code> - <code>URL</code> The URL to the download of this servers JAR-file.</dd>
+<dd><code>objectMapper</code> - <code>ObjectMapper</code> for parsing.</dd>
 </dl>
 </li>
 </ul>
@@ -225,6 +234,16 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="setServerJson--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setServerJson</h4>
+<pre>protected&nbsp;void&nbsp;setServerJson()</pre>
+<div class="block">Read and store the server manifest.</div>
+</li>
+</ul>
 <a name="version--">
 <!--   -->
 </a>

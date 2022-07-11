@@ -130,10 +130,11 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected </code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html#MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">MinecraftClient</a></span>(java.lang.String&nbsp;version,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html#MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">MinecraftClient</a></span>(java.lang.String&nbsp;version,
                <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;type,
                java.net.URL&nbsp;url,
-               <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta)</code>
+               <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta,
+               com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
 <div class="block">Constructor using version, type and url.</div>
 </td>
 </tr>
@@ -214,7 +215,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">
+<a name="MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -223,7 +224,8 @@ extends java.lang.Object</pre>
 <pre>protected&nbsp;MinecraftClient(java.lang.String&nbsp;version,
                           <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;type,
                           java.net.URL&nbsp;url,
-                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta)</pre>
+                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta,
+                          com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
 <div class="block">Constructor using version, type and url.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -232,6 +234,7 @@ extends java.lang.Object</pre>
 <dd><code>url</code> - <code>URL</code> Url to this versions manifest.</dd>
 <dd><code>forgeMeta</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeMeta</code></a> to acquire Forge instances for this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>
      version.</dd>
+<dd><code>objectMapper</code> - <code>ObjectMapper</code> for parsing.</dd>
 </dl>
 </li>
 </ul>
