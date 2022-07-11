@@ -176,7 +176,7 @@ public class ServerPackCreator {
         stageOne();
         stageFour();
         checkDatabase();
-        runWebservice();
+        web(ARGS);
         break;
 
       case CGEN:
@@ -742,49 +742,6 @@ public class ServerPackCreator {
             versionMeta,
             configUtilities)
         .createConfigurationFile();
-  }
-
-  /**
-   * Run ServerPackCreator as a webservice.
-   *
-   * @author Griefed
-   */
-  private void runWebservice() {
-
-    if (systemInformation.get("osName").contains("windows")
-        || systemInformation.get("osName").contains("Windows")) {
-
-      Scanner reader = new Scanner(System.in);
-
-      LOG.warn(
-          "ServerPackCreator webservice-mode does not support Windows. Are you sure you want to proceed? Prepare for unforeseen consequences.");
-      System.out.print("Answer Yes to proceed, No to quit: ");
-
-      //noinspection UnusedAssignment
-      String answer = "foobar";
-
-      do {
-        answer = reader.nextLine();
-
-        if (answer.equals("No")) {
-
-          LOG.info("Answered no. Existing...");
-          reader.close();
-          System.exit(0);
-
-        } else if (answer.equals("Yes")) {
-
-          LOG.warn("No regrets, Mr. Freeman...");
-          reader.close();
-          web(ARGS);
-        }
-
-      } while (!answer.matches("^(Yes|No)$"));
-
-    } else {
-
-      web(ARGS);
-    }
   }
 
   /**

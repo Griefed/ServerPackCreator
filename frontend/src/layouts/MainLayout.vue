@@ -1,5 +1,4 @@
 <template>
-  <!--  <div id="tsparticles"/>-->
   <q-layout view="hHh Lpr lff">
     <q-header class="header" elevated reveal>
       <q-toolbar
@@ -292,7 +291,7 @@ export default defineComponent({
             "mode": ["bubble", "grab"]
           },
           "onclick": {
-            "enable": true,
+            "enable": false,
             "mode": "push"
           },
           "resize": true

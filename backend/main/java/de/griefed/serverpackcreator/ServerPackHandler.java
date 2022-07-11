@@ -567,7 +567,7 @@ public class ServerPackHandler {
         String clientDir = String.format("%s/%s", modpackDir, directory).replace("\\", "/");
         String serverDir = String.format("%s/%s", destination, directory).replace("\\", "/");
 
-        LOG.info("Gathering %s file(s).");
+        LOG.info("Gathering " + directory + " file(s) and folder(s).");
 
         if (directory.contains(";")) {
 
@@ -1280,8 +1280,8 @@ public class ServerPackHandler {
 
     try (ZipFile zip = new ZipFile(String.format("%s_server_pack.zip", destination))) {
 
-      zip.setComment(comment);
       zip.addFolder(new File(destination), zipParameters);
+      zip.setComment(comment);
 
     } catch (IOException ex) {
 
@@ -1291,11 +1291,11 @@ public class ServerPackHandler {
     if (includeServerInstallation) {
 
       LOG.warn(
-          "!!!       NOTE: The minecraft_server.jar will not be included in the zip-archive.       !!!");
+          "!!!-------NOTE: The minecraft_server.jar will not be included in the zip-archive.-------!!!");
       LOG.warn(
-          "!!! Mojang strictly prohibits the distribution of their software through third parties. !!!");
+          "!!!-Mojang strictly prohibits the distribution of their software through third parties.-!!!");
       LOG.warn(
-          "!!!   Tell your users to execute the download scripts to get the Minecraft server jar.  !!!");
+          "!!!---Tell your users to execute the download scripts to get the Minecraft server jar.--!!!");
     }
 
     LOG.info("Finished creation of zip archive.");
