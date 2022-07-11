@@ -93,7 +93,6 @@ public class ServerPackCreator {
   private ServerPackHandler serverPackHandler = null;
   private ServerPackCreatorSplash serverPackCreatorSplash = null;
   private UpdateChecker updateChecker = null;
-  private HashMap<String, String> systemInformation;
 
   /**
    * Initialize ServerPackCreator and determine the {@link CommandlineParser.Mode} to run in.
@@ -228,10 +227,9 @@ public class ServerPackCreator {
 
     this.utilities = new Utilities(I18N, APPLICATIONPROPERTIES);
 
-    this.systemInformation =
-        utilities.JarUtils()
-            .systemInformation(
-                utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
+    HashMap<String, String> systemInformation = utilities.JarUtils()
+        .systemInformation(
+            utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
 
     LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
     LOG.debug("System information jarName: " + systemInformation.get("jarName"));
@@ -315,8 +313,8 @@ public class ServerPackCreator {
                       + "/disabled.txt"))) {
 
         writer.write("########################################\n");
-        writer.write("# - Load all plugins except these.   - #\n");
-        writer.write("# - Add one plugin-id per line.      - #\n");
+        writer.write("#...Load all plugins except these......#\n");
+        writer.write("#...Add one plugin-id per line.........#\n");
         writer.write("########################################\n");
         writer.write("#example-plugin\n");
 
@@ -335,11 +333,11 @@ public class ServerPackCreator {
 
     if (config || serverProperties || serverIcon || shellTemplate || powershellTemplate) {
 
-      LOG.warn("################################################################");
-      LOG.warn("#             ONE OR MORE DEFAULT FILE(S) GENERATED.           #");
-      LOG.warn("# CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED. #");
-      LOG.warn("#               CUSTOMIZE THEM BEFORE CONTINUING!              #");
-      LOG.warn("################################################################");
+      LOG.warn("#################################################################");
+      LOG.warn("#.............ONE OR MORE DEFAULT FILE(S) GENERATED.............#");
+      LOG.warn("#..CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED..#");
+      LOG.warn("#...............CUSTOMIZE THEM BEFORE CONTINUING!...............#");
+      LOG.warn("#################################################################");
 
     } else {
       LOG.info("Setup completed.");
@@ -360,10 +358,11 @@ public class ServerPackCreator {
 
       LOG.debug("Warning user about possible data loss.");
       LOG.warn("################################################################");
-      LOG.warn("#                      WORK IN PROGRESS!                       #");
-      LOG.warn("#  USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!  #");
-      LOG.warn("#        I WILL NOT BE HELD RESPONSIBLE FOR DATA LOSS!         #");
-      LOG.warn("#                    YOU HAVE BEEN WARNED!                     #");
+      LOG.warn("#.............ALPHA | BETA | DEV VERSION DETECTED..............#");
+      LOG.warn("#.............THESE VERSIONS ARE WORK IN PROGRESS!.............#");
+      LOG.warn("#..USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!..#");
+      LOG.warn("#........I WILL NOT BE HELD RESPONSIBLE FOR DATA LOSS!.........#");
+      LOG.warn("#....................YOU HAVE BEEN WARNED!.....................#");
       LOG.warn("################################################################");
     }
 
