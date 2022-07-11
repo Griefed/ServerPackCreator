@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
@@ -101,8 +101,8 @@ public class ServerPackCreatorGui {
    *
    * <p>Used for Dependency Injection.
    *
-   * <p>Receives an instance of {@link LocalizationManager} or creates one if the received one is
-   * null. Required for use of localization.
+   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
+   * for use of localization.
    *
    * <p>Receives an instance of {@link ConfigurationHandler} required to successfully and correctly
    * create the server pack.
@@ -110,8 +110,7 @@ public class ServerPackCreatorGui {
    * <p>Receives an instance of {@link ServerPackHandler} which is required to generate a server
    * pack.
    *
-   * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for
-   *     localized log messages.
+   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
    * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to
    *     successfully and correctly create the server pack.
    * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the
@@ -129,7 +128,7 @@ public class ServerPackCreatorGui {
    * @author Griefed
    */
   public ServerPackCreatorGui(
-      LocalizationManager injectedLocalizationManager,
+      I18n injectedI18n,
       ConfigurationHandler injectedConfigurationHandler,
       ServerPackHandler injectedServerPackHandler,
       ApplicationProperties injectedApplicationProperties,
@@ -149,11 +148,11 @@ public class ServerPackCreatorGui {
     } else {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
-    LocalizationManager LOCALIZATIONMANAGER;
-    if (injectedLocalizationManager == null) {
-      LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    I18n I18N;
+    if (injectedI18n == null) {
+      I18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      LOCALIZATIONMANAGER = injectedLocalizationManager;
+      I18N = injectedI18n;
     }
 
     VersionMeta VERSIONMETA;
@@ -172,15 +171,14 @@ public class ServerPackCreatorGui {
 
     Utilities UTILITIES;
     if (injectedUtilities == null) {
-      UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
     } else {
       UTILITIES = injectedUtilities;
     }
 
     ConfigUtilities CONFIGUTILITIES;
     if (injectedConfigUtilities == null) {
-      CONFIGUTILITIES =
-          new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+      CONFIGUTILITIES = new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
     } else {
       CONFIGUTILITIES = injectedConfigUtilities;
     }
@@ -189,7 +187,7 @@ public class ServerPackCreatorGui {
     if (injectedConfigurationHandler == null) {
       CONFIGURATIONHANDLER =
           new ConfigurationHandler(
-              LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+              I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
     } else {
       CONFIGURATIONHANDLER = injectedConfigurationHandler;
     }
@@ -205,11 +203,7 @@ public class ServerPackCreatorGui {
     if (injectedServerPackHandler == null) {
       CREATESERVERPACK =
           new ServerPackHandler(
-              LOCALIZATIONMANAGER,
-              APPLICATIONPROPERTIES,
-              VERSIONMETA,
-              UTILITIES,
-              APPLICATIONPLUGINS);
+              I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS);
     } else {
       CREATESERVERPACK = injectedServerPackHandler;
     }
@@ -234,13 +228,13 @@ public class ServerPackCreatorGui {
 
     this.FRAME_SERVERPACKCREATOR =
         new JFrame(
-            LOCALIZATIONMANAGER.getLocalizedString("createserverpack.gui.createandshowgui")
+            I18N.getMessage("createserverpack.gui.createandshowgui")
                 + " - "
                 + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
 
     this.TAB_CREATESERVERPACK =
         new TabCreateServerPack(
-            LOCALIZATIONMANAGER,
+            I18N,
             CONFIGURATIONHANDLER,
             CREATESERVERPACK,
             VERSIONMETA,
@@ -254,39 +248,30 @@ public class ServerPackCreatorGui {
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(
-            LOCALIZATIONMANAGER,
-            APPLICATIONPROPERTIES,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
+            I18N.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
 
     TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER =
         new TabAddonsHandlerLog(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
+            I18N.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
 
     this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
     this.TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
 
     TABBEDPANE.addTab(
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.createserverpack.title"),
+        I18N.getMessage("createserverpack.gui.tabbedpane.createserverpack.title"),
         null,
         TAB_CREATESERVERPACK,
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.createserverpack.tip"));
+        I18N.getMessage("createserverpack.gui.tabbedpane.createserverpack.tip"));
 
     TABBEDPANE.addTab(
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
+        I18N.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
         null,
         TAB_LOG_SERVERPACKCREATOR,
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
+        I18N.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
 
     TABBEDPANE.addTab(
-        LOCALIZATIONMANAGER.getLocalizedString(
-            "createserverpack.gui.tabbedpane.addonshandlerlog.title"),
+        I18N.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.title"),
         null,
         TAB_LOG_ADDONSHANDLER);
 
@@ -312,7 +297,7 @@ public class ServerPackCreatorGui {
 
     MENUBAR =
         new MainMenuBar(
-            LOCALIZATIONMANAGER,
+            I18N,
             LIGHTTHEME,
             DARKTHEME,
             FRAME_SERVERPACKCREATOR,

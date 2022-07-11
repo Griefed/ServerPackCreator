@@ -55,8 +55,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/v1/zip")
 public class ZipController {
 
-  private static final Logger LOG = LogManager.getLogger(ZipController.class);
-
   private final ZipService ZIPSERVICE;
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final NotificationResponse NOTIFICATIONRESPONSE;
@@ -160,9 +158,7 @@ public class ZipController {
       @PathVariable("modLoaderVersion") String modLoaderVersion) {
 
     if (clientMods.length() == 0) {
-      clientMods =
-          UTILITIES.StringUtils()
-              .buildString(APPLICATIONPROPERTIES.getListFallbackMods());
+      clientMods = UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods());
     }
 
     return ResponseEntity.ok()

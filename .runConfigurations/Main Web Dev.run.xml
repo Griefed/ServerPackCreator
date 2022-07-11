@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run as dev-webservice" type="Application" factoryName="Application">
-    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+    <option name="ALTERNATIVE_JRE_PATH" value="BUNDLED" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <envs>
       <env name="spring.profiles.active" value="dev" />

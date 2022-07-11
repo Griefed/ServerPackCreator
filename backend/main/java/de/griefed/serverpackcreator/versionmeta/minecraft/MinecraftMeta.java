@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
@@ -35,22 +36,22 @@ import java.util.Optional;
  */
 public class MinecraftMeta {
 
-  private final File MINECRAFT_MANIFEST;
   private final MinecraftClientMeta MINECRAFT_CLIENT_META;
   private final MinecraftServerMeta MINECRAFT_SERVER_META;
 
   /**
-   * Constructor.
+   * Create a new Minecraft Meta instance.
    *
    * @param minecraftManifest {@link File} Minecraft manifest file.
    * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link
    *     MinecraftClient} version.
+   * @param objectMapper {@link ObjectMapper} for parsing.
    * @author Griefed
    */
-  public MinecraftMeta(File minecraftManifest, ForgeMeta injectedForgeMeta) {
-    this.MINECRAFT_MANIFEST = minecraftManifest;
+  public MinecraftMeta(
+      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper) {
     this.MINECRAFT_CLIENT_META =
-        new MinecraftClientMeta(this.MINECRAFT_MANIFEST, injectedForgeMeta);
+        new MinecraftClientMeta(minecraftManifest, injectedForgeMeta, objectMapper);
     this.MINECRAFT_SERVER_META = new MinecraftServerMeta(this.MINECRAFT_CLIENT_META);
   }
 
@@ -58,14 +59,12 @@ public class MinecraftMeta {
    * Update the {@link MinecraftClientMeta} and {@link MinecraftServerMeta}. Usually called after
    * the manifest-files have been refreshed.
    *
-   * @return This instance of {@link MinecraftMeta}.
    * @throws IOException if the {@link MinecraftClientMeta} could not be initialized.
    * @author Griefed
    */
-  public MinecraftMeta update() throws IOException {
+  public void update() throws IOException {
     this.MINECRAFT_CLIENT_META.update();
     this.MINECRAFT_SERVER_META.update();
-    return this;
   }
 
   /*

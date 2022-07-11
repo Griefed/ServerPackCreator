@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.utilities.JComponentTailer;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.io.File;
@@ -40,8 +40,8 @@ public class TabAddonsHandlerLog extends JComponentTailer {
    *
    * <p>Used for Dependency Injection.
    *
-   * <p>Receives an instance of {@link LocalizationManager} or creates one if the received one is
-   * null. Required for use of localization.
+   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
+   * for use of localization.
    *
    * @param tooltip {@link String} The tooltip text for this tailer.
    * @author Griefed

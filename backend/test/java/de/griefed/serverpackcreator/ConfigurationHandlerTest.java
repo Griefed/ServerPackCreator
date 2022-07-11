@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -28,7 +28,7 @@ class ConfigurationHandlerTest {
     }
 
     ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    I18n I18N = new I18n(APPLICATIONPROPERTIES);
     ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
     SERVER_PACK_CREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
     this.VERSIONMETA =
@@ -39,12 +39,12 @@ class ConfigurationHandlerTest {
             APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+    Utilities UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
     ConfigUtilities CONFIGUTILITIES =
-        new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+        new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
     this.CONFIGURATIONHANDLER =
         new ConfigurationHandler(
-            LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+            I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
   }
 
   @Test

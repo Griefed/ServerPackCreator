@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.typesafe.config.ConfigException;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
 import de.griefed.serverpackcreator.utilities.common.InvalidFileTypeException;
@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import org.apache.commons.io.FileUtils;
@@ -56,7 +57,7 @@ public class ConfigurationHandler {
 
   private static final Logger LOG = LogManager.getLogger(ConfigurationHandler.class);
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final VersionMeta VERSIONMETA;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
@@ -67,11 +68,10 @@ public class ConfigurationHandler {
    *
    * <p>Used for Dependency Injection.
    *
-   * <p>Receives an instance of {@link LocalizationManager} or creates one if the received one is
-   * null. Required for use of localization.
+   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
+   * for use of localization.
    *
-   * @param injectedLocalizationManager Instance of {@link LocalizationManager} required for
-   *     localized log messages.
+   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
    * @param injectedApplicationProperties Instance of {@link Properties} required for various
    *     different things.
    * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything
@@ -83,7 +83,7 @@ public class ConfigurationHandler {
    */
   @Autowired
   public ConfigurationHandler(
-      LocalizationManager injectedLocalizationManager,
+      I18n injectedI18n,
       VersionMeta injectedVersionMeta,
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
@@ -96,10 +96,10 @@ public class ConfigurationHandler {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    if (injectedI18n == null) {
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+      this.I18N = injectedI18n;
     }
 
     if (injectedVersionMeta == null) {
@@ -116,14 +116,14 @@ public class ConfigurationHandler {
     }
 
     if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
     } else {
       this.UTILITIES = injectedUtilities;
     }
 
     if (injectedConfigUtilities == null) {
       this.CONFIGUTILITIES =
-          new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+          new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
     } else {
       this.CONFIGUTILITIES = injectedConfigUtilities;
     }
@@ -253,9 +253,12 @@ public class ConfigurationHandler {
     try {
       config = FileConfig.of(configFile);
     } catch (ConfigException ex) {
-      /* This log is meant to be read by the user, therefore we allow translation. */
+
       LOG.error(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
+          "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
+
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
     }
 
     if (config != null) {
@@ -263,11 +266,12 @@ public class ConfigurationHandler {
       try {
         config.load();
       } catch (ConfigException ex) {
-        /* This log is meant to be read by the user, therefore we allow translation. */
+
         LOG.error(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
-        encounteredErrors.add(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
+            "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
       }
 
       configurationModel.setClientMods(
@@ -305,8 +309,11 @@ public class ConfigurationHandler {
 
     } else {
 
-      encounteredErrors.add(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.start"));
+      LOG.error(
+          "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
+
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
     }
 
     return checkConfiguration(configurationModel, encounteredErrors, quietCheck);
@@ -342,13 +349,11 @@ public class ConfigurationHandler {
 
     sanitizeLinks(configurationModel);
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.start"));
+    LOG.info("Checking configuration...");
 
     if (configurationModel.getClientMods().isEmpty()) {
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkconfig.clientmods"));
+
+      LOG.warn("No clientside-only mods specified. Using fallback list.");
       configurationModel.setClientMods(APPLICATIONPROPERTIES.getListFallbackMods());
     } else {
       configurationModel.setClientMods(configurationModel.getClientMods());
@@ -362,9 +367,13 @@ public class ConfigurationHandler {
       //noinspection UnusedAssignment
       configHasError = true;
 
+      LOG.error(
+          "The specified server-icon does not exist: " + configurationModel.getServerIconPath());
+
+      /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(
           String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.servericon"),
+              I18N.getMessage("configuration.log.error.servericon"),
               configurationModel.getServerIconPath()));
 
     } else if (configurationModel.getServerIconPath().length() > 0
@@ -374,10 +383,12 @@ public class ConfigurationHandler {
       //noinspection UnusedAssignment
       configHasError = true;
 
+      LOG.error("No read-permission for " + configurationModel.getServerIconPath());
+
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(
           String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"),
+              I18N.getMessage("configuration.log.error.checkcopydirs.read"),
               configurationModel.getServerIconPath()));
     }
 
@@ -386,9 +397,14 @@ public class ConfigurationHandler {
       //noinspection UnusedAssignment
       configHasError = true;
 
+      LOG.error(
+          "The specified server.properties does not exist: "
+              + configurationModel.getServerPropertiesPath());
+
+      /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(
           String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.serverproperties"),
+              I18N.getMessage("configuration.log.error.serverproperties"),
               configurationModel.getServerPropertiesPath()));
 
     } else if (configurationModel.getServerPropertiesPath().length() > 0
@@ -399,10 +415,12 @@ public class ConfigurationHandler {
       //noinspection UnusedAssignment
       configHasError = true;
 
+      LOG.error("No read-permission for " + configurationModel.getServerPropertiesPath());
+
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(
           String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.read"),
+              I18N.getMessage("configuration.log.error.checkcopydirs.read"),
               configurationModel.getServerPropertiesPath()));
     }
 
@@ -433,66 +451,53 @@ public class ConfigurationHandler {
 
     } else {
       configHasError = true;
-      LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
-      encounteredErrors.add(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
+      LOG.error("Modpack directory not specified. Please specify an existing directory.");
+
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodpackdir"));
     }
 
     if (checkModloader(configurationModel.getModLoader())) {
 
       if (VERSIONMETA.minecraft().checkMinecraftVersion(configurationModel.getMinecraftVersion())) {
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.debug(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.debug.isdir.minecraftversion"));
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.debug(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.modloader"));
+        LOG.debug("minecraftVersion setting check passed.");
+        LOG.debug("modLoader setting check passed.");
 
         if (checkModloaderVersion(
             configurationModel.getModLoader(),
             configurationModel.getModLoaderVersion(),
             configurationModel.getMinecraftVersion())) {
 
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.debug(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.debug.isdir.modloaderversion"));
+          LOG.debug("modLoaderVersion setting check passed.");
 
         } else {
 
           configHasError = true;
 
+          LOG.error("There's something wrong with your Modloader version setting.");
+
           /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.error(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.error.isdir.modloaderversion"));
-          encounteredErrors.add(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.error.checkmodloaderversion"));
+          encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloaderversion"));
         }
 
       } else {
 
         configHasError = true;
+        LOG.error("There's something wrong with your Minecraft version setting.");
+
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.error(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.error.isdir.minecraftversion"));
-        encounteredErrors.add(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.minecraft"));
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.minecraft"));
       }
 
     } else {
 
       configHasError = true;
 
+      LOG.error("There's something wrong with your Modloader or Modloader version setting.");
+
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.modloader"));
-      encounteredErrors.add(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloader"));
     }
 
     if (quietCheck) {
@@ -501,18 +506,15 @@ public class ConfigurationHandler {
 
     if (!configHasError) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkconfig.success"));
+      LOG.info("Config check successful. No errors encountered.");
 
     } else {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkconfig.failure"));
-
+      LOG.error("Config check not successful. Check your config for errors.");
       printEncounteredErrors(encounteredErrors);
     }
+
+    ensureScriptSettingsDefaults(configurationModel);
 
     return configHasError;
   }
@@ -535,16 +537,16 @@ public class ConfigurationHandler {
     if (checkCopyDirs(
         configurationModel.getCopyDirs(), configurationModel.getModpackDir(), encounteredErrors)) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.isdir.copydirs"));
+      LOG.debug("copyDirs setting check passed.");
 
     } else {
 
       configHasError = true;
+      LOG.error(
+          "There's something wrong with your setting of directories to include in your server pack.");
+
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
-      encounteredErrors.add(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.isdir.copydir"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.isdir.copydir"));
     }
 
     return configHasError;
@@ -650,8 +652,9 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing CurseForge manifest.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.manifest"));
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.manifest"));
 
         configHasError = true;
       }
@@ -670,6 +673,7 @@ public class ConfigurationHandler {
           packName =
               String.format(
                   "./work/modpacks/%s", configurationModel.getCurseModpack().get("name").asText());
+
         } catch (NullPointerException npe) {
 
           //noinspection ConstantConditions
@@ -679,8 +683,9 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing minecraftinstance.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.instance"));
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.instance"));
 
         configHasError = true;
       }
@@ -710,8 +715,9 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing config.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.config"));
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.config"));
 
         configHasError = true;
       }
@@ -726,8 +732,9 @@ public class ConfigurationHandler {
       } catch (IOException ex) {
 
         LOG.error("Error parsing mmc-pack.json from ZIP-file.", ex);
-        encounteredErrors.add(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.mmcpack"));
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.mmcpack"));
 
         configHasError = true;
       }
@@ -864,12 +871,14 @@ public class ConfigurationHandler {
       if (foldersInModpackZip.size() == 1) {
 
         LOG.error(
-            String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
-                foldersInModpackZip.get(0)));
+            "The ZIP-file you specified only contains one directory: "
+                + foldersInModpackZip.get(0)
+                + ". ZIP-files for ServerPackCreator must be full modpacks, with all their contents being in the root of the ZIP-file.");
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
         encounteredErrors.add(
             String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.overrides"),
+                I18N.getMessage("configuration.log.error.zip.overrides"),
                 foldersInModpackZip.get(0)));
 
         return true;
@@ -878,9 +887,10 @@ public class ConfigurationHandler {
       } else if (!foldersInModpackZip.contains("mods") || !foldersInModpackZip.contains("config")) {
 
         LOG.error(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
-        encounteredErrors.add(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.modsorconfig"));
+            "The ZIP-file you specified does not contain the mods or config directories. What use is a modded server without mods and their configurations?");
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.modsorconfig"));
 
         return true;
       }
@@ -888,13 +898,86 @@ public class ConfigurationHandler {
     } catch (IOException ex) {
 
       LOG.error("Couldn't acquire directories in ZIP-file.", ex);
-      encounteredErrors.add(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.zip.directories"));
+
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.directories"));
 
       return true;
     }
 
     return false;
+  }
+
+  /**
+   * Update the script settings and ensure the default keys, with values gathered from the passed
+   * {@link ConfigurationModel}, are present:
+   *
+   * <ol>
+   *   <li><code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>
+   *       ServerPackCreator version with which the scripts were created</code>
+   *   <li><code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
+   *   <li><code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
+   *       </code>
+   *   <li><code>SPC_MODLOADER_SPC</code> : <code>The modloader of the modpack</code>
+   *   <li><code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
+   *       </code>
+   *   <li><code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
+   *   <li><code>SPC_JAVA_SPC</code> : <code>
+   *       Path to the java installation to be used to run the server</code>
+   *   <li><code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>
+   *       Most recent version of the Fabric installer at the time of creating the scripts</code>
+   *   <li><code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>
+   *       Most recent version of the Quilt installer at the time of creating the scripts</code>
+   * </ol>
+   *
+   * @param configurationModel {@link ConfigurationModel} in which to ensure the default key-value
+   *     pairs are present.
+   * @author Griefed
+   */
+  private void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
+
+    HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
+
+    if (!VERSIONMETA.minecraft().getServer(configurationModel.getMinecraftVersion()).isPresent()
+        || !VERSIONMETA
+            .minecraft()
+            .getServer(configurationModel.getMinecraftVersion())
+            .get()
+            .url()
+            .isPresent()) {
+
+      scriptSettings.put(
+          "SPC_MINECRAFT_SERVER_URL_SPC","");
+
+    } else {
+      scriptSettings.put(
+          "SPC_MINECRAFT_SERVER_URL_SPC",
+          VERSIONMETA
+              .minecraft()
+              .getServer(configurationModel.getMinecraftVersion())
+              .get()
+              .url()
+              .get()
+              .toString());
+    }
+
+    scriptSettings.put(
+        "SPC_SERVERPACKCREATOR_VERSION_SPC", APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+    scriptSettings.put("SPC_MINECRAFT_VERSION_SPC", configurationModel.getMinecraftVersion());
+
+    scriptSettings.put("SPC_MODLOADER_SPC", configurationModel.getModLoader());
+    scriptSettings.put("SPC_MODLOADER_VERSION_SPC", configurationModel.getModLoaderVersion());
+    scriptSettings.put("SPC_JAVA_ARGS_SPC", configurationModel.getJavaArgs());
+
+    // To be enhanced in a later milestone
+    scriptSettings.put("SPC_JAVA_SPC", "java");
+
+    scriptSettings.put(
+        "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstallerVersion());
+    scriptSettings.put(
+        "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstallerVersion());
+
+    configurationModel.setScriptSettings(scriptSettings);
   }
 
   /**
@@ -1085,9 +1168,7 @@ public class ConfigurationHandler {
   private void printEncounteredErrors(List<String> encounteredErrors) {
 
     LOG.error(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.encountered"),
-            encounteredErrors.size()));
+        "Encountered " + encounteredErrors.size() + " errors during the configuration check.");
 
     //noinspection UnusedAssignment
     int encounteredErrorNumber = 0;
@@ -1096,12 +1177,7 @@ public class ConfigurationHandler {
 
       encounteredErrorNumber = i + 1;
 
-      LOG.error(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.error.encountered.specific"),
-              encounteredErrorNumber,
-              encounteredErrors.get(i)));
+      LOG.error("Error " + encounteredErrorNumber + ": " + encounteredErrors.get(i));
     }
   }
 
@@ -1133,23 +1209,18 @@ public class ConfigurationHandler {
 
     if (modpackDir.isEmpty()) {
 
+      LOG.error("Modpack directory not specified. Please specify an existing directory.");
+
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
-      encounteredErrors.add(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodpackdir"));
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodpackdir"));
 
     } else if (!(new File(modpackDir).isDirectory())) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.warn(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.checkmodpackdir"),
-              modpackDir));
+      LOG.warn("Couldn't find directory " + modpackDir + ".");
 
+      /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.modpackdirectory"),
-              modpackDir));
+          String.format(I18N.getMessage("configuration.log.error.modpackdirectory"), modpackDir));
 
     } else {
 
@@ -1205,37 +1276,29 @@ public class ConfigurationHandler {
 
       configCorrect = false;
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.error(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
+          "No directories or files specified for copying. This would result in an empty serverpack.");
 
-      encounteredErrors.add(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkcopydirs.empty"));
+      /* This log is meant to be read by the user, therefore we allow translation. */
+      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkcopydirs.empty"));
 
     } else if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
       LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode0"));
+          "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
       LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode1"));
+          "Lazy mode specified. This will copy the WHOLE modpack to the server pack. No exceptions.");
+      LOG.warn("You will not receive support from me for a server pack generated this way.");
       LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode2"));
+          "Do not open an issue on GitHub if this configuration errors or results in a broken server pack.");
       LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode3"));
-      LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString(
-              "configuration.log.warn.checkconfig.copydirs.lazymode0"));
+          "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
 
     } else {
 
       if (directoriesToCopy.size() > 1 && directoriesToCopy.contains("lazy_mode"))
         LOG.warn(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.warn.checkconfig.copydirs.lazymode.ignore"));
+            "You specified lazy mode in your configuration, but your copyDirs configuration contains other entries. To use the lazy mode, only specify \"lazy_mode\" and nothing else. Ignoring lazy mode.");
 
       directoriesToCopy.removeIf(entry -> entry.equals("lazy_mode"));
 
@@ -1259,17 +1322,15 @@ public class ConfigurationHandler {
 
             configCorrect = false;
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(
-                String.format(
-                    LOCALIZATIONMANAGER.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.filenotfound"),
-                    sourceFileToCheck));
+                "Copy-file "
+                    + sourceFileToCheck
+                    + " does not exist. Please specify existing files.");
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             encounteredErrors.add(
                 String.format(
-                    LOCALIZATIONMANAGER.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.filenotfound"),
+                    I18N.getMessage("configuration.log.error.checkcopydirs.filenotfound"),
                     sourceFileToCheck));
 
           } else {
@@ -1284,11 +1345,15 @@ public class ConfigurationHandler {
 
               configCorrect = false;
 
+              LOG.error(
+                  "No read-permission for "
+                      + String.format(
+                          "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      LOCALIZATIONMANAGER.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"),
                       String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
 
             } else if (new File(
@@ -1301,11 +1366,15 @@ public class ConfigurationHandler {
 
               configCorrect = false;
 
+              LOG.error(
+                  "No read-permission for "
+                      + String.format(
+                          "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      LOCALIZATIONMANAGER.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"),
                       String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
 
             } else if (new File(sourceFileDestinationFileCombination[0]).exists()
@@ -1314,11 +1383,12 @@ public class ConfigurationHandler {
 
               configCorrect = false;
 
+              LOG.error("No read-permission for " + sourceFileDestinationFileCombination[0]);
+
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      LOCALIZATIONMANAGER.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"),
                       sourceFileDestinationFileCombination[0]));
             }
 
@@ -1335,12 +1405,12 @@ public class ConfigurationHandler {
                 if (!UTILITIES.FileUtils().checkReadPermission(file)) {
                   configCorrect = false;
 
+                  LOG.error("No read-permission for " + file);
+
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          LOCALIZATIONMANAGER.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
 
@@ -1351,12 +1421,12 @@ public class ConfigurationHandler {
                 if (!UTILITIES.FileUtils().checkReadPermission(file)) {
                   configCorrect = false;
 
+                  LOG.error("No read-permission for " + file);
+
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          LOCALIZATIONMANAGER.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
             }
@@ -1393,18 +1463,15 @@ public class ConfigurationHandler {
 
             configCorrect = false;
 
-            /* This log is meant to be read by the user, therefore we allow translation. */
             LOG.error(
-                String.format(
-                    LOCALIZATIONMANAGER.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.notfound"),
-                    directory));
+                "Copy-file or copy-directory "
+                    + directory
+                    + " does not exist. Please specify existing directories or files.");
 
+            /* This log is meant to be read by the user, therefore we allow translation. */
             encounteredErrors.add(
                 String.format(
-                    LOCALIZATIONMANAGER.getLocalizedString(
-                        "configuration.log.error.checkcopydirs.notfound"),
-                    directory));
+                    I18N.getMessage("configuration.log.error.checkcopydirs.notfound"), directory));
 
           } else {
 
@@ -1412,24 +1479,24 @@ public class ConfigurationHandler {
 
               configCorrect = false;
 
+              LOG.error("No read-permission for " + dirToCheck);
+
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      LOCALIZATIONMANAGER.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
-                      dirToCheck));
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"), dirToCheck));
 
             } else if (new File(directory).exists()
                 && !UTILITIES.FileUtils().checkReadPermission(directory)) {
 
               configCorrect = false;
 
+              LOG.error("No read-permission for " + directory);
+
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
-                      LOCALIZATIONMANAGER.getLocalizedString(
-                          "configuration.log.error.checkcopydirs.read"),
-                      directory));
+                      I18N.getMessage("configuration.log.error.checkcopydirs.read"), directory));
             }
 
             if (dirToCheck.isDirectory()) {
@@ -1439,12 +1506,12 @@ public class ConfigurationHandler {
                 if (!UTILITIES.FileUtils().checkReadPermission(file)) {
                   configCorrect = false;
 
+                  LOG.error("No read-permission for " + file);
+
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          LOCALIZATIONMANAGER.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
 
@@ -1455,12 +1522,12 @@ public class ConfigurationHandler {
                 if (!UTILITIES.FileUtils().checkReadPermission(file)) {
                   configCorrect = false;
 
+                  LOG.error("No read-permission for " + file);
+
                   /* This log is meant to be read by the user, therefore we allow translation. */
                   encounteredErrors.add(
                       String.format(
-                          LOCALIZATIONMANAGER.getLocalizedString(
-                              "configuration.log.error.checkcopydirs.read"),
-                          file));
+                          I18N.getMessage("configuration.log.error.checkcopydirs.read"), file));
                 }
               }
             }
@@ -1642,8 +1709,7 @@ public class ConfigurationHandler {
 
     } else {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.checkmodloader"));
+      LOG.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt.");
 
       return false;
     }
@@ -1677,11 +1743,8 @@ public class ConfigurationHandler {
         return VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion);
 
       default:
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.error(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.error.checkmodloaderversion"));
+            "Specified incorrect modloader version. Please check your modpack for the correct version and enter again.");
 
         return false;
     }

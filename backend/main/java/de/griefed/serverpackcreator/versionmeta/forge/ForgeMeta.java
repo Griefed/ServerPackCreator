@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.versionmeta.forge;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import de.griefed.serverpackcreator.versionmeta.Type;
@@ -39,15 +38,20 @@ import java.util.Optional;
 public class ForgeMeta {
 
   private final File FORGE_MANIFEST;
-  private final ObjectMapper OBJECTMAPPER =
-      new ObjectMapper()
-          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+  private final ObjectMapper OBJECTMAPPER;
 
   private ForgeLoader forgeLoader;
 
-  public ForgeMeta(File forgeManifest) {
+  /**
+   * Create a new Forge Meta, using a manifest file.
+   *
+   * @param forgeManifest {@link File} The manifest from which to acquire version information.
+   * @param objectMapper {@link ObjectMapper} for parsing.
+   * @author Griefed
+   */
+  public ForgeMeta(File forgeManifest, ObjectMapper objectMapper) {
     this.FORGE_MANIFEST = forgeManifest;
+    this.OBJECTMAPPER = objectMapper;
   }
 
   /**
@@ -70,15 +74,12 @@ public class ForgeMeta {
    * Update this instances {@link ForgeLoader} with new information. Usually called after the Forge
    * manifest has been refreshed.
    *
-   * @return This instance of {@link ForgeMeta}
    * @throws IOException if the manifest could not be parsed into a {@link
    *     com.fasterxml.jackson.databind.JsonNode}.
    * @author Griefed
    */
-  public ForgeMeta update() throws IOException {
+  public void update() throws IOException {
     this.forgeLoader.update(OBJECTMAPPER.readTree(this.FORGE_MANIFEST));
-
-    return this;
   }
 
   /**

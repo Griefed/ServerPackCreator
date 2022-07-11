@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorGui;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
@@ -73,15 +73,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @PropertySources({
-    @PropertySource("classpath:application.properties"),
-    @PropertySource("classpath:serverpackcreator.properties")
+  @PropertySource("classpath:application.properties"),
+  @PropertySource("classpath:serverpackcreator.properties")
 })
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final String[] ARGS;
   private final File LOG4J2XML = new File("log4j2.xml");
   private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
@@ -93,7 +93,6 @@ public class ServerPackCreator {
   private ServerPackHandler serverPackHandler = null;
   private ServerPackCreatorSplash serverPackCreatorSplash = null;
   private UpdateChecker updateChecker = null;
-  private HashMap<String, String> systemInformation;
 
   /**
    * Initialize ServerPackCreator and determine the {@link CommandlineParser.Mode} to run in.
@@ -108,11 +107,9 @@ public class ServerPackCreator {
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
-      this.LOCALIZATIONMANAGER =
-          new LocalizationManager(
-              APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
+      this.I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
     } else {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     }
   }
 
@@ -178,7 +175,7 @@ public class ServerPackCreator {
         stageOne();
         stageFour();
         checkDatabase();
-        runWebservice();
+        web(ARGS);
         break;
 
       case CGEN:
@@ -228,12 +225,11 @@ public class ServerPackCreator {
     System.setProperty("log4j2.formatMsgNoLookups", "true");
     System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
-    this.utilities = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+    this.utilities = new Utilities(I18N, APPLICATIONPROPERTIES);
 
-    this.systemInformation =
-        utilities.JarUtils()
-            .systemInformation(
-                utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
+    HashMap<String, String> systemInformation = utilities.JarUtils()
+        .systemInformation(
+            utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
 
     LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
     LOG.debug("System information jarName: " + systemInformation.get("jarName"));
@@ -317,8 +313,8 @@ public class ServerPackCreator {
                       + "/disabled.txt"))) {
 
         writer.write("########################################\n");
-        writer.write("# - Load all plugins except these.   - #\n");
-        writer.write("# - Add one plugin-id per line.      - #\n");
+        writer.write("#...Load all plugins except these......#\n");
+        writer.write("#...Add one plugin-id per line.........#\n");
         writer.write("########################################\n");
         writer.write("#example-plugin\n");
 
@@ -331,18 +327,20 @@ public class ServerPackCreator {
     boolean serverProperties =
         checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
     boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
+    boolean shellTemplate = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+    boolean powershellTemplate =
+        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
 
-    if (config || serverProperties || serverIcon) {
+    if (config || serverProperties || serverIcon || shellTemplate || powershellTemplate) {
 
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning1"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning2"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning3"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.warn.filessetup.warning0"));
+      LOG.warn("#################################################################");
+      LOG.warn("#.............ONE OR MORE DEFAULT FILE(S) GENERATED.............#");
+      LOG.warn("#..CHECK THE LOGS TO FIND OUT WHICH FILE(S) WAS/WERE GENERATED..#");
+      LOG.warn("#...............CUSTOMIZE THEM BEFORE CONTINUING!...............#");
+      LOG.warn("#################################################################");
 
     } else {
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.filessetup.finish"));
+      LOG.info("Setup completed.");
     }
 
     // Print system information to console and logs.
@@ -358,44 +356,25 @@ public class ServerPackCreator {
         || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("alpha")
         || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("beta")) {
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("main.log.debug.warning"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip1"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip2"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip3"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip4"));
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.wip0"));
+      LOG.debug("Warning user about possible data loss.");
+      LOG.warn("################################################################");
+      LOG.warn("#.............ALPHA | BETA | DEV VERSION DETECTED..............#");
+      LOG.warn("#.............THESE VERSIONS ARE WORK IN PROGRESS!.............#");
+      LOG.warn("#..USE AT YOUR OWN RISK! BE AWARE THAT DATA LOSS IS POSSIBLE!..#");
+      LOG.warn("#........I WILL NOT BE HELD RESPONSIBLE FOR DATA LOSS!.........#");
+      LOG.warn("#....................YOU HAVE BEEN WARNED!.....................#");
+      LOG.warn("################################################################");
     }
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.enter"));
+    LOG.info("SYSTEM INFORMATION:");
     LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarpath"),
-            systemInformation.get("jarPath")));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.jarname"),
-            systemInformation.get("jarName")));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.java"),
-            systemInformation.get("javaVersion")));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osarchitecture"),
-            systemInformation.get("osArch")));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osname"),
-            systemInformation.get("osName")));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.osversion"),
-            systemInformation.get("osVersion")));
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.info.system.include"));
+    LOG.info("JAR Path:        " + systemInformation.get("jarPath"));
+    LOG.info("JAR Name:        " + systemInformation.get("jarName"));
+    LOG.info("Java version:    " + systemInformation.get("javaVersion"));
+    LOG.info("OS architecture: " + systemInformation.get("osArch"));
+    LOG.info("OS name:         " + systemInformation.get("osName"));
+    LOG.info("OS version:      " + systemInformation.get("osVersion"));
+    LOG.info("Include this information when reporting an issue on GitHub.");
   }
 
   /**
@@ -414,12 +393,11 @@ public class ServerPackCreator {
             APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
 
-    this.configUtilities =
-        new ConfigUtilities(LOCALIZATIONMANAGER, utilities, APPLICATIONPROPERTIES, versionMeta);
+    this.configUtilities = new ConfigUtilities(I18N, utilities, APPLICATIONPROPERTIES, versionMeta);
 
     this.configurationHandler =
         new ConfigurationHandler(
-            LOCALIZATIONMANAGER, versionMeta, APPLICATIONPROPERTIES, utilities, configUtilities);
+            I18N, versionMeta, APPLICATIONPROPERTIES, utilities, configUtilities);
   }
 
   /**
@@ -434,7 +412,7 @@ public class ServerPackCreator {
 
     this.serverPackHandler =
         new ServerPackHandler(
-            LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, versionMeta, utilities, applicationPlugins);
+            I18N, APPLICATIONPROPERTIES, versionMeta, utilities, applicationPlugins);
 
     if (this.updateChecker == null) {
       this.updateChecker = new UpdateChecker();
@@ -491,6 +469,16 @@ public class ServerPackCreator {
 
                 checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
                 LOG.info("Restored default server-icon.png.");
+
+              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE())) {
+
+                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+                LOG.info("Restored default_template.sh.");
+
+              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE())) {
+
+                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+                LOG.info("Restored default_template.ps1.");
               }
             }
           }
@@ -509,7 +497,8 @@ public class ServerPackCreator {
           private void createFile(File toCreate) {
             try {
               FileUtils.copyInputStreamToFile(
-                  Objects.requireNonNull(ServerPackCreator.class.getResourceAsStream("/" + toCreate.getName())),
+                  Objects.requireNonNull(
+                      ServerPackCreator.class.getResourceAsStream("/" + toCreate.getName())),
                   toCreate);
 
             } catch (IOException ex) {
@@ -553,7 +542,7 @@ public class ServerPackCreator {
     }
 
     new ServerPackCreatorGui(
-            LOCALIZATIONMANAGER,
+            I18N,
             configurationHandler,
             serverPackHandler,
             APPLICATIONPROPERTIES,
@@ -588,7 +577,7 @@ public class ServerPackCreator {
         selection = scanner.nextInt();
 
         if (selection == 7 && GraphicsEnvironment.isHeadless()) {
-          System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.gui"));
+          System.out.println("You environment does not support a GUI.");
           selection = 100;
         }
 
@@ -619,14 +608,13 @@ public class ServerPackCreator {
 
           default:
             if (selection > 7) {
-              System.out.println(
-                  LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.selection"));
+              System.out.println("Not a valid number. Please pick a number from 0 to 7.");
               printMenu();
             }
         }
 
       } catch (InputMismatchException ex) {
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.error.selection"));
+        System.out.println("Not a valid number. Please pick a number from 0 to 7.");
         selection = 100;
       }
 
@@ -649,14 +637,15 @@ public class ServerPackCreator {
 
       case 0:
       default:
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.exit"));
+        System.out.println("Exiting...");
         System.exit(0);
     }
   }
 
   private void changeLocale() {
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale"));
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale.format"));
+    System.out.println("What locale would you like to use?");
+    System.out.println("(Locale format is en_us, de_de, uk_ua etc.)");
+    System.out.println("Note: Changing the locale only affects the GUI. CLI always uses en_US.");
 
     Scanner scanner = new Scanner(System.in);
     String regex = "^[a-zA-Z]+_[a-zA-Z]+$";
@@ -670,17 +659,18 @@ public class ServerPackCreator {
 
       if (!userLocale.matches(regex)) {
 
-        System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale.error"));
+        System.out.println(
+            "Incorrect format. ServerPackCreator currently only supports locales in the format of en_us (Language, Country).");
 
       } else {
 
         try {
 
-          LOCALIZATIONMANAGER.initialize(userLocale);
+          I18N.initialize(userLocale);
 
         } catch (IncorrectLanguageException e) {
           System.out.println(
-              LOCALIZATIONMANAGER.getLocalizedString("run.menu.change.locale.error"));
+              "Incorrect format. ServerPackCreator currently only supports locales in the format of en_us (Language, Country).");
           userLocale = "";
         }
       }
@@ -688,10 +678,7 @@ public class ServerPackCreator {
     } while (!userLocale.matches(regex));
 
     scanner.close();
-    System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("cli.usingLanguage")
-            + " "
-            + LOCALIZATIONMANAGER.getLocalizedString("localeName"));
+    System.out.println("Using language: " + I18N.getMessage("localeName"));
   }
 
   /**
@@ -701,31 +688,17 @@ public class ServerPackCreator {
    */
   private void printMenu() {
     System.out.println();
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("run.menu.options"));
-    System.out.println("(1) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options1"));
-    System.out.println("(2) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options2"));
-    System.out.println("(3) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options3"));
-    System.out.println("(4) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options4"));
-    System.out.println("(5) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options5"));
-    System.out.println("(6) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options6"));
-    System.out.println("(7) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options7"));
-    System.out.println("(0) : " + LOCALIZATIONMANAGER.getLocalizedString("run.menu.options0"));
-
-    // Determine the length of the longest menu entry.
-    int lengthOfText = 0;
-    for (int i = 0; i < 8; i++) {
-      if (LOCALIZATIONMANAGER.getLocalizedString("run.menu.options" + i).length() + 6
-          > lengthOfText) {
-        lengthOfText = LOCALIZATIONMANAGER.getLocalizedString("run.menu.options" + i).length() + 6;
-      }
-    }
-
-    // Print "-" n-times. Where n is the length of the longest menu entry.
-    for (int i = 0; i < lengthOfText; i++) {
-      System.out.print("-");
-    }
-    System.out.println();
-    System.out.print(LOCALIZATIONMANAGER.getLocalizedString("run.menu.options.select") + ": ");
+    System.out.println("What would you like to do next?");
+    System.out.println("(1) : Print help");
+    System.out.println("(2) : Check for updates");
+    System.out.println("(3) : Change locale");
+    System.out.println("(4) : Generate a new configuration");
+    System.out.println("(5) : Run ServerPackCreator in CLI-mode");
+    System.out.println("(6) : Run ServerPackCreator as a webservice");
+    System.out.println("(7) : Run ServerPackCraator with a GUI");
+    System.out.println("(0) : Exit");
+    System.out.println("-------------------------------------------");
+    System.out.print("Enter the number of your selection: ");
   }
 
   /**
@@ -761,55 +734,13 @@ public class ServerPackCreator {
   private void createConfig() throws IOException {
 
     new ConfigurationCreator(
-            LOCALIZATIONMANAGER,
+            I18N,
             configurationHandler,
             APPLICATIONPROPERTIES,
             utilities,
             versionMeta,
             configUtilities)
         .createConfigurationFile();
-  }
-
-  /**
-   * Run ServerPackCreator as a webservice.
-   *
-   * @author Griefed
-   */
-  private void runWebservice() {
-
-    if (systemInformation.get("osName").contains("windows")
-        || systemInformation.get("osName").contains("Windows")) {
-
-      Scanner reader = new Scanner(System.in);
-
-      LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows"));
-      System.out.print(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.input") + " ");
-
-      //noinspection UnusedAssignment
-      String answer = "foobar";
-
-      do {
-        answer = reader.nextLine();
-
-        if (answer.equals("No")) {
-
-          LOG.info(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.no"));
-          reader.close();
-          System.exit(0);
-
-        } else if (answer.equals("Yes")) {
-
-          LOG.warn(LOCALIZATIONMANAGER.getLocalizedString("main.log.warn.windows.yes"));
-          reader.close();
-          web(ARGS);
-        }
-
-      } while (!answer.matches("^(Yes|No)$"));
-
-    } else {
-
-      web(ARGS);
-    }
   }
 
   /**
@@ -829,9 +760,8 @@ public class ServerPackCreator {
             APPLICATIONPROPERTIES.DEFAULT_CONFIG().getAbsoluteFile().toPath());
 
         if (APPLICATIONPROPERTIES.OLD_CONFIG().delete()) {
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.info(
-              LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.old"));
+
+          LOG.info("creator.conf migrated to serverpackcreator.conf.");
         }
 
       } catch (IOException ex) {
@@ -850,9 +780,7 @@ public class ServerPackCreator {
                         APPLICATIONPROPERTIES.DEFAULT_CONFIG().getName()))),
             APPLICATIONPROPERTIES.DEFAULT_CONFIG());
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforconfig.config"));
+        LOG.info("serverpackcreator.conf generated. Please customize.");
         firstRun = true;
 
       } catch (IOException ex) {
@@ -886,11 +814,7 @@ public class ServerPackCreator {
                     String.format("/de/griefed/resources/server_files/%s", fileToCheckFor))),
             new File(String.format("./server_files/%s", fileToCheckFor)));
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.info.checkforfile"),
-                fileToCheckFor));
+        LOG.info(fileToCheckFor + " generated. Please customize if you intend on using it.");
 
         firstRun = true;
 
@@ -898,7 +822,7 @@ public class ServerPackCreator {
 
         if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
 
-          LOG.error(String.format("Could not extract default %s file.", fileToCheckFor), ex);
+          LOG.error("Could not extract default " + fileToCheckFor + " file.", ex);
           firstRun = true;
         }
       }
@@ -957,11 +881,11 @@ public class ServerPackCreator {
 
     System.out.println();
     if (update.isPresent()) {
-      System.out.println(LOCALIZATIONMANAGER.getLocalizedString("update.dialog.available"));
+      System.out.println("Update available!");
       System.out.println("    " + update.get().version());
       System.out.println("    " + update.get().url());
     } else {
-      System.out.println(LOCALIZATIONMANAGER.getLocalizedString("updates.log.info.none"));
+      System.out.println("No updates available.");
     }
   }
 
@@ -971,35 +895,92 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void printHelp() {
-    System.out.println(LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.intro"));
+    // TODO move to file in resources. Read and print text from file
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.intro"));
+        "# How to use ServerPackCreator:\n"
+            + "#   java -jar ServerPackCreator.jar\n"
+            + "#     Simply running the JAR without extra arguments runs ServerPackCreator in GUI mode unless\n"
+            + "#     you are running in a headless environment. In the case of a headless environment, the CLI\n"
+            + "#     mode will automatically be used.\n"
+            + "#");
+    System.out.println("#   Extra arguments to use ServerPackCreator with:\n" + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.lang"));
+        "#     -lang : Allows you to use one of the available languages for ServerPackCreator. I can not\n"
+            + "#             guarantee that each of the following available languages is 100% translated.\n"
+            + "#             You best choice is en_us, or not specifying any as that is the default, because\n"
+            + "#             I write ServerPackCreator with english in mind. Available usages:\n"
+            + "#             -lang en_us\n"
+            + "#             -lang uk_ua\n"
+            + "#             -lang de_de\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.help"));
+        "#     -cgen : Only available for the commandline interface. This will start the generation of\n"
+            + "#             a new configuration file. You will be asked to enter information about your modpack\n"
+            + "#             step-by-step. Each setting you enter will be checked for errors before it is saved.\n"
+            + "#             If everything you enter is valid and without errors, it will be written to a new\n"
+            + "#             serverpackcreator.conf and ServerPackCreator will immediately start a run with said\n"
+            + "#             configuration file, generating a server pack for you.\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.update"));
+        "#   -update : Check whether a new version of ServerPackCreator is available for download.\n"
+            + "#             If an update is available, the version and link to the release of said update are\n"
+            + "#             written to the console so you can from work with it from there.\n"
+            + "#             Note: Automatic updates are currently not planned nor supported, and neither are\n"
+            + "#             downloads of any available updates to your system. You need to update manually.\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.cgen"));
+        "#     -cgen : Only available for the commandline interface. This will start the generation of\n"
+            + "#             a new configuration file. You will be asked to enter information about your modpack\n"
+            + "#             step-by-step. Each setting you enter will be checked for errors before it is saved.\n"
+            + "#             If everything you enter is valid and without errors, it will be written to a new\n"
+            + "#             serverpackcreator.conf and ServerPackCreator will immediately start a run with said\n"
+            + "#             configuration file, generating a server pack for you.\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.cli"));
+        "#     -cli  : Run ServerPackCreator in Command-line interface mode. Checks the serverpackcreator.conf\n"
+            + "#             for errors and if none are found, starts the generation of a server pack with the configuration\n"
+            + "#             provided by your serverpackcreator.conf.\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.web"));
+        "#     -web  : Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice\n"
+            + "#             provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline\n"
+            + "#             arguments and a non-headless environment) as well as a REST API which can be used in different ways.\n"
+            + "#             For more information about the REST API, please see the Java documentation:\n"
+            + "#              - GitHub Pages: https://griefed.github.io/ServerPackCreator/\n"
+            + "#              - GitLab Pages: https://griefed.pages.griefed.de/ServerPackCreator/\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.gui"));
+        "#      -gui : Run ServerPackCreator using the graphical user interface. If your environment supports\n"
+            + "#             graphics, i.e. is not headless, then this is the default mode in which ServerPackCreator\n"
+            + "#             started as when no arguments are used.\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.arguments.setup"));
+        "#   --setup : Set up and prepare the environment for subsequent runs of ServerPackCreator.\n"
+            + "#             This will create/copy all files needed for ServerPackCreator to function\n"
+            + "#             properly from inside its JAR-file and setup everything else, too.\n"
+            + "#");
+    System.out.println("# Support:\n" + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.intro"));
+        "#   Issues:  Encountered a bug, or want some part of the documentation to be improved on? Got a suggestion?\n"
+            + "#            Open an issue on GitHub at: https://github.com/Griefed/ServerPackCreator/issues\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.issues"));
+        "#   Discord: If you would like to chat with me, ask me questions, or see when there's something new\n"
+            + "#            regarding ServerPackCreator coming up, you can join my Discord server to stay up-to-date.\n"
+            + "#             - Discord link: https://discord.griefed.de\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.discord"));
+        "# Help/Wiki: If you want additional help on how to use ServerPackCreator, take a look at my wiki articles\n"
+            + "#            regarding ServerPackCreator and some of the more advanced things it can do.\n"
+            + "#             - Help:  https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help\n"
+            + "#             - HowTo: https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo\n"
+            + "#");
     System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.wiki"));
-    System.out.println(
-        LOCALIZATIONMANAGER.getLocalizedString("serverpackcreator.help.support.someluv"));
+        "# Buy Me A Coffee:\n"
+            + "#   You like ServerPackCreator and would like to support me? By all means, every bit is very much\n"
+            + "#   appreciated and helps me pay for servers and food. Food is most important. And coffee. Food and Coffee.\n"
+            + "#   Those two get converted into code. Thank you very much!\n"
+            + "#     - Github Sponsors: https://github.com/sponsors/Griefed");
   }
 
   /**

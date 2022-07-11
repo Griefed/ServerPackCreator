@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -45,7 +45,7 @@ public class ConfigurationCreator {
 
   private static final Logger LOG = LogManager.getLogger(ConfigurationCreator.class);
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
@@ -53,7 +53,7 @@ public class ConfigurationCreator {
   private final ConfigUtilities CONFIGUTILITIES;
 
   public ConfigurationCreator(
-      LocalizationManager injectedLocalizationManager,
+      I18n injectedI18n,
       ConfigurationHandler injectedConfigurationHandler,
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
@@ -67,10 +67,10 @@ public class ConfigurationCreator {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    if (injectedI18n == null) {
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+      this.I18N = injectedI18n;
     }
 
     if (injectedVersionMeta == null) {
@@ -87,14 +87,14 @@ public class ConfigurationCreator {
     }
 
     if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
     } else {
       this.UTILITIES = injectedUtilities;
     }
 
     if (injectedConfigUtilities == null) {
       this.CONFIGUTILITIES =
-          new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+          new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
     } else {
       this.CONFIGUTILITIES = injectedConfigUtilities;
     }
@@ -102,7 +102,7 @@ public class ConfigurationCreator {
     if (injectedConfigurationHandler == null) {
       this.CONFIGURATIONHANDLER =
           new ConfigurationHandler(
-              LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+              I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
     } else {
       this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
     }
@@ -155,98 +155,71 @@ public class ConfigurationCreator {
 
     Scanner reader = new Scanner(System.in);
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
     LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.start"), "-cgen"));
+        "You started ServerPackCreator with the \"-cgen\" argument. Step-by-step generation of config file initiated...");
     do {
-      // --------------------------------------------------------------------------------------------MODPACK DIRECTORY---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.enter"));
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.example"));
+      // -----------------------------------------------------------------MODPACK DIRECTORY---------
+
+      LOG.info("Please enter your modpack path. This path can be relative to ServerPackCreator, or absolute.");
+      LOG.info("Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
 
       do {
 
         do {
-          System.out.print(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modpack.cli") + " ");
+          System.out.print("Path to modpack directory: ");
           tmpModpackDir = reader.nextLine();
         } while (!CONFIGURATIONHANDLER.checkModpackDir(tmpModpackDir, encounteredErrors));
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-                tmpModpackDir));
-        LOG.info(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.info.modpack.checkreturninfo"));
+        LOG.info("You entered: " + tmpModpackDir);
+        LOG.info("If you are satisfied with this setting, enter ture. If not, enter false to restart modpack directory configuration.");
 
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print("Answer: ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
       modpackDir = tmpModpackDir.replace("\\", "/");
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              modpackDir));
+
+      LOG.info("You entered: " + modpackDir);
       System.out.println();
 
-      // -----------------------------------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.clientmods.enter"));
+      // --------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
+
+      LOG.info("Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
       do {
         clientMods.clear();
 
         clientMods.addAll(UTILITIES.ListUtils().readStringArray());
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-                clientMods));
+        LOG.info("You entered: " + clientMods);
 
         if (clientMods.isEmpty()) {
           clientMods = APPLICATIONPROPERTIES.getListFallbackMods();
 
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.warn(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.warn.checkconfig.clientmods"));
+          LOG.warn("No clientside-only mods specified. Using fallback list.");
 
           for (String mod : clientMods) {
             LOG.warn(String.format("    %s", mod));
           }
         }
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.info.clientmods.checkreturninfo"));
 
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+        LOG.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
+
+        System.out.print("Answer: ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              clientMods));
+      LOG.info("You entered: " + clientMods);
 
       tmpClientMods = new String[clientMods.size()];
       clientMods.toArray(tmpClientMods);
 
       System.out.println();
 
-      // ------------------------------------------------------------------DIRECTORIES OR FILES TO
-      // COPY TO SERVER PACK---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.enter"));
+      // ---------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
+
+      LOG.info("Which directories or files should be copied to the server pack? These are folder- or filenames inside your modpack directory or explicit source/file;destination/file-combinations.");
 
       List<String> dirList =
           Arrays.asList(
@@ -254,296 +227,190 @@ public class ConfigurationCreator {
                   new File(modpackDir)
                       .list((current, name) -> new File(current, name).isDirectory())));
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.info.copydirs.dirsinmodpack"),
-              dirList.toString().replace("[", "").replace("]", "")));
+      LOG.info("The modpack directory you specified contains the following directories: " + UTILITIES.StringUtils().buildString(dirList));
+
       do {
         do {
           copyDirs.clear();
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          LOG.info(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.copydirs.specify"));
+
+          LOG.info("Specify your directories and files you want to be copied:");
           copyDirs.addAll(UTILITIES.ListUtils().readStringArray());
 
         } while (!CONFIGURATIONHANDLER.checkCopyDirs(copyDirs, modpackDir, encounteredErrors));
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-                copyDirs));
-        LOG.info(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.info.copydirs.checkreturninfo"));
+        LOG.info("You entered: " + copyDirs);
+        LOG.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
 
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print("Answer: ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              copyDirs));
+      LOG.info("You entered: " + copyDirs);
 
       tmpCopyDirs = new String[copyDirs.size()];
       copyDirs.toArray(tmpCopyDirs);
 
       System.out.println();
 
-      // ---------------------------------------------------------------------------PATH TO THE
-      // CUSTOM SERVER-ICON.PNG---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.icon.enter"));
+      // ------------------------------------------------PATH TO THE CUSTOM SERVER-ICON.PNG---------
+
+      LOG.info("Enter the path to your custom server-icon.png-file, if you want to include one. Leave blank if you are fine with the default.");
 
       do {
 
         do {
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          System.out.print(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.icon.path"));
+          System.out.print("Path to your server-icon.png: ");
           tmpServerIcon = reader.nextLine();
 
         } while (!CONFIGURATIONHANDLER.checkIconAndProperties(tmpServerIcon));
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-                tmpServerIcon));
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.icon.end"));
-
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+        LOG.info("You entered: " + tmpServerIcon);
+        LOG.info("If you are satisfied with this setting, enter ture. If not, enter false to restart server-icon.png configuration.");
+        System.out.print("Answer: ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
       serverIconPath = tmpServerIcon.replace("\\", "/");
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              serverIconPath));
+
+      LOG.info("You entered: " + serverIconPath);
       System.out.println();
 
-      // -------------------------------------------------------------------------PATH TO THE CUSTOM
-      // SERVER.PROPERTIES---------
+      //-----------------------------------------------PATH TO THE CUSTOM SERVER.PROPERTIES---------
 
-      LOG.info(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.properties.enter"));
+      LOG.info("Enter the path to your custom server.properties-file, if you want to include one. Leave blank if you are fine with the default.");
 
       do {
 
         do {
-          /* This log is meant to be read by the user, therefore we allow translation. */
-          System.out.print(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.info.custom.properties.path"));
+
+          System.out.print("Path to your server.properties: ");
           tmpServerProperties = reader.nextLine();
         } while (!CONFIGURATIONHANDLER.checkIconAndProperties(tmpServerProperties));
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            String.format(
-                LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-                tmpServerProperties));
-        LOG.info(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.custom.properties.end"));
+        LOG.info("You entered: " + tmpServerProperties);
+        LOG.info("If you are satisfied with this setting, enter ture. If not, enter false to restart server-icon.png configuration.");
 
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+        System.out.print("Answer: ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
 
       serverPropertiesPath = tmpServerProperties.replace("\\", "/");
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              serverPropertiesPath));
+
+      LOG.info("You entered: " + serverPropertiesPath);
       System.out.println();
 
-      // -------------------------------------------------------------WHETHER TO INCLUDE MODLOADER
-      // SERVER INSTALLATION---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.server.enter"));
+      // ----------------------------------WHETHER TO INCLUDE MODLOADER SERVER INSTALLATION---------
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.server.include") + " ");
+      LOG.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
+
+      System.out.print("Include modloader server installation: ");
       includeServerInstallation = UTILITIES.BooleanUtils().readBoolean();
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              includeServerInstallation));
+      LOG.info("You entered: " + includeServerInstallation);
 
-      // -------------------------------------------------------------------------------MINECRAFT
-      // VERSION MODPACK USES---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.minecraft.enter"));
+      // ----------------------------------------------------MINECRAFT VERSION MODPACK USES---------
+      LOG.info("Which version of Minecraft does your modpack use?");
 
       do {
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.minecraft.specify")
-                + " ");
+        System.out.print("Minecraft version: ");
         minecraftVersion = reader.nextLine();
 
       } while (!VERSIONMETA.minecraft().checkMinecraftVersion(minecraftVersion));
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              minecraftVersion));
+      LOG.info("You entered: " + minecraftVersion);
       System.out.println();
 
-      // ---------------------------------------------------------------------------------------MODLOADER MODPACK USES---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloader.enter"));
+      // ------------------------------------------------------------MODLOADER MODPACK USES---------
+
+      LOG.info("What modloader does your modpack use?");
 
       do {
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloader.cli") + " ");
+        System.out.print("Modloader: ");
         modLoader = reader.nextLine();
 
       } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
 
       modLoader = CONFIGUTILITIES.getModLoaderCase(modLoader);
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              modLoader));
+      LOG.info("You entered: " + modLoader);
       System.out.println();
 
-      // ----------------------------------------------------------------------------VERSION OF
-      // MODLOADER MODPACK USES---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString(
-                  "configuration.log.info.modloaderversion.enter"),
-              modLoader));
+      // -------------------------------------------------VERSION OF MODLOADER MODPACK USES---------
+      LOG.info("What version of " + modLoader + " does your modpack use?");
 
       do {
-        System.out.print(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.modloaderversion.cli")
-                + " ");
+        System.out.print("Modloader version: ");
         modLoaderVersion = reader.nextLine();
 
       } while (!CONFIGURATIONHANDLER.checkModloaderVersion(
           modLoader, modLoaderVersion, minecraftVersion));
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              modLoaderVersion));
+      LOG.info("You entered: " + modLoaderVersion);
       System.out.println();
 
-      // ------------------------------------------------------------------------------------PATH TO
-      // JAVA INSTALLATION---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.enter"));
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.enter2"));
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.example"));
+      // ---------------------------------------------------------PATH TO JAVA INSTALLATION---------
+      LOG.info(
+          "Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.");
+      LOG.info("If you leave this empty, ServerPackCreator will try to determine the path for you.");
+      LOG.info("Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.java.cli") + " ");
+      System.out.print("Path to your Java installation: ");
 
       javaPath = CONFIGURATIONHANDLER.getJavaPath(reader.nextLine());
 
-      //noinspection RedundantStringFormatCall
-      System.out.println(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.warn.getjavapath.set"),
-              javaPath));
+      System.out.println("Automatically acquired path to Java installation: " + javaPath);
 
       System.out.println();
 
-      // ------------------------------------------------------------WHETHER TO INCLUDE
-      // SERVER-ICON.PNG IN SERVER PACK---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.icon.enter"));
+      // ---------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.icon.cli") + " ");
+      LOG.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
+
+      System.out.print("Include server-icon.png: ");
       includeServerIcon = UTILITIES.BooleanUtils().readBoolean();
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              includeServerIcon));
+      LOG.info("You entered: " + includeServerIcon);
       System.out.println();
 
-      // ----------------------------------------------------------WHETHER TO INCLUDE
-      // SERVER.PROPERTIES IN SERVER PACK---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.properties.enter"));
+      // -------------------------------WHETHER TO INCLUDE SERVER.PROPERTIES IN SERVER PACK---------
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.properties.cli") + " ");
+      LOG.info("Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
+
+      System.out.print("Include server.properties: ");
       includeServerProperties = UTILITIES.BooleanUtils().readBoolean();
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              includeServerProperties));
+      LOG.info("You entered: " + includeServerProperties);
       System.out.println();
 
-      // ----------------------------------------------------WHETHER TO INCLUDE CREATION OF
-      // ZIP-ARCHIVE OF SERVER PACK---------
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.zip.enter"));
+      // -------------------------WHETHER TO INCLUDE CREATION OF ZIP-ARCHIVE OF SERVER PACK---------
+      LOG.info("Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.zip.cli") + " ");
+      System.out.print("Create ZIP-archive: ");
       includeZipCreation = UTILITIES.BooleanUtils().readBoolean();
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.checkreturn"),
-              includeZipCreation));
+      LOG.info("You entered: " + includeZipCreation);
 
-      // -------------------------------------------------------------------------JAVA ARGS TO
-      // EXECUTE THE SERVER WITH---------
+      // ----------------------------------------------JAVA ARGS TO EXECUTE THE SERVER WITH---------
 
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javaargs.cli"));
+      LOG.info("Specify the Java arguments, if any, to execute the server with. Can be left blank.");
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.javaargs.enter"));
+      System.out.print("Java args: ");
       javaArgs = reader.nextLine();
 
       if (javaArgs.isEmpty()) {
         javaArgs = "empty";
       }
 
-      LOG.info(
-          String.format(
-              LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"),
-              javaArgs));
+      LOG.info("Java arguments for start-scripts: " + javaArgs);
 
-      // ------------------------------------------------------------------------------SUFFIX TO
-      // APPEND TO SERVER PACK---------
+      // ---------------------------------------------------SUFFIX TO APPEND TO SERVER PACK---------
 
-      LOG.info(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.serverpacksuffix.cli"));
+      LOG.info("Enter the suffix you want to append to your server pack. Can be left empty.");
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.serverpacksuffix.enter"));
+      System.out.print("Server pack suffix: ");
       serverPackSuffix = reader.nextLine();
 
-      // ------------------------------------------------------------------------------PRINT CONFIG
-      // TO CONSOLE AND LOG---------
+      // ---------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
       CONFIGUTILITIES.printConfigurationModel(
           modpackDir,
           clientMods,
@@ -561,17 +428,15 @@ public class ConfigurationCreator {
           serverIconPath,
           serverPropertiesPath);
 
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.enter"));
+      LOG.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
 
-      System.out.print(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.answer") + " ");
+      System.out.print("Answer: ");
 
     } while (!UTILITIES.BooleanUtils().readBoolean());
 
     reader.close();
 
-    // -----------------------------------------------------------------------------------------WRITE CONFIG TO FILE---------
+    // ----------------------------------------------------------------WRITE CONFIG TO FILE---------
     if (CONFIGUTILITIES.writeConfigToFile(
         modpackDir,
         Arrays.asList(tmpClientMods),
@@ -589,8 +454,8 @@ public class ConfigurationCreator {
         javaArgs,
         serverPackSuffix,
         APPLICATIONPROPERTIES.DEFAULT_CONFIG())) {
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.config.written"));
+
+      LOG.info("New config file successfully written. Thanks go to Whitebear60 for initially writing the CLI-Config-Generation.");
     }
   }
 }

@@ -44,7 +44,7 @@ public class FabricInstaller {
   private HashMap<String, URL> installerUrlMeta;
 
   /**
-   * Constructor
+   * Create a new instance of the Fabric Installer.
    *
    * @param installerManifest {@link Document} containing Fabric installer information
    * @author Griefed
@@ -103,10 +103,9 @@ public class FabricInstaller {
    * Update this {@link FabricInstaller} with information from the given {@link Document}.
    *
    * @param installerManifest {@link Document} containing new installer information.
-   * @return This instance of {@link FabricInstaller}.
    * @author Griefed
    */
-  protected FabricInstaller update(Document installerManifest) {
+  protected void update(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -154,8 +153,6 @@ public class FabricInstaller {
 
           }
         });
-
-    return this;
   }
 
   /**

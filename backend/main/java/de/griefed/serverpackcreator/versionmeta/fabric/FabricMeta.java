@@ -50,7 +50,7 @@ public class FabricMeta {
   private final FabricInstaller FABRIC_INSTALLER;
 
   /**
-   * Constructor
+   * Create a new Fabric Meta instance.
    *
    * @param fabricManifest {@link File} Fabric manifest file..
    * @param fabricInstallerManifest {@link File} Fabric-installer manifest file..
@@ -66,16 +66,12 @@ public class FabricMeta {
   /**
    * Update the {@link FabricLoader} and {@link FabricInstaller} information.
    *
-   * @return This instance of {@link FabricMeta}.
    * @throws MalformedURLException if a URL could not be constructed
    * @author Griefed
    */
-  public FabricMeta update() throws MalformedURLException {
-
+  public void update() throws MalformedURLException {
     this.FABRIC_LOADER.update(getXml(this.FABRIC_MANIFEST));
     this.FABRIC_INSTALLER.update(getXml(this.FABRIC_INSTALLER_MANIFEST));
-
-    return this;
   }
 
   private Document getXml(File manifest) {

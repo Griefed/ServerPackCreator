@@ -2,7 +2,7 @@ package de.griefed.serverpackcreator;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
@@ -36,7 +36,7 @@ class ServerPackHandlerTest {
     }
 
     ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    I18n I18N = new I18n(APPLICATIONPROPERTIES);
     ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
     SERVER_PACK_CREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
     VersionMeta VERSIONMETA =
@@ -47,16 +47,16 @@ class ServerPackHandlerTest {
             APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    Utilities UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+    Utilities UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
     ConfigUtilities CONFIGUTILITIES =
-        new ConfigUtilities(LOCALIZATIONMANAGER, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
+        new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
     this.CONFIGURATIONHANDLER =
         new ConfigurationHandler(
-            LOCALIZATIONMANAGER, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
+            I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
     ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins();
     this.SERVERPACKHANDLER =
         new ServerPackHandler(
-            LOCALIZATIONMANAGER, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER);
+            I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER);
   }
 
   @Test
@@ -78,7 +78,7 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/start.bat").exists());
+    Assertions.assertTrue(new File("server-packs/forge_tests/start.ps1").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
     try {
       Files.copy(

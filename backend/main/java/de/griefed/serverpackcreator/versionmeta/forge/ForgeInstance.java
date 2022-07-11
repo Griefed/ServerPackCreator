@@ -39,7 +39,7 @@ public class ForgeInstance {
   private final MinecraftMeta MINECRAFT_META;
 
   /**
-   * Constructor.
+   * Create a new Forge Instance instance.
    *
    * @param minecraftVersion {@link String} Minecraft version.
    * @param forgeVersion {@link String} Forge version.

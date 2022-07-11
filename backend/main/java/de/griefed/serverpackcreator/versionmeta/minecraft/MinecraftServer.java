@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.versionmeta.Type;
@@ -35,10 +34,7 @@ import java.util.Optional;
  */
 public class MinecraftServer {
 
-  private final ObjectMapper OBJECT_MAPPER =
-      new ObjectMapper()
-          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+  private final ObjectMapper OBJECT_MAPPER;
   private final URL MANIFEST_URL;
   private final String VERSION;
   private final Type TYPE;
@@ -46,21 +42,28 @@ public class MinecraftServer {
   private JsonNode serverJson = null;
 
   /**
-   * Constructor
+   * Create a new Minecraft Server.
    *
    * @param mcVersion {@link String} The Minecraft version of this server.
    * @param mcType {@link Type} The release-type of this server. Either {@link Type#RELEASE} or
    *     {@link Type#SNAPSHOT}.
    * @param mcUrl {@link URL} The URL to the download of this servers JAR-file.
+   * @param objectMapper {@link ObjectMapper} for parsing.
    * @author Griefed
    */
-  protected MinecraftServer(String mcVersion, Type mcType, URL mcUrl) {
+  protected MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper) {
     this.MANIFEST_URL = mcUrl;
     this.VERSION = mcVersion;
     this.TYPE = mcType;
+    this.OBJECT_MAPPER = objectMapper;
   }
 
-  private void setServerJson() {
+  /**
+   * Read and store the server manifest.
+   *
+   * @author Griefed
+   */
+  protected void setServerJson() {
     try {
       this.serverJson = OBJECT_MAPPER.readTree(MANIFEST_URL.openStream());
     } catch (IOException e) {

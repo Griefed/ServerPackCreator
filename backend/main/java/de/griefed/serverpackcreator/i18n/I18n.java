@@ -48,10 +48,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * This is the localizationManager for ServerPackCreator.<br>
- * To use it, initialize it by calling {@link #initialize()}. Then use {@link
- * #getLocalizedString(String)} to use a language key from the resource bundle corresponding to the
- * specified locale. If no locale is provided during the launch of ServerPackCreator, en_US is used
- * by default.<br>
+ * To use it, initialize it by calling {@link #initialize()}. Then use {@link #getMessage(String)}
+ * to use a language key from the resource bundle corresponding to the specified locale. If no
+ * locale is provided during the launch of ServerPackCreator, en_US is used by default.<br>
  * All localization properties-files need to be stored in the <code>de/griefed/resources/lang/
  * </code>-directory and be named using following pattern: lang_{language code in
  * lowercase}_{country code in lowercase}. For example: <code>lang_en_us.properties</code>.<br>
@@ -59,20 +58,21 @@ import org.springframework.stereotype.Component;
  * By default, ServerPackCreator tries to load language definitions from the local filesystem, in
  * the <code>lang</code>-folder. If no file can be found for the specified locale, ServerPackCreator
  * tries to load language definitions from inside the JAR-file, from the resource bundles. If the
- * specified key can not be retrieved when calling {@link #getLocalizedString(String)}, a default is
+ * specified key can not be retrieved when calling {@link #getMessage(String)}, a default is
  * retrieved from the lang_en_us-bundle inside the JAR-file by default.
  *
  * @author whitebear60
  * @author Griefed
  */
 @Component
-public class LocalizationManager {
+public class I18n {
 
-  private static final Logger LOG = LogManager.getLogger(LocalizationManager.class);
+  private static final Logger LOG = LogManager.getLogger(I18n.class);
 
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final ResourceBundle FALLBACKRESOURCES =
-      ResourceBundle.getBundle("de/griefed/resources/lang/lang_en_us", new Locale("en", "us"));
+      ResourceBundle.getBundle(
+          "de/griefed/resources/lang/lang_en_us", new Locale("en", "us"), new UTF8Control());
   private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>();
   private final File PROPERTIESFILE = new File("serverpackcreator.properties");
   private final String MAP_PATH_LANGUAGE = "language";
@@ -84,17 +84,17 @@ public class LocalizationManager {
   private ResourceBundle jarResources = null;
 
   /**
-   * Constructor for our LocalizationManager using the locale set in the {@link
-   * ApplicationProperties}-instance passed to this constructor. If initialization with the provided
-   * {@link ApplicationProperties}-instance fails, the LocalizationManager is initialized with the
-   * default locale <code>en_us</code>.
+   * Constructor for our I18n using the locale set in the {@link ApplicationProperties}-instance
+   * passed to this constructor. If initialization with the provided {@link
+   * ApplicationProperties}-instance fails, the I18n is initialized with the default locale <code>
+   * en_us</code>.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
    *     various different things.
    * @author Griefed
    */
   @Autowired
-  public LocalizationManager(ApplicationProperties injectedApplicationProperties) {
+  public I18n(ApplicationProperties injectedApplicationProperties) {
     if (injectedApplicationProperties == null) {
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
     } else {
@@ -109,9 +109,9 @@ public class LocalizationManager {
   }
 
   /**
-   * Constructor for our LocalizationManager with a given locale. If initialization with the
-   * provided locale fails, the LocalizationManager is initialized with the locale set in the
-   * instance of {@link ApplicationProperties}. If this also fails, the default locale <code>en_us
+   * Constructor for our I18n with a given locale. If initialization with the provided locale fails,
+   * the I18n is initialized with the locale set in the instance of {@link ApplicationProperties}.
+   * If this also fails, the default locale <code>en_us
    * </code> is used.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
@@ -119,7 +119,7 @@ public class LocalizationManager {
    * @param locale String. The locale to initialize with.
    * @author Griefed
    */
-  public LocalizationManager(ApplicationProperties injectedApplicationProperties, String locale) {
+  public I18n(ApplicationProperties injectedApplicationProperties, String locale) {
     if (injectedApplicationProperties == null) {
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
     } else {
@@ -140,18 +140,18 @@ public class LocalizationManager {
   }
 
   /**
-   * Constructor for our LocalizationManager using the default locale en_us.
+   * Constructor for our I18n using the default locale en_us.
    *
    * @author Griefed
    */
-  public LocalizationManager() {
+  public I18n() {
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
     initialize();
   }
 
   /**
-   * Initialize the LocalizationManager with en_us as the locale.
+   * Initialize the I18n with en_us as the locale.
    *
    * @author whitebear60
    */
@@ -164,7 +164,7 @@ public class LocalizationManager {
   }
 
   /**
-   * Initializes the LocalizationManager with a provided localePropertiesFile.
+   * Initializes the I18n with a provided localePropertiesFile.
    *
    * @param propertiesFile Path to the locale properties file which specifies the language to use.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
@@ -192,7 +192,7 @@ public class LocalizationManager {
   }
 
   /**
-   * Initializes the LocalizationManager with a provided localePropertiesFile.
+   * Initializes the I18n with a provided localePropertiesFile.
    *
    * @param applicationProperties Instance of {@link ApplicationProperties} containing the locale to
    *     use.
@@ -207,7 +207,7 @@ public class LocalizationManager {
   }
 
   /**
-   * Initializes the LocalizationManager with a provided locale.
+   * Initializes the I18n with a provided locale.
    *
    * @param locale Locale to be used by application in this run.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
@@ -270,8 +270,8 @@ public class LocalizationManager {
             ResourceBundle.getBundle(
                 String.format("de/griefed/resources/lang/lang_%s", locale),
                 new Locale(
-                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)),
+                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
+                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
                 new UTF8Control());
 
       } catch (Exception ex2) {
@@ -296,8 +296,8 @@ public class LocalizationManager {
             ResourceBundle.getBundle(
                 String.format("de/griefed/resources/lang/lang_%s", locale),
                 new Locale(
-                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY)),
+                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
+                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
                 new UTF8Control());
 
       } catch (Exception ex) {
@@ -307,9 +307,10 @@ public class LocalizationManager {
       }
     }
 
-    // Uncomment if you want to work on encodings....
-    // Nightmare fuel...
-    // LOG.debug(getLocalizedString("encoding.check"));
+    if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().equals("dev")) {
+      LOG.info(getMessage("encoding.check"));
+      System.out.println(getMessage("encoding.check"));
+    }
   }
 
   /**
@@ -322,7 +323,7 @@ public class LocalizationManager {
    * @author whitebear60
    * @author Griefed
    */
-  public String getLocalizedString(String languageKey) {
+  public String getMessage(String languageKey) {
 
     //noinspection UnusedAssignment
     String text = null;
@@ -392,8 +393,8 @@ public class LocalizationManager {
   /**
    * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
    * subsequent start of serverpackcreator is executed using said locale. This method should
-   * <strong>not</strong> call {@link #getLocalizedString(String)}, as the initialization of said
-   * manager is called from here. Therefore, localized strings are not yet available.
+   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager is
+   * called from here. Therefore, localized strings are not yet available.
    *
    * @param locale The locale the user specified when they ran serverpackcreator with -lang
    *     -your_locale.

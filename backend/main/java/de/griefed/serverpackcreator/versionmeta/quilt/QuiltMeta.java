@@ -50,7 +50,7 @@ public class QuiltMeta {
   private final QuiltInstaller QUILT_INSTALLER;
 
   /**
-   * Constructor
+   * Create a new Quilt Meta instance.
    *
    * @param quiltManifest {@link File} Quilt manifest file..
    * @param quiltInstallerManifest {@link File} Quilt-installer manifest file..
@@ -66,16 +66,12 @@ public class QuiltMeta {
   /**
    * Update the {@link QuiltLoader} and {@link QuiltInstaller} information.
    *
-   * @return This instance of {@link QuiltMeta}.
    * @throws MalformedURLException if a URL could not be constructed
    * @author Griefed
    */
-  public QuiltMeta update() throws MalformedURLException {
-
+  public void update() throws MalformedURLException {
     this.QUILT_LOADER.update(getXml(this.QUILT_MANIFEST));
     this.QUILT_INSTALLER.update(getXml(this.QUILT_INSTALLER_MANIFEST));
-
-    return this;
   }
 
   private Document getXml(File manifest) {

@@ -35,7 +35,7 @@ public class QuiltLoader {
   private String release;
 
   /**
-   * Constructor
+   * Create a new Quilt Loader instance.
    *
    * @param loaderManifest {@link Document} containing Quilts manifest.
    * @author Griefed
@@ -72,10 +72,9 @@ public class QuiltLoader {
    * Update the latest, release and releases information.
    *
    * @param loaderManifest {@link Document} containing Quilts manifest.
-   * @return This instance of {@link QuiltLoader}.
    * @author Griefed
    */
-  protected QuiltLoader update(Document loaderManifest) {
+  protected void update(Document loaderManifest) {
     this.latest =
         loaderManifest
             .getElementsByTagName("latest")
@@ -100,8 +99,6 @@ public class QuiltLoader {
               .item(0)
               .getNodeValue());
     }
-
-    return this;
   }
 
   /**

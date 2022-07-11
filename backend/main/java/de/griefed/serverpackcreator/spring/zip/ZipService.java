@@ -23,7 +23,6 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.spring.NotificationResponse;
 import de.griefed.serverpackcreator.spring.task.TaskSubmitter;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
-import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +48,6 @@ public class ZipService {
 
   private final TaskSubmitter TASKSUBMITTER;
   private final ConfigurationHandler CONFIGURATIONHANDLER;
-  private final Utilities UTILITIES;
   private final NotificationResponse NOTIFICATIONRESPONSE;
   private final VersionMeta VERSIONMETA;
   private final ConfigUtilities CONFIGUTILITIES;
@@ -59,7 +57,6 @@ public class ZipService {
    *
    * @param injectedTaskSubmitter Instance of {@link TaskSubmitter}.
    * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-   * @param injectedUtilities Instance of {@link Utilities}.
    * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
    * @param injectedVersionMeta Instance of {@link VersionMeta}.
    * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
@@ -69,14 +66,12 @@ public class ZipService {
   public ZipService(
       TaskSubmitter injectedTaskSubmitter,
       ConfigurationHandler injectedConfigurationHandler,
-      Utilities injectedUtilities,
       NotificationResponse injectedNotificationResponse,
       VersionMeta injectedVersionMeta,
       ConfigUtilities injectedConfigUtilities) {
 
     this.TASKSUBMITTER = injectedTaskSubmitter;
     this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    this.UTILITIES = injectedUtilities;
     this.NOTIFICATIONRESPONSE = injectedNotificationResponse;
     this.VERSIONMETA = injectedVersionMeta;
     this.CONFIGUTILITIES = injectedConfigUtilities;

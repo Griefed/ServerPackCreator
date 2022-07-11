@@ -42,8 +42,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/packs")
 public class ServerPackController {
 
-  private static final Logger LOG = LogManager.getLogger(ServerPackController.class);
-
   private final ServerPackService SERVERPACKSERVICE;
 
   /**
@@ -99,7 +97,6 @@ public class ServerPackController {
    * @author Griefed
    */
   @GetMapping("vote/{voting}")
-  // TODO: Secure with Captcha so vote spamming is somewhat prevented
   public ResponseEntity<Object> voteForServerPack(@PathVariable("voting") String voting) {
     return SERVERPACKSERVICE.voteForServerPack(voting);
   }

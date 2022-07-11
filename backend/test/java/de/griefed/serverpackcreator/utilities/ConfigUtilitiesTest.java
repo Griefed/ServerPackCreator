@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
@@ -23,7 +23,7 @@ public class ConfigUtilitiesTest {
   private final ConfigUtilities CONFIGUTILITIES;
 
   ConfigUtilitiesTest() throws IOException {
-    LocalizationManager LOCALIZATIONMANAGER = new LocalizationManager();
+    I18n I18N = new I18n();
     ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
     VersionMeta VERSIONMETA =
         new VersionMeta(
@@ -35,8 +35,8 @@ public class ConfigUtilitiesTest {
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     this.CONFIGUTILITIES =
         new ConfigUtilities(
-            LOCALIZATIONMANAGER,
-            new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES),
+            I18N,
+            new Utilities(I18N, APPLICATIONPROPERTIES),
             APPLICATIONPROPERTIES,
             VERSIONMETA);
   }

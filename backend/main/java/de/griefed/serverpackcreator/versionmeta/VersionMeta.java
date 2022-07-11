@@ -60,8 +60,6 @@ public class VersionMeta {
       new ObjectMapper()
           .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
           .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-  private final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY =
-      DocumentBuilderFactory.newInstance();
 
   private final File MINECRAFT_MANIFEST;
   private final File FORGE_MANIFEST;
@@ -119,8 +117,8 @@ public class VersionMeta {
 
     checkManifests();
 
-    this.FORGE_META = new ForgeMeta(forgeManifest);
-    this.MINECRAFT_META = new MinecraftMeta(minecraftManifest, this.FORGE_META);
+    this.FORGE_META = new ForgeMeta(forgeManifest, OBJECT_MAPPER);
+    this.MINECRAFT_META = new MinecraftMeta(minecraftManifest, this.FORGE_META, OBJECT_MAPPER);
     this.FABRIC_META = new FabricMeta(fabricManifest, fabricInstallerManifest);
     this.FORGE_META.initialize(this.MINECRAFT_META);
     this.QUIL_META = new QuiltMeta(quiltManifest, quiltInstallerManifest);
@@ -315,12 +313,13 @@ public class VersionMeta {
    * @author Griefed
    */
   private Document getXml(InputStream manifest) {
+    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = null;
     Document xml = null;
 
     try {
 
-      documentBuilder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
+      documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
     } catch (ParserConfigurationException ex) {
       LOG.error("Couldn't read document.", ex);

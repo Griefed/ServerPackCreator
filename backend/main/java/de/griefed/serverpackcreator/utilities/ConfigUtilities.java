@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.BufferedWriter;
@@ -62,14 +62,14 @@ public class ConfigUtilities {
 
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
-  private final LocalizationManager LOCALIZATIONMANAGER;
+  private final I18n I18N;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
 
   @Autowired
   public ConfigUtilities(
-      LocalizationManager injectedLocalizationManager,
+      I18n injectedI18n,
       Utilities injectedUtilities,
       ApplicationProperties injectedApplicationProperties,
       VersionMeta injectedVersionMeta)
@@ -81,14 +81,14 @@ public class ConfigUtilities {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     }
 
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
+    if (injectedI18n == null) {
+      this.I18N = new I18n(APPLICATIONPROPERTIES);
     } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
+      this.I18N = injectedI18n;
     }
 
     if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(LOCALIZATIONMANAGER, APPLICATIONPROPERTIES);
+      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
     } else {
       this.UTILITIES = injectedUtilities;
     }
@@ -238,45 +238,37 @@ public class ConfigUtilities {
                 + "%s\nincludeZipCreation = %b\n\n"
                 + "%s\njavaArgs = \"%s\"\n\n"
                 + "%s\nserverPackSuffix = \"%s\"",
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modpackdir"),
+            "# Path to your modpack. Can be either relative or absolute.\n# Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"",
             modpackDir.replace("\\", "/"),
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.clientmods"),
+            "# List of client-only mods to delete from serverpack.\n# No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n# Example: [AmbientSounds-,ClientTweaks-,PackMenu-,BetterAdvancement-,jeiintegration-]",
             UTILITIES.ListUtils()
                 .encapsulateListElements(UTILITIES.ListUtils().cleanList(clientMods)),
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.copydirs"),
+            "# Name of directories or files to include in serverpack.\n# When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n# for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n# Example: [config,mods,scripts]",
             UTILITIES.ListUtils()
                 .encapsulateListElements(UTILITIES.ListUtils().cleanList(copyDirs)),
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.custom.icon"),
+            "# Path to a custom server-icon.png-file to include in the server pack.",
             serverIconPath,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.custom.properties"),
+            "# Path to a custom server.properties-file to include in the server pack.",
             serverPropertiesPath,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.includeserverinstallation"),
+            "# Whether to install a Forge/Fabric/Quilt server for the serverpack. Must be true or false.\n# Default value is true.",
             includeServer,
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javapath"),
+            "# Path to the Java executable. On Linux systems it would be something like \"/usr/bin/java\".\n# Only needed if includeServerInstallation is true.",
             javaPath.replace("\\", "/"),
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.minecraftversion"),
+            "# Which Minecraft version to use. Example: \"1.16.5\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
             minecraftVersion,
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.modloader"),
+            "# Which modloader to install. Must be either \"Forge\", \"Fabric\" or \"Quilt\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
             modLoader,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.modloaderversion"),
+            "# The version of the modloader you want to install. Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
             modLoaderVersion,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.includeservericon"),
+            "# Include a server-icon.png in your serverpack. Must be true or false.\n# Customize server-icon.png in ./server_files.\n# Dimensions must be 64x64!\n# Default value is true.",
             includeIcon,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.includeserverproperties"),
+            "# Include a server.properties in your serverpack. Must be true or false.\n# Customize server.properties in ./server_files.\n# If no server.properties is provided but is set to true, a default one will be provided.\n# Default value is true.",
             includeProperties,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.includezipcreation"),
+            "# Create zip-archive of serverpack. Must be true or false.\n# Default value is true.",
             includeZip,
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.writeconfigtofile.javaargs"),
+            "# Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n# Leave as \"empty\" to not have Java arguments in your start-scripts.",
             javaArgs,
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.writeconfigtofile.serverpacksuffix"),
+            "# Suffix to append to the server pack to be generated. Can be left blank/empty.",
             serverPackSuffix);
 
     // Overwrite any existing config by deleting already existing one.
@@ -290,13 +282,10 @@ public class ConfigUtilities {
       writer.close();
       configWritten = true;
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          LOCALIZATIONMANAGER.getLocalizedString(
-              "defaultfiles.log.info.writeconfigtofile.confignew"));
+      LOG.info("Successfully written new configuration file.");
     } catch (IOException ex) {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(
-          LOCALIZATIONMANAGER.getLocalizedString("defaultfiles.log.error.writeconfigtofile"), ex);
+      LOG.error("Couldn't write serverpackcreator.conf.", ex);
     }
 
     return configWritten;
@@ -331,8 +320,7 @@ public class ConfigUtilities {
     configurationAsList.add(configurationModel.getModpackDir());
     configurationAsList.add(
         UTILITIES.StringUtils().buildString(configurationModel.getClientMods()));
-    configurationAsList.add(
-        UTILITIES.StringUtils().buildString(configurationModel.getCopyDirs()));
+    configurationAsList.add(UTILITIES.StringUtils().buildString(configurationModel.getCopyDirs()));
     configurationAsList.add(configurationModel.getJavaPath());
     configurationAsList.add(configurationModel.getMinecraftVersion());
     configurationAsList.add(configurationModel.getModLoader());
@@ -423,30 +411,23 @@ public class ConfigUtilities {
       String serverIconPath,
       String serverPropertiesPath) {
 
-    /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.start"));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modpackdir"),
-            modpackDirectory));
+    LOG.info("Your configuration is:");
+    LOG.info("Modpack directory: " + modpackDirectory);
 
     if (clientsideMods.isEmpty()) {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.warn(
-          LOCALIZATIONMANAGER.getLocalizedString(
-              "configuration.log.warn.printconfig.noclientmods"));
+      LOG.warn("No client mods specified.");
     } else {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.info(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.clientmods"));
+      LOG.info("Client mods specified. Client mods are:");
       for (String mod : clientsideMods) {
         LOG.info(String.format("    %s", mod));
       }
     }
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.copydirs"));
+    LOG.info("Directories to copy:");
 
     if (copyDirectories != null) {
 
@@ -456,63 +437,22 @@ public class ConfigUtilities {
 
     } else {
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.error(
-          LOCALIZATIONMANAGER.getLocalizedString("configuration.log.error.printconfig.copydirs"));
+      LOG.error("List of directories to copy is empty.");
     }
 
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.server"),
-            installServer));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javapath"),
-            javaInstallPath));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.info.printconfig.minecraftversion"),
-            minecraftVer));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.modloader"),
-            modloader));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.info.printconfig.modloaderversion"),
-            modloaderVersion));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.icon"),
-            includeIcon));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.properties"),
-            includeProperties));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.zip"),
-            includeZip));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.printconfig.javaargs"),
-            javaArgs));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "configuration.log.info.printconfig.serverpacksuffix"),
-            serverPackSuffix));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("utilities.log.info.config.print.servericon"),
-            serverIconPath));
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString(
-                "utilities.log.info.config.print.serverproperties"),
-            serverPropertiesPath));
+    LOG.info("Include server installation:      " + installServer);
+    LOG.info("Java Installation path:           " + javaInstallPath);
+    LOG.info("Minecraft version:                " + minecraftVer);
+    LOG.info("Modloader:                        " + modloader);
+    LOG.info("Modloader Version:                " + modloaderVersion);
+    LOG.info("Include server icon:              " + includeIcon);
+    LOG.info("Include server properties:        " + includeProperties);
+    LOG.info("Create zip-archive of serverpack: " + includeZip);
+    LOG.info("Java arguments for start-scripts: " + javaArgs);
+    LOG.info("Server pack suffix:               " + serverPackSuffix);
+    LOG.info("Path to custom server-icon:       " + serverIconPath);
+    LOG.info("Path to custom server.properties: " + serverPropertiesPath);
   }
 
   /**
@@ -546,6 +486,7 @@ public class ConfigUtilities {
 
     if (checkCurseForgeJsonForFabric(configurationModel.getCurseModpack())) {
 
+      LOG.debug("Setting modloader to Fabric.");
       if (modloaderAndVersion[0].equalsIgnoreCase("Fabric")) {
 
         configurationModel.setModLoader("Fabric");
@@ -554,9 +495,7 @@ public class ConfigUtilities {
       } else {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.iscurse.fabric"));
-        LOG.debug(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
+        LOG.info("Please make sure to check the configuration for the used Fabric version after ServerPackCreator is done setting up the modpack and new config file.");
 
         configurationModel.setModLoader("Fabric");
         configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoaderVersion());
@@ -565,7 +504,7 @@ public class ConfigUtilities {
     } else {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.debug.modloader.forge"));
+      LOG.debug("Setting modloader to Forge.");
 
       configurationModel.setModLoader("Forge");
       configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
@@ -734,8 +673,7 @@ public class ConfigUtilities {
    */
   public List<String> suggestCopyDirs(String modpackDir) {
     /* This log is meant to be read by the user, therefore we allow translation. */
-    LOG.info(
-        LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.start"));
+    LOG.info("Preparing a list of directories to include in server pack...");
 
     File[] listDirectoriesInModpack = new File(modpackDir).listFiles();
 
@@ -754,9 +692,7 @@ public class ConfigUtilities {
           np);
     }
 
-    for (int idirs = 0;
-        idirs < APPLICATIONPROPERTIES.getDirectoriesToExclude().size();
-        idirs++) {
+    for (int idirs = 0; idirs < APPLICATIONPROPERTIES.getDirectoriesToExclude().size(); idirs++) {
 
       int i = idirs;
 
@@ -764,10 +700,7 @@ public class ConfigUtilities {
           n -> (n.contains(APPLICATIONPROPERTIES.getDirectoriesToExclude().get(i))));
     }
 
-    LOG.info(
-        String.format(
-            LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.suggestcopydirs.list"),
-            dirsInModpack));
+    LOG.info("Modpack directory checked. Suggested directories for copyDirs-setting are: " + dirsInModpack);
 
     return dirsInModpack;
   }
@@ -783,7 +716,7 @@ public class ConfigUtilities {
    * @author Griefed
    */
   public boolean checkCurseForgeJsonForFabric(JsonNode modpackJson) {
-
+    // TODO check ids for Fabric API loader thingy
     for (int i = 0; i < modpackJson.get("files").size(); i++) {
 
       LOG.debug(
@@ -795,7 +728,7 @@ public class ConfigUtilities {
           || modpackJson.get("files").get(i).get("fileID").asText().equalsIgnoreCase("306612")) {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(LOCALIZATIONMANAGER.getLocalizedString("configuration.log.info.containsfabric"));
+        LOG.info("Fabric detected. Setting modloader to \"Fabric\".");
         return true;
       }
     }

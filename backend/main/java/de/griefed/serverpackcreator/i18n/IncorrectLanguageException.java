@@ -26,7 +26,7 @@ package de.griefed.serverpackcreator.i18n;
  * {@link #IncorrectLanguageException(Throwable)}<br>
  * {@link #IncorrectLanguageException(String, Throwable)}
  *
- * <p>Provides exceptions to {@link LocalizationManager}
+ * <p>Provides exceptions to {@link I18n}
  *
  * @author whitebear60
  */

@@ -37,7 +37,7 @@ class MinecraftServerMeta {
   private HashMap<String, MinecraftServer> meta;
 
   /**
-   * Constructor.
+   * Create a new Minecraft Server Meta instance.
    *
    * @param minecraftClientMeta Instance of {@link MinecraftClientMeta}.
    * @author Griefed
@@ -49,10 +49,9 @@ class MinecraftServerMeta {
   /**
    * Update this instance of {@link MinecraftServerMeta} with new information.
    *
-   * @return This instance of {@link MinecraftServerMeta}.
    * @author Griefed
    */
-  protected MinecraftServerMeta update() {
+  protected void update() {
 
     this.RELEASES.clear();
     MINECRAFT_CLIENT_META.releases().forEach(client -> this.RELEASES.add(client.server()));
@@ -67,8 +66,6 @@ class MinecraftServerMeta {
     MINECRAFT_CLIENT_META
         .snapshots()
         .forEach(client -> this.meta.put(client.version(), client.server()));
-
-    return this;
   }
 
   /**

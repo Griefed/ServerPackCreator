@@ -1,7 +1,7 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.LocalizationManager;
+import de.griefed.serverpackcreator.i18n.I18n;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -33,22 +33,13 @@ public class WebUtilities {
   private static final Logger LOG = LogManager.getLogger(WebUtilities.class);
 
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final LocalizationManager LOCALIZATIONMANAGER;
 
-  public WebUtilities(
-      ApplicationProperties injectedApplicationProperties,
-      LocalizationManager injectedLocalizationManager) {
+  public WebUtilities(ApplicationProperties injectedApplicationProperties) {
     if (injectedApplicationProperties == null) {
 
       this.APPLICATIONPROPERTIES = new ApplicationProperties();
     } else {
       this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedLocalizationManager == null) {
-      this.LOCALIZATIONMANAGER = new LocalizationManager(APPLICATIONPROPERTIES);
-    } else {
-      this.LOCALIZATIONMANAGER = injectedLocalizationManager;
     }
   }
 
@@ -321,8 +312,7 @@ public class WebUtilities {
     if (response.contains(requestURL.replace("/documents", ""))) {
       return response;
     } else {
-      return LOCALIZATIONMANAGER.getLocalizedString(
-          "createserverpack.log.error.abouttab.hastebin.response");
+      return "Error encountered when acquiring response from URL.";
     }
   }
 }
