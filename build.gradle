@@ -361,6 +361,16 @@ publishing {
   }
 
   repositories {
+
+    maven {
+      name = "OSSRH"
+      url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+      credentials {
+        username = System.getenv("OSSRH_USERNAME")
+        password = System.getenv("OSSRH_PASSWORD")
+      }
+    }
+
     maven {
       name = "GitHubPackages"
       url = "https://maven.pkg.github.com/Griefed/serverpackcreator"
@@ -369,16 +379,7 @@ publishing {
         password = System.getenv("GITHUB_TOKEN")
       }
     }
-    maven {
-      url = "https://git.griefed.de/api/v4/projects/63/packages/maven"
-      credentials(HttpHeaderCredentials) {
-        name = "Private-Token"
-        value = System.getenv("GITLAB_TOKEN")
-      }
-      authentication {
-        header(HttpHeaderAuthentication)
-      }
-    }
+
     maven {
       url = "https://gitlab.com/api/v4/projects/32677538/packages/maven"
       credentials(HttpHeaderCredentials) {
@@ -389,14 +390,18 @@ publishing {
         header(HttpHeaderAuthentication)
       }
     }
+
     maven {
-      name = "OSSRH"
-      url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-      credentials {
-        username = System.getenv("OSSRH_USERNAME")
-        password = System.getenv("OSSRH_PASSWORD")
+      url = "https://git.griefed.de/api/v4/projects/63/packages/maven"
+      credentials(HttpHeaderCredentials) {
+        name = "Private-Token"
+        value = System.getenv("GITLAB_TOKEN")
+      }
+      authentication {
+        header(HttpHeaderAuthentication)
       }
     }
+    
   }
 }
 
