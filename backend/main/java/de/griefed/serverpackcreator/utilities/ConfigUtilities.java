@@ -41,7 +41,9 @@ import java.nio.file.Paths;
 import java.nio.file.ProviderNotFoundException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -59,7 +61,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ConfigUtilities {
-
+  // TODO move class back to configurationhandler...why did I make all this stuff a separate class
+  // anyway?
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
   private final I18n I18N;
@@ -292,50 +295,6 @@ public class ConfigUtilities {
   }
 
   /**
-   * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to
-   * any addon that may run. Values included in this list are:<br>
-   * 1. modpackDir<br>
-   * 2. clientMods<br>
-   * 3. copyDirs<br>
-   * 4. javaPath<br>
-   * 5. minecraftVersion<br>
-   * 6. modLoader<br>
-   * 7. modLoaderVersion<br>
-   * 8. includeServerInstallation<br>
-   * 9. includeServerIcon<br>
-   * 10.includeServerProperties<br>
-   * 11.includeStartScripts<br>
-   * 12.includeZipCreation
-   *
-   * @param configurationModel An instance of {@link ConfigurationModel} which contains the
-   *     configuration of the modpack.
-   * @return String List. A list of all configurations as strings.
-   * @author Griefed
-   */
-  @Deprecated
-  public List<String> getConfigurationAsList(ConfigurationModel configurationModel) {
-
-    List<String> configurationAsList = new ArrayList<>(100);
-
-    configurationAsList.add(configurationModel.getModpackDir());
-    configurationAsList.add(
-        UTILITIES.StringUtils().buildString(configurationModel.getClientMods()));
-    configurationAsList.add(UTILITIES.StringUtils().buildString(configurationModel.getCopyDirs()));
-    configurationAsList.add(configurationModel.getJavaPath());
-    configurationAsList.add(configurationModel.getMinecraftVersion());
-    configurationAsList.add(configurationModel.getModLoader());
-    configurationAsList.add(configurationModel.getModLoaderVersion());
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeServerInstallation()));
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeServerIcon()));
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeServerProperties()));
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeZipCreation()));
-
-    LOG.debug(String.format("Configuration to pass to addons is: %s", configurationAsList));
-
-    return configurationAsList;
-  }
-
-  /**
    * Convenience method which passes the important fields from an instance of {@link
    * ConfigurationModel} to {@link #printConfigurationModel(String, List, List, boolean, String,
    * String, String, String, boolean, boolean, boolean, String, String, String, String)}
@@ -456,7 +415,86 @@ public class ConfigUtilities {
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the downloaded CurseForge
+   * <strong><code>instance.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from a ATLauncher manifest.
+   *
+   * @param configurationModel {@link ConfigurationModel} The model to update.
+   * @param manifest {@link File} The manifest file.
+   * @throws IOException when the instance.json-file could not be parsed.
+   * @author Griefed
+   */
+  public void updateConfigModelFromATLauncherInstance(
+      ConfigurationModel configurationModel, File manifest) throws IOException {
+
+    configurationModel.setModpackJson(getJson(manifest));
+
+    configurationModel.setMinecraftVersion(configurationModel.getModpackJson().get("id").asText());
+
+    configurationModel.setModLoader(
+        configurationModel
+            .getModpackJson()
+            .get("launcher")
+            .get("loaderVersion")
+            .get("type")
+            .asText());
+
+    configurationModel.setModLoaderVersion(
+        configurationModel
+            .getModpackJson()
+            .get("launcher")
+            .get("loaderVersion")
+            .get("version")
+            .asText());
+  }
+
+  /**
+   * <strong><code>modrinth.index.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from a Modrinth <code>
+   * modrinth.index.json</code>-manifest.
+   *
+   * @param configurationModel {@link ConfigurationModel} The model to update.
+   * @param manifest {@link File} The manifest file.
+   * @throws IOException when the modrinth.index.json-file could not be parsed.
+   * @author Griefed
+   */
+  public void updateConfigModelFromModrinthManifest(
+      ConfigurationModel configurationModel, File manifest) throws IOException {
+
+    configurationModel.setModpackJson(getJson(manifest));
+
+    configurationModel.setMinecraftVersion(
+        configurationModel.getModpackJson().get("dependencies").get("minecraft").asText());
+
+    for (Iterator<Entry<String, JsonNode>> it =
+            configurationModel.getModpackJson().get("dependencies").fields();
+        it.hasNext(); ) {
+      Entry<String, JsonNode> dependencyEntry = it.next();
+
+      switch (dependencyEntry.getKey()) {
+        case "fabric-loader":
+          configurationModel.setModLoader("Fabric");
+          configurationModel.setModLoaderVersion(dependencyEntry.getValue().asText());
+          break;
+
+        case "quilt-loader":
+          configurationModel.setModLoader("Quilt");
+          configurationModel.setModLoaderVersion(dependencyEntry.getValue().asText());
+          break;
+
+        case "forge":
+          configurationModel.setModLoader("Forge");
+          configurationModel.setModLoaderVersion(dependencyEntry.getValue().asText());
+          break;
+      }
+    }
+  }
+
+  /**
+   * <strong><code>manifest.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the downloaded CurseForge
    * modpack. A manifest.json-file is usually created when a modpack is exported through launchers
    * like Overwolf's CurseForge or GDLauncher.
    *
@@ -469,11 +507,11 @@ public class ConfigUtilities {
   public void updateConfigModelFromCurseManifest(
       ConfigurationModel configurationModel, File manifest) throws IOException {
 
-    configurationModel.setCurseModpack(getJson(manifest));
+    configurationModel.setModpackJson(getJson(manifest));
 
     String[] modloaderAndVersion =
         configurationModel
-            .getCurseModpack()
+            .getModpackJson()
             .get("minecraft")
             .get("modLoaders")
             .get(0)
@@ -482,38 +520,18 @@ public class ConfigUtilities {
             .split("-");
 
     configurationModel.setMinecraftVersion(
-        configurationModel.getCurseModpack().get("minecraft").get("version").asText());
+        configurationModel.getModpackJson().get("minecraft").get("version").asText());
 
-    if (checkCurseForgeJsonForFabric(configurationModel.getCurseModpack())) {
+    configurationModel.setModLoader(modloaderAndVersion[0]);
 
-      LOG.debug("Setting modloader to Fabric.");
-      if (modloaderAndVersion[0].equalsIgnoreCase("Fabric")) {
-
-        configurationModel.setModLoader("Fabric");
-        configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
-
-      } else {
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info("Please make sure to check the configuration for the used Fabric version after ServerPackCreator is done setting up the modpack and new config file.");
-
-        configurationModel.setModLoader("Fabric");
-        configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoaderVersion());
-      }
-
-    } else {
-
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug("Setting modloader to Forge.");
-
-      configurationModel.setModLoader("Forge");
-      configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
-    }
+    configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the minecraftinstance.json of the
-   * modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
+   * <strong><code>minecraftinstance.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the minecraftinstance.json of
+   * the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
    *     for a modpack from which to create a server pack.
@@ -524,19 +542,28 @@ public class ConfigUtilities {
   public void updateConfigModelFromMinecraftInstance(
       ConfigurationModel configurationModel, File minecraftInstance) throws IOException {
 
-    configurationModel.setCurseModpack(getJson(minecraftInstance));
+    configurationModel.setModpackJson(getJson(minecraftInstance));
 
-    String[] modLoaderAndVersion =
-        configurationModel.getCurseModpack().get("baseModLoader").get("name").asText().split("-");
+    configurationModel.setModLoader(
+        getModLoaderCase(
+            configurationModel
+                .getModpackJson()
+                .get("baseModLoader")
+                .get("name")
+                .asText()
+                .split("-")[0]));
 
-    configurationModel.setModLoader(getModLoaderCase(modLoaderAndVersion[0]));
-    configurationModel.setModLoaderVersion(modLoaderAndVersion[1]);
+    configurationModel.setModLoaderVersion(
+        configurationModel.getModpackJson().get("baseModLoader").get("forgeVersion").asText());
+
     configurationModel.setMinecraftVersion(
-        configurationModel.getCurseModpack().get("baseModLoader").get("minecraftVersion").asText());
+        configurationModel.getModpackJson().get("baseModLoader").get("minecraftVersion").asText());
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the modpacks config.json. A
+   * <strong><code>config.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the modpacks config.json. A
    * config.json is usually created by GDLauncher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
@@ -548,33 +575,28 @@ public class ConfigUtilities {
   public void updateConfigModelFromConfigJson(ConfigurationModel configurationModel, File config)
       throws IOException {
 
-    configurationModel.setCurseModpack(getJson(config));
+    configurationModel.setModpackJson(getJson(config));
 
     configurationModel.setModLoader(
         getModLoaderCase(
-            configurationModel.getCurseModpack().get("loader").get("loaderType").asText()));
+            configurationModel.getModpackJson().get("loader").get("loaderType").asText()));
+
     configurationModel.setMinecraftVersion(
-        configurationModel.getCurseModpack().get("loader").get("mcVersion").asText());
+        configurationModel.getModpackJson().get("loader").get("mcVersion").asText());
 
-    if (configurationModel.getModLoader().equalsIgnoreCase("forge")) {
-
-      configurationModel.setModLoaderVersion(
-          configurationModel
-              .getCurseModpack()
-              .get("loader")
-              .get("loaderVersion")
-              .asText()
-              .split("-")[1]);
-
-    } else {
-
-      configurationModel.setModLoaderVersion(
-          configurationModel.getCurseModpack().get("loader").get("loaderVersion").asText());
-    }
+    configurationModel.setModLoaderVersion(
+        configurationModel
+            .getModpackJson()
+            .get("loader")
+            .get("loaderVersion")
+            .asText()
+            .replace(configurationModel.getMinecraftVersion() + "-", ""));
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
+   * <strong><code>mmc-pack.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
    * mmc-pack.json is usually created by the MultiMC launcher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
@@ -586,30 +608,38 @@ public class ConfigUtilities {
   public void updateConfigModelFromMMCPack(ConfigurationModel configurationModel, File mmcPack)
       throws IOException {
 
-    configurationModel.setCurseModpack(getJson(mmcPack));
+    configurationModel.setModpackJson(getJson(mmcPack));
 
-    for (JsonNode jsonNode : configurationModel.getCurseModpack().get("components")) {
+    for (JsonNode jsonNode : configurationModel.getModpackJson().get("components")) {
 
-      if (jsonNode.get("uid").asText().equals("net.minecraft")) {
+      switch (jsonNode.get("uid").asText()) {
+        case "net.minecraft":
+          configurationModel.setMinecraftVersion(jsonNode.get("version").asText());
+          break;
 
-        configurationModel.setMinecraftVersion(jsonNode.get("version").asText());
+        case "net.minecraftforge":
+          configurationModel.setModLoader("Forge");
+          configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+          break;
 
-      } else if (jsonNode.get("uid").asText().equals("net.minecraftforge")) {
+        case "net.fabricmc.fabric-loader":
+          configurationModel.setModLoader("Fabric");
+          configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+          break;
 
-        configurationModel.setModLoader("Forge");
-        configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
-
-      } else if (jsonNode.get("uid").asText().equals("net.fabricmc.fabric-loader")) {
-
-        configurationModel.setModLoader("Fabric");
-        configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+        case "org.quiltmc.quilt-loader":
+          configurationModel.setModLoader("Quilt");
+          configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+          break;
       }
     }
   }
 
   /**
-   * Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks instance.cfg,
-   * which is usually created by the MultiMC launcher.
+   * <strong><code>instance.cfg</code></strong>
+   *
+   * <p>Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks
+   * instance.cfg, which is usually created by the MultiMC launcher.
    *
    * @param instanceCfg {@link File}. The config.json-file of the modpack to read.
    * @return {@link String} Returns the instance name.
@@ -700,7 +730,9 @@ public class ConfigUtilities {
           n -> (n.contains(APPLICATIONPROPERTIES.getDirectoriesToExclude().get(i))));
     }
 
-    LOG.info("Modpack directory checked. Suggested directories for copyDirs-setting are: " + dirsInModpack);
+    LOG.info(
+        "Modpack directory checked. Suggested directories for copyDirs-setting are: "
+            + dirsInModpack);
 
     return dirsInModpack;
   }
@@ -714,9 +746,12 @@ public class ConfigUtilities {
    * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
    * @return Boolean. Returns true if Jumploader is found.
    * @author Griefed
+   * @deprecated Regular checks in {@link #updateConfigModelFromCurseManifest(ConfigurationModel,
+   *     File)} detect Fabric and the version. Iterating through the mods list is no longer
+   *     necessary.
    */
   public boolean checkCurseForgeJsonForFabric(JsonNode modpackJson) {
-    // TODO check ids for Fabric API loader thingy
+
     for (int i = 0; i < modpackJson.get("files").size(); i++) {
 
       LOG.debug(
@@ -758,7 +793,8 @@ public class ConfigUtilities {
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
           IOException, SecurityException {
     List<String> directories = new ArrayList<>(100);
-
+    // TODO check contents with zip4j
+    // https://github.com/srikanth-lingala/zip4j#list-all-files-in-a-zip
     LOG.debug("URI: " + zipURI);
 
     FileSystem fileSystems = FileSystems.newFileSystem(zipURI, null);

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "game": "minecraft",
+  "versionId": "1.19",
+  "name": "SodiumPlus-1.2.0",
+  "summary": "Minecraft 1.19 with Fabric",
+  "files": [],
+  "dependencies": {
+    "minecraft": "1.19",
+    "fabric-loader": "0.14.8"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "game": "minecraft",
+  "versionId": "0.3.3",
+  "name": "Chronos Client",
+  "summary": "Chronos Client provides the best possible FPS along with some cool Add-Ons to improve gameplay experience.",
+  "files": [],
+  "dependencies": {
+    "minecraft": "1.19",
+    "quilt-loader": "0.17.0"
+  }
+}
