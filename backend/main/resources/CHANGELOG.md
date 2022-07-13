@@ -1,3 +1,60 @@
+## [3.8.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.7.0...3.8.0) (2022-07-11)
+
+
+### 💎 Improvements
+
+* **Start scripts:** Ensure we stay in the batch-scripts containing directory, even when someone decides to run with administrator privileges ([621bf18](https://git.griefed.de/Griefed/ServerPackCreator/commit/621bf18f49fd079b613a51486d1b72e7dc421414))
+
+
+### 🚀 Features
+
+* **Start scripts:** Templating! Create start scripts from customizable templates ([26e2452](https://git.griefed.de/Griefed/ServerPackCreator/commit/26e245266e51234199bd88d54bbe674820357ff7))
+
+
+### Other
+
+* **deps-dev:** bump @babel/eslint-parser in /frontend ([1139c56](https://git.griefed.de/Griefed/ServerPackCreator/commit/1139c56060fcc19e492f3d157e0948143270d3a9))
+* **deps-dev:** bump @types/node from 17.0.24 to 18.0.3 in /frontend ([37af17d](https://git.griefed.de/Griefed/ServerPackCreator/commit/37af17de9727614eed64c7e7b51fec7df86224a6))
+* **deps-dev:** bump eslint from 8.14.0 to 8.18.0 in /frontend ([2242843](https://git.griefed.de/Griefed/ServerPackCreator/commit/2242843dd25e516222825269546b22c120feb031))
+* **deps-dev:** bump eslint from 8.18.0 to 8.19.0 in /frontend ([e4a6147](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4a61479c85fe9050d04299ce80def6f1eb6fbc7))
+* **deps-dev:** bump eslint-plugin-vue from 8.7.1 to 9.2.0 in /frontend ([700f9b8](https://git.griefed.de/Griefed/ServerPackCreator/commit/700f9b8613ac5c49d4bf9d07ccfcbc909a1613e3))
+* **deps:** bump @quasar/extras from 1.13.6 to 1.14.1 in /frontend ([a1d247e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a1d247e5cc43f07ff1a87510591206bfb0c75e47))
+* **deps:** bump core-js from 3.22.8 to 3.23.4 in /frontend ([8d01f28](https://git.griefed.de/Griefed/ServerPackCreator/commit/8d01f28c92ccc6df54dae49debd3013954224ad0))
+* **deps:** bump docker/build-push-action from 2 to 3 ([dfd9e29](https://git.griefed.de/Griefed/ServerPackCreator/commit/dfd9e291eac7a6a0d31e035d86ce22ed0aede14d))
+* **deps:** bump docker/setup-buildx-action from 1 to 2 ([97715c1](https://git.griefed.de/Griefed/ServerPackCreator/commit/97715c159b6115090a0fdd4c5bb5d907f2c4dca1))
+* **deps:** bump docker/setup-qemu-action from 1 to 2 ([0fc9735](https://git.griefed.de/Griefed/ServerPackCreator/commit/0fc97352255dc0e7385adaa5ce10950c1b200942))
+* **deps:** bump griefed/baseimage-ubuntu-jdk-8 from 2.0.10 to 2.0.11 ([16b9fa0](https://git.griefed.de/Griefed/ServerPackCreator/commit/16b9fa054d1a7e39007008a7383b09977f025795))
+* **deps:** bump io.spring.dependency-management ([6018b76](https://git.griefed.de/Griefed/ServerPackCreator/commit/6018b76c78f570b637ed566c3bea9ce0f5169945))
+* **deps:** bump JamesIves/github-pages-deploy-action ([e909c69](https://git.griefed.de/Griefed/ServerPackCreator/commit/e909c69d2184c5b0f96eff4fad67a66121b5e26b))
+* **deps:** bump log4j-core from 2.17.2 to 2.18.0 ([aaae449](https://git.griefed.de/Griefed/ServerPackCreator/commit/aaae449a31fe5e40f9f3d0f4c92f4bb0812dd0b9))
+* **deps:** bump log4j-jul from 2.17.2 to 2.18.0 ([2b635b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/2b635b0830fb5c004b53da702c9a5bf7ce1c726e))
+* **deps:** bump log4j-web from 2.17.2 to 2.18.0 ([691be8c](https://git.griefed.de/Griefed/ServerPackCreator/commit/691be8c0e8a58f44813f949b900ce0c59b0ab73c))
+* **deps:** bump org.springframework.boot from 2.6.7 to 2.7.1 ([3231370](https://git.griefed.de/Griefed/ServerPackCreator/commit/323137080d933fcd633cc3c48a43f9e9189596b0))
+* **deps:** bump quasar from 2.6.6 to 2.7.3 in /frontend ([c88465a](https://git.griefed.de/Griefed/ServerPackCreator/commit/c88465a9480201df14f0c0e707e2282808db7665))
+* **deps:** bump spring-boot-starter-artemis from 2.7.0 to 2.7.1 ([b8d39d3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8d39d3d4b87faab93efb9953f4986ef48f11cb7))
+* **deps:** bump spring-boot-starter-data-jpa from 2.7.0 to 2.7.1 ([224e03a](https://git.griefed.de/Griefed/ServerPackCreator/commit/224e03a5e0833cc31a1421fe31964e59b24b2f52))
+* **deps:** bump spring-boot-starter-web from 2.7.0 to 2.7.1 ([944bd33](https://git.griefed.de/Griefed/ServerPackCreator/commit/944bd339341563adb6efdb491c12db87e94c5f66))
+* **deps:** bump vue from 3.2.33 to 3.2.37 in /frontend ([d589fff](https://git.griefed.de/Griefed/ServerPackCreator/commit/d589fff10e1e0a00246ba91c868bdb055d3a6935))
+* **deps:** bump zip4j from 2.10.0 to 2.11.1 ([fc84982](https://git.griefed.de/Griefed/ServerPackCreator/commit/fc849821a77bd9eb7ae9ca54059a4ff25d6e8e23))
+* **deps:** update dependency @quasar/extras to v1.14.2 ([12228dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/12228dcee34ec32482de385ab54247a273302b3f))
+* **deps:** update dependency core-js to v3.23.3 ([6bdaf51](https://git.griefed.de/Griefed/ServerPackCreator/commit/6bdaf5140372e423a0a20501b755f3cc2e2b7451))
+* **deps:** update dependency eslint to v8.19.0 ([9b9378d](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b9378de759e93e68a967a9b282d5ccc227332b3))
+* **deps:** update dependency eslint-plugin-vue to v9 ([f328a06](https://git.griefed.de/Griefed/ServerPackCreator/commit/f328a06de16d50b27d997d769006b83d7ee22d43))
+* **deps:** update dependency eslint-webpack-plugin to v3.2.0 ([75322cf](https://git.griefed.de/Griefed/ServerPackCreator/commit/75322cf8cfe60925bfb9c57226fbed501c675f31))
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.11 ([6292f3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6292f3ffaa61f0a9d96b304f6fc8405061e9ff00))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.0.8 ([1c40cc0](https://git.griefed.de/Griefed/ServerPackCreator/commit/1c40cc008259a5de9376582dee3d2e4cba306141))
+* **deps:** update dependency org.apache.logging.log4j:log4j-api to v2.18.0 ([d1157e4](https://git.griefed.de/Griefed/ServerPackCreator/commit/d1157e42507d451ade6cdda84e35366290f0117e))
+* **deps:** update dependency org.apache.logging.log4j:log4j-core to v2.18.0 ([d2f24e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2f24e1d696e6393499a1a5962aa9f955382478c))
+* **deps:** update dependency org.apache.logging.log4j:log4j-jul to v2.18.0 ([0166133](https://git.griefed.de/Griefed/ServerPackCreator/commit/0166133e9b70cdfe5b82ae2545f8915ed7686074))
+* **deps:** update dependency org.apache.logging.log4j:log4j-slf4j-impl to v2.18.0 ([c46d93c](https://git.griefed.de/Griefed/ServerPackCreator/commit/c46d93c4b7c1ce9e18a2ff961ac044b844987617))
+* **deps:** update dependency org.apache.logging.log4j:log4j-web to v2.18.0 ([455a181](https://git.griefed.de/Griefed/ServerPackCreator/commit/455a18133ead8a31eeac380a334f5dd038ff9b4a))
+* **deps:** update dependency org.pf4j:pf4j to v3.7.0 ([a10228b](https://git.griefed.de/Griefed/ServerPackCreator/commit/a10228bba4455870620521b45a406e4ff0db9ddd))
+* **deps:** update dependency quasar to v2.7.4 ([8040ae5](https://git.griefed.de/Griefed/ServerPackCreator/commit/8040ae5bc8ab3d7f2f4862dc8d993ea155069e7f))
+* **deps:** update dependency quasar to v2.7.5 ([ae5d48f](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae5d48f08ffbff5b26f4df7d743757c07e5fa8a6))
+* **deps:** update dependency vue to v3.2.37 ([018c907](https://git.griefed.de/Griefed/ServerPackCreator/commit/018c9079e0a1f9e62a44114cc69e9342a5c2c5e8))
+* **deps:** update plugin io.spring.dependency-management to v1.0.12.release ([540ee71](https://git.griefed.de/Griefed/ServerPackCreator/commit/540ee711e5e6acaeaf49c3af0bb54efde2ea8909))
+* **deps:** update spring boot to v2.7.1 ([7f9172d](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f9172d3d10a8a1808bcdd8d1642b30f0b1a2297))
+
 ## [3.7.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.6.0...3.7.0) (2022-06-29)
 
 

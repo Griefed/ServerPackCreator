@@ -128,6 +128,72 @@ public class StringUtilities {
   }
 
   /**
+   * Remove commonly forbidden characters from the passed string, making the resulting String safe
+   * to use for files, paths, directories etc. If the passed text ends with a SPACE<code>
+   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
+   * Contraty to {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
+   * <strong>&#47;</strong> or <strong>&#92;</strong>.
+   *
+   * <p>Replaced/removed are:
+   *
+   * <ul>
+   *   <li><b>&#60;</b>
+   *   <li><b>&#62;</b>
+   *   <li><b>&#58;</b>
+   *   <li><b>&#34;</b>
+   *   <li><b>&#124;</b>
+   *   <li><b>&#63;</b>
+   *   <li><b>&#42;</b>
+   *   <li><b>&#35;</b>
+   *   <li><b>&#37;</b>
+   *   <li><b>&#38;</b>
+   *   <li><b>&#123;</b>
+   *   <li><b>&#125;</b>
+   *   <li><b>&#36;</b>
+   *   <li><b>&#33;</b>
+   *   <li><b>&#39;</b>
+   *   <li><b>&#64;</b>
+   *   <li><b>&#43;</b>
+   *   <li><b>&#180;</b>
+   *   <li><b>&#96;</b>
+   *   <li><b>&#61;</b>
+   * </ul>
+   *
+   * <br>
+   *
+   * @param text {@link String} The text which you want to be made safe.
+   * @return {@link String} The passed String safe for use for files, paths, directories etc.
+   * @author Griefed
+   */
+  public String pathSecureTextAlternative(String text) {
+
+    while (text.endsWith(".") || text.endsWith(" ")) {
+      text = text.replace(text.substring(text.length() - 1), "");
+    }
+
+    return text.replace("<", "")
+        .replace(">", "")
+        .replace(":", "")
+        .replace("\"", "")
+        .replace("|", "")
+        .replace("?", "")
+        .replace("*", "")
+        .replace("#", "")
+        .replace("%", "")
+        .replace("&", "")
+        .replace("{", "")
+        .replace("}", "")
+        .replace("$", "")
+        .replace("!", "")
+        .replace("'", "")
+        .replace("@", "")
+        .replace("+", "")
+        .replace("´", "")
+        .replace("`", "")
+        .replace("=", "");
+  }
+
+  /**
    * Check the passed string whether it contains any of the following characters:
    *
    * <ul>

@@ -54,7 +54,7 @@ public class ConfigurationModel {
   private Boolean includeServerIcon = true;
   private Boolean includeServerProperties = true;
   private Boolean includeZipCreation = true;
-  private JsonNode curseModpack = null;
+  private JsonNode modpackJson = null;
   private String projectName;
   private String fileName;
   private String fileDiskName;
@@ -90,7 +90,8 @@ public class ConfigurationModel {
    * @param includeServerProperties {@link Boolean} Whether to include the server.properties in the
    *     server pack.
    * @param includeZipCreation {@link Boolean} Whether to create a ZIP-archive of the server pack.
-   * @param scriptSettings {@link HashMap} {@link String} {@link String} Map containing key-value pairs to be used in start script creation.
+   * @param scriptSettings {@link HashMap} {@link String} {@link String} Map containing key-value
+   *     pairs to be used in start script creation.
    * @author Griefed
    */
   public ConfigurationModel(
@@ -455,24 +456,25 @@ public class ConfigurationModel {
   }
 
   /**
-   * Getter for the JsonNode containing all information about the CurseForge modpack.
+   * Getter for the JsonNode containing all information about the modpack. May be from various *
+   * sources, so be careful when using this.
    *
-   * @return JsonNode. The JsonNode containing all information about the CurseForge modpack.
+   * @return JsonNode. The JsonNode containing all information about the modpack.
    * @author Griefed
    */
-  public JsonNode getCurseModpack() {
-    return curseModpack;
+  public JsonNode getModpackJson() {
+    return modpackJson;
   }
 
   /**
-   * Setter for the JsonNode containing all information about the CurseForge modpack.
+   * Setter for the JsonNode containing all information about the modpack. May be from various
+   * sources, so be careful when using this.
    *
-   * @param curseModpack JsonNode. The JsonNode containing all information about the CurseForge
-   *     modpack.
+   * @param modpackJson JsonNode. The JsonNode containing all information about the modpack.
    * @author Griefed
    */
-  public void setCurseModpack(JsonNode curseModpack) {
-    this.curseModpack = curseModpack;
+  public void setModpackJson(JsonNode modpackJson) {
+    this.modpackJson = modpackJson;
   }
 
   /**
@@ -641,7 +643,7 @@ public class ConfigurationModel {
         + ", includeZipCreation="
         + includeZipCreation
         + ", curseModpack="
-        + curseModpack
+        + modpackJson
         + ", projectName='"
         + projectName
         + '\''

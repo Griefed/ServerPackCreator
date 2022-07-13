@@ -332,9 +332,9 @@ public class ConfigurationModelTest {
   @Test
   void getsetCurseModpackTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    configurationModel.setCurseModpack(
-        getJson(new File("backend/test/resources/testresources/manifest.json")));
-    Assertions.assertNotNull(configurationModel.getCurseModpack());
+    configurationModel.setModpackJson(
+        getJson(new File("backend/test/resources/testresources/curseforge/fabric_manifest.json")));
+    Assertions.assertNotNull(configurationModel.getModpackJson());
   }
 
   @Test

@@ -35,10 +35,7 @@ public class ConfigUtilitiesTest {
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     this.CONFIGUTILITIES =
         new ConfigUtilities(
-            I18N,
-            new Utilities(I18N, APPLICATIONPROPERTIES),
-            APPLICATIONPROPERTIES,
-            VERSIONMETA);
+            I18N, new Utilities(I18N, APPLICATIONPROPERTIES), APPLICATIONPROPERTIES, VERSIONMETA);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -347,13 +344,46 @@ public class ConfigUtilitiesTest {
   }
 
   @Test
+  void updateConfigModelFromModrinthManifestTest() throws IOException {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/modrinth/forge_modrinth.index.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "40.1.48");
+
+    CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/modrinth/fabric_modrinth.index.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.14.8");
+
+    CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/modrinth/quilt_modrinth.index.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Quilt");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.17.0");
+  }
+
+  @Test
   void updateConfigModelFromCurseManifestTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
     CONFIGUTILITIES.updateConfigModelFromCurseManifest(
-        configurationModel, new File("backend/test/resources/testresources/manifest.json"));
+        configurationModel,
+        new File("backend/test/resources/testresources/curseforge/forge_manifest.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.0.1");
+
+    CONFIGUTILITIES.updateConfigModelFromCurseManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/curseforge/fabric_manifest.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.13.3");
   }
 
   @Test
@@ -361,38 +391,73 @@ public class ConfigUtilitiesTest {
     ConfigurationModel configurationModel = new ConfigurationModel();
     CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(
         configurationModel,
-        new File("backend/test/resources/testresources/minecraftinstance.json"));
+        new File("backend/test/resources/testresources/curseforge/forge_minecraftinstance.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.2.4");
+
+    CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(
+        configurationModel,
+        new File("backend/test/resources/testresources/curseforge/fabric_minecraftinstance.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.13.3");
   }
 
   @Test
   void updateConfigModelFromConfigJsonTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
     CONFIGUTILITIES.updateConfigModelFromConfigJson(
-        configurationModel, new File("backend/test/resources/testresources/config.json"));
-    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.1");
+        configurationModel,
+        new File("backend/test/resources/testresources/gdlauncher/fabric_config.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
     Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
-    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.12.12");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.14.8");
+
+    CONFIGUTILITIES.updateConfigModelFromConfigJson(
+        configurationModel,
+        new File("backend/test/resources/testresources/gdlauncher/forge_config.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "40.1.52");
   }
 
   @Test
   void updateConfigModelFromMMCPackTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
     CONFIGUTILITIES.updateConfigModelFromMMCPack(
-        configurationModel, new File("backend/test/resources/testresources/mmc-pack.json"));
+        configurationModel,
+        new File("backend/test/resources/testresources/multimc/fabric_mmc-pack.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.1");
     Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.12.12");
+
+    CONFIGUTILITIES.updateConfigModelFromMMCPack(
+        configurationModel,
+        new File("backend/test/resources/testresources/multimc/forge_mmc-pack.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.2.23");
+
+    CONFIGUTILITIES.updateConfigModelFromMMCPack(
+        configurationModel,
+        new File("backend/test/resources/testresources/multimc/quilt_mmc-pack.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Quilt");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.17.0");
   }
 
   @Test
   void updateDestinationFromInstanceCfgTest() throws IOException {
-    String name =
+    Assertions.assertEquals(
         CONFIGUTILITIES.updateDestinationFromInstanceCfg(
-            new File("backend/test/resources/testresources/instance.cfg"));
-    Assertions.assertEquals(name, "Better Minecraft [FABRIC] - 1.18.1");
+            new File("backend/test/resources/testresources/multimc/better_mc_instance.cfg")),
+        "Better Minecraft [FABRIC] - 1.18.1");
+
+    Assertions.assertEquals(
+        CONFIGUTILITIES.updateDestinationFromInstanceCfg(
+            new File("backend/test/resources/testresources/multimc/all_the_mods_instance.cfg")),
+        "All the Mods 6 - ATM6 - 1.16.5");
   }
 
   @Test
@@ -404,13 +469,6 @@ public class ConfigUtilitiesTest {
     Assertions.assertTrue(dirs.contains("scripts"));
     Assertions.assertTrue(dirs.contains("seeds"));
     Assertions.assertFalse(dirs.contains("server_pack"));
-  }
-
-  @Test
-  void checkCurseForgeJsonForFabricTest() throws IOException {
-    Assertions.assertTrue(
-        CONFIGUTILITIES.checkCurseForgeJsonForFabric(
-            getJson(new File("backend/test/resources/testresources/fabric_manifest.json"))));
   }
 
   @Test
