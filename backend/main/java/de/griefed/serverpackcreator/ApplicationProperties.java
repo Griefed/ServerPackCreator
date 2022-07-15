@@ -241,6 +241,8 @@ public class ApplicationProperties extends Properties {
   private final File MINECRAFT_VERSION_MANIFEST = new File("minecraft-manifest.json");
   private final File FORGE_VERSION_MANIFEST = new File("forge-manifest.json");
   private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
+  private final File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION =
+      new File("./work/fabric-intermediaries-manifest.json");
   private final File FABRIC_INSTALLER_VERSION_MANIFEST = new File("fabric-installer-manifest.xml");
   private final File QUILT_VERSION_MANIFEST = new File("quilt-manifest.xml");
   private final File QUILT_INSTALLER_VERSION_MANIFEST = new File("quilt-installer-manifest.xml");
@@ -757,6 +759,15 @@ public class ApplicationProperties extends Properties {
    */
   public File FABRIC_VERSION_MANIFEST_LOCATION() {
     return FABRIC_VERSION_MANIFEST_LOCATION;
+  }
+
+  /**
+   * Path to the Fabric intermediaries manifest-file, as a file.
+   *
+   * @return {@link File} ./work/fabric-intermediaries-manifest.json
+   */
+  public File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION() {
+    return FABRIC_INTERMEDIARIES_MANIFEST_LOCATION;
   }
 
   /**

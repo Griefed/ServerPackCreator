@@ -19,12 +19,13 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.DocumentBuilder;
@@ -47,29 +48,42 @@ public class FabricMeta {
   private final File FABRIC_MANIFEST;
   private final File FABRIC_INSTALLER_MANIFEST;
   private final FabricLoader FABRIC_LOADER;
+  private final FabricLoaderDetails FABRIC_LOADER_DETAILS;
   private final FabricInstaller FABRIC_INSTALLER;
+  private final FabricIntermediaries FABRIC_INTERMEDIARIES;
+  private final HashMap<String, FabricDetails> LOADER_DETAILS = new HashMap<>();
 
   /**
    * Create a new Fabric Meta instance.
    *
-   * @param fabricManifest {@link File} Fabric manifest file..
-   * @param fabricInstallerManifest {@link File} Fabric-installer manifest file..
+   * @param fabricManifest {@link File} Fabric manifest file.
+   * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
+   * @param fabricIntermediaryManifest {@link File} Fabric Intermediary manifest file.
+   * @param objectMapper {@link ObjectMapper} used for parsing loader details JSON.
+   * @throws IOException when the Intermediaries manifest could not be parsed.
    * @author Griefed
    */
-  public FabricMeta(File fabricManifest, File fabricInstallerManifest) {
+  public FabricMeta(
+      File fabricManifest,
+      File fabricInstallerManifest,
+      File fabricIntermediaryManifest,
+      ObjectMapper objectMapper)
+      throws IOException {
+
+    this.FABRIC_LOADER_DETAILS = new FabricLoaderDetails(objectMapper);
     this.FABRIC_MANIFEST = fabricManifest;
     this.FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
     this.FABRIC_LOADER = new FabricLoader(getXml(this.FABRIC_MANIFEST));
+    this.FABRIC_INTERMEDIARIES = new FabricIntermediaries(fabricIntermediaryManifest, objectMapper);
     this.FABRIC_INSTALLER = new FabricInstaller(getXml(this.FABRIC_INSTALLER_MANIFEST));
   }
 
   /**
    * Update the {@link FabricLoader} and {@link FabricInstaller} information.
    *
-   * @throws MalformedURLException if a URL could not be constructed
    * @author Griefed
    */
-  public void update() throws MalformedURLException {
+  public void update() {
     this.FABRIC_LOADER.update(getXml(this.FABRIC_MANIFEST));
     this.FABRIC_INSTALLER.update(getXml(this.FABRIC_INSTALLER_MANIFEST));
   }
@@ -293,5 +307,54 @@ public class FabricMeta {
    */
   public boolean checkFabricVersion(String fabricVersion) {
     return FABRIC_LOADER.loaders().contains(fabricVersion);
+  }
+
+  /**
+   * Get details for a Fabric loader.
+   *
+   * @param minecraftVersion {@link String} Minecraft version.
+   * @param fabricVersion {@link String} Fabric version.
+   * @return {@link FabricDetails} of a Fabric loader for the given Minecraft and Fabric version,
+   *     wrappen in an {@link Optional}.
+   * @author Griefed
+   */
+  public Optional<FabricDetails> getLoaderDetails(String minecraftVersion, String fabricVersion) {
+    String key = minecraftVersion + "-" + fabricVersion;
+
+    if (LOADER_DETAILS.containsKey(key)) {
+
+      return Optional.of(LOADER_DETAILS.get(key));
+
+    } else if (FABRIC_LOADER_DETAILS.getDetails(minecraftVersion, fabricVersion).isPresent()) {
+
+      LOADER_DETAILS.put(
+          key, FABRIC_LOADER_DETAILS.getDetails(minecraftVersion, fabricVersion).get());
+      return Optional.of(LOADER_DETAILS.get(key));
+
+    } else {
+
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * HashMap of available intermediaries.
+   *
+   * @return {@link HashMap} of available intermediaries.
+   * @author Griefed
+   */
+  public HashMap<String, FabricIntermediary> getFabricIntermediaries() {
+    return FABRIC_INTERMEDIARIES.getIntermediaries();
+  }
+
+  /**
+   * Get a specific intermediary, wrapped in an {@link Optional}.
+   *
+   * @param minecraftVersion {@link String} Minecraft version.
+   * @return A specific intermediary, wrapped in an {@link Optional}.
+   * @author Griefed
+   */
+  public Optional<FabricIntermediary> getFabricIntermediary(String minecraftVersion) {
+    return FABRIC_INTERMEDIARIES.getIntermediary(minecraftVersion);
   }
 }

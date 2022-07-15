@@ -64,6 +64,7 @@ public class VersionMeta {
   private final File MINECRAFT_MANIFEST;
   private final File FORGE_MANIFEST;
   private final File FABRIC_MANIFEST;
+  private final File FABRIC_INTERMEDIARIES_MANIFEST;
   private final File FABRIC_INSTALLER_MANIFEST;
   private final File QUILT_MANIFEST;
   private final File QUILT_INSTALLER_MANIFEST;
@@ -73,6 +74,8 @@ public class VersionMeta {
       new URL("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json");
   private final URL FABRIC_MANIFEST_URL =
       new URL("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml");
+  private final URL FABRIC_INTERMEDIARIES_MANIFEST_URL =
+      new URL("https://meta.fabricmc.net/v2/versions/intermediary");
   private final URL FABRIC_INSTALLER_MANIFEST_URL =
       new URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml");
   private final URL QUILT_MANIFEST_URL =
@@ -92,6 +95,7 @@ public class VersionMeta {
    * @param minecraftManifest {@link File} Minecraft manifest file.
    * @param forgeManifest {@link File} Forge manifest file.
    * @param fabricManifest {@link File} Fabric manifest file.
+   * @param fabricIntermediariesManifest {@link File} Fabric Intermediary manifest-file.
    * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
    * @param quiltManifest {@link File} Quilt manifest file.
    * @param quiltInstallerManifest {@link File} Quilt-installer manifest file.
@@ -104,6 +108,7 @@ public class VersionMeta {
       File forgeManifest,
       File fabricManifest,
       File fabricInstallerManifest,
+      File fabricIntermediariesManifest,
       File quiltManifest,
       File quiltInstallerManifest)
       throws IOException {
@@ -111,6 +116,7 @@ public class VersionMeta {
     this.MINECRAFT_MANIFEST = minecraftManifest;
     this.FORGE_MANIFEST = forgeManifest;
     this.FABRIC_MANIFEST = fabricManifest;
+    this.FABRIC_INTERMEDIARIES_MANIFEST = fabricIntermediariesManifest;
     this.FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
     this.QUILT_MANIFEST = quiltManifest;
     this.QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
@@ -119,7 +125,9 @@ public class VersionMeta {
 
     this.FORGE_META = new ForgeMeta(forgeManifest, OBJECT_MAPPER);
     this.MINECRAFT_META = new MinecraftMeta(minecraftManifest, this.FORGE_META, OBJECT_MAPPER);
-    this.FABRIC_META = new FabricMeta(fabricManifest, fabricInstallerManifest);
+    this.FABRIC_META =
+        new FabricMeta(
+            fabricManifest, fabricInstallerManifest, fabricIntermediariesManifest, OBJECT_MAPPER);
     this.FORGE_META.initialize(this.MINECRAFT_META);
     this.QUIL_META = new QuiltMeta(quiltManifest, quiltInstallerManifest);
 
@@ -141,6 +149,10 @@ public class VersionMeta {
     checkManifest(MINECRAFT_MANIFEST, MINECRAFT_MANIFEST_URL, Type.MINECRAFT);
     checkManifest(FORGE_MANIFEST, FORGE_MANIFEST_URL, Type.FORGE);
     checkManifest(FABRIC_MANIFEST, FABRIC_MANIFEST_URL, Type.FABRIC);
+    checkManifest(
+        FABRIC_INTERMEDIARIES_MANIFEST,
+        FABRIC_INTERMEDIARIES_MANIFEST_URL,
+        Type.FABRIC_INTERMEDIARIES);
     checkManifest(FABRIC_INSTALLER_MANIFEST, FABRIC_INSTALLER_MANIFEST_URL, Type.FABRIC_INSTALLER);
     checkManifest(QUILT_MANIFEST, QUILT_MANIFEST_URL, Type.QUILT);
     checkManifest(QUILT_INSTALLER_MANIFEST, QUILT_INSTALLER_MANIFEST_URL, Type.QUILT_INSTALLER);
@@ -182,6 +194,12 @@ public class VersionMeta {
             for (JsonNode mcVer : getJson(newManifest)) {
               countNewFile += mcVer.size();
             }
+
+            break;
+
+          case FABRIC_INTERMEDIARIES:
+            countOldFile = getJson(existing).size();
+            countNewFile = getJson(newManifest).size();
 
             break;
 

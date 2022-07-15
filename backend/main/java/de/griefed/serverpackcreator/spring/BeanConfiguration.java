@@ -75,6 +75,17 @@ public class BeanConfiguration {
   }
 
   /**
+   * Bean for the location of the Fabric intermediaries manifest-file.
+   *
+   * @return {@link File}
+   * @author Griefed
+   */
+  @Bean
+  public File fabricIntermediariesManifest() {
+    return APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION();
+  }
+
+  /**
    * Bean for the location of the Fabric installer version manifest-file.
    *
    * @return {@link File}

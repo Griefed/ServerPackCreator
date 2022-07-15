@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.I18n;
 import java.io.File;
 import java.net.URL;
 import org.apache.commons.io.FileUtils;
@@ -14,8 +13,7 @@ public class WebUtilitiesTest {
 
   WebUtilitiesTest() {
     ApplicationProperties applicationProperties = new ApplicationProperties();
-    this.WEB_UTILITIES =
-        new WebUtilities(applicationProperties);
+    this.WEB_UTILITIES = new WebUtilities(applicationProperties);
   }
 
   @Test

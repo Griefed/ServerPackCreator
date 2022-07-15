@@ -109,6 +109,7 @@ public class ConfigurationHandler {
               APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     } else {
@@ -467,7 +468,8 @@ public class ConfigurationHandler {
         if (checkModloaderVersion(
             configurationModel.getModLoader(),
             configurationModel.getModLoaderVersion(),
-            configurationModel.getMinecraftVersion())) {
+            configurationModel.getMinecraftVersion(),
+            encounteredErrors)) {
 
           LOG.debug("modLoaderVersion setting check passed.");
 
@@ -1809,17 +1811,83 @@ public class ConfigurationHandler {
   public boolean checkModloaderVersion(
       String modloader, String modloaderVersion, String minecraftVersion) {
 
+    return checkModloaderVersion(modloader, modloaderVersion, minecraftVersion, new ArrayList<>());
+  }
+
+  /**
+   * Check the given Minecraft and modloader versions for the specified modloader and update the
+   * passed error-list should any error be encountered.
+   *
+   * @param modloader String. The passed modloader which determines whether the check for Forge or
+   *     Fabric is called.
+   * @param modloaderVersion String. The version of the modloader which is checked against the
+   *     corresponding modloaders manifest.
+   * @param minecraftVersion String. The version of Minecraft used for checking the Forge version.
+   * @param encounteredErrors {@link String}-list of encountered errors to add to in case of errors.
+   * @return Boolean. Returns true if the specified modloader version was found in the corresponding
+   *     manifest.
+   * @author Griefed
+   */
+  public boolean checkModloaderVersion(
+      String modloader,
+      String modloaderVersion,
+      String minecraftVersion,
+      List<String> encounteredErrors) {
+
     switch (modloader) {
       case "Forge":
-        return VERSIONMETA
-            .forge()
-            .checkForgeAndMinecraftVersion(minecraftVersion, modloaderVersion);
+        if (VERSIONMETA.forge().checkForgeAndMinecraftVersion(minecraftVersion, modloaderVersion)) {
+
+          return true;
+
+        } else {
+
+          encounteredErrors.add(
+              String.format(
+                  I18N.getMessage("configuration.log.error.checkmodloaderandversion"),
+                  minecraftVersion,
+                  modloader,
+                  modloaderVersion));
+
+          return false;
+        }
 
       case "Fabric":
-        return VERSIONMETA.fabric().checkFabricVersion(modloaderVersion);
+        if (VERSIONMETA.fabric().checkFabricVersion(modloaderVersion)
+            && VERSIONMETA
+                .fabric()
+                .getLoaderDetails(minecraftVersion, modloaderVersion)
+                .isPresent()) {
+
+          return true;
+
+        } else {
+          encounteredErrors.add(
+              String.format(
+                  I18N.getMessage("configuration.log.error.checkmodloaderandversion"),
+                  minecraftVersion,
+                  modloader,
+                  modloaderVersion));
+
+          return false;
+        }
 
       case "Quilt":
-        return VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion);
+        if (VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion)
+            && VERSIONMETA.fabric().getFabricIntermediary(minecraftVersion).isPresent()) {
+
+          return true;
+
+        } else {
+          encounteredErrors.add(
+              String.format(
+                  I18N.getMessage("configuration.log.error.checkmodloaderandversion"),
+                  minecraftVersion,
+                  modloader,
+                  modloaderVersion));
+
+          return false;
+        }
 
       default:
         LOG.error(
@@ -1828,4 +1896,6 @@ public class ConfigurationHandler {
         return false;
     }
   }
+
+  // TODO replace String in docs with {@link String}
 }
