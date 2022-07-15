@@ -54,6 +54,9 @@ public enum Type {
   /** Indicates this operation concerns Quilt. */
   QUILT,
 
+  /** Indicates this operation concerns Fabric Intermediaries. */
+  FABRIC_INTERMEDIARIES,
+
   /** Indicates this operation concerns Quilt Installer. */
   QUILT_INSTALLER
 }

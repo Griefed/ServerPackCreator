@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.I18n;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -9,6 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -314,5 +314,41 @@ public class WebUtilities {
     } else {
       return "Error encountered when acquiring response from URL.";
     }
+  }
+
+  /**
+   * Get the reponse of a call to a URL as a string.
+   *
+   * @param url {@link URL} The URL you want to get the response from
+   * @return {@link String} The response.
+   * @throws IOException if the URL could not be called or a communication error occurred.
+   */
+  public String getResponseAsString(URL url) throws IOException {
+
+    BufferedReader in =
+        new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
+
+    StringBuilder response = new StringBuilder();
+    String currentLine;
+
+    while ((currentLine = in.readLine()) != null) {
+      response.append(currentLine);
+    }
+
+    in.close();
+
+    return response.toString();
+  }
+
+  /**
+   * Get the response-code of a call to a URL as an integer.
+   *
+   * @param url {@link URL} The URL you want to get the response from
+   * @return {@link String} The response.
+   * @throws IOException if the URL could not be called or a communication error occurred.
+   */
+  public int getResponseCode(URL url) throws IOException {
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    return connection.getResponseCode();
   }
 }

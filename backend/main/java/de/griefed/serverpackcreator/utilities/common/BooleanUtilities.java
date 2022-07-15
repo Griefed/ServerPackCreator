@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
@@ -35,9 +33,7 @@ public class BooleanUtilities {
 
   private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
 
-  public BooleanUtilities() {
-
-  }
+  public BooleanUtilities() {}
 
   /**
    * Converts various strings to booleans, by using regex, to allow for more variations in input.

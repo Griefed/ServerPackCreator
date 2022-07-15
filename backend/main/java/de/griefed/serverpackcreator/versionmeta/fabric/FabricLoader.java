@@ -41,31 +41,7 @@ public class FabricLoader {
    * @author Griefed
    */
   protected FabricLoader(Document loaderManifest) {
-
-    this.latest =
-        loaderManifest
-            .getElementsByTagName("latest")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    this.release =
-        loaderManifest
-            .getElementsByTagName("release")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    this.loaders.clear();
-    for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
-      loaders.add(
-          loaderManifest
-              .getElementsByTagName("version")
-              .item(i)
-              .getChildNodes()
-              .item(0)
-              .getNodeValue());
-    }
+    update(loaderManifest);
   }
 
   /**

@@ -254,7 +254,6 @@ public class TabCreateServerPack extends JPanel {
   private final JCheckBox CHECKBOX_ICON;
   private final JCheckBox CHECKBOX_PROPERTIES;
   private final JCheckBox CHECKBOX_ZIP;
-  private DefaultComboBoxModel<String> forgeComboBoxModel;
   private String chosenModloader = "Fabric";
   private String chosenModloaderVersion;
   private String chosenMinecraftVersion = "1.18.2";
@@ -328,6 +327,7 @@ public class TabCreateServerPack extends JPanel {
               APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     } else {
@@ -1465,13 +1465,15 @@ public class TabCreateServerPack extends JPanel {
   }
 
   /**
-   * Setter for the list of available Forge versions depending on the passed Minecraft version.
+   * Get the DefaultComboboxModel of available Forge versions depending on the passed Minecraft
+   * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
    * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
    *     of available Forge versions.
    * @author Griefed
    */
-  private void updateForgeComboBoxVersions(@Nullable String chosenMinecraftVersion) {
+  private DefaultComboBoxModel<String> updateForgeComboBoxVersions(
+      @Nullable String chosenMinecraftVersion) {
 
     if (chosenMinecraftVersion != null
         && VERSIONMETA
@@ -1479,16 +1481,56 @@ public class TabCreateServerPack extends JPanel {
             .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
             .isPresent()) {
 
-      forgeComboBoxModel =
-          new DefaultComboBoxModel<>(
-              VERSIONMETA
-                  .forge()
-                  .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
-                  .get());
+      return new DefaultComboBoxModel<>(
+          VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get());
 
     } else {
 
-      forgeComboBoxModel = new DefaultComboBoxModel<>(this.NONE);
+      return new DefaultComboBoxModel<>(this.NONE);
+    }
+  }
+
+  /**
+   * Get the DefaultComboboxModel of available Fabric versions depending on the passed Minecraft
+   * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
+   *
+   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
+   *     of available Fabric versions.
+   * @author Griefed
+   */
+  private DefaultComboBoxModel<String> updateFabricComboBoxVersions(
+      @Nullable String chosenMinecraftVersion) {
+
+    if (chosenMinecraftVersion != null
+        && VERSIONMETA.fabric().getFabricIntermediary(chosenMinecraftVersion).isPresent()) {
+
+      return FABRIC_VERSIONS;
+
+    } else {
+
+      return new DefaultComboBoxModel<>(this.NONE);
+    }
+  }
+
+  /**
+   * Get the DefaultComboboxModel of available Quilt versions depending on the passed Minecraft
+   * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
+   *
+   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
+   *     of available Fabric versions.
+   * @author Griefed
+   */
+  private DefaultComboBoxModel<String> updateQuiltComboBoxVersions(
+      @Nullable String chosenMinecraftVersion) {
+
+    if (chosenMinecraftVersion != null
+        && VERSIONMETA.fabric().getFabricIntermediary(chosenMinecraftVersion).isPresent()) {
+
+      return QUILT_VERSIONS;
+
+    } else {
+
+      return new DefaultComboBoxModel<>(this.NONE);
     }
   }
 
@@ -1543,24 +1585,27 @@ public class TabCreateServerPack extends JPanel {
         // Fabric
       case "Fabric":
         COMBOBOX_MODLOADERS.setSelectedIndex(0);
-        COMBOBOX_MODLOADER_VERSIONS.setModel(FABRIC_VERSIONS);
+        //noinspection ConstantConditions
+        COMBOBOX_MODLOADER_VERSIONS.setModel(
+            updateFabricComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
         break;
 
         // Forge
       case "Forge":
-
-        //noinspection ConstantConditions
-        updateForgeComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString());
         COMBOBOX_MODLOADERS.setSelectedIndex(1);
-        COMBOBOX_MODLOADER_VERSIONS.setModel(forgeComboBoxModel);
+        //noinspection ConstantConditions
+        COMBOBOX_MODLOADER_VERSIONS.setModel(
+            updateForgeComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
         break;
 
         // Quilt
       case "Quilt":
         COMBOBOX_MODLOADERS.setSelectedIndex(2);
-        COMBOBOX_MODLOADER_VERSIONS.setModel(QUILT_VERSIONS);
+        //noinspection ConstantConditions
+        COMBOBOX_MODLOADER_VERSIONS.setModel(
+            updateQuiltComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
     }
 
     COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(0);

@@ -227,9 +227,10 @@ public class ServerPackCreator {
 
     this.utilities = new Utilities(I18N, APPLICATIONPROPERTIES);
 
-    HashMap<String, String> systemInformation = utilities.JarUtils()
-        .systemInformation(
-            utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
+    HashMap<String, String> systemInformation =
+        utilities.JarUtils()
+            .systemInformation(
+                utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
 
     LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
     LOG.debug("System information jarName: " + systemInformation.get("jarName"));
@@ -390,6 +391,7 @@ public class ServerPackCreator {
             APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
 

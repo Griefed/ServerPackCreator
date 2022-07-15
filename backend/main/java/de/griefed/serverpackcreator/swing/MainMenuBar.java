@@ -962,7 +962,9 @@ public class MainMenuBar extends Component {
       try {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info("Loading from configuration file: " + configChooser.getSelectedFile().getCanonicalPath());
+        LOG.info(
+            "Loading from configuration file: "
+                + configChooser.getSelectedFile().getCanonicalPath());
 
         File specifiedConfigFile;
         try {

@@ -53,8 +53,7 @@ public class TaskSubmitter {
    * @author Griefed
    */
   @Autowired
-  public TaskSubmitter(
-      JmsTemplate injectedJmsTemplate) {
+  public TaskSubmitter(JmsTemplate injectedJmsTemplate) {
     this.jmsTemplate = injectedJmsTemplate;
   }
 
