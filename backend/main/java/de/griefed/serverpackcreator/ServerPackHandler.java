@@ -142,6 +142,7 @@ public class ServerPackHandler {
               APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     } else {
@@ -1271,9 +1272,10 @@ public class ServerPackHandler {
       LOG.info("File exclusion from ZIP-archives deactivated.");
     }
 
-    String comment = "Server pack made with ServerPackCreator "
-        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
-        + " by Griefed.";
+    String comment =
+        "Server pack made with ServerPackCreator "
+            + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
+            + " by Griefed.";
 
     zipParameters.setIncludeRootFolder(false);
     zipParameters.setFileComment(comment);

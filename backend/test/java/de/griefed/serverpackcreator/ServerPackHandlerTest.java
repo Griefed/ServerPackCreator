@@ -45,6 +45,7 @@ class ServerPackHandlerTest {
             APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     Utilities UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
@@ -55,8 +56,7 @@ class ServerPackHandlerTest {
             I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
     ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins();
     this.SERVERPACKHANDLER =
-        new ServerPackHandler(
-            I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER);
+        new ServerPackHandler(I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER);
   }
 
   @Test
@@ -265,7 +265,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/fabric_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge","36.2.25");
+    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -284,7 +284,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/forge_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge","36.2.25");
+    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -303,7 +303,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/quilt_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge","36.2.25");
+    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(

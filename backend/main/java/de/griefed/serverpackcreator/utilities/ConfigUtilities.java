@@ -32,20 +32,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.ProviderNotFoundException;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,7 +55,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ConfigUtilities {
-
+  // TODO move class back to configurationhandler...why did I make all this stuff a separate class
+  // anyway?
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
   private final I18n I18N;
@@ -100,6 +97,7 @@ public class ConfigUtilities {
               APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     } else {
@@ -292,50 +290,6 @@ public class ConfigUtilities {
   }
 
   /**
-   * Creates a list of all configurations as they appear in the serverpackcreator.conf to pass it to
-   * any addon that may run. Values included in this list are:<br>
-   * 1. modpackDir<br>
-   * 2. clientMods<br>
-   * 3. copyDirs<br>
-   * 4. javaPath<br>
-   * 5. minecraftVersion<br>
-   * 6. modLoader<br>
-   * 7. modLoaderVersion<br>
-   * 8. includeServerInstallation<br>
-   * 9. includeServerIcon<br>
-   * 10.includeServerProperties<br>
-   * 11.includeStartScripts<br>
-   * 12.includeZipCreation
-   *
-   * @param configurationModel An instance of {@link ConfigurationModel} which contains the
-   *     configuration of the modpack.
-   * @return String List. A list of all configurations as strings.
-   * @author Griefed
-   */
-  @Deprecated
-  public List<String> getConfigurationAsList(ConfigurationModel configurationModel) {
-
-    List<String> configurationAsList = new ArrayList<>(100);
-
-    configurationAsList.add(configurationModel.getModpackDir());
-    configurationAsList.add(
-        UTILITIES.StringUtils().buildString(configurationModel.getClientMods()));
-    configurationAsList.add(UTILITIES.StringUtils().buildString(configurationModel.getCopyDirs()));
-    configurationAsList.add(configurationModel.getJavaPath());
-    configurationAsList.add(configurationModel.getMinecraftVersion());
-    configurationAsList.add(configurationModel.getModLoader());
-    configurationAsList.add(configurationModel.getModLoaderVersion());
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeServerInstallation()));
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeServerIcon()));
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeServerProperties()));
-    configurationAsList.add(String.valueOf(configurationModel.getIncludeZipCreation()));
-
-    LOG.debug(String.format("Configuration to pass to addons is: %s", configurationAsList));
-
-    return configurationAsList;
-  }
-
-  /**
    * Convenience method which passes the important fields from an instance of {@link
    * ConfigurationModel} to {@link #printConfigurationModel(String, List, List, boolean, String,
    * String, String, String, boolean, boolean, boolean, String, String, String, String)}
@@ -456,7 +410,86 @@ public class ConfigUtilities {
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the downloaded CurseForge
+   * <strong><code>instance.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from a ATLauncher manifest.
+   *
+   * @param configurationModel {@link ConfigurationModel} The model to update.
+   * @param manifest {@link File} The manifest file.
+   * @throws IOException when the instance.json-file could not be parsed.
+   * @author Griefed
+   */
+  public void updateConfigModelFromATLauncherInstance(
+      ConfigurationModel configurationModel, File manifest) throws IOException {
+
+    configurationModel.setModpackJson(getJson(manifest));
+
+    configurationModel.setMinecraftVersion(configurationModel.getModpackJson().get("id").asText());
+
+    configurationModel.setModLoader(
+        configurationModel
+            .getModpackJson()
+            .get("launcher")
+            .get("loaderVersion")
+            .get("type")
+            .asText());
+
+    configurationModel.setModLoaderVersion(
+        configurationModel
+            .getModpackJson()
+            .get("launcher")
+            .get("loaderVersion")
+            .get("version")
+            .asText());
+  }
+
+  /**
+   * <strong><code>modrinth.index.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from a Modrinth <code>
+   * modrinth.index.json</code>-manifest.
+   *
+   * @param configurationModel {@link ConfigurationModel} The model to update.
+   * @param manifest {@link File} The manifest file.
+   * @throws IOException when the modrinth.index.json-file could not be parsed.
+   * @author Griefed
+   */
+  public void updateConfigModelFromModrinthManifest(
+      ConfigurationModel configurationModel, File manifest) throws IOException {
+
+    configurationModel.setModpackJson(getJson(manifest));
+
+    configurationModel.setMinecraftVersion(
+        configurationModel.getModpackJson().get("dependencies").get("minecraft").asText());
+
+    for (Iterator<Entry<String, JsonNode>> it =
+            configurationModel.getModpackJson().get("dependencies").fields();
+        it.hasNext(); ) {
+      Entry<String, JsonNode> dependencyEntry = it.next();
+
+      switch (dependencyEntry.getKey()) {
+        case "fabric-loader":
+          configurationModel.setModLoader("Fabric");
+          configurationModel.setModLoaderVersion(dependencyEntry.getValue().asText());
+          break;
+
+        case "quilt-loader":
+          configurationModel.setModLoader("Quilt");
+          configurationModel.setModLoaderVersion(dependencyEntry.getValue().asText());
+          break;
+
+        case "forge":
+          configurationModel.setModLoader("Forge");
+          configurationModel.setModLoaderVersion(dependencyEntry.getValue().asText());
+          break;
+      }
+    }
+  }
+
+  /**
+   * <strong><code>manifest.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the downloaded CurseForge
    * modpack. A manifest.json-file is usually created when a modpack is exported through launchers
    * like Overwolf's CurseForge or GDLauncher.
    *
@@ -469,11 +502,11 @@ public class ConfigUtilities {
   public void updateConfigModelFromCurseManifest(
       ConfigurationModel configurationModel, File manifest) throws IOException {
 
-    configurationModel.setCurseModpack(getJson(manifest));
+    configurationModel.setModpackJson(getJson(manifest));
 
     String[] modloaderAndVersion =
         configurationModel
-            .getCurseModpack()
+            .getModpackJson()
             .get("minecraft")
             .get("modLoaders")
             .get(0)
@@ -482,38 +515,18 @@ public class ConfigUtilities {
             .split("-");
 
     configurationModel.setMinecraftVersion(
-        configurationModel.getCurseModpack().get("minecraft").get("version").asText());
+        configurationModel.getModpackJson().get("minecraft").get("version").asText());
 
-    if (checkCurseForgeJsonForFabric(configurationModel.getCurseModpack())) {
+    configurationModel.setModLoader(modloaderAndVersion[0]);
 
-      LOG.debug("Setting modloader to Fabric.");
-      if (modloaderAndVersion[0].equalsIgnoreCase("Fabric")) {
-
-        configurationModel.setModLoader("Fabric");
-        configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
-
-      } else {
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info("Please make sure to check the configuration for the used Fabric version after ServerPackCreator is done setting up the modpack and new config file.");
-
-        configurationModel.setModLoader("Fabric");
-        configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoaderVersion());
-      }
-
-    } else {
-
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      LOG.debug("Setting modloader to Forge.");
-
-      configurationModel.setModLoader("Forge");
-      configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
-    }
+    configurationModel.setModLoaderVersion(modloaderAndVersion[1]);
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the minecraftinstance.json of the
-   * modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
+   * <strong><code>minecraftinstance.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the minecraftinstance.json of
+   * the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
    *     for a modpack from which to create a server pack.
@@ -524,19 +537,28 @@ public class ConfigUtilities {
   public void updateConfigModelFromMinecraftInstance(
       ConfigurationModel configurationModel, File minecraftInstance) throws IOException {
 
-    configurationModel.setCurseModpack(getJson(minecraftInstance));
+    configurationModel.setModpackJson(getJson(minecraftInstance));
 
-    String[] modLoaderAndVersion =
-        configurationModel.getCurseModpack().get("baseModLoader").get("name").asText().split("-");
+    configurationModel.setModLoader(
+        getModLoaderCase(
+            configurationModel
+                .getModpackJson()
+                .get("baseModLoader")
+                .get("name")
+                .asText()
+                .split("-")[0]));
 
-    configurationModel.setModLoader(getModLoaderCase(modLoaderAndVersion[0]));
-    configurationModel.setModLoaderVersion(modLoaderAndVersion[1]);
+    configurationModel.setModLoaderVersion(
+        configurationModel.getModpackJson().get("baseModLoader").get("forgeVersion").asText());
+
     configurationModel.setMinecraftVersion(
-        configurationModel.getCurseModpack().get("baseModLoader").get("minecraftVersion").asText());
+        configurationModel.getModpackJson().get("baseModLoader").get("minecraftVersion").asText());
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the modpacks config.json. A
+   * <strong><code>config.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the modpacks config.json. A
    * config.json is usually created by GDLauncher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
@@ -548,33 +570,28 @@ public class ConfigUtilities {
   public void updateConfigModelFromConfigJson(ConfigurationModel configurationModel, File config)
       throws IOException {
 
-    configurationModel.setCurseModpack(getJson(config));
+    configurationModel.setModpackJson(getJson(config));
 
     configurationModel.setModLoader(
         getModLoaderCase(
-            configurationModel.getCurseModpack().get("loader").get("loaderType").asText()));
+            configurationModel.getModpackJson().get("loader").get("loaderType").asText()));
+
     configurationModel.setMinecraftVersion(
-        configurationModel.getCurseModpack().get("loader").get("mcVersion").asText());
+        configurationModel.getModpackJson().get("loader").get("mcVersion").asText());
 
-    if (configurationModel.getModLoader().equalsIgnoreCase("forge")) {
-
-      configurationModel.setModLoaderVersion(
-          configurationModel
-              .getCurseModpack()
-              .get("loader")
-              .get("loaderVersion")
-              .asText()
-              .split("-")[1]);
-
-    } else {
-
-      configurationModel.setModLoaderVersion(
-          configurationModel.getCurseModpack().get("loader").get("loaderVersion").asText());
-    }
+    configurationModel.setModLoaderVersion(
+        configurationModel
+            .getModpackJson()
+            .get("loader")
+            .get("loaderVersion")
+            .asText()
+            .replace(configurationModel.getMinecraftVersion() + "-", ""));
   }
 
   /**
-   * Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
+   * <strong><code>mmc-pack.json</code></strong>
+   *
+   * <p>Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
    * mmc-pack.json is usually created by the MultiMC launcher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
@@ -586,30 +603,38 @@ public class ConfigUtilities {
   public void updateConfigModelFromMMCPack(ConfigurationModel configurationModel, File mmcPack)
       throws IOException {
 
-    configurationModel.setCurseModpack(getJson(mmcPack));
+    configurationModel.setModpackJson(getJson(mmcPack));
 
-    for (JsonNode jsonNode : configurationModel.getCurseModpack().get("components")) {
+    for (JsonNode jsonNode : configurationModel.getModpackJson().get("components")) {
 
-      if (jsonNode.get("uid").asText().equals("net.minecraft")) {
+      switch (jsonNode.get("uid").asText()) {
+        case "net.minecraft":
+          configurationModel.setMinecraftVersion(jsonNode.get("version").asText());
+          break;
 
-        configurationModel.setMinecraftVersion(jsonNode.get("version").asText());
+        case "net.minecraftforge":
+          configurationModel.setModLoader("Forge");
+          configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+          break;
 
-      } else if (jsonNode.get("uid").asText().equals("net.minecraftforge")) {
+        case "net.fabricmc.fabric-loader":
+          configurationModel.setModLoader("Fabric");
+          configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+          break;
 
-        configurationModel.setModLoader("Forge");
-        configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
-
-      } else if (jsonNode.get("uid").asText().equals("net.fabricmc.fabric-loader")) {
-
-        configurationModel.setModLoader("Fabric");
-        configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+        case "org.quiltmc.quilt-loader":
+          configurationModel.setModLoader("Quilt");
+          configurationModel.setModLoaderVersion(jsonNode.get("version").asText());
+          break;
       }
     }
   }
 
   /**
-   * Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks instance.cfg,
-   * which is usually created by the MultiMC launcher.
+   * <strong><code>instance.cfg</code></strong>
+   *
+   * <p>Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks
+   * instance.cfg, which is usually created by the MultiMC launcher.
    *
    * @param instanceCfg {@link File}. The config.json-file of the modpack to read.
    * @return {@link String} Returns the instance name.
@@ -700,7 +725,9 @@ public class ConfigUtilities {
           n -> (n.contains(APPLICATIONPROPERTIES.getDirectoriesToExclude().get(i))));
     }
 
-    LOG.info("Modpack directory checked. Suggested directories for copyDirs-setting are: " + dirsInModpack);
+    LOG.info(
+        "Modpack directory checked. Suggested directories for copyDirs-setting are: "
+            + dirsInModpack);
 
     return dirsInModpack;
   }
@@ -714,9 +741,12 @@ public class ConfigUtilities {
    * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
    * @return Boolean. Returns true if Jumploader is found.
    * @author Griefed
+   * @deprecated Regular checks in {@link #updateConfigModelFromCurseManifest(ConfigurationModel,
+   *     File)} detect Fabric and the version. Iterating through the mods list is no longer
+   *     necessary.
    */
   public boolean checkCurseForgeJsonForFabric(JsonNode modpackJson) {
-    // TODO check ids for Fabric API loader thingy
+
     for (int i = 0; i < modpackJson.get("files").size(); i++) {
 
       LOG.debug(
@@ -740,10 +770,10 @@ public class ConfigUtilities {
   }
 
   /**
-   * Acquire a list of directories in a ZIP-file.
+   * Acquire a list of directories in the base-directory of a ZIP-file.
    *
-   * @param zipURI URI to the ZIP-file from which to gather a list of directories within.
-   * @return String List. A list of all directories in the ZIP-file.
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all directories in the base-directory of the ZIP-file.
    * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
    *     the env parameter does not contain properties required by the provider, or a property value
    *     is invalid.
@@ -754,64 +784,127 @@ public class ConfigUtilities {
    *     permission required by the file system provider implementation.
    * @author Griefed
    */
-  public List<String> directoriesInModpackZip(Path zipURI)
+  public List<String> getDirectoriesInModpackZipBaseDirectory(ZipFile zipFile)
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
           IOException, SecurityException {
-    List<String> directories = new ArrayList<>(100);
 
-    LOG.debug("URI: " + zipURI);
+    List<String> baseDirectories = new ArrayList<>(100);
 
-    FileSystem fileSystems = FileSystems.newFileSystem(zipURI, null);
-
-    fileSystems
-        .getRootDirectories()
+    zipFile
+        .getFileHeaders()
         .forEach(
-            root -> {
-              LOG.debug("root: " + root);
-
-              try (Stream<Path> paths = Files.walk(root)) {
-
-                paths.forEach(
-                    path -> {
-
-                      /*
-                       * In regular regex: ^[\/\\]\w+[\/\\]?$
-                       * What is this madness?
-                       */
-                      if (path.toString().matches("^[/\\\\]\\w+[/\\\\]?$")) {
-                        LOG.debug("Path in ZIP: " + path);
-                        directories.add(path.toString().replace("/", ""));
-                      }
-                    });
-
-              } catch (IOException ex) {
-                LOG.error("No root available.", ex);
+            fileHeader -> {
+              if (fileHeader.getFileName().matches("^\\w+[/\\\\]$")) {
+                baseDirectories.add(fileHeader.getFileName());
               }
             });
 
-    if (directories.isEmpty()) {
+    return baseDirectories;
+  }
 
-      Enumeration<? extends ZipEntry> entries;
-      try (ZipFile zipFile = new ZipFile(zipURI.toString())) {
-        entries = zipFile.entries();
-      }
+  /**
+   * Acquire a list of all files in a ZIP-file.
+   *
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all files in the ZIP-file.
+   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
+   *     the env parameter does not contain properties required by the provider, or a property value
+   *     is invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
+   * @throws IOException if an I/O error occurs creating the file system.
+   * @throws SecurityException if a security manager is installed, and it denies an unspecified
+   *     permission required by the file system provider implementation.
+   * @author Griefed
+   */
+  public List<String> getFilesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+          IOException, SecurityException {
 
-      while (entries.hasMoreElements()) {
-        ZipEntry zipEntry = entries.nextElement();
-        LOG.debug("ZIP entry: " + zipEntry.getName());
+    List<String> files = new ArrayList<>(100);
 
-        /*
-         * In regular regex: ^[\/\\]\w+[\/\\]?$
-         * You have a problem, so you use regex. Now you have two problems.
-         */
-        if (zipEntry.getName().matches("^[/\\\\]\\w+[/\\\\]?$")) {
-          directories.add(zipEntry.getName());
-        }
-      }
-    }
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              if (!fileHeader.isDirectory()) {
+                files.add(fileHeader.getFileName());
+              }
+            });
 
-    fileSystems.close();
+    return files;
+  }
+
+  /**
+   * Acquire a list of all directories in a ZIP-file.
+   *
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all directories in the ZIP-file.
+   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
+   *     the env parameter does not contain properties required by the provider, or a property value
+   *     is invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
+   * @throws IOException if an I/O error occurs creating the file system.
+   * @throws SecurityException if a security manager is installed, and it denies an unspecified
+   *     permission required by the file system provider implementation.
+   * @author Griefed
+   */
+  public List<String> getDirectoriesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+          IOException, SecurityException {
+
+    List<String> directories = new ArrayList<>(100);
+
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              if (fileHeader.isDirectory()) {
+                directories.add(fileHeader.getFileName());
+              }
+            });
 
     return directories;
+  }
+
+  /**
+   * Acquire a list of all files and directories in a ZIP-file.
+   *
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all files and directories in the ZIP-file.
+   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
+   *     the env parameter does not contain properties required by the provider, or a property value
+   *     is invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
+   * @throws IOException if an I/O error occurs creating the file system.
+   * @throws SecurityException if a security manager is installed, and it denies an unspecified
+   *     permission required by the file system provider implementation.
+   * @author Griefed
+   */
+  public List<String> getAllFilesAndDirectoriesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+      IOException, SecurityException {
+
+    List<String> filesAndDirectories = new ArrayList<>(100);
+
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              try {
+                filesAndDirectories.addAll(getDirectoriesInModpackZip(zipFile));
+              } catch (IOException ex) {
+                LOG.error("Could not acquire file or directory from ZIP-archive.",ex);
+              }
+              try {
+                filesAndDirectories.addAll(getFilesInModpackZip(zipFile));
+              } catch (IOException ex) {
+                LOG.error("Could not acquire file or directory from ZIP-archive.",ex);
+              }
+            });
+
+    return filesAndDirectories;
   }
 }

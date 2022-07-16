@@ -80,6 +80,7 @@ public class ConfigurationCreator {
               APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     } else {
@@ -160,7 +161,8 @@ public class ConfigurationCreator {
     do {
       // -----------------------------------------------------------------MODPACK DIRECTORY---------
 
-      LOG.info("Please enter your modpack path. This path can be relative to ServerPackCreator, or absolute.");
+      LOG.info(
+          "Please enter your modpack path. This path can be relative to ServerPackCreator, or absolute.");
       LOG.info("Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
 
       do {
@@ -171,7 +173,8 @@ public class ConfigurationCreator {
         } while (!CONFIGURATIONHANDLER.checkModpackDir(tmpModpackDir, encounteredErrors));
 
         LOG.info("You entered: " + tmpModpackDir);
-        LOG.info("If you are satisfied with this setting, enter ture. If not, enter false to restart modpack directory configuration.");
+        LOG.info(
+            "If you are satisfied with this setting, enter ture. If not, enter false to restart modpack directory configuration.");
 
         System.out.print("Answer: ");
 
@@ -184,7 +187,8 @@ public class ConfigurationCreator {
 
       // --------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
 
-      LOG.info("Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
+      LOG.info(
+          "Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
       do {
         clientMods.clear();
 
@@ -203,8 +207,8 @@ public class ConfigurationCreator {
           }
         }
 
-
-        LOG.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
+        LOG.info(
+            "If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
 
         System.out.print("Answer: ");
 
@@ -219,7 +223,8 @@ public class ConfigurationCreator {
 
       // ---------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
 
-      LOG.info("Which directories or files should be copied to the server pack? These are folder- or filenames inside your modpack directory or explicit source/file;destination/file-combinations.");
+      LOG.info(
+          "Which directories or files should be copied to the server pack? These are folder- or filenames inside your modpack directory or explicit source/file;destination/file-combinations.");
 
       List<String> dirList =
           Arrays.asList(
@@ -227,7 +232,9 @@ public class ConfigurationCreator {
                   new File(modpackDir)
                       .list((current, name) -> new File(current, name).isDirectory())));
 
-      LOG.info("The modpack directory you specified contains the following directories: " + UTILITIES.StringUtils().buildString(dirList));
+      LOG.info(
+          "The modpack directory you specified contains the following directories: "
+              + UTILITIES.StringUtils().buildString(dirList));
 
       do {
         do {
@@ -239,7 +246,8 @@ public class ConfigurationCreator {
         } while (!CONFIGURATIONHANDLER.checkCopyDirs(copyDirs, modpackDir, encounteredErrors));
 
         LOG.info("You entered: " + copyDirs);
-        LOG.info("If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
+        LOG.info(
+            "If you are satisfied with these values, enter true. If not, enter false to restart clientmod configuration.");
 
         System.out.print("Answer: ");
 
@@ -254,7 +262,8 @@ public class ConfigurationCreator {
 
       // ------------------------------------------------PATH TO THE CUSTOM SERVER-ICON.PNG---------
 
-      LOG.info("Enter the path to your custom server-icon.png-file, if you want to include one. Leave blank if you are fine with the default.");
+      LOG.info(
+          "Enter the path to your custom server-icon.png-file, if you want to include one. Leave blank if you are fine with the default.");
 
       do {
 
@@ -265,7 +274,8 @@ public class ConfigurationCreator {
         } while (!CONFIGURATIONHANDLER.checkIconAndProperties(tmpServerIcon));
 
         LOG.info("You entered: " + tmpServerIcon);
-        LOG.info("If you are satisfied with this setting, enter ture. If not, enter false to restart server-icon.png configuration.");
+        LOG.info(
+            "If you are satisfied with this setting, enter ture. If not, enter false to restart server-icon.png configuration.");
         System.out.print("Answer: ");
 
       } while (!UTILITIES.BooleanUtils().readBoolean());
@@ -275,9 +285,11 @@ public class ConfigurationCreator {
       LOG.info("You entered: " + serverIconPath);
       System.out.println();
 
-      //-----------------------------------------------PATH TO THE CUSTOM SERVER.PROPERTIES---------
+      // -----------------------------------------------PATH TO THE CUSTOM
+      // SERVER.PROPERTIES---------
 
-      LOG.info("Enter the path to your custom server.properties-file, if you want to include one. Leave blank if you are fine with the default.");
+      LOG.info(
+          "Enter the path to your custom server.properties-file, if you want to include one. Leave blank if you are fine with the default.");
 
       do {
 
@@ -288,7 +300,8 @@ public class ConfigurationCreator {
         } while (!CONFIGURATIONHANDLER.checkIconAndProperties(tmpServerProperties));
 
         LOG.info("You entered: " + tmpServerProperties);
-        LOG.info("If you are satisfied with this setting, enter ture. If not, enter false to restart server-icon.png configuration.");
+        LOG.info(
+            "If you are satisfied with this setting, enter ture. If not, enter false to restart server-icon.png configuration.");
 
         System.out.print("Answer: ");
 
@@ -301,7 +314,8 @@ public class ConfigurationCreator {
 
       // ----------------------------------WHETHER TO INCLUDE MODLOADER SERVER INSTALLATION---------
 
-      LOG.info("Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
+      LOG.info(
+          "Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
 
       System.out.print("Include modloader server installation: ");
       includeServerInstallation = UTILITIES.BooleanUtils().readBoolean();
@@ -351,8 +365,10 @@ public class ConfigurationCreator {
       // ---------------------------------------------------------PATH TO JAVA INSTALLATION---------
       LOG.info(
           "Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.");
-      LOG.info("If you leave this empty, ServerPackCreator will try to determine the path for you.");
-      LOG.info("Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
+      LOG.info(
+          "If you leave this empty, ServerPackCreator will try to determine the path for you.");
+      LOG.info(
+          "Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
 
       System.out.print("Path to your Java installation: ");
 
@@ -364,7 +380,8 @@ public class ConfigurationCreator {
 
       // ---------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
 
-      LOG.info("Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
+      LOG.info(
+          "Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
 
       System.out.print("Include server-icon.png: ");
       includeServerIcon = UTILITIES.BooleanUtils().readBoolean();
@@ -374,7 +391,8 @@ public class ConfigurationCreator {
 
       // -------------------------------WHETHER TO INCLUDE SERVER.PROPERTIES IN SERVER PACK---------
 
-      LOG.info("Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
+      LOG.info(
+          "Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
 
       System.out.print("Include server.properties: ");
       includeServerProperties = UTILITIES.BooleanUtils().readBoolean();
@@ -383,7 +401,8 @@ public class ConfigurationCreator {
       System.out.println();
 
       // -------------------------WHETHER TO INCLUDE CREATION OF ZIP-ARCHIVE OF SERVER PACK---------
-      LOG.info("Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
+      LOG.info(
+          "Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
 
       System.out.print("Create ZIP-archive: ");
       includeZipCreation = UTILITIES.BooleanUtils().readBoolean();
@@ -392,7 +411,8 @@ public class ConfigurationCreator {
 
       // ----------------------------------------------JAVA ARGS TO EXECUTE THE SERVER WITH---------
 
-      LOG.info("Specify the Java arguments, if any, to execute the server with. Can be left blank.");
+      LOG.info(
+          "Specify the Java arguments, if any, to execute the server with. Can be left blank.");
 
       System.out.print("Java args: ");
       javaArgs = reader.nextLine();
@@ -428,7 +448,8 @@ public class ConfigurationCreator {
           serverIconPath,
           serverPropertiesPath);
 
-      LOG.info("If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
+      LOG.info(
+          "If you are satisfied with these values, enter true. If not, enter false to restart config generation.");
 
       System.out.print("Answer: ");
 
@@ -455,7 +476,8 @@ public class ConfigurationCreator {
         serverPackSuffix,
         APPLICATIONPROPERTIES.DEFAULT_CONFIG())) {
 
-      LOG.info("New config file successfully written. Thanks go to Whitebear60 for initially writing the CLI-Config-Generation.");
+      LOG.info(
+          "New config file successfully written. Thanks go to Whitebear60 for initially writing the CLI-Config-Generation.");
     }
   }
 }

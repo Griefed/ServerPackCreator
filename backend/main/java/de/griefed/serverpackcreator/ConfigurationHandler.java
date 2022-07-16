@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -109,6 +110,7 @@ public class ConfigurationHandler {
               APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     } else {
@@ -467,7 +469,8 @@ public class ConfigurationHandler {
         if (checkModloaderVersion(
             configurationModel.getModLoader(),
             configurationModel.getModLoaderVersion(),
-            configurationModel.getMinecraftVersion())) {
+            configurationModel.getMinecraftVersion(),
+            encounteredErrors)) {
 
           LOG.debug("modLoaderVersion setting check passed.");
 
@@ -629,6 +632,8 @@ public class ConfigurationHandler {
     // If various manifests exist, gather as much information as possible.
     // Check CurseForge manifest available if a modpack was exported through a client like
     // Overwolf's CurseForge or through GDLauncher.
+
+    // TODO extract content of if blocks to methods
     if (new File(String.format("%s/manifest.json", destination)).exists()) {
 
       try {
@@ -641,7 +646,7 @@ public class ConfigurationHandler {
 
           packName =
               String.format(
-                  "./work/modpacks/%s", configurationModel.getCurseModpack().get("name").asText());
+                  "./work/modpacks/%s", configurationModel.getModpackJson().get("name").asText());
 
         } catch (NullPointerException npe) {
 
@@ -672,7 +677,7 @@ public class ConfigurationHandler {
 
           packName =
               String.format(
-                  "./work/modpacks/%s", configurationModel.getCurseModpack().get("name").asText());
+                  "./work/modpacks/%s", configurationModel.getModpackJson().get("name").asText());
 
         } catch (NullPointerException npe) {
 
@@ -686,6 +691,77 @@ public class ConfigurationHandler {
 
         /* This log is meant to be read by the user, therefore we allow translation. */
         encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.instance"));
+
+        configHasError = true;
+      }
+
+      // Check modrinth.index.json usually available if the modpack is from Modrinth
+    } else if (new File(String.format("%s/modrinth.index.json", destination)).exists()) {
+
+      try {
+        CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
+            configurationModel, new File(String.format("%s/modrinth.index.json", destination)));
+
+        // If JSON was acquired, get the name of the modpack and overwrite newDestination using
+        // modpack name.
+        try {
+
+          packName =
+              String.format(
+                  "./work/modpacks/%s", configurationModel.getModpackJson().get("name").asText());
+
+        } catch (NullPointerException npe) {
+
+          //noinspection ConstantConditions
+          packName = null;
+        }
+
+      } catch (IOException ex) {
+
+        LOG.error("Error parsing modrinth.index.json from ZIP-file.", ex);
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.config"));
+
+        configHasError = true;
+      }
+
+      // Check instance.json usually created by ATLauncher
+    } else if (new File(String.format("%s/instance.json", destination)).exists()) {
+
+      try {
+        CONFIGUTILITIES.updateConfigModelFromATLauncherInstance(
+            configurationModel, new File(String.format("%s/instance.json", destination)));
+
+        // If JSON was acquired, get the name of the modpack and overwrite newDestination using
+        // modpack name.
+        try {
+
+          packName =
+              String.format(
+                  "./work/modpacks/%s",
+                  configurationModel.getModpackJson().get("launcher").get("name").asText());
+
+        } catch (NullPointerException npe) {
+
+          try {
+            packName =
+                String.format(
+                    "./work/modpacks/%s",
+                    configurationModel.getModpackJson().get("launcher").get("pack").asText());
+          } catch (NullPointerException npe2) {
+
+            //noinspection ConstantConditions
+            packName = null;
+          }
+        }
+
+      } catch (IOException ex) {
+
+        LOG.error("Error parsing config.json from ZIP-file.", ex);
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        encounteredErrors.add(I18N.getMessage("configuration.log.error.zip.config"));
 
         configHasError = true;
       }
@@ -704,7 +780,7 @@ public class ConfigurationHandler {
           packName =
               String.format(
                   "./work/modpacks/%s",
-                  configurationModel.getCurseModpack().get("loader").get("sourceName").asText());
+                  configurationModel.getModpackJson().get("loader").get("sourceName").asText());
 
         } catch (NullPointerException npe) {
 
@@ -757,7 +833,11 @@ public class ConfigurationHandler {
 
     // If no json was read from the modpack, we must sadly use the ZIP-files name as the new
     // destination. Sadface.
-    if (packName == null) packName = destination;
+    if (packName == null) {
+      packName = destination;
+    }
+
+    packName = UTILITIES.StringUtils().pathSecureTextAlternative(packName.replace("\\", "/"));
 
     // Get the path to the would-be-server-pack with the new destination.
     String wouldBeServerPack =
@@ -859,12 +939,31 @@ public class ConfigurationHandler {
    * @param pathToZip Path to the ZIP-file to check.
    * @param encounteredErrors String List. List of encountered errors for further processing, like
    *     printing to logs or display in GUI or whatever you want, really.
-   * @return Boolean. Returns false if the ZIP-archive is considered valid.
+   * @return Boolean. <code>false</code> if the ZIP-archive is considered valid.
    * @author Griefed
    */
   public boolean checkZipArchive(Path pathToZip, List<String> encounteredErrors) {
+
+    ZipFile modpackZip;
+
+    try (ZipFile zipFile = new ZipFile(pathToZip.toString())) {
+
+      if (!zipFile.isValidZipFile()) {
+
+        return true;
+
+      } else {
+
+        modpackZip = zipFile;
+      }
+
+    } catch (IOException ex) {
+      LOG.error("Could not validate ZIP-file " + pathToZip + ".",ex);
+      return true;
+    }
+
     try {
-      List<String> foldersInModpackZip = CONFIGUTILITIES.directoriesInModpackZip(pathToZip);
+      List<String> foldersInModpackZip = CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(modpackZip);
 
       // If the ZIP-file only contains one directory, assume it is overrides and return true to
       // indicate invalid configuration.
@@ -884,7 +983,7 @@ public class ConfigurationHandler {
         return true;
 
         // If the ZIP-file does not contain the mods or config directories, consider it invalid.
-      } else if (!foldersInModpackZip.contains("mods") || !foldersInModpackZip.contains("config")) {
+      } else if (!foldersInModpackZip.contains("mods/") || !foldersInModpackZip.contains("config/")) {
 
         LOG.error(
             "The ZIP-file you specified does not contain the mods or config directories. What use is a modded server without mods and their configurations?");
@@ -946,8 +1045,7 @@ public class ConfigurationHandler {
             .url()
             .isPresent()) {
 
-      scriptSettings.put(
-          "SPC_MINECRAFT_SERVER_URL_SPC","");
+      scriptSettings.put("SPC_MINECRAFT_SERVER_URL_SPC", "");
 
     } else {
       scriptSettings.put(
@@ -1730,17 +1828,83 @@ public class ConfigurationHandler {
   public boolean checkModloaderVersion(
       String modloader, String modloaderVersion, String minecraftVersion) {
 
+    return checkModloaderVersion(modloader, modloaderVersion, minecraftVersion, new ArrayList<>());
+  }
+
+  /**
+   * Check the given Minecraft and modloader versions for the specified modloader and update the
+   * passed error-list should any error be encountered.
+   *
+   * @param modloader String. The passed modloader which determines whether the check for Forge or
+   *     Fabric is called.
+   * @param modloaderVersion String. The version of the modloader which is checked against the
+   *     corresponding modloaders manifest.
+   * @param minecraftVersion String. The version of Minecraft used for checking the Forge version.
+   * @param encounteredErrors {@link String}-list of encountered errors to add to in case of errors.
+   * @return Boolean. Returns true if the specified modloader version was found in the corresponding
+   *     manifest.
+   * @author Griefed
+   */
+  public boolean checkModloaderVersion(
+      String modloader,
+      String modloaderVersion,
+      String minecraftVersion,
+      List<String> encounteredErrors) {
+
     switch (modloader) {
       case "Forge":
-        return VERSIONMETA
-            .forge()
-            .checkForgeAndMinecraftVersion(minecraftVersion, modloaderVersion);
+        if (VERSIONMETA.forge().checkForgeAndMinecraftVersion(minecraftVersion, modloaderVersion)) {
+
+          return true;
+
+        } else {
+
+          encounteredErrors.add(
+              String.format(
+                  I18N.getMessage("configuration.log.error.checkmodloaderandversion"),
+                  minecraftVersion,
+                  modloader,
+                  modloaderVersion));
+
+          return false;
+        }
 
       case "Fabric":
-        return VERSIONMETA.fabric().checkFabricVersion(modloaderVersion);
+        if (VERSIONMETA.fabric().checkFabricVersion(modloaderVersion)
+            && VERSIONMETA
+                .fabric()
+                .getLoaderDetails(minecraftVersion, modloaderVersion)
+                .isPresent()) {
+
+          return true;
+
+        } else {
+          encounteredErrors.add(
+              String.format(
+                  I18N.getMessage("configuration.log.error.checkmodloaderandversion"),
+                  minecraftVersion,
+                  modloader,
+                  modloaderVersion));
+
+          return false;
+        }
 
       case "Quilt":
-        return VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion);
+        if (VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion)
+            && VERSIONMETA.fabric().getFabricIntermediary(minecraftVersion).isPresent()) {
+
+          return true;
+
+        } else {
+          encounteredErrors.add(
+              String.format(
+                  I18N.getMessage("configuration.log.error.checkmodloaderandversion"),
+                  minecraftVersion,
+                  modloader,
+                  modloaderVersion));
+
+          return false;
+        }
 
       default:
         LOG.error(
@@ -1749,4 +1913,6 @@ public class ConfigurationHandler {
         return false;
     }
   }
+
+  // TODO replace String in docs with {@link String}
 }

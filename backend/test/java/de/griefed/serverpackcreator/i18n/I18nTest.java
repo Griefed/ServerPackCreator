@@ -24,8 +24,7 @@ public class I18nTest {
   void newTest() {
     FileUtils.deleteQuietly(new File("lang"));
     I18n i18n = new I18n();
-    Assertions.assertEquals(
-        "English (United States)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
   }
 
   @Test
@@ -33,20 +32,16 @@ public class I18nTest {
     FileUtils.deleteQuietly(new File("lang"));
 
     LOG.info("newLocaleTest() en_us");
-    I18n i18n =
-        new I18n(new ApplicationProperties(), "en_us");
-    Assertions.assertEquals(
-        "English (United States)", i18n.getMessage("localeUnlocalizedName"));
+    I18n i18n = new I18n(new ApplicationProperties(), "en_us");
+    Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
 
     LOG.info("newLocaleTest() uk_ua");
     i18n = new I18n(new ApplicationProperties(), "uk_ua");
-    Assertions.assertEquals(
-        "Ukrainian (Ukraine)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("Ukrainian (Ukraine)", i18n.getMessage("localeUnlocalizedName"));
 
     LOG.info("newLocaleTest() de_de");
     i18n = new I18n(new ApplicationProperties(), "de_de");
-    Assertions.assertEquals(
-        "German (Germany)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("German (Germany)", i18n.getMessage("localeUnlocalizedName"));
   }
 
   @Test
@@ -65,8 +60,7 @@ public class I18nTest {
       ex.printStackTrace();
     }
     i18n = new I18n(applicationProperties);
-    Assertions.assertEquals(
-        "English (United States)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
 
     LOG.info("newPropertiesTest() de_de");
     try (FileInputStream fileInputStream =
@@ -78,8 +72,7 @@ public class I18nTest {
       ex.printStackTrace();
     }
     i18n = new I18n(applicationProperties);
-    Assertions.assertEquals(
-        "German (Germany)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("German (Germany)", i18n.getMessage("localeUnlocalizedName"));
 
     LOG.info("newPropertiesTest() uk_ua");
     try (FileInputStream fileInputStream =
@@ -91,8 +84,7 @@ public class I18nTest {
       ex.printStackTrace();
     }
     i18n = new I18n(applicationProperties);
-    Assertions.assertEquals(
-        "Ukrainian (Ukraine)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("Ukrainian (Ukraine)", i18n.getMessage("localeUnlocalizedName"));
   }
 
   @Test
@@ -104,25 +96,20 @@ public class I18nTest {
     }
 
     LOG.info("getLocalizedStringTest() en_us");
-    I18n i18n =
-        new I18n(new ApplicationProperties(), "en_us");
-    Assertions.assertEquals(
-        "English (United States)", i18n.getMessage("localeUnlocalizedName"));
+    I18n i18n = new I18n(new ApplicationProperties(), "en_us");
+    Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
 
     LOG.info("getLocalizedStringTest() uk_ua");
     i18n = new I18n(new ApplicationProperties(), "uk_ua");
-    Assertions.assertEquals(
-        "Ukrainian (Ukraine)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("Ukrainian (Ukraine)", i18n.getMessage("localeUnlocalizedName"));
 
     LOG.info("getLocalizedStringTest() de_de");
     i18n = new I18n(new ApplicationProperties(), "de_de");
-    Assertions.assertEquals(
-        "German (Germany)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("German (Germany)", i18n.getMessage("localeUnlocalizedName"));
 
     LOG.info("getLocalizedStringTest() ab_cd");
     i18n = new I18n(new ApplicationProperties(), "ab_cd");
-    Assertions.assertEquals(
-        "English (United States)", i18n.getMessage("localeUnlocalizedName"));
+    Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
   }
 
   @Test
@@ -136,9 +123,7 @@ public class I18nTest {
     }
 
     LOG.info("customLanguageTest() ef_gh");
-    I18n i18n =
-        new I18n(new ApplicationProperties(), "ef_gh");
-    Assertions.assertEquals(
-        "I bims 1 Sprache", i18n.getMessage("localeUnlocalizedName"));
+    I18n i18n = new I18n(new ApplicationProperties(), "ef_gh");
+    Assertions.assertEquals("I bims 1 Sprache", i18n.getMessage("localeUnlocalizedName"));
   }
 }
