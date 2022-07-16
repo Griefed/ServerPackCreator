@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import net.lingala.zip4j.ZipFile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -475,16 +476,41 @@ public class ConfigUtilitiesTest {
   @Test
   void directoriesInModpackZipTest() throws IOException {
     List<String> entries =
-        CONFIGUTILITIES.directoriesInModpackZip(
-            Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"));
+        CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(
+            new ZipFile(
+                "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"));
     Assertions.assertEquals(1, entries.size());
-    Assertions.assertTrue(entries.contains("overrides"));
+    Assertions.assertTrue(entries.contains("overrides/"));
     entries =
-        CONFIGUTILITIES.directoriesInModpackZip(
-            Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"));
-    Assertions.assertEquals(2, entries.size());
-    Assertions.assertTrue(entries.contains("mods"));
-    Assertions.assertTrue(entries.contains("config"));
+        CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(
+            new ZipFile("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"));
+    Assertions.assertTrue(entries.size() > 1);
+    Assertions.assertTrue(entries.contains("mods/"));
+    Assertions.assertTrue(entries.contains("config/"));
+  }
+
+  @Test
+  void filesAndDirsInZipTest() throws IOException {
+    Assertions.assertTrue(CONFIGUTILITIES.getFilesInModpackZip(
+        new ZipFile(
+            "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip")).size() > 0);
+    Assertions.assertTrue(CONFIGUTILITIES.getFilesInModpackZip(
+        new ZipFile(
+            "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip")).size() > 0);
+
+    Assertions.assertTrue(CONFIGUTILITIES.getDirectoriesInModpackZip(
+        new ZipFile(
+            "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip")).size() > 0);
+    Assertions.assertTrue(CONFIGUTILITIES.getDirectoriesInModpackZip(
+        new ZipFile(
+            "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip")).size() > 0);
+
+    Assertions.assertTrue(CONFIGUTILITIES.getAllFilesAndDirectoriesInModpackZip(
+        new ZipFile(
+            "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip")).size() > 0);
+    Assertions.assertTrue(CONFIGUTILITIES.getAllFilesAndDirectoriesInModpackZip(
+        new ZipFile(
+            "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip")).size() > 0);
   }
 
   private ObjectMapper getObjectMapper() {

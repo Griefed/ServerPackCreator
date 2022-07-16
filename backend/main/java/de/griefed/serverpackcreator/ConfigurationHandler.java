@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -938,15 +939,31 @@ public class ConfigurationHandler {
    * @param pathToZip Path to the ZIP-file to check.
    * @param encounteredErrors String List. List of encountered errors for further processing, like
    *     printing to logs or display in GUI or whatever you want, really.
-   * @return Boolean. Returns false if the ZIP-archive is considered valid.
+   * @return Boolean. <code>false</code> if the ZIP-archive is considered valid.
    * @author Griefed
    */
   public boolean checkZipArchive(Path pathToZip, List<String> encounteredErrors) {
-    try {
-      List<String> foldersInModpackZip = CONFIGUTILITIES.directoriesInModpackZip(pathToZip);
 
-      // TODO check if valid zip file
-      // https://github.com/srikanth-lingala/zip4j#check-if-a-zip-file-is-valid
+    ZipFile modpackZip;
+
+    try (ZipFile zipFile = new ZipFile(pathToZip.toString())) {
+
+      if (!zipFile.isValidZipFile()) {
+
+        return true;
+
+      } else {
+
+        modpackZip = zipFile;
+      }
+
+    } catch (IOException ex) {
+      LOG.error("Could not validate ZIP-file " + pathToZip + ".",ex);
+      return true;
+    }
+
+    try {
+      List<String> foldersInModpackZip = CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(modpackZip);
 
       // If the ZIP-file only contains one directory, assume it is overrides and return true to
       // indicate invalid configuration.
@@ -966,7 +983,7 @@ public class ConfigurationHandler {
         return true;
 
         // If the ZIP-file does not contain the mods or config directories, consider it invalid.
-      } else if (!foldersInModpackZip.contains("mods") || !foldersInModpackZip.contains("config")) {
+      } else if (!foldersInModpackZip.contains("mods/") || !foldersInModpackZip.contains("config/")) {
 
         LOG.error(
             "The ZIP-file you specified does not contain the mods or config directories. What use is a modded server without mods and their configurations?");
