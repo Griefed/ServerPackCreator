@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -167,29 +167,35 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricIntermediariesManifest--">fabricIntermediariesManifest</a></span>()</code>
+<div class="block">Bean for the location of the Fabric intermediaries manifest-file.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricManifest--">fabricManifest</a></span>()</code>
 <div class="block">Bean for the location of the Fabric version manifest-file.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#forgeManifest--">forgeManifest</a></span>()</code>
 <div class="block">Bean for the location of the Forge version manifest-file.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#minecraftManifest--">minecraftManifest</a></span>()</code>
 <div class="block">Bean for the location of the Minecraft version manifest-file.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltInstallerManifest--">quiltInstallerManifest</a></span>()</code>
 <div class="block">Bean for the location of the Quilt installer version manifest-file.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltManifest--">quiltManifest</a></span>()</code>
 <div class="block">Bean for the location of the Quilt version manifest-file.</div>
@@ -274,6 +280,21 @@ public&nbsp;java.io.File&nbsp;forgeManifest()</pre>
 <pre>@Bean
 public&nbsp;java.io.File&nbsp;fabricManifest()</pre>
 <div class="block">Bean for the location of the Fabric version manifest-file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>File</code></dd>
+</dl>
+</li>
+</ul>
+<a name="fabricIntermediariesManifest--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>fabricIntermediariesManifest</h4>
+<pre>@Bean
+public&nbsp;java.io.File&nbsp;fabricIntermediariesManifest()</pre>
+<div class="block">Bean for the location of the Fabric intermediaries manifest-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>File</code></dd>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -247,11 +247,21 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-java.util.List-">checkModloaderVersion</a></span>(java.lang.String&nbsp;modloader,
+                     java.lang.String&nbsp;modloaderVersion,
+                     java.lang.String&nbsp;minecraftVersion,
+                     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<div class="block">Check the given Minecraft and modloader versions for the specified modloader and update the
+ passed error-list should any error be encountered.</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-">checkModpackDir</a></span>(java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Check the passed directory for existence and whether it is a directory, rather than a file.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-java.util.List-">checkModpackDir</a></span>(java.lang.String&nbsp;modpackDir,
                java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
@@ -261,20 +271,20 @@ extends java.lang.Object</pre>
  message to the console and serverpackcreator.log so the user knows what went wrong.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkZipArchive-java.nio.file.Path-java.util.List-">checkZipArchive</a></span>(java.nio.file.Path&nbsp;pathToZip,
                java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Check a given ZIP-archives contents.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getJavaPath-java.lang.String-">getJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
 <div class="block">Check the given path to a Java installation for validity and return it, if it is valid.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#testJava-java.lang.String-">testJava</a></span>(java.lang.String&nbsp;pathToJava)</code>
 <div class="block">Test for a valid Java specification by trying to run <code>java -version</code>.</div>
@@ -535,7 +545,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dd><code>encounteredErrors</code> - String List. List of encountered errors for further processing, like
      printing to logs or display in GUI or whatever you want, really.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns false if the ZIP-archive is considered valid.</dd>
+<dd>Boolean. <code>false</code> if the ZIP-archive is considered valid.</dd>
 </dl>
 </li>
 </ul>
@@ -724,7 +734,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <a name="checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>checkModloaderVersion</h4>
 <pre>public&nbsp;boolean&nbsp;checkModloaderVersion(java.lang.String&nbsp;modloader,
@@ -738,6 +748,32 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dd><code>modloaderVersion</code> - String. The version of the modloader which is checked against the
      corresponding modloaders manifest.</dd>
 <dd><code>minecraftVersion</code> - String. The version of Minecraft used for checking the Forge version.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boolean. Returns true if the specified modloader version was found in the corresponding
+     manifest.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>checkModloaderVersion</h4>
+<pre>public&nbsp;boolean&nbsp;checkModloaderVersion(java.lang.String&nbsp;modloader,
+                                     java.lang.String&nbsp;modloaderVersion,
+                                     java.lang.String&nbsp;minecraftVersion,
+                                     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Check the given Minecraft and modloader versions for the specified modloader and update the
+ passed error-list should any error be encountered.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modloader</code> - String. The passed modloader which determines whether the check for Forge or
+     Fabric is called.</dd>
+<dd><code>modloaderVersion</code> - String. The version of the modloader which is checked against the
+     corresponding modloaders manifest.</dd>
+<dd><code>minecraftVersion</code> - String. The version of Minecraft used for checking the Forge version.</dd>
+<dd><code>encounteredErrors</code> - <code>String</code>-list of encountered errors to add to in case of errors.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the specified modloader version was found in the corresponding
      manifest.</dd>

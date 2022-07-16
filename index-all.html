@@ -262,8 +262,11 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#checkCurseForgeJsonForFabric-com.fasterxml.jackson.databind.JsonNode-">checkCurseForgeJsonForFabric(JsonNode)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
-<div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by
- the CurseForge modpack.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="block"><span class="deprecationComment">Regular checks in <a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-"><code>ConfigUtilities.updateConfigModelFromCurseManifest(ConfigurationModel,
+     File)</code></a> detect Fabric and the version. Iterating through the mods list is no longer
+     necessary.</span></div>
+</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#checkDatabase--">checkDatabase()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
 <dd>
@@ -361,6 +364,11 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-">checkModloaderVersion(String, String, String)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
 <dd>
 <div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-java.util.List-">checkModloaderVersion(String, String, String, List&lt;String&gt;)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
+<dd>
+<div class="block">Check the given Minecraft and modloader versions for the specified modloader and update the
+ passed error-list should any error be encountered.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-">checkModpackDir(String)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
 <dd>
@@ -670,10 +678,6 @@
 <dd>
 <div class="block">Deletes a server pack with the given id.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#directoriesInModpackZip-java.nio.file.Path-">directoriesInModpackZip(Path)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
-<dd>
-<div class="block">Acquire a list of directories in a ZIP-file.</div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#DIRECTORY_PLUGINS--">DIRECTORY_PLUGINS()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Directory where plugins are stored in.</div>
@@ -749,6 +753,10 @@
 <dd>
 <div class="block">Path to the Fabric installer version manifest-file, as a file.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_INTERMEDIARIES_MANIFEST_LOCATION--">FABRIC_INTERMEDIARIES_MANIFEST_LOCATION()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
+<dd>
+<div class="block">Path to the Fabric intermediaries manifest-file, as a file.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_VERSION_MANIFEST--">FABRIC_VERSION_MANIFEST()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Fabric version manifest-file.</div>
@@ -756,6 +764,14 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_VERSION_MANIFEST_LOCATION--">FABRIC_VERSION_MANIFEST_LOCATION()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Path to the Fabric version manifest-file, as a file.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricArguments.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricArguments</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
+<dd>
+<div class="block">Arguments of this loader.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricDetails</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
+<dd>
+<div class="block">Fabric loader details</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricInstaller</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
 <dd>
@@ -769,6 +785,26 @@
 <dd>
 <div class="block">Bean for the location of the Fabric installer version manifest-file.</div>
 </dd>
+<dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricIntermediaries</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
+<dd>
+<div class="block">Intermediaries for Fabric.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#FabricIntermediaries-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">FabricIntermediaries(File, ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a></dt>
+<dd>
+<div class="block">Instantiate Fabric intermediaries.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricIntermediariesManifest--">fabricIntermediariesManifest()</a></span> - Method in class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html" title="class in de.griefed.serverpackcreator.spring">BeanConfiguration</a></dt>
+<dd>
+<div class="block">Bean for the location of the Fabric intermediaries manifest-file.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricIntermediary</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
+<dd>
+<div class="block">A Fabric intermediary.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricLibrary</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
+<dd>
+<div class="block">Library information.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricLoader</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
 <dd>
 <div class="block">Information about releases of the Fabric loader.</div>
@@ -777,6 +813,12 @@
 <dd>
 <div class="block">Create a new instance of the Fabric Loader.</div>
 </dd>
+<dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoaderDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">FabricLoaderDetails</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a></dt>
+<dd>
+<div class="block">Acquire details for a Fabric loader of a given Minecraft and Fabric version.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoaderDetails.html#FabricLoaderDetails-com.fasterxml.jackson.databind.ObjectMapper-">FabricLoaderDetails(ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoaderDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLoaderDetails</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html#fabricManifest--">fabricManifest()</a></span> - Method in class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html" title="class in de.griefed.serverpackcreator.spring">BeanConfiguration</a></dt>
 <dd>
 <div class="block">Bean for the location of the Fabric version manifest-file.</div>
@@ -785,7 +827,7 @@
 <dd>
 <div class="block">Fabric meta containing information about available Fabric releases and installers.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#FabricMeta-java.io.File-java.io.File-">FabricMeta(File, File)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#FabricMeta-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">FabricMeta(File, File, File, ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></dt>
 <dd>
 <div class="block">Create a new Fabric Meta instance.</div>
 </dd>
@@ -928,6 +970,10 @@
 <dd>
 <div class="block">Get the alignment of the icon on the y-axis</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#getAllFilesAndDirectoriesInModpackZip-net.lingala.zip4j.ZipFile-">getAllFilesAndDirectoriesInModpackZip(ZipFile)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Acquire a list of all files and directories in a ZIP-file.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackController.html#getAllServerPacks--">getAllServerPacks()</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackController.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackController</a></dt>
 <dd>
 <div class="block">GET request for retrieving a list of all available server packs.</div>
@@ -935,6 +981,10 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass(Class&lt;?&gt;)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a></dt>
 <dd>
 <div class="block">Retrieve the ApplicationHome for a given class.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getArguments--">getArguments()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricArguments.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricArguments</code></a> used by this Fabric loader.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/plugins/PluginInformation.html#getAuthor--">getAuthor()</a></span> - Method in interface de.griefed.serverpackcreator.plugins.<a href="de/griefed/serverpackcreator/plugins/PluginInformation.html" title="interface in de.griefed.serverpackcreator.plugins">PluginInformation</a></dt>
 <dd>
@@ -986,10 +1036,6 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/ApplicationPropertiesController.html#getConfiguration--">getConfiguration()</a></span> - Method in class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/ApplicationPropertiesController.html" title="class in de.griefed.serverpackcreator.spring">ApplicationPropertiesController</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#getConfigurationAsList-de.griefed.serverpackcreator.ConfigurationModel-">getConfigurationAsList(ConfigurationModel)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
-<dd>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getConfirmedWorking--">getConfirmedWorking()</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a></dt>
 <dd>
 <div class="block">Getter for the amount of votes indicating whether this server pack works.</div>
@@ -997,10 +1043,6 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getCopyDirs--">getCopyDirs()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Getter for the list of directories in the modpack to copy to the server pack.</div>
-</dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getCurseModpack--">getCurseModpack()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
-<dd>
-<div class="block">Getter for the JsonNode containing all information about the CurseForge modpack.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getDateCreated--">getDateCreated()</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a></dt>
 <dd>
@@ -1013,6 +1055,18 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/plugins/PluginInformation.html#getDescription--">getDescription()</a></span> - Method in interface de.griefed.serverpackcreator.plugins.<a href="de/griefed/serverpackcreator/plugins/PluginInformation.html" title="interface in de.griefed.serverpackcreator.plugins">PluginInformation</a></dt>
 <dd>
 <div class="block">Get the description of this plugin.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoaderDetails.html#getDetails-java.lang.String-java.lang.String-">getDetails(String, String)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoaderDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLoaderDetails</a></dt>
+<dd>
+<div class="block">Get the details for a given Minecraft and Fabric version combination.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#getDirectoriesInModpackZip-net.lingala.zip4j.ZipFile-">getDirectoriesInModpackZip(ZipFile)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Acquire a list of all directories in a ZIP-file.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#getDirectoriesInModpackZipBaseDirectory-net.lingala.zip4j.ZipFile-">getDirectoriesInModpackZipBaseDirectory(ZipFile)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Acquire a list of directories in the base-directory of a ZIP-file.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#getDirectoriesToExclude--">getDirectoriesToExclude()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
@@ -1030,6 +1084,14 @@
 <dd>
 <div class="block">Getter for the amount of downloads this server pack has received.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#getFabricIntermediaries--">getFabricIntermediaries()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></dt>
+<dd>
+<div class="block">HashMap of available intermediaries.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#getFabricIntermediary-java.lang.String-">getFabricIntermediary(String)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></dt>
+<dd>
+<div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getFileDiskName--">getFileDiskName()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Getter for the disk-name of the CurseForge project file.</div>
@@ -1045,6 +1107,10 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getFileName--">getFileName()</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a></dt>
 <dd>
 <div class="block">Getter for the file display name of the project file from which the server pack was generated.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#getFilesInModpackZip-net.lingala.zip4j.ZipFile-">getFilesInModpackZip(ZipFile)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block">Acquire a list of all files in a ZIP-file.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--">getFilesToExcludeFromZipArchive()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
@@ -1070,6 +1136,10 @@
 <dd>
 <div class="block">Get a list of all available <a href="de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for a given Minecraft version, wrapped in an
  <code>Optional</code></div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricArguments.html#getGame--">getGame()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricArguments.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricArguments</a></dt>
+<dd>
+<div class="block">Object-array of arguments used.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/CompoundIcon.html#getGap--">getGap()</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/CompoundIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">CompoundIcon</a></dt>
 <dd>
@@ -1127,6 +1197,11 @@
 <dd>
 <div class="block">Getter for the database id of a server pack.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getId--">getId()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block">Fabric loader ID, in the format of <code>fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION
+ </code>.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getIncludeServerIcon--">getIncludeServerIcon()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Getter for whether the server-icon.png should be included in the server pack.</div>
@@ -1142,6 +1217,18 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getIncludeZipCreation--">getIncludeZipCreation()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Getter for whether a ZIP-archive of the server pack should be created.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getInheritsFrom--">getInheritsFrom()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block">The Minecraft version from which this Fabric loader version inherits from.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#getIntermediaries--">getIntermediaries()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a></dt>
+<dd>
+<div class="block">HashMap of available intermediaries.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#getIntermediary-java.lang.String-">getIntermediary(String)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a></dt>
+<dd>
+<div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getJavaArgs--">getJavaArgs()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
@@ -1175,9 +1262,25 @@
 <dd>
 <div class="block">Get the Layout enum</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getLibraries--">getLibraries()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricLibrary</code></a>-list used by this Fabric loader.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#getListFallbackMods--">getListFallbackMods()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Getter for the fallback list of clientside-only mods.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#getLoaderDetails-java.lang.String-java.lang.String-">getLoaderDetails(String, String)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></dt>
+<dd>
+<div class="block">Get details for a Fabric loader.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getMainClass--">getMainClass()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block">The Main class of this Fabric loader.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html#getMaven--">getMaven()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediary</a></dt>
+<dd>
+<div class="block">The maven mapping of this intermediary.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/i18n/I18n.html#getMessage-java.lang.String-">getMessage(String)</a></span> - Method in class de.griefed.serverpackcreator.i18n.<a href="de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a></dt>
 <dd>
@@ -1207,9 +1310,17 @@
 <dd>
 <div class="block">Getter for the path to the modpack directory.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getModpackJson--">getModpackJson()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
+<dd>
+<div class="block">Getter for the JsonNode containing all information about the modpack.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/plugins/PluginInformation.html#getName--">getName()</a></span> - Method in interface de.griefed.serverpackcreator.plugins.<a href="de/griefed/serverpackcreator/plugins/PluginInformation.html" title="interface in de.griefed.serverpackcreator.plugins">PluginInformation</a></dt>
 <dd>
 <div class="block">Get the name of this plugin.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html#getName--">getName()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLibrary</a></dt>
+<dd>
+<div class="block">The name of this library.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html#getPadding--">getPadding()</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">TextIcon</a></dt>
 <dd>
@@ -1234,6 +1345,18 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#getQueueMaxDiskUsage--">getQueueMaxDiskUsage()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Getter for the maximum disk usage at which JMS/Artemis will stop storing queues on disk.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getReleaseTime--">getReleaseTime()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block">The date at which this loader was released.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/WebUtilities.html#getResponseAsString-java.net.URL-">getResponseAsString(URL)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a></dt>
+<dd>
+<div class="block">Get the reponse of a call to a URL as a string.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/WebUtilities.html#getResponseCode-java.net.URL-">getResponseCode(URL)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a></dt>
+<dd>
+<div class="block">Get the response-code of a call to a URL as an integer.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/RotatedIcon.html#getRotate--">getRotate()</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/RotatedIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">RotatedIcon</a></dt>
 <dd>
@@ -1312,9 +1435,25 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/themes/LightTheme.html#getTextErrorColour--">getTextErrorColour()</a></span> - Method in class de.griefed.serverpackcreator.swing.themes.<a href="de/griefed/serverpackcreator/swing/themes/LightTheme.html" title="class in de.griefed.serverpackcreator.swing.themes">LightTheme</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getTime--">getTime()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block">Probably the same as <a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getReleaseTime--"><code>FabricDetails.getReleaseTime()</code></a>.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getType--">getType()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
+<dd>
+<div class="block">The release type of this Fabric loader.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html#getUrl--">getUrl()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLibrary</a></dt>
+<dd>
+<div class="block">The URL to this library.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/plugins/PluginInformation.html#getVersion--">getVersion()</a></span> - Method in interface de.griefed.serverpackcreator.plugins.<a href="de/griefed/serverpackcreator/plugins/PluginInformation.html" title="interface in de.griefed.serverpackcreator.plugins">PluginInformation</a></dt>
 <dd>
 <div class="block">Get the version of this plugin.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html#getVersion--">getVersion()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediary</a></dt>
+<dd>
+<div class="block">The version of this intermediary.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/zip/GenerateZip.html#getZipGenerationProperties--">getZipGenerationProperties()</a></span> - Method in class de.griefed.serverpackcreator.spring.zip.<a href="de/griefed/serverpackcreator/spring/zip/GenerateZip.html" title="class in de.griefed.serverpackcreator.spring.zip">GenerateZip</a></dt>
 <dd>
@@ -1563,6 +1702,10 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.io.File-">isLink(File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></dt>
 <dd>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html#isStable--">isStable()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediary</a></dt>
+<dd>
+<div class="block">Whether this intermediary is considered stable.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--">isZipFileExclusionEnabled()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
@@ -1929,6 +2072,11 @@
 <div class="block">Paint the icons of this compound icon at the specified location</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/StringUtilities.html#pathSecureText-java.lang.String-">pathSecureText(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a></dt>
+<dd>
+<div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe
+ to use for files, paths, directories etc.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/StringUtilities.html#pathSecureTextAlternative-java.lang.String-">pathSecureTextAlternative(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a></dt>
 <dd>
 <div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe
  to use for files, paths, directories etc.</div>
@@ -2419,10 +2567,6 @@
 <dd>
 <div class="block">Setter for the list of directories in the modpack to copy to the server pack.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#setCurseModpack-com.fasterxml.jackson.databind.JsonNode-">setCurseModpack(JsonNode)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
-<dd>
-<div class="block">Setter for the JsonNode containing all information about the CurseForge modpack.</div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setDateCreated-java.sql.Timestamp-">setDateCreated(Timestamp)</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a></dt>
 <dd>
 <div class="block">Setter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
@@ -2526,6 +2670,10 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#setModpackDir-java.lang.String-">setModpackDir(String)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Setter for the path to the modpack directory.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#setModpackJson-com.fasterxml.jackson.databind.JsonNode-">setModpackJson(JsonNode)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
+<dd>
+<div class="block">Setter for the JsonNode containing all information about the modpack.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html#setPadding-int-">setPadding(int)</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">TextIcon</a></dt>
 <dd>
@@ -2849,6 +2997,10 @@
 <dd>
 <div class="block">Update this <a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricInstaller</code></a> with information from the given <code>Document</code>.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#update--">update()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a></dt>
+<dd>
+<div class="block">Update the intermediaries for Fabric.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoader.html#update-org.w3c.dom.Document-">update(Document)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLoader</a></dt>
 <dd>
 <div class="block">Update the latest, release and releases information.</div>
@@ -2902,23 +3054,29 @@
 <dd>
 <div class="block">Constructor for Dependency Injection.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromATLauncherInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromATLauncherInstance(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block"><strong><code>instance.json</code></strong></div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromConfigJson-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromConfigJson(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
-<div class="block">Update the given ConfigurationModel with values gathered from the modpacks config.json.</div>
+<div class="block"><strong><code>config.json</code></strong></div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromCurseManifest(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
-<div class="block">Update the given ConfigurationModel with values gathered from the downloaded CurseForge
- modpack.</div>
+<div class="block"><strong><code>manifest.json</code></strong></div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromMinecraftInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMinecraftInstance(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
-<div class="block">Update the given ConfigurationModel with values gathered from the minecraftinstance.json of the
- modpack.</div>
+<div class="block"><strong><code>minecraftinstance.json</code></strong></div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromMMCPack-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMMCPack(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
-<div class="block">Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json.</div>
+<div class="block"><strong><code>mmc-pack.json</code></strong></div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromModrinthManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromModrinthManifest(ConfigurationModel, File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dd>
+<div class="block"><strong><code>modrinth.index.json</code></strong></div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html#updateConfirmedCounter-int-int-">updateConfirmedCounter(int, int)</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackService</a></dt>
 <dd>
@@ -2927,8 +3085,7 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateDestinationFromInstanceCfg-java.io.File-">updateDestinationFromInstanceCfg(File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
-<div class="block">Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks instance.cfg,
- which is usually created by the MultiMC launcher.</div>
+<div class="block"><strong><code>instance.cfg</code></strong></div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html#updateDownloadCounter-int-">updateDownloadCounter(int)</a></span> - Method in class de.griefed.serverpackcreator.spring.serverpack.<a href="de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackService</a></dt>
 <dd>
@@ -3046,7 +3203,7 @@ the order they are declared.</div>
 <dd>
 <div class="block">VersionMeta containing available versions and important details for Minecraft, Fabric and Forge.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-">VersionMeta(File, File, File, File, File, File)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-">VersionMeta(File, File, File, File, File, File, File)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></dt>
 <dd>
 <div class="block">Constructor.</div>
 </dd>
