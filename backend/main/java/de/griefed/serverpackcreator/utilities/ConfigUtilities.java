@@ -32,22 +32,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.ProviderNotFoundException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -775,10 +769,10 @@ public class ConfigUtilities {
   }
 
   /**
-   * Acquire a list of directories in a ZIP-file.
+   * Acquire a list of directories in the base-directory of a ZIP-file.
    *
-   * @param zipURI URI to the ZIP-file from which to gather a list of directories within.
-   * @return String List. A list of all directories in the ZIP-file.
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all directories in the base-directory of the ZIP-file.
    * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
    *     the env parameter does not contain properties required by the provider, or a property value
    *     is invalid.
@@ -789,65 +783,127 @@ public class ConfigUtilities {
    *     permission required by the file system provider implementation.
    * @author Griefed
    */
-  public List<String> directoriesInModpackZip(Path zipURI)
+  public List<String> getDirectoriesInModpackZipBaseDirectory(ZipFile zipFile)
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
           IOException, SecurityException {
-    List<String> directories = new ArrayList<>(100);
-    // TODO check contents with zip4j
-    // https://github.com/srikanth-lingala/zip4j#list-all-files-in-a-zip
-    LOG.debug("URI: " + zipURI);
 
-    FileSystem fileSystems = FileSystems.newFileSystem(zipURI, null);
+    List<String> baseDirectories = new ArrayList<>(100);
 
-    fileSystems
-        .getRootDirectories()
+    zipFile
+        .getFileHeaders()
         .forEach(
-            root -> {
-              LOG.debug("root: " + root);
-
-              try (Stream<Path> paths = Files.walk(root)) {
-
-                paths.forEach(
-                    path -> {
-
-                      /*
-                       * In regular regex: ^[\/\\]\w+[\/\\]?$
-                       * What is this madness?
-                       */
-                      if (path.toString().matches("^[/\\\\]\\w+[/\\\\]?$")) {
-                        LOG.debug("Path in ZIP: " + path);
-                        directories.add(path.toString().replace("/", ""));
-                      }
-                    });
-
-              } catch (IOException ex) {
-                LOG.error("No root available.", ex);
+            fileHeader -> {
+              if (fileHeader.getFileName().matches("^\\w+[/\\\\]$")) {
+                baseDirectories.add(fileHeader.getFileName());
               }
             });
 
-    if (directories.isEmpty()) {
+    return baseDirectories;
+  }
 
-      Enumeration<? extends ZipEntry> entries;
-      try (ZipFile zipFile = new ZipFile(zipURI.toString())) {
-        entries = zipFile.entries();
-      }
+  /**
+   * Acquire a list of all files in a ZIP-file.
+   *
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all files in the ZIP-file.
+   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
+   *     the env parameter does not contain properties required by the provider, or a property value
+   *     is invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
+   * @throws IOException if an I/O error occurs creating the file system.
+   * @throws SecurityException if a security manager is installed, and it denies an unspecified
+   *     permission required by the file system provider implementation.
+   * @author Griefed
+   */
+  public List<String> getFilesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+          IOException, SecurityException {
 
-      while (entries.hasMoreElements()) {
-        ZipEntry zipEntry = entries.nextElement();
-        LOG.debug("ZIP entry: " + zipEntry.getName());
+    List<String> files = new ArrayList<>(100);
 
-        /*
-         * In regular regex: ^[\/\\]\w+[\/\\]?$
-         * You have a problem, so you use regex. Now you have two problems.
-         */
-        if (zipEntry.getName().matches("^[/\\\\]\\w+[/\\\\]?$")) {
-          directories.add(zipEntry.getName());
-        }
-      }
-    }
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              if (!fileHeader.isDirectory()) {
+                files.add(fileHeader.getFileName());
+              }
+            });
 
-    fileSystems.close();
+    return files;
+  }
+
+  /**
+   * Acquire a list of all directories in a ZIP-file.
+   *
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all directories in the ZIP-file.
+   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
+   *     the env parameter does not contain properties required by the provider, or a property value
+   *     is invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
+   * @throws IOException if an I/O error occurs creating the file system.
+   * @throws SecurityException if a security manager is installed, and it denies an unspecified
+   *     permission required by the file system provider implementation.
+   * @author Griefed
+   */
+  public List<String> getDirectoriesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+          IOException, SecurityException {
+
+    List<String> directories = new ArrayList<>(100);
+
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              if (fileHeader.isDirectory()) {
+                directories.add(fileHeader.getFileName());
+              }
+            });
 
     return directories;
+  }
+
+  /**
+   * Acquire a list of all files and directories in a ZIP-file.
+   *
+   * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
+   * @return {@link List} {@link String} A list of all files and directories in the ZIP-file.
+   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
+   *     the env parameter does not contain properties required by the provider, or a property value
+   *     is invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
+   * @throws IOException if an I/O error occurs creating the file system.
+   * @throws SecurityException if a security manager is installed, and it denies an unspecified
+   *     permission required by the file system provider implementation.
+   * @author Griefed
+   */
+  public List<String> getAllFilesAndDirectoriesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+      IOException, SecurityException {
+
+    List<String> filesAndDirectories = new ArrayList<>(100);
+
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              try {
+                filesAndDirectories.addAll(getDirectoriesInModpackZip(zipFile));
+              } catch (IOException ex) {
+                LOG.error("Could not acquire file or directory from ZIP-archive.",ex);
+              }
+              try {
+                filesAndDirectories.addAll(getFilesInModpackZip(zipFile));
+              } catch (IOException ex) {
+                LOG.error("Could not acquire file or directory from ZIP-archive.",ex);
+              }
+            });
+
+    return filesAndDirectories;
   }
 }

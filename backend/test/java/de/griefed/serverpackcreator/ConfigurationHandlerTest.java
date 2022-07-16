@@ -6,6 +6,7 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -408,5 +409,14 @@ class ConfigurationHandlerTest {
     Assertions.assertTrue(CONFIGURATIONHANDLER.checkIconAndProperties(""));
     Assertions.assertFalse(CONFIGURATIONHANDLER.checkIconAndProperties("/some/path"));
     Assertions.assertTrue(CONFIGURATIONHANDLER.checkIconAndProperties("img/prosper.png"));
+  }
+
+  @Test
+  void checkZipArchiveTest() {
+    Assertions.assertFalse(CONFIGURATIONHANDLER.checkZipArchive(Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"),
+        new ArrayList<>()));
+
+    Assertions.assertTrue(CONFIGURATIONHANDLER.checkZipArchive(Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"),
+        new ArrayList<>()));
   }
 }
