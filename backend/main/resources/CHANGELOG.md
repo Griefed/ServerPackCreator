@@ -1,3 +1,12 @@
+## [3.9.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.8.0...3.9.0) (2022-07-16)
+
+
+### 💎 Improvements
+
+* **Compatibility checks:** Simple check whether the specified Minecraft version and Fabric/Quilt versions are compatible with each other and available. Enhance VersionMeta for Fabric, allowing for more checks in back- and frontend. The GUI will now only allow valid Minecraft and Fabric/Quilt combinations and present you with an error if you manage to pass an invalid combination. ([8c6324b](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c6324b08778ce62856a184000adacb8635589b3))
+* **Manifest scans:** Scan ATLauncher manifest and improve all manifest scans for better modloader and version detection. Detect Quilt where possible. ([ac6f799](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac6f799376eccc3d6dc9713c3fe24cc6ed0d254f))
+* **ZIP-archive checks:** Check the validity of a ZIP-archive and improve the listing of files and directories in a given ZIP-archive. ([fd0621d](https://git.griefed.de/Griefed/ServerPackCreator/commit/fd0621d4e0da121cd79d7770d5d4b05a029b56d6))
+
 ## [3.8.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.7.0...3.8.0) (2022-07-11)
 
 

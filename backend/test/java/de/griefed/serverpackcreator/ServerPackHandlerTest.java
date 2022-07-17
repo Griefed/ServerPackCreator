@@ -3,7 +3,6 @@ package de.griefed.serverpackcreator;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import de.griefed.serverpackcreator.i18n.I18n;
-import de.griefed.serverpackcreator.plugins.ApplicationPlugins;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;

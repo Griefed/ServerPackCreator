@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugins;
+package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.plugins.serverpackhandler.PostGenExtension;
 import de.griefed.serverpackcreator.plugins.serverpackhandler.PreGenExtension;
@@ -92,10 +92,10 @@ public class ApplicationPlugins extends JarPluginManager {
       LOG.info("Available PreGenExtension plugins:");
       PLUGINS_PreGenExtension.forEach(
           plugin -> {
-            LOG.info("Name:       " + plugin.getName());
-            LOG.info("Description:" + plugin.getDescription());
-            LOG.info("Version:    " + plugin.getVersion());
-            LOG.info("Author:     " + plugin.getAuthor());
+            LOG.info("  Name:       " + plugin.getName());
+            LOG.info("    Description:" + plugin.getDescription());
+            LOG.info("    Version:    " + plugin.getVersion());
+            LOG.info("    Author:     " + plugin.getAuthor());
           });
     } else {
       LOG.info("No PreGenExtensions installed.");
@@ -105,10 +105,10 @@ public class ApplicationPlugins extends JarPluginManager {
       LOG.info("Available PreZipExtension plugins:");
       PLUGINS_PreZipExtension.forEach(
           plugin -> {
-            LOG.info("Name:       " + plugin.getName());
-            LOG.info("Description:" + plugin.getDescription());
-            LOG.info("Version:    " + plugin.getVersion());
-            LOG.info("Author:     " + plugin.getAuthor());
+            LOG.info("  Name:       " + plugin.getName());
+            LOG.info("    Description:" + plugin.getDescription());
+            LOG.info("    Version:    " + plugin.getVersion());
+            LOG.info("    Author:     " + plugin.getAuthor());
           });
     } else {
       LOG.info("No PreZipExtension installed.");
@@ -118,10 +118,10 @@ public class ApplicationPlugins extends JarPluginManager {
       LOG.info("Available PostGenExtension plugins:");
       PLUGINS_PostGenExtension.forEach(
           plugin -> {
-            LOG.info("Name:       " + plugin.getName());
-            LOG.info("Description:" + plugin.getDescription());
-            LOG.info("Version:    " + plugin.getVersion());
-            LOG.info("Author:     " + plugin.getAuthor());
+            LOG.info("  Name:       " + plugin.getName());
+            LOG.info("    Description:" + plugin.getDescription());
+            LOG.info("    Version:    " + plugin.getVersion());
+            LOG.info("    Author:     " + plugin.getAuthor());
           });
     } else {
       LOG.info("No PostGenExtension installed.");
@@ -131,10 +131,10 @@ public class ApplicationPlugins extends JarPluginManager {
       LOG.info("Available TabExtension plugins:");
       PLUGINS_TabExtension.forEach(
           plugin -> {
-            LOG.info("Name:       " + plugin.getName());
-            LOG.info("Description:" + plugin.getDescription());
-            LOG.info("Version:    " + plugin.getVersion());
-            LOG.info("Author:     " + plugin.getAuthor());
+            LOG.info("  Name:       " + plugin.getName());
+            LOG.info("    Description:" + plugin.getDescription());
+            LOG.info("    Version:    " + plugin.getVersion());
+            LOG.info("    Author:     " + plugin.getAuthor());
           });
     } else {
       LOG.info("No TabExtension installed.");
