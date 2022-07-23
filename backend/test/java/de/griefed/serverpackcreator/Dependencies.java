@@ -18,27 +18,17 @@ import org.apache.commons.io.FileUtils;
 
 public class Dependencies {
 
-  public static final ServerPackCreator SERVER_PACK_CREATOR =
-      new ServerPackCreator(new String[] {"--setup"});
-  public static final ObjectMapper OBJECT_MAPPER =
-      new ObjectMapper()
-          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-  public static final ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-  public static final I18n I18N = new I18n(APPLICATIONPROPERTIES);
-  public static final Utilities UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-  public static final ConfigUtilities CONFIGUTILITIES =
-      new ConfigUtilities(UTILITIES, APPLICATIONPROPERTIES, OBJECT_MAPPER);
+  public static final ServerPackCreator SERVER_PACK_CREATOR;
+  public static final ObjectMapper OBJECT_MAPPER;
+  public static final ApplicationProperties APPLICATIONPROPERTIES;
+  public static final I18n I18N;
+  public static final Utilities UTILITIES;
+  public static final ConfigUtilities CONFIGUTILITIES;
   public static final VersionMeta VERSIONMETA;
   public static final ConfigurationHandler CONFIGURATIONHANDLER;
   public static final ServerPackHandler SERVERPACKHANDLER;
   public static final ApplicationPlugins APPLICATION_PLUGINS;
-  public static final ModScanner MODSCANNER =
-      new ModScanner(
-          new AnnotationScanner(OBJECT_MAPPER),
-          new FabricScanner(OBJECT_MAPPER),
-          new QuiltScanner(OBJECT_MAPPER),
-          new TomlScanner(new TomlParser()));
+  public static final ModScanner MODSCANNER;
 
   static {
     try {
@@ -47,14 +37,28 @@ public class Dependencies {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-
-    APPLICATION_PLUGINS = new ApplicationPlugins();
-
+    SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
     try {
       SERVER_PACK_CREATOR.run();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+
+    OBJECT_MAPPER =
+        new ObjectMapper()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+    APPLICATIONPROPERTIES = new ApplicationProperties();
+    I18N = new I18n(APPLICATIONPROPERTIES);
+    UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
+    CONFIGUTILITIES = new ConfigUtilities(UTILITIES, APPLICATIONPROPERTIES, OBJECT_MAPPER);
+    MODSCANNER =
+        new ModScanner(
+            new AnnotationScanner(OBJECT_MAPPER),
+            new FabricScanner(OBJECT_MAPPER),
+            new QuiltScanner(OBJECT_MAPPER),
+            new TomlScanner(new TomlParser()));
+    APPLICATION_PLUGINS = new ApplicationPlugins();
 
     try {
       VERSIONMETA =
