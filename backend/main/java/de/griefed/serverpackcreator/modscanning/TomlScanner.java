@@ -1,4 +1,23 @@
-package de.griefed.serverpackcreator;
+/* Copyright (C) 2022  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.modscanning;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.toml.TomlParser;
@@ -6,54 +25,70 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-public class TomlScanner {
+@Component
+public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
 
+  private static final Logger LOG = LogManager.getLogger(TomlScanner.class);
   private final TomlParser PARSER;
   private final String FORGE_MC = "^(forge|minecraft)$";
   private final String BOTH_SERVER = "^(BOTH|SERVER)$";
 
+  @Autowired
   public TomlScanner(TomlParser tomlParser) {
     this.PARSER = tomlParser;
   }
 
-  public Map<String, List<String>> scan(File[] jarFiles) {
-    List<String> allFiles = new ArrayList<>();
-    for (File modJar : jarFiles) {
-      allFiles.add(modJar.getName());
-    }
+  /**
+   * Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.
+   * <br>
+   * If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br>
+   * If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER
+   * </code>, it is added.<br>
+   * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
+   * If no sideness can be found for a given mod, it is added to prevent false positives.
+   *
+   * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
+   * @return TreeSet File. List of mods not to include in server pack based on
+   *     mods.toml-configuration.
+   * @author Griefed
+   */
+  public TreeSet<File> scan(Collection<File> filesInModsDir) {
 
-    List<String> serverMods = new ArrayList<>();
+    TreeSet<File> serverMods = new TreeSet<>();
 
     TreeSet<String> idsRequiredOnServer = new TreeSet<>();
 
     CommentedConfig config;
 
-    for (File modJar : jarFiles) {
+    for (File modJar : filesInModsDir) {
       try {
 
         config = getConfig(modJar);
 
         // get all [[dependencies.n]] which are not minecraft|forge, but required by the mod
-        idsRequiredOnServer.addAll(getIdsOfInstalledModsDependencies(config));
+        idsRequiredOnServer.addAll(getModDependencyIdsRequiredOnServer(config));
 
         // get all mods required on the server
-        idsRequiredOnServer.addAll(getIdsOfInstalledModsRequiredOnServer(config));
+        idsRequiredOnServer.addAll(getModIdsRequiredOnServer(config));
 
       } catch (Exception e) {
 
-        // TODO replace with logging
-        System.out.println("Error scanning " + modJar.getName() + ". Line 54. " + e);
-        serverMods.add(modJar.getName());
+        LOG.debug("Could not fully scan " + modJar.getName() + ". " + e.getMessage());
+        serverMods.add(modJar);
       }
     }
 
-    for (File modJar : jarFiles) {
+    for (File modJar : filesInModsDir) {
       try {
 
         config = getConfig(modJar);
@@ -62,39 +97,39 @@ public class TomlScanner {
 
         for (String id : idsInMod) {
           if (idsRequiredOnServer.contains(id)) {
-            serverMods.add(modJar.getName());
+            serverMods.add(modJar);
           }
         }
 
       } catch (Exception e) {
 
-        // TODO replace with logging
-        System.out.println("Error scanning " + modJar.getName() + ". Line 74. " + e.getMessage());
-        serverMods.add(modJar.getName());
+        LOG.debug("Could not fully scan " + modJar.getName() + ". " + e.getMessage());
+        serverMods.add(modJar);
       }
     }
 
-    List<String> excluded = new ArrayList<>(allFiles);
+    TreeSet<File> excluded = new TreeSet<>(filesInModsDir);
     excluded.removeAll(serverMods);
 
-    return new HashMap<String, List<String>>() {
-      {
-        put("mods", allFiles);
-        put("excluded", excluded);
-      }
-    };
+    return excluded;
   }
 
-  private TreeSet<String> getIdsOfInstalledModsRequiredOnServer(CommentedConfig config)
+  /**
+   * Get all ids of mods required for running the server.
+   *
+   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
+   *     information.
+   * @return {@link TreeSet} of ids of mods required.
+   * @throws ScanningException if the mod specifies no mods.
+   */
+  private TreeSet<String> getModIdsRequiredOnServer(CommentedConfig config)
       throws ScanningException {
 
     ArrayList<Map<String, Object>> configs = new ArrayList<>();
     TreeSet<String> ids = new TreeSet<>();
 
     if (config.valueMap().get("mods") == null) {
-
       throw new ScanningException("No mods specified.");
-
     } else {
 
       for (CommentedConfig commentedConfig :
@@ -110,7 +145,6 @@ public class TomlScanner {
     for (Map<String, Object> mod : configs) {
 
       String modId = mod.get("modId").toString();
-
       if (dependencies.containsKey(modId)) {
 
         for (CommentedConfig dependency : dependencies.get(modId)) {
@@ -121,9 +155,7 @@ public class TomlScanner {
               containedForgeOrMinecraft = true;
 
               try {
-
                 if (getSide(dependency).matches(BOTH_SERVER)) {
-
                   ids.add(modId);
                 }
               } catch (NullPointerException ex) {
@@ -151,7 +183,19 @@ public class TomlScanner {
     return ids;
   }
 
-  private TreeSet<String> getIdsOfInstalledModsDependencies(CommentedConfig config)
+  /**
+   * Acquire a list of ids of dependencies required by the passed mod in order to run on a modded
+   * server. Only if all dependencies in this mod specify <code>CLIENT</code> for either <code>forge
+   * </code> or <code>minecraft</code> is a dependency not added to the list of required
+   * dependencies. Otherwise, all modIds mentioned in the dependencies of this mod, which are
+   * neither <code>forge</code> nor <code>minecraft</code> get added to the list.
+   *
+   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
+   *     information.
+   * @return {@link TreeSet} of ids of mods required as dependencies.
+   * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
+   */
+  private TreeSet<String> getModDependencyIdsRequiredOnServer(CommentedConfig config)
       throws ScanningException {
     TreeSet<String> ids = new TreeSet<>();
 
@@ -221,6 +265,14 @@ public class TomlScanner {
     return ids;
   }
 
+  /**
+   * Acquire a set of ids of mods required for running the server.
+   *
+   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
+   *     information.
+   * @return {@link TreeSet} of ids of mods required.
+   * @throws ScanningException if the mod specifies no...well...mods.
+   */
   private TreeSet<String> getModIdsInJar(CommentedConfig config) throws ScanningException {
     TreeSet<String> ids = new TreeSet<>();
     if (config.valueMap().get("mods") == null) {
@@ -239,6 +291,13 @@ public class TomlScanner {
     return ids;
   }
 
+  /**
+   * Acquire the base toml-config of a mod.
+   *
+   * @param file {@link File} The file from which to acquire the toml config.
+   * @return {@link CommentedConfig} config read from the toml in the mod.
+   * @throws IOException if the mods.toml file could not be read/found.
+   */
   private CommentedConfig getConfig(File file) throws IOException {
     JarFile jarFile = new JarFile(file);
     InputStream tomlStream = jarFile.getInputStream(jarFile.getJarEntry("META-INF/mods.toml"));
@@ -248,6 +307,15 @@ public class TomlScanner {
     return config;
   }
 
+  /**
+   * Acquire a map of all dependencies specified by a mod.
+   *
+   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all *
+   *     information.
+   * @return {@link Map} {@link String}, {@link ArrayList} {@link CommentedConfig} - Map of
+   *     dependencies for the passed mod config.
+   * @throws ScanningException if the mod declares no dependencies.
+   */
   private Map<String, ArrayList<CommentedConfig>> getMapOfDependencyLists(CommentedConfig config)
       throws ScanningException {
 
@@ -276,10 +344,22 @@ public class TomlScanner {
     return dependencies;
   }
 
+  /**
+   * Acquire the modId from the passed config.
+   *
+   * @param config {@link CommentedConfig} Mod- or dependency-config which contains the modId.
+   * @return {@link String} <code>modId</code> from the passed config, in lower-case letters.
+   */
   private String getModId(CommentedConfig config) {
     return config.valueMap().get("modId").toString().toLowerCase();
   }
 
+  /**
+   * Acquire the side of the config of the passed dependency.
+   *
+   * @param config {@link CommentedConfig} Mod- or dependency-config which contains the modId.
+   * @return {@link String} <code>side</code> from the passed config, in upper-case letters.
+   */
   private String getSide(CommentedConfig config) {
     return config.valueMap().get("side").toString().toUpperCase();
   }

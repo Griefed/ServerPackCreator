@@ -19,8 +19,16 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.electronwill.nightconfig.toml.TomlParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
+import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
+import de.griefed.serverpackcreator.modscanning.FabricScanner;
+import de.griefed.serverpackcreator.modscanning.ModScanner;
+import de.griefed.serverpackcreator.modscanning.QuiltScanner;
+import de.griefed.serverpackcreator.modscanning.TomlScanner;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorGui;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
@@ -84,6 +92,10 @@ public class ServerPackCreator {
   private final String[] ARGS;
   private final File LOG4J2XML = new File("log4j2.xml");
   private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
+  private final ObjectMapper OBJECT_MAPPER =
+      new ObjectMapper()
+          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
   private Utilities utilities = null;
   private VersionMeta versionMeta = null;
   private ConfigUtilities configUtilities = null;
@@ -392,9 +404,10 @@ public class ServerPackCreator {
             APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
             APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
+            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
+            OBJECT_MAPPER);
 
-    this.configUtilities = new ConfigUtilities(I18N, utilities, APPLICATIONPROPERTIES, versionMeta);
+    this.configUtilities = new ConfigUtilities(utilities, APPLICATIONPROPERTIES, OBJECT_MAPPER);
 
     this.configurationHandler =
         new ConfigurationHandler(
@@ -413,7 +426,15 @@ public class ServerPackCreator {
 
     this.serverPackHandler =
         new ServerPackHandler(
-            I18N, APPLICATIONPROPERTIES, versionMeta, utilities, applicationPlugins);
+            APPLICATIONPROPERTIES,
+            versionMeta,
+            utilities,
+            applicationPlugins,
+            new ModScanner(
+                new AnnotationScanner(OBJECT_MAPPER),
+                new FabricScanner(OBJECT_MAPPER),
+                new QuiltScanner(OBJECT_MAPPER),
+                new TomlScanner(new TomlParser())));
 
     if (this.updateChecker == null) {
       this.updateChecker = new UpdateChecker();
