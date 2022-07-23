@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.modscanner;
 
-import static de.griefed.serverpackcreator.Dependencies.MODSCANNER;
-
+import de.griefed.serverpackcreator.Dependencies;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +17,8 @@ public class ModScannerTest {
         FileUtils.listFiles(
             new File("backend/test/resources/forge_tests/mods"), new String[] {"jar"}, true);
 
-    List<File> excluded = new ArrayList<>(MODSCANNER.tomls().scan(files));
+    List<File> excluded =
+        new ArrayList<>(Dependencies.getInstance().MODSCANNER().tomls().scan(files));
 
     Assertions.assertTrue(
         excluded.contains(new File("backend/test/resources/forge_tests/mods/aaaaa.jar")));
@@ -73,7 +73,8 @@ public class ModScannerTest {
         FileUtils.listFiles(
             new File("backend/test/resources/fabric_tests/mods"), new String[] {"jar"}, true);
 
-    List<File> excluded = new ArrayList<>(MODSCANNER.fabric().scan(files));
+    List<File> excluded =
+        new ArrayList<>(Dependencies.getInstance().MODSCANNER().fabric().scan(files));
 
     Assertions.assertTrue(
         excluded.contains(new File("backend/test/resources/fabric_tests/mods/aaaaa.jar")));
@@ -120,7 +121,8 @@ public class ModScannerTest {
         FileUtils.listFiles(
             new File("backend/test/resources/quilt_tests/mods"), new String[] {"jar"}, true);
 
-    List<File> excluded = new ArrayList<>(MODSCANNER.quilt().scan(files));
+    List<File> excluded =
+        new ArrayList<>(Dependencies.getInstance().MODSCANNER().quilt().scan(files));
 
     Assertions.assertTrue(
         excluded.contains(new File("backend/test/resources/quilt_tests/mods/aaaaa.jar")));
@@ -137,7 +139,8 @@ public class ModScannerTest {
         FileUtils.listFiles(
             new File("backend/test/resources/forge_old/mods"), new String[] {"jar"}, true);
 
-    List<File> excluded = new ArrayList<>(MODSCANNER.annotations().scan(files));
+    List<File> excluded =
+        new ArrayList<>(Dependencies.getInstance().MODSCANNER().annotations().scan(files));
 
     Assertions.assertTrue(
         excluded.contains(new File("backend/test/resources/forge_old/mods/aaaaa.jar")));

@@ -1,23 +1,30 @@
 package de.griefed.serverpackcreator.utilities.common;
 
+import de.griefed.serverpackcreator.Dependencies;
 import java.io.File;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class SystemUtilitiesTest {
 
-  private final SystemUtilities SYSTEMUTILITIES;
-
-  SystemUtilitiesTest() {
-    this.SYSTEMUTILITIES = new SystemUtilities();
-  }
+  SystemUtilitiesTest() {}
 
   @Test
   void acquireJavaPathFromSystemTest() {
-    Assertions.assertNotNull(SYSTEMUTILITIES.acquireJavaPathFromSystem());
-    Assertions.assertTrue(new File(SYSTEMUTILITIES.acquireJavaPathFromSystem()).exists());
-    Assertions.assertTrue(new File(SYSTEMUTILITIES.acquireJavaPathFromSystem()).isFile());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().UTILITIES().SystemUtils().acquireJavaPathFromSystem());
     Assertions.assertTrue(
-        SYSTEMUTILITIES.acquireJavaPathFromSystem().replace("\\", "/").contains("bin/java"));
+        new File(Dependencies.getInstance().UTILITIES().SystemUtils().acquireJavaPathFromSystem())
+            .exists());
+    Assertions.assertTrue(
+        new File(Dependencies.getInstance().UTILITIES().SystemUtils().acquireJavaPathFromSystem())
+            .isFile());
+    Assertions.assertTrue(
+        Dependencies.getInstance()
+            .UTILITIES()
+            .SystemUtils()
+            .acquireJavaPathFromSystem()
+            .replace("\\", "/")
+            .contains("bin/java"));
   }
 }

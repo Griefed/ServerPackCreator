@@ -1,38 +1,27 @@
 package de.griefed.serverpackcreator;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ApplicationPropertiesTest {
 
-  private final ApplicationProperties APPLICATIONPROPERTIES;
-
-  ApplicationPropertiesTest() {
-    try {
-      FileUtils.copyFile(
-          new File("backend/test/resources/serverpackcreator.properties"),
-          new File("serverpackcreator.properties"));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    this.APPLICATIONPROPERTIES = new ApplicationProperties();
-  }
+  ApplicationPropertiesTest() {}
 
   @Test
   void finalsTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().SERVERPACKCREATOR_PROPERTIES());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().SERVERPACKCREATOR_PROPERTIES(),
         new File("serverpackcreator.properties"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FALLBACK_CLIENTSIDE_MODS());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FALLBACK_CLIENTSIDE_MODS(),
         new ArrayList<>(
             Arrays.asList(
                 ("3dSkinLayers-,"
@@ -192,116 +181,161 @@ public class ApplicationPropertiesTest {
                         + "WorldNameRandomizer-,"
                         + "yisthereautojump-")
                     .split(","))));
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.getListFallbackMods());
-    APPLICATIONPROPERTIES.setProperty(
-        "de.griefed.serverpackcreator.configuration.fallbackmodslist", "bla");
-    APPLICATIONPROPERTIES.updateFallback();
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().getListFallbackMods());
+    Dependencies.getInstance()
+        .APPLICATIONPROPERTIES()
+        .setProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist", "bla");
+    Dependencies.getInstance().APPLICATIONPROPERTIES().updateFallback();
     Assertions.assertNotEquals(
-        APPLICATIONPROPERTIES.getProperty(
-            "de.griefed.serverpackcreator.configuration.fallbackmodslist"),
+        Dependencies.getInstance()
+            .APPLICATIONPROPERTIES()
+            .getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"),
         "bla");
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+    Assertions.assertNotNull(Dependencies.getInstance().APPLICATIONPROPERTIES().DEFAULT_CONFIG());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.DEFAULT_CONFIG(), new File("serverpackcreator.conf"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().DEFAULT_CONFIG(),
+        new File("serverpackcreator.conf"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.OLD_CONFIG());
-    Assertions.assertEquals(APPLICATIONPROPERTIES.OLD_CONFIG(), new File("creator.conf"));
-
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
+    Assertions.assertNotNull(Dependencies.getInstance().APPLICATIONPROPERTIES().OLD_CONFIG());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES(), new File("server.properties"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().OLD_CONFIG(), new File("creator.conf"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().DEFAULT_SERVER_PROPERTIES());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON(), new File("server-icon.png"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().DEFAULT_SERVER_PROPERTIES(),
+        new File("server.properties"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().DEFAULT_SERVER_ICON());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST(), new File("minecraft-manifest.json"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().DEFAULT_SERVER_ICON(),
+        new File("server-icon.png"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().MINECRAFT_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST(), new File("forge-manifest.json"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().MINECRAFT_VERSION_MANIFEST(),
+        new File("minecraft-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FORGE_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST(), new File("fabric-manifest.xml"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FORGE_VERSION_MANIFEST(),
+        new File("forge-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FABRIC_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FABRIC_VERSION_MANIFEST(),
+        new File("fabric-manifest.xml"));
+
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FABRIC_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertEquals(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FABRIC_INSTALLER_VERSION_MANIFEST(),
         new File("fabric-installer-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().QUILT_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST(), new File("quilt-manifest.xml"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().QUILT_VERSION_MANIFEST(),
+        new File("quilt-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().QUILT_INSTALLER_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().QUILT_INSTALLER_VERSION_MANIFEST(),
         new File("quilt-installer-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().SERVERPACKCREATOR_DATABASE());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE(), new File("serverpackcreator.db"));
+        Dependencies.getInstance().APPLICATIONPROPERTIES().SERVERPACKCREATOR_DATABASE(),
+        new File("serverpackcreator.db"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().MINECRAFT_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().MINECRAFT_VERSION_MANIFEST_LOCATION(),
         new File("./work/minecraft-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FORGE_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FORGE_VERSION_MANIFEST_LOCATION(),
         new File("./work/forge-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FABRIC_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().FABRIC_VERSION_MANIFEST_LOCATION(),
         new File("./work/fabric-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(
+        Dependencies.getInstance()
+            .APPLICATIONPROPERTIES()
+            .FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+        Dependencies.getInstance()
+            .APPLICATIONPROPERTIES()
+            .FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
         new File("./work/fabric-installer-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().QUILT_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+        Dependencies.getInstance().APPLICATIONPROPERTIES().QUILT_VERSION_MANIFEST_LOCATION(),
         new File("./work/quilt-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(
+        Dependencies.getInstance()
+            .APPLICATIONPROPERTIES()
+            .QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
+        Dependencies.getInstance()
+            .APPLICATIONPROPERTIES()
+            .QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
         new File("./work/quilt-installer-manifest.xml"));
   }
 
   @Test
   void getDirectoryServerPacksTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.getDirectoryServerPacks());
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().getDirectoryServerPacks());
   }
 
   @Test
   void getListOfDirectoriesToExcludeTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.getDirectoriesToExclude());
-    APPLICATIONPROPERTIES.addDirectoryToExclude("test");
-    Assertions.assertTrue(APPLICATIONPROPERTIES.getDirectoriesToExclude().contains("test"));
+    Assertions.assertNotNull(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().getDirectoriesToExclude());
+    Dependencies.getInstance().APPLICATIONPROPERTIES().addDirectoryToExclude("test");
+    Assertions.assertTrue(
+        Dependencies.getInstance()
+            .APPLICATIONPROPERTIES()
+            .getDirectoriesToExclude()
+            .contains("test"));
   }
 
   @Test
   void booleanTests() {
-    Assertions.assertFalse(APPLICATIONPROPERTIES.getSaveLoadedConfiguration());
-    Assertions.assertFalse(APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+    Assertions.assertFalse(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().getSaveLoadedConfiguration());
+    Assertions.assertFalse(
+        Dependencies.getInstance().APPLICATIONPROPERTIES().checkForAvailablePreReleases());
   }
 
   @Test
   void queueMaxUsageTest() {
-    Assertions.assertEquals(90, APPLICATIONPROPERTIES.getQueueMaxDiskUsage());
+    Assertions.assertEquals(
+        90, Dependencies.getInstance().APPLICATIONPROPERTIES().getQueueMaxDiskUsage());
   }
 
   @Test
   void getServerPackCreatorVersionTest() {
-    Assertions.assertEquals("dev", APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+    Assertions.assertEquals(
+        "dev", Dependencies.getInstance().APPLICATIONPROPERTIES().SERVERPACKCREATOR_VERSION());
   }
 }

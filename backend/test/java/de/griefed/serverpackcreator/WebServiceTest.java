@@ -28,9 +28,8 @@ public class WebServiceTest {
       e.printStackTrace();
     }
 
-    ServerPackCreator SERVERPACKCREATOR = new ServerPackCreator(new String[] {"--setup"});
-    SERVERPACKCREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
-    SERVERPACKCREATOR.checkDatabase();
+    Dependencies.getInstance().SERVER_PACK_CREATOR().run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+    Dependencies.getInstance().SERVER_PACK_CREATOR().checkDatabase();
   }
 
   @Test

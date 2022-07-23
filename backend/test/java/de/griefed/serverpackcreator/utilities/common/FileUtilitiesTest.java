@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.utilities.common;
 
+import de.griefed.serverpackcreator.Dependencies;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -8,17 +9,13 @@ import org.junit.jupiter.api.Test;
 
 public class FileUtilitiesTest {
 
-  private final FileUtilities FILE_UTILITIES;
-
-  FileUtilitiesTest() {
-    this.FILE_UTILITIES = new FileUtilities();
-  }
+  FileUtilitiesTest() {}
 
   @Test
   void unzipArchiveTest() {
     String modpackDir = "backend/test/resources/curseforge_tests";
     String zipFile = "backend/test/resources/curseforge_tests/modpack.zip";
-    FILE_UTILITIES.unzipArchive(zipFile, modpackDir);
+    Dependencies.getInstance().UTILITIES().FileUtils().unzipArchive(zipFile, modpackDir);
     Assertions.assertTrue(
         new File("./backend/test/resources/curseforge_tests/manifest.json").exists());
     Assertions.assertTrue(
@@ -37,7 +34,7 @@ public class FileUtilitiesTest {
     File destination = new File("destination.file");
     source.createNewFile();
     destination.createNewFile();
-    FILE_UTILITIES.replaceFile(source, destination);
+    Dependencies.getInstance().UTILITIES().FileUtils().replaceFile(source, destination);
     Assertions.assertFalse(source.exists());
     Assertions.assertTrue(destination.exists());
     FileUtils.deleteQuietly(destination);

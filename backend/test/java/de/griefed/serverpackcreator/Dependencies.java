@@ -16,29 +16,45 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 
-public class Dependencies {
+public final class Dependencies {
 
-  public static final ServerPackCreator SERVER_PACK_CREATOR;
-  public static final ObjectMapper OBJECT_MAPPER;
-  public static final ApplicationProperties APPLICATIONPROPERTIES;
-  public static final I18n I18N;
-  public static final Utilities UTILITIES;
-  public static final ConfigUtilities CONFIGUTILITIES;
-  public static final VersionMeta VERSIONMETA;
-  public static final ConfigurationHandler CONFIGURATIONHANDLER;
-  public static final ServerPackHandler SERVERPACKHANDLER;
-  public static final ApplicationPlugins APPLICATION_PLUGINS;
-  public static final ModScanner MODSCANNER;
+  private static Dependencies instance = null;
+  private final ServerPackCreator SERVER_PACK_CREATOR;
+  private final ObjectMapper OBJECT_MAPPER;
+  private final ApplicationProperties APPLICATIONPROPERTIES;
+  private final I18n I18N;
+  private final Utilities UTILITIES;
+  private final ConfigUtilities CONFIGUTILITIES;
+  private final VersionMeta VERSIONMETA;
+  private final ConfigurationHandler CONFIGURATIONHANDLER;
+  private final ServerPackHandler SERVERPACKHANDLER;
+  private final ApplicationPlugins APPLICATION_PLUGINS;
+  private final ModScanner MODSCANNER;
 
-  static {
+  private Dependencies() {
     try {
       FileUtils.copyDirectory(
           new File("backend/test/resources/testresources/addons"), new File("plugins"));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
     try {
+      FileUtils.copyFile(
+          new File("backend/test/resources/serverpackcreator.properties"),
+          new File("serverpackcreator.properties"));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    try {
+      FileUtils.copyFile(
+          new File("backend/test/resources/serverpackcreator.db"),
+          new File("serverpackcreator.db"));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    
+    try {
+      SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
       SERVER_PACK_CREATOR.run();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -90,5 +106,56 @@ public class Dependencies {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static Dependencies getInstance() {
+    if (instance == null) {
+      instance = new Dependencies();
+    }
+    return instance;
+  }
+
+  public ServerPackCreator SERVER_PACK_CREATOR() {
+    return SERVER_PACK_CREATOR;
+  }
+
+  public ObjectMapper OBJECT_MAPPER() {
+    return OBJECT_MAPPER;
+  }
+
+  public ApplicationProperties APPLICATIONPROPERTIES() {
+    return APPLICATIONPROPERTIES;
+  }
+
+  public I18n I18N() {
+    return I18N;
+  }
+
+  public Utilities UTILITIES() {
+    return UTILITIES;
+  }
+
+  public ConfigUtilities CONFIGUTILITIES() {
+    return CONFIGUTILITIES;
+  }
+
+  public VersionMeta VERSIONMETA() {
+    return VERSIONMETA;
+  }
+
+  public ConfigurationHandler CONFIGURATIONHANDLER() {
+    return CONFIGURATIONHANDLER;
+  }
+
+  public ServerPackHandler SERVERPACKHANDLER() {
+    return SERVERPACKHANDLER;
+  }
+
+  public ApplicationPlugins APPLICATION_PLUGINS() {
+    return APPLICATION_PLUGINS;
+  }
+
+  public ModScanner MODSCANNER() {
+    return MODSCANNER;
   }
 }

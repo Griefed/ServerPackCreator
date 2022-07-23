@@ -1,8 +1,7 @@
 package de.griefed.serverpackcreator.utilities;
 
-import static de.griefed.serverpackcreator.Dependencies.CONFIGUTILITIES;
-
 import de.griefed.serverpackcreator.ConfigurationModel;
+import de.griefed.serverpackcreator.Dependencies;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,23 +60,25 @@ public class ConfigUtilitiesTest {
     String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
 
     Assertions.assertTrue(
-        CONFIGUTILITIES.writeConfigToFile(
-            "./backend/test/resources/fabric_tests",
-            clientMods,
-            copyDirs,
-            "",
-            "",
-            true,
-            javaPath,
-            "1.16.5",
-            "Fabric",
-            "0.11.3",
-            true,
-            true,
-            true,
-            javaArgs,
-            "",
-            new File("./serverpackcreatorfabric.conf")));
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .writeConfigToFile(
+                "./backend/test/resources/fabric_tests",
+                clientMods,
+                copyDirs,
+                "",
+                "",
+                true,
+                javaPath,
+                "1.16.5",
+                "Fabric",
+                "0.11.3",
+                true,
+                true,
+                true,
+                javaArgs,
+                "",
+                new File("./serverpackcreatorfabric.conf")));
     Assertions.assertTrue(new File("./serverpackcreatorfabric.conf").exists());
     new File("./serverpackcreatorfabric.conf").delete();
   }
@@ -129,23 +130,25 @@ public class ConfigUtilitiesTest {
     String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
 
     Assertions.assertTrue(
-        CONFIGUTILITIES.writeConfigToFile(
-            "./backend/test/resources/forge_tests",
-            clientMods,
-            copyDirs,
-            "",
-            "",
-            true,
-            javaPath,
-            "1.16.5",
-            "Forge",
-            "36.1.2",
-            true,
-            true,
-            true,
-            javaArgs,
-            "",
-            new File("./serverpackcreatorforge.conf")));
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .writeConfigToFile(
+                "./backend/test/resources/forge_tests",
+                clientMods,
+                copyDirs,
+                "",
+                "",
+                true,
+                javaPath,
+                "1.16.5",
+                "Forge",
+                "36.1.2",
+                true,
+                true,
+                true,
+                javaArgs,
+                "",
+                new File("./serverpackcreatorforge.conf")));
     Assertions.assertTrue(new File("./serverpackcreatorforge.conf").exists());
     new File("./serverpackcreatorforge.conf").delete();
   }
@@ -192,28 +195,35 @@ public class ConfigUtilitiesTest {
     configurationModel.setModLoaderVersion("36.1.2");
     configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
     Assertions.assertTrue(
-        CONFIGUTILITIES.writeConfigToFile(configurationModel, new File("somefile.conf")));
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .writeConfigToFile(configurationModel, new File("somefile.conf")));
     Assertions.assertTrue(new File("somefile.conf").exists());
   }
 
   @Test
   void setModLoaderCaseTestForge() {
-    Assertions.assertEquals("Forge", CONFIGUTILITIES.getModLoaderCase("fOrGe"));
+    Assertions.assertEquals(
+        "Forge", Dependencies.getInstance().CONFIGUTILITIES().getModLoaderCase("fOrGe"));
   }
 
   @Test
   void setModLoaderCaseTestFabric() {
-    Assertions.assertEquals("Fabric", CONFIGUTILITIES.getModLoaderCase("fAbRiC"));
+    Assertions.assertEquals(
+        "Fabric", Dependencies.getInstance().CONFIGUTILITIES().getModLoaderCase("fAbRiC"));
   }
 
   @Test
   void setModLoaderCaseTestForgeCorrected() {
-    Assertions.assertEquals("Forge", CONFIGUTILITIES.getModLoaderCase("eeeeefOrGeeeeee"));
+    Assertions.assertEquals(
+        "Forge", Dependencies.getInstance().CONFIGUTILITIES().getModLoaderCase("eeeeefOrGeeeeee"));
   }
 
   @Test
   void setModLoaderCaseTestFabricCorrected() {
-    Assertions.assertEquals("Fabric", CONFIGUTILITIES.getModLoaderCase("hufwhafasfabricfagrsg"));
+    Assertions.assertEquals(
+        "Fabric",
+        Dependencies.getInstance().CONFIGUTILITIES().getModLoaderCase("hufwhafasfabricfagrsg"));
   }
 
   @Test
@@ -257,22 +267,24 @@ public class ConfigUtilitiesTest {
     boolean includeServerProperties = true;
     boolean includeZipCreation = true;
 
-    CONFIGUTILITIES.printConfigurationModel(
-        modpackDir,
-        clientMods,
-        copyDirs,
-        includeServerInstallation,
-        javaPath,
-        minecraftVersion,
-        modLoader,
-        modLoaderVersion,
-        includeServerIcon,
-        includeServerProperties,
-        includeZipCreation,
-        javaArgs,
-        "",
-        "",
-        "");
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .printConfigurationModel(
+            modpackDir,
+            clientMods,
+            copyDirs,
+            includeServerInstallation,
+            javaPath,
+            minecraftVersion,
+            modLoader,
+            modLoaderVersion,
+            includeServerIcon,
+            includeServerProperties,
+            includeZipCreation,
+            javaArgs,
+            "",
+            "",
+            "");
   }
 
   @Test
@@ -316,29 +328,35 @@ public class ConfigUtilitiesTest {
     configurationModel.setModLoader("Forge");
     configurationModel.setModLoaderVersion("36.1.2");
     configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
-    CONFIGUTILITIES.printConfigurationModel(configurationModel);
+    Dependencies.getInstance().CONFIGUTILITIES().printConfigurationModel(configurationModel);
   }
 
   @Test
   void updateConfigModelFromModrinthManifestTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
-        configurationModel,
-        new File("backend/test/resources/testresources/modrinth/forge_modrinth.index.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromModrinthManifest(
+            configurationModel,
+            new File("backend/test/resources/testresources/modrinth/forge_modrinth.index.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "40.1.48");
 
-    CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
-        configurationModel,
-        new File("backend/test/resources/testresources/modrinth/fabric_modrinth.index.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromModrinthManifest(
+            configurationModel,
+            new File("backend/test/resources/testresources/modrinth/fabric_modrinth.index.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
     Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.14.8");
 
-    CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
-        configurationModel,
-        new File("backend/test/resources/testresources/modrinth/quilt_modrinth.index.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromModrinthManifest(
+            configurationModel,
+            new File("backend/test/resources/testresources/modrinth/quilt_modrinth.index.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
     Assertions.assertEquals(configurationModel.getModLoader(), "Quilt");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.17.0");
@@ -347,16 +365,20 @@ public class ConfigUtilitiesTest {
   @Test
   void updateConfigModelFromCurseManifestTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    CONFIGUTILITIES.updateConfigModelFromCurseManifest(
-        configurationModel,
-        new File("backend/test/resources/testresources/curseforge/forge_manifest.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromCurseManifest(
+            configurationModel,
+            new File("backend/test/resources/testresources/curseforge/forge_manifest.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.0.1");
 
-    CONFIGUTILITIES.updateConfigModelFromCurseManifest(
-        configurationModel,
-        new File("backend/test/resources/testresources/curseforge/fabric_manifest.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromCurseManifest(
+            configurationModel,
+            new File("backend/test/resources/testresources/curseforge/fabric_manifest.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
     Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.13.3");
@@ -365,16 +387,22 @@ public class ConfigUtilitiesTest {
   @Test
   void updateConfigModelFromMinecraftInstanceTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(
-        configurationModel,
-        new File("backend/test/resources/testresources/curseforge/forge_minecraftinstance.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromMinecraftInstance(
+            configurationModel,
+            new File(
+                "backend/test/resources/testresources/curseforge/forge_minecraftinstance.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.2.4");
 
-    CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(
-        configurationModel,
-        new File("backend/test/resources/testresources/curseforge/fabric_minecraftinstance.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromMinecraftInstance(
+            configurationModel,
+            new File(
+                "backend/test/resources/testresources/curseforge/fabric_minecraftinstance.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
     Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.13.3");
@@ -383,16 +411,20 @@ public class ConfigUtilitiesTest {
   @Test
   void updateConfigModelFromConfigJsonTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    CONFIGUTILITIES.updateConfigModelFromConfigJson(
-        configurationModel,
-        new File("backend/test/resources/testresources/gdlauncher/fabric_config.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromConfigJson(
+            configurationModel,
+            new File("backend/test/resources/testresources/gdlauncher/fabric_config.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
     Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.14.8");
 
-    CONFIGUTILITIES.updateConfigModelFromConfigJson(
-        configurationModel,
-        new File("backend/test/resources/testresources/gdlauncher/forge_config.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromConfigJson(
+            configurationModel,
+            new File("backend/test/resources/testresources/gdlauncher/forge_config.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "40.1.52");
@@ -401,23 +433,29 @@ public class ConfigUtilitiesTest {
   @Test
   void updateConfigModelFromMMCPackTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    CONFIGUTILITIES.updateConfigModelFromMMCPack(
-        configurationModel,
-        new File("backend/test/resources/testresources/multimc/fabric_mmc-pack.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromMMCPack(
+            configurationModel,
+            new File("backend/test/resources/testresources/multimc/fabric_mmc-pack.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.1");
     Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.12.12");
 
-    CONFIGUTILITIES.updateConfigModelFromMMCPack(
-        configurationModel,
-        new File("backend/test/resources/testresources/multimc/forge_mmc-pack.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromMMCPack(
+            configurationModel,
+            new File("backend/test/resources/testresources/multimc/forge_mmc-pack.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.2.23");
 
-    CONFIGUTILITIES.updateConfigModelFromMMCPack(
-        configurationModel,
-        new File("backend/test/resources/testresources/multimc/quilt_mmc-pack.json"));
+    Dependencies.getInstance()
+        .CONFIGUTILITIES()
+        .updateConfigModelFromMMCPack(
+            configurationModel,
+            new File("backend/test/resources/testresources/multimc/quilt_mmc-pack.json"));
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
     Assertions.assertEquals(configurationModel.getModLoader(), "Quilt");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.17.0");
@@ -426,19 +464,26 @@ public class ConfigUtilitiesTest {
   @Test
   void updateDestinationFromInstanceCfgTest() throws IOException {
     Assertions.assertEquals(
-        CONFIGUTILITIES.updateDestinationFromInstanceCfg(
-            new File("backend/test/resources/testresources/multimc/better_mc_instance.cfg")),
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .updateDestinationFromInstanceCfg(
+                new File("backend/test/resources/testresources/multimc/better_mc_instance.cfg")),
         "Better Minecraft [FABRIC] - 1.18.1");
 
     Assertions.assertEquals(
-        CONFIGUTILITIES.updateDestinationFromInstanceCfg(
-            new File("backend/test/resources/testresources/multimc/all_the_mods_instance.cfg")),
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .updateDestinationFromInstanceCfg(
+                new File("backend/test/resources/testresources/multimc/all_the_mods_instance.cfg")),
         "All the Mods 6 - ATM6 - 1.16.5");
   }
 
   @Test
   void suggestCopyDirsTest() {
-    List<String> dirs = CONFIGUTILITIES.suggestCopyDirs("backend/test/resources/fabric_tests");
+    List<String> dirs =
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .suggestCopyDirs("backend/test/resources/fabric_tests");
     Assertions.assertTrue(dirs.contains("config"));
     Assertions.assertTrue(dirs.contains("defaultconfigs"));
     Assertions.assertTrue(dirs.contains("mods"));
@@ -450,14 +495,19 @@ public class ConfigUtilitiesTest {
   @Test
   void directoriesInModpackZipTest() throws IOException {
     List<String> entries =
-        CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(
-            new ZipFile(
-                "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"));
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .getDirectoriesInModpackZipBaseDirectory(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"));
     Assertions.assertEquals(1, entries.size());
     Assertions.assertTrue(entries.contains("overrides/"));
     entries =
-        CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(
-            new ZipFile("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"));
+        Dependencies.getInstance()
+            .CONFIGUTILITIES()
+            .getDirectoriesInModpackZipBaseDirectory(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"));
     Assertions.assertTrue(entries.size() > 1);
     Assertions.assertTrue(entries.contains("mods/"));
     Assertions.assertTrue(entries.contains("config/"));
@@ -466,14 +516,16 @@ public class ConfigUtilitiesTest {
   @Test
   void filesAndDirsInZipTest() throws IOException {
     Assertions.assertTrue(
-        CONFIGUTILITIES
+        Dependencies.getInstance()
+                .CONFIGUTILITIES()
                 .getFilesInModpackZip(
                     new ZipFile(
                         "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
                 .size()
             > 0);
     Assertions.assertTrue(
-        CONFIGUTILITIES
+        Dependencies.getInstance()
+                .CONFIGUTILITIES()
                 .getFilesInModpackZip(
                     new ZipFile(
                         "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
@@ -481,14 +533,16 @@ public class ConfigUtilitiesTest {
             > 0);
 
     Assertions.assertTrue(
-        CONFIGUTILITIES
+        Dependencies.getInstance()
+                .CONFIGUTILITIES()
                 .getDirectoriesInModpackZip(
                     new ZipFile(
                         "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
                 .size()
             > 0);
     Assertions.assertTrue(
-        CONFIGUTILITIES
+        Dependencies.getInstance()
+                .CONFIGUTILITIES()
                 .getDirectoriesInModpackZip(
                     new ZipFile(
                         "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
@@ -496,14 +550,16 @@ public class ConfigUtilitiesTest {
             > 0);
 
     Assertions.assertTrue(
-        CONFIGUTILITIES
+        Dependencies.getInstance()
+                .CONFIGUTILITIES()
                 .getAllFilesAndDirectoriesInModpackZip(
                     new ZipFile(
                         "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
                 .size()
             > 0);
     Assertions.assertTrue(
-        CONFIGUTILITIES
+        Dependencies.getInstance()
+                .CONFIGUTILITIES()
                 .getAllFilesAndDirectoriesInModpackZip(
                     new ZipFile(
                         "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
