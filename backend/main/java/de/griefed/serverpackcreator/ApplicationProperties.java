@@ -315,6 +315,9 @@ public class ApplicationProperties extends Properties {
   /** List of templates used for start-script creation. */
   private List<File> scriptTemplates;
 
+  /** Whether clientside-only mods should automatically be excluded * */
+  private boolean autoExcludingModsEnabled = true;
+
   /**
    * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
    *
@@ -565,6 +568,15 @@ public class ApplicationProperties extends Properties {
                           "de.griefed.serverpackcreator.configuration.fallbackmodslist"))));
     }
     LOG.debug("Script templates set to: " + this.scriptTemplates);
+
+    try {
+      autoExcludingModsEnabled =
+          Boolean.parseBoolean(
+              getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled"));
+    } catch (Exception e) {
+      autoExcludingModsEnabled = true;
+    }
+    LOG.debug("Auto-discovery of clientside-only mods set to: " + autoExcludingModsEnabled);
   }
 
   /**
@@ -969,6 +981,15 @@ public class ApplicationProperties extends Properties {
    */
   public boolean isZipFileExclusionEnabled() {
     return isZipFileExclusionEnabled;
+  }
+
+  /**
+   * Is auto excluding of clientside-only mods enabled.
+   *
+   * @return {@link Boolean} <code>true</code> if autodiscovery is enabled.
+   */
+  public boolean isAutoExcludingModsEnabled() {
+    return autoExcludingModsEnabled;
   }
 
   /**
