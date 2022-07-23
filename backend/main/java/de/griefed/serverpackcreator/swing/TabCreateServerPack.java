@@ -1217,29 +1217,31 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void validateCopyDirs() {
-    List<String> errorsTEXTFIELD_COPYDIRECTORIES = new ArrayList<>();
-    if (!TEXTAREA_COPYDIRECTORIES.getText().matches("^.*,\\s*\\\\*$")
-        && CONFIGURATIONHANDLER.checkCopyDirs(
-            UTILITIES.ListUtils()
-                .cleanList(
-                    new ArrayList<>(
-                        Arrays.asList(
-                            TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
-            TEXTFIELD_MODPACKDIRECTORY.getText(),
-            errorsTEXTFIELD_COPYDIRECTORIES)) {
+    if (CONFIGURATIONHANDLER.checkModpackDir(TEXTFIELD_MODPACKDIRECTORY.getText())) {
+      List<String> errorsTEXTFIELD_COPYDIRECTORIES = new ArrayList<>();
+      if (!TEXTAREA_COPYDIRECTORIES.getText().matches("^.*,\\s*\\\\*$")
+          && CONFIGURATIONHANDLER.checkCopyDirs(
+          UTILITIES.ListUtils()
+              .cleanList(
+                  new ArrayList<>(
+                      Arrays.asList(
+                          TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
+          TEXTFIELD_MODPACKDIRECTORY.getText(),
+          errorsTEXTFIELD_COPYDIRECTORIES)) {
 
-      TEXTAREA_COPYDIRECTORIES.setIcon(null);
-      TEXTAREA_COPYDIRECTORIES.setToolTipText(
-          I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
+        TEXTAREA_COPYDIRECTORIES.setIcon(null);
+        TEXTAREA_COPYDIRECTORIES.setToolTipText(
+            I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
 
-      TEXTAREA_COPYDIRECTORIES.setForeground(getThemeTextColor());
+        TEXTAREA_COPYDIRECTORIES.setForeground(getThemeTextColor());
 
-    } else {
+      } else {
 
-      TEXTAREA_COPYDIRECTORIES.setForeground(getThemeErrorColor());
-      TEXTAREA_COPYDIRECTORIES.setIcon(ERROR_ICON_COPYDIRECTORIES);
-      ERROR_ICON_COPYDIRECTORIES.setDescription(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
-      TEXTAREA_COPYDIRECTORIES.setToolTipText(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
+        TEXTAREA_COPYDIRECTORIES.setForeground(getThemeErrorColor());
+        TEXTAREA_COPYDIRECTORIES.setIcon(ERROR_ICON_COPYDIRECTORIES);
+        ERROR_ICON_COPYDIRECTORIES.setDescription(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
+        TEXTAREA_COPYDIRECTORIES.setToolTipText(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
+      }
     }
   }
 
