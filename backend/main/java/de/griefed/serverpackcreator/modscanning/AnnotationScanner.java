@@ -67,14 +67,14 @@ public class AnnotationScanner implements Scanner<TreeSet<File>, Collection<File
 
     LOG.info("Scanning Minecraft 1.12.x and older mods for sideness...");
 
-    List<String> modDependencies = new ArrayList<>();
-    List<String> clientMods = new ArrayList<>();
+    TreeSet<String> modDependencies = new TreeSet<>();
+    TreeSet<String> clientMods = new TreeSet<>();
 
     for (File mod : filesInModsDir) {
       if (mod.toString().endsWith("jar")) {
 
         String modId = null;
-        List<String> additionalMods = new ArrayList<>();
+        TreeSet<String> additionalMods = new TreeSet<>();
 
         JarFile jarFile = null;
         JarEntry jarEntry;
@@ -87,6 +87,7 @@ public class AnnotationScanner implements Scanner<TreeSet<File>, Collection<File
         } catch (Exception ex) {
           LOG.error("Can not scan " + mod);
         }
+        //TODO extract method for json acquisition
 
         try {
 

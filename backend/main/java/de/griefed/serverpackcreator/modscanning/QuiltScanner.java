@@ -66,8 +66,8 @@ public class QuiltScanner implements Scanner<TreeSet<File>, Collection<File>> {
   public TreeSet<File> scan(Collection<File> filesInModsDir) {
     LOG.info("Scanning Quilt mods for sideness...");
 
-    List<String> modDependencies = new ArrayList<>();
-    List<String> clientMods = new ArrayList<>();
+    TreeSet<String> modDependencies = new TreeSet<>();
+    TreeSet<String> clientMods = new TreeSet<>();
 
     for (File mod : filesInModsDir) {
       if (mod.toString().endsWith("jar")) {
